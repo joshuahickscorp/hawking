@@ -1,0 +1,764 @@
+{
+ "actionable_hypotheses": [
+  {
+   "actionable": true,
+   "cheapest_falsifier": "Time `git --no-optional-locks status --porcelain` (this module does) and inspect GIT_TRACE2 for an index refresh. If the no-lock path still refreshes or still takes minutes, the flag is not the removal. Do not re-run bare `git status`: that recreates the lock incident.",
+   "cost": "git_query",
+   "cost_state": "MEASURED_SELF_DIRTY",
+   "does_not_decide": true,
+   "median_ms": 136.855,
+   "removal": {
+    "kind": "wait",
+    "what_would_remove_it": "Pass --no-optional-locks on the HCLI git.status argv (the sidecar path already does). That skips the index refresh. The lock doctor is durability after a kill, not the removal of the wait."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "git status refreshes the index and therefore WRITES .git/index.lock. On this ~43GB dirty tree that refresh took minutes. hcli.tool_registry._git_status invokes `git status --short --branch` via _run_readonly (timeout=30) WITHOUT --no-optional-locks. A 30s timeout SIGKILLs git while it holds the lock. tools/future/_common.git already passes the flag; HCLI does not.",
+   "worked_example": true
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "Compare python3 -c pass (this analog) to in-process exec of an empty function. If spawn is not in the ranked head, leave it: isolation is the point.",
+   "cost": "subprocess_launch",
+   "cost_state": "MEASURED_SELF_DIRTY",
+   "does_not_decide": true,
+   "median_ms": 26.748,
+   "removal": {
+    "kind": "call",
+    "what_would_remove_it": "In-process pytest runner for tiny files already imported in this interpreter, and reuse one git child for batched read-only queries. Spawn stays for isolation of untrusted commands."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "Engine._run_contained_subprocess starts a new session for every contained pytest/script. Tool _run_readonly does the same for git and shell. Process spawn is paid per call, not amortized.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "Count identify_ready median_ms against source_receipt_io median_ms on a 10k-unit DAG. If identify_ready dominates I/O, the incremental-set hypothesis is live; if I/O dominates, debounce persist instead.",
+   "cost": "scheduler_decision",
+   "cost_state": "MEASURED_SELF_DIRTY",
+   "does_not_decide": true,
+   "median_ms": 1.764,
+   "removal": {
+    "kind": "information",
+    "what_would_remove_it": "Keep a ready-set incrementally instead of scanning all units every dispatch, and debounce _persist to a dirty flag. The scan is cheap next to git.status; persist is the scheduler cost that actually copies."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "Every dispatch scans the unit map (identify_ready) and admits under per-class caps (assign_ready). Scheduler.__init__ / submit / dispatch also _persist the DAG when a store is set.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "Two consecutive dispatch() calls with no unit-state change: if _persist still writes bytes, debounce is live. If the second write is zero bytes, the cost is already gone.",
+   "cost": "source_receipt_io",
+   "cost_state": "MEASURED_SELF_DIRTY",
+   "does_not_decide": true,
+   "median_ms": 0.815,
+   "removal": {
+    "kind": "re-read",
+    "what_would_remove_it": "Content-address the evidence blob (mtime+size or sha) and skip a persist when the DAG hash is unchanged. Receipts are already sealed; the cache key is the seal."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "Scheduler._persist writes the DAG on submit/replan/dispatch. Ledger.save atomically rewrites markdown. Engine evidence gather re-reads files named in the prompt every turn.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "Two consecutive executes of the same prompt: if the second still re-reads every evidence file, the cache is missing. If file reads drop to zero, the copy is already gone.",
+   "cost": "context_construction",
+   "cost_state": "MEASURED_SELF_DIRTY",
+   "does_not_decide": true,
+   "median_ms": 0.193,
+   "removal": {
+    "kind": "copy",
+    "what_would_remove_it": "Treat sealed receipts as the authority and put only paths + seals in context, fetching bodies on miss. FT.CONTEXT.disk-authority already names this bug: a context blob must not compete with a receipt."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "Engine._gather_evidence walks path tokens in the prompt, reads each file under a char budget, and may expand nested references from instruction documents. Context is rebuilt per complete_text, not reused across turns.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "Time ToolRegistry.get+validate (this analog) against git_query. If routing median_ms is not in the ranked head, do not rewrite the dispatcher.",
+   "cost": "tool_routing",
+   "cost_state": "MEASURED_SELF_DIRTY",
+   "does_not_decide": true,
+   "median_ms": 0.118,
+   "removal": {
+    "kind": "call",
+    "what_would_remove_it": "Stop calling git.status on every turn. Route status through the sidecar git() (already --no-optional-locks) or skip untracked. Routing itself does not need a new dispatcher."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "ToolRegistry.invoke looks up a name, validates input, checks permissions, calls the handler, validates output. The dict lookup is cheap; the handler (often git.status or a network fetch) is the cost mis-attributed to routing.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "This module's negative control: `true` and `exit 0` must come back rejected. If they are admitted, the overhead is fiction and the verifier is the bug. If rejected and median_ms is in the tail, do not rewrite it.",
+   "cost": "verifier_overhead",
+   "cost_state": "MEASURED_SELF_DIRTY",
+   "does_not_decide": true,
+   "median_ms": 0.104,
+   "removal": {
+    "kind": "call",
+    "what_would_remove_it": "Cache admissibility by command hash. Do not weaken the vacuous-command refuse: a verifier nobody has watched reject is a verifier that will silently drift."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "command_is_admissible tokenizes, splits on shell combinators, and AST-parses python -c bodies so `true` / `exit 0` / `cmd || true` cannot launder a pass. evaluate_python_test_file may spawn pytest.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "turnaround.py already refuses to time compile as a CPU proxy. A protected window that records compile_ns on an isolated target-dir either drops the wait (fingerprint hit) or does not (cache miss / lock contention remains).",
+   "cost": "compile_wait",
+   "cost_state": "UNKNOWN",
+   "does_not_decide": true,
+   "removal": {
+    "kind": "wait",
+    "what_would_remove_it": "Per-experiment CARGO_TARGET_DIR plus a content-addressed skip fingerprint (turnaround.py lever target_isolation_plus_input_fingerprint). Do not substitute release-fast numbers for protected ones."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "cargo build against the shared target-dir workspace/ops/build/rust contends with the live campaign. tests_run may select runner=cargo. This sidecar must not join that queue.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "A live session timeline containing an idle or awaiting-instructions event would refute 'HCLI does not idle-wait'. Scheduler source says dispatch returns without waiting; this sidecar has no live timeline, so the duration stays UNKNOWN.",
+   "cost": "process_idle",
+   "cost_state": "UNKNOWN",
+   "does_not_decide": true,
+   "removal": {
+    "kind": "wait",
+    "what_would_remove_it": "Refill the frontier (frontiers.next_work / refill) instead of sitting in an empty dispatch loop. Park hardware work SLEEPING and move to CPU work."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "dispatch() returns without waiting. Campaign-level idle is the gap between missions, not a blocking call. autonomy_run.py treats an idle / awaiting-instructions event as an automatic trial failure and has no path that emits one.",
+   "worked_example": false
+  },
+  {
+   "actionable": true,
+   "cheapest_falsifier": "A live DAG ledger of ready_at minus running_at, split by resource_class. If LIGHT_CONTROL gaps are large while occupancy is below cap, the cap is not the wait.",
+   "cost": "queue_wait",
+   "cost_state": "UNKNOWN",
+   "does_not_decide": true,
+   "removal": {
+    "kind": "wait",
+    "what_would_remove_it": "Do not put CPU-class work on GPU_EXCLUSIVE. Raise the cap only from measured occupancy, never from a wish. Park blocked GPU work SLEEPING (frontiers.py already does) so it does not occupy a ready slot."
+   },
+   "status": "HYPOTHESIS",
+   "why_this_cost_exists": "A ready unit waits when its resource class is at cap (GPU_EXCLUSIVE=1, MUTATION=1, decode limit). dispatch() returns without waiting; the wait is calendar time until a later dispatch sees a free slot.",
+   "worked_example": false
+  }
+ ],
+ "attributed_costs": [
+  {
+   "actionable": true,
+   "cost": "scheduler_decision",
+   "hcli_import": "import:hcli (editable or path; read-only)",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "Count identify_ready median_ms against source_receipt_io median_ms on a 10k-unit DAG. If identify_ready dominates I/O, the incremental-set hypothesis is live; if I/O dominates, debounce persist instead.",
+    "cost": "scheduler_decision",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "information",
+     "what_would_remove_it": "Keep a ready-set incrementally instead of scanning all units every dispatch, and debounce _persist to a dirty flag. The scan is cheap next to git.status; persist is the scheduler cost that actually copies."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "Every dispatch scans the unit map (identify_ready) and admits under per-class caps (assign_ready). Scheduler.__init__ / submit / dispatch also _persist the DAG when a store is set.",
+    "worked_example": false
+   },
+   "last": {
+    "analog": "hcli.workunit.identify_ready + assign_ready",
+    "n_assigned": 32,
+    "n_gpu_exclusive_ready": 35,
+    "n_ready": 343,
+    "n_unassigned": 311,
+    "n_units": 400
+   },
+   "measurement_kind": "identify_ready_plus_assign_ready",
+   "reason": null,
+   "self_timing": {
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "max_ms": 2.189,
+    "median_ms": 1.764,
+    "min_ms": 1.75,
+    "n": 3,
+    "not_a_hardware_measurement": true,
+    "not_protected_absolute": true,
+    "range_ms": 0.439,
+    "samples_ms": [
+     2.189,
+     1.764,
+     1.75
+    ],
+    "use": "rank and prune; decide nothing"
+   },
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  {
+   "actionable": true,
+   "cost": "queue_wait",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "A live DAG ledger of ready_at minus running_at, split by resource_class. If LIGHT_CONTROL gaps are large while occupancy is below cap, the cap is not the wait.",
+    "cost": "queue_wait",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "wait",
+     "what_would_remove_it": "Do not put CPU-class work on GPU_EXCLUSIVE. Raise the cap only from measured occupancy, never from a wish. Park blocked GPU work SLEEPING (frontiers.py already does) so it does not occupy a ready slot."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "A ready unit waits when its resource class is at cap (GPU_EXCLUSIVE=1, MUTATION=1, decode limit). dispatch() returns without waiting; the wait is calendar time until a later dispatch sees a free slot.",
+    "worked_example": false
+   },
+   "not_a_hardware_measurement": true,
+   "reason": "dispatch() returns without waiting; queue wait is calendar time a ready unit spends blocked on occupancy. No live ready_at/running_at ledger in this sidecar.",
+   "scheduler_nonblocking": {
+    "dispatch_returns_without_waiting": true,
+    "note": "queue_wait and process_idle are calendar gaps, not a function that blocks inside dispatch(). A duration for them needs a live ready_at/running_at ledger this sidecar does not have.",
+    "path": "hcli/scheduler.py",
+    "persist_on_submit_and_dispatch": true,
+    "recovered_from": "disk:/Users/scammermike/Downloads/hawking/hcli/scheduler.py"
+   },
+   "self_timing": null,
+   "state": "UNKNOWN",
+   "structural_note": "the scheduler analog set gpu_exclusive=0 so GPU_EXCLUSIVE units remain unassigned. That is evidence the wait exists as a structure, not a duration.",
+   "structural_unassigned_in_analog": 311
+  },
+  {
+   "actionable": true,
+   "analog_of": "Engine._run_contained_subprocess",
+   "cost": "subprocess_launch",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "Compare python3 -c pass (this analog) to in-process exec of an empty function. If spawn is not in the ranked head, leave it: isolation is the point.",
+    "cost": "subprocess_launch",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "call",
+     "what_would_remove_it": "In-process pytest runner for tiny files already imported in this interpreter, and reuse one git child for batched read-only queries. Spawn stays for isolation of untrusted commands."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "Engine._run_contained_subprocess starts a new session for every contained pytest/script. Tool _run_readonly does the same for git and shell. Process spawn is paid per call, not amortized.",
+    "worked_example": false
+   },
+   "measurement_kind": "python3_-c_pass",
+   "reason": null,
+   "self_timing": {
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "max_ms": 27.49,
+    "median_ms": 26.748,
+    "min_ms": 26.465,
+    "n": 3,
+    "not_a_hardware_measurement": true,
+    "not_protected_absolute": true,
+    "range_ms": 1.025,
+    "samples_ms": [
+     27.49,
+     26.748,
+     26.465
+    ],
+    "use": "rank and prune; decide nothing"
+   },
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  {
+   "actionable": true,
+   "analog_of": "Scheduler._persist / Ledger.save",
+   "cost": "source_receipt_io",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "Two consecutive dispatch() calls with no unit-state change: if _persist still writes bytes, debounce is live. If the second write is zero bytes, the cost is already gone.",
+    "cost": "source_receipt_io",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "re-read",
+     "what_would_remove_it": "Content-address the evidence blob (mtime+size or sha) and skip a persist when the DAG hash is unchanged. Receipts are already sealed; the cache key is the seal."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "Scheduler._persist writes the DAG on submit/replan/dispatch. Ledger.save atomically rewrites markdown. Engine evidence gather re-reads files named in the prompt every turn.",
+    "worked_example": false
+   },
+   "last": {
+    "bytes_read": 253275,
+    "receipts_read": 8
+   },
+   "measurement_kind": "receipt_read_plus_tempfile_fsync",
+   "reason": null,
+   "self_timing": {
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "max_ms": 2.801,
+    "median_ms": 0.815,
+    "min_ms": 0.768,
+    "n": 3,
+    "not_a_hardware_measurement": true,
+    "not_protected_absolute": true,
+    "range_ms": 2.033,
+    "samples_ms": [
+     2.801,
+     0.815,
+     0.768
+    ],
+    "use": "rank and prune; decide nothing"
+   },
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  {
+   "actionable": true,
+   "analog_of": "Engine._gather_evidence",
+   "cost": "context_construction",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "Two consecutive executes of the same prompt: if the second still re-reads every evidence file, the cache is missing. If file reads drop to zero, the copy is already gone.",
+    "cost": "context_construction",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "copy",
+     "what_would_remove_it": "Treat sealed receipts as the authority and put only paths + seals in context, fetching bodies on miss. FT.CONTEXT.disk-authority already names this bug: a context blob must not compete with a receipt."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "Engine._gather_evidence walks path tokens in the prompt, reads each file under a char budget, and may expand nested references from instruction documents. Context is rebuilt per complete_text, not reused across turns.",
+    "worked_example": false
+   },
+   "last": {
+    "asked": 6,
+    "chars": 273251,
+    "files_read": 6
+   },
+   "measurement_kind": "read_named_sidecar_sources",
+   "reason": null,
+   "self_timing": {
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "max_ms": 0.378,
+    "median_ms": 0.193,
+    "min_ms": 0.179,
+    "n": 3,
+    "not_a_hardware_measurement": true,
+    "not_protected_absolute": true,
+    "range_ms": 0.199,
+    "samples_ms": [
+     0.378,
+     0.193,
+     0.179
+    ],
+    "use": "rank and prune; decide nothing"
+   },
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  {
+   "actionable": true,
+   "cost": "tool_routing",
+   "hcli_import": "import:hcli (editable or path; read-only)",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "Time ToolRegistry.get+validate (this analog) against git_query. If routing median_ms is not in the ranked head, do not rewrite the dispatcher.",
+    "cost": "tool_routing",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "call",
+     "what_would_remove_it": "Stop calling git.status on every turn. Route status through the sidecar git() (already --no-optional-locks) or skip untracked. Routing itself does not need a new dispatcher."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "ToolRegistry.invoke looks up a name, validates input, checks permissions, calls the handler, validates output. The dict lookup is cheap; the handler (often git.status or a network fetch) is the cost mis-attributed to routing.",
+    "worked_example": false
+   },
+   "last": {
+    "analog": "ToolRegistry.get + validate_input + handler; git.status not invoked",
+    "git.status_registered": false,
+    "n_misses": 0,
+    "n_registered": 40,
+    "n_routed": 40
+   },
+   "measurement_kind": "ToolRegistry_get_validate_handler",
+   "reason": null,
+   "self_timing": {
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "max_ms": 0.201,
+    "median_ms": 0.118,
+    "min_ms": 0.11,
+    "n": 3,
+    "not_a_hardware_measurement": true,
+    "not_protected_absolute": true,
+    "range_ms": 0.091,
+    "samples_ms": [
+     0.201,
+     0.118,
+     0.11
+    ],
+    "use": "rank and prune; decide nothing"
+   },
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  {
+   "actionable": true,
+   "cost": "verifier_overhead",
+   "hcli_import": "import:hcli (editable or path; read-only)",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "This module's negative control: `true` and `exit 0` must come back rejected. If they are admitted, the overhead is fiction and the verifier is the bug. If rejected and median_ms is in the tail, do not rewrite it.",
+    "cost": "verifier_overhead",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "call",
+     "what_would_remove_it": "Cache admissibility by command hash. Do not weaken the vacuous-command refuse: a verifier nobody has watched reject is a verifier that will silently drift."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "command_is_admissible tokenizes, splits on shell combinators, and AST-parses python -c bodies so `true` / `exit 0` / `cmd || true` cannot launder a pass. evaluate_python_test_file may spawn pytest.",
+    "worked_example": false
+   },
+   "last": {
+    "analog": "hcli.verifier_pipeline.command_is_admissible",
+    "n": 10,
+    "n_admitted": 4,
+    "n_rejected": 6,
+    "rejected_reasons": [
+     "'true':VACUOUS_COMMAND",
+     "':':VACUOUS_COMMAND",
+     "'exit 0':VACUOUS_COMMAND",
+     "\"python3 -c 'raise SystemExit(0)'\":VACUOUS_COMMAND",
+     "'sh -c true':VACUOUS_COMMAND",
+     "'':EMPTY_COMMAND"
+    ]
+   },
+   "measurement_kind": "command_is_admissible_corpus",
+   "reason": null,
+   "self_timing": {
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "max_ms": 0.245,
+    "median_ms": 0.104,
+    "min_ms": 0.094,
+    "n": 3,
+    "not_a_hardware_measurement": true,
+    "not_protected_absolute": true,
+    "range_ms": 0.151,
+    "samples_ms": [
+     0.245,
+     0.104,
+     0.094
+    ],
+    "use": "rank and prune; decide nothing"
+   },
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  {
+   "actionable": true,
+   "argv": [
+    "git",
+    "--no-optional-locks",
+    "status",
+    "--porcelain"
+   ],
+   "cost": "git_query",
+   "hcli_path": {
+    "argv": [
+     "git",
+     "-C",
+     "<dyn>",
+     "status",
+     "--short",
+     "--branch"
+    ],
+    "carries_no_optional_locks": false,
+    "file_mentions_no_optional_locks": false,
+    "finding": "HCLI git.status is git status --short --branch with a 30s timeout and without --no-optional-locks. Sidecar _common.git already passes the flag. The minutes-scale cost is HCLI's path, not the sidecar's.",
+    "function": "_git_status",
+    "path": "hcli/tool_registry.py",
+    "recovered_from": "disk:/Users/scammermike/Downloads/hawking/hcli/tool_registry.py",
+    "timeout_s_default": 30.0
+   },
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "Time `git --no-optional-locks status --porcelain` (this module does) and inspect GIT_TRACE2 for an index refresh. If the no-lock path still refreshes or still takes minutes, the flag is not the removal. Do not re-run bare `git status`: that recreates the lock incident.",
+    "cost": "git_query",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "wait",
+     "what_would_remove_it": "Pass --no-optional-locks on the HCLI git.status argv (the sidecar path already does). That skips the index refresh. The lock doctor is durability after a kill, not the removal of the wait."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "git status refreshes the index and therefore WRITES .git/index.lock. On this ~43GB dirty tree that refresh took minutes. hcli.tool_registry._git_status invokes `git status --short --branch` via _run_readonly (timeout=30) WITHOUT --no-optional-locks. A 30s timeout SIGKILLs git while it holds the lock. tools/future/_common.git already passes the flag; HCLI does not.",
+    "worked_example": true
+   },
+   "is_hcli_path": false,
+   "last": {
+    "n_lines": 722,
+    "returncode": 0,
+    "timed_out": false
+   },
+   "measurement_kind": "git_no_optional_locks_status_porcelain",
+   "note": "this times the sidecar path (flag present). HCLI's path is unmeasured because it is the lock-taking arm.",
+   "reason": null,
+   "self_timing": {
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "max_ms": 143.253,
+    "median_ms": 136.855,
+    "min_ms": 133.75,
+    "n": 3,
+    "not_a_hardware_measurement": true,
+    "not_protected_absolute": true,
+    "range_ms": 9.503,
+    "samples_ms": [
+     143.253,
+     136.855,
+     133.75
+    ],
+    "use": "rank and prune; decide nothing"
+   },
+   "sidecar_path": {
+    "carries_no_optional_locks": true,
+    "function": "git",
+    "historical_claim": "Seconds before a read-only git query is abandoned. The tree is ~43GB and dirty, so git status can run for minutes; --no-optional-locks tells git not to take index.lock for a query that does not need it.",
+    "historical_claim_source": "tools/future/_common.py module comment on git()",
+    "not_remeasured_without_flag": true,
+    "path": "tools/future/_common.py",
+    "timeout_present_in_source": true,
+    "timeout_s": 120,
+    "why_not_remeasured": "the no-flag arm takes the index lock and has stranded it; this profiler refuses that arm"
+   },
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  {
+   "actionable": true,
+   "cargo_forbidden": true,
+   "cost": "compile_wait",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "turnaround.py already refuses to time compile as a CPU proxy. A protected window that records compile_ns on an isolated target-dir either drops the wait (fingerprint hit) or does not (cache miss / lock contention remains).",
+    "cost": "compile_wait",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "wait",
+     "what_would_remove_it": "Per-experiment CARGO_TARGET_DIR plus a content-addressed skip fingerprint (turnaround.py lever target_isolation_plus_input_fingerprint). Do not substitute release-fast numbers for protected ones."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "cargo build against the shared target-dir workspace/ops/build/rust contends with the live campaign. tests_run may select runner=cargo. This sidecar must not join that queue.",
+    "worked_example": false
+   },
+   "lever_id": "target_isolation_plus_input_fingerprint",
+   "lever_owner": "tools/future/turnaround.py",
+   "not_a_hardware_measurement": true,
+   "reason": "cargo build is forbidden on the shared target-dir; a CPU proxy is not compile wait (turnaround.py already refuses this)",
+   "self_timing": null,
+   "shared_target_dir": "workspace/ops/build/rust",
+   "state": "UNKNOWN"
+  },
+  {
+   "actionable": true,
+   "cost": "process_idle",
+   "hypothesis": {
+    "actionable": true,
+    "cheapest_falsifier": "A live session timeline containing an idle or awaiting-instructions event would refute 'HCLI does not idle-wait'. Scheduler source says dispatch returns without waiting; this sidecar has no live timeline, so the duration stays UNKNOWN.",
+    "cost": "process_idle",
+    "does_not_decide": true,
+    "removal": {
+     "kind": "wait",
+     "what_would_remove_it": "Refill the frontier (frontiers.next_work / refill) instead of sitting in an empty dispatch loop. Park hardware work SLEEPING and move to CPU work."
+    },
+    "status": "HYPOTHESIS",
+    "why_this_cost_exists": "dispatch() returns without waiting. Campaign-level idle is the gap between missions, not a blocking call. autonomy_run.py treats an idle / awaiting-instructions event as an automatic trial failure and has no path that emits one.",
+    "worked_example": false
+   },
+   "not_a_hardware_measurement": true,
+   "reason": "dispatch returns without waiting; autonomy_run has no idle-event path. Campaign idle is a session gap. No live timeline here.",
+   "scheduler_nonblocking": {
+    "dispatch_returns_without_waiting": true,
+    "note": "queue_wait and process_idle are calendar gaps, not a function that blocks inside dispatch(). A duration for them needs a live ready_at/running_at ledger this sidecar does not have.",
+    "path": "hcli/scheduler.py",
+    "persist_on_submit_and_dispatch": true,
+    "recovered_from": "disk:/Users/scammermike/Downloads/hawking/hcli/scheduler.py"
+   },
+   "self_timing": null,
+   "state": "UNKNOWN"
+  }
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:31Z",
+  "recorded_by": "tools/future/hcli_self_profile.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. Process-wall attribution of this Python is SELF_MEASURED_DIRTY: it ranks and prunes and decides nothing. It is not PROTECTED_ABSOLUTE, not a GPU result, and not a hardware field.",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "No tools/future/hcli_self_profile.py existed; HCLI was not a ranked search space",
+  "Wall-clock attribution across the ten named buckets, with UNKNOWN where a duration would be fiction",
+  "Worked example recovered from _common.git vs HCLI git.status argv, without re-running the lock-taking arm",
+  "Actionable gate: a cost with no removal hypothesis cannot be reported as actionable",
+  "Rank gate: no MEASURED_SELF_DIRTY timings refuses to rank",
+  "Hardware-named fields refused even as python timings"
+ ],
+ "gpu_authority": false,
+ "hcli_import": "import:hcli (editable or path; read-only)",
+ "negative_findings": [
+  "Did not invoke hcli git.status or run git status without --no-optional-locks",
+  "Did not run cargo build / cargo test or time compile_wait",
+  "Did not take a GPU lease or flock a bench lock",
+  "Did not start a resident model process",
+  "queue_wait and process_idle stay UNKNOWN: no live ready_at/running_at ledger",
+  "Did not prove index-refresh is the cause of the historical minutes (before-arm refused)",
+  "orchestration.BINDINGS was not updated (not in this lane's write set); naming FT.HCLI_SELF.emit-workunits is what the receipt informs, not proof invoke() routed it",
+  "hcli/ is sparse-missing in this checkout; recovered via git show HEAD:hcli/... and the editable install",
+  "Did not write hcli/, crates/, tools/accelerator/, or any Codex surface"
+ ],
+ "purpose": "Treat HCLI as part of Hawking's search space: attribute process wall across the resident's own machinery and rank actionable removal hypotheses. SELF_MEASURED_DIRTY numbers rank and prune and decide nothing.",
+ "rank_reason": null,
+ "rank_state": "RANKED_SELF_DIRTY",
+ "ranked": [
+  {
+   "cost": "git_query",
+   "median_ms": 136.855,
+   "n": 3,
+   "rank": 1,
+   "rank_use": "SELF_MEASURED_DIRTY rank and prune; decide nothing"
+  },
+  {
+   "cost": "subprocess_launch",
+   "median_ms": 26.748,
+   "n": 3,
+   "rank": 2,
+   "rank_use": "SELF_MEASURED_DIRTY rank and prune; decide nothing"
+  },
+  {
+   "cost": "scheduler_decision",
+   "median_ms": 1.764,
+   "n": 3,
+   "rank": 3,
+   "rank_use": "SELF_MEASURED_DIRTY rank and prune; decide nothing"
+  },
+  {
+   "cost": "source_receipt_io",
+   "median_ms": 0.815,
+   "n": 3,
+   "rank": 4,
+   "rank_use": "SELF_MEASURED_DIRTY rank and prune; decide nothing"
+  },
+  {
+   "cost": "context_construction",
+   "median_ms": 0.193,
+   "n": 3,
+   "rank": 5,
+   "rank_use": "SELF_MEASURED_DIRTY rank and prune; decide nothing"
+  },
+  {
+   "cost": "tool_routing",
+   "median_ms": 0.118,
+   "n": 3,
+   "rank": 6,
+   "rank_use": "SELF_MEASURED_DIRTY rank and prune; decide nothing"
+  },
+  {
+   "cost": "verifier_overhead",
+   "median_ms": 0.104,
+   "n": 3,
+   "rank": 7,
+   "rank_use": "SELF_MEASURED_DIRTY rank and prune; decide nothing"
+  }
+ ],
+ "recovered_implementation": [
+  "tools/future/_common.py git() --no-optional-locks + GIT_TIMEOUT_S",
+  "tools/future/git_lock_doctor.py (HCLI git.status lock-taking inventory)",
+  "tools/future/turnaround.py (CPU-side phase timings; compile stays UNKNOWN)",
+  "tools/future/dirty_measure.py (SELF_MEASURED_DIRTY; rank refuses without data)",
+  "tools/future/contamination.py (machine-state snapshot, not a benchmark)",
+  "tools/future/autonomy_run.py (idle event is a trial failure)",
+  "tools/future/orchestration.py BINDINGS / FT.HCLI_SELF.emit-workunits",
+  "tools/future/frontiers.py HCLI_SELF items",
+  "hcli/tool_registry.py _git_status / _run_readonly",
+  "hcli/scheduler.py dispatch() non-blocking + _persist",
+  "hcli/workunit.py identify_ready / assign_ready",
+  "hcli/verifier_pipeline.py command_is_admissible",
+  "hcli/engine.py _gather_evidence / _run_contained_subprocess"
+ ],
+ "resident_callable": {
+  "can_hcli_invoke": true,
+  "entry_point": "tools.future.hcli_self_profile.profile()",
+  "fails_closed": "bare git status and hcli git.status raise LiveGitStatusForbidden; compile_wait as measured raises CompileWaitForbidden; rank with no timings raises RankRefused; actionable without why/removal/falsifier raises ActionableRefused; hardware field names raise HardwareClaimError",
+  "frontier": "FT.HCLI_SELF.emit-workunits",
+  "orchestration_bound": false,
+  "orchestration_bound_reason": "this lane cannot write tools/future/orchestration.py; a later glue lane must add the binding before invoke() can route it",
+  "receipt": "receipts/future/HCLI_SELF_PROFILE.json",
+  "workunit": "one ANALYSIS unit; profile HCLI self costs as SELF_MEASURED_DIRTY; rank removal hypotheses; never promote"
+ },
+ "schema": "hawking.future.hcli_self_profile.v1",
+ "seal_sha256": "11ac471d2d229d621fd2a241e44ea3e80eaab8bd056c94f2811ae34013ab147d",
+ "self_timing": {
+  "contamination": {
+   "competing_workloads": [
+    {
+     "cpu_pct": 109.4,
+     "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 30545,
+     "rss_gib": 12.44
+    },
+    {
+     "cpu_pct": 24.4,
+     "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+     "pid": 180,
+     "rss_gib": 0.12
+    },
+    {
+     "cpu_pct": 21.9,
+     "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 26181,
+     "rss_gib": 0.07
+    }
+   ],
+   "contamination_class": "HEAVY",
+   "contamination_reason": "at least one HEAVY probe fired",
+   "did_not_take_gpu_lease": true,
+   "live_campaign_declared": true,
+   "live_campaign_note": "a live Codex Accelerator campaign is running in this repo; SELF_MEASURED_DIRTY timings are contaminated by construction",
+   "load_15m": 4.43115234375,
+   "load_1m": 4.66357421875,
+   "load_5m": 4.45458984375,
+   "memory_pressure_name": "warn",
+   "ncpu": 28,
+   "reason": null,
+   "status": "OK",
+   "thermal_state": "UNKNOWN"
+  },
+  "evidence_class": "SELF_MEASURED_DIRTY",
+  "field_names": "median_ms/min_ms/max_ms/samples_ms under this block; never accepted_tps, bandwidth_gbps, complete_token_ns, dispatch_ns, gpu_ns, joules_per_token, token_ns, tps, wall_ns",
+  "not_a_hardware_measurement": true,
+  "not_protected_absolute": true,
+  "numbers_decide_nothing": true,
+  "repeats": 3,
+  "use": "rank and prune; decide nothing"
+ },
+ "verifier_negative_fired": true,
+ "version": 1,
+ "worked_example": {
+  "causal_claim_verified": false,
+  "cost": "git_query",
+  "does_not_decide": true,
+  "hcli_argv": [
+   "git",
+   "-C",
+   "<dyn>",
+   "status",
+   "--short",
+   "--branch"
+  ],
+  "hcli_path": "OPEN",
+  "hcli_recovered_from": "disk:/Users/scammermike/Downloads/hawking/hcli/tool_registry.py",
+  "historical_before": {
+   "claim": "git status on this ~43GB dirty tree took minutes",
+   "not_a_measurement": true,
+   "not_remeasured": true,
+   "source": "tools/future/_common.py module comment on git()",
+   "why_not_remeasured": "the no-flag arm takes the index lock and has stranded it; this profiler refuses that arm"
+  },
+  "id": "H.GIT.no-optional-locks",
+  "observed_after": {
+   "median_ms": 136.855,
+   "note": "~0.2s is the recovered operator figure; median_ms is this run",
+   "path": "git --no-optional-locks status --porcelain",
+   "state": "MEASURED_SELF_DIRTY"
+  },
+  "sidecar_path": "LANDED",
+  "status": "HYPOTHESIS",
+  "why_hcli_still_pays": "HCLI git.status is git status --short --branch with a 30s timeout and without --no-optional-locks. Sidecar _common.git already passes the flag. The minutes-scale cost is HCLI's path, not the sidecar's."
+ }
+}

@@ -1,0 +1,569 @@
+{
+ "active_processes": [
+  "1131 /Applications/Bl /Applications/Blender.app/Contents/MacOS/Blender -b --python /Users/scammermike/.grok-mcp/blender_headless_server.py",
+  "16941 /Library/Framewo /Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python tools/odyssey_ctl.py cycle --go --max-lanes 14 --grok-lanes 0 --loop-secs 300 --inner-sleep 3",
+  "21666 /Library/Framewo /Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python /Library/Frameworks/Python.framework/Versions/3.12/bin/hf download zai-org/GLM-5.3-Flash .gitattributes",
+  "22436 /Library/Framewo /Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python /Library/Frameworks/Python.framework/Versions/3.12/bin/hf download thinkingmachines/Inkling-Small .gita",
+  "98220 /Library/Framewo /Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python /Users/scammermike/Downloads/hawking/tools/odyssey/modellake_watch.py --poll-secs 0.10"
+ ],
+ "adversarial_attack": {
+  "counts": {
+   "P0": 0,
+   "P1": 0,
+   "total": 0
+  },
+  "verdict": "CLEAN"
+ },
+ "arrival_questions": {
+  "codex_finishes_now": {
+   "absent": [],
+   "answer": "16 of 16 systems are executable today, each with a module, a test and a sealed receipt on disk.",
+   "evidence": {
+    "abi_verdict_harness": "receipts/future/ABI_VERDICT_HARNESS.json",
+    "ane_preboard": "receipts/future/ANE_PREBOARD.json",
+    "candidate_queue_planner": "receipts/future/CANDIDATE_STAGED_PLAN.json",
+    "codex_mutation_surface": "receipts/future/CODEX_MUTATION_SURFACE.json",
+    "codex_receipt_ingestion": "receipts/future/CODEX_INGEST_STATE.json",
+    "contamination_science": "receipts/future/CONTAMINATION_SCIENCE.json",
+    "derived_freshness": "receipts/future/DERIVED_FRESHNESS.json",
+    "ebpw_category_validator": "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
+    "evidence_snapshot": "receipts/future/EVIDENCE_SNAPSHOT.json",
+    "experiment_turnaround": "receipts/future/EXPERIMENT_TURNAROUND.json",
+    "flash_nx_audit": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+    "global_frontier": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+    "propagation_engine": "receipts/future/PROPAGATION_STATE.json",
+    "qualification_automation": "receipts/future/QUALIFICATION_PIPELINE.json",
+    "qwen27_profile_schema": "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+    "static_kernel_preflight": "receipts/future/STATIC_KERNEL_PREFLIGHT.json"
+   },
+   "executable_now": [
+    "abi_verdict_harness",
+    "ane_preboard",
+    "candidate_queue_planner",
+    "codex_mutation_surface",
+    "codex_receipt_ingestion",
+    "contamination_science",
+    "derived_freshness",
+    "ebpw_category_validator",
+    "evidence_snapshot",
+    "experiment_turnaround",
+    "flash_nx_audit",
+    "global_frontier",
+    "propagation_engine",
+    "qualification_automation",
+    "qwen27_profile_schema",
+    "static_kernel_preflight"
+   ],
+   "partial": [],
+   "question": "IF CODEX FINISHED THE CURRENT ACCELERATOR CAMPAIGN RIGHT NOW, HOW MUCH FUTURE HAWKING COULD IMMEDIATELY PLUG INTO IT?"
+  },
+  "cuda_arrives": {
+   "absent": [],
+   "answer": "4 of 4 systems are executable today, each with a module, a test and a sealed receipt on disk.",
+   "evidence": {
+    "cuda_lowbit_hypotheses": "receipts/future/CUDA_LOWBIT_HYPOTHESES.json",
+    "device_ascension": "receipts/future/DEVICE_ASCENSION_PIPELINE.json",
+    "fusion": "receipts/future/FUSION_SIMULATION.json",
+    "hmf_hgvas": "receipts/future/HMF_MANAGED_OBJECTS.json"
+   },
+   "executable_now": [
+    "cuda_lowbit_hypotheses",
+    "device_ascension",
+    "fusion",
+    "hmf_hgvas"
+   ],
+   "partial": [],
+   "question": "IF A CUDA NODE ARRIVED TOMORROW, WHAT COMPILER/FUSION FLOOR ALREADY EXISTS?"
+  },
+  "era_ii": {
+   "absent": [],
+   "answer": "12 of 12 systems are executable today, each with a module, a test and a sealed receipt on disk.",
+   "evidence": {
+    "decode_civilization": "receipts/future/DECODE_CIVILIZATION.json",
+    "developer_platform": "receipts/future/DEVELOPER_PLATFORM.json",
+    "expert_bank_school": "receipts/future/EXPERT_BANK_SCHOOL.json",
+    "meta_downstream_ready": "receipts/future/META_DOWNSTREAM_READY.json",
+    "meta_experiment_funnel": "receipts/future/META_EXPERIMENT_FUNNEL.json",
+    "moe_physical_school": "receipts/future/MOE_PHYSICAL_SCHOOL.json",
+    "negative_science_index": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+    "ngram_school": "receipts/future/NGRAM_SCHOOL.json",
+    "physical_primitive_library": "receipts/future/PHYSICAL_PRIMITIVES.json",
+    "router_science": "receipts/future/ROUTER_SENSITIVE_ALLOCATION.json",
+    "static_skeleton": "receipts/future/STATIC_SKELETON.json",
+    "teacher_corpus": "receipts/future/TEACHER_CORPUS_CONTRACT.json"
+   },
+   "executable_now": [
+    "decode_civilization",
+    "developer_platform",
+    "expert_bank_school",
+    "meta_downstream_ready",
+    "meta_experiment_funnel",
+    "moe_physical_school",
+    "negative_science_index",
+    "ngram_school",
+    "physical_primitive_library",
+    "router_science",
+    "static_skeleton",
+    "teacher_corpus"
+   ],
+   "partial": [],
+   "question": "IF ERA II STARTED TOMORROW, WHAT IS ALREADY EXECUTABLE?"
+  },
+  "era_iii": {
+   "absent": [],
+   "answer": "6 of 6 systems are executable today, each with a module, a test and a sealed receipt on disk.",
+   "evidence": {
+    "autonomous_reproducible_science": "receipts/future/REPRO_SCIENCE.json",
+    "git_lock_durability": "receipts/future/GIT_LOCK_DURABILITY_REPORT.json",
+    "integration_attack": "receipts/future/INTEGRATION_ATTACK.json",
+    "learned_physical_compiler": "receipts/future/LPC_DATASET.json",
+    "odyssey_ii_law_store": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "odyssey_iii_adversary": "receipts/future/ODYSSEY3_ADVERSARY.json"
+   },
+   "executable_now": [
+    "autonomous_reproducible_science",
+    "git_lock_durability",
+    "integration_attack",
+    "learned_physical_compiler",
+    "odyssey_ii_law_store",
+    "odyssey_iii_adversary"
+   ],
+   "partial": [],
+   "question": "IF ERA III STARTED TOMORROW, WHAT IS ALREADY EXECUTABLE?"
+  },
+  "tournament_winner": {
+   "absent": [],
+   "answer": "5 of 5 systems are executable today, each with a module, a test and a sealed receipt on disk.",
+   "evidence": {
+    "green_machine": "receipts/future/GREEN_MACHINE.json",
+    "hcli_future_workunits": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+    "resident_install": null,
+    "resident_optimizer": "receipts/future/RESIDENT_OPTIMIZER.json",
+    "tournament": "receipts/future/TOURNAMENT_READINESS.json"
+   },
+   "executable_now": [
+    "green_machine",
+    "hcli_future_workunits",
+    "resident_install",
+    "resident_optimizer",
+    "tournament"
+   ],
+   "partial": [],
+   "question": "IF THE TOURNAMENT WINNER WERE SELECTED TOMORROW, WHAT REAL WORK COULD HCLI IMMEDIATELY BEGIN?"
+  },
+  "u50_arrives": {
+   "absent": [],
+   "answer": "6 of 6 systems are executable today, each with a module, a test and a sealed receipt on disk.",
+   "evidence": {
+    "fpga_engine_school": "receipts/future/FPGA_ENGINE_SCHOOL.json",
+    "fpga_multifidelity": "receipts/future/FPGA_MULTIFIDELITY.json",
+    "hardware_doctor": "receipts/future/HARDWARE_DOCTOR.json",
+    "hbm_doctor": "receipts/future/HBM_DOCTOR.json",
+    "hwir": "receipts/future/HWIR_V1.json",
+    "p6_primitive_projection": "receipts/future/P6_PRIMITIVE_PROJECTION.json"
+   },
+   "executable_now": [
+    "fpga_engine_school",
+    "fpga_multifidelity",
+    "hardware_doctor",
+    "hbm_doctor",
+    "hwir",
+    "p6_primitive_projection"
+   ],
+   "partial": [],
+   "question": "IF THE U50DD ARRIVED TOMORROW, WHAT SOFTWARE/HWIR/SIMULATION FLOOR ALREADY EXISTS?"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T02:52:12Z",
+  "recorded_by": "tools/future/handoff.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "blockers": [
+  "No protected GPU authority in this campaign: every hardware quantity is UNKNOWN by rule, not by omission.",
+  "Flash has no source-independent complete NX. This is the dominant blocker: the count is read live from FLASH_NX_COMPLETENESS_AUDIT.json rather than pinned here, because Codex keeps adding candidates behind it -- it was 12 of 14 at campaign start and 27 of 28 Flash candidates by the end.",
+  "No U50 board, no CUDA node, no Core ML/ANE compiler environment: those fidelity levels and backends are declared UNAVAILABLE rather than simulated as if present."
+ ],
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "dirty_paths": 767,
+ "gpu_authority": false,
+ "head": "b511b5e1b047a92224e0083ebdbdafe100bf00c2",
+ "head_subject": "feat(future): compounding-mode frontier entries F016-F020",
+ "protected_measurements_taken": 0,
+ "schema": "hawking.future.handoff.v1",
+ "seal_sha256": "e5083bf560a60205ec2e308b171212e6b9e3a4e27fd0742faa8c2576e6e53385",
+ "sidecar_commits": [
+  "b511b5e1b feat(future): compounding-mode frontier entries F016-F020",
+  "bb8c0f386 chore(future): resync derived artifacts against the live 47-candidate queue",
+  "6e246058f chore(future): final handoff at campaign close",
+  "269a627f6 fix(future): plan-size guard must not depend on a capped convenience integer",
+  "c5863bb69 feat(future): physical qualification pipeline",
+  "b607d29dc feat(future): ANE preboard and resident optimizer",
+  "607532bd4 feat(future): static kernel preflight, negative science index, tournament harness, HCLI workunit species",
+  "d355718d9 feat(future): integrate 25 sidecar lanes across FPGA, representation and science",
+  "862653a9c feat(future): odyssey II law store, odyssey III adversary, HWIR v1, codex ingest",
+  "5ad5646a6 feat(future): pinned evidence snapshot and adversarial integration attack",
+  "b63bb01f6 feat(future): sidecar namespace with codex mutation surface and global frontier"
+ ],
+ "system_counts": {
+  "ABSENT": 0,
+  "EXECUTABLE": 49,
+  "PARTIAL": 0
+ },
+ "systems": {
+  "abi_verdict_harness": {
+   "module": "tools/future/abi_verdicts.py",
+   "module_lines": 1497,
+   "receipt": "receipts/future/ABI_VERDICT_HARNESS.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_abi_verdicts.py"
+  },
+  "ane_preboard": {
+   "module": "tools/future/ane_preboard.py",
+   "module_lines": 1773,
+   "receipt": "receipts/future/ANE_PREBOARD.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_ane_preboard.py"
+  },
+  "autonomous_reproducible_science": {
+   "module": "tools/future/repro_science.py",
+   "module_lines": 1325,
+   "receipt": "receipts/future/REPRO_SCIENCE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_repro_science.py"
+  },
+  "candidate_queue_planner": {
+   "module": "tools/future/candidate_planner.py",
+   "module_lines": 1971,
+   "receipt": "receipts/future/CANDIDATE_STAGED_PLAN.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_candidate_planner.py"
+  },
+  "codex_mutation_surface": {
+   "module": "tools/future/mutation_surface.py",
+   "module_lines": 160,
+   "receipt": "receipts/future/CODEX_MUTATION_SURFACE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_mutation_surface.py"
+  },
+  "codex_receipt_ingestion": {
+   "module": "tools/future/codex_ingest.py",
+   "module_lines": 1155,
+   "receipt": "receipts/future/CODEX_INGEST_STATE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_codex_ingest.py"
+  },
+  "contamination_science": {
+   "module": "tools/future/contamination.py",
+   "module_lines": 1016,
+   "receipt": "receipts/future/CONTAMINATION_SCIENCE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_contamination.py"
+  },
+  "cuda_lowbit_hypotheses": {
+   "module": "tools/future/cuda_lowbit_hypotheses.py",
+   "module_lines": 1518,
+   "receipt": "receipts/future/CUDA_LOWBIT_HYPOTHESES.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_cuda_lowbit_hypotheses.py"
+  },
+  "decode_civilization": {
+   "module": "tools/future/decode_civilization.py",
+   "module_lines": 1416,
+   "receipt": "receipts/future/DECODE_CIVILIZATION.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_decode_civilization.py"
+  },
+  "derived_freshness": {
+   "module": "tools/future/freshness.py",
+   "module_lines": 1228,
+   "receipt": "receipts/future/DERIVED_FRESHNESS.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_freshness.py"
+  },
+  "developer_platform": {
+   "module": "tools/future/devplatform.py",
+   "module_lines": 1585,
+   "receipt": "receipts/future/DEVELOPER_PLATFORM.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_devplatform.py"
+  },
+  "device_ascension": {
+   "module": "tools/future/device_ascension_pipeline.py",
+   "module_lines": 1158,
+   "receipt": "receipts/future/DEVICE_ASCENSION_PIPELINE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_device_ascension_pipeline.py"
+  },
+  "ebpw_category_validator": {
+   "module": "tools/future/ebpw_categories.py",
+   "module_lines": 1440,
+   "receipt": "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_ebpw_categories.py"
+  },
+  "evidence_snapshot": {
+   "module": "tools/future/evidence_snapshot.py",
+   "module_lines": 184,
+   "receipt": "receipts/future/EVIDENCE_SNAPSHOT.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_evidence_snapshot.py"
+  },
+  "experiment_turnaround": {
+   "module": "tools/future/turnaround.py",
+   "module_lines": 706,
+   "receipt": "receipts/future/EXPERIMENT_TURNAROUND.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_turnaround.py"
+  },
+  "expert_bank_school": {
+   "module": "tools/future/expert_bank_school.py",
+   "module_lines": 1362,
+   "receipt": "receipts/future/EXPERT_BANK_SCHOOL.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_expert_bank_school.py"
+  },
+  "flash_nx_audit": {
+   "module": "tools/future/flash_nx_audit.py",
+   "module_lines": 1463,
+   "receipt": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_flash_nx_audit.py"
+  },
+  "fpga_engine_school": {
+   "module": "tools/future/fpga_engines.py",
+   "module_lines": 1441,
+   "receipt": "receipts/future/FPGA_ENGINE_SCHOOL.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_fpga_engines.py"
+  },
+  "fpga_multifidelity": {
+   "module": "tools/future/fpga_fidelity.py",
+   "module_lines": 1469,
+   "receipt": "receipts/future/FPGA_MULTIFIDELITY.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_fpga_fidelity.py"
+  },
+  "fusion": {
+   "module": "tools/future/fusion_sim.py",
+   "module_lines": 1679,
+   "receipt": "receipts/future/FUSION_SIMULATION.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_fusion_sim.py"
+  },
+  "git_lock_durability": {
+   "module": "tools/future/git_lock_doctor.py",
+   "module_lines": 1237,
+   "receipt": "receipts/future/GIT_LOCK_DURABILITY_REPORT.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_git_lock_doctor.py"
+  },
+  "global_frontier": {
+   "module": "tools/future/global_frontier.py",
+   "module_lines": 530,
+   "receipt": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_global_frontier.py"
+  },
+  "green_machine": {
+   "module": "tools/future/green_machine.py",
+   "module_lines": 1249,
+   "receipt": "receipts/future/GREEN_MACHINE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_green_machine.py"
+  },
+  "hardware_doctor": {
+   "module": "tools/future/hardware_doctor.py",
+   "module_lines": 1222,
+   "receipt": "receipts/future/HARDWARE_DOCTOR.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_hardware_doctor.py"
+  },
+  "hbm_doctor": {
+   "module": "tools/future/hbm_doctor.py",
+   "module_lines": 1108,
+   "receipt": "receipts/future/HBM_DOCTOR.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_hbm_doctor.py"
+  },
+  "hcli_future_workunits": {
+   "module": "tools/future/workunit_species.py",
+   "module_lines": 1362,
+   "receipt": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_workunit_species.py"
+  },
+  "hmf_hgvas": {
+   "module": "tools/future/hmf_objects.py",
+   "module_lines": 1244,
+   "receipt": "receipts/future/HMF_MANAGED_OBJECTS.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_hmf_objects.py"
+  },
+  "hwir": {
+   "module": "tools/future/hwir.py",
+   "module_lines": 1720,
+   "receipt": "receipts/future/HWIR_V1.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_hwir.py"
+  },
+  "integration_attack": {
+   "module": "tools/future/integration_attack.py",
+   "module_lines": 410,
+   "receipt": "receipts/future/INTEGRATION_ATTACK.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_integration_attack.py"
+  },
+  "learned_physical_compiler": {
+   "module": "tools/future/lpc_dataset.py",
+   "module_lines": 1047,
+   "receipt": "receipts/future/LPC_DATASET.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_lpc_dataset.py"
+  },
+  "meta_downstream_ready": {
+   "module": "tools/future/meta_ready.py",
+   "module_lines": 1816,
+   "receipt": "receipts/future/META_DOWNSTREAM_READY.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_meta_ready.py"
+  },
+  "meta_experiment_funnel": {
+   "module": "tools/future/meta_funnel.py",
+   "module_lines": 1474,
+   "receipt": "receipts/future/META_EXPERIMENT_FUNNEL.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_meta_funnel.py"
+  },
+  "moe_physical_school": {
+   "module": "tools/future/moe_physical_school.py",
+   "module_lines": 2241,
+   "receipt": "receipts/future/MOE_PHYSICAL_SCHOOL.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_moe_physical_school.py"
+  },
+  "negative_science_index": {
+   "module": "tools/future/negative_index.py",
+   "module_lines": 1491,
+   "receipt": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_negative_index.py"
+  },
+  "ngram_school": {
+   "module": "tools/future/ngram_school.py",
+   "module_lines": 1234,
+   "receipt": "receipts/future/NGRAM_SCHOOL.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_ngram_school.py"
+  },
+  "odyssey_ii_law_store": {
+   "module": "tools/future/odyssey2_law_store.py",
+   "module_lines": 1520,
+   "receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_odyssey2_law_store.py"
+  },
+  "odyssey_iii_adversary": {
+   "module": "tools/future/odyssey3_adversary.py",
+   "module_lines": 1299,
+   "receipt": "receipts/future/ODYSSEY3_ADVERSARY.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_odyssey3_adversary.py"
+  },
+  "p6_primitive_projection": {
+   "module": "tools/future/p6_projection.py",
+   "module_lines": 1695,
+   "receipt": "receipts/future/P6_PRIMITIVE_PROJECTION.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_p6_projection.py"
+  },
+  "physical_primitive_library": {
+   "module": "tools/future/physical_primitives.py",
+   "module_lines": 1845,
+   "receipt": "receipts/future/PHYSICAL_PRIMITIVES.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_physical_primitives.py"
+  },
+  "propagation_engine": {
+   "module": "tools/future/propagate.py",
+   "module_lines": 1592,
+   "receipt": "receipts/future/PROPAGATION_STATE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_propagate.py"
+  },
+  "qualification_automation": {
+   "module": "tools/future/qualification_pipeline.py",
+   "module_lines": 1490,
+   "receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_qualification_pipeline.py"
+  },
+  "qwen27_profile_schema": {
+   "module": "tools/future/qwen27_profile_schema.py",
+   "module_lines": 1433,
+   "receipt": "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_qwen27_profile_schema.py"
+  },
+  "resident_install": {
+   "module": "tools/future/resident_install.py",
+   "module_lines": 426,
+   "receipt": null,
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_resident_install.py"
+  },
+  "resident_optimizer": {
+   "module": "tools/future/resident_optimizer.py",
+   "module_lines": 1446,
+   "receipt": "receipts/future/RESIDENT_OPTIMIZER.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_resident_optimizer.py"
+  },
+  "router_science": {
+   "module": "tools/future/router_science.py",
+   "module_lines": 1282,
+   "receipt": "receipts/future/ROUTER_SENSITIVE_ALLOCATION.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_router_science.py"
+  },
+  "static_kernel_preflight": {
+   "module": "tools/future/static_kernel_verify.py",
+   "module_lines": 2030,
+   "receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_static_kernel_verify.py"
+  },
+  "static_skeleton": {
+   "module": "tools/future/static_skeleton.py",
+   "module_lines": 1314,
+   "receipt": "receipts/future/STATIC_SKELETON.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_static_skeleton.py"
+  },
+  "teacher_corpus": {
+   "module": "tools/future/teacher_corpus.py",
+   "module_lines": 1434,
+   "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_teacher_corpus.py"
+  },
+  "tournament": {
+   "module": "tools/future/tournament.py",
+   "module_lines": 671,
+   "receipt": "receipts/future/TOURNAMENT_READINESS.json",
+   "state": "EXECUTABLE",
+   "test": "tools/future/test_tournament.py"
+  }
+ },
+ "tests": {
+  "exit_code": 0,
+  "green": true,
+  "summary": "942 passed in 510.63s (0:08:30)"
+ },
+ "version": 1
+}

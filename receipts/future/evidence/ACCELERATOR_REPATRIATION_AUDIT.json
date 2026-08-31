@@ -1,0 +1,264 @@
+{
+  "artifact_paths": {
+    "atlas": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "effects": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+    "queue": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json"
+  },
+  "bench": {
+    "machine": "planning artifact; no physical benchmark was executed",
+    "provenance": "This artifact contains hypotheses and schema metadata, not a benchmark result",
+    "quiescence": null,
+    "recorded_at": "2026-08-29T00:00:00Z",
+    "recorded_by": "architecture-atlas planning artifact",
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "state": "UNKNOWN"
+  },
+  "checks": [
+    {
+      "check_id": "atlas-validator",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+      ],
+      "observed": {
+        "asic_watchlist_count": 5,
+        "claim_boundary": "validation proves schema/funnel invariants, not physical performance",
+        "entry_count": 15,
+        "experiment_count": 9,
+        "hwir_hypothesis_count": 15,
+        "passed": true,
+        "schema": "hawking.accelerator.architecture_atlas_validation.v1",
+        "source_school_count": 14
+      },
+      "passed": true,
+      "requirement": "The canonical atlas passes its own schema, effect, queue, HWIR, and ASIC invariants."
+    },
+    {
+      "check_id": "effects-ledger",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json"
+      ],
+      "observed": {
+        "candidate_scope_bindings": 49,
+        "claim_boundary": "effects validation is scoped provenance, not physical performance",
+        "entries": 15,
+        "passed": true,
+        "physical_laws": 0,
+        "schema": "hawking.accelerator.repatriation_effects_validation.v1"
+      },
+      "passed": true,
+      "requirement": "Every imported behavior binds its source school, invariant, Hawking primitive, implementation, scope, evidence, measured-result boundary, and falsifier without promoting a generic law."
+    },
+    {
+      "check_id": "source-schools",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+      ],
+      "observed": {
+        "covered": 14,
+        "required": 14
+      },
+      "passed": true,
+      "requirement": "Every bounded source architecture school is represented."
+    },
+    {
+      "check_id": "technique-coverage",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+      ],
+      "observed": {
+        "technique_rows": 48
+      },
+      "passed": true,
+      "requirement": "Named source techniques are collapsed into Hawking physical behaviors rather than product ports."
+    },
+    {
+      "check_id": "taxonomy-and-primitives",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "hcli/physical_graph.py"
+      ],
+      "observed": {
+        "primitives": 17,
+        "taxonomy": 21
+      },
+      "passed": true,
+      "requirement": "The full behavior taxonomy and backend-neutral primitive vocabulary are present."
+    },
+    {
+      "check_id": "evidence-provenance",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "/Users/scammermike/Downloads/hawking/hcli/agentos/flash_executable.py",
+        "/Users/scammermike/Downloads/hawking/hcli/agentos/fpga_preboard.py",
+        "/Users/scammermike/Downloads/hawking/hcli/ane_provider.py",
+        "/Users/scammermike/Downloads/hawking/hcli/hawking_native.py",
+        "/Users/scammermike/Downloads/hawking/hcli/physical_graph.py",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SPARSE.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/AFFINE2_NATIVE_MLP.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_ATLAS.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/PHYSICAL_GRAPH_COMPILER.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+        "/Users/scammermike/Downloads/hawking/tools/accelerator/air.py",
+        "/Users/scammermike/Downloads/hawking/tools/accelerator/fusion_planner.py",
+        "/Users/scammermike/Downloads/hawking/tools/accelerator/kernel_forge.py"
+      ],
+      "observed": {
+        "evidence_labels": [
+          "DERIVED",
+          "HAWKING_IMPLEMENTED",
+          "HAWKING_MEASURED",
+          "OPEN-SOURCE-INSPECTED"
+        ],
+        "missing_paths": []
+      },
+      "passed": true,
+      "requirement": "Every behavior has an allowed evidence label, status, falsifier, and present source evidence path."
+    },
+    {
+      "check_id": "qwen27-flash-funnel",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json"
+      ],
+      "observed": {
+        "atlas_models": [
+          "Flash",
+          "Qwen27"
+        ],
+        "spec_models": [
+          "Qwen3.8-27B",
+          "Qwen3.8-Flash-Next"
+        ]
+      },
+      "passed": true,
+      "requirement": "Qwen27 is the rapid laboratory and Flash is the adversarial transfer frontier."
+    },
+    {
+      "check_id": "experiment-contract",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+        "tools/accelerator/accelerator_runner.py"
+      ],
+      "observed": {
+        "specs": 9
+      },
+      "passed": true,
+      "requirement": "Each compiled spec carries model/NX/NR, organ/range, backend/lowering, state/session, receipt, metrics, and shell-free detached execution."
+    },
+    {
+      "check_id": "verification-funnel",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json"
+      ],
+      "observed": {
+        "diagnostic_relative_interleaved_ab": [
+          "flash-semantic-transport-hwir",
+          "qwen27-async-double-buffer",
+          "qwen27-graph-replay-token-skeleton",
+          "qwen27-layout-algebra-mlp",
+          "qwen27-move-or-recompute-boundary",
+          "qwen27-stationary-packed-weight"
+        ],
+        "promotion": [],
+        "promotion_rule": "only a protected complete-token receipt may move an id beyond the queue",
+        "protected_absolute_complete_wall_with_capability_gate": [
+          "qwen27-async-double-buffer",
+          "qwen27-graph-replay-token-skeleton",
+          "qwen27-layout-algebra-mlp",
+          "qwen27-move-or-recompute-boundary",
+          "qwen27-stationary-packed-weight"
+        ],
+        "structural_compile_and_negative_controls": [
+          "flash-semantic-transport-hwir",
+          "qwen27-async-double-buffer",
+          "qwen27-graph-replay-token-skeleton",
+          "qwen27-layout-algebra-mlp",
+          "qwen27-move-or-recompute-boundary",
+          "qwen27-stationary-packed-weight"
+        ]
+      },
+      "passed": true,
+      "requirement": "The queue preserves structural, diagnostic, protected, and promotion boundaries."
+    },
+    {
+      "check_id": "hwir-automatic-feed",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "observed": {
+        "entries": 15,
+        "hwir": 15
+      },
+      "passed": true,
+      "requirement": "Every atlas behavior emits a derived HWIR hypothesis without a board/timing claim."
+    },
+    {
+      "check_id": "asic-watchlist",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+      ],
+      "observed": {
+        "watchlist": 5
+      },
+      "passed": true,
+      "requirement": "ASIC candidates remain watchlist-only until repeated cross-model/hardware survival is proven."
+    },
+    {
+      "check_id": "physical-graph-law",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "hcli/physical_graph.py"
+      ],
+      "observed": {
+        "selected_behaviors": [
+          "move_or_recompute",
+          "persistent_physical_region",
+          "fused_decode_compute",
+          "local_state_machine",
+          "graph_replay",
+          "layout_algebra",
+          "static_dynamic_skeleton",
+          "stationary_representation",
+          "semantic_transport",
+          "collective_region",
+          "async_double_buffer",
+          "spatial_local_pipeline",
+          "sparse_conditional_execution",
+          "npu_regular_island"
+        ]
+      },
+      "passed": true,
+      "requirement": "PhysicalGraph makes layout, stationarity, memory-tier identity, movement cost, and no-device-prestige authority explicit."
+    },
+    {
+      "check_id": "artifact-identity",
+      "evidence": [
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+        "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json"
+      ],
+      "observed": {
+        "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+        "effects_fingerprint": "c91992fc913c341f0b923b5885a3f7f5055d53b9cea471d8f65bb0216304c1e3",
+        "queue_fingerprint": "2614343a763063e3812f0d9a5fbc786385a88d9e183708f347667124097e4e5b"
+      },
+      "passed": true,
+      "requirement": "Generated canonical artifacts agree with their builders and carry explicit non-performance claim boundaries."
+    }
+  ],
+  "claim_boundary": "This audit proves structural/provenance/funnel invariants only; it does not claim physical performance, capability, FPGA timing, or ASIC suitability.",
+  "fingerprint": "4c03b895936076bb2b1908ce489ba68baf84dafd4d67a9d837e9aa8df868d3ef",
+  "passed": true,
+  "schema": "hawking.accelerator.repatriation_audit.v1",
+  "version": 1
+}

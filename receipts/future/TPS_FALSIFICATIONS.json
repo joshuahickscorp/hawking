@@ -1,0 +1,88 @@
+{
+ "active_weight_bytes_per_token": 9878901136,
+ "claim_boundary": "Each falsification holds only over the scope named in its own entry. A falsified hypothesis is not a proven negative for every member of its family: L41 in particular kills the geometries it tested, not kernel geometry as a subject. No hardware measurement is asserted here; the numbers are quoted from the receipts named.",
+ "evidence_class": "STATIC_ONLY",
+ "falsifications": [
+  {
+   "evidence": "The 24% did not follow the catalog indirection. Isolating host catalog lookup off the GPU addr-probe timestamp left the gap in place. What the 24% tracks instead is dispatch topology and mixed organ sizes: the marginal cost of a dispatch (~15us for this host/catalog ceremony class) multiplied by how many the token issues, plus the fact that organs of very different sizes do not amortise a dispatch equally.",
+   "falsifier_that_would_reopen_it": "A catalog change that leaves dispatch count and organ size mix unchanged and still moves the 703->530 step.",
+   "hypothesis": "The production catalog's host-side weight addressing indirection is what costs the 24% between a clean single GEMV and production catalog addressing.",
+   "id": "CATALOG_ADDRESSING_NOT_PRIMARY_703_530_CAUSE",
+   "lane": "L40",
+   "patch_preserved_unapplied": "receipts/future/patches/l40-catalog-addressing.crate.patch",
+   "redirect": "Attack dispatch COUNT and the organ size mix, not the addressing layer. Measure the current exact production dispatch count first and do not reuse a historical one.",
+   "scope": "this machine, this resident, the production catalog path",
+   "source_receipt": "receipts/future/CATALOG_ADDRESSING.json",
+   "step_attacked": "703.5 -> 530.7 GB/s",
+   "tested_shapes": "production catalog decode vs isolated single GEMV",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "evidence": "Parity holds across K=5120, 6144 and 17408 with occupancy unchanged; the geometry is not mis-tuned for the shapes it runs on. The lane's own handoff names two other things: affine2-vs-q4 ALU cost in the low-bit decode, and the fact that MLP is ~54% of the bytes, so the shape that dominates is not the one being tuned.",
+   "falsifier_that_would_reopen_it": "An untested geometry family, or a shape not covered by K in {5120, 6144, 17408}, that moves the 530->337 step.",
+   "hypothesis": "The tpr64/tg128 kernel geometry is mis-tuned for these shapes, and occupancy/coalescing is what costs the 530->337 step.",
+   "id": "TESTED_GEOMETRY_NOT_PRIMARY_530_337_CAUSE",
+   "lane": "L41",
+   "patch_preserved_unapplied": "receipts/future/patches/l41-kernel-geometry.crate.patch",
+   "redirect": "Go at low-bit decode ALU cost (affine2 vs q4) and at MLP bytes. The 54% share means MLP representation, not MLP kernel tuning, is the larger lever.",
+   "scope": "the tested geometries only. This does NOT say kernel geometry can never matter \u2014 it says the geometries tested at these K values are not where this step went.",
+   "source_receipt": "receipts/future/KERNEL_GEOMETRY.json",
+   "step_attacked": "530.7 -> 337.3 GB/s",
+   "tested_shapes": "K=5120, K=6144, K=17408; tpr64 / tg128",
+   "verdict": "FALSIFIED"
+  },
+  {
+   "correction_of_an_earlier_claim": "An earlier reading of this gap called it '24% ceremony'. That was wrong and this entry supersedes it.",
+   "evidence": "The gap is an arithmetic artifact of generate_greedy's Instant identity: complete-token TPS amortises prefill across a short generation as P/(P+N-1). It is teacher-forced prefill accounting, not work the runtime performs and could remove. Shortening the generation widens the 'gap' without changing any runtime cost.",
+   "falsifier_that_would_reopen_it": "A measurement at large N where the complete-vs-decode gap persists after P/(P+N-1) is divided out.",
+   "hypothesis": "About a quarter of the complete-token cost is runtime ceremony \u2014 command buffer, encoder and synchronization overhead that decode TPS does not pay.",
+   "id": "COMPLETE_VS_DECODE_GAP_PREFILL_ACCOUNTING_NOT_CEREMONY",
+   "lane": "L42",
+   "patch_preserved_unapplied": "receipts/future/patches/l42-dispatch-ceremony.crate.patch",
+   "redirect": "Steady decode ~35.5 TPS (~28.17 ms/token) is the resident's real rate and the quantity to minimize. Complete-token TPS on a short run is not a ceremony measurement and must not be quoted as one.",
+   "scope": "generate_greedy short-generation measurement, this resident",
+   "source_receipt": "receipts/future/DISPATCH_CEREMONY.json",
+   "step_attacked": "the ~25% between complete-token TPS and decode TPS",
+   "tested_shapes": "complete-token vs steady decode, short N",
+   "verdict": "FALSIFIED"
+  }
+ ],
+ "gpu_authority": false,
+ "loss_chain": [
+  {
+   "gb_s": 819.0,
+   "share_of_peak": 1.0,
+   "what": "published M3 Ultra peak"
+  },
+  {
+   "gb_s": 703.5,
+   "share_of_peak": 0.859,
+   "what": "single GEMV clean addressing"
+  },
+  {
+   "gb_s": 530.7,
+   "share_of_peak": 0.648,
+   "what": "production catalog addressing"
+  },
+  {
+   "gb_s": 513.0,
+   "share_of_peak": 0.626,
+   "what": "production catalog decode"
+  },
+  {
+   "gb_s": 337.3,
+   "share_of_peak": 0.412,
+   "what": "actual production decode"
+  }
+ ],
+ "machine": "M3 Ultra 96GB / 28c \u2014 Apple Silicon unified memory",
+ "model": "qwen3.8-27b sealed-3.14 resident (physical_ebpw 3.1393)",
+ "n_falsifications": 3,
+ "recorded_by": "tools/future/tps_falsifications.py",
+ "registered_in": "tools/future/negative_index.py SEED_SOURCES",
+ "scar_feed": "receipts/future/TPS_FALSIFICATIONS.jsonl",
+ "schema": "hawking.future.tps_falsifications.v1",
+ "the_question_that_replaces_them": "Not 'how do we make the same byte stream reach 703 GB/s' but 'why does this token require these bytes and these physical operations at all'.",
+ "version": 1,
+ "what_these_three_together_establish": "The remaining levers on this resident are dispatch COUNT and total BYTES. Addressing, tested geometry and complete-vs-decode accounting are all spent as explanations."
+}

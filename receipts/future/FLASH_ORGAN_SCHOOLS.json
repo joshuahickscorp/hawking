@@ -1,0 +1,4379 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:46:25Z",
+  "recorded_by": "tools/future/flash_schools.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "budget_families": 9,
+  "candidates": 88,
+  "census_families": 9,
+  "program_families_in_catalog": 14,
+  "program_families_used": 14,
+  "schools_in_catalog": 14,
+  "schools_scheduled": 14,
+  "workunits": 14
+ },
+ "elimination_questions": [
+  "needs_independent_storage",
+  "can_be_generated_predicted_or_shared",
+  "dictionary_recurrent_or_conditional_expresses_it",
+  "sparse_residual_restores_capability_difference",
+  "function_replaceable_not_just_tensor_represented"
+ ],
+ "era_vocabulary": {
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is_not_its_own_civilization": true,
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ },
+ "fit_policy": "NOT_FIT",
+ "gaps_closed": [
+  "fourteen independently schedulable Flash Gravity organ schools, each with its own WorkUnit and cheapest falsifiers",
+  "program-family search (Literal/Quant/SharedBasis/Factorized/Dictionary/Generated/SparseResidual/Recurrent/Lookup/Conditional/Routed/Fused/Zero/Composite) rather than quantization-as-mission",
+  "elimination questions and the three zeros answered structurally per organ",
+  "compute sharing scored WITH storage sharing; a bytes-halving FLOP-tripling trap loses on joint_cost and can be Pareto-dominated",
+  "router treated as control plane: disproportionate bits on the tiny gate, uniform-bpw baseline crushed on capability",
+  "scar refusal that actually fires on trivial global expert sharing while structured cousins still emit",
+  "resident-callable entry points, WorkUnits, receipt, frontier refill, fail-closed paths",
+  "extends landed expert_bank / ngram / router_science / moe_physical / decode_civilization / negative_index instead of duplicating them"
+ ],
+ "integration_points": {
+  "codex_behaviors.py": "not imported; Flash Gravity stays STATIC_ONLY",
+  "frontiers.py": "frontier_fed is declared in-receipt until that sibling lands",
+  "resident_api.py": "register build/schedule_school as resident verbs",
+  "super_resident.py": "HCLI super-resident would loop schedule_school until Odyssey I starts",
+  "wakeup.py": "physical blockers stay SLEEPING; this lane does not wake them",
+  "workgraph.py": "WorkUnits are HCLI-shaped proposals; a workgraph sibling would schedule them"
+ },
+ "inventory": {
+  "budget_source": "pinned_snapshot",
+  "census_source": "pinned_snapshot",
+  "dispatch_count": 35,
+  "doctor": {
+   "cross_expert_gate_up_mean_cosine": 0.003834665467747213,
+   "expert_count": 512,
+   "layer": 44,
+   "rank_1_energy": 0.002715124050155282,
+   "rank_8_energy": 0.020705385133624077
+  },
+  "families": [
+   {
+    "bytes": 2564759064,
+    "family": "embedding_lm_head",
+    "fraction": 0.007124331463023194,
+    "tensor_count": 10
+   },
+   {
+    "bytes": 1337609728,
+    "family": "full_attention",
+    "fraction": 0.0037155829583360414,
+    "tensor_count": 117
+   },
+   {
+    "bytes": 4820291328,
+    "family": "linear_attention_hyperconnection",
+    "fraction": 0.013389699504736112,
+    "tensor_count": 520
+   },
+   {
+    "bytes": 1311502048,
+    "family": "mlp_hyperconnection",
+    "fraction": 0.003643061617574911,
+    "tensor_count": 353
+   },
+   {
+    "bytes": 102400491520,
+    "family": "ngram_embedding",
+    "fraction": 0.2844458389113527,
+    "tensor_count": 128
+   },
+   {
+    "bytes": 376320,
+    "family": "norm",
+    "fraction": 1.0453334403987072e-06,
+    "tensor_count": 116
+   },
+   {
+    "bytes": 457917440,
+    "family": "other",
+    "fraction": 0.0012719930191692405,
+    "tensor_count": 120
+   },
+   {
+    "bytes": 246625075200,
+    "family": "routed_experts",
+    "fraction": 0.6850697234996967,
+    "tensor_count": 98
+   },
+   {
+    "bytes": 481940480,
+    "family": "shared_expert",
+    "fraction": 0.0013387236926706112,
+    "tensor_count": 196
+   }
+  ],
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "n_budget_families": 9,
+  "n_census_families": 9,
+  "protected_islands": [
+   "router logits/top-k/tie semantics",
+   "DeltaNet recurrent state transition",
+   "HyperConnection norms and gates",
+   "KV-cache indexing and attention normalization",
+   "terminal lm_head / tokenizer boundary"
+  ],
+  "router_membership_change_rows": 1,
+  "router_tensor_bytes": 2621440,
+  "specimen_bytes": 359999963128
+ },
+ "measurement_classes": {
+  "DIAGNOSTIC_RELATIVE": "not produced",
+  "PROTECTED_ABSOLUTE": "not produced",
+  "gpu_authority": false,
+  "this_module": "STATIC_ONLY"
+ },
+ "negative_control": {
+  "flop_trap": {
+   "control_dominates_trap": false,
+   "control_flop_milli": 1000,
+   "control_id": "ROUTED_EXPERTS:LITERAL",
+   "control_joint_cost": 2000,
+   "control_storage_bytes": 246625075200,
+   "dominator_dominates_trap": true,
+   "dominator_id": "DOMINATOR-BETTER-ON-BYTES-AND-FLOPS",
+   "dominator_joint_cost": 1900,
+   "naive_storage_winner": "TRAP-HALF-BYTES-TRIPLE-FLOPS",
+   "scalar_winner": null,
+   "storage_only_axes_raises": true,
+   "storage_only_by_keyword_raises": true,
+   "trap_dominates_control": false,
+   "trap_flop_milli": 3000,
+   "trap_id": "TRAP-HALF-BYTES-TRIPLE-FLOPS",
+   "trap_joint_cost": 3500,
+   "trap_loses_on_joint_cost": true,
+   "trap_storage_bytes": 123312537600
+  },
+  "router_control_plane": {
+   "bit_classes_from_router_science": [
+    "CRUSHED",
+    "ORDINARY",
+    "PREMIUM",
+    "CONTROL_FLOW_PREMIUM"
+   ],
+   "bpw_for_class": {
+    "CONTROL_FLOW_PREMIUM": 16.0,
+    "CRUSHED": 2.0,
+    "ORDINARY": 4.25,
+    "PREMIUM": 8.0
+   },
+   "heterogeneous": {
+    "bulk_bpw_milli": 999,
+    "capability_risk_class": "PROTECTED_ISLAND",
+    "capability_risk_rank": 2,
+    "flop_milli": 1000,
+    "id": "ALLOC-HETERO-ROUTER-PREMIUM",
+    "router_bpw_milli": 16000,
+    "storage_bytes": 15414231040
+   },
+   "heterogeneous_dominates_uniform": true,
+   "objective": "total executable information with control-plane preservation, not uniform bpw",
+   "reachable": true,
+   "routed_experts_bytes": 246625075200,
+   "router_bits_disproportionate": true,
+   "router_tensor_bytes": 2621440,
+   "same_total_bits_class": true,
+   "uniform": {
+    "bulk_bpw_milli": 1000,
+    "capability_risk_class": "CONTROL_CRUSHED",
+    "capability_risk_rank": 8,
+    "flop_milli": 1000,
+    "id": "ALLOC-UNIFORM-1BPW",
+    "router_bpw_milli": 1000,
+    "storage_bytes": 15414231040
+   },
+   "uniform_dominates_heterogeneous": false
+  },
+  "scar_refusal": {
+   "dead_probe_id": "PROBE-TRIVIAL-GLOBAL-EXPERT-SHARING",
+   "dead_probe_refused": true,
+   "n_live_routed_cousins": 11,
+   "reason": "REFUSED PROBE-TRIVIAL-GLOBAL-EXPERT-SHARING: dead hypothesis SCAR-TRIVIAL-GLOBAL-EXPERT-SHARING (trivial global expert sharing)",
+   "scar_id": "SCAR-TRIVIAL-GLOBAL-EXPERT-SHARING",
+   "structurally_distinct_emitted": "ROUTED_EXPERTS:EBS:COMPUTE-CROSS-LAYER-REUSED-TRANSFORM",
+   "structurally_distinct_family": "GeneratedProgram"
+  }
+ },
+ "negative_findings": [
+  "Did not fit any candidate to the 350GB Flash specimen.",
+  "Did not take a hardware measurement; flop_milli and storage_bytes are structural estimates. Complete-token ns, tps, joules remain UNKNOWN.",
+  "Did not acquire a GPU lease, quiesce workers, or touch Codex Metal/Rust.",
+  "Flash source-independent NX remains SCAFFOLD_ONLY; teacher capture remains 0/256 \u2014 those stay SLEEPING WorkUnits for the Accelerator lane.",
+  "MTP expert tensors sit inside the routed_experts census family; MTP_SPECULATION searches the draft/verify function, not a second copy of those bytes.",
+  "embedding_lm_head is lumped in the census; EMBEDDING and LM_HEAD share that parent budget rather than inventing a 50/50 split.",
+  "KV_STATE / DECODING / MTP function organs have 0 family_summary bytes; they still emit programs (runtime/function schools)."
+ ],
+ "program_families": [
+  {
+   "id": "LiteralTensor",
+   "what": "Store the source tensor unchanged (BF16 control)."
+  },
+  {
+   "id": "QuantTensor",
+   "what": "Packed independent quant (group-64 Q4/Q3). Control, not the mission."
+  },
+  {
+   "id": "SharedBasisProgram",
+   "what": "Share a structured factor. Unconditioned global expert basis is DEAD."
+  },
+  {
+   "id": "FactorizedProgram",
+   "what": "One-sided / CP / Tucker / sandwich cores consumed factor-wise."
+  },
+  {
+   "id": "DictionaryProgram",
+   "what": "Codebook + indices. Organ-tagged; raw 1-bit PQ is dead."
+  },
+  {
+   "id": "GeneratedProgram",
+   "what": "A smaller program emits the useful values at use time."
+  },
+  {
+   "id": "SparseResidualProgram",
+   "what": "Cheap backbone + sparse residual restoring capability-sensitive difference."
+  },
+  {
+   "id": "RecurrentStateProgram",
+   "what": "Replace stored sequence state with a transition program."
+  },
+  {
+   "id": "LookupProgram",
+   "what": "Gather / compositional lookup rather than GEMV."
+  },
+  {
+   "id": "ConditionalProgram",
+   "what": "Spend bits only on the tokens/routes that need them."
+  },
+  {
+   "id": "RoutedSubprogram",
+   "what": "Per-route executable, not a stacked dense bank."
+  },
+  {
+   "id": "FusedPhysicalProgram",
+   "what": "Fused native consume path; forbids dense rematerialization."
+  },
+  {
+   "id": "ZeroProgram",
+   "what": "Eliminate storage, independent information, or standalone execution."
+  },
+  {
+   "id": "CompositeProgram",
+   "what": "A typed mix of the above; scored as a whole program."
+  }
+ ],
+ "purpose": "Fourteen independently schedulable Flash Gravity organ schools searching for the smallest executable PROGRAM that preserves each organ's useful function. Not a quantization campaign.",
+ "recovered_implementation": {
+  "budget_families_derived": 9,
+  "census_families_derived": 9,
+  "doctor_l44": {
+   "cross_expert_gate_up_mean_cosine": 0.003834665467747213,
+   "expert_count": 512,
+   "layer": 44,
+   "rank_1_energy": 0.002715124050155282,
+   "rank_8_energy": 0.020705385133624077
+  },
+  "evidence_reach": [
+   {
+    "evidence_source": "pinned_snapshot",
+    "name": "FLASH_ORGAN_CENSUS.json",
+    "path": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
+    "reachable": true
+   },
+   {
+    "evidence_source": "pinned_snapshot",
+    "name": "FLASH_META_REPRESENTATION_SUB1.json",
+    "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+    "reachable": true
+   },
+   {
+    "evidence_source": "pinned_snapshot",
+    "name": "FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+    "path": "receipts/future/evidence/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+    "reachable": true
+   },
+   {
+    "evidence_source": "pinned_snapshot",
+    "name": "FLASH_LAYER46_DISPATCH_LEDGER.json",
+    "path": "receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
+    "reachable": true
+   },
+   {
+    "evidence_source": "pinned_snapshot",
+    "name": "FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+    "path": "receipts/future/evidence/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+    "reachable": true
+   },
+   {
+    "evidence_source": "pinned_snapshot",
+    "name": "FLASH_NEXT_FPGA_ORGAN_MAP.json",
+    "path": "receipts/future/evidence/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+    "reachable": true
+   }
+  ],
+  "landed_siblings_extended": [
+   {
+    "adequate_as_fourteen_schools": false,
+    "how_extended": "ROUTED_EXPERTS wraps generate() as Gravity program families",
+    "path": "tools/future/expert_bank_school.py",
+    "role": "structured expert STORAGE + COMPUTE sharing; dead trivial sharing refused"
+   },
+   {
+    "adequate_as_fourteen_schools": false,
+    "how_extended": "NGRAM wraps candidates() as Lookup/Dictionary/Generated programs",
+    "path": "tools/future/ngram_school.py",
+    "role": "five-axis n-gram representation school"
+   },
+   {
+    "adequate_as_fourteen_schools": false,
+    "how_extended": "ROUTER school turns allocation into a control-plane program search",
+    "path": "tools/future/router_science.py",
+    "role": "per-surface precision ALLOCATION, not a scalar score"
+   },
+   {
+    "adequate_as_fourteen_schools": false,
+    "how_extended": "FusedPhysicalProgram / RoutedSubprogram consume its taxonomy",
+    "path": "tools/future/moe_physical_school.py",
+    "role": "physical execution of routed compute"
+   },
+   {
+    "adequate_as_fourteen_schools": false,
+    "how_extended": "cheapest_falsifier is the funnel's next cheap gate, not a GPU run",
+    "path": "tools/future/meta_funnel.py",
+    "role": "ordered refusal funnel; passing a gate is not promotion"
+   },
+   {
+    "adequate_as_fourteen_schools": false,
+    "how_extended": "KV_STATE, LM_HEAD, DECODING, MTP_SPECULATION wrap its functions",
+    "path": "tools/future/decode_civilization.py",
+    "role": "tokenizer / lm_head / KV / recurrent / MTP cost models"
+   },
+   {
+    "adequate_as_fourteen_schools": false,
+    "how_extended": "consulted before every emit; builtin Gravity scars still fire if ingest copes out",
+    "path": "tools/future/negative_index.py",
+    "role": "keyed scar index; refuse_if_dead"
+   }
+  ],
+  "not_duplicating": "Trivial expert sharing stays dead (negative_index + expert_bank_school). FPGA remains Accelerator/Physical Compiler/Fusion. This lane produces STATIC_ONLY only.",
+  "note": "Expert-bank, n-gram, router-science, MoE-physical, meta-funnel and decode-civilization already generate organ-local science. They are not fourteen independently schedulable Gravity schools with program-family search, joint storage+compute scoring, elimination questions, and resident-callable WorkUnits. This module extends them; it does not fork a second expert genome or a second n-gram packing table."
+ },
+ "resident_callable": {
+  "callables": [
+   "build",
+   "schedule_school",
+   "selftest",
+   "admit_candidate",
+   "rank"
+  ],
+  "cannot": [
+   "acquire a GPU lease",
+   "promote DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE",
+   "fit the 350GB specimen",
+   "time a kernel",
+   "weaken a verifier"
+  ],
+  "discoverable": true,
+  "entry_point": "python3 tools/future/flash_schools.py --build",
+  "fail_closed": {
+   "dead_hypothesis": "DeadHypothesisError citing the scar; live cousins still emit",
+   "hardware_claim": "write_receipt raises HardwareClaimError",
+   "missing_census": "coped as unavailable; no synthetic GPU result",
+   "physical_blocker": "this lane never emits GPU_EXCLUSIVE units. Blocked Metal / xcrun / qualification-pipeline HEAVY / NX SCAFFOLD_ONLY / teacher 0/256 stay SLEEPING for the Accelerator lane.",
+   "specimen_fit": "refused (fit_policy=NOT_FIT)",
+   "storage_only_rank": "StorageOnlyRankingError",
+   "unknown_school": "UnknownSchoolError; no WorkUnit, no receipt row"
+  },
+  "frontier_fed": {
+   "how_it_changes": "Each scheduled school admits live program candidates or records a scar. The frontier is the union of live candidates across independently scheduled schools.",
+   "how_next_work_refills": "Reschedule the same school after a falsifier returns; the school re-emits remaining live families. Do not wait for a monolithic Gravity run.",
+   "integration_point": "swap the in-receipt frontier_fed block for tools/future/frontiers.py when that sibling lands",
+   "kind": "candidate_frontier",
+   "name": "flash_gravity_organ_schools"
+  },
+  "hcli_constructor": "tools.future.workunit_species.emit_hcli_workunit",
+  "integration_point_resident_api": "when tools/future/resident_api.py lands, register schedule_school and build as resident-callable verbs",
+  "module": "tools.future.flash_schools",
+  "per_school_entry": "python3 tools/future/flash_schools.py --school <SCHOOL_ID>",
+  "receipt": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+  "workunit_id_pattern": "future.flash_schools.<SCHOOL_ID>",
+  "workunits_emitted": [
+   "future.flash_schools.ROUTED_EXPERTS",
+   "future.flash_schools.SHARED_EXPERTS",
+   "future.flash_schools.ROUTER",
+   "future.flash_schools.HC_HYPERCONNECTION",
+   "future.flash_schools.DELTANET_RECURRENT_STATE",
+   "future.flash_schools.FULL_ATTENTION",
+   "future.flash_schools.KV_STATE",
+   "future.flash_schools.NGRAM",
+   "future.flash_schools.EMBEDDING",
+   "future.flash_schools.LM_HEAD",
+   "future.flash_schools.NORMALIZATION",
+   "future.flash_schools.POSITIONAL_STRUCTURE",
+   "future.flash_schools.DECODING",
+   "future.flash_schools.MTP_SPECULATION"
+  ]
+ },
+ "schema": "hawking.future.flash_schools.v1",
+ "school_catalog": [
+  "ROUTED_EXPERTS",
+  "SHARED_EXPERTS",
+  "ROUTER",
+  "HC_HYPERCONNECTION",
+  "DELTANET_RECURRENT_STATE",
+  "FULL_ATTENTION",
+  "KV_STATE",
+  "NGRAM",
+  "EMBEDDING",
+  "LM_HEAD",
+  "NORMALIZATION",
+  "POSITIONAL_STRUCTURE",
+  "DECODING",
+  "MTP_SPECULATION"
+ ],
+ "schools": [
+  {
+   "candidates": [
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "RESIDUAL_REPAIRABLE",
+     "capability_risk_rank": 4,
+     "cheapest_falsifier": "Kill if the residual density required to pass the function screen exceeds independent Q4 bytes.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1300,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "generator_plus_sparse_residual",
+     "id": "ROUTED_EXPERTS:COMPOSITE-DECODER-RESIDUAL",
+     "independently_schedulable": true,
+     "mechanism": "Generated decoder + sparse residual on capability-sensitive experts. The residual is the expert's identity.",
+     "native_execution_concept": "Decode tile, add sparse residual, fuse SwiGLU. No densify.",
+     "not_a_hardware_measurement": true,
+     "program_family": "CompositeProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not unchanged archetype (residual changes per expert).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 73987522560,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Kill if ||V @ x_{L+1} - adapter(z_L)|| is not smaller than ||V @ x_{L+1}|| on a real residual stream (then reuse is a no-op). Do not score by W cosine across layers (dead tying metric).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#COMPUTE-CROSS-LAYER-REUSED-TRANSFORM",
+     "flop_milli": 900,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_cross_layer_reused_transforms",
+     "id": "ROUTED_EXPERTS:EBS:COMPUTE-CROSS-LAYER-REUSED-TRANSFORM",
+     "independently_schedulable": true,
+     "mechanism": "cross-layer reused transforms: reuse a transform of the residual stream (V_L @ x_L) as an initialization for layer L+1, with a small adapter, instead of independently projecting at every layer.",
+     "native_execution_concept": "Keep z_L = V @ x_L. At L+1 compute z_{L+1} = z_L + V @ \u0394 (or a small adapter on z_L). Token path uses z, never W. V may be per-block (storage SB9) or per-layer with reuse of the product.",
+     "not_a_hardware_measurement": true,
+     "program_family": "GeneratedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not same-index cross-layer weight tying. Not an unchanged archetype copied across layers.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 197300060160,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Identity check: shared-U expand-then-sum vs reduce-then-expand must match at 0.0 residual (planted). Kill the candidate if a real organ requires per-expert U to meet the function screen (then the identity does not apply).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#COMPUTE-LATENT-WEIGHTED-REDUCTION",
+     "flop_milli": 750,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_latent_weighted_reduction",
+     "id": "ROUTED_EXPERTS:EBS:COMPUTE-LATENT-WEIGHTED-REDUCTION",
+     "independently_schedulable": true,
+     "mechanism": "latent weighted reduction: apply router weights in a small latent and reduce there, instead of weighting full d_model outputs.",
+     "native_execution_concept": "Each selected expert writes an r-vector. Weighted sum in r. One U @ u. Exact when U is shared. No dense down_proj.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not expert merging (all selected experts still run). Not mean subtraction.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 246625075200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Planted shared-U identity (must be exact). Then one-layer down function screen vs per-expert U. Kill if per-expert U is required.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#COMPUTE-ONE-OUTPUT-EXPANSION",
+     "flop_milli": 700,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_one_output_expansion",
+     "id": "ROUTED_EXPERTS:EBS:COMPUTE-ONE-OUTPUT-EXPANSION",
+     "independently_schedulable": true,
+     "mechanism": "one output expansion: a single shared expansion of a reduced intermediate, rather than k independent down_proj GEMVs.",
+     "native_execution_concept": "Bind one U. Consume the reduced latent. One GEMV to d_model. Never k packed down_proj payloads applied independently unless the function screen forbids sharing U.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not a trivial shared basis of whole W. Not same-index tying.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 246625075200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Do not rerun the B-sweep of ACCELERATOR_EXPERT_BATCH as if it were new. Falsify the FUSED remainder: a kernel that keeps x resident and reads packed rows vs the existing per-expert qwen80_routed_expert_wave_gate_up dispatches, on the same packed payload, under a protected lease (later lane). Kill if the fused wave matches the independent-dispatch complete-token within noise.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#COMPUTE-ONE-X-MANY-EXPERTS",
+     "flop_milli": 800,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_one_hidden_vector_many_experts",
+     "id": "ROUTED_EXPERTS:EBS:COMPUTE-ONE-X-MANY-EXPERTS",
+     "independently_schedulable": true,
+     "mechanism": "one hidden vector entering many experts: keep x register/SRAM resident and stream selected expert rows against it in one wave, fused with SiLU(gate)*up. Not a stacked dense table of independent W_e.",
+     "native_execution_concept": "Load x once into threadgroup memory. Each threadgroup owns an intermediate row of a selected expert's packed gate/up and dots against resident x. Packed values are consumed in-register. No dense W_e, no stacked dense table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not naive expert-table batching (already measured). Not a trivial shared basis (no shared W).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 246625075200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if a shared V for gate+up fails the function screen on gate (dominant_failure_organ historically). The fused-but-unshared kernel is the control, not a missing fusion.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#COMPUTE-SHARED-PROJECTIONS-ACROSS-ORGANS",
+     "flop_milli": 850,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_shared_projections_across_organs",
+     "id": "ROUTED_EXPERTS:EBS:COMPUTE-SHARED-PROJECTIONS-ACROSS-ORGANS",
+     "independently_schedulable": true,
+     "mechanism": "shared projections across organs: hoist a common transform of x that both gate and up (and possibly the shared expert) can reuse, instead of two independent input projections per expert.",
+     "native_execution_concept": "One V @ x. Skinny gate core and skinny up core against z, fused SiLU product. Independent per-organ paths remain legal for the sensitive organ (gate). No densified W_gate or W_up.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not already-built fused gate-up (that still uses two matrices). Not a trivial shared basis of the whole expert.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 246625075200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if K is large enough to become a gather LUT (dead lever: learned codebook LUT). Kill if the kernel writes or caches a dense W (NS-018: caching decoded W restores the footprint the representation exists to remove). Kill if the codebook is raw-weight PQ at ~1 BPW (dead family). A planted tiny shared CB plus fused FMA must beat per-expert unpack on a synthetic packed payload before any specimen is touched.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#COMPUTE-SHARED-REPRESENTATION-DECODE",
+     "flop_milli": 1400,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_shared_representation_decode",
+     "id": "ROUTED_EXPERTS:EBS:COMPUTE-SHARED-REPRESENTATION-DECODE",
+     "independently_schedulable": true,
+     "mechanism": "shared representation decode: a tiny shared codebook / scale family lives in registers; per-expert payloads are indices consumed fused with the matvec. Decode is not a per-expert prologue that writes dense W.",
+     "native_execution_concept": "Codebook in registers (K tiny). Fused FMA of codebook entries with x. No densify-then-GEMM. Organ-specific codebooks allowed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "DictionaryProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not NS-010 unconditioned shared codebook on raw routed-expert weights. Not entropy-coded Lloyd indices. Not NS-018 cache-decoded-W. Not NNS-018 single-family-across-organs (organ-specific tiny CBs are allowed).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 49325015040,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Same cheapest falsifier as shared input transforms (uncoded V, real X). Kill on function before claiming a compute win. A protected complete-token comparison is a later lane.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#COMPUTE-SHARED-XB-THEN-SKINNY",
+     "flop_milli": 700,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_shared_xb_then_skinny",
+     "id": "ROUTED_EXPERTS:EBS:COMPUTE-SHARED-XB-THEN-SKINNY",
+     "independently_schedulable": true,
+     "mechanism": "shared xB transform with small expert-specific transforms: z = x @ B once; y_e = z @ C_e. Compute dual of shared input / common right.",
+     "native_execution_concept": "One GEMV z = B @ x in SRAM. Selected C_e stream against z. No W_e = C_e B. Gate and up may share the same z.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not trivial shared basis (B is a transform of x, not a shared W). Not ACCELERATOR_EXPERT_BATCH stacking of independent W_e.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 246625075200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if island labels derived from a capability screen do not reduce per-island joint-SVD null-gap vs the global null (then the partition is cosmetic). Kill if the partition is used to justify a single codec family across organs (NNS-018).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-CAPABILITY-ISLANDS",
+     "flop_milli": 1350,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_capability_sensitive_expert_islands",
+     "id": "ROUTED_EXPERTS:EBS:STORE-CAPABILITY-ISLANDS",
+     "independently_schedulable": true,
+     "mechanism": "capability-sensitive expert islands: partition the bank by capability / organ sensitivity (gate vs down, layer-band, tool vs language), and share structure only inside an island. Islands may use different mechanisms.",
+     "native_execution_concept": "Tag experts/organs with an island id. Each island binds its own shared factors and native path (e.g. down island uses shared U, gate island stays independent or uses a milder skinny). The kernel dispatches per island; it does not densify a mixed W.",
+     "not_a_hardware_measurement": true,
+     "program_family": "CompositeProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not raw global similarity (partitioned on purpose). Not a single unconditioned shared basis across the bank.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 98650030080,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Kill if the K that beats the orthogonal null is ~E (then clustering is a rename of independent experts). Kill if the method reconstructs a held-out expert from cluster mates (that is dead expert-merging, atlas expert_merging_omitted_from_survivors / NNS-023).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-CLUSTERED-SUBSPACES",
+     "flop_milli": 1250,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_clustered_subspaces",
+     "id": "ROUTED_EXPERTS:EBS:STORE-CLUSTERED-SUBSPACES",
+     "independently_schedulable": true,
+     "mechanism": "clustered subspaces: partition experts into K << E clusters; each cluster shares a left or right factor; members keep a skinny residual. All experts remain present.",
+     "native_execution_concept": "Bind K shared factors and a cluster-id table (log2 K bits/expert). Selected expert e in cluster k uses V_k @ x then C_e. Gather V_k by cluster id, not by reconstructing W_e.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ConditionalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not raw global similarity (K spaces, not one). Not expert merging (every expert is stored; no omitted-expert reconstruction). Not an unchanged archetype (cluster factor plus member residual).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 82208358400,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Instrument first on a planted U_shared @ C_e stack (must recover shared energy) and an orthogonal control (must not). Then, at a later funnel stage that owns a specimen, one layer / one organ / 8 experts: joint SVD of stacked W_e W_e^T energy in top-r. Kill if top-r energy is indistinguishable from the orthogonal null. Do not flatten-and-cosine. Do not fit the full bank in this lane.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-COMMON-LEFT-SUBSPACE",
+     "flop_milli": 1200,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_common_left_subspaces",
+     "id": "ROUTED_EXPERTS:EBS:STORE-COMMON-LEFT-SUBSPACE",
+     "independently_schedulable": true,
+     "mechanism": "common left subspaces: share an output-side factor U across experts; keep expert-specific right factors C_e. Algebra y = U @ (C_e @ x) without forming W_e = U @ C_e.",
+     "native_execution_concept": "Bind one U[d_model, r] per layer-organ and gathered C_e[r, d_in] for the selected experts. Compute z_e = C_e @ x (skinny), then y = U @ sum_e w_e z_e (or U @ z_e per expert if U is only partly shared). Never write W_e into DRAM.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FactorizedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not raw global similarity (does not flatten W or use pairwise cosine). Not a trivial shared basis (one-sided, not U_shared @ V_shared for all experts).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 61656268800,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Planted shared-V stack vs orthogonal control (instrument). Then one-layer joint SVD of stacked W_e^T W_e. Kill if top-r energy matches the orthogonal null at the r the byte plan needs. Pairwise overlap of two experts is not this test.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-COMMON-RIGHT-SUBSPACE",
+     "flop_milli": 1200,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_common_right_subspaces",
+     "id": "ROUTED_EXPERTS:EBS:STORE-COMMON-RIGHT-SUBSPACE",
+     "independently_schedulable": true,
+     "mechanism": "common right subspaces: share an input-side factor V across experts in WEIGHT space of the stacked bank; expert-specific left cores C_e. Algebra y_e = C_e @ (V @ x).",
+     "native_execution_concept": "Bind one V[r, d_in] and gathered C_e[d_out, r]. Compute z = V @ x once per organ (or once per layer if gate/up share V), then y_e = C_e @ z. Never form W_e = C_e @ V.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FactorizedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not trivial shared basis (one-sided joint factor of the stack, not one unconditioned basis plus nf4 residual on raw W). Not activation-PCA (that is shared_input_transforms).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 61656268800,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "RESIDUAL_REPAIRABLE",
+     "capability_risk_rank": 4,
+     "cheapest_falsifier": "Kill if ||residual_e|| / ||expert_e|| is ~1 on the named shared_op (mean-expert already showed this). The falsifier must name the shared_op; 'the mean' is not an allowed shared_op. Do not merge omitted experts from residuals (NNS-023).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-CONDITIONAL-RESIDUAL",
+     "flop_milli": 1300,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_conditional_residuals",
+     "id": "ROUTED_EXPERTS:EBS:STORE-CONDITIONAL-RESIDUAL",
+     "independently_schedulable": true,
+     "mechanism": "conditional residuals: y = shared_op(x) + residual_e(x), where shared_op is a learned or architecture-native shared operator (not the mean expert) and residual_e is skinny / sparse / gated.",
+     "native_execution_concept": "Compute y_shared = shared_op(x) once. Selected experts add R_e @ z (skinny) or a sparse residual. Sum. Never form W_e = W_shared + R_e as a dense matrix.",
+     "not_a_hardware_measurement": true,
+     "program_family": "SparseResidualProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not shared-mean subtraction (explicitly forbidden as shared_op). Not expert merging. Not an unchanged archetype.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 73987522560,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Kill if residual energy of predicted factors is ~1 (then prediction is a no-op, matching the tying control). The test is on factors, not on flattened W. Do not reopen same-index W tying.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-CROSS-LAYER-EXPERT-PREDICTION",
+     "flop_milli": 1800,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_cross_layer_expert_prediction",
+     "id": "ROUTED_EXPERTS:EBS:STORE-CROSS-LAYER-EXPERT-PREDICTION",
+     "independently_schedulable": true,
+     "mechanism": "cross-layer expert prediction: predict layer L+1's expert factors from layer L's (same index or learned map); store only the residual of that prediction. Weights are not tied.",
+     "native_execution_concept": "Bind predictors P that map C_e,L -> C_e,L+1_hat as a small linear map on factors. Token path uses the residual-corrected factors already in the same skinny buffers. No dense W_L or W_{L+1}.",
+     "not_a_hardware_measurement": true,
+     "program_family": "GeneratedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not same-index cross-layer weight tying (atlas / NNS-024). The stored object is a factor residual, not tied W.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 30828134400,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if the K needed to hit a planted reconstruction is so large the dictionary plus codes exceed independent coding. Kill if atoms are applied by densifying W_e. Do not entropy-code Lloyd indices as the byte win (atlas entropy_coded_pq_indices).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-DICTIONARY-FAMILIES",
+     "flop_milli": 1400,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_dictionary_families",
+     "id": "ROUTED_EXPERTS:EBS:STORE-DICTIONARY-FAMILIES",
+     "independently_schedulable": true,
+     "mechanism": "dictionary families: a shared dictionary of linear atoms; each expert is a sparse combination of those atoms, executed as a sum of gathered low-rank factors.",
+     "native_execution_concept": "Keep dictionary atoms as GEMM factors in registers/SRAM (tiny K). Expert e holds sparse indices and scales. y_e = sum_{k in supp(e)} s_{e,k} * (atom_k @ x). Lookup-free FMA. Never densify W_e from the atom sum. Large LUT gathers are a recorded dead lever.",
+     "not_a_hardware_measurement": true,
+     "program_family": "DictionaryProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not NS-010 unconditioned shared codebook on raw routed-expert weights. Not a single unchanged template. Not SB6-large-LUT.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 49325015040,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Kill if ||G(h_e) - target_factors|| requires h_e or G large enough that embeddings+G exceed independent skinny factors. Kill if G emits dense W. Do not score this by pairwise cosine of W.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-EXPERT-EMBEDDING-GENERATOR",
+     "flop_milli": 2000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_expert_embeddings_generators",
+     "id": "ROUTED_EXPERTS:EBS:STORE-EXPERT-EMBEDDING-GENERATOR",
+     "independently_schedulable": true,
+     "mechanism": "expert embeddings / generators: each expert is a small embedding h_e; a shared generator G maps h_e to the factors a kernel consumes (cores, codes, or skinny maps), not to a dense W_e.",
+     "native_execution_concept": "At bind time, G(h_e) emits C_e (or sparse codes) into the same buffers the small-core / dictionary kernel already consumes. The token path never calls G if cores are materialized as skinny factors; G is a storage generator, not a per-token network. Never emit dense W_e from G.",
+     "not_a_hardware_measurement": true,
+     "program_family": "GeneratedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not NNS-024 procedural generated expert bases on orthogonal experts: this does not assume similarity and does not emit W. Not an unchanged archetype (h_e differs; G is shared).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 24662507520,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Planted sandwich recovers C_e energy; orthogonal W_e must force r \u2248 min(d_out, d_in) to fit. Kill if the r that beats independent coding is not small enough to cut bytes after storing U and V once.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-EXPERT-SMALL-CORE",
+     "flop_milli": 1300,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_expert_specific_small_cores",
+     "id": "ROUTED_EXPERTS:EBS:STORE-EXPERT-SMALL-CORE",
+     "independently_schedulable": true,
+     "mechanism": "expert-specific small cores: W_e \u2248 U @ C_e @ V with C_e a small r x r (or r x s) core unique to the expert; U, V shared.",
+     "native_execution_concept": "Bind U, V once and C_e for selected experts. Path: z = V @ x, u_e = C_e @ z, y_e = U @ u_e (or fused). Three GEMVs, none of which materializes W_e. C_e stays in registers if r is small.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FactorizedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not an unchanged archetype (the core changes per expert). Not a trivial shared basis (sandwich with a mixing core, not residual on a frozen shared W).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 49325015040,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Kill if g(\u03c0)=constant on held-out routes (then this collapses to the unchanged-archetype scar). Kill if mixing K archetypes cannot beat a single archetype by more than the orthogonal-null margin that already killed templates (0.0013 energy).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-ROUTE-CONDITIONED-ARCHETYPES",
+     "flop_milli": 1500,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_route_conditioned_archetypes",
+     "id": "ROUTED_EXPERTS:EBS:STORE-ROUTE-CONDITIONED-ARCHETYPES",
+     "independently_schedulable": true,
+     "mechanism": "route-conditioned archetypes: a small set of archetypal operators specialized by the live router score (or top-k identity), producing an adapted expert without storing a full W_e.",
+     "native_execution_concept": "Bind K archetypal factors. Given router scores \u03c0, form a mixed core C(\u03c0) = sum_k g_k(\u03c0) C_k (or a sparse top-k mix) and apply C(\u03c0) @ (V @ x) natively. The kernel reads \u03c0 and the archetypal factors; it does not write a dense adapted W.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ConditionalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not an unchanged archetype: the operator depends on the live route. The named Flash route-conditioned / archetype-sparse tools are absent from this tree; this candidate is the untested structured form, not a rerun of a missing screen.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 41104179200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "One layer, one organ, real X (never Gaussian). Uncoded V from activation PCA; reconstruct C_e (V x) vs W_e x. Kill if output cosine is no better than an orthogonal-V control at the r the byte plan needs. If uncoded already dies, quantizing C_e cannot save it. Do not run on a specimen in this lane.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-SHARED-INPUT-TRANSFORM",
+     "flop_milli": 1100,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_shared_input_transforms",
+     "id": "ROUTED_EXPERTS:EBS:STORE-SHARED-INPUT-TRANSFORM",
+     "independently_schedulable": true,
+     "mechanism": "shared input transforms: one activation-space transform z = V @ x from the real residual stream (PCA / Hessian-weighted), then expert-specific skinny maps on z. Experts may be orthogonal as W and still share input covariance.",
+     "native_execution_concept": "Compute z = V @ x once per layer (serves gate+up if they share V). Selected experts apply skinny C_e to z. Down: skinny then shared U. Lookup-free GEMM. Forbidden: materialize W_e = C_e V then qmm.",
+     "not_a_hardware_measurement": true,
+     "program_family": "SharedBasisProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not trivial shared basis (activation-space V, not a shared weight basis plus residual on W). Not raw global similarity (does not use W cosine).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 61656268800,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if a shared U at the r that saves bytes cannot match per-expert expansions on a planted sandwich; then on one layer down_proj at a later stage. Kill if combine-in-latent disagrees with expand-then-sum by more than the combiner's linearity allows (it must be identical when U is fully shared).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-SHARED-OUTPUT-LATENT",
+     "flop_milli": 1100,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_shared_output_latent_spaces",
+     "id": "ROUTED_EXPERTS:EBS:STORE-SHARED-OUTPUT-LATENT",
+     "independently_schedulable": true,
+     "mechanism": "shared output latent spaces: each expert emits a small latent u_e; a shared U expands to d_model. Combine can happen in the latent. Dual of shared input transforms, on the output side.",
+     "native_execution_concept": "Selected experts write u_e into an r-vector. Kernel does u = sum_e \u03c0_e u_e then y = U @ u, or y_e = U @ u_e if U is only partly shared. U is bound once. Never store or form W_down,e.",
+     "not_a_hardware_measurement": true,
+     "program_family": "SharedBasisProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not a trivial shared basis (output-side only, combine-in-latent is part of the object). Not mean-expert subtraction.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 61656268800,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Do not rerun single-tensor Kronecker at depth. Falsify the BANK decomposition: CP rank needed for a planted 3-way vs for real stack energy (later funnel). Kill if CP rank scales like E * min(d_out, d_in) (then there is no expert-mode structure).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/expert_bank_school.py#STORE-TENSOR-DECOMPOSITION",
+     "flop_milli": 1600,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_bank_tensor_decomposition",
+     "id": "ROUTED_EXPERTS:EBS:STORE-TENSOR-DECOMPOSITION",
+     "independently_schedulable": true,
+     "mechanism": "tensor decomposition of the expert BANK as a 3-way tensor (expert \u00d7 out \u00d7 in): CP / Tucker / tensor-train on the stack, consumed factor-wise.",
+     "native_execution_concept": "Store CP atoms (a_r, u_r, v_r) or Tucker (G, A, U, V). Native: y = sum_r a_e,r * (u_r @ (v_r @ x)) or the Tucker contraction along in, then mix by expert row of A. Never reconstruct a dense slice W_e.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FactorizedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not NNS-016 (that is one expert tensor, Kronecker/TT/low-rank, layers >= 1). The expert index is an additional mode.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 41104179200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Planted generator recovers useful tiles; real L44 bank must beat independent Q4 on held-out routed-output AND keep top-K membership. Kill if the decoder is an unconditioned shared basis in disguise.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json#meta_program.expert_bank",
+     "flop_milli": 2000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "expert_local_tile_generator",
+     "id": "ROUTED_EXPERTS:GENERATED-TILE",
+     "independently_schedulable": true,
+     "mechanism": "expert-local latent codes + shared tile decoder + route-margin repair (FLASH_META expert_bank). Share the decoder program, not a single expert basis.",
+     "native_execution_concept": "route -> latent decode -> fused gate/up/SwiGLU/down accumulation. No dense W_e.",
+     "not_a_hardware_measurement": true,
+     "program_family": "GeneratedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not trivial shared basis (decoder is shared, codes are expert-local).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 24662507520,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the ROUTED_EXPERTS organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "ROUTED_EXPERTS:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "ROUTED_EXPERTS source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 246625075200,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "ROUTED_EXPERTS:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "ROUTED_EXPERTS independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 65509785600,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Kill if inactive experts' programs must stay resident to meet the function screen.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1100,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "per_route_subprogram",
+     "id": "ROUTED_EXPERTS:ROUTED-SUBPROGRAM",
+     "independently_schedulable": true,
+     "mechanism": "Per-route executable instead of a stacked dense bank. Only selected experts' programs are live.",
+     "native_execution_concept": "Gather program ids from the router; run only those subprograms.",
+     "not_a_hardware_measurement": true,
+     "program_family": "RoutedSubprogram",
+     "scar_consulted": true,
+     "scar_distance": "Not expert merge (omitted experts stay addressable programs).",
+     "school": "ROUTED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 30828134400,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    }
+   ],
+   "census_families": [
+    "routed_experts"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Share a decoder PROGRAM and per-expert latent codes (FLASH_META expert_bank). Do not share one weight basis. Trivial global expert sharing is dead.",
+    "dictionary_recurrent_or_conditional_expresses_it": "Route-conditioned subprograms, dictionaries with organ-tagged codebooks, and factorized one-sided subspaces remain live. Unconditioned shared codebook is dead.",
+    "function_replaceable_not_just_tensor_represented": "Yes: replace per-expert dense GEMV with generated-tile GEMV / route accumulation (meta runtime_shape). Function, not tensor.",
+    "needs_independent_storage": "Flattened experts look independent (L44 mean cosine ~3.8e-3, rank-1 energy ~2.7e-3). Independent STORAGE of raw W is the default; independent INFORMATION of a generator program is not.",
+    "sparse_residual_restores_capability_difference": "Yes: capability-sensitive expert islands plus a sparse residual on a cheap backbone. The residual is the identity of the expert.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED: selected experts still run",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN for the shared decoder; CLOSED for expert identity codes",
+     "ZERO_STORAGE": "OPEN if a generator reconstructs the useful function"
+    }
+   },
+   "independent": true,
+   "n_candidates": 25,
+   "organ_slug": "routed_experts",
+   "program_families_used": [
+    "CompositeProgram",
+    "ConditionalProgram",
+    "DictionaryProgram",
+    "FactorizedProgram",
+    "FusedPhysicalProgram",
+    "GeneratedProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "RoutedSubprogram",
+    "SharedBasisProgram",
+    "SparseResidualProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 246625075200,
+    "joint_cost_order": [
+     {
+      "id": "ROUTED_EXPERTS:ROUTED-SUBPROGRAM",
+      "joint_cost": 1225
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-SHARED-INPUT-TRANSFORM",
+      "joint_cost": 1350
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-SHARED-OUTPUT-LATENT",
+      "joint_cost": 1350
+     },
+     {
+      "id": "ROUTED_EXPERTS:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-COMMON-LEFT-SUBSPACE",
+      "joint_cost": 1450
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-COMMON-RIGHT-SUBSPACE",
+      "joint_cost": 1450
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-EXPERT-SMALL-CORE",
+      "joint_cost": 1500
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-CLUSTERED-SUBSPACES",
+      "joint_cost": 1583
+     },
+     {
+      "id": "ROUTED_EXPERTS:COMPOSITE-DECODER-RESIDUAL",
+      "joint_cost": 1600
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:COMPUTE-SHARED-REPRESENTATION-DECODE",
+      "joint_cost": 1600
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-CONDITIONAL-RESIDUAL",
+      "joint_cost": 1600
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-DICTIONARY-FAMILIES",
+      "joint_cost": 1600
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-ROUTE-CONDITIONED-ARCHETYPES",
+      "joint_cost": 1666
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:COMPUTE-CROSS-LAYER-REUSED-TRANSFORM",
+      "joint_cost": 1700
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:COMPUTE-ONE-OUTPUT-EXPANSION",
+      "joint_cost": 1700
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:COMPUTE-SHARED-XB-THEN-SKINNY",
+      "joint_cost": 1700
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:COMPUTE-LATENT-WEIGHTED-REDUCTION",
+      "joint_cost": 1750
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-CAPABILITY-ISLANDS",
+      "joint_cost": 1750
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-TENSOR-DECOMPOSITION",
+      "joint_cost": 1766
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:COMPUTE-ONE-X-MANY-EXPERTS",
+      "joint_cost": 1800
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:COMPUTE-SHARED-PROJECTIONS-ACROSS-ORGANS",
+      "joint_cost": 1850
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-CROSS-LAYER-EXPERT-PREDICTION",
+      "joint_cost": 1925
+     },
+     {
+      "id": "ROUTED_EXPERTS:LITERAL",
+      "joint_cost": 2000
+     },
+     {
+      "id": "ROUTED_EXPERTS:EBS:STORE-EXPERT-EMBEDDING-GENERATOR",
+      "joint_cost": 2100
+     },
+     {
+      "id": "ROUTED_EXPERTS:GENERATED-TILE",
+      "joint_cost": 2100
+     }
+    ],
+    "n_candidates": 25,
+    "n_front": 12,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "ROUTED_EXPERTS:EBS:COMPUTE-CROSS-LAYER-REUSED-TRANSFORM",
+     "ROUTED_EXPERTS:EBS:COMPUTE-ONE-OUTPUT-EXPANSION",
+     "ROUTED_EXPERTS:EBS:COMPUTE-SHARED-XB-THEN-SKINNY",
+     "ROUTED_EXPERTS:EBS:STORE-EXPERT-EMBEDDING-GENERATOR",
+     "ROUTED_EXPERTS:EBS:STORE-EXPERT-SMALL-CORE",
+     "ROUTED_EXPERTS:EBS:STORE-SHARED-INPUT-TRANSFORM",
+     "ROUTED_EXPERTS:EBS:STORE-SHARED-OUTPUT-LATENT",
+     "ROUTED_EXPERTS:EBS:STORE-TENSOR-DECOMPOSITION",
+     "ROUTED_EXPERTS:GENERATED-TILE",
+     "ROUTED_EXPERTS:LITERAL",
+     "ROUTED_EXPERTS:QUANT-Q4",
+     "ROUTED_EXPERTS:ROUTED-SUBPROGRAM"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "ROUTED_EXPERTS",
+   "source_bytes": 246625075200,
+   "workunit_id": "future.flash_schools.ROUTED_EXPERTS"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "One-layer shared-expert function screen vs source BF16. Kill if the factor rank that saves bytes fails SwiGLU.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1200,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "shared_expert_factor",
+     "id": "SHARED_EXPERTS:FACTOR-SWIGLU",
+     "independently_schedulable": true,
+     "mechanism": "Factorized shared-expert SwiGLU with fused native consume.",
+     "native_execution_concept": "Fused gate/up/SwiGLU/down; no densify.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FactorizedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not a tie to the routed bank (shared path stays its own program).",
+     "school": "SHARED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 120485120,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if fusion changes the shared+routed sum relative to source order.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/moe_physical_school.py",
+     "flop_milli": 850,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "shared_routed_epilogue_fusion",
+     "id": "SHARED_EXPERTS:FUSED-WITH-ROUTED",
+     "independently_schedulable": true,
+     "mechanism": "Fuse shared-expert epilogue with routed accumulation (moe_physical_school).",
+     "native_execution_concept": "One epilogue over shared + routed accumulators.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Compute fusion, not storage sharing.",
+     "school": "SHARED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 481940480,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the SHARED_EXPERTS organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "SHARED_EXPERTS:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "SHARED_EXPERTS source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "SHARED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 481940480,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "SHARED_EXPERTS:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "SHARED_EXPERTS independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "SHARED_EXPERTS",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 128015440,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    }
+   ],
+   "census_families": [
+    "shared_expert"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "A generator is allowed; a trivial tie to the routed bank is not.",
+    "dictionary_recurrent_or_conditional_expresses_it": "Factorized / fused SwiGLU program. Dictionary is optional.",
+    "function_replaceable_not_just_tensor_represented": "Fuse with routed accumulation rather than represent W twice.",
+    "needs_independent_storage": "Always-on path; small (census shared_expert). Independent storage until a generator matches the protected island.",
+    "sparse_residual_restores_capability_difference": "A small residual can bandage a compressed shared expert.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED: the shared path still executes",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN if predicted from route/hidden",
+     "ZERO_STORAGE": "OPEN after generator parity"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "mlp",
+   "program_families_used": [
+    "FactorizedProgram",
+    "FusedPhysicalProgram",
+    "LiteralTensor",
+    "QuantTensor"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 481940480,
+    "joint_cost_order": [
+     {
+      "id": "SHARED_EXPERTS:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "SHARED_EXPERTS:FACTOR-SWIGLU",
+      "joint_cost": 1450
+     },
+     {
+      "id": "SHARED_EXPERTS:FUSED-WITH-ROUTED",
+      "joint_cost": 1850
+     },
+     {
+      "id": "SHARED_EXPERTS:LITERAL",
+      "joint_cost": 2000
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 4,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "SHARED_EXPERTS:FACTOR-SWIGLU",
+     "SHARED_EXPERTS:FUSED-WITH-ROUTED",
+     "SHARED_EXPERTS:LITERAL",
+     "SHARED_EXPERTS:QUANT-Q4"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "SHARED_EXPERTS",
+   "source_bytes": 481940480,
+   "workunit_id": "future.flash_schools.SHARED_EXPERTS"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "PROTECTED_ISLAND",
+     "capability_risk_rank": 2,
+     "cheapest_falsifier": "Kill only if a compact gate preserves membership AND order on held-out seams.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "heterogeneous_control_plane",
+     "id": "ROUTER:CONTROL-PLANE-PREMIUM",
+     "independently_schedulable": true,
+     "mechanism": "Keep the router at CONTROL_FLOW_PREMIUM (16 bpw class) even though it is <<1% of specimen bytes. Optimize total executable information, not uniform bpw.",
+     "native_execution_concept": "Resident BF16/FP16 gate GEMV. Tiny; do not crush to save bulk bits.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Opposite of uniform_subbit_allocation.",
+     "school": "ROUTER",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 2621440,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the ROUTER organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "ROUTER:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "ROUTER source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "ROUTER",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 2621440,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Kill if compact+residual still changes top-K membership on the L3-L4 seam (FLASH_ROUTER_SENSITIVITY_MAP). Do not rerun the seam as if it were new; reuse the map.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/router_science.py",
+     "flop_milli": 1100,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "margin_gated_router_residual",
+     "id": "ROUTER:MARGIN-GATED-RESIDUAL",
+     "independently_schedulable": true,
+     "mechanism": "Compact router plus a conditional exact residual on low-margin tokens. Spend CONTROL_FLOW_PREMIUM bits on the 2.6 MB gate; near-zero on predictable bulk.",
+     "native_execution_concept": "Exact gate on tight margin; compact otherwise. Never generate W_gate from experts.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ConditionalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not student-distill of the router (router_distill is dead). Not uniform bpw.",
+     "school": "ROUTER",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 2621504,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "ROUTER:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "ROUTER independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "ROUTER",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 696320,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "CONTROL_CRUSHED",
+     "capability_risk_rank": 8,
+     "cheapest_falsifier": "Already: L3-L4 membership is margin-sensitive. This baseline exists to lose.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "uniform_bpw_baseline",
+     "id": "ROUTER:UNIFORM-BPW-BASELINE",
+     "independently_schedulable": true,
+     "mechanism": "Baseline: pack the router at the same 4.25 bpw as bulk. Expected to LOSE on control-plane risk. Not proposed as a winner; scored so a uniform plan cannot silently win on bytes.",
+     "native_execution_concept": "Packed gate GEMV. Diagnostic control, not a recommendation.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Does not use the dead phrase 'uniform subbit allocation'; it is a scored baseline, not a rediscovery of the scar.",
+     "school": "ROUTER",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 696320,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    }
+   ],
+   "census_families": [],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Do not generate the router from the expert bank (experts are downstream of routing). A margin-gated residual around a compact router is allowed; crushing the gate is not.",
+    "dictionary_recurrent_or_conditional_expresses_it": "ConditionalProgram on low-margin tokens (exact island). Not a dictionary of experts \u2014 that confuses control with payload.",
+    "function_replaceable_not_just_tensor_represented": "The FUNCTION is discrete top-K membership and order, not a tensor MSE. Optimize executable control information, not bpw.",
+    "needs_independent_storage": "YES. The router is the control plane. L3-L4 membership already flips under a small hidden perturbation. Independent storage of the gate is required at CONTROL_FLOW_PREMIUM precision.",
+    "sparse_residual_restores_capability_difference": "Yes: 0.5% residual normally, 2% when top10/top11 margin is tight (cited oracle policy, not re-derived).",
+    "three_zeros": {
+     "ZERO_EXECUTION": "REFUSED",
+     "ZERO_INDEPENDENT_INFORMATION": "REFUSED",
+     "ZERO_STORAGE": "REFUSED"
+    }
+   },
+   "independent": true,
+   "n_candidates": 5,
+   "organ_slug": "router",
+   "program_families_used": [
+    "ConditionalProgram",
+    "LiteralTensor",
+    "QuantTensor"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 2621440,
+    "joint_cost_order": [
+     {
+      "id": "ROUTER:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "ROUTER:UNIFORM-BPW-BASELINE",
+      "joint_cost": 1415
+     },
+     {
+      "id": "ROUTER:CONTROL-PLANE-PREMIUM",
+      "joint_cost": 2000
+     },
+     {
+      "id": "ROUTER:LITERAL",
+      "joint_cost": 2000
+     },
+     {
+      "id": "ROUTER:MARGIN-GATED-RESIDUAL",
+      "joint_cost": 2100
+     }
+    ],
+    "n_candidates": 5,
+    "n_front": 2,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "ROUTER:LITERAL",
+     "ROUTER:QUANT-Q4"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "ROUTER",
+   "source_bytes": 2621440,
+   "workunit_id": "future.flash_schools.ROUTER"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if fused order differs from source HC read precondition.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 700,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "hc_fusion",
+     "id": "HC_HYPERCONNECTION:FUSED-READ-WRITE",
+     "independently_schedulable": true,
+     "mechanism": "Fuse HC grouped RMSNorm / low-rank / SiLU / read-mix / write (layer-46 ledger).",
+     "native_execution_concept": "One TokenCommandBuffer region; no standalone HC dispatches.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Fusion of exact coefficients, not a shared basis of HC and MLP.",
+     "school": "HC_HYPERCONNECTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1311502048,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the HC_HYPERCONNECTION organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "HC_HYPERCONNECTION:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "HC_HYPERCONNECTION source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "HC_HYPERCONNECTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1311502048,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "HC_HYPERCONNECTION:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "HC_HYPERCONNECTION independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "HC_HYPERCONNECTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 348367731,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if the mix coefficients themselves are dropped.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 700,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "zero_standalone_hc_dispatch",
+     "id": "HC_HYPERCONNECTION:ZERO-STANDALONE-KERNELS",
+     "independently_schedulable": true,
+     "mechanism": "Eliminate standalone HC kernels by fusion (ZERO_EXECUTION of dispatches, not of the mix).",
+     "native_execution_concept": "Coefficients stay; kernels merge.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ZeroProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not zeroing the organ's information.",
+     "school": "HC_HYPERCONNECTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1311502048,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    }
+   ],
+   "census_families": [
+    "mlp_hyperconnection"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Do not share HC gates with attention weights. Fusion into the neighboring projections is a program change, not a share.",
+    "dictionary_recurrent_or_conditional_expresses_it": "A tiny conditional mix program. Not a dictionary.",
+    "function_replaceable_not_just_tensor_represented": "Yes: fuse HC read/SiLU/mix/write so standalone HC kernels have ZERO_EXECUTION as separate dispatches.",
+    "needs_independent_storage": "Small coefficient island (mlp_hyperconnection). Independent because HC read/write is an exact source precondition.",
+    "sparse_residual_restores_capability_difference": "Not the right tool: HC is already a residual mix.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "OPEN for standalone kernels via fusion",
+     "ZERO_INDEPENDENT_INFORMATION": "UNLIKELY",
+     "ZERO_STORAGE": "UNLIKELY (exact mix coefficients)"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "mlp",
+   "program_families_used": [
+    "FusedPhysicalProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "ZeroProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 1311502048,
+    "joint_cost_order": [
+     {
+      "id": "HC_HYPERCONNECTION:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "HC_HYPERCONNECTION:FUSED-READ-WRITE",
+      "joint_cost": 1700
+     },
+     {
+      "id": "HC_HYPERCONNECTION:ZERO-STANDALONE-KERNELS",
+      "joint_cost": 1700
+     },
+     {
+      "id": "HC_HYPERCONNECTION:LITERAL",
+      "joint_cost": 2000
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 4,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "HC_HYPERCONNECTION:FUSED-READ-WRITE",
+     "HC_HYPERCONNECTION:LITERAL",
+     "HC_HYPERCONNECTION:QUANT-Q4",
+     "HC_HYPERCONNECTION:ZERO-STANDALONE-KERNELS"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "HC_HYPERCONNECTION",
+   "source_bytes": 1311502048,
+   "workunit_id": "future.flash_schools.HC_HYPERCONNECTION"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if fusion changes the state recurrence.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 800,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "deltanet_fused_update",
+     "id": "DELTANET_RECURRENT_STATE:FUSED-UPDATE",
+     "independently_schedulable": true,
+     "mechanism": "Fuse in-proj / conv / state update / out-proj.",
+     "native_execution_concept": "One state-machine pipeline with resident state.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Physical fusion, not state merging (qn_state_merging is a different scar).",
+     "school": "DELTANET_RECURRENT_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 4820291328,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the DELTANET_RECURRENT_STATE organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "DELTANET_RECURRENT_STATE:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "DELTANET_RECURRENT_STATE source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "DELTANET_RECURRENT_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 4820291328,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "DELTANET_RECURRENT_STATE:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "DELTANET_RECURRENT_STATE independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "DELTANET_RECURRENT_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1280389884,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "PROTECTED_ISLAND",
+     "capability_risk_rank": 2,
+     "cheapest_falsifier": "Kill if recurrent_state_semantics leave source-approved (coherence_contract).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/decode_civilization.py#recurrent_state_compression",
+     "flop_milli": 1100,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "deltanet_transition_program",
+     "id": "DELTANET_RECURRENT_STATE:TRANSITION",
+     "independently_schedulable": true,
+     "mechanism": "Keep the DeltaNet transition; search a smaller state encoding.",
+     "native_execution_concept": "Resident state update; cannot be tiled like affine GEMV (decode_civilization).",
+     "not_a_hardware_measurement": true,
+     "program_family": "RecurrentStateProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not GPU-resident-state scar (that was a placement failure, not a transition).",
+     "school": "DELTANET_RECURRENT_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 2410145664,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    }
+   ],
+   "census_families": [
+    "linear_attention_hyperconnection"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "State is predicted from the previous state plus a token; that IS the source program. Do not replace it with a static tensor.",
+    "dictionary_recurrent_or_conditional_expresses_it": "RecurrentStateProgram is the native family. A dictionary of states would be a cache, not a transition.",
+    "function_replaceable_not_just_tensor_represented": "Yes: keep the transition, compress the stored state, fuse the update. Do not represent DeltaNet as a big static matrix.",
+    "needs_independent_storage": "Recurrent state transition is a protected island (coherence_contract: exact_or_source-approved). Weights of linear-attention/HC live in linear_attention_hyperconnection.",
+    "sparse_residual_restores_capability_difference": "A sparse residual on the transition may bandage compression; it cannot restore a wrong state machine.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED",
+     "ZERO_INDEPENDENT_INFORMATION": "CLOSED: state is the information",
+     "ZERO_STORAGE": "OPEN for weight compression, CLOSED for the live state"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "deltanet",
+   "program_families_used": [
+    "FusedPhysicalProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "RecurrentStateProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 4820291328,
+    "joint_cost_order": [
+     {
+      "id": "DELTANET_RECURRENT_STATE:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "DELTANET_RECURRENT_STATE:TRANSITION",
+      "joint_cost": 1600
+     },
+     {
+      "id": "DELTANET_RECURRENT_STATE:FUSED-UPDATE",
+      "joint_cost": 1800
+     },
+     {
+      "id": "DELTANET_RECURRENT_STATE:LITERAL",
+      "joint_cost": 2000
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 4,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "DELTANET_RECURRENT_STATE:FUSED-UPDATE",
+     "DELTANET_RECURRENT_STATE:LITERAL",
+     "DELTANET_RECURRENT_STATE:QUANT-Q4",
+     "DELTANET_RECURRENT_STATE:TRANSITION"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "DELTANET_RECURRENT_STATE",
+   "source_bytes": 4820291328,
+   "workunit_id": "future.flash_schools.DELTANET_RECURRENT_STATE"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if fused path disagrees with source attention on a short teacher window.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 800,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "fused_attention_path",
+     "id": "FULL_ATTENTION:FUSED-QKV-SDPA",
+     "independently_schedulable": true,
+     "mechanism": "Fused QKV / RoPE / SDPA / KV write.",
+     "native_execution_concept": "One attention region. No host ceremony between QKV and SDPA.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not head-sharing (qn_head_redundancy is a different scar).",
+     "school": "FULL_ATTENTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1337609728,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the FULL_ATTENTION organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "FULL_ATTENTION:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "FULL_ATTENTION source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "FULL_ATTENTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1337609728,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if Q/K/V function screen fails at the rank that saves bytes.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1200,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "qkv_shared_input_factor",
+     "id": "FULL_ATTENTION:QKV-FACTOR",
+     "independently_schedulable": true,
+     "mechanism": "Shared input factor across Q/K/V with skinny heads.",
+     "native_execution_concept": "z = V @ x once; skinny Q/K/V cores. No densify.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FactorizedProgram",
+     "scar_consulted": true,
+     "scar_distance": "One-sided factor of projections, not a shared expert basis.",
+     "school": "FULL_ATTENTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 334402432,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "FULL_ATTENTION:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "FULL_ATTENTION independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "FULL_ATTENTION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 355302584,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    }
+   ],
+   "census_families": [
+    "full_attention"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "QKV may share a factor; the attention FUNCTION cannot be predicted from MLP weights.",
+    "dictionary_recurrent_or_conditional_expresses_it": "Fused QKV/attention program. Conditional sparse patterns.",
+    "function_replaceable_not_just_tensor_represented": "Yes: fused QKV/RoPE/SDPA rather than three stored matrices plus ceremony.",
+    "needs_independent_storage": "KV-sensitive protected island (meta_bpw_target 3.0). Independent of the MoE bank.",
+    "sparse_residual_restores_capability_difference": "Yes, on Q/K/V with a high-precision island for sinking tokens.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "OPEN for unfused projection kernels",
+     "ZERO_INDEPENDENT_INFORMATION": "PARTIAL (Q/K/V factors)",
+     "ZERO_STORAGE": "OPEN for projections, CLOSED for the attention function"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "attention",
+   "program_families_used": [
+    "FactorizedProgram",
+    "FusedPhysicalProgram",
+    "LiteralTensor",
+    "QuantTensor"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 1337609728,
+    "joint_cost_order": [
+     {
+      "id": "FULL_ATTENTION:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "FULL_ATTENTION:QKV-FACTOR",
+      "joint_cost": 1450
+     },
+     {
+      "id": "FULL_ATTENTION:FUSED-QKV-SDPA",
+      "joint_cost": 1800
+     },
+     {
+      "id": "FULL_ATTENTION:LITERAL",
+      "joint_cost": 2000
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 4,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "FULL_ATTENTION:FUSED-QKV-SDPA",
+     "FULL_ATTENTION:LITERAL",
+     "FULL_ATTENTION:QKV-FACTOR",
+     "FULL_ATTENTION:QUANT-Q4"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "FULL_ATTENTION",
+   "source_bytes": 1337609728,
+   "workunit_id": "future.flash_schools.FULL_ATTENTION"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "PROTECTED_ISLAND",
+     "capability_risk_rank": 2,
+     "cheapest_falsifier": "Kill on recall, not on bytes (decode_civilization kv_compression).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/decode_civilization.py#kv_compression",
+     "flop_milli": 1100,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "kv_quant_byte_class",
+     "id": "KV_STATE:CACHE-Q8",
+     "independently_schedulable": true,
+     "mechanism": "Runtime KV quant (byte class only). Long-context recall is the gate and is ABSENT here.",
+     "native_execution_concept": "Quantized cache consume in-attention. No host round-trip.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Byte ladder is not a capability result.",
+     "school": "KV_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the KV_STATE organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "KV_STATE:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "KV_STATE source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "KV_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "KV_STATE:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "KV_STATE independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "KV_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "ZERO_UNTESTED",
+     "capability_risk_rank": 7,
+     "cheapest_falsifier": "Kill if accepted-token cost rises (recompute must not win on storage alone).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 3000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "kv_recompute",
+     "id": "KV_STATE:RECOMPUTE",
+     "independently_schedulable": true,
+     "mechanism": "Zero cache storage: recompute past K/V. FLOP-tripling cousin of the trap.",
+     "native_execution_concept": "Recompute attention keys/values from residual stream.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ZeroProgram",
+     "scar_consulted": true,
+     "scar_distance": "Joint scoring must let this LOSE to a stored cache.",
+     "school": "KV_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "RESIDUAL_REPAIRABLE",
+     "capability_risk_rank": 4,
+     "cheapest_falsifier": "Kill if recall-sensitive keys are not in the dictionary.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1400,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "kv_sinking_dictionary",
+     "id": "KV_STATE:SINKING-TOKEN-DICT",
+     "independently_schedulable": true,
+     "mechanism": "Dictionary of sinking / heavy tokens; compressed remainder.",
+     "native_execution_concept": "Exact island gather + compressed rest.",
+     "not_a_hardware_measurement": true,
+     "program_family": "DictionaryProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not H2O/MiniCache claimed as measured; analytical family only.",
+     "school": "KV_STATE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    }
+   ],
+   "census_families": [],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Recompute (ZeroProgram of the cache) vs store. Recompute is a FLOP trade, not free.",
+    "dictionary_recurrent_or_conditional_expresses_it": "Quantized cache, dictionary of sinking tokens, recurrent compression. Asymmetric K/V is a byte class, not a result.",
+    "function_replaceable_not_just_tensor_represented": "Yes: the function is 'attend to the past', which can be a compressed cache, a sliding window, or a recompute program.",
+    "needs_independent_storage": "Runtime state, not a census weight family. Independent of stored W. Long-context recall is the capability gate (decode_civilization kv_compression).",
+    "sparse_residual_restores_capability_difference": "Yes: keep high-precision residuals on recall-sensitive keys.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED (someone must attend)",
+     "ZERO_INDEPENDENT_INFORMATION": "CLOSED (the past is the information)",
+     "ZERO_STORAGE": "OPEN (recompute) at FLOP cost"
+    }
+   },
+   "independent": true,
+   "n_candidates": 5,
+   "organ_slug": "kv",
+   "program_families_used": [
+    "DictionaryProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "ZeroProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 1,
+    "joint_cost_order": [
+     {
+      "id": "KV_STATE:LITERAL",
+      "joint_cost": 1000
+     },
+     {
+      "id": "KV_STATE:CACHE-Q8",
+      "joint_cost": 1100
+     },
+     {
+      "id": "KV_STATE:QUANT-Q4",
+      "joint_cost": 1150
+     },
+     {
+      "id": "KV_STATE:SINKING-TOKEN-DICT",
+      "joint_cost": 1400
+     },
+     {
+      "id": "KV_STATE:RECOMPUTE",
+      "joint_cost": 3000
+     }
+    ],
+    "n_candidates": 5,
+    "n_front": 1,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "KV_STATE:LITERAL"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "KV_STATE",
+   "source_bytes": 0,
+   "workunit_id": "future.flash_schools.KV_STATE"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the NGRAM organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "NGRAM:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "NGRAM source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 102400491520,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#clustered_dictionaries",
+     "flop_milli": 2000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_clustered_dictionaries",
+     "id": "NGRAM:NGS:clustered_dictionaries",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family clustered_dictionaries",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "DictionaryProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1312995288,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#context_conditioned_lookup",
+     "flop_milli": 1333,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_context_conditioned_lookup",
+     "id": "NGRAM:NGS:context_conditioned_lookup",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family context_conditioned_lookup",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ConditionalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 1359951320,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#factorized_lookup",
+     "flop_milli": 32000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_factorized_lookup",
+     "id": "NGRAM:NGS:factorized_lookup",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family factorized_lookup",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FactorizedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 63249880,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#generated_lookup",
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_generated_lookup",
+     "id": "NGRAM:NGS:generated_lookup",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family generated_lookup",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "GeneratedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 97236440,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#hierarchical_codebooks",
+     "flop_milli": 9000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_hierarchical_codebooks",
+     "id": "NGRAM:NGS:hierarchical_codebooks",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family hierarchical_codebooks",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "DictionaryProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 3217871320,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "RESIDUAL_REPAIRABLE",
+     "capability_risk_rank": 4,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#literal_exception_islands",
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_literal_exception_islands",
+     "id": "NGRAM:NGS:literal_exception_islands",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family literal_exception_islands",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "SparseResidualProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 21673550230,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#packed_q3_control",
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_packed_q3_control",
+     "id": "NGRAM:NGS:packed_q3_control",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family packed_q3_control",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 20813441240,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#packed_q4_control",
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_packed_q4_control",
+     "id": "NGRAM:NGS:packed_q4_control",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family packed_q4_control",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 27217576920,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#product_codebooks",
+     "flop_milli": 16000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_product_codebooks",
+     "id": "NGRAM:NGS:product_codebooks",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family product_codebooks",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "DictionaryProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 5137552856,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "RESIDUAL_REPAIRABLE",
+     "capability_risk_rank": 4,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#residual_product_quantization",
+     "flop_milli": 16000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_residual_product_quantization",
+     "id": "NGRAM:NGS:residual_product_quantization",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family residual_product_quantization",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "SparseResidualProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 5137634776,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": null,
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Five-axis Pareto in ngram_school: kill if the family is dominated on executable_bytes, active_lookup_bytes, lookup_ops, decode_cost, and sensitivity simultaneously, or if a later funnel fit fails held-out n-gram retrieval.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/ngram_school.py#semantic_hashing",
+     "flop_milli": 8000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "ngram_semantic_hashing",
+     "id": "NGRAM:NGS:semantic_hashing",
+     "independently_schedulable": true,
+     "mechanism": "ngram_school family semantic_hashing",
+     "native_execution_concept": "Native gather / generate / island bypass; never densify the 320M-row table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LookupProgram",
+     "scar_consulted": true,
+     "scar_distance": "Wraps ngram_school; does not rerun storage-only ranking.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 185218520,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "NGRAM:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "NGRAM independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "NGRAM",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 27200130560,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    }
+   ],
+   "census_families": [
+    "ngram_embedding"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Yes: generated lookup from token embeds + MLP; frequency-tiered generator + hot islands (meta ngram_bank).",
+    "dictionary_recurrent_or_conditional_expresses_it": "LookupProgram, DictionaryProgram, FactorizedProgram, GeneratedProgram \u2014 already emitted by ngram_school; this school wraps them as Gravity programs.",
+    "function_replaceable_not_just_tensor_represented": "Yes: replace the table with a generator. That is the point.",
+    "needs_independent_storage": "The table is 28% of specimen bytes; per-token DRAM is PLE-aux dominated (ngram_school). Independent storage of 320M rows is the question this school exists to kill.",
+    "sparse_residual_restores_capability_difference": "Yes: literal exception islands on Zipf heavy-hitters.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED: some lookup or generate still runs",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN if generated from tokens",
+     "ZERO_STORAGE": "OPEN for the cold table"
+    }
+   },
+   "independent": true,
+   "n_candidates": 13,
+   "organ_slug": "embed",
+   "program_families_used": [
+    "ConditionalProgram",
+    "DictionaryProgram",
+    "FactorizedProgram",
+    "GeneratedProgram",
+    "LiteralTensor",
+    "LookupProgram",
+    "QuantTensor",
+    "SparseResidualProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 102400491520,
+    "joint_cost_order": [
+     {
+      "id": "NGRAM:NGS:generated_lookup",
+      "joint_cost": 1000
+     },
+     {
+      "id": "NGRAM:NGS:packed_q3_control",
+      "joint_cost": 1203
+     },
+     {
+      "id": "NGRAM:NGS:literal_exception_islands",
+      "joint_cost": 1211
+     },
+     {
+      "id": "NGRAM:NGS:packed_q4_control",
+      "joint_cost": 1265
+     },
+     {
+      "id": "NGRAM:NGS:context_conditioned_lookup",
+      "joint_cost": 1346
+     },
+     {
+      "id": "NGRAM:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "NGRAM:LITERAL",
+      "joint_cost": 2000
+     },
+     {
+      "id": "NGRAM:NGS:clustered_dictionaries",
+      "joint_cost": 2012
+     },
+     {
+      "id": "NGRAM:NGS:semantic_hashing",
+      "joint_cost": 8001
+     },
+     {
+      "id": "NGRAM:NGS:hierarchical_codebooks",
+      "joint_cost": 9031
+     },
+     {
+      "id": "NGRAM:NGS:product_codebooks",
+      "joint_cost": 16050
+     },
+     {
+      "id": "NGRAM:NGS:residual_product_quantization",
+      "joint_cost": 16050
+     },
+     {
+      "id": "NGRAM:NGS:factorized_lookup",
+      "joint_cost": 32000
+     }
+    ],
+    "n_candidates": 13,
+    "n_front": 7,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "NGRAM:LITERAL",
+     "NGRAM:NGS:clustered_dictionaries",
+     "NGRAM:NGS:context_conditioned_lookup",
+     "NGRAM:NGS:factorized_lookup",
+     "NGRAM:NGS:generated_lookup",
+     "NGRAM:NGS:packed_q3_control",
+     "NGRAM:NGS:residual_product_quantization"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "NGRAM",
+   "source_bytes": 102400491520,
+   "workunit_id": "future.flash_schools.NGRAM"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the EMBEDDING organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "EMBEDDING:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "EMBEDDING source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "EMBEDDING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 2564759064,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if a GEMV rewrite of embed beats gather on function \u2014 it should not.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 900,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "embed_lookup",
+     "id": "EMBEDDING:LOOKUP",
+     "independently_schedulable": true,
+     "mechanism": "Keep embed as a gather organ, not a GEMV.",
+     "native_execution_concept": "Row gather. No densify.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LookupProgram",
+     "scar_consulted": true,
+     "scar_distance": "Function is lookup.",
+     "school": "EMBEDDING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 2564759064,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "EMBEDDING:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "EMBEDDING independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "EMBEDDING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 681264126,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "GENERATIVE_UNMEASURED",
+     "capability_risk_rank": 6,
+     "cheapest_falsifier": "Kill if rare-token held-out retrieval fails.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 2000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "embed_rare_generator",
+     "id": "EMBEDDING:RARE-GENERATOR",
+     "independently_schedulable": true,
+     "mechanism": "Hot rows literal; rare rows generated from a smaller program.",
+     "native_execution_concept": "Hot gather + generator. No full table rematerialization.",
+     "not_a_hardware_measurement": true,
+     "program_family": "GeneratedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not n-gram table generation (that is the NGRAM school).",
+     "school": "EMBEDDING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 641189766,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    }
+   ],
+   "census_families": [
+    "embedding_lm_head"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "May share a dictionary with n-gram / lm_head; tying is a hypothesis, not a default.",
+    "dictionary_recurrent_or_conditional_expresses_it": "LookupProgram + DictionaryProgram. GeneratedProgram for rare tokens.",
+    "function_replaceable_not_just_tensor_represented": "Yes: a generator of rows rather than a stored table.",
+    "needs_independent_storage": "Census lumps embedding_lm_head. Input embed is a lookup organ, not a GEMV. Independent of routed experts.",
+    "sparse_residual_restores_capability_difference": "Yes: hot-token islands at higher precision.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN if tied/generated",
+     "ZERO_STORAGE": "OPEN for rare rows"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "embed",
+   "program_families_used": [
+    "GeneratedProgram",
+    "LiteralTensor",
+    "LookupProgram",
+    "QuantTensor"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 2564759064,
+    "joint_cost_order": [
+     {
+      "id": "EMBEDDING:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "EMBEDDING:LOOKUP",
+      "joint_cost": 1900
+     },
+     {
+      "id": "EMBEDDING:LITERAL",
+      "joint_cost": 2000
+     },
+     {
+      "id": "EMBEDDING:RARE-GENERATOR",
+      "joint_cost": 2250
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 4,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "EMBEDDING:LITERAL",
+     "EMBEDDING:LOOKUP",
+     "EMBEDDING:QUANT-Q4",
+     "EMBEDDING:RARE-GENERATOR"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "EMBEDDING",
+   "source_bytes": 2564759064,
+   "workunit_id": "future.flash_schools.EMBEDDING"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the LM_HEAD organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "LM_HEAD:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "LM_HEAD source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "LM_HEAD",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 2564759064,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "LM_HEAD:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "LM_HEAD independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "LM_HEAD",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 681264126,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if terminal logits disagree with untied source on a teacher window.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1100,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "lm_head_embed_tie",
+     "id": "LM_HEAD:TIE-EMBED",
+     "independently_schedulable": true,
+     "mechanism": "Tie lm_head to embed with a small adapter (structured cousin of tying, not a dead expert-share).",
+     "native_execution_concept": "Gather embed row, apply adapter, skip a second vocab matrix when the screen holds.",
+     "not_a_hardware_measurement": true,
+     "program_family": "SharedBasisProgram",
+     "scar_consulted": true,
+     "scar_distance": "Vocab tying, not routed-expert sharing.",
+     "school": "LM_HEAD",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 320594883,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_INDEPENDENT_INFORMATION",
+      "ZERO_STORAGE"
+     ]
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Kill on terminal-logit / argmax disagreement (decode_civilization exact-target predicate).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/decode_civilization.py#lm_head",
+     "flop_milli": 1300,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "lm_head_top_island",
+     "id": "LM_HEAD:TOP-LOGIT-ISLAND",
+     "independently_schedulable": true,
+     "mechanism": "PREMIUM residual on the argmax neighborhood; crushed tail.",
+     "native_execution_concept": "Full GEMV only on a shortlist, or island + tail.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ConditionalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not lm_head_below_q8 as a uniform crush of the island.",
+     "school": "LM_HEAD",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 854919688,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    }
+   ],
+   "census_families": [
+    "embedding_lm_head"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Tying with embed is a live hypothesis; crushing below the terminal island is not (lm_head_precision scar family).",
+    "dictionary_recurrent_or_conditional_expresses_it": "QuantTensor at PREMIUM. Conditional exact islands on top logits.",
+    "function_replaceable_not_just_tensor_represented": "The function is the terminal distribution. Replacing the GEMV with a sampled-softmax program is allowed; dropping it is not.",
+    "needs_independent_storage": "Terminal-logit island (protected). Paid on every target verify. Independent of the MoE bank; MTP may share it.",
+    "sparse_residual_restores_capability_difference": "Yes: keep a high-precision residual on the argmax neighborhood.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "REFUSED",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN if tied to embed",
+     "ZERO_STORAGE": "REFUSED for the island; OPEN for the long tail"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "lm_head",
+   "program_families_used": [
+    "ConditionalProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "SharedBasisProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 2564759064,
+    "joint_cost_order": [
+     {
+      "id": "LM_HEAD:TIE-EMBED",
+      "joint_cost": 1225
+     },
+     {
+      "id": "LM_HEAD:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "LM_HEAD:TOP-LOGIT-ISLAND",
+      "joint_cost": 1633
+     },
+     {
+      "id": "LM_HEAD:LITERAL",
+      "joint_cost": 2000
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 3,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "LM_HEAD:LITERAL",
+     "LM_HEAD:QUANT-Q4",
+     "LM_HEAD:TIE-EMBED"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "LM_HEAD",
+   "source_bytes": 2564759064,
+   "workunit_id": "future.flash_schools.LM_HEAD"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "PROTECTED_ISLAND",
+     "capability_risk_rank": 2,
+     "cheapest_falsifier": "Kill if fused norm is not source-exact.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 600,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "fused_exact_norm",
+     "id": "NORMALIZATION:FUSED-INTO-CONSUMER",
+     "independently_schedulable": true,
+     "mechanism": "Fuse RMSNorm into the consumer projection (ZERO_EXECUTION of standalone norms).",
+     "native_execution_concept": "Exact RMSNorm in the consumer kernel. Weights stay FP32/BF16 island.",
+     "not_a_hardware_measurement": true,
+     "program_family": "FusedPhysicalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Does not zero the weights.",
+     "school": "NORMALIZATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 376320,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the NORMALIZATION organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "NORMALIZATION:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "NORMALIZATION source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "NORMALIZATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 376320,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "NORMALIZATION:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "NORMALIZATION independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "NORMALIZATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 99960,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    }
+   ],
+   "census_families": [
+    "norm"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Do not generate RMSNorm from other organs.",
+    "dictionary_recurrent_or_conditional_expresses_it": "LiteralTensor / exact island. Dictionary would be a category error.",
+    "function_replaceable_not_just_tensor_represented": "Fuse into the consumer (ZERO_EXECUTION of standalone kernels). Do not replace the function.",
+    "needs_independent_storage": "Tiny (norm family ~376 kB) and exact. Independent because RMSNorm semantics are source-exact.",
+    "sparse_residual_restores_capability_difference": "No: a residual on a wrong norm is still a wrong norm.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "OPEN as standalone kernels via fusion",
+     "ZERO_INDEPENDENT_INFORMATION": "REFUSED",
+     "ZERO_STORAGE": "REFUSED"
+    }
+   },
+   "independent": true,
+   "n_candidates": 3,
+   "organ_slug": "whole_model",
+   "program_families_used": [
+    "FusedPhysicalProgram",
+    "LiteralTensor",
+    "QuantTensor"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 376320,
+    "joint_cost_order": [
+     {
+      "id": "NORMALIZATION:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "NORMALIZATION:FUSED-INTO-CONSUMER",
+      "joint_cost": 1600
+     },
+     {
+      "id": "NORMALIZATION:LITERAL",
+      "joint_cost": 2000
+     }
+    ],
+    "n_candidates": 3,
+    "n_front": 3,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "NORMALIZATION:FUSED-INTO-CONSUMER",
+     "NORMALIZATION:LITERAL",
+     "NORMALIZATION:QUANT-Q4"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "NORMALIZATION",
+   "source_bytes": 376320,
+   "workunit_id": "future.flash_schools.NORMALIZATION"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the POSITIONAL_STRUCTURE organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "POSITIONAL_STRUCTURE:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "POSITIONAL_STRUCTURE source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "POSITIONAL_STRUCTURE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 457917440,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "CRUSHED",
+     "capability_risk_class": "ZERO_UNTESTED",
+     "capability_risk_rank": 7,
+     "cheapest_falsifier": "Kill on long-context / order-sensitive tasks. Do not promote on bytes.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 0,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "nope",
+     "id": "POSITIONAL_STRUCTURE:NOPE",
+     "independently_schedulable": true,
+     "mechanism": "No positional program (NoPE). High capability risk; exists so ZeroProgram is schedulable here.",
+     "native_execution_concept": "Skip rotary. Residual stream carries position only if the rest of the net learned it.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ZeroProgram",
+     "scar_consulted": true,
+     "scar_distance": "A function replacement, not a packing.",
+     "school": "POSITIONAL_STRUCTURE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION",
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "POSITIONAL_STRUCTURE:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "POSITIONAL_STRUCTURE independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "POSITIONAL_STRUCTURE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 121634320,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if generated rotary disagrees with source tables on a position grid.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1200,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "rope_closed_form",
+     "id": "POSITIONAL_STRUCTURE:ROPE-FORMULA",
+     "independently_schedulable": true,
+     "mechanism": "RoPE as a closed-form program. Textbook ZERO_STORAGE.",
+     "native_execution_concept": "Compute cos/sin from position index. Do not store a table.",
+     "not_a_hardware_measurement": true,
+     "program_family": "GeneratedProgram",
+     "scar_consulted": true,
+     "scar_distance": "Formula, not a learned codebook.",
+     "school": "POSITIONAL_STRUCTURE",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 4579174,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_INDEPENDENT_INFORMATION"
+     ]
+    }
+   ],
+   "census_families": [
+    "other"
+   ],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "YES: RoPE is generated from a formula. This is the textbook ZERO_STORAGE organ.",
+    "dictionary_recurrent_or_conditional_expresses_it": "GeneratedProgram (closed form). LookupProgram of cos/sin tables is the worse cousin.",
+    "function_replaceable_not_just_tensor_represented": "Yes: replace stored tables with the rotary program.",
+    "needs_independent_storage": "RoPE / position tables often live in 'other'. Independent of content weights; frequently a closed-form program.",
+    "sparse_residual_restores_capability_difference": "Not needed if the formula is exact.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED: rotary still applies",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN (determined by position index)",
+     "ZERO_STORAGE": "OPEN (formula)"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "attention",
+   "program_families_used": [
+    "GeneratedProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "ZeroProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 457917440,
+    "joint_cost_order": [
+     {
+      "id": "POSITIONAL_STRUCTURE:NOPE",
+      "joint_cost": 0
+     },
+     {
+      "id": "POSITIONAL_STRUCTURE:ROPE-FORMULA",
+      "joint_cost": 1209
+     },
+     {
+      "id": "POSITIONAL_STRUCTURE:QUANT-Q4",
+      "joint_cost": 1415
+     },
+     {
+      "id": "POSITIONAL_STRUCTURE:LITERAL",
+      "joint_cost": 2000
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 4,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "POSITIONAL_STRUCTURE:LITERAL",
+     "POSITIONAL_STRUCTURE:NOPE",
+     "POSITIONAL_STRUCTURE:QUANT-Q4",
+     "POSITIONAL_STRUCTURE:ROPE-FORMULA"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "POSITIONAL_STRUCTURE",
+   "source_bytes": 457917440,
+   "workunit_id": "future.flash_schools.POSITIONAL_STRUCTURE"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "CONTROL_FLOW_PREMIUM",
+     "capability_risk_class": "PROTECTED_ISLAND",
+     "capability_risk_rank": 2,
+     "cheapest_falsifier": "decode_civilization.VerificationCorrectnessError if WHAT changes.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/decode_civilization.py",
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "exact_target_decode",
+     "id": "DECODING:EXACT-TARGET-PREDICATE",
+     "independently_schedulable": true,
+     "mechanism": "Decoding program whose verifier is exact-target argmax prefix. Placement of the check may move; WHAT may not.",
+     "native_execution_concept": "Same predicate, cheaper WHERE (fused / device-side / digest).",
+     "not_a_hardware_measurement": true,
+     "program_family": "ConditionalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Ceremony reduction, not correctness weakening.",
+     "school": "DECODING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "STRUCTURE_PRESERVING",
+     "capability_risk_rank": 3,
+     "cheapest_falsifier": "Kill if the product requires sampling (then greedy is a different function).",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 800,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "greedy_decode",
+     "id": "DECODING:GREEDY",
+     "independently_schedulable": true,
+     "mechanism": "Zero sampler state: greedy argmax. Simpler function.",
+     "native_execution_concept": "Argmax of terminal logits. No sampler tables.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ZeroProgram",
+     "scar_consulted": true,
+     "scar_distance": "Function change, scored as such.",
+     "school": "DECODING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE",
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the DECODING organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "DECODING:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "DECODING source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "DECODING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "DECODING:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "DECODING independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "DECODING",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    }
+   ],
+   "census_families": [],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "Greedy argmax is a simpler program than a sampled head. Speculative decoding is a program over the target, not a stored tensor.",
+    "dictionary_recurrent_or_conditional_expresses_it": "ConditionalProgram (accept/reject). LookupProgram for sampler tables.",
+    "function_replaceable_not_just_tensor_represented": "Yes: this organ IS a function. Placement of the exact-target predicate may move; WHAT is checked may not (decode_civilization VerificationCorrectnessError).",
+    "needs_independent_storage": "Not a weight organ. Tokenizer / sampler / accept-reject. Extends decode_civilization: the objective is accepted complete-token cost, not draft throughput.",
+    "sparse_residual_restores_capability_difference": "N/A as weight residual. Rollback is inside the objective.",
+    "three_zeros": {
+     "ZERO_EXECUTION": "CLOSED: a token must be chosen",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN (determined by logits + policy)",
+     "ZERO_STORAGE": "mostly already (function)"
+    }
+   },
+   "independent": true,
+   "n_candidates": 4,
+   "organ_slug": "whole_model",
+   "program_families_used": [
+    "ConditionalProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "ZeroProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 1,
+    "joint_cost_order": [
+     {
+      "id": "DECODING:GREEDY",
+      "joint_cost": 800
+     },
+     {
+      "id": "DECODING:EXACT-TARGET-PREDICATE",
+      "joint_cost": 1000
+     },
+     {
+      "id": "DECODING:LITERAL",
+      "joint_cost": 1000
+     },
+     {
+      "id": "DECODING:QUANT-Q4",
+      "joint_cost": 1150
+     }
+    ],
+    "n_candidates": 4,
+    "n_front": 2,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "DECODING:GREEDY",
+     "DECODING:LITERAL"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "DECODING",
+   "source_bytes": 0,
+   "workunit_id": "future.flash_schools.DECODING"
+  },
+  {
+   "candidates": [
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONDITIONAL",
+     "capability_risk_rank": 5,
+     "cheapest_falsifier": "Kill if accepted complete-token cost (relative units) exceeds the no-speculation control. Do not cite draft TPS.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/decode_civilization.py",
+     "flop_milli": 1500,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "mtp_draft_verify",
+     "id": "MTP_SPECULATION:DRAFT-VERIFY-ROLLBACK",
+     "independently_schedulable": true,
+     "mechanism": "Draft / verify / rollback with the same exact-target predicate. Rollback is inside the objective.",
+     "native_execution_concept": "Explicit accept/reject/state rollback accounting (FPGA organ map mtp_draft_verify_rollback).",
+     "not_a_hardware_measurement": true,
+     "program_family": "ConditionalProgram",
+     "scar_consulted": true,
+     "scar_distance": "Function school; MTP expert bytes stay in ROUTED_EXPERTS.",
+     "school": "MTP_SPECULATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "If a later funnel cannot even load the MTP_SPECULATION organ as source BF16, the school has no control. Kill the lane, not the organ.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "literal_control",
+     "id": "MTP_SPECULATION:LITERAL",
+     "independently_schedulable": true,
+     "mechanism": "MTP_SPECULATION source tensor as LiteralTensor (analytical control).",
+     "native_execution_concept": "Consume source values. No rematerialization because nothing was packed.",
+     "not_a_hardware_measurement": true,
+     "program_family": "LiteralTensor",
+     "scar_consulted": true,
+     "scar_distance": "Control. Not a sharing hypothesis.",
+     "school": "MTP_SPECULATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_LITERAL",
+     "capability_risk_rank": 0,
+     "cheapest_falsifier": "Not a kill; this IS the control. Speculation that wins draft TPS and loses accepted-token cost is refused.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": "tools/future/decode_civilization.py",
+     "flop_milli": 1000,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "no_mtp_baseline",
+     "id": "MTP_SPECULATION:NO-SPECULATION",
+     "independently_schedulable": true,
+     "mechanism": "No MTP. The baseline every speculation program must beat on accepted-token cost.",
+     "native_execution_concept": "Target forward only.",
+     "not_a_hardware_measurement": true,
+     "program_family": "ZeroProgram",
+     "scar_consulted": true,
+     "scar_distance": "Draft TPS is DIAGNOSTIC_RELATIVE and cannot promote.",
+     "school": "MTP_SPECULATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_EXECUTION"
+     ]
+    },
+    {
+     "bit_class": "ORDINARY",
+     "capability_risk_class": "CONTROL_QUANT",
+     "capability_risk_rank": 1,
+     "cheapest_falsifier": "Kill QuantTensor as the *mission* if it is the only survivor: the school exists to find a PROGRAM, not a packing. Keep it as a control that later programs must beat on joint cost.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1150,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "independent_q4_control",
+     "id": "MTP_SPECULATION:QUANT-Q4",
+     "independently_schedulable": true,
+     "mechanism": "MTP_SPECULATION independent group-64 Q4 QuantTensor control.",
+     "native_execution_concept": "Packed GEMV / gather with fused dequant. Never write dense W back.",
+     "not_a_hardware_measurement": true,
+     "program_family": "QuantTensor",
+     "scar_consulted": true,
+     "scar_distance": "Independent Q4 is a control, not a Gravity program. Not uniform_subbit.",
+     "school": "MTP_SPECULATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": []
+    },
+    {
+     "bit_class": "PREMIUM",
+     "capability_risk_class": "PROTECTED_ISLAND",
+     "capability_risk_rank": 2,
+     "cheapest_falsifier": "Kill if rollback desynchronizes KV / DeltaNet / HC state.",
+     "evidence_class": "STATIC_ONLY",
+     "extends": null,
+     "flop_milli": 1400,
+     "forbids_dense_rematerialization": true,
+     "hypothesis_family": "mtp_rollback_state",
+     "id": "MTP_SPECULATION:ROLLBACK-STATE",
+     "independently_schedulable": true,
+     "mechanism": "Speculation as a state program with explicit rollback, not a second copy of weights.",
+     "native_execution_concept": "Checkpoint-and-restore of recurrent and KV state on reject.",
+     "not_a_hardware_measurement": true,
+     "program_family": "RecurrentStateProgram",
+     "scar_consulted": true,
+     "scar_distance": "Not a second expert bank.",
+     "school": "MTP_SPECULATION",
+     "status": "HYPOTHESIS_UNFITTED",
+     "storage_bytes": 0,
+     "storage_flop_are_structural_estimates": true,
+     "zeros_targeted": [
+      "ZERO_STORAGE"
+     ]
+    }
+   ],
+   "census_families": [],
+   "elimination": {
+    "can_be_generated_predicted_or_shared": "ZeroProgram = no speculation (the baseline). Speculation is a program that must beat that baseline on accepted-token cost.",
+    "dictionary_recurrent_or_conditional_expresses_it": "Conditional accept/reject. RecurrentStateProgram for rollback.",
+    "function_replaceable_not_just_tensor_represented": "Yes: replace extra forwards with a draft program whose verify is the same predicate. Raw draft TPS is a diagnostic that can win while accepted-token cost loses.",
+    "needs_independent_storage": "MTP expert tensors are indexed inside routed_experts (census largest_tensors includes mtp.layers.*.mlp.experts.*). This school does not re-quantize those bytes; it searches the draft / verify / rollback FUNCTION.",
+    "sparse_residual_restores_capability_difference": "N/A as expert residual (that's ROUTED_EXPERTS).",
+    "three_zeros": {
+     "ZERO_EXECUTION": "OPEN: ZeroProgram (no MTP) is a legal candidate",
+     "ZERO_INDEPENDENT_INFORMATION": "OPEN",
+     "ZERO_STORAGE": "N/A (function school)"
+    }
+   },
+   "independent": true,
+   "n_candidates": 5,
+   "organ_slug": "whole_model",
+   "program_families_used": [
+    "ConditionalProgram",
+    "LiteralTensor",
+    "QuantTensor",
+    "RecurrentStateProgram",
+    "ZeroProgram"
+   ],
+   "ranking": {
+    "axes": [
+     "storage_bytes",
+     "flop_milli",
+     "capability_risk_rank"
+    ],
+    "control_storage_bytes": 1,
+    "joint_cost_order": [
+     {
+      "id": "MTP_SPECULATION:LITERAL",
+      "joint_cost": 1000
+     },
+     {
+      "id": "MTP_SPECULATION:NO-SPECULATION",
+      "joint_cost": 1000
+     },
+     {
+      "id": "MTP_SPECULATION:QUANT-Q4",
+      "joint_cost": 1150
+     },
+     {
+      "id": "MTP_SPECULATION:ROLLBACK-STATE",
+      "joint_cost": 1400
+     },
+     {
+      "id": "MTP_SPECULATION:DRAFT-VERIFY-ROLLBACK",
+      "joint_cost": 1500
+     }
+    ],
+    "n_candidates": 5,
+    "n_front": 2,
+    "note": "A candidate that halves storage_bytes and triples flop_milli loses on joint_cost to LiteralTensor (3500 vs 2000 when the control is 1.0x/1.0x) and does not Pareto-dominate it.",
+    "pareto_front_ids": [
+     "MTP_SPECULATION:LITERAL",
+     "MTP_SPECULATION:NO-SPECULATION"
+    ],
+    "ranking_rule": "pareto_storage_flop_capability_plus_joint_cost",
+    "scalar_winner": null,
+    "storage_only": "REFUSED"
+   },
+   "refused_at_emit": [],
+   "schedulable_alone": true,
+   "school": "MTP_SPECULATION",
+   "source_bytes": 0,
+   "workunit_id": "future.flash_schools.MTP_SPECULATION"
+  }
+ ],
+ "scoring": {
+  "axes": [
+   "storage_bytes",
+   "flop_milli",
+   "capability_risk_rank"
+  ],
+  "flop_milli_unit": "1000 = 1.0x LiteralTensor structural FLOP (not a measured FLOP)",
+  "rule": "Pareto on storage_bytes, flop_milli, capability_risk_rank; joint_cost = storage_ratio_milli + flop_milli",
+  "storage_only": "REFUSED"
+ },
+ "seal_sha256": "cb9d704b395de23187d834ab6d8582b1e74a2b3b1d73b9f39310354dbe358211",
+ "three_zeros": [
+  "ZERO_STORAGE",
+  "ZERO_INDEPENDENT_INFORMATION",
+  "ZERO_EXECUTION"
+ ],
+ "version": 1,
+ "workunits": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "ROUTED_EXPERTS"
+   ],
+   "content_hash": "cc9934a42d0d46d35011d4c51107714e72a04310d749645ed90f3d3dbc16c90e",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school ROUTED_EXPERTS: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.ROUTED_EXPERTS",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "ROUTED_EXPERTS",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.ROUTED_EXPERTS.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "SHARED_EXPERTS"
+   ],
+   "content_hash": "e558e58e7c54de8fa05a94548b3828670f580cd2ea8eebc1de023b2e513c30ef",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school SHARED_EXPERTS: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.SHARED_EXPERTS",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "SHARED_EXPERTS",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.SHARED_EXPERTS.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "ROUTER"
+   ],
+   "content_hash": "167cd02aff00baf35474b7e11a8751517fafb2173fdfffb010a4c23d081267c9",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school ROUTER: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.ROUTER",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "ROUTER",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.ROUTER.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "HC_HYPERCONNECTION"
+   ],
+   "content_hash": "5df62759817d95a1c28d41f774898cf8bc1be15c76179f44ebf2084eadf80225",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school HC_HYPERCONNECTION: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.HC_HYPERCONNECTION",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "HC_HYPERCONNECTION",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.HC_HYPERCONNECTION.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "DELTANET_RECURRENT_STATE"
+   ],
+   "content_hash": "e468d5f47d19634f40ac6170db0ba9b151a503241f7335a2c443ae91814b866d",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school DELTANET_RECURRENT_STATE: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.DELTANET_RECURRENT_STATE",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "DELTANET_RECURRENT_STATE",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.DELTANET_RECURRENT_STATE.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "FULL_ATTENTION"
+   ],
+   "content_hash": "6536dd01aa836f11bd4da3a757b1c531f57b393bcd1f295d89a61124f43a2b8e",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school FULL_ATTENTION: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.FULL_ATTENTION",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "FULL_ATTENTION",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.FULL_ATTENTION.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "KV_STATE"
+   ],
+   "content_hash": "cf2a7c6a1e8c7677c4fe4b10b8fd5c89d401b15ebca3aa8158e48f018238daee",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school KV_STATE: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.KV_STATE",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "KV_STATE",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.KV_STATE.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "NGRAM"
+   ],
+   "content_hash": "95bcd6bd5b89eaf6567965c7c88934b68f7853ab4fb7637f82c3fd0a0346488c",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school NGRAM: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.NGRAM",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "NGRAM",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.NGRAM.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "EMBEDDING"
+   ],
+   "content_hash": "c384ac6016c6ccf8145740cb471685b6923dce1f693c55eae048d0c1b165fd62",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school EMBEDDING: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.EMBEDDING",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "EMBEDDING",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.EMBEDDING.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "LM_HEAD"
+   ],
+   "content_hash": "4988994085cff08332815e5714a02bc48bc95349ca44bb355c8d66e48594faa6",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school LM_HEAD: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.LM_HEAD",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "LM_HEAD",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.LM_HEAD.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "NORMALIZATION"
+   ],
+   "content_hash": "a82e5185b1d5ec506abcee6fa79349d35ba1eb30cba27f9a9b4f54a3a24bc5f5",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school NORMALIZATION: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.NORMALIZATION",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "NORMALIZATION",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.NORMALIZATION.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "POSITIONAL_STRUCTURE"
+   ],
+   "content_hash": "4beb9346000f2d63852bbae5aaec7b7c9685c02cafb5f10b5330493af80bbc3c",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school POSITIONAL_STRUCTURE: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.POSITIONAL_STRUCTURE",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "POSITIONAL_STRUCTURE",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.POSITIONAL_STRUCTURE.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "DECODING"
+   ],
+   "content_hash": "7db6e42866dee5347d6edaf0d5db39285d975cb519c146c71544c4ce6539a5bc",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school DECODING: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.DECODING",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "DECODING",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.DECODING.joint_pareto",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_schools.py",
+    "--school",
+    "MTP_SPECULATION"
+   ],
+   "content_hash": "7ae088f5ca0870bd6ab34ca9d932dc5e167963ee4560f04c81ac676960910612",
+   "dependencies": [],
+   "description": "Independently schedule Flash Gravity school MTP_SPECULATION: emit program candidates with cheapest falsifiers, consult the negative index, score storage WITH compute, write STATIC_ONLY evidence.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_schools.MTP_SPECULATION",
+   "output_receipt_path": "receipts/future/FLASH_ORGAN_SCHOOLS.json",
+   "preferred_backend": null,
+   "provider": "tools.future.flash_schools",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "gravity_organ_school",
+   "running_at": null,
+   "school": "MTP_SPECULATION",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_schools.MTP_SPECULATION.joint_pareto",
+   "workspace": "repo-root"
+  }
+ ]
+}

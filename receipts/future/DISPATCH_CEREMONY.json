@@ -1,0 +1,355 @@
+{
+ "accounting_across_prompt_lengths": [
+  {
+   "complete_over_decode": 1.0,
+   "complete_rate": 1.0,
+   "decode": 15.0,
+   "decode_rate": 1.0,
+   "decode_share_of_wall": 0.9375,
+   "decode_steps": 15,
+   "emitting_prefill_steps": 1,
+   "generated": 16,
+   "interphase": 0.0,
+   "interphase_share_of_wall": 0.0,
+   "non_emitting_prefill_steps": 0,
+   "prefill": 1.0,
+   "prefill_share_of_wall": 0.0625,
+   "prefill_steps": 1,
+   "prompt_len": 1,
+   "step_cost": 1.0,
+   "wall": 16.0
+  },
+  {
+   "complete_over_decode": 0.7692307692307693,
+   "complete_rate": 0.7692307692307693,
+   "decode": 39.0,
+   "decode_rate": 1.0,
+   "decode_share_of_wall": 0.75,
+   "decode_steps": 39,
+   "emitting_prefill_steps": 1,
+   "generated": 40,
+   "interphase": 0.0,
+   "interphase_share_of_wall": 0.0,
+   "non_emitting_prefill_steps": 12,
+   "prefill": 13.0,
+   "prefill_share_of_wall": 0.25,
+   "prefill_steps": 13,
+   "prompt_len": 13,
+   "step_cost": 1.0,
+   "wall": 52.0
+  },
+  {
+   "complete_over_decode": 0.3404255319148936,
+   "complete_rate": 0.3404255319148936,
+   "decode": 15.0,
+   "decode_rate": 1.0,
+   "decode_share_of_wall": 0.3191489361702128,
+   "decode_steps": 15,
+   "emitting_prefill_steps": 1,
+   "generated": 16,
+   "interphase": 0.0,
+   "interphase_share_of_wall": 0.0,
+   "non_emitting_prefill_steps": 31,
+   "prefill": 32.0,
+   "prefill_share_of_wall": 0.6808510638297872,
+   "prefill_steps": 32,
+   "prompt_len": 32,
+   "step_cost": 1.0,
+   "wall": 47.0
+  },
+  {
+   "complete_over_decode": 0.05925925925925926,
+   "complete_rate": 0.05925925925925926,
+   "decode": 7.0,
+   "decode_rate": 1.0,
+   "decode_share_of_wall": 0.05185185185185185,
+   "decode_steps": 7,
+   "emitting_prefill_steps": 1,
+   "generated": 8,
+   "interphase": 0.0,
+   "interphase_share_of_wall": 0.0,
+   "non_emitting_prefill_steps": 127,
+   "prefill": 128.0,
+   "prefill_share_of_wall": 0.9481481481481482,
+   "prefill_steps": 128,
+   "prompt_len": 128,
+   "step_cost": 1.0,
+   "wall": 135.0
+  },
+  {
+   "complete_over_decode": 0.4,
+   "complete_rate": 0.4,
+   "decode": 7.0,
+   "decode_rate": 1.0,
+   "decode_share_of_wall": 0.35,
+   "decode_steps": 7,
+   "emitting_prefill_steps": 1,
+   "generated": 8,
+   "interphase": 0.0,
+   "interphase_share_of_wall": 0.0,
+   "non_emitting_prefill_steps": 12,
+   "prefill": 13.0,
+   "prefill_share_of_wall": 0.65,
+   "prefill_steps": 13,
+   "prompt_len": 13,
+   "step_cost": 1.0,
+   "wall": 20.0
+  },
+  {
+   "complete_over_decode": 0.8421052631578947,
+   "complete_rate": 0.8421052631578947,
+   "decode": 63.0,
+   "decode_rate": 1.0,
+   "decode_share_of_wall": 0.8289473684210527,
+   "decode_steps": 63,
+   "emitting_prefill_steps": 1,
+   "generated": 64,
+   "interphase": 0.0,
+   "interphase_share_of_wall": 0.0,
+   "non_emitting_prefill_steps": 12,
+   "prefill": 13.0,
+   "prefill_share_of_wall": 0.17105263157894737,
+   "prefill_steps": 13,
+   "prompt_len": 13,
+   "step_cost": 1.0,
+   "wall": 76.0
+  }
+ ],
+ "angle": "complete-vs-decode dispatch/encoder ceremony",
+ "angle_falsified_as_the_quarter": true,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:53:01Z",
+  "recorded_by": "tools/future/dispatch_ceremony.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. SELF_MEASURED_DIRTY ratios in self_timing are the generate_greedy Instant identity applied to a quoted pair. They cannot promote.",
+ "claim_class": "STATIC_ONLY",
+ "crate": {
+  "hybrid": {
+   "default_serial_encoder_off": true,
+   "default_skip_terminal_on": true,
+   "encode_full_token_still_runs_terminal": true,
+   "encode_prefill_body_omits_terminal": true,
+   "last_prompt_still_full_step": true,
+   "missing": [],
+   "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "required_present": true
+  },
+  "levers": {
+   "HAWKING_QWEN38_PREFILL_SKIP_TERMINAL": {
+    "default": "on",
+    "off_token": "0",
+    "role": "A/B control for full-terminal prefill"
+   },
+   "HAWKING_QWEN38_SERIAL_TOKEN_ENCODER": {
+    "default": "off",
+    "on_token": "1",
+    "role": "opt-in; idle-gap already showed 580\u21921 does not separate"
+   }
+  },
+  "metal": {
+   "begin_serial_group_exists": true,
+   "comment_names_idle_gap": true,
+   "commit_no_wait_exists": true,
+   "did_not_enable_serial_by_default": true,
+   "path": "crates/hawking-core/src/metal/mod.rs",
+   "production_inner_skips_untraced_labels": true
+  },
+  "resident": {
+   "complete_tps_uses_outer_wall": true,
+   "decode_tps_uses_decode_wall": true,
+   "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+   "protocol": "hawking.qwen38.resident.v1",
+   "reports_complete_tps": true,
+   "reports_decode_tps": true,
+   "reports_decode_wall_ns": true,
+   "reports_generation_wall_ns": true,
+   "reports_prefill_wall_ns": true,
+   "reports_wall_ns": true,
+   "unmodified_this_lane": true
+  },
+  "shaders": {
+   "reason": "No kernel change. Prefill skip is a host encode-graph choice (omit lm_head + argmax dispatches). Encoder labels are host Metal API calls.",
+   "touched": false
+  }
+ },
+ "crate_ok": true,
+ "evidence_class": "STATIC_ONLY",
+ "finding": "The complete-vs-decode gap is teacher-forced prefill amortized over generated tokens, not command-buffer or encoder ceremony. Interphase is not the quarter. Serial-encoder ceremony was already attacked and did not separate. Decode TPS is L40/L41 territory. Removable work that was still on the prefill path: lm_head+argmax on non-emitting prompt steps, and production encoder labels without a physical probe.",
+ "gaps_closed": [
+  "Non-emitting prefill no longer runs lm_head + argmax.",
+  "Production TokenCommandBuffer dispatches no longer set_label without a physical-trace probe.",
+  "Serial-encoder and skip-terminal env levers refuse unrecognised values instead of silently falling through."
+ ],
+ "gpu_authority": false,
+ "lane": "L42",
+ "lm_head_skip": {
+  "active_weight_bytes_per_token": 9878901136,
+  "claim_boundary": "Arithmetic on the catalog shapes, not a measured GPU duration. The skip is bit-identity-preserving if lm_head/argmax do not write KV or DeltaNet; they write logits and sampled only.",
+  "complete_wall_fraction_saved_if_q4": 0.014849811063502014,
+  "hidden": 5120,
+  "lm_head_share_of_active_bytes": 0.06434918127517539,
+  "non_emitting_prefill_steps_on_quoted_prompt": 12,
+  "prefill_gpu_fraction_saved_if_q4": 0.059399244254008055,
+  "q4_bytes_if_group_absmax": 635699200.0,
+  "vocab": 248320
+ },
+ "negative_findings": [
+  "Serial compute encoder covering the token graph did not separate complete-wall (GPU_IDLE_GAP_LEDGER, 7 reps, overlapping ranges).",
+  "A removed dispatch that moves no extra bytes is ~1 us (ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE). Removing hundreds of encoder creates is not the 25% complete-vs-decode gap.",
+  "wall \u2212 prefill \u2212 decode (interphase) is not a quarter of complete-token time; it is the Instant gap between two loops."
+ ],
+ "parity": {
+  "gate": "assert_token_id_parity",
+  "live_gpu_pairs": null,
+  "live_gpu_reason": "STATIC_ONLY --build. The gate is the comparison: it passes on identical ids across three prompt lengths and fails when one id is perturbed. A live A/B is HAWKING_QWEN38_PREFILL_SKIP_TERMINAL 0 vs unset on the same resident.",
+  "negative_control": {
+   "after": [
+    10,
+    20,
+    30,
+    41
+   ],
+   "before": [
+    10,
+    20,
+    30,
+    40
+   ],
+   "fires": true,
+   "kind": "perturb_one_token_id",
+   "message": "token-id parity broken on 'negative-control': len 4 vs 4; first_diff_index=3; before=[10, 20, 30, 40] after=[10, 20, 30, 41]"
+  },
+  "prompts": [
+   {
+    "dense_w_materialized": 0,
+    "fallbacks": 0,
+    "ids_equal": true,
+    "label": "short",
+    "n_ids": 8,
+    "prompt": "Hi",
+    "prompt_len": 1
+   },
+   {
+    "dense_w_materialized": 0,
+    "fallbacks": 0,
+    "ids_equal": true,
+    "label": "thirteen",
+    "n_ids": 8,
+    "prompt": "Explain, briefly, what a compiler basic block is.",
+    "prompt_len": 13
+   },
+   {
+    "dense_w_materialized": 0,
+    "fallbacks": 0,
+    "ids_equal": true,
+    "label": "long",
+    "n_ids": 24,
+    "prompt": "Write a careful account of how a compiler turns a for-loop into basic blocks and then into machine code, at length.",
+    "prompt_len": 32
+   }
+  ]
+ },
+ "quoted_gap": {
+  "abs_delta_vs_quoted_complete": 0.10769230769231086,
+  "identity": {
+   "complete_over_decode": 0.7692307692307693,
+   "complete_rate": 0.7692307692307693,
+   "decode": 39.0,
+   "decode_rate": 1.0,
+   "decode_share_of_wall": 0.75,
+   "decode_steps": 39,
+   "emitting_prefill_steps": 1,
+   "generated": 40,
+   "interphase": 0.0,
+   "interphase_share_of_wall": 0.0,
+   "non_emitting_prefill_steps": 12,
+   "prefill": 13.0,
+   "prefill_share_of_wall": 0.25,
+   "prefill_steps": 13,
+   "prompt_len": 13,
+   "step_cost": 1.0,
+   "wall": 52.0
+  },
+  "implied_generated": 40,
+  "interphase_is_not_the_quarter": true,
+  "predicted_complete_rate": 27.30769230769231,
+  "prefill_is_the_quarter": true,
+  "quoted_complete_rate": 27.2,
+  "quoted_decode_rate": 35.5,
+  "quoted_prompt_len": 13,
+  "reading": "complete/decode = generated / (prompt_len + generated - 1) when every step costs the same and interphase is zero. 13 and 40 give 40/52 = 0.769, and 0.769 * 35.5 = 27.3, which is the quoted 27.2. The quarter is teacher-forced prefill."
+ },
+ "recorded_by": "tools/future/dispatch_ceremony.py",
+ "recovered": {
+  "atlas_presence": "GIT_HEAD",
+  "dispatch_price": {
+   "presence": "GIT_HEAD",
+   "reading": "G079 carried an open question: why does a synthetic arm price a removed dispatch at 8.6 us while production prices the gate_up pair at 17.35 us. The answer is that NEITHER NUMBER IS A DISPATCH PRICE. 'us per removed dispatch' silently bundles the dispatch overhead with whatever WORK moved when the dispatch was removed, and on this machine the work dominates by two orders of magnitude.",
+   "recovered": true,
+   "source": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json",
+   "us_per_removed_dispatch_when_no_work_moves": 1.042
+  },
+  "gpu_idle_gap": {
+   "attack_note": "serial-encoder attack on command construction did not separate from the per-dispatch-encoder no-op on complete_wall_ns across 7 reps. Host command construction is a few percent of complete-wall; GPU_NS is the rest and is bandwidth-bound. Intra-CB dependency idle remains ABSENT (atDispatchBoundary=false; boundary samples changed greedy ids).",
+   "command_construction_median_ms": 0.7263885428571428,
+   "one_line": "Largest classified GPU-idle cause is command construction (0.726 ms/token). Attack on command construction: NOT SEPARATED. serial-encoder attack on command construction did not separate from the per-dispatch-encoder no-op on complete_wall_ns across 7 reps. Host command construction is a few percent of complete-wall; GPU_NS is the rest and is bandwidth-bound. Intra-CB dependency idle remains ABSENT (atDispatchBoundary=false; boundary samples changed greedy ids).",
+   "presence": "GIT_HEAD",
+   "reading": "Largest classified GPU-idle cause was command construction, a few percent of complete-wall. encoder_count 580\u21921 did not separate. That is the ceremony attack this lane would otherwise re-run.",
+   "recovered": true,
+   "serial_encoder_separated": false,
+   "serial_faster": true,
+   "source": "receipts/headless/GPU_IDLE_GAP_LEDGER.json",
+   "token_ids_unchanged": true
+  },
+  "gravity_token_graph": {
+   "collapses_command_buffers": true,
+   "path": "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+   "presence": "ON_DISK",
+   "reading": "DeepSeek V4 native token graph already collapses dispatch topology (ordered / serial group, batched expert). Qwen38 production is already one command buffer per token; the remaining 580 are encoders inside that CB. Collapsing those did not separate complete-wall (GPU_IDLE_GAP_LEDGER)."
+  }
+ },
+ "recovered_implementation": [
+  "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+  "crates/hawking-core/src/metal/mod.rs",
+  "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+  "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
+  "receipts/headless/GPU_IDLE_GAP_LEDGER.json",
+  "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json"
+ ],
+ "resident_callable": {
+  "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+  "generate_greedy_is_what_it_calls": true,
+  "protocol": "hawking.qwen38.resident.v1",
+  "this_lane_did_not_modify_the_resident_example": true
+ },
+ "schema": "hawking.future.dispatch_ceremony.v1",
+ "seal_sha256": "aa3e1ca9bb3c048f4eea89db00a6acd3da5be1c38ddbc6c290de54bcff174beb",
+ "self_timing": {
+  "abs_delta_vs_quoted_complete": 0.10769230769231086,
+  "accounting_complete_over_decode": 0.7692307692307693,
+  "accounting_decode_share": 0.75,
+  "accounting_interphase_share": 0.0,
+  "accounting_prefill_share": 0.25,
+  "contamination": {
+   "class": "SELF_MEASURED_DIRTY",
+   "live_campaign_declared": true
+  },
+  "evidence_class": "SELF_MEASURED_DIRTY",
+  "not_protected_absolute": true,
+  "numbers_decide_nothing": true,
+  "paired_before_after": "Skip-terminal vs full-terminal is the A/B. Same binary, env HAWKING_QWEN38_PREFILL_SKIP_TERMINAL=0 restores the before arm. This --build did not run that A/B on the GPU.",
+  "predicted_complete_rate_from_quoted_decode": 27.30769230769231,
+  "quoted_complete_rate": 27.2,
+  "ran_live_resident": false,
+  "reason": "This host holds no protected lease. --build does not start the 27B resident. Ratios below are the Instant identity of generate_greedy applied to the quoted 13-token / 35.5 vs 27.2 pair. They rank and prune; they qualify nothing.",
+  "repeats": "identity \u2014 not a wall-clock repeat"
+ },
+ "version": 1,
+ "where_decode_tps_is": "L40 catalog addressing / L41 kernel geometry",
+ "where_the_quarter_is": "teacher-forced prefill (generate_greedy Instant identity)"
+}

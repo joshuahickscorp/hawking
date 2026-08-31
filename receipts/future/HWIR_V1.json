@@ -1,0 +1,910 @@
+{
+ "atlas": {
+  "git_head_has_file": false,
+  "on_disk": true,
+  "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+  "recovered_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+  "recovered_from": "parent checkout /Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+  "schema": "hawking.accelerator.architecture_atlas.v1"
+ },
+ "backend_neutral_primitives": [
+  "PersistentPhysicalRegion",
+  "StationaryRepresentation",
+  "AsyncPrefetch",
+  "DoubleBufferedTile",
+  "SpatialPipeline",
+  "FusedDecodeCompute",
+  "DirectRoutedAccumulate",
+  "LocalStateMachine",
+  "SemanticTransportEdge",
+  "TiledProjection",
+  "LayoutTransform",
+  "SparseSkip",
+  "ConditionalPhysicalProgram",
+  "GraphReplay",
+  "CollectiveRegion",
+  "MoveOrRecompute",
+  "MemoryTierIdentity"
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:46:36Z",
+  "recorded_by": "tools/future/hwir.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar HWIR artifact. No FPGA board, bitstream, timing, or hardware measurement.",
+ "frame_kinds": [
+  "activation",
+  "partial_reduction",
+  "compact_representation_fragment",
+  "state",
+  "codebook_id",
+  "sparse_residual"
+ ],
+ "gaps_closed": [
+  "seven node kinds with the attributes each actually needs",
+  "typed stream edges with semantic frame + optional in-transit transform",
+  "physical attributes: arithmetic width, tile shape, banking, HBM channel, resource class, DFX boundary",
+  "byte-stable to_json/from_json (sorted keys, no wall-clock in hashed content)",
+  "validate() rejects source-tensor identity / dense rematerialization, dangling and type-mismatched edges, over-budget footprints, unowned state",
+  "from_organ_map() lowers a real Flash/Qwen27 organ into a valid HWIR graph",
+  "negative controls that actually fire"
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "hwir_hypotheses": [
+  {
+   "behavior_id": "move_or_recompute",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "costed_dependency_queries",
+    "device_placement": "topology_aware",
+    "execution_policy": "measured_complete_wall"
+   },
+   "primitive": "MoveOrRecompute",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "persistent_physical_region",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy.process": "long_lived_executor",
+    "residency.state": "sequence",
+    "residency.weights": "resident"
+   },
+   "primitive": "PersistentPhysicalRegion",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "fused_decode_compute",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "spatial_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "projection_plus_decode",
+    "memory": "no_dense_rematerialization",
+    "representation": "native_decode"
+   },
+   "primitive": "FusedDecodeCompute",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "local_state_machine",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "spatial_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy": "fixed_state_transitions",
+    "state": "authoritative_resident_owner",
+    "synchronization": "state_update_edges"
+   },
+   "primitive": "LocalStateMachine",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "graph_replay",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy.dynamic_slots": [
+     "token",
+     "position",
+     "route",
+     "sampling"
+    ],
+    "execution_policy.pipeline_state": "compile_once_reuse"
+   },
+   "primitive": "GraphReplay",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "tile_and_lane_mapping",
+    "precision": "representation_grouping",
+    "representation": "layout_algebra"
+   },
+   "primitive": "LayoutTransform",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "static_dynamic_skeleton",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "precomputed",
+    "execution_policy": "static_skeleton_plus_dynamic_slots",
+    "synchronization": "precomputed_where_safe"
+   },
+   "primitive": "ConditionalPhysicalProgram",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "stationary_representation",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "memory": "tier_is_executable_identity",
+    "representation": "packed_native",
+    "residency": "stationarity_contract"
+   },
+   "primitive": "StationaryRepresentation",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "semantic_transport",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "typed_transport_edges",
+    "device_placement": "topology_aware",
+    "synchronization": "edge_ownership_and_order"
+   },
+   "primitive": "SemanticTransportEdge",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "collective_region",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "semantic_transport",
+    "device_placement": "topology_aware",
+    "synchronization": "collective_algorithm"
+   },
+   "primitive": "CollectiveRegion",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "async_double_buffer",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy": "overlap_when_measured",
+    "memory": "double_buffered_tiles",
+    "synchronization": "producer_consumer_fences"
+   },
+   "primitive": "DoubleBufferedTile",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "spatial_local_pipeline",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "spatial_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "spatial_regions",
+    "data": "semantic_edges",
+    "memory": "local_intermediates"
+   },
+   "primitive": "SpatialPipeline",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "direct_routed_accumulate",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "route_then_native_expert",
+    "data": "selected_payload_only",
+    "state": "route_metadata_resident"
+   },
+   "primitive": "DirectRoutedAccumulate",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "sparse_conditional_execution",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "conditional_regions",
+    "data": "sparse_indices_and_payloads",
+    "qualification": "parity_required"
+   },
+   "primitive": "SparseSkip",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "npu_regular_island",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "explicit_transfer_edges",
+    "device_placement": "organ_level_choice",
+    "qualification": "public_api_and_measurement"
+   },
+   "primitive": "ConditionalPhysicalProgram",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  }
+ ],
+ "hypotheses_source": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+ "in_transit_transforms": [
+  "identity",
+  "quantize",
+  "transpose",
+  "reduce",
+  "checksum_digest",
+  "pack",
+  "unpack"
+ ],
+ "lowered": {
+  "device_budget": null,
+  "edge_count": 5,
+  "fingerprint": "49f7746a105c8d34e19eb94e77efc72a162e27f534b19fe94f37f351040ddc9b",
+  "frame_kinds": [
+   "activation",
+   "compact_representation_fragment",
+   "partial_reduction"
+  ],
+  "graph": {
+   "device_budget": null,
+   "edges": [
+    {
+     "dst": "red.expert_bank.partial",
+     "dst_port": "in",
+     "frame_kind": "partial_reduction",
+     "id": "e.expert_bank.partial",
+     "in_transit_transform": "identity",
+     "src": "cmp.expert_bank.body",
+     "src_port": "out"
+    },
+    {
+     "dst": "cmp.expert_bank.body",
+     "dst_port": "in_rep",
+     "frame_kind": "activation",
+     "id": "e.expert_bank.decoded",
+     "in_transit_transform": "identity",
+     "src": "dec.expert_bank.native",
+     "src_port": "out"
+    },
+    {
+     "dst": "cmp.expert_bank.body",
+     "dst_port": "in_act",
+     "frame_kind": "activation",
+     "id": "e.expert_bank.act",
+     "in_transit_transform": "identity",
+     "src": "dma.expert_bank.in",
+     "src_port": "out"
+    },
+    {
+     "dst": "dec.expert_bank.native",
+     "dst_port": "in",
+     "frame_kind": "compact_representation_fragment",
+     "id": "e.expert_bank.compact",
+     "in_transit_transform": "identity",
+     "src": "mem.expert_bank.shards",
+     "src_port": "out"
+    },
+    {
+     "dst": "dma.expert_bank.out",
+     "dst_port": "in",
+     "frame_kind": "partial_reduction",
+     "id": "e.expert_bank.egress",
+     "in_transit_transform": "identity",
+     "src": "red.expert_bank.partial",
+     "src_port": "out"
+    }
+   ],
+   "fingerprint": "49f7746a105c8d34e19eb94e77efc72a162e27f534b19fe94f37f351040ddc9b",
+   "model": "flash-next",
+   "nodes": [
+    {
+     "assumes_source_tensor_identity": false,
+     "dense_weight_materialization": false,
+     "id": "cmp.expert_bank.body",
+     "inputs": {
+      "in_act": "activation",
+      "in_rep": "activation"
+     },
+     "kind": "compute",
+     "lifetime": "token",
+     "mapping": "HBM-resident selected expert subsets with native NF GEMV",
+     "organ": "expert_bank",
+     "outputs": {
+      "out": "partial_reduction"
+     },
+     "owner": null,
+     "per_token_transfer": null,
+     "physical": {
+      "arithmetic_width": "nf",
+      "banking": null,
+      "dfx_module_boundary": "expert_bank",
+      "hbm_channel": null,
+      "resource_class": {
+       "BRAM": 0,
+       "DSP": 0,
+       "LUT": 0,
+       "URAM": 0
+      },
+      "tile_shape": null
+     },
+     "primitive": "DirectRoutedAccumulate",
+     "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+     "semantics": "noetic_native",
+     "transport_policy": null
+    },
+    {
+     "assumes_source_tensor_identity": false,
+     "dense_weight_materialization": false,
+     "id": "dec.expert_bank.native",
+     "inputs": {
+      "in": "compact_representation_fragment"
+     },
+     "kind": "representation-decoder",
+     "lifetime": "token",
+     "mapping": "native decode of compact representation at the consumer; no_dense_rematerialization",
+     "organ": "expert_bank",
+     "outputs": {
+      "out": "activation"
+     },
+     "owner": null,
+     "per_token_transfer": null,
+     "physical": {
+      "arithmetic_width": "nf",
+      "banking": null,
+      "dfx_module_boundary": "expert_bank",
+      "hbm_channel": null,
+      "resource_class": {
+       "BRAM": 0,
+       "DSP": 0,
+       "LUT": 0,
+       "URAM": 0
+      },
+      "tile_shape": null
+     },
+     "primitive": "FusedDecodeCompute",
+     "resident_weight_policy": null,
+     "semantics": "noetic_native",
+     "transport_policy": null
+    },
+    {
+     "assumes_source_tensor_identity": false,
+     "dense_weight_materialization": false,
+     "id": "dma.expert_bank.in",
+     "inputs": {},
+     "kind": "dma-transport",
+     "lifetime": "token",
+     "mapping": "token activation ingress; no weight body",
+     "organ": "expert_bank",
+     "outputs": {
+      "out": "activation"
+     },
+     "owner": null,
+     "per_token_transfer": true,
+     "physical": {
+      "arithmetic_width": "nf",
+      "banking": null,
+      "dfx_module_boundary": "expert_bank",
+      "hbm_channel": null,
+      "resource_class": {
+       "BRAM": 0,
+       "DSP": 0,
+       "LUT": 0,
+       "URAM": 0
+      },
+      "tile_shape": null
+     },
+     "primitive": "SemanticTransportEdge",
+     "resident_weight_policy": null,
+     "semantics": "noetic_native",
+     "transport_policy": "route_metadata_activations_and_partial_reductions_only"
+    },
+    {
+     "assumes_source_tensor_identity": false,
+     "dense_weight_materialization": false,
+     "id": "dma.expert_bank.out",
+     "inputs": {
+      "in": "partial_reduction"
+     },
+     "kind": "dma-transport",
+     "lifetime": "token",
+     "mapping": "token activation or partial-reduction egress; no weight body",
+     "organ": "expert_bank",
+     "outputs": {},
+     "owner": null,
+     "per_token_transfer": true,
+     "physical": {
+      "arithmetic_width": "nf",
+      "banking": null,
+      "dfx_module_boundary": "expert_bank",
+      "hbm_channel": null,
+      "resource_class": {
+       "BRAM": 0,
+       "DSP": 0,
+       "LUT": 0,
+       "URAM": 0
+      },
+      "tile_shape": null
+     },
+     "primitive": "SemanticTransportEdge",
+     "resident_weight_policy": null,
+     "semantics": "noetic_native",
+     "transport_policy": "route_metadata_activations_and_partial_reductions_only"
+    },
+    {
+     "assumes_source_tensor_identity": false,
+     "dense_weight_materialization": false,
+     "id": "mem.expert_bank.shards",
+     "inputs": {},
+     "kind": "memory",
+     "lifetime": "persistent",
+     "mapping": "resident compact representation shards; not source-dense weights",
+     "organ": "expert_bank",
+     "outputs": {
+      "out": "compact_representation_fragment"
+     },
+     "owner": null,
+     "per_token_transfer": false,
+     "physical": {
+      "arithmetic_width": "nf",
+      "banking": null,
+      "dfx_module_boundary": "expert_bank",
+      "hbm_channel": null,
+      "resource_class": {
+       "BRAM": 0,
+       "DSP": 0,
+       "LUT": 0,
+       "URAM": 0
+      },
+      "tile_shape": null
+     },
+     "primitive": "StationaryRepresentation",
+     "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+     "semantics": "noetic_native",
+     "transport_policy": null
+    },
+    {
+     "assumes_source_tensor_identity": false,
+     "dense_weight_materialization": false,
+     "id": "red.expert_bank.partial",
+     "inputs": {
+      "in": "partial_reduction"
+     },
+     "kind": "reduction",
+     "lifetime": "token",
+     "mapping": "partial reduction of native fragments",
+     "organ": "expert_bank",
+     "outputs": {
+      "out": "partial_reduction"
+     },
+     "owner": null,
+     "per_token_transfer": null,
+     "physical": {
+      "arithmetic_width": "nf",
+      "banking": null,
+      "dfx_module_boundary": "expert_bank",
+      "hbm_channel": null,
+      "resource_class": {
+       "BRAM": 0,
+       "DSP": 0,
+       "LUT": 0,
+       "URAM": 0
+      },
+      "tile_shape": null
+     },
+     "primitive": "CollectiveRegion",
+     "resident_weight_policy": null,
+     "semantics": "noetic_native",
+     "transport_policy": null
+    }
+   ],
+   "notes": [
+    "Lowered from a real FPGA organ-map receipt; not a bitstream and not a hardware timing claim.",
+    "Resident compact shards stay put; per-token transport is activation / partial reduction / state only.",
+    "Representation-decoder is FusedDecodeCompute: native decode, no dense rematerialization.",
+    "PhysicalGraph semantics consumed: organ is a role, not a source tensor name.",
+    "hbm_channel is None while the organ-map device genome is TARGET_UNSELECTED.",
+    "resource_class zeros mean undeclared/unmeasured, not a synthesis of zero."
+   ],
+   "organ": "expert_bank",
+   "qualification": "STATIC_ONLY",
+   "schema": "hawking.future.hwir.v1",
+   "semantics_consumed": "physical_graph_noetic_native",
+   "source_hwir_schema": "hcli.fpga.hwir.v1",
+   "source_receipt": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "version": 1
+  },
+  "model": "flash-next",
+  "node_count": 6,
+  "node_kinds": [
+   "compute",
+   "dma-transport",
+   "memory",
+   "reduction",
+   "representation-decoder"
+  ],
+  "organ": "expert_bank",
+  "source_receipt": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+  "validate": {
+   "errors": [],
+   "ok": true
+  }
+ },
+ "negative_findings": [
+  "ACCELERATOR_ARCHITECTURE_ATLAS.json is absent from this worktree HEAD and sparse disk",
+  "hcli/physical_graph.py and hcli/agentos/fpga_preboard.py are git-present but not materialized (sparse checkout)",
+  "existing hcli.fpga.hwir.v1 is not an IR: no types, no validator, no serdes, organ_operator only",
+  "device genome is TARGET_UNSELECTED; HBM channel and resource footprints cannot be known without a board/synthesis",
+  "no FPGA board, no HDL, no bitstream; this module must not and did not emit any",
+  "AIR exists and executes on Metal; it is not HWIR and was not reused as the spatial IR",
+  "PhysicalGraph compile_physical_graph is too unresolved to lower into a resource-accurate HWIR without invention; organ maps are the reality connection"
+ ],
+ "node_kinds": [
+  "compute",
+  "state",
+  "memory",
+  "representation-decoder",
+  "reduction",
+  "dma-transport",
+  "persistent-pipeline"
+ ],
+ "not_an_fpga_backend": true,
+ "organ_map_inputs": {
+  "flash": {
+   "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "present": true,
+   "sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0"
+  },
+  "qwen27": {
+   "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+   "present": true,
+   "sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655"
+  }
+ },
+ "physical_graph_semantics_consumed": [
+  "computation",
+  "data",
+  "representation",
+  "memory",
+  "residency",
+  "state",
+  "precision",
+  "dependencies",
+  "device_placement",
+  "synchronization",
+  "qualification"
+ ],
+ "primitive_to_node_kind": {
+  "AsyncPrefetch": "dma-transport",
+  "CollectiveRegion": "reduction",
+  "ConditionalPhysicalProgram": "compute",
+  "DirectRoutedAccumulate": "compute",
+  "DoubleBufferedTile": "memory",
+  "FusedDecodeCompute": "representation-decoder",
+  "GraphReplay": "persistent-pipeline",
+  "LayoutTransform": "compute",
+  "LocalStateMachine": "state",
+  "MemoryTierIdentity": "memory",
+  "MoveOrRecompute": "compute",
+  "PersistentPhysicalRegion": "persistent-pipeline",
+  "SemanticTransportEdge": "dma-transport",
+  "SparseSkip": "compute",
+  "SpatialPipeline": "persistent-pipeline",
+  "StationaryRepresentation": "memory",
+  "TiledProjection": "compute"
+ },
+ "proofs": {
+  "all_seven_kinds_exercised": true,
+  "dangling_codes": [
+   "DANGLING_EDGE"
+  ],
+  "dangling_edge_rejected": true,
+  "dense_codes": [
+   "DENSE_WEIGHT_MATERIALIZATION",
+   "DENSE_WEIGHT_MATERIALIZATION",
+   "SOURCE_TENSOR_IDENTITY",
+   "SOURCE_TENSOR_IDENTITY"
+  ],
+  "dense_source_rejected": true,
+  "lowered_kinds": [
+   "compute",
+   "dma-transport",
+   "memory",
+   "reduction",
+   "representation-decoder"
+  ],
+  "lowered_qwen_fingerprint": "0a8ff6c4474783b9a96038d3a420624b1d8c74dff75efc9922805414bf3990e0",
+  "lowered_state_fingerprint": "4fae29ee1d14506e35e6429f18dbbb8eddeafe17398fec8b0b6f97edd6e9980f",
+  "lowered_state_kinds": [
+   "compute",
+   "dma-transport",
+   "memory",
+   "persistent-pipeline",
+   "representation-decoder",
+   "state"
+  ],
+  "lowered_state_valid": true,
+  "lowered_valid": true,
+  "qwen_lowered_valid": true,
+  "resource_over_budget_rejected": true,
+  "round_trip_bytes": 5941,
+  "round_trip_equal": true,
+  "state_no_owner_rejected": true,
+  "type_mismatch_rejected": true,
+  "wall_clock_in_hashed_content": false
+ },
+ "purpose": "Hardware IR a future physical compiler uses to decide what an FPGA should become. Not a backend, not HDL, not a bitstream.",
+ "recovered_implementation": [
+  {
+   "adequate_as_ir": false,
+   "note": "Not in this worktree HEAD or sparse disk. Recovered from the parent Hawking checkout. Consumed as input spec, not re-derived.",
+   "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "what": "15 hwir_hypotheses + 17 backend_neutral_primitives (atlas)"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "Pre-board sketch: nodes are kind=organ_operator, buffers untyped, no validator, no resource classes, no byte-stable node/edge IR. Cannot be edited (Codex/hcli surface). Consumed via organ-map receipts.",
+   "path": "hcli/agentos/fpga_preboard.py",
+   "what": "class HWIR, schema hcli.fpga.hwir.v1"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "Lowering input. Seven Flash organs with resident-shard / no-weight-body policy.",
+   "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "what": "Flash FPGA organ map with embedded hcli.fpga.hwir.v1 stub"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "Secondary lowering input. mlp_gate_up_down is packed low-bit GEMV, not dense source GEMM.",
+   "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+   "what": "Qwen27 FPGA organ map with embedded hcli.fpga.hwir.v1 stub"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "PLAN_ONLY placement graph. Organs become computation nodes with unresolved bytes. Semantic contract HWIR consumes: organ is a role, representation is native, sizes unresolved, qualification PLAN_ONLY. Not materialized in this sparse worktree; recovered via git show HEAD:hcli/physical_graph.py.",
+   "path": "hcli/physical_graph.py",
+   "what": "PhysicalGraph dataclass + compile_physical_graph"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "Law used as semantic constraint, not as an IR.",
+   "path": "receipts/headless/PHYSICAL_GRAPH_COMPILER.json",
+   "what": "organ-as-role law; source-framework boundaries are not physical law"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "Confirms we must not build an FPGA backend. HWIR is the decision IR only.",
+   "path": "receipts/headless/HCLI_FPGA_PREBOARD.json",
+   "what": "preboard: fpga_backend NOT_BUILT, physical_board ABSENT, hwir present as stub fingerprints"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "GPU/Metal IR. Different object. HWIR is spatial/hardware placement IR. Not forked.",
+   "path": "tools/accelerator/air.py",
+   "what": "AIR \u2014 Accelerator IR with Metal lowering"
+  },
+  {
+   "adequate_as_ir": false,
+   "note": "Named the gap this module closes. Recovered via git show.",
+   "path": "hcli/agentos/preboard.py",
+   "what": "hwir interface INTERFACE_DEFINED / SCHEMA_ONLY empty nodes"
+  }
+ ],
+ "resource_classes": [
+  "BRAM",
+  "DSP",
+  "LUT",
+  "URAM"
+ ],
+ "schema": "hawking.future.hwir.v1",
+ "seal_sha256": "38dc819434a05ea3312c6a7a48d23ce1be52203b165284e5b14454446f910cc3",
+ "serialization": {
+  "canonical": "json.dumps(sort_keys=True, separators=(',', ':'), ensure_ascii=True)",
+  "fingerprint": "sha256 of canonical body excluding the fingerprint field",
+  "round_trip_equal": true,
+  "wall_clock_in_hashed_content": false
+ },
+ "validator_rules": [
+  "SOURCE_TENSOR_IDENTITY: node.semantics or assumes_source_tensor_identity",
+  "DENSE_WEIGHT_MATERIALIZATION: explicit flag, forbidden primitive, or affirmative dense-source mapping",
+  "DANGLING_EDGE: src/dst not in the node set",
+  "TYPE_MISMATCH: missing port, frame disagreement, or illegal in-transit transform",
+  "RESOURCE_OVER_BUDGET: summed declared resource_class exceeds device_budget",
+  "STATE_NO_OWNER: kind=state with empty owner"
+ ],
+ "version": 1
+}

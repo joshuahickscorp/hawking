@@ -350,3 +350,155 @@ kernel void qwen_next_shared_expert_sigmoid_gate(
     const float gate = 1.0f / (1.0f + exp(-gate_logit[0]));
     gated_output[id] = shared_output[id] * gate;
 }
+
+// Device-resident Qwen3-Next MoE route reduction.  Each selected routed
+// expert writes one contiguous hidden-width row; the router's normalized
+// selected weights are applied without a host gather.
+kernel void qwen_next_moe_weighted_sum(
+    device const float* routed_outputs [[buffer(0)]],
+    device const float* selected_weights [[buffer(1)]],
+    device float* output                [[buffer(2)]],
+    constant uint& expert_count         [[buffer(3)]],
+    constant uint& hidden               [[buffer(4)]],
+    uint id                             [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    float sum = 0.0f;
+    for (uint expert = 0u; expert < expert_count; ++expert) {
+        sum += routed_outputs[expert * hidden + id] * selected_weights[expert];
+    }
+    output[id] = sum;
+}
+
+// Qwen3-Next's complete candidate MoE block adds the sigmoid-gated shared
+// expert output to the selected routed-expert sum on device.
+kernel void qwen_next_moe_add_shared(
+    device const float* routed_output [[buffer(0)]],
+    device const float* shared_output [[buffer(1)]],
+    device float* output              [[buffer(2)]],
+    constant uint& elements           [[buffer(3)]],
+    uint id                           [[thread_position_in_grid]])
+{
+    if (id >= elements) return;
+    output[id] = routed_output[id] + shared_output[id];
+}
+
+// Bounded Flash-Next hyperconnection candidate boundary.  The source census
+// exposes four 2560-wide streams (10240 values total); this helper injects a
+// device-resident 2560-wide shared-expert result into one stream while
+// preserving the other candidate state values.  It is intentionally a
+// candidate graph primitive, not a claim that the complete model's runtime
+// uses this exact stream slot or ordering.
+kernel void qwen_next_expand_shared_to_hyper_state(
+    device const float* base_state   [[buffer(0)]],
+    device const float* shared_output [[buffer(1)]],
+    device float* output             [[buffer(2)]],
+    constant uint& hidden             [[buffer(3)]],
+    constant uint& streams            [[buffer(4)]],
+    constant uint& injected_stream    [[buffer(5)]],
+    uint id                           [[thread_position_in_grid]])
+{
+    const uint elements = hidden * streams;
+    if (id >= elements) return;
+    output[id] = base_state[id];
+    const uint injected_start = injected_stream * hidden;
+    if (id >= injected_start && id < injected_start + hidden) {
+        output[id] = shared_output[id - injected_start];
+    }
+}
+
+// Candidate low-rank hyperconnection residual mix.  The four source
+// block-inject logits gate the low-rank correction per 2560-wide stream; all
+// inputs and outputs remain device-resident for this bounded graph.
+kernel void qwen_next_hyperconnection_residual_mix_candidate(
+    device const float* state         [[buffer(0)]],
+    device const float* correction    [[buffer(1)]],
+    device const float* block_logits  [[buffer(2)]],
+    device float* output              [[buffer(3)]],
+    constant uint& hidden              [[buffer(4)]],
+    constant uint& streams             [[buffer(5)]],
+    uint id                            [[thread_position_in_grid]])
+{
+    const uint elements = hidden * streams;
+    if (id >= elements) return;
+    const uint stream = id / hidden;
+    const float gate = 1.0f / (1.0f + exp(-block_logits[stream]));
+    output[id] = state[id] + correction[id] * gate;
+}
+
+// Exact Qwen3.8-Flash-Next HyperConnection read/write primitives.  The
+// checkpoint stores hc_norm as BF16 and the reference implementation applies
+// it as grouped RMSNorm with the additive Gemma-style scale (1 + weight).
+static inline float qwen_next_hc_bf16_value(ushort bits)
+{
+    return as_type<float>(((uint)bits) << 16u);
+}
+
+kernel void qwen_next_hyperconnection_grouped_rmsnorm(
+    device const float* input       [[buffer(0)]],
+    device const ushort* weight_bf16 [[buffer(1)]],
+    device float* output             [[buffer(2)]],
+    constant uint& hidden             [[buffer(3)]],
+    constant uint& streams            [[buffer(4)]],
+    constant float& eps               [[buffer(5)]],
+    uint id                           [[thread_position_in_grid]])
+{
+    const uint elements = hidden * streams;
+    if (id >= elements) return;
+    const uint stream_start = (id / hidden) * hidden;
+    float sum = 0.0f;
+    for (uint index = 0u; index < hidden; ++index) {
+        const float value = input[stream_start + index];
+        sum += value * value;
+    }
+    const float inverse_rms = rsqrt(sum / float(hidden) + eps);
+    const float scale = 1.0f + qwen_next_hc_bf16_value(weight_bf16[id]);
+    output[id] = input[id] * inverse_rms * scale;
+}
+
+kernel void qwen_next_hyperconnection_silu_scale(
+    device const float* input [[buffer(0)]],
+    device float* output       [[buffer(1)]],
+    constant uint& elements    [[buffer(2)]],
+    constant float& divisor    [[buffer(3)]],
+    uint id                    [[thread_position_in_grid]])
+{
+    if (id >= elements) return;
+    const float value = input[id] / divisor;
+    output[id] = value / (1.0f + exp(-value));
+}
+
+kernel void qwen_next_hyperconnection_read_mix(
+    device const float* normalized [[buffer(0)]],
+    device const float* gate_logits [[buffer(1)]],
+    device float* output            [[buffer(2)]],
+    constant uint& hidden           [[buffer(3)]],
+    constant uint& streams          [[buffer(4)]],
+    uint id                         [[thread_position_in_grid]])
+{
+    if (id >= hidden) return;
+    float sum = 0.0f;
+    for (uint stream = 0u; stream < streams; ++stream) {
+        const uint offset = stream * hidden + id;
+        const float gate = 1.0f / (1.0f + exp(-gate_logits[offset]));
+        sum += gate * normalized[offset];
+    }
+    output[id] = sum / float(streams);
+}
+
+kernel void qwen_next_hyperconnection_combine(
+    device const float* residual    [[buffer(0)]],
+    device const float* block_output [[buffer(1)]],
+    device const float* block_logits  [[buffer(2)]],
+    device float* output              [[buffer(3)]],
+    constant uint& hidden              [[buffer(4)]],
+    constant uint& streams             [[buffer(5)]],
+    constant float& divisor            [[buffer(6)]],
+    uint id                            [[thread_position_in_grid]])
+{
+    const uint elements = hidden * streams;
+    if (id >= elements) return;
+    const uint stream = id / hidden;
+    const float gate = 2.0f / (1.0f + exp(-block_logits[stream] / divisor));
+    output[id] = residual[id] + block_output[id % hidden] * gate;
+}

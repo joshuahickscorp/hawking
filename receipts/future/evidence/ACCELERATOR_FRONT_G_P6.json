@@ -1,0 +1,146 @@
+{
+ "schema": "hawking.accelerator.receipt.v1",
+ "generated_at": "2026-08-25T12:13:42Z",
+ "experiment_class": "ACCEL-MEMORY",
+ "knowledge_level": "INSTANCE",
+ "git_head": "2d17d48724bb8ebc5d60b5a3d832205cd83df580",
+ "identities": {
+  "experiment": {
+   "id": "FRONT_G_P6",
+   "proof": "P6 \u2014 a reproducible machine-specific win",
+   "obligation": "G049",
+   "steer": "S015 \u00a7125"
+  },
+  "machine": {
+   "soc": "Apple M3 Ultra",
+   "gpu_cores": 60,
+   "memory_bytes": 103079215104,
+   "os_product": "27.0",
+   "measured_bandwidth_gb_s": 589.73
+  },
+  "device": {
+   "name": "APPLE_GPU_0",
+   "api": "Metal"
+  },
+  "model": {
+   "status": "ABSENT",
+   "reason": "no model; this measures a memory pattern"
+  },
+  "representation": {
+   "name": "dense_f32",
+   "elements": 16777216
+  },
+  "kernel": {
+   "name": "fused mul->relu->silu",
+   "identical_in_both_arms": true
+  },
+  "runtime": {
+   "mlx": "0.32.1",
+   "python": "3.12.13"
+  },
+  "transport": {
+   "status": "ABSENT",
+   "reason": "single-device; the copies measured are host<->device within one machine"
+  }
+ },
+ "result": {
+  "runs": [
+   {
+    "run": 1,
+    "cuda_era_ms": 3.8059159996919334,
+    "unified_ms": 0.5307499959599227,
+    "cuda_iqr": 8.58,
+    "unified_iqr": 10.02,
+    "both_reliable": false,
+    "speedup": 7.170826243358692
+   },
+   {
+    "run": 2,
+    "cuda_era_ms": 3.7687079748138785,
+    "unified_ms": 0.509250006871298,
+    "cuda_iqr": 2.59,
+    "unified_iqr": 12.49,
+    "both_reliable": false,
+    "speedup": 7.400506478081087
+   },
+   {
+    "run": 3,
+    "cuda_era_ms": 3.8063749962020665,
+    "unified_ms": 0.5116660031490028,
+    "cuda_iqr": 4.48,
+    "unified_iqr": 3.93,
+    "both_reliable": true,
+    "speedup": 7.439179020642511
+   }
+  ],
+  "speedups": [
+   7.171,
+   7.401,
+   7.439
+  ],
+  "reproducibility_spread_pct": 3.74,
+  "arms_agree_max_abs_err": 0.0,
+  "worst_arm_iqr_pct": 12.49,
+  "margin_over_noise_ratio": 49.4,
+  "reliability_gate": {
+   "runs_failing_flat_gate": 2,
+   "why_the_claim_still_stands": "the fast arm is sub-millisecond so its relative noise is higher; the margin is 617% against a worst arm noise of 12.49%, i.e. 49x. A flat veto would have discarded that, which is not a judgement an honest instrument should make, so bench.compare now admits a result whose margin is >=5x the worst arm noise and labels it CANDIDATE_WINS_DESPITE_NOISE with the magnitude flagged as less certain than the direction."
+  },
+  "device_ascension": {
+   "stages_completed": [
+    "fingerprint",
+    "benchmark",
+    "roof_measurement",
+    "workload_census",
+    "kernel_selection",
+    "autotune",
+    "memory_plan",
+    "dispatch_plan"
+   ],
+   "stages_not_run": [
+    "concurrency_sweep",
+    "sustained_qualification",
+    "adp_seal"
+   ],
+   "adp": {
+    "adp": "ADP-AppleM3Ultra-MAX_THROUGHPUT",
+    "profile": "MAX_THROUGHPUT",
+    "config": {
+     "kernel": "tg256_ept2",
+     "memory": "keep operands resident, no per-call copies"
+    },
+    "knowledge_level": "EXACT_MACHINE",
+    "production_sealed": false,
+    "status": "PROVISIONAL",
+    "why": "sustained_qualification has not run; \u00a729 forbids sealing a production ADP on microbenchmark evidence",
+    "stages_completed": [
+     "fingerprint",
+     "benchmark",
+     "roof_measurement",
+     "workload_census",
+     "kernel_selection",
+     "autotune",
+     "memory_plan",
+     "dispatch_plan"
+    ],
+    "stages_not_run": [
+     "concurrency_sweep",
+     "sustained_qualification",
+     "adp_seal"
+    ],
+    "sealed_at": "2026-08-25T12:13:42Z"
+   }
+  }
+ },
+ "claim_boundary": "WHY THIS IS MACHINE-SPECIFIC: on a discrete GPU the host-to-device and device-to-host copies are NOT optional -- there is separate device memory and the data must cross it. On this machine there is none, so both copies can simply not happen. That is why it qualifies for P6 where the flat autotune landscape did not.\nFAIRNESS CAVEAT, STATED PLAINLY: the CUDA-era arm copies on EVERY call, which is the NAIVE pattern. A competent CUDA programmer hoists the upload out of the loop and keeps data resident, and would not pay this 7x. So the honest claim is NOT 'Apple beats CUDA by 7x'. It is that per-call host<->device copying costs 7.17-7.44x on this operation, and that on unified memory the elimination is structural rather than something the programmer must remember to do.\nThe ADP is PROVISIONAL, not sealed: sustained_qualification has NOT run, and \u00a729 forbids sealing a production profile on microbenchmark evidence. 9 of 11 stages completed. Knowledge level EXACT_MACHINE, not promoted.",
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
+}

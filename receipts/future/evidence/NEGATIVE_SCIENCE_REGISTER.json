@@ -1,0 +1,970 @@
+{
+  "schema": "hawking.ascent.negative_science_register.v1",
+  "date": "2026-08-16",
+  "campaign": "ascent-2026-08-16",
+  "worktree_head": "ee09f5122",
+  "authority": {
+    "steer": "S004 section 8",
+    "law": "Negative science is retained. Never repeat a disproven mechanism because context was lost.",
+    "steer_location": "S004 is a session steer, not a file in this tree. S003 is cited in SUPERWAVE_STATE.md (Q4 de-authorisation) and tools/ascent_daemon.py. S004 section 7 is cited in Q80_MIXED_RECONSTRUCTION_WALL.json (in-register / fused reconstruction). This register is the S004 section 8 artefact.",
+    "graveyard_kin": "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md (Bible §32). This file is the campaign register, not a new graveyard scaffold."
+  },
+  "machine": {
+    "chip": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_mem_gb": 96,
+    "published_peak_gb_s": 819
+  },
+  "how_to_use": [
+    "Before proposing a mechanism, match it by id or by the mechanism string. If it is REFUTED, DEAUTHORISED, UNREACHABLE, or CATEGORY_ERROR, do not re-derive it.",
+    "Cite the settling receipt, not a later summary that still carries the superseded number.",
+    "G013_FS_EFFICIENCY_CLOSURE.json (v1), FS_PER_WEIGHT_LAW.json's 0.135% row, and TERMINAL_TARGET.json's 0.135% / 560-647 band are SUPERSEDED. Use G013 v2 and G014.",
+    "Q80_DECODE_SHAPE_BANDWIDTH.json and G014_FS_OCCUPANCY_CONTROL.json live on commit 89f40c76e (branch grok/fs-occupancy-20260816-143029) and are NOT in this HEAD. G013_FS_EFFICIENCY_CLOSURE_V2.json in this tree restates the same numbers."
+  ],
+  "attribution_corrections": [
+    {
+      "listed_as": "DSV4F experts are mutually orthogonal (cos 0.004)",
+      "what_the_receipts_actually_say": "The 0.004 figure is Q80, layer 10, 96 of 512 experts (receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json). No DSV4F pairwise-cosine receipt exists in this tree. dsv-resident-gravity.json transfers the Q80 finding as a forbidden codec, it does not remeasure DSV4F.",
+      "consequence": "Do not treat DSV4F orthogonality as settled science. Measuring DSV4F pairwise cosine is a cheap check, not a retry of a Q80-refuted pack."
+    }
+  ],
+  "superseded_do_not_cite_as_law": [
+    {
+      "path": "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE.json",
+      "why": "v1. Used storage BPW as active BPW, accepted the 560-647 reuse band, and computed 0.135% by mixing a mixed-artifact floor with a Q4 runtime. Superseded the same day by G013_FS_EFFICIENCY_CLOSURE_V2.json."
+    },
+    {
+      "path": "receipts/ascent-2026-08-16/FS_PER_WEIGHT_LAW.json",
+      "field": "q80_now.efficiency_pct_of_peak = 0.135",
+      "why": "Same category error as G013 v1."
+    },
+    {
+      "path": "receipts/ascent-2026-08-16/TERMINAL_TARGET.json",
+      "fields": ["machine_reference.MEASURED_control_gb_s = [560.25, 646.71]", "sub_100_fs_threshold.current.efficiency_q80_pct_of_peak = 0.135"],
+      "why": "560-647 is the cache-resident reuse band (NS-004). 0.135% is NS-003."
+    },
+    {
+      "path": "SUPERWAVE_STATE.md",
+      "section": "Law (top of file)",
+      "why": "Still publishes G013 v1 (156970 fs at 0.135%, BPW < 0.448-0.518). The CORRECTION block later in the same file is the live law."
+    }
+  ],
+  "entries": [
+    {
+      "id": "NS-001",
+      "listed": true,
+      "mechanism": "Reach sub-100 fs/weight on this box with any existing Q80 pack",
+      "class": "UNREACHABLE",
+      "models": ["q80"],
+      "what_was_expected": "mixed-sub655-v1 at 0.6462 complete_physical_bpw would clear the ledger's sub-100 fs threshold (nominal BPW < 0.6552 at efficiency=1.0). G013 v1 restated the requirement as BPW < 0.448-0.518 against a 560-647 GB/s control.",
+      "what_was_measured": {
+        "active_bpw_mixed_sub655": 2.518,
+        "active_bpw_mixed_1p5": 4.98,
+        "fs_sub655_at_320_gb_s": 985,
+        "fs_sub655_at_411_gb_s": 765,
+        "fs_sub655_at_unity_819_unachievable": 384,
+        "required_active_bpw_for_100_fs": {"at_320_gb_s": 0.256, "at_411_gb_s": 0.329},
+        "must_include": "attention and lm_head, the dominant mass, not just experts"
+      },
+      "why_it_failed": "The 0.6462 figure is a storage average over 512 experts. Decode at batch=1 reads 10 of 512. Attention + lm_head stay at 4.25-8.25 BPW, so active BPW is 2.518. Even a perfect load-only kernel at the honest decode ceiling cannot put that mass under 100 fs. Unity 819 GB/s still bottoms out at 384 fs.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json",
+          "git:89f40c76e:receipts/ascent-2026-08-16/G014_FS_OCCUPANCY_CONTROL.json",
+          "git:89f40c76e:receipts/ascent-2026-08-16/Q80_DECODE_SHAPE_BANDWIDTH.json"
+        ],
+        "commits": [
+          "ae0fd8ec9 G013 CORRECTION: sub-100 fs is unreachable, and my earlier receipt was wrong",
+          "89f40c76e G014: measure decode-shape bandwidth; sub-100 fs unreachable at active BPW"
+        ]
+      },
+      "retry_when": "never on this box with any pack whose ACTIVE decode BPW (attention + lm_head included) stays above 0.256-0.329. Reopen only if a new pack actually moves attention and lm_head into that active-BPW band, or if a no-model unique-once control in the real 98-CB / 10-of-512 shape is measured above ~411 GB/s on this machine."
+    },
+    {
+      "id": "NS-002",
+      "listed": true,
+      "mechanism": "Treat storage / complete_physical BPW as the BPW decode moves (active BPW)",
+      "class": "CATEGORY_ERROR",
+      "models": ["q80"],
+      "what_was_expected": "complete_physical_bpw 0.6462 (mixed-sub655) or 1.4444 (mixed-1p5) is the per-token traffic density.",
+      "what_was_measured": {
+        "batch": 1,
+        "experts_read_of_512": 10,
+        "mixed_sub655_storage_bpw": 0.6462,
+        "mixed_sub655_active_bpw": 2.518,
+        "mixed_1p5_storage_bpw": 1.4444,
+        "mixed_1p5_active_bpw": 4.98,
+        "understatement_factor": "~4x"
+      },
+      "why_it_failed": "Storage BPW averages over unused experts. At batch=1 only top-10 routed experts are read; attention, lm_head, router and shared expert are read every token at their native (much higher) BPW.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json",
+          "git:89f40c76e:receipts/ascent-2026-08-16/G014_FS_OCCUPANCY_CONTROL.json"
+        ],
+        "commits": ["ae0fd8ec9", "89f40c76e", "2f0501687 State map: record that attention, not experts, is the mass that matters"]
+      },
+      "retry_when": "never as a substitute for active BPW. Storage BPW remains a valid disk/residency figure. Use it only when the question is bytes on disk, not bytes moved per token."
+    },
+    {
+      "id": "NS-003",
+      "listed": true,
+      "mechanism": "Quote 0.135% bandwidth efficiency as Q80's wall rate",
+      "class": "CATEGORY_ERROR",
+      "models": ["q80"],
+      "what_was_expected": "156,970 fs measured / 212.53 fs mixed-artifact floor = 0.135% of peak, so occupancy is a 740x term.",
+      "what_was_measured": {
+        "numerator": "Q4-vehicle runtime 156,970 fs (QWEN80_TOKEN_NS_LEDGER / frontier-fs-per-weight)",
+        "denominator": "mixed-artifact storage floor 212.53 fs at 1.392467 BPW",
+        "same_vehicle_q4_wall_gb_s": 3.38,
+        "same_vehicle_q4_wall_pct_of_peak": 0.413,
+        "same_vehicle_q4_wall_pct_of_honest_control": 1.1
+      },
+      "why_it_failed": "Numerator and denominator are different vehicles. Mixed floor over Q4 runtime is not an efficiency.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json what_v1_got_wrong[2]",
+          "git:89f40c76e:receipts/ascent-2026-08-16/G014_FS_OCCUPANCY_CONTROL.json why_q80_is_not_at_the_control"
+        ],
+        "commits": ["ae0fd8ec9"]
+      },
+      "retry_when": "never. Any future efficiency claim must be same-vehicle: the runtime and the byte budget from the same pack."
+    },
+    {
+      "id": "NS-004",
+      "listed": true,
+      "mechanism": "Use the 535-637 GB/s reuse band (also written 560-647) as the decode ceiling",
+      "class": "CATEGORY_ERROR",
+      "models": ["q80", "qwen38", "dsv4f"],
+      "what_was_expected": "A no-model DRAM-row / reuse probe at 535.9-637.5 (or 560-647) GB/s is the achievable bandwidth for decode.",
+      "what_was_measured": {
+        "reuse_64mib_x_4096_gb_s": [535.882, 637.496],
+        "flag_on_primary_receipt": "not_the_decode_ceiling=true",
+        "unique_once_1024_mib_gb_s": 301.634,
+        "unique_once_512_mib_gb_s": 411.514,
+        "token_shape_98cb_10of512_gb_s": [319.682, 363.152],
+        "honest_decode_ceiling_gb_s": 411.51,
+        "published_peak_gb_s": 819,
+        "qwen38_at_ceiling_pct": 98.7
+      },
+      "why_it_failed": "The 64 MiB working set reused 4096x is cache-resident. Decode reads each weight once per token. The honest control is unique-bytes-once in the real command-buffer topology (320-411 GB/s), not the reuse roofline and not 819.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/QWEN38_AT_CEILING_RESOLVED.json",
+          "git:89f40c76e:receipts/ascent-2026-08-16/G014_FS_OCCUPANCY_CONTROL.json",
+          "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json"
+        ],
+        "commits": [
+          "57ee82cce Qwen3.8 is at 98.7 percent of the decode ceiling - question resolved from existing data",
+          "89f40c76e"
+        ]
+      },
+      "retry_when": "never as a decode ceiling. The reuse band is a valid cache-resident roofline for a working set that actually stays hot. It is not a batch=1 decode bound.",
+      "session_note": "This is the measurement one lane this session proposed after another lane had already published it. QWEN38_AT_CEILING_RESOLVED.json: 'The fs-occupancy lane had ALREADY measured this; I had only read its summary, not its full receipt.'"
+    },
+    {
+      "id": "NS-005",
+      "listed": true,
+      "mechanism": "Compress routed experts to move fs/weight or token time (the density campaign on the 9%)",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Because routed experts are ~97% of Q80's stored mass, crushing them is the velocity lever.",
+      "what_was_measured": {
+        "per_token_bytes_mixed_sub655": {
+          "attention": 818151424,
+          "lm_head": 165329552,
+          "routed_experts": 100915200,
+          "router": 26742448,
+          "shared_expert": 10091520,
+          "total": 1121230144
+        },
+        "attention_pct": 73.0,
+        "attention_plus_lm_head_pct": "86-88",
+        "routed_experts_pct": 9.0,
+        "independent_cross_check": "matches receipts/QWEN80_TOKEN_NS_LEDGER.json theoretical_weight_bytes to within 0.03%/class"
+      },
+      "why_it_failed": "Storage mass is not traffic. At batch=1 the unread 502 experts do not move. Crushing unused experts to zero removes 9% of per-token bytes. Attention is the only mass whose compression changes the token.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/G013_FS_EFFICIENCY_CLOSURE_V2.json",
+          "receipts/ascent-2026-08-16/G001_KERNEL_GAP.json"
+        ],
+        "commits": ["ae0fd8ec9", "2f0501687", "e6b90c957 G001: the lever is a 21-27x kernel gap, not density and not the bandwidth ceiling"]
+      },
+      "retry_when": "never as a token-time or fs/weight lever on Q80 batch=1 decode. Expert compression remains a disk/residency lever. Reopen as a velocity lever only if routing changes so that a much larger expert fraction is actually read per token (e.g. large-batch or many-token expert reuse that makes unread experts become traffic)."
+    },
+    {
+      "id": "NS-006",
+      "listed": true,
+      "mechanism": "Assume lower storage BPW is faster per token (density is velocity)",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Moving Q80 from uniform-Q4 4.259 BPW to mixed 1.4444 BPW buys bytes and therefore token time.",
+      "what_was_measured": {
+        "q4_gb_s": 15.2,
+        "mixed_gb_s": 2.57,
+        "slowdown_per_byte_x": 5.9,
+        "q4_token_ms": 225,
+        "mixed_token_ms": 1171,
+        "mixed_gpu_matvec_ms": 863.4,
+        "mixed_gpu_matvec_pct_of_token": 73.8,
+        "mixed_active_bytes_gb": 2.218,
+        "mixed_pct_of_honest_ceiling": 0.62,
+        "factor_off_ceiling": 160.0
+      },
+      "why_it_failed": "Binary / rice_q1 / low-rank need expensive per-weight reconstruction. Density bought bytes and lost more to reconstruction. On the mixed G020 vehicle Q80 is GPU-matvec-bound, not host-bound. The Q4-vehicle 'host/sync-bound' claim does not transfer.",
+      "settled_by": {
+        "receipts": ["receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json"],
+        "commits": ["9a721173d Q80 mixed is GPU-matvec-bound, and density is what made it slow"]
+      },
+      "retry_when": "never as an unqualified 'lower BPW is faster' rule on mixed codecs. Reopen a density-for-speed claim only after reconstruction is in-register or fused into consumption (S004 section 7 items 5-6) and a same-vehicle GB/s is remeasured at or above the Q4 15.2 GB/s mark."
+    },
+    {
+      "id": "NS-007",
+      "listed": true,
+      "mechanism": "Use the uniform-Q4 group64 vehicle as a target, family member, or benchmark subject",
+      "class": "DEAUTHORISED",
+      "models": ["q80"],
+      "what_was_expected": "uniform-q4-group64-v1 (4.259 BPW) is the Q80 sealing / velocity vehicle.",
+      "what_was_measured": {
+        "complete_physical_bpw": 4.259241,
+        "tournament_valid": false,
+        "reason": "exceeds the 1.5 complete-physical ceiling; abandoned as a target 2026-08-16; tensors deleted; do not rebuild",
+        "allowed_use": "correctness reference only"
+      },
+      "why_it_failed": "User steer S003 de-authorised the vehicle. It cannot satisfy the density gate. Daemon exclude list now matches on uniform-q4 / uniform_q4.",
+      "settled_by": {
+        "receipts": [
+          "SUPERWAVE_STATE.md Artifacts on disk",
+          "receipts/ascent-2026-08-16/G023_REUSE_MATRIX.json q4_status",
+          "receipts/ascent-2026-08-16/G023_FAMILY_RECEIPT.json structural_not_unified",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.q80.reason_invalid",
+          "tools/ascent_daemon.py DEAUTHORISED"
+        ],
+        "commits": ["6e08b6e10 Daemon: exclude de-authorised work instead of down-ranking it"],
+        "steer": "S003"
+      },
+      "retry_when": "never as a campaign target or G023 family member. Leave the source. Do not rebuild, unify, or benchmark uniform-q4-group64. The Q4 path remains a correctness oracle only."
+    },
+    {
+      "id": "NS-008",
+      "listed": true,
+      "mechanism": "~20 h DSV4F determined teacher-X capture (G007 route 1)",
+      "class": "DEAUTHORISED",
+      "models": ["dsv4f"],
+      "what_was_expected": "A 21,846-token determined capture would un-starve existing X and let a <=1.5 DSV4F fit proceed.",
+      "what_was_measured": {
+        "tokens": 21846,
+        "streamed_body_s": 3.323,
+        "estimated_forward_h": 20,
+        "existing_x": "underdetermined (defaults 16/64 rows vs w1 dim 4096 / w2 dim 2048)",
+        "g007_status": "BLOCKED — both acceptance routes shut",
+        "relaunched_after_deauth": true
+      },
+      "why_it_failed": "Qwen-first amendment made DSV4F theory-only. A 0.05 relative weight cannot stop a launch when the pending set is one model; the daemon relaunched the capture. It cannot close G007 (20 h of GPU, contends with paired-rep lanes) and was then excluded by name.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/dsv-resident-gravity.json",
+          "tools/ascent_daemon.py DEAUTHORISED=('determined-teacher-x','teacher_x_capture',...)"
+        ],
+        "commits": [
+          "9fcda89d9 G007 BLOCKED: both acceptance routes shut, exact missing input recorded",
+          "6e08b6e10 Daemon: exclude de-authorised work instead of down-ranking it"
+        ]
+      },
+      "retry_when": "never under the current Qwen-first amendment. Unblocks only if a human authorises the capture or reverses the amendment (9fcda89d9). A cheaper determined-X design (layer-tiled, discard X after fit, no 20 h streamed full model) would be a new premise, not a retry of this capture."
+    },
+    {
+      "id": "NS-009",
+      "listed": true,
+      "mechanism": "Evaluate or fit compression on Gaussian / synthetic proxy activations",
+      "class": "REFUTED",
+      "models": ["glm52", "q80", "qwen38", "dsv4f"],
+      "what_was_expected": "Gaussian or synthetic X is a cheap stand-in for teacher-forced activations when ranking codecs.",
+      "what_was_measured": {
+        "glm52": "Six families first measured negative sub-bit under Gaussian proxy. Refitted on real teacher-capsule X, ranking inverted and the null moved from 0.126 to 0.651. Activation-aware then hit 0.755 cosine at 0.167 BPW on 12/12 experts.",
+        "structural_reason": "top 16 activation directions carried 88.9% of variance; weights live across 6144 dimensions the model never visits"
+      },
+      "why_it_failed": "The input distribution decides which family wins. Gaussian X is not a detail. Every prior sub-bit negative in this project traced to that proxy.",
+      "settled_by": {
+        "receipts": [
+          "workspace/campaign/evidence/systems/hawking/HAWKING_HEAVY_CONTINUATION_STATUS.json rebuild_glm.step_2_pilot",
+          "receipts/ascent-2026-08-16/FS_PER_WEIGHT_LAW.json precedent_for_sub_bit",
+          "receipts/ascent-2026-08-16/G016_PACKER_DESIGN.json hard_requirement"
+        ],
+        "tests": ["test_no_gaussian_proxy_promotion_path_in_v2_source"]
+      },
+      "retry_when": "never as a promotion or ranking path. Synthetic X is allowed only as a kernel numeric fixture, never as a codec-selection or sub-bit evidence input."
+    },
+    {
+      "id": "NS-010",
+      "listed": true,
+      "listed_wording_was": "DSV4F experts are mutually orthogonal (cos 0.004), so shared-basis is refuted",
+      "mechanism": "Shared cross-expert basis / shared codebook across routed experts",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "not_measured_on": ["dsv4f"],
+      "what_was_expected": "Experts share a basis, so a shared codebook or joint subspace compresses them together.",
+      "what_was_measured": {
+        "receipt": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+        "layer": 10,
+        "n_experts": 96,
+        "gate_proj_pairwise_cosine_mean": 0.004142791032791138,
+        "gate_proj_pairwise_cosine_p95": 0.007685263641178608,
+        "up_proj_pairwise_cosine_mean": -5.968913319520652e-05,
+        "up_proj_subspace_overlap_top32": 0.020372524857521057
+      },
+      "why_it_failed": "Q80 experts in the measured slice are mutually orthogonal. There is no shared direction to exploit.",
+      "settled_by": {
+        "receipts": [
+          "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+          "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json confirmed_solid",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[1]"
+        ]
+      },
+      "retry_when": "never on Q80. On DSV4F: do not treat this as settled. A pairwise-cosine measurement on DSV4F experts is the cheap check; only if that mean is materially above ~0.05 would a shared-basis pack be a new premise. Do not skip that measurement by transferring the Q80 number."
+    },
+    {
+      "id": "NS-011",
+      "listed": false,
+      "mechanism": "Copy the Q30 static <=1.5 representation approach to get a coherent dense/MoE artifact",
+      "class": "REFUTED",
+      "models": ["q30"],
+      "what_was_expected": "A static <=1.5 complete-physical Q30 pack would generate coherent text.",
+      "what_was_measured": "Coherence FAILED. Q30 removed from the contender set. Capture bodies deleted 2026-08-15; identity retained for re-fetch.",
+      "why_it_failed": "Bits were reachable; capability was not. Standing prior: do not copy the Q30 approach onto Q80 / DSV4F / Qwen3.8.",
+      "settled_by": {
+        "receipts": [
+          "receipts/QWEN30_SOURCE_IDENTITY_RECLAIMED.json",
+          "receipts/QWEN30_CAPTURE_SUMMARIES_RECLAIMED.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[0]"
+        ]
+      },
+      "retry_when": "never as a template. A new Q30 pack with a materially different codec family AND a generation gate (not organ cosine) would be a new campaign, not a retry."
+    },
+    {
+      "id": "NS-012",
+      "listed": false,
+      "mechanism": "Single-family representation across gate_proj / up_proj / down_proj",
+      "class": "INSUFFICIENT",
+      "models": ["q80"],
+      "what_was_expected": "One codec family (all-binary, or all low-rank) wins on every organ.",
+      "what_was_measured": {
+        "gate_proj": "binary_group clears the in-budget screen on busy organs (e.g. L10E453 binary_g cosine 0.893)",
+        "up_proj": "binary_g fails the same organ (cosine 0.828); binary + rice_q1 residual is the in-budget family",
+        "down_proj": "binary_g fails on post-SwiGLU X (L1E265 cosine 0.826); low-rank is the intended family. down_proj inverts the ranking and must be fit on post-SwiGLU X, not the layer hidden."
+      },
+      "why_it_failed": "The three organs prefer three families. A single-family pack either misses the bar or blows the 1.5 budget.",
+      "settled_by": {
+        "receipts": [
+          "receipts/QWEN80_REPRESENTATION_FRONTIER_SWEEP.json",
+          "receipts/QWEN80_DOWN_PROJ_FRONTIER_SWEEP.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[5]",
+          "workspace/ops/ascent-lanes/_Q80_DENSITY_COMMON.md"
+        ]
+      },
+      "retry_when": "never as a Q80 default. Reopen only if a new organ family, scored on real post-SwiGLU X for down and real hidden for gate/up, beats the mixed recipe on all three organs inside the budget."
+    },
+    {
+      "id": "NS-013",
+      "listed": false,
+      "mechanism": "Treat raw activation cosine ~0.86-0.90 as evidence the codec preserved function",
+      "class": "REFUTED",
+      "models": ["q80", "glm52"],
+      "what_was_expected": "Organ cosine above ~0.86 means the reconstruction is doing the layer's job.",
+      "what_was_measured": {
+        "constant_mean_null_baseline": 0.898,
+        "note": "cosine 0.898 can mean nothing",
+        "q80_up_rice_q1_rms_2pct": [0.864163, 0.865237],
+        "q80_bar_0.8604": "sits BELOW the 0.898 null"
+      },
+      "why_it_failed": "A matched-magnitude random residual can score in the same band. The 0.8604 D23 bar is a residual-identity break-even, not a capability certificate. Generation is the gate.",
+      "settled_by": {
+        "receipts": [
+          "workspace/ops/ascent-lanes/_Q80_DENSITY_COMMON.md",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[6]",
+          "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json P1-SCREEN-BELOW-NULL-AND-UNDERDETERMINED"
+        ]
+      },
+      "retry_when": "never as a standalone GO. Cosine remains a screen. A claim must beat a stated null AND pass generation."
+    },
+    {
+      "id": "NS-014",
+      "listed": false,
+      "mechanism": "Fit a rank-r or full-dim codec on fewer captured rows than the fitted dimension, then trust the score",
+      "class": "REFUTED",
+      "models": ["q80", "dsv4f"],
+      "what_was_expected": "A 25k-token capture is enough to score every organ.",
+      "what_was_measured": {
+        "q80_25k_capture": {"p10_rows": 34, "p50_rows": 258, "pairs_reaching_2048": 782, "never_routed": 221},
+        "q80_gate_up_underdetermined": "24326/24576 pairs have rows < 2048",
+        "coherence_probe_clamped_hgravs": "395/2048 organs rank=min(160, n_fit)",
+        "prior_q80_run": "median 92 rows against 2048 dims; every score garbage",
+        "dsv4f_writer_defaults": "16 or 64 rows vs w1 dim 4096"
+      },
+      "why_it_failed": "rows < input_dim is underdetermined for a full-rank score; rows < rank is underdetermined for a rank-r score. rank = min(budget, n_fit_rows) silently starves the codec and the score is not the codec's score.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.q80.capture_coverage",
+          "receipts/ascent-2026-08-16/Q80_COHERENCE_LAYER_DRIFT_PROBE.json",
+          "receipts/ascent-2026-08-16/dsv-resident-gravity.json capture.writer_defaults_are_underdetermined"
+        ]
+      },
+      "retry_when": "never trust a score from an underdetermined fit. Re-score only when n_fit >= the claimed rank (and, for a full-dim claim, n_fit >= dim), with rank not clamped."
+    },
+    {
+      "id": "NS-015",
+      "listed": false,
+      "mechanism": "Calibrate or capture X from a degraded / quantized / gibberish baseline",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "X from a packed or already-quantized run is close enough for codec ranking.",
+      "what_was_measured": "A prior campaign captured X from a 0.7966 gibberish baseline and every score ranked the wrong trajectory.",
+      "why_it_failed": "The teacher must be the BF16 (or official mixed-precision) source. A degraded baseline writes its own errors into the fit.",
+      "settled_by": {
+        "receipts": [
+          "workspace/ops/ascent-lanes/_Q80_DENSITY_COMMON.md",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[8]"
+        ]
+      },
+      "retry_when": "never. Fit against the source named in the lane brief (Q80 BF16 at workspace/campaign/records/runs/qwen-80b/Qwen3-Coder-Next; DSV4F official mixed-precision; Qwen3.8 BF16)."
+    },
+    {
+      "id": "NS-016",
+      "listed": false,
+      "mechanism": "Treat the 0.8604 organ-cosine bar as the capability cliff / refuse any recipe below it",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "0 of 588 recipes clear 0.8604 on all organs ⇒ NO_GO for sub-0.655, and the 1.444 mixed artifact should fail capability because down_proj holdout cosine is 0.7684.",
+      "what_was_measured": {
+        "subbit_curve": "0/588 clear all organs at 0.8604; incumbent holdout gate 0.8755 / up 0.8665 / down 0.7684",
+        "generation": "the same 1.44445 BPW mixed-1p5 artifact then generated coherent text, numeric drift 3.58e-7",
+        "generated_text": "Here's a function that reverses a string (i.e"
+      },
+      "why_it_failed": "The screen predicted failure where generation worked. The bar is conservative in the pessimistic direction. Where the capability cliff actually sits is unproven; generation is ground truth.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/q80-subbit-capability-curve.SUMMARY.json",
+          "receipts/ascent-2026-08-16/Q80_MIXED_GENERATE.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json SUBBIT_VERDICT_AND_ITS_TENSION"
+        ]
+      },
+      "retry_when": "never as a hard GO/NO_GO. A generation-calibrated bar is a new premise (that is what q80-recalibrate-capability-bar is for). Do not reopen the 588-recipe organ-cosine grid against 0.8604."
+    },
+    {
+      "id": "NS-017",
+      "listed": false,
+      "mechanism": "Extrapolate a 4-layer teacher-forced residual probe across 48 layers and call it a GO",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "mixed rel-L2 geo-grows 1.277x/layer; 0.3429 * 1.277^44 = 16211 at layer 48 ⇒ protect first/last 4 layers and GO_WITH_FIX.",
+      "what_was_measured": {
+        "span": [0, 4],
+        "mixed_growth_ratios": [1.733, 1.229, 0.978],
+        "separated_from_null": false,
+        "null_KL_better_than_mixed": true,
+        "coherence_generation_tested": false
+      },
+      "why_it_failed": "Three ratios, one of which shrinks, are not a 48-layer measurement. The probe cannot beat its own shuffled-weight null. 395/2048 organs were rank-clamped (NS-014).",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/Q80_COHERENCE_LAYER_DRIFT_PROBE.json",
+          "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json P1-COHERENCE-4LAYER-EXTRAPOLATION-AS-GO"
+        ]
+      },
+      "retry_when": "never as a 48-layer claim from a 4-layer span. A full-depth or tiled residual probe that separates from a stated null AND a generation run is a new measurement, not a retry of this GO."
+    },
+    {
+      "id": "NS-018",
+      "listed": false,
+      "mechanism": "Cache decoded dense W to avoid re-decode",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Keep decoded expert weights resident so the next hit skips reconstruction.",
+      "what_was_measured": {
+        "dense_bytes_per_expert": 12582912,
+        "all_routed_48x512_decoded_gib": 288.0,
+        "all_routed_48x512_packed_gib": 11.05,
+        "live_top10_decoded_mib": 120
+      },
+      "why_it_failed": "Caching decoded W restores the footprint the 1.23 BPW representation exists to remove.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/q80-decode-throughput.json amortization",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[14]"
+        ]
+      },
+      "retry_when": "never for all-(layer,expert) decoded W. Bind-time rice-index expand (~84 KiB/up) is not dense W and stays allowed. A cache of packed payloads (not decoded W) is a different mechanism."
+    },
+    {
+      "id": "NS-019",
+      "listed": false,
+      "mechanism": "Reconstruct down_proj W then multiply (representation→algebra still open)",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "The remaining decode cost is that we materialise W = L@R before W@x.",
+      "what_was_measured": "Token path already executes y = L @ (R @ x) via hgravs01_two_stage_matvec_f32 / q80_hgravs01_factor_matvec. Packed→dense W is CPU parity only. Routed 48×10 stayed 192.9 → 18.28 ms, unchanged by the algebra lane.",
+      "why_it_failed": "The optimisation was already in place. Re-opening it cannot move the token.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/q80-lowrank-algebra.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json q80_density_frontier.lowrank_algebra"
+        ]
+      },
+      "retry_when": "never on Q80 down_proj. The remaining cost is occupancy of the two-stage factor matvec, not reconstruct-W."
+    },
+    {
+      "id": "NS-020",
+      "listed": false,
+      "mechanism": "Collapse command-buffer / encoder / dispatch topology to win complete-token wall",
+      "class": "REFUTED",
+      "models": ["q80", "dsv4f"],
+      "what_was_expected": "Fewer CBs / fewer encoders / fused serial encoder ⇒ less host wait ⇒ faster token.",
+      "what_was_measured": {
+        "q80_fuse_to_51_cbs": "REGRESSED 516 ms vs 307 ms on the cleanest pair; bit-identical",
+        "q80_overlap_and_serial_encoder": "bit-identical, failed to win complete-token wall",
+        "dsv4f_encoders": "731 → 43, bit-identical, attention GPU time did not move",
+        "dsv4f_cb_collapse_shipped_median": "cold-contaminated (pair1A 12.9 s); warm last-two pairs not uniformly faster; real GPU movement ~35 ms, not an 800 ms body win"
+      },
+      "why_it_failed": "Encoder gaps are not the attention wall. Occupancy and bytes, not topology. A cold first-A contaminates the median.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.q80.deltanet_gqa.rejected_all_bit_identical",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[10] and [12]",
+          "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json P1-CB-COLLAPSE-SHIPPED-ON-COLD-MEDIAN"
+        ]
+      },
+      "retry_when": "never as the primary lever on either model. A topology change that also changes occupancy or removes GPU-idle host I/O is a different mechanism and must be scored on warm paired complete-token wall, not a cold median."
+    },
+    {
+      "id": "NS-021",
+      "listed": false,
+      "mechanism": "Attack DSV4F path_resolve / verify identity tax for wall time",
+      "class": "REFUTED",
+      "models": ["dsv4f"],
+      "what_was_expected": "983 ms of path identity is on the critical path; cutting it wins the token.",
+      "what_was_measured": {
+        "parallel_sum_ms": {"before": 983, "after": 343, "factor": 2.9},
+        "wall_effect": "NONE (A1 1231 vs B1 1303 ms)"
+      },
+      "why_it_failed": "The tax was already overlapped. A parallel sum across threads is not token latency.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.dsv4f.admission_identity",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[11]"
+        ]
+      },
+      "retry_when": "never for wall time. Admission-time bind of a sealed session table remains allowed as cleanup, but do not spend a GPU lane on it expecting ns/token."
+    },
+    {
+      "id": "NS-022",
+      "listed": false,
+      "mechanism": "DSV4F route-ID readback serializer is the token wall",
+      "class": "REFUTED",
+      "models": ["dsv4f"],
+      "what_was_expected": "Host wait on route-ID readback serialises the token.",
+      "what_was_measured": "40 route-id readbacks, ~0.1 ms total (host-wall and cb-collapse).",
+      "why_it_failed": "Not the token wall.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/DSV4F_HOST_WALL_BASELINE.json route_preparation",
+          "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json confirmed_solid"
+        ]
+      },
+      "retry_when": "never on this graph. Reopen only if a new graph makes host route-id a blocking wait measured in tens of milliseconds."
+    },
+    {
+      "id": "NS-023",
+      "listed": false,
+      "mechanism": "Shader compile is the primary current wall",
+      "class": "REFUTED",
+      "models": ["q80", "dsv4f", "qwen38"],
+      "what_was_expected": "Metal compile dominates startup or per-token time.",
+      "what_was_measured": "Warm compile ~24 ms on the Q30 startup path; deprioritised as the current wall. Standing law in every lane brief.",
+      "why_it_failed": "Not the live token limiter. Host I/O, reconstruction, or GPU occupancy is.",
+      "settled_by": {
+        "receipts": [
+          "receipts/q30-startup-latency/LATENCY_GENOME.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[4]"
+        ]
+      },
+      "retry_when": "never as the primary current wall. A cold-start admission claim may still mention compile, but it is not the decode lever."
+    },
+    {
+      "id": "NS-024",
+      "listed": false,
+      "mechanism": "Recompute immutable identity (SHA-256, st_dev, geometry parse, manifest scan) inside the token loop",
+      "class": "REFUTED",
+      "models": ["q80", "dsv4f"],
+      "what_was_expected": "Per-token identity checks are cheap / necessary.",
+      "what_was_measured": {
+        "q80_runtime_residency": "moe_table_build is ~99.9% upload_miss = catalog read + first-load SHA-256 + new_buffer_with_bytes; this has been the top latency three separate times",
+        "q80_late_token_bind_ms": [90, 245],
+        "dsv4f_path_resolve": "see NS-021"
+      },
+      "why_it_failed": "Identity of an immutable blob does not change per token. Paying SHA/stat/parse on the critical path is the pattern.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/q80-runtime-residency.json",
+          "receipts/ascent-2026-08-16/q80-expert-first-touch.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[9]"
+        ]
+      },
+      "retry_when": "never as a per-token operation. Identity belongs at admission / first-touch, then the payload is reused."
+    },
+    {
+      "id": "NS-025",
+      "listed": false,
+      "mechanism": "Emit a giant JSON index (capture-result.json class) as the working format",
+      "class": "REFUTED",
+      "models": ["q80", "dsv4f"],
+      "what_was_expected": "One JSON file holding the capture is convenient.",
+      "what_was_measured": "A 1.38 GB capture-result.json was a real iteration wall.",
+      "why_it_failed": "Parse and residency cost dominate the experiment it exists to serve.",
+      "settled_by": {
+        "receipts": [
+          "workspace/ops/ascent-lanes/_COMMON.md",
+          "receipts/ascent-2026-08-16/dsv-resident-gravity.json capture.layer_tiled_capture_bytes_rank256.note"
+        ]
+      },
+      "retry_when": "never. Layer-tile, fit, discard X. Keep science blocks, not a giant index."
+    },
+    {
+      "id": "NS-026",
+      "listed": false,
+      "mechanism": "DRAM-row interleaving or expert co-route permutation as the token lever",
+      "class": "REFUTED",
+      "models": ["q80", "dsv4f"],
+      "what_was_expected": "Better DRAM-row locality or co-routed expert layout wins GB/s and token time.",
+      "what_was_measured": {
+        "q4_and_binary": "LOST",
+        "fp4": "gained; live wall unchanged",
+        "co_route_greedy": "mean |id_i-id_j| 170.29 → 164.28 (1.037x). WEAK. Pair-specific, not a global permutation win."
+      },
+      "why_it_failed": "The live catalog is one SHA-named file per organ. A 1.037x id-distance cut only pays inside a packed slab and is not the wall. Do not rewrite the 74k-file catalog for this.",
+      "settled_by": {
+        "receipts": ["receipts/ascent-2026-08-16/dram-row-locality.json"]
+      },
+      "retry_when": "never as a live-catalog rewrite. A pack-time colocated triplet blob is a different, already-named lever and belongs in a gravity re-pack, not a DRAM-row hunt."
+    },
+    {
+      "id": "NS-027",
+      "listed": false,
+      "mechanism": "Switching-activity / Gray / LUT permutation of packed codes to cut energy or latency",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Reordering the codebook reduces bit transitions and therefore energy or GPU time.",
+      "what_was_measured": {
+        "alpha_already": "~0.5 (random)",
+        "gpu_ns_original_vs_lut": {"a_median": 299000, "b_median": 299333},
+        "latency_verdict": "same_speed_within_3pct_lower_switching"
+      },
+      "why_it_failed": "Alpha is already random. A free permutation does not move a reconstruction/occupancy wall.",
+      "settled_by": {
+        "receipts": ["receipts/ascent-2026-08-16/codec-switching-activity.json"]
+      },
+      "retry_when": "never as a token-time lever. An energy claim would need measured joules, which this lane did not have."
+    },
+    {
+      "id": "NS-028",
+      "listed": false,
+      "mechanism": "Keep an 8 GiB persistent expert residency arena to win Q80 wall time",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Once experts are resident, bind becomes microseconds and the token falls.",
+      "what_was_measured": {
+        "C_old_ms": [370, 574, 295],
+        "D_persistent_8gib_ms": [461, 387, 356],
+        "spreads": "overlap; no clean speedup",
+        "correctness": "12/12 bit-identical"
+      },
+      "why_it_failed": "New (layer, expert) pairs keep appearing. Each miss still pays catalog read + SHA-256 + MTLBuffer copy (90-245 ms on late tokens). Residency of yesterday's experts does not help today's misses.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/q80-runtime-residency.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.q80.runtime_residency"
+        ]
+      },
+      "retry_when": "never as a complete-token win on this capture of first-touches. A pre-bound no-copy window of the whole catalog (admission-time) is a different mechanism (later lanes attacked that)."
+    },
+    {
+      "id": "NS-029",
+      "listed": false,
+      "mechanism": "Prefetch this token's experts from the previous token's route set",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Last token's top-10 predicts this token's top-10, so first-touch disappears.",
+      "what_was_measured": "REFUTED as a first-touch win. Those experts are already resident from the previous token's bind of that layer. New (layer, expert) pairs are exactly the ones the previous token did not use. Cross-layer expert overlap is not assumed (Q80 experts mutually orthogonal — NS-010).",
+      "why_it_failed": "The predictor cannot see the misses that cost money.",
+      "settled_by": {
+        "receipts": ["receipts/ascent-2026-08-16/q80-expert-first-touch.json"]
+      },
+      "retry_when": "never as a previous-token route predictor. A corpus-level hot-set prebind is a different mechanism."
+    },
+    {
+      "id": "NS-030",
+      "listed": false,
+      "mechanism": "Fuse Q80 down_proj L@(R@x) into one Metal dispatch by recomputing R in every threadgroup",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "One dispatch beats two (R then L) because it removes the mid[160] round-trip.",
+      "what_was_measured": "Redundant-R fusion LOST 5-13x. Each of 64-256 TGs recomputes R[160x512]. Two well-parallelized dispatches with a 640-byte device mid is the token path.",
+      "why_it_failed": "Metal has no grid-wide barrier, so true single-pass without recompute is not available.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/q80-decode-throughput.json",
+          "receipts/ascent-2026-08-16/q80-lowrank-algebra.json findings.down_proj.metal_fused_single_dispatch"
+        ]
+      },
+      "retry_when": "never on this GPU without a grid-wide barrier or a layout that does not recompute R[160x512] per TG."
+    },
+    {
+      "id": "NS-031",
+      "listed": false,
+      "mechanism": "Run rice_q1 serial bitstream expand on the per-token path",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Decode rice residuals per token inside the matvec.",
+      "what_was_measured": {
+        "rice_per_token_serial_ns_one_shot": 15597000,
+        "rejected": true,
+        "csr_apply_us": [78, 82]
+      },
+      "why_it_failed": "15.6 ms/organ serial. Bind-time expand + CSR apply is the token path.",
+      "settled_by": {
+        "receipts": ["receipts/ascent-2026-08-16/q80-decode-kernels.json"]
+      },
+      "retry_when": "never as a per-token kernel. Bind-time expand stays."
+    },
+    {
+      "id": "NS-032",
+      "listed": false,
+      "mechanism": "Blame 10-of-512 gather vs sequential access for the Q80 bandwidth gap",
+      "class": "REFUTED",
+      "models": ["q80"],
+      "what_was_expected": "Scatter gather of 10 experts is why decode misses the sequential ceiling.",
+      "what_was_measured": "G014 ranked_caps rank 11: 10-of-512 gather vs sequential = 0 ns; scatter was not slower; spreads overlap.",
+      "why_it_failed": "The axis that matters is reuse vs no-reuse (unique-once), not gather vs sequential.",
+      "settled_by": {
+        "receipts": [
+          "git:89f40c76e:receipts/ascent-2026-08-16/G014_FS_OCCUPANCY_CONTROL.json ranked_caps[10]",
+          "receipts/ascent-2026-08-16/QWEN38_AT_CEILING_RESOLVED.json the_distinction_that_actually_matters"
+        ]
+      },
+      "retry_when": "never as the explanation of the Q80 kernel gap. The 21-27x (G001) is kernel-shaped against a control that already used the same gather."
+    },
+    {
+      "id": "NS-033",
+      "listed": false,
+      "mechanism": "Compare a 0.59 MiB isolated Q80 organ to a 64 MiB DRAM-row probe and call it a 230x occupancy gap",
+      "class": "CATEGORY_ERROR",
+      "models": ["q80"],
+      "what_was_expected": "Packed matvecs at 2.5 GB/s vs 560-647 GB/s ⇒ ~230x occupancy hole.",
+      "what_was_measured": {
+        "mlx_isolated_512x2048_gb_s": [2.12, 2.43],
+        "hawking_after_occupancy_ns": 11041,
+        "mlx_incremental_ns": 3694,
+        "real_gap_after_occupancy": "~2.75x, not 230x",
+        "mlx_in_flight_N256_gb_s": [112.4, 151.5],
+        "qwen38_50mib_isolated_median_gb_s": 182
+      },
+      "why_it_failed": "A 0.59 MiB batch-1 qmv cannot be judged against a 64 MiB streaming probe. Even Apple MLX lands at ~2.3 GB/s isolated on that shape. The 230x framing is wrong at Q80 organ size and only meaningful as a kernel-quality gap at Qwen3.8 size.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/matvec-mlx-reference.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json CORRECTION_230X_FRAMING_WAS_PARTLY_WRONG"
+        ]
+      },
+      "retry_when": "never as a Q80 slogan. For Qwen3.8-sized (~50 MiB) organs, ~180 GB/s isolated is the right comparator, not 550-647."
+    },
+    {
+      "id": "NS-034",
+      "listed": false,
+      "mechanism": "Present an isolated-organ product (e.g. 192 ms = 48×10×(gate+up+down)) as a token time",
+      "class": "CATEGORY_ERROR",
+      "models": ["q80", "dsv4f"],
+      "what_was_expected": "Sum of organ microbenches is the token.",
+      "what_was_measured": "q80-decode-kernels 192 ms is 480 isolated organ dispatches on deterministic_matrix, not a full token, not BF16 parent, not 0-fallback generate. Baking it next to the 403 ms incumbent is a unit error.",
+      "why_it_failed": "A lane's win counts only when it appears in the complete token. Parallel sums, isolated microbenches and organ-level products are not token latency.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json P1-DECODE-192MS-NOT-A-TOKEN",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json specialization_evidence"
+        ]
+      },
+      "retry_when": "never. Report organ times as organ times. Token times require the generate/graph path."
+    },
+    {
+      "id": "NS-035",
+      "listed": false,
+      "mechanism": "Treat Q80 403 ms / 2.479 tok/s as a legal paired GPU baseline",
+      "class": "CATEGORY_ERROR",
+      "models": ["q80"],
+      "what_was_expected": "ASCENT_STATE incumbents.q80.measured_ns_per_token = 403000000 is the Q80 number.",
+      "what_was_measured": "Single 11-token CPU-wall decode, no paired reps, no GPUEndTime-GPUStartTime, 1637 fallbacks. Ledger GPU median 175.04 ms, wall median 571.51 ms. Filename QWEN80_UNIFORM_Q4_VELOCITY_BASELINE.json is a separate trap (metal: no Metal-capable GPU).",
+      "why_it_failed": "It is not GPU time and not a 0-fallback run.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/CROSS_ADVERSARIAL_FINDINGS.json P1-Q80-403MS-NOT-A-LEGAL-MEASUREMENT",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.q80.measurement_label = DIRTY_ENGINEERING_P1_INVALID_SINGLE_RUN"
+        ]
+      },
+      "retry_when": "never as a baseline. Use a paired, 0-fallback, GPU-timestamped run on a named vehicle."
+    },
+    {
+      "id": "NS-036",
+      "listed": false,
+      "mechanism": "Add separately-measured stage wins and call the sum a token",
+      "class": "REFUTED",
+      "models": ["q80", "dsv4f"],
+      "what_was_expected": "Expert-cache + attn-cache + occupancy deltas compose by arithmetic.",
+      "what_was_measured": "joint-token-ns exists because they do not. dsv-admission-identity cut its metric 2.9x and moved the token by nothing (NS-021). Four Q80 GPU wins are measured and all masked by host first-touch / moe_table_build.",
+      "why_it_failed": "Per-stage wins need not appear in the token. Projection from separately-measured deltas is not a measured token.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/JOINT_TOKEN_NS.json",
+          "receipts/ascent-2026-08-16/ASCENT_STATE.json specialization_evidence and incumbents.dsv4f.inversion.PROJECTED_NOT_MEASURED"
+        ]
+      },
+      "retry_when": "never. Compose on one binary and remeasure the complete token."
+    },
+    {
+      "id": "NS-037",
+      "listed": false,
+      "mechanism": "Say 'Q80 is host/sync-bound' or 'Q80 is simply bandwidth-bound' without naming the vehicle",
+      "class": "CATEGORY_ERROR",
+      "models": ["q80"],
+      "what_was_expected": "One regime describes Q80.",
+      "what_was_measured": {
+        "q4_vehicle": "GPU 125 ms of a 225 ms token, 15.2 GB/s, 21-27x off the 320-411 control — host/sync + kernel gap, not DRAM-roof",
+        "mixed_1p5_vehicle": "gpu_matvec 863 ms of a 1171 ms token (74%), 2.57 GB/s, 0.62% of 411.51 — GPU-matvec-bound / reconstruction-bound",
+        "standing_0.79pct_51pct_idle": "Q4-class measurement; do not transfer to mixed"
+      },
+      "why_it_failed": "The two vehicles are in different regimes. THREE_MODEL_REGIME_SPLIT.json's Q80 row is the Q4 vehicle.",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/Q80_MIXED_RECONSTRUCTION_WALL.json",
+          "receipts/ascent-2026-08-16/G001_KERNEL_GAP.json",
+          "receipts/ascent-2026-08-16/THREE_MODEL_REGIME_SPLIT.json"
+        ]
+      },
+      "retry_when": "never as an unscoped slogan. Always name the vehicle. Same-vehicle discipline is the rule that invalidated G013 v1."
+    },
+    {
+      "id": "NS-038",
+      "listed": false,
+      "mechanism": "Ask whether Qwen3.8 is at its wall by comparing it to Q80's gather control, then 'correct' that by invoking gather-vs-sequential",
+      "class": "CATEGORY_ERROR",
+      "models": ["qwen38"],
+      "what_was_expected": "Either Qwen3.8 is at the 320-411 gather control, or it has ~2x kernel headroom because it is sequential.",
+      "what_was_measured": {
+        "qwen38_achieved_gb_s": 406.2,
+        "honest_decode_ceiling_gb_s": 411.51,
+        "pct_of_ceiling": 98.7,
+        "wrong_axis": "gather vs sequential",
+        "right_axis": "reuse vs no-reuse"
+      },
+      "why_it_failed": "The fs-occupancy lane had already measured the unique-once ceiling. Re-deriving the question from the summary, then self-correcting onto the wrong axis, wasted a measurement that already existed (NS-004 session_note).",
+      "settled_by": {
+        "receipts": [
+          "receipts/ascent-2026-08-16/QWEN38_AT_CEILING_RESOLVED.json",
+          "receipts/ascent-2026-08-16/QWEN38_ACTIVE_BUDGET_MEASURED.json",
+          "receipts/ascent-2026-08-16/QWEN38_BANDWIDTH_BOUND.json"
+        ],
+        "commits": ["57ee82cce", "778eebdbe", "07b92c12f", "91a7751b2"]
+      },
+      "retry_when": "never. Qwen3.8's lever is fewer bytes (BPW), not kernels. Do not reopen a dense-sequential bandwidth control to relitigate 98.7%."
+    }
+  ],
+  "current_plan_contradictions": [
+    {
+      "severity": "P0",
+      "contradicts": ["NS-008"],
+      "where": [
+        "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.dsv4f_density_frontier.blocker",
+        "receipts/ascent-2026-08-16/PROMOTION_QUEUE.json lane dsv-resident-gravity-20260816-001744 next_bottleneck",
+        "workspace/ops/ascent-lanes/auto-dsv4f-determined-teacher-x-capture.md",
+        "README.md 'What is not true yet' (Determined teacher-X capture is the blocker)"
+      ],
+      "what_they_still_say": "The next DSV4F obligation is a ~20 h determined teacher-X capture.",
+      "why_that_is_a_contradiction": "Commits 9fcda89d9 and 6e08b6e10 de-authorised that capture and taught the daemon to exclude it. The live lane brief auto-dsv4f-determined-teacher-x-capture.md is a daemon-generated contract that would re-launch the excluded work if the exclude list ever misses."
+    },
+    {
+      "severity": "P0",
+      "contradicts": ["NS-003", "NS-004", "NS-001"],
+      "where": [
+        "SUPERWAVE_STATE.md Law (top block)",
+        "receipts/ascent-2026-08-16/FS_PER_WEIGHT_LAW.json q80_now.efficiency_pct_of_peak",
+        "receipts/ascent-2026-08-16/TERMINAL_TARGET.json machine_reference and sub_100_fs_threshold",
+        "workspace/ops/ascent-lanes/_COMMON.md and every auto-* brief 'Standing negative science' (560-647 GB/s vs 2.5 GB/s packed)"
+      ],
+      "what_they_still_say": "Q80 is at 0.135% efficiency; the measured control is 560-647 GB/s; sub-100 fs needs BPW < 0.448-0.518.",
+      "why_that_is_a_contradiction": "Those are the three numbers G013 v2 / G014 killed the same day. Lanes that still treat 560-647 as the decode ceiling will propose the measurement that already exists (this session's motivating failure)."
+    },
+    {
+      "severity": "P0",
+      "contradicts": ["NS-002", "NS-005"],
+      "where": [
+        "receipts/ascent-2026-08-16/PHYSICAL_FLOOR.json floors.q80_mixed_1_392467",
+        "receipts/ascent-2026-08-16/TERMINAL_TARGET.json per_model.q80 (target_bpw 1.44445, floor_ms 0.785, ceiling 1273 tok/s)"
+      ],
+      "what_they_still_say": "Q80 mixed floor is 757 µs / 1321 tok/s using BPW 1.392467 × 3.562 G active weights.",
+      "why_that_is_a_contradiction": "That multiplies a storage-ish BPW by the active-weight count. G013 v2's active budget for mixed-1p5 is 4.98 BPW / 2.218 GB/token. The published ceiling is ~3x too optimistic and is the same category error as NS-002."
+    },
+    {
+      "severity": "P1",
+      "contradicts": ["NS-006", "NS-037"],
+      "where": [
+        "receipts/ascent-2026-08-16/THREE_MODEL_REGIME_SPLIT.json measured.q80",
+        "receipts/ascent-2026-08-16/ASCENT_STATE.json negative_science[2] (0.79% of ceiling, ~51% GPU idle)",
+        "SUPERWAVE_STATE.md Measured token budgets (Q80 mixed 1.249 s listed, then 'Q80 (best any vehicle): 225 ms' from Q4)"
+      ],
+      "what_they_still_say": "Q80 is HOST_SYNC_BOUND (125/225 ms).",
+      "why_that_is_a_contradiction": "That is the de-authorised Q4 vehicle. The G020 sealing vehicle is mixed: 863 ms GPU matvec of a 1171 ms token. Host-facet lanes on mixed are working the remaining 26%, not the wall."
+    },
+    {
+      "severity": "P1",
+      "contradicts": ["NS-001", "NS-005"],
+      "where": [
+        "receipts/ascent-2026-08-16/PROMOTION_QUEUE.json q80-recalibrate-capability-bar-20260816-023440 next_bottleneck",
+        "receipts/ascent-2026-08-16/q80-subbit-capability-curve.SUMMARY.json verdict.sub_100_fs_reachable_at_preserved_capability = false"
+      ],
+      "what_they_still_say": "Pack a real sub-0.655 catalog (hgravs gate/up + binary down + ne4) and generate it.",
+      "why_that_is_a_contradiction": "If the purpose is G013 / sub-100 fs, it contradicts NS-001 and NS-005: even a 0.646 storage pack is 2.518 active BPW because attention and lm_head are untouched. If the purpose is only a generation-calibrated capability bar (NS-016), say so and do not file it under G013."
+    },
+    {
+      "severity": "P1",
+      "contradicts": ["NS-033", "NS-004"],
+      "where": [
+        "receipts/ascent-2026-08-16/PROMOTION_QUEUE.json matvec-occupancy-230x-20260816-015752 next_bottleneck",
+        "receipts/ascent-2026-08-16/matvec-occupancy-230x.json (control 550 GB/s)"
+      ],
+      "what_they_still_say": "Q4 organ still 50.45 GB/s, 10.9× below the 550 GB/s control.",
+      "why_that_is_a_contradiction": "matvec-mlx-reference closed that comparison as a category error at Q80 organ size. 550 GB/s is the reuse/DRAM-row probe (NS-004 / NS-033)."
+    },
+    {
+      "severity": "P2",
+      "contradicts": ["NS-007"],
+      "where": [
+        "receipts/ascent-2026-08-16/ASCENT_STATE.json incumbents.q80.vehicle = uniform-Q4 group64 v1",
+        "README.md current dirty figures still lead with Q4 2.48 tok/s"
+      ],
+      "what_they_still_say": "The Q80 incumbent vehicle is uniform-Q4.",
+      "why_that_is_a_contradiction": "S003 de-authorised that vehicle. The incumbent record should name mixed-1p5-v1 as the sealing vehicle and Q4 as a correctness reference only."
+    },
+    {
+      "severity": "P2",
+      "contradicts": ["NS-038"],
+      "where": ["README.md 'Qwen3.8 has no decode path.'"],
+      "what_they_still_say": "Qwen3.8 has no decode path.",
+      "why_that_is_a_contradiction": "qwen38-native-bringup shipped a language-only greedy path (receipts/ascent-2026-08-16/qwen38-native-bringup.json, G015_NATIVE_LEG_VERIFY_ON_MAIN.json). Stale README will spawn a bring-up lane that already exists."
+    }
+  ],
+  "counts": {
+    "entries": 38,
+    "listed_items_covered": 10,
+    "unlisted_found": 28,
+    "contradictions": 8,
+    "p0_contradictions": 3
+  }
+}

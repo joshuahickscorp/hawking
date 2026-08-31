@@ -1,0 +1,223 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T22:21:56Z",
+  "recorded_by": "tools/future/model_bearing.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. The model proposes; the tools decide. A receipt that mixes those two columns is fiction. Cognition UNAVAILABLE is not a scripted success.",
+ "cognition": {
+  "asked": false,
+  "faked": false,
+  "interface": {
+   "missing": [
+    "start",
+    "ask",
+    "sessions",
+    "health",
+    "stop",
+    "restart"
+   ],
+   "ok": false,
+   "present": []
+  },
+  "provider_import": "tools.future.resident_provider is importable but missing ['ask', 'sessions', 'health', 'stop', 'restart']; refusing to treat a partial surface as a resident",
+  "provider_source": null,
+  "state": "UNAVAILABLE",
+  "why": "--build does not start or ask the resident; start() is a GPU-adjacent process this sidecar will not launch without a lease. Interface presence is recorded separately from execution."
+ },
+ "declared_vs_executed": {
+  "live_probe_cited": true,
+  "live_probe_re_run": false,
+  "resident_asked_in_this_receipt": false,
+  "resident_provider_imported": false,
+  "resident_provider_named": true,
+  "rule": "naming a tool is not evidence it ran"
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "no cognition seam existed: interpret/choose/explain_failure/next_hypothesis/delegate/decision_log",
+  "materially_participated() is now a computed predicate (divergence, different hyp B, enacted pick, reason)",
+  "a reworded restatement fails the difference check on a shared fixture",
+  "provider absence reports cognition UNAVAILABLE and refuses to claim participation",
+  "a decision with no recorded reason does not count",
+  "receipts keep model_decided and tools_established in separate columns"
+ ],
+ "gpu_authority": false,
+ "live_probe_cited_not_executed": {
+  "cited_not_executed": true,
+  "evidence_class": "SELF_MEASURED_DIRTY",
+  "gpu_authority": false,
+  "lease_taken": false,
+  "path": "receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
+  "path_taken": "disk",
+  "present": true,
+  "schema": "hawking.future.resident_live_probe.v1",
+  "verdict": "RESIDENT_STARTS_AND_GENERATES",
+  "what_this_does_NOT_establish": [
+   "any qualified throughput number: this ran on a contaminated machine with no protected lease, so the rates it reported are SELF_MEASURED_DIRTY and rank nothing",
+   "that the resident can sustain an hour of load, which is what the model-bearing torture is for",
+   "that the resident reasons WELL enough to orchestrate; two prompts is not cognition evidence",
+   "anything about Flash, which remains a separate child artifact"
+  ],
+  "why": "citing the probe receipt is not re-running the resident; DECLARED capability is not EXECUTED capability"
+ },
+ "loop_entry": {
+  "autonomy_run": "tools/future/autonomy_run.py is the loop; the model must enter there. This lane cannot edit it. enter_loop() is the seam.",
+  "power_torture_transitions": [
+   "REPLAN",
+   "SUBAGENT_STATE",
+   "NO_WAIT",
+   "SCAR_PRUNING",
+   "STATUS_CAUSALITY"
+  ],
+  "wired_into_autonomy_run": false
+ },
+ "model_decided": null,
+ "negative_controls": {
+  "different_surface_passes": true,
+  "no_reason_does_not_count": true,
+  "reworded_restatement_fails": true,
+  "unavailable_does_not_count": true
+ },
+ "negative_findings": [
+  "this module is not in orchestration.BINDINGS (that table is outside this WRITE list)",
+  "autonomy_run.py is not wired to enter_loop() (outside this WRITE list)",
+  "--build did not start or ask the resident; cognition in this receipt is UNAVAILABLE",
+  "if resident_provider is not importable, the sibling lane has not landed; that is UNAVAILABLE not a fake",
+  "the live probe is SELF_MEASURED_DIRTY and does not establish an hour of load or that the resident reasons well",
+  "a resident whose choices never diverge from the fixed policy is a publishable finding, not a pass"
+ ],
+ "prompt_budget": "a handful of focused JSON decisions per minute; tool waits must not hold the inference slot (no_wait_scheduler owns poll)",
+ "purpose": "Cognition seam for the autonomy loop: interpret, choose, explain, next_hypothesis, delegate, decision_log, materially_participated. The model proposes; the tools decide.",
+ "recovered_implementation": [
+  "tools/future/autonomy_run.py \u2014 the loop; resident_model_cognition UNAVAILABLE; FIFO after scar filter",
+  "tools/future/autonomy_trial.py \u2014 COGNITION_UNAVAILABLE; extract_orchestration_and_cognition keeps the fields independent",
+  "tools/future/frontiers.py \u2014 next_work order is the fixed policy (gain then id); _tokens/_jaccard reused",
+  "tools/future/flash_organ_pivot.py \u2014 refuse_if_restatement / restatement_verdict; scoped scar is not a restatement on a new surface",
+  "tools/future/negative_index.py \u2014 refuse_if_dead / canon_family / canon_organ; tools still kill dead ideas",
+  "tools/future/status_causality.py \u2014 challenge(); a status label is a hypothesis until the probe entails it",
+  "tools/future/no_wait_scheduler.py \u2014 poll is supervisor-side; the reasoning context is already released",
+  "tools/future/power_torture.py \u2014 REPLAN / SUBAGENT_STATE transition classes the hour must still demonstrate",
+  "tools/future/orchestration.py \u2014 BINDINGS / invoke / emit_workunit; this module is not bound (outside WRITE)",
+  "tools/future/mutation_engine.py \u2014 metabolism the loop still lacks; not claimed executed here",
+  "receipts/future/evidence/RESIDENT_LIVE_PROBE.json \u2014 RESIDENT_STARTS_AND_GENERATES, cited not re-run"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.model_bearing.enter_loop() / choose() / interpret()",
+  "fails_closed": "provider absent -> cognition UNAVAILABLE, no scripted fallback; invented ids refused; scar-dead picks refused by tools; reworded hyp B fails meaningfully_different; no reason does not count; start/ask never implied by --build",
+  "frontier": "FT.CHILD_RESIDENT.launch",
+  "receipt": "receipts/future/MODEL_BEARING.json",
+  "workunit": "one CPU_ANALYSIS unit; the resident proposes a WorkUnit against the live frontier, tools admit or refuse, and the tape records whether the pick diverged and whether it ran"
+ },
+ "schema": "hawking.future.model_bearing.v1",
+ "seal_sha256": "d2357d3819bbb538e8c7704e7b0148bc643c91a1da6d94f3ebf8d6742de36061",
+ "separation": {
+  "model_decided": null,
+  "rule": "the model proposes; the tools decide. This receipt has a null model_decided column because --build did not ask.",
+  "tools_established": {
+   "empty_check": {
+    "containment": 0.0,
+    "different": false,
+    "evidence_class": "STATIC_ONLY",
+    "jaccard": 1.0,
+    "refused": true,
+    "why": "both hypotheses are empty; emptiness is not a new mechanism"
+   },
+   "fixed_policy": "highest expected_information_gain then id (frontiers.next_work)",
+   "frontier_catalog": {
+    "fixed_policy_id": "FT.ACTIVE_BYTES.hbm-rank",
+    "ids": [
+     "FT.ACTIVE_BYTES.hbm-rank",
+     "FT.CHILD_RESIDENT.install-dry-run",
+     "FT.CONTEXT.disk-authority",
+     "FT.DECODING.cost-model",
+     "FT.FPGA.engine-sim",
+     "FT.GPU_KERNELS.static-warnings",
+     "FT.HCLI_SELF.emit-workunits",
+     "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+     "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "FT.ODYSSEY_ADVERSARY.attacks",
+     "FT.ODYSSEY_TRANSFER.re-earn",
+     "FT.PHYSICAL_GRAPH.p6-projection"
+    ],
+    "n": 32,
+    "ok": true,
+    "policy": "highest expected_information_gain then id (frontiers.next_work)",
+    "source": "frontiers.next_work(THIS_HOST_LANES)"
+   },
+   "pivot_check": {
+    "containment": 0.0,
+    "different": true,
+    "evidence_class": "STATIC_ONLY",
+    "family_a": "cross_expert_structure",
+    "family_b": "n_gram_product_codebook_table",
+    "jaccard": 0.0,
+    "mechanism_same": false,
+    "refused": false,
+    "surface_a": "layer_4.routed_experts.gate_up_proj",
+    "surface_b": "embed",
+    "why": "surface 'layer_4.routed_experts.gate_up_proj' -> 'embed'; family 'cross_expert_structure' -> 'n_gram_product_codebook_table'"
+   },
+   "restatement_check": {
+    "containment": 1.0,
+    "different": false,
+    "evidence_class": "STATIC_ONLY",
+    "family_a": "cross_expert_structure",
+    "family_b": "cross_expert_structure",
+    "jaccard": 1.0,
+    "mechanism_same": true,
+    "refused": false,
+    "surface_a": "layer_4.routed_experts.gate_up_proj",
+    "surface_b": "layer_4.routed_experts.gate_up_proj",
+    "why": "reworded restatement: mechanism jaccard=1.000 containment=1.000 surface='layer_4.routed_experts.gate_up_proj'"
+   },
+   "self_check": {
+    "containment": 1.0,
+    "different": false,
+    "evidence_class": "STATIC_ONLY",
+    "family_a": "cross_expert_structure",
+    "family_b": "cross_expert_structure",
+    "jaccard": 1.0,
+    "mechanism_same": true,
+    "refused": false,
+    "surface_a": "layer_4.routed_experts.gate_up_proj",
+    "surface_b": "layer_4.routed_experts.gate_up_proj",
+    "why": "reworded restatement: mechanism jaccard=1.000 containment=1.000 surface='layer_4.routed_experts.gate_up_proj'"
+   }
+  }
+ },
+ "tools_established": {
+  "empty_refused": true,
+  "fixed_policy": "highest expected_information_gain then id (frontiers.next_work)",
+  "frontier_catalog": {
+   "fixed_policy_id": "FT.ACTIVE_BYTES.hbm-rank",
+   "ids": [
+    "FT.ACTIVE_BYTES.hbm-rank",
+    "FT.CHILD_RESIDENT.install-dry-run",
+    "FT.CONTEXT.disk-authority",
+    "FT.DECODING.cost-model",
+    "FT.FPGA.engine-sim",
+    "FT.GPU_KERNELS.static-warnings",
+    "FT.HCLI_SELF.emit-workunits",
+    "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+    "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+    "FT.ODYSSEY_ADVERSARY.attacks",
+    "FT.ODYSSEY_TRANSFER.re-earn",
+    "FT.PHYSICAL_GRAPH.p6-projection"
+   ],
+   "n": 32,
+   "ok": true,
+   "policy": "highest expected_information_gain then id (frontiers.next_work)",
+   "source": "frontiers.next_work(THIS_HOST_LANES)"
+  },
+  "pivot_passes": true,
+  "provider_importable": false,
+  "restatement_fails": true,
+  "self_not_different": true
+ },
+ "version": 1
+}

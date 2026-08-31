@@ -1,0 +1,284 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:48:00Z",
+  "recorded_by": "tools/future/resident_install.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "existing_lifecycle": {
+  "genesis_resident": "tools/agentos/genesis_resident.py",
+  "incumbent_identity": "hcli/hawking-native.sealed-3.14.json",
+  "native_gate": "hcli/agentos/native_gate.py",
+  "native_mission_gate": "hcli/agentos/native_mission_gate.py",
+  "protected_accelerator_benchmark": "hcli/agentos/protected_accelerator_benchmark.py",
+  "recovery_gate": "hcli/agentos/recovery.py",
+  "resident_gate": "hcli/agentos/resident_gate.py",
+  "resident_seal": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+  "serve_sealed": "tools/hcli_resident/serve_sealed.py"
+ },
+ "gaps_closed": [
+  "generic phase list covering identity through crash recovery and receipts",
+  "bind_winner accepts Flash NX genomes and Qwen resident profiles without a rewrite",
+  "validate_contract fail-closed on unbound required keys"
+ ],
+ "negative_findings": [
+  "hcli/agentos/resident.py does not exist; resident_gate.py is the live gate",
+  "this module does not launch, install, or unload a resident",
+  "performance_receipt.required_bench_state is PROTECTED_ABSOLUTE; sidecar cannot emit it"
+ ],
+ "phase_required": {
+  "capability_receipt": [
+   "path",
+   "schema"
+  ],
+  "crash_recovery": [
+   "policy",
+   "module"
+  ],
+  "executable_identity": [
+   "binary_path",
+   "artifact_root"
+  ],
+  "fallback_policy": [
+   "on_identity_mismatch",
+   "on_unsealed"
+  ],
+  "launch_args": [
+   "argv"
+  ],
+  "memory_requirements": [
+   "resident_bytes",
+   "source"
+  ],
+  "nx_identity": [
+   "contender_id",
+   "nx_kind",
+   "identity_path",
+   "identity_digest"
+  ],
+  "performance_receipt": [
+   "path",
+   "required_bench_state"
+  ],
+  "protected_benchmark_evacuation": [
+   "stop_before_closing_quiescence",
+   "lock_name",
+   "owner"
+  ],
+  "readiness_probe": [
+   "probe",
+   "timeout_s"
+  ],
+  "restart": [
+   "max_restarts",
+   "reset_session"
+  ],
+  "shutdown": [
+   "signal",
+   "grace_s"
+  ],
+  "tokenizer_session": [
+   "tokenizer_path",
+   "prompt_contract"
+  ],
+  "unload": [
+   "drop_weights",
+   "release_device"
+  ]
+ },
+ "phases": [
+  "nx_identity",
+  "executable_identity",
+  "tokenizer_session",
+  "memory_requirements",
+  "launch_args",
+  "readiness_probe",
+  "shutdown",
+  "unload",
+  "protected_benchmark_evacuation",
+  "restart",
+  "crash_recovery",
+  "fallback_policy",
+  "capability_receipt",
+  "performance_receipt"
+ ],
+ "purpose": "Generic NX resident install contract. The tournament winner binds into these slots; the contract is not rewritten per contender.",
+ "recovered_implementation": [
+  {
+   "path": "hcli/agentos/resident_gate.py",
+   "role": "resident_gate"
+  },
+  {
+   "path": "hcli/agentos/native_gate.py",
+   "role": "native_gate"
+  },
+  {
+   "path": "hcli/agentos/native_mission_gate.py",
+   "role": "native_mission_gate"
+  },
+  {
+   "path": "hcli/agentos/recovery.py",
+   "role": "recovery_gate"
+  },
+  {
+   "path": "hcli/agentos/protected_accelerator_benchmark.py",
+   "role": "protected_accelerator_benchmark"
+  },
+  {
+   "path": "tools/agentos/genesis_resident.py",
+   "role": "genesis_resident"
+  },
+  {
+   "path": "tools/hcli_resident/serve_sealed.py",
+   "role": "serve_sealed"
+  },
+  {
+   "path": "hcli/hawking-native.sealed-3.14.json",
+   "role": "incumbent_identity"
+  },
+  {
+   "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "role": "resident_seal"
+  }
+ ],
+ "schema": "hawking.future.resident_install.v1",
+ "seal_sha256": "7d31f38c5aadee07630fef940b83cbeec2300a27dd1cbd9cdee0f7a20a2523d5",
+ "unbound_template": {
+  "existing_lifecycle": {
+   "genesis_resident": "tools/agentos/genesis_resident.py",
+   "incumbent_identity": "hcli/hawking-native.sealed-3.14.json",
+   "native_gate": "hcli/agentos/native_gate.py",
+   "native_mission_gate": "hcli/agentos/native_mission_gate.py",
+   "protected_accelerator_benchmark": "hcli/agentos/protected_accelerator_benchmark.py",
+   "recovery_gate": "hcli/agentos/recovery.py",
+   "resident_gate": "hcli/agentos/resident_gate.py",
+   "resident_seal": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "serve_sealed": "tools/hcli_resident/serve_sealed.py"
+  },
+  "generic": true,
+  "phases": [
+   "nx_identity",
+   "executable_identity",
+   "tokenizer_session",
+   "memory_requirements",
+   "launch_args",
+   "readiness_probe",
+   "shutdown",
+   "unload",
+   "protected_benchmark_evacuation",
+   "restart",
+   "crash_recovery",
+   "fallback_policy",
+   "capability_receipt",
+   "performance_receipt"
+  ],
+  "policy": {
+   "fallback": "Identity mismatch is a REFUSAL naming the field, not a warning. Unsealed serve is stamped sealed=false rather than silently diverging.",
+   "generic_over_winner": true,
+   "hardcoded_winner_forbidden": true,
+   "hardware_numbers_forbidden": true,
+   "protected_evacuation": "The resident is stopped before the closing quiescence sample. Codex owns the protected GPU lease; this sidecar never takes it."
+  },
+  "schema": "hawking.future.resident_install.v1",
+  "slots": {
+   "capability_receipt": {
+    "bound": false,
+    "path": null,
+    "phase": "capability_receipt",
+    "schema": null
+   },
+   "crash_recovery": {
+    "bound": true,
+    "module": "hcli/agentos/recovery.py",
+    "phase": "crash_recovery",
+    "policy": "fail-closed fixture proof in recovery_gate; production recovery is Codex-owned"
+   },
+   "executable_identity": {
+    "artifact_root": null,
+    "binary_path": null,
+    "bound": false,
+    "phase": "executable_identity"
+   },
+   "fallback_policy": {
+    "bound": true,
+    "on_identity_mismatch": "REFUSE naming the field",
+    "on_unsealed": "refuse unless allow-unsealed; stamp sealed=false",
+    "phase": "fallback_policy"
+   },
+   "launch_args": {
+    "argv": null,
+    "bound": false,
+    "phase": "launch_args"
+   },
+   "memory_requirements": {
+    "bound": false,
+    "phase": "memory_requirements",
+    "resident_bytes": null,
+    "source": null
+   },
+   "nx_identity": {
+    "bound": false,
+    "contender_id": null,
+    "identity_digest": null,
+    "identity_path": null,
+    "nx_kind": null,
+    "phase": "nx_identity"
+   },
+   "performance_receipt": {
+    "bound": false,
+    "diagnostic_relative_never_promotes": true,
+    "path": null,
+    "phase": "performance_receipt",
+    "required_bench_state": "PROTECTED_ABSOLUTE",
+    "sidecar_cannot_emit": true
+   },
+   "protected_benchmark_evacuation": {
+    "bound": true,
+    "lock_name": "protected-accelerator-bench.lock",
+    "owner": "hcli/agentos/protected_accelerator_benchmark.py",
+    "phase": "protected_benchmark_evacuation",
+    "sidecar_must_not_take_lease": true,
+    "stop_before_closing_quiescence": true
+   },
+   "readiness_probe": {
+    "bound": true,
+    "module": "hcli/agentos/resident_gate.py",
+    "phase": "readiness_probe",
+    "probe": "connector.start + identity.resident_health.pid",
+    "timeout_s": 180.0
+   },
+   "restart": {
+    "bound": true,
+    "max_restarts": 0,
+    "no_silent_restart": true,
+    "phase": "restart",
+    "reset_session": true
+   },
+   "shutdown": {
+    "bound": true,
+    "grace_s": 5.0,
+    "phase": "shutdown",
+    "signal": "connector.stop"
+   },
+   "tokenizer_session": {
+    "bound": false,
+    "phase": "tokenizer_session",
+    "prompt_contract": null,
+    "tokenizer_path": null
+   },
+   "unload": {
+    "bound": true,
+    "drop_weights": true,
+    "note": "Unload must drop weights and release the device before any other resident binds.",
+    "phase": "unload",
+    "release_device": true
+   }
+  },
+  "winner_id": null
+ },
+ "version": 1
+}

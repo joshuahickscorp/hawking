@@ -1,0 +1,117 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:46:09Z",
+  "recorded_by": "tools/future/mutation_surface.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "carve_out_rule": "SIDECAR globs are evaluated first, so tools/future/* is sidecar-owned even though tools/* is listed as Codex-owned.",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "codex_owned": [
+  "crates/*",
+  "hcli/*",
+  "tools/*",
+  "civilization/*",
+  "docs/*",
+  "receipts/headless/*",
+  "receipts/odyssey-i/*",
+  "spec/*",
+  "contracts/*"
+ ],
+ "dirty_paths": 767,
+ "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "integration_window_open": false,
+ "policy": {
+  "codex_writes": "unconstrained; Codex is the live frontier",
+  "on_conflict": "sidecar yields; prepare an integration bundle instead",
+  "quiescence_is_not_permission": "A quiescent surface opens an integration window. It never grants the sidecar authority to edit a Codex file.",
+  "sidecar_writes": "only into SIDECAR globs"
+ },
+ "purpose": "Ownership map preventing Claude/Grok sidecar lanes from mutating files the live Codex Accelerator campaign is holding.",
+ "quiescence_threshold_seconds": 21600,
+ "schema": "hawking.future.codex_mutation_surface.v1",
+ "seal_sha256": "92e36d1fb1f346c0c4c0337609d7cdf00b2b10481d734e6e4bd1b51419666ff0",
+ "sidecar_owned": [
+  "tools/future/*",
+  "receipts/future/*"
+ ],
+ "surface_evidence": [
+  {
+   "age_seconds": 39766.4,
+   "exists": true,
+   "glob": "crates/*",
+   "newest_file": "crates/hawking-core/src/metal/mod.rs",
+   "newest_mtime_epoch": 1788065002.524,
+   "quiescent": true
+  },
+  {
+   "age_seconds": 88482.9,
+   "exists": true,
+   "glob": "hcli/*",
+   "newest_file": "hcli/agentos_cli.py",
+   "newest_mtime_epoch": 1788016286.038,
+   "quiescent": true
+  },
+  {
+   "age_seconds": 5528.1,
+   "exists": true,
+   "glob": "tools/*",
+   "newest_file": "tools/odyssey/state_gravity.py",
+   "newest_mtime_epoch": 1788099240.801,
+   "quiescent": false
+  },
+  {
+   "age_seconds": 126433.1,
+   "exists": true,
+   "glob": "civilization/*",
+   "newest_file": "civilization/ROADMAP_STATE.json",
+   "newest_mtime_epoch": 1787978335.832,
+   "quiescent": true
+  },
+  {
+   "age_seconds": 44389.6,
+   "exists": true,
+   "glob": "docs/*",
+   "newest_file": "docs/ACCELERATOR_PHYSICAL_QUEUE.md",
+   "newest_mtime_epoch": 1788060379.381,
+   "quiescent": true
+  },
+  {
+   "age_seconds": 38843.4,
+   "exists": true,
+   "glob": "receipts/headless/*",
+   "newest_file": "receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+   "newest_mtime_epoch": 1788065925.529,
+   "quiescent": true
+  },
+  {
+   "age_seconds": 917231.2,
+   "exists": true,
+   "glob": "receipts/odyssey-i/*",
+   "newest_file": "receipts/odyssey-i/O006_GRAVITY_q4-g64-experts.json",
+   "newest_mtime_epoch": 1787187537.782,
+   "quiescent": true
+  },
+  {
+   "age_seconds": 1046587.1,
+   "exists": true,
+   "glob": "spec/*",
+   "newest_file": "spec/battery/wide_v1.py",
+   "newest_mtime_epoch": 1787058181.799,
+   "quiescent": true
+  },
+  {
+   "age_seconds": 1160399.3,
+   "exists": true,
+   "glob": "contracts/*",
+   "newest_file": "contracts/genesis/GENESIS_OUTPUT_LAW.md",
+   "newest_mtime_epoch": 1786944369.627,
+   "quiescent": true
+  }
+ ],
+ "version": 1
+}

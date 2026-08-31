@@ -1,0 +1,1181 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:57Z",
+  "recorded_by": "tools/future/fusion_sim.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "cuda_seam": {
+  "local_cuda_on_apple": "FORBIDDEN",
+  "lowering_contract": {
+   "forbidden": [
+    "local CUDA performance claim on Apple hardware",
+    "tps / token_ns / gpu_ns / bandwidth_gbps in lowering output",
+    "building an FPGA backend or an FPGA civilization"
+   ],
+   "ir": "fusion_isa.FusionOp",
+   "methods": [
+    "lower(op, representation) -> kernel_ref",
+    "abi_layout(op)",
+    "required_objects(op)"
+   ],
+   "note": "Lowering is a contract over FusionOp, not a timing model. tools/accelerator/cuda_runtime.py executes a CUDA HOST subset on Metal and already records is_a_cuda_differential=False because no NVIDIA hardware exists on this machine.",
+   "ops": [
+    "ACQUIRE_READ",
+    "ACQUIRE_WRITE",
+    "RELEASE",
+    "PREFETCH",
+    "COPY",
+    "MATERIALIZE",
+    "INVALIDATE",
+    "REDUCE",
+    "SCATTER",
+    "GATHER",
+    "SUBMIT",
+    "FENCE",
+    "DIGEST",
+    "EVICT"
+   ],
+   "source": "tools/accelerator/fusion_isa.py",
+   "targets": [
+    "metal",
+    "cuda",
+    "fpga_hwir"
+   ],
+   "wire": "tools/accelerator/fusion_wire.py"
+  },
+  "metal_cuda_differential_schema": {
+   "hardware_fields_must_be_null_until_both_protected": [
+    "bandwidth_gbps",
+    "dispatch_ns",
+    "gpu_ns",
+    "token_ns",
+    "tps",
+    "wall_ns"
+   ],
+   "local_cuda_on_apple": "FORBIDDEN",
+   "promotion_rule": "both sides must be PROTECTED_ABSOLUTE taken under a real protected GPU lease on the named machine. DIAGNOSTIC_RELATIVE never promotes. STATIC_ONLY never promotes.",
+   "required_fields": [
+    "workload_id",
+    "metal_receipt",
+    "cuda_receipt",
+    "machine_metal",
+    "machine_cuda",
+    "bench_state_metal",
+    "bench_state_cuda",
+    "measurement_class_metal",
+    "measurement_class_cuda"
+   ],
+   "schema": "hawking.future.fusion_sim.metal_cuda_differential.v1",
+   "why_local_cuda_on_apple_is_forbidden": "receipts/headless/CUDA_CAPABILITY_CENSUS.json identities.transport.status=ABSENT: 'no NVIDIA hardware exists on this machine'. A CUDA number collected on Apple Silicon is not CUDA."
+  }
+ },
+ "default_simulation": {
+  "collectives": [
+   {
+    "algorithm": "UNDECIDABLE",
+    "algorithm_structural": "RING_OR_TREE",
+    "choice_decidable": false,
+    "cost_s": null,
+    "domains": [
+     "APPLE",
+     "FPGA_U50",
+     "CUDA_DGX"
+    ],
+    "message_bytes": 65536,
+    "op": "ALLREDUCE",
+    "reason": "p=3: RING ((p-1) hops, (p-1)/p bandwidth-share) vs TREE (ceil(log2 p) hops) is a cost comparison. Critical-path interconnect costs are UNKNOWN, so the algorithm is not chosen. fusion_planner.py would pick from knobs; this module refuses.",
+    "structural_ring_hops": [
+     [
+      "APPLE",
+      "FPGA_U50"
+     ],
+     [
+      "FPGA_U50",
+      "APPLE",
+      "CUDA_DGX"
+     ],
+     [
+      "CUDA_DGX",
+      "APPLE"
+     ]
+    ],
+    "unknown_inputs": [
+     "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+     "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement",
+     "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+     "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement",
+     "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+     "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement",
+     "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+     "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+    ]
+   }
+  ],
+  "executable": false,
+  "fault": null,
+  "honesty": {
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "produces_diagnostic_relative": false,
+   "produces_protected_absolute": false,
+   "rule": "when any critical-path input is UNKNOWN, timing_decidable is False and no speedup number is produced"
+  },
+  "move_vs_recompute": [
+   {
+    "action": "UNDECIDABLE",
+    "choice_decidable": false,
+    "home_domain": "APPLE",
+    "identity": "weights",
+    "need_domain": "CUDA_DGX",
+    "options": [
+     {
+      "action": "MOVE_DATA",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "transfer 1073741824B APPLE -> CUDA_DGX via APPLE->CUDA_DGX",
+      "unknown_inputs": [
+       "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "REPLICATE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "place a persistent replica of weights in CUDA_DGX (legal: IMMUTABLE_WEIGHTS is immutable)",
+      "unknown_inputs": [
+       "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "MOVE_COMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "run the consumer in APPLE instead of moving 1073741824B: send a 42B fusion_wire dispatch and return 0B of result",
+      "unknown_inputs": [
+       "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     }
+    ],
+    "reason": "at least one offered option has an UNKNOWN cost on the critical path; refusing to pick a winner from knobs. This is the move-vs-recompute trap a naive heterogeneous plan hits.",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-CUDA_DGX"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "CUDA_DGX"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    }
+   },
+   {
+    "action": "UNDECIDABLE",
+    "choice_decidable": false,
+    "home_domain": "APPLE",
+    "identity": "weights",
+    "need_domain": "EGPU",
+    "options": [
+     {
+      "action": "MOVE_DATA",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "transfer 1073741824B APPLE -> EGPU via APPLE->EGPU",
+      "unknown_inputs": [
+       "APPLE-EGPU.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-EGPU.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "REPLICATE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "place a persistent replica of weights in EGPU (legal: IMMUTABLE_WEIGHTS is immutable)",
+      "unknown_inputs": [
+       "APPLE-EGPU.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-EGPU.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "MOVE_COMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "run the consumer in APPLE instead of moving 1073741824B: send a 42B fusion_wire dispatch and return 0B of result",
+      "unknown_inputs": [
+       "APPLE-EGPU.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-EGPU.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     }
+    ],
+    "reason": "at least one offered option has an UNKNOWN cost on the critical path; refusing to pick a winner from knobs. This is the move-vs-recompute trap a naive heterogeneous plan hits.",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-EGPU"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "EGPU"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-EGPU.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-EGPU.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    }
+   },
+   {
+    "action": "UNDECIDABLE",
+    "choice_decidable": false,
+    "home_domain": "APPLE",
+    "identity": "weights",
+    "need_domain": "FPGA_U50",
+    "options": [
+     {
+      "action": "MOVE_DATA",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "transfer 1073741824B APPLE -> FPGA_U50 via APPLE->FPGA_U50",
+      "unknown_inputs": [
+       "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "REPLICATE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "place a persistent replica of weights in FPGA_U50 (legal: IMMUTABLE_WEIGHTS is immutable)",
+      "unknown_inputs": [
+       "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "MOVE_COMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "run the consumer in APPLE instead of moving 1073741824B: send a 42B fusion_wire dispatch and return 0B of result",
+      "unknown_inputs": [
+       "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     }
+    ],
+    "reason": "at least one offered option has an UNKNOWN cost on the critical path; refusing to pick a winner from knobs. This is the move-vs-recompute trap a naive heterogeneous plan hits.",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-FPGA_U50"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "FPGA_U50"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    }
+   },
+   {
+    "action": "UNDECIDABLE",
+    "choice_decidable": false,
+    "home_domain": "APPLE",
+    "identity": "weights",
+    "need_domain": "MAC_ADDITIONAL",
+    "options": [
+     {
+      "action": "MOVE_DATA",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "transfer 1073741824B APPLE -> MAC_ADDITIONAL via APPLE->MAC_ADDITIONAL",
+      "unknown_inputs": [
+       "APPLE-MAC_ADDITIONAL.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-MAC_ADDITIONAL.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "REPLICATE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "place a persistent replica of weights in MAC_ADDITIONAL (legal: IMMUTABLE_WEIGHTS is immutable)",
+      "unknown_inputs": [
+       "APPLE-MAC_ADDITIONAL.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-MAC_ADDITIONAL.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "MOVE_COMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "run the consumer in APPLE instead of moving 1073741824B: send a 42B fusion_wire dispatch and return 0B of result",
+      "unknown_inputs": [
+       "APPLE-MAC_ADDITIONAL.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-MAC_ADDITIONAL.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     }
+    ],
+    "reason": "at least one offered option has an UNKNOWN cost on the critical path; refusing to pick a winner from knobs. This is the move-vs-recompute trap a naive heterogeneous plan hits.",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-MAC_ADDITIONAL"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "MAC_ADDITIONAL"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-MAC_ADDITIONAL.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-MAC_ADDITIONAL.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    }
+   },
+   {
+    "action": "UNDECIDABLE",
+    "choice_decidable": false,
+    "home_domain": "APPLE",
+    "identity": "activations",
+    "need_domain": "CUDA_DGX",
+    "options": [
+     {
+      "action": "MOVE_DATA",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "transfer 65536B APPLE -> CUDA_DGX via APPLE->CUDA_DGX",
+      "unknown_inputs": [
+       "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "MOVE_COMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "run the consumer in APPLE instead of moving 65536B: send a 42B fusion_wire dispatch and return 0B of result",
+      "unknown_inputs": [
+       "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "RECOMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "recompute activations locally in CUDA_DGX instead of transferring it",
+      "unknown_inputs": [
+       "no PROTECTED_ABSOLUTE compute measurement; sidecar has no GPU lease and does not invent token_ns"
+      ]
+     }
+    ],
+    "reason": "at least one offered option has an UNKNOWN cost on the critical path; refusing to pick a winner from knobs. This is the move-vs-recompute trap a naive heterogeneous plan hits.",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-CUDA_DGX"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 65536,
+     "path": [
+      "APPLE",
+      "CUDA_DGX"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    }
+   },
+   {
+    "action": "UNDECIDABLE",
+    "choice_decidable": false,
+    "home_domain": "APPLE",
+    "identity": "activations",
+    "need_domain": "FPGA_U50",
+    "options": [
+     {
+      "action": "MOVE_DATA",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "transfer 65536B APPLE -> FPGA_U50 via APPLE->FPGA_U50",
+      "unknown_inputs": [
+       "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "MOVE_COMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "run the consumer in APPLE instead of moving 65536B: send a 42B fusion_wire dispatch and return 0B of result",
+      "unknown_inputs": [
+       "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+       "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+      ]
+     },
+     {
+      "action": "RECOMPUTE",
+      "choice_decidable": false,
+      "cost_s": null,
+      "detail": "recompute activations locally in FPGA_U50 instead of transferring it",
+      "unknown_inputs": [
+       "no PROTECTED_ABSOLUTE compute measurement; sidecar has no GPU lease and does not invent token_ns"
+      ]
+     }
+    ],
+    "reason": "at least one offered option has an UNKNOWN cost on the critical path; refusing to pick a winner from knobs. This is the move-vs-recompute trap a naive heterogeneous plan hits.",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-FPGA_U50"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 65536,
+     "path": [
+      "APPLE",
+      "FPGA_U50"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    }
+   }
+  ],
+  "not_executable_reasons": [
+   "work ['expert_mlp'] assigned to absent node FPGA_U50 (physical Xilinx Alveo U50 (or any selected FPGA board). receipts/headless/HCLI_FPGA_PREBOARD.json records physical_board.status=ABSENT, fpga_backend.status=NOT_BUILT, device_genome TARGET_UNSELECTED. receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json is a candidate map with no physical board, bitstream, or U50 performance claimed. FPGA is Accelerator/Physical Compiler/Fusion; it is not a civilization and this is not an FPGA backend.)"
+  ],
+  "overlap": [
+   {
+    "a": "decode_attn",
+    "b": "expert_mlp",
+    "hidden_time_s": null,
+    "may_overlap": true,
+    "reason": "decode_attn@APPLE and expert_mlp@FPGA_U50 share no happens-before and no node; overlap DURATION is UNKNOWN"
+   }
+  ],
+  "placement": {
+   "activations": {
+    "home": "APPLE",
+    "hypothetical_replicas": [],
+    "identity": "activations",
+    "mutable": true,
+    "owner": "APPLE",
+    "real_replicas": [],
+    "reason": "ACTIVATIONS is mutable per humf.MEMORY_CLASS_POLICY; a single authoritative owner (APPLE) is required and replication is never offered",
+    "replicas": []
+   },
+   "kv": {
+    "home": "APPLE",
+    "hypothetical_replicas": [],
+    "identity": "kv",
+    "mutable": true,
+    "owner": "APPLE",
+    "real_replicas": [],
+    "reason": "KV_STATE is mutable per humf.MEMORY_CLASS_POLICY; a single authoritative owner (APPLE) is required and replication is never offered",
+    "replicas": []
+   },
+   "weights": {
+    "home": "APPLE",
+    "hypothetical_replicas": [
+     "CUDA_DGX",
+     "EGPU",
+     "FPGA_U50",
+     "MAC_ADDITIONAL"
+    ],
+    "identity": "weights",
+    "mutable": false,
+    "owner": "APPLE",
+    "real_replicas": [],
+    "reason": "ORGAN-granularity IMMUTABLE_WEIGHTS is immutable; replicated into every remote consumer ['CUDA_DGX', 'EGPU', 'FPGA_U50', 'MAC_ADDITIONAL']. Replicas on absent nodes ['CUDA_DGX', 'EGPU', 'FPGA_U50', 'MAC_ADDITIONAL'] are HYPOTHETICAL and cannot satisfy recovery.",
+    "replicas": [
+     "CUDA_DGX",
+     "EGPU",
+     "FPGA_U50",
+     "MAC_ADDITIONAL"
+    ]
+   }
+  },
+  "representation_conversion": [
+   {
+    "cost": {
+     "field": null,
+     "kind": "UNKNOWN",
+     "reason": "no measured Metal->HWIR conversion cost; no U50",
+     "receipt": null,
+     "unit": null,
+     "value": null
+    },
+    "from": "metal_f16",
+    "id": "convert_act_to_hwir",
+    "node": "APPLE",
+    "timing_decidable": false,
+    "to": "fpga_hwir"
+   }
+  ],
+  "residency": [
+   {
+    "authoritative": "APPLE",
+    "hypothetical_replicas": [],
+    "identity": "activations",
+    "present_home": true,
+    "real_replicas": []
+   },
+   {
+    "authoritative": "APPLE",
+    "hypothetical_replicas": [],
+    "identity": "kv",
+    "present_home": true,
+    "real_replicas": []
+   },
+   {
+    "authoritative": "APPLE",
+    "hypothetical_replicas": [
+     "CUDA_DGX",
+     "EGPU",
+     "FPGA_U50",
+     "MAC_ADDITIONAL"
+    ],
+    "identity": "weights",
+    "present_home": true,
+    "real_replicas": []
+   }
+  ],
+  "schema": "hawking.future.fusion_sim.result.v1",
+  "speedup": null,
+  "state_ownership": [
+   {
+    "identity": "activations",
+    "mutable": true,
+    "owner": "APPLE",
+    "rule": "single owner if mutable; replicas legal only if immutable"
+   },
+   {
+    "identity": "kv",
+    "mutable": true,
+    "owner": "APPLE",
+    "rule": "single owner if mutable; replicas legal only if immutable"
+   },
+   {
+    "identity": "weights",
+    "mutable": false,
+    "owner": "APPLE",
+    "rule": "single owner if mutable; replicas legal only if immutable"
+   }
+  ],
+  "timing": null,
+  "timing_decidable": false,
+  "topology": {
+   "links": [
+    {
+     "a": "APPLE",
+     "b": "CUDA_DGX",
+     "bandwidth": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "costs_known": false,
+     "latency": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "note": "APPLE<CUDA_DGX interconnect; node absent; cost UNKNOWN not a knob"
+    },
+    {
+     "a": "APPLE",
+     "b": "EGPU",
+     "bandwidth": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "costs_known": false,
+     "latency": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "note": "APPLE<EGPU interconnect; node absent; cost UNKNOWN not a knob"
+    },
+    {
+     "a": "APPLE",
+     "b": "FPGA_U50",
+     "bandwidth": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "costs_known": false,
+     "latency": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "note": "APPLE<FPGA_U50 interconnect; node absent; cost UNKNOWN not a knob"
+    },
+    {
+     "a": "APPLE",
+     "b": "MAC_ADDITIONAL",
+     "bandwidth": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "costs_known": false,
+     "latency": {
+      "field": null,
+      "kind": "UNKNOWN",
+      "reason": "no measured interconnect to an absent node; a knob is not a measurement",
+      "receipt": null,
+      "unit": null,
+      "value": null
+     },
+     "note": "APPLE<MAC_ADDITIONAL interconnect; node absent; cost UNKNOWN not a knob"
+    }
+   ],
+   "nodes": [
+    {
+     "genome_receipt": "receipts/headless/MACHINE_GENOME.json",
+     "id": "APPLE",
+     "identity": {
+      "arch": "arm64",
+      "bandwidth_roof_cited": "receipts/headless/MACHINE_GENOME.json#measured_bandwidth.median_gb_s (INSTANCE triad; not a heterogeneous interconnect; not token_ns)",
+      "cpu_cores": 28,
+      "gpu_cores": 60,
+      "knowledge_level": "INSTANCE",
+      "memory_bytes": 103079215104,
+      "os": "Darwin 27.0.0",
+      "schema": "hawking.accelerator.machine_genome.v1",
+      "soc": "Apple M3 Ultra",
+      "sustained_behaviour": "ABSENT",
+      "thermal_envelope": "ABSENT"
+     },
+     "kind": "APPLE",
+     "missing_dependency": null,
+     "note": "Present. Real MachineGenome at INSTANCE knowledge_level, produced by tools/accelerator/machine_genome.py and consumed via hcli/machine.py. Unified-memory copy deletion is the machine-specific win named in tools/accelerator/device_ascension.py; it is not a CUDA/FPGA/eGPU number.",
+     "present": true
+    },
+    {
+     "genome_receipt": null,
+     "id": "CUDA_DGX",
+     "identity": {},
+     "kind": "CUDA_DGX",
+     "missing_dependency": "NVIDIA CUDA device / DGX node. receipts/headless/CUDA_CAPABILITY_CENSUS.json identities.transport.status=ABSENT: 'no NVIDIA hardware exists on this machine'. receipts/headless/CUDA_CAPABILITY_LEDGER.json MULTI_DEVICE.peer_access remains unmeasured. tools/accelerator/cuda_runtime.py is a Metal stand-in and records is_a_cuda_differential=False.",
+     "note": "Absent. CUDA Capability Ledger is an inventory, not a device.",
+     "present": false
+    },
+    {
+     "genome_receipt": null,
+     "id": "EGPU",
+     "identity": {},
+     "kind": "EGPU",
+     "missing_dependency": "Thunderbolt/PCIe eGPU enclosure attached to this host. tools/accelerator/fusion_planner.py models EGPU0 as physical=False and used a 5 GB/s KNOB; this module replaces the knob with UNKNOWN.",
+     "note": "Absent. fusion_planner's eGPU shape is structural; its bandwidth is not.",
+     "present": false
+    },
+    {
+     "genome_receipt": null,
+     "id": "FPGA_U50",
+     "identity": {},
+     "kind": "FPGA_U50",
+     "missing_dependency": "physical Xilinx Alveo U50 (or any selected FPGA board). receipts/headless/HCLI_FPGA_PREBOARD.json records physical_board.status=ABSENT, fpga_backend.status=NOT_BUILT, device_genome TARGET_UNSELECTED. receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json is a candidate map with no physical board, bitstream, or U50 performance claimed. FPGA is Accelerator/Physical Compiler/Fusion; it is not a civilization and this is not an FPGA backend.",
+     "note": "Absent. Pre-board scaffolding exists; the board does not.",
+     "present": false
+    },
+    {
+     "genome_receipt": null,
+     "id": "MAC_ADDITIONAL",
+     "identity": {},
+     "kind": "MAC",
+     "missing_dependency": "a second Apple Silicon host with its own INSTANCE MachineGenome plus a measured interconnect. receipts/headless/MACHINE_GENOME.json is INSTANCE-scoped to this machine only; knowledge_level INSTANCE does not transfer to a sibling Mac.",
+     "note": "Absent. A second Mac is not implied by one MachineGenome.",
+     "present": false
+    }
+   ]
+  },
+  "transport": [
+   {
+    "from": "APPLE",
+    "object": "weights",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-CUDA_DGX"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "CUDA_DGX"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    },
+    "to": "CUDA_DGX"
+   },
+   {
+    "from": "APPLE",
+    "object": "weights",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-EGPU"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "EGPU"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-EGPU.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-EGPU.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    },
+    "to": "EGPU"
+   },
+   {
+    "from": "APPLE",
+    "object": "weights",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-FPGA_U50"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "FPGA_U50"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    },
+    "to": "FPGA_U50"
+   },
+   {
+    "from": "APPLE",
+    "object": "weights",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-MAC_ADDITIONAL"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 1073741824,
+     "path": [
+      "APPLE",
+      "MAC_ADDITIONAL"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-MAC_ADDITIONAL.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-MAC_ADDITIONAL.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    },
+    "to": "MAC_ADDITIONAL"
+   },
+   {
+    "from": "APPLE",
+    "object": "activations",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-CUDA_DGX"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 65536,
+     "path": [
+      "APPLE",
+      "CUDA_DGX"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    },
+    "to": "CUDA_DGX"
+   },
+   {
+    "from": "APPLE",
+    "object": "activations",
+    "route": {
+     "alpha_s": null,
+     "beta_s_per_byte": null,
+     "evidence_class": "STATIC_ONLY",
+     "hops": [
+      "APPLE-FPGA_U50"
+     ],
+     "how_chosen": "FEWEST_HOPS_COSTS_UNKNOWN",
+     "nbytes": 65536,
+     "path": [
+      "APPLE",
+      "FPGA_U50"
+     ],
+     "timing_decidable": false,
+     "total_time_s": null,
+     "unknown_inputs": [
+      "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+      "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement"
+     ]
+    },
+    "to": "FPGA_U50"
+   }
+  ],
+  "unknown_inputs_on_critical_path": [
+   "compute.decode_attn:no PROTECTED_ABSOLUTE compute measurement; sidecar has no GPU lease and does not invent token_ns",
+   "convert.convert_act_to_hwir:no measured Metal->HWIR conversion cost; no U50",
+   "compute.expert_mlp:no PROTECTED_ABSOLUTE compute measurement; sidecar has no GPU lease and does not invent token_ns",
+   "compute.lm_head:no PROTECTED_ABSOLUTE compute measurement; sidecar has no GPU lease and does not invent token_ns",
+   "APPLE-CUDA_DGX.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+   "APPLE-CUDA_DGX.latency:no measured interconnect to an absent node; a knob is not a measurement",
+   "APPLE-EGPU.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+   "APPLE-EGPU.latency:no measured interconnect to an absent node; a knob is not a measurement",
+   "APPLE-FPGA_U50.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+   "APPLE-FPGA_U50.latency:no measured interconnect to an absent node; a knob is not a measurement",
+   "APPLE-MAC_ADDITIONAL.bandwidth:no measured interconnect to an absent node; a knob is not a measurement",
+   "APPLE-MAC_ADDITIONAL.latency:no measured interconnect to an absent node; a knob is not a measurement",
+   "no PROTECTED_ABSOLUTE compute measurement; sidecar has no GPU lease and does not invent token_ns"
+  ]
+ },
+ "fault_recovery": {
+  "vanish_APPLE": {
+   "collectives": [
+    {
+     "detail": "APPLE vanished mid-ALLREDUCE; remaining participants FENCE. No partial result is authoritative.",
+     "domains": [
+      "APPLE",
+      "FPGA_U50",
+      "CUDA_DGX"
+     ],
+     "op": "ALLREDUCE",
+     "outcome": "ABORT_COLLECTIVE"
+    }
+   ],
+   "inflight": [
+    {
+     "detail": "in-flight transport APPLE->FPGA_U50 involved vanished node APPLE",
+     "dst": "FPGA_U50",
+     "identity": "activations",
+     "outcome": "ABORT",
+     "src": "APPLE"
+    }
+   ],
+   "means": "a lost device invalidates every copy it held; anything whose live or only state was there is DATA_LOSS, not degraded replication",
+   "objects": [
+    {
+     "detail": "mutable owner vanished; object declares recompute_legal",
+     "home": "APPLE",
+     "identity": "activations",
+     "mutable": true,
+     "outcome": "RECOMPUTE_ON_SURVIVOR"
+    },
+    {
+     "detail": "mutable owner vanished; sole live state was there. humf.device_lost names this DATA LOSS, not degraded replication",
+     "home": "APPLE",
+     "identity": "kv",
+     "mutable": true,
+     "outcome": "DATA_LOSS"
+    },
+    {
+     "detail": "immutable home vanished; remaining replicas were HYPOTHETICAL (on absent nodes ['CUDA_DGX', 'EGPU', 'FPGA_U50', 'MAC_ADDITIONAL']) and cannot recover",
+     "home": "APPLE",
+     "identity": "weights",
+     "mutable": false,
+     "outcome": "DATA_LOSS"
+    }
+   ],
+   "outcome": "DEFINED",
+   "quarantine": true,
+   "quarantine_note": "Cited from humf.Humf.device_lost: the domain is not trustworthy for the NEXT transfer either. Release is explicit, never automatic.",
+   "vanished": "APPLE",
+   "work": [
+    {
+     "detail": "work decode_attn was assigned to vanished node APPLE",
+     "id": "decode_attn",
+     "outcome": "ABORT_WORK"
+    },
+    {
+     "detail": "work convert_act_to_hwir was assigned to vanished node APPLE",
+     "id": "convert_act_to_hwir",
+     "outcome": "ABORT_WORK"
+    },
+    {
+     "detail": "work lm_head was assigned to vanished node APPLE",
+     "id": "lm_head",
+     "outcome": "ABORT_WORK"
+    }
+   ]
+  },
+  "vanish_FPGA_U50": {
+   "collectives": [],
+   "inflight": [],
+   "objects": [],
+   "outcome": "ALREADY_ABSENT",
+   "reason": "FPGA_U50 was never present (physical Xilinx Alveo U50 (or any selected FPGA board). receipts/headless/HCLI_FPGA_PREBOARD.json records physical_board.status=ABSENT, fpga_backend.status=NOT_BUILT, device_genome TARGET_UNSELECTED. receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json is a candidate map with no physical board, bitstream, or U50 performance claimed. FPGA is Accelerator/Physical Compiler/Fusion; it is not a civilization and this is not an FPGA backend.); vanishing it is a no-op with a defined outcome",
+   "vanished": "FPGA_U50",
+   "work": []
+  }
+ },
+ "gaps_closed": [
+  "Node model for APPLE (present, real MachineGenome) + FPGA_U50 + CUDA_DGX + EGPU + MAC_ADDITIONAL, each with present:bool and an exact missing dependency when absent.",
+  "Honesty layer fusion_planner lacks: Cost is MEASURED (cited receipts/ path) or UNKNOWN; UNKNOWN cannot carry a number; simulate() returns structure + timing_decidable; emit_speedup() refuses when undecidable.",
+  "Move-vs-recompute at every transport edge, UNDECIDABLE when either cost is UNKNOWN.",
+  "Collectives as structure; algorithm UNDECIDABLE when interconnect costs are UNKNOWN (DIRECT at p<=2 is structural, not a cost pick).",
+  "CUDA seam: backend-neutral FusionOp lowering contract + Metal/CUDA differential schema that forbids a local CUDA claim on Apple hardware.",
+  "Fault/recovery: vanish_node always returns a defined outcome (DATA_LOSS / RECOVERED_FROM_REPLICA / ABORT / ALREADY_ABSENT / ...), extending humf.device_lost onto a heterogeneous plan.",
+  "Replicas on absent nodes are marked hypothetical and cannot satisfy recovery."
+ ],
+ "honesty_rule": {
+  "emit_speedup_refuses_undecidable": true,
+  "fusion_planner_gap": "fusion_planner.py stamps SIMULATED provenance but still returns cost_s from knobs. This module does not compute a time unless every hop is MEASURED.",
+  "inputs": "MEASURED Hawking record (cite receipts/ path) or UNKNOWN",
+  "unknown_cannot_carry_a_number": true,
+  "when_critical_path_unknown": "timing_decidable=False and no speedup figure"
+ },
+ "integration": {
+  "emit_speedup": "emit_speedup(hetero_time_s, baseline_time_s, *, timing_decidable) -> float; raises HonestyError unless timing_decidable",
+  "hawking_topology": "hawking_topology() -> Topology",
+  "simulate": "simulate(topo, objects, work, collectives=(), vanish=None, inflight_edges=(), baseline_time_s=None) -> dict"
+ },
+ "negative_findings": [
+  "receipts/headless/APPLE_ANE_ATLAS.json: NOT in git \u2014 asked to read, could not.",
+  "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json: NOT in git \u2014 asked to read, could not.",
+  "No U50-specific device genome (FPGA preboard is TARGET_UNSELECTED, not Alveo U50).",
+  "No measured interconnect to FPGA, CUDA/DGX, eGPU, or a second Mac.",
+  "No PROTECTED_ABSOLUTE token_ns, so even Apple-local compute is UNKNOWN for execution timing.",
+  "tools/accelerator/fusion_planner.py, fusion_isa.py, fusion_wire.py, humf.py, machine_genome.py, cuda_runtime.py and hcli/machine.py are in git but not materialized in this sparse checkout; recovered via git show; not imported (Codex-owned; importing them would also fail).",
+  "Cannot run Codex fusion_planner tests from this worktree.",
+  "Sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE."
+ ],
+ "node_model": [
+  {
+   "genome_receipt": "receipts/headless/MACHINE_GENOME.json",
+   "id": "APPLE",
+   "identity": {
+    "arch": "arm64",
+    "bandwidth_roof_cited": "receipts/headless/MACHINE_GENOME.json#measured_bandwidth.median_gb_s (INSTANCE triad; not a heterogeneous interconnect; not token_ns)",
+    "cpu_cores": 28,
+    "gpu_cores": 60,
+    "knowledge_level": "INSTANCE",
+    "memory_bytes": 103079215104,
+    "os": "Darwin 27.0.0",
+    "schema": "hawking.accelerator.machine_genome.v1",
+    "soc": "Apple M3 Ultra",
+    "sustained_behaviour": "ABSENT",
+    "thermal_envelope": "ABSENT"
+   },
+   "kind": "APPLE",
+   "missing_dependency": null,
+   "note": "Present. Real MachineGenome at INSTANCE knowledge_level, produced by tools/accelerator/machine_genome.py and consumed via hcli/machine.py. Unified-memory copy deletion is the machine-specific win named in tools/accelerator/device_ascension.py; it is not a CUDA/FPGA/eGPU number.",
+   "present": true
+  },
+  {
+   "genome_receipt": null,
+   "id": "FPGA_U50",
+   "identity": {},
+   "kind": "FPGA_U50",
+   "missing_dependency": "physical Xilinx Alveo U50 (or any selected FPGA board). receipts/headless/HCLI_FPGA_PREBOARD.json records physical_board.status=ABSENT, fpga_backend.status=NOT_BUILT, device_genome TARGET_UNSELECTED. receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json is a candidate map with no physical board, bitstream, or U50 performance claimed. FPGA is Accelerator/Physical Compiler/Fusion; it is not a civilization and this is not an FPGA backend.",
+   "note": "Absent. Pre-board scaffolding exists; the board does not.",
+   "present": false
+  },
+  {
+   "genome_receipt": null,
+   "id": "CUDA_DGX",
+   "identity": {},
+   "kind": "CUDA_DGX",
+   "missing_dependency": "NVIDIA CUDA device / DGX node. receipts/headless/CUDA_CAPABILITY_CENSUS.json identities.transport.status=ABSENT: 'no NVIDIA hardware exists on this machine'. receipts/headless/CUDA_CAPABILITY_LEDGER.json MULTI_DEVICE.peer_access remains unmeasured. tools/accelerator/cuda_runtime.py is a Metal stand-in and records is_a_cuda_differential=False.",
+   "note": "Absent. CUDA Capability Ledger is an inventory, not a device.",
+   "present": false
+  },
+  {
+   "genome_receipt": null,
+   "id": "EGPU",
+   "identity": {},
+   "kind": "EGPU",
+   "missing_dependency": "Thunderbolt/PCIe eGPU enclosure attached to this host. tools/accelerator/fusion_planner.py models EGPU0 as physical=False and used a 5 GB/s KNOB; this module replaces the knob with UNKNOWN.",
+   "note": "Absent. fusion_planner's eGPU shape is structural; its bandwidth is not.",
+   "present": false
+  },
+  {
+   "genome_receipt": null,
+   "id": "MAC_ADDITIONAL",
+   "identity": {},
+   "kind": "MAC",
+   "missing_dependency": "a second Apple Silicon host with its own INSTANCE MachineGenome plus a measured interconnect. receipts/headless/MACHINE_GENOME.json is INSTANCE-scoped to this machine only; knowledge_level INSTANCE does not transfer to a sibling Mac.",
+   "note": "Absent. A second Mac is not implied by one MachineGenome.",
+   "present": false
+  }
+ ],
+ "purpose": "Semantic heterogeneous simulation of a Hawking execution spread across Apple Silicon, an FPGA card, a future CUDA/DGX node, an eGPU and additional Macs \u2014 structurally incapable of emitting a heterogeneous speedup number from unknown inputs.",
+ "recovered_implementation": {
+  "ane": {
+   "asked": [
+    "receipts/headless/APPLE_ANE_ATLAS.json",
+    "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json"
+   ],
+   "found": false
+  },
+  "cuda": {
+   "census_receipt": "receipts/headless/CUDA_CAPABILITY_CENSUS.json",
+   "ledger": "tools/accelerator/ccl.py",
+   "runtime": "tools/accelerator/cuda_runtime.py",
+   "what": "Metal stand-in + capability inventory. is_a_cuda_differential=False."
+  },
+  "device_ascension": {
+   "path": "tools/accelerator/device_ascension.py",
+   "what": "Unified-memory copy deletion as a machine-specific win, not a CUDA number."
+  },
+  "fpga": {
+   "organ_map": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "preboard": "hcli/agentos/fpga_preboard.py",
+   "receipt": "receipts/headless/HCLI_FPGA_PREBOARD.json",
+   "what": "TARGET_UNSELECTED, physical_board ABSENT, fpga_backend NOT_BUILT."
+  },
+  "fusion_isa": {
+   "path": "tools/accelerator/fusion_isa.py",
+   "what": "14 FusionOp commands, FusionTimeline submit/fence/wait, no timing."
+  },
+  "fusion_planner": {
+   "gap": "Non-Apple bandwidth/latency are KNOBS and the planner still emits cost_s. No FPGA U50 / CUDA-DGX / additional-Mac node model. No timing_decidable. No speedup refusal. Not imported here (Codex-owned, not materialized in this sparse checkout).",
+   "path": "tools/accelerator/fusion_planner.py",
+   "tests": "tools/accelerator/test_fusion_planner.py",
+   "what": "Multi-domain topology, organ-vs-tensor placement, MOVE_DATA/MOVE_COMPUTE/RECOMPUTE/REPACK/REPLICATE/WAIT/PREFETCH, ring-vs-tree collectives. SIMULATED hop taints a route. Spark/eGPU shapes exist."
+  },
+  "fusion_wire": {
+   "path": "tools/accelerator/fusion_wire.py",
+   "what": "42-byte packet, no payload, no bandwidth/latency. HEADER_SIZE reused."
+  },
+  "humf": {
+   "path": "tools/accelerator/humf.py",
+   "what": "MemoryClass policy, two-domain move-vs-recompute, DeviceLost, device_lost(), vanish_next, quarantine. Fault semantics are extended, not reimplemented as a live fabric."
+  },
+  "machine_genome": {
+   "hcli": "hcli/machine.py",
+   "path": "tools/accelerator/machine_genome.py",
+   "receipt": "receipts/headless/MACHINE_GENOME.json",
+   "what": "INSTANCE Apple MachineGenome. Apple node is present because of this."
+  }
+ },
+ "schema": "hawking.future.fusion_sim.v1",
+ "seal_sha256": "98f083f71ca1347ea2694e8c427c3126c62ff267b83812308548d17d05e1ab74",
+ "simulated_dimensions": [
+  "placement",
+  "residency",
+  "transport",
+  "collectives",
+  "overlap",
+  "state_ownership",
+  "representation_conversion",
+  "fault_recovery"
+ ],
+ "version": 1,
+ "vocabulary": {
+  "disk_state_is_authority": true,
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is_not_a_civilization": true,
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "this_lane_emits": "STATIC_ONLY / bench.state=UNKNOWN / gpu_authority=false"
+ }
+}

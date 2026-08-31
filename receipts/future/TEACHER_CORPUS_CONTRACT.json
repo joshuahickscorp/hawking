@@ -1,0 +1,828 @@
+{
+ "anti_fabrication": {
+  "detectors": [
+   "THRESHOLD_MET_ONLY_BY_DUPLICATION",
+   "EXCESS_EXACT_COLLISIONS",
+   "UNIQUE_RATIO_IMPLausible",
+   "POSITION_DEGENERACY",
+   "ROUTE_DISTRIBUTION_SUSPICIOUSLY_UNIFORM",
+   "NEAR_DUPLICATE_OR_RESAMPLE_PADDING",
+   "SYNTHESISED_OR_DUPLICATED_TO_THRESHOLD",
+   "MISSING_SPECIMEN_OR_PROVENANCE_BINDING"
+  ],
+  "jaccard_near_dup": 0.8,
+  "loud_exception": "CorpusRefused",
+  "natural_dup_rate": 0.05,
+  "route_uniform_cv_max": 0.05,
+  "rule": "A corpus that only meets min_rows because rows were copied must FAIL. validate_corpus raises CorpusRefused. A return-flag that nobody checks is not a guard.",
+  "shingle_size": 5,
+  "unique_ratio_floor": 0.85,
+  "unique_ratio_min": 0.95
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:46:01Z",
+  "recorded_by": "tools/future/teacher_corpus.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "capability_domains": [
+  "math",
+  "code",
+  "prose",
+  "tool",
+  "shell"
+ ],
+ "capture_workunits": [
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3-Coder-Next @ a7fbcb5c0e12 layers [0,4) surface=shared_expert",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-07cd65a9c0040869",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3-Coder-Next",
+     "pinned_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+     "seal_kind": "capture_source_json_sha256",
+     "seal_sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+     "source": "receipts/QWEN80_CAPTURE_INDEX.json#source_json.sha256"
+    },
+    "surface": "shared_expert",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3.8-Flash-Next @ 34567a4712bc layers [0,4) surface=combine",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-465fb883697ab45d",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3.8-Flash-Next",
+     "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "seal_kind": "model_lake_manifest_sha256",
+     "seal_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+     "source": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#source_identity"
+    },
+    "surface": "combine",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3.8-Flash-Next @ 34567a4712bc layers [0,4) surface=routed_expert",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-5109645776eb0155",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3.8-Flash-Next",
+     "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "seal_kind": "model_lake_manifest_sha256",
+     "seal_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+     "source": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#source_identity"
+    },
+    "surface": "routed_expert",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3-Coder-Next @ a7fbcb5c0e12 layers [0,4) surface=combine",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-5961432d6a1071db",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3-Coder-Next",
+     "pinned_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+     "seal_kind": "capture_source_json_sha256",
+     "seal_sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+     "source": "receipts/QWEN80_CAPTURE_INDEX.json#source_json.sha256"
+    },
+    "surface": "combine",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3-Coder-Next @ a7fbcb5c0e12 layers [0,4) surface=hidden_pre_mlp",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-a2d3e7e8207cf55e",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3-Coder-Next",
+     "pinned_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+     "seal_kind": "capture_source_json_sha256",
+     "seal_sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+     "source": "receipts/QWEN80_CAPTURE_INDEX.json#source_json.sha256"
+    },
+    "surface": "hidden_pre_mlp",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3.8-Flash-Next @ 34567a4712bc layers [0,4) surface=router",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-c21f51b9dab2f447",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3.8-Flash-Next",
+     "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "seal_kind": "model_lake_manifest_sha256",
+     "seal_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+     "source": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#source_identity"
+    },
+    "surface": "router",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3-Coder-Next @ a7fbcb5c0e12 layers [0,4) surface=router",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-c93ac19891e637a8",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3-Coder-Next",
+     "pinned_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+     "seal_kind": "capture_source_json_sha256",
+     "seal_sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+     "source": "receipts/QWEN80_CAPTURE_INDEX.json#source_json.sha256"
+    },
+    "surface": "router",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3-Coder-Next @ a7fbcb5c0e12 layers [0,4) surface=routed_expert",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-ca2c7c957f8526e7",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3-Coder-Next",
+     "pinned_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+     "seal_kind": "capture_source_json_sha256",
+     "seal_sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+     "source": "receipts/QWEN80_CAPTURE_INDEX.json#source_json.sha256"
+    },
+    "surface": "routed_expert",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3-Coder-Next @ a7fbcb5c0e12 layers [0,4) surface=attention",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-d1655f40fb7bda78",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3-Coder-Next",
+     "pinned_revision": "a7fbcb5c0e12d62a448eaa0e260346bf5dcc0feb",
+     "seal_kind": "capture_source_json_sha256",
+     "seal_sha256": "17a1e9b60a53cc491601a549880c2d215ff16395ee36abaa05fb95eb7fe2aabe",
+     "source": "receipts/QWEN80_CAPTURE_INDEX.json#source_json.sha256"
+    },
+    "surface": "attention",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3.8-Flash-Next @ 34567a4712bc layers [0,4) surface=attention",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-ea87752002de22e0",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3.8-Flash-Next",
+     "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "seal_kind": "model_lake_manifest_sha256",
+     "seal_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+     "source": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#source_identity"
+    },
+    "surface": "attention",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3.8-Flash-Next @ 34567a4712bc layers [0,4) surface=shared_expert",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-ed8435dc24cf0612",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3.8-Flash-Next",
+     "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "seal_kind": "model_lake_manifest_sha256",
+     "seal_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+     "source": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#source_identity"
+    },
+    "surface": "shared_expert",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  },
+  {
+   "dependencies": [],
+   "description": "Capture 256 teacher rows for Qwen/Qwen3.8-Flash-Next @ 34567a4712bc layers [0,4) surface=hidden_pre_mlp",
+   "effect_class": "read_only_capture",
+   "executed": false,
+   "execution_forbidden_reason": "Sidecar has no GPU lease. WorkUnits are emitted, not run. A later HCLI protected window may execute them; this module must not.",
+   "id": "teacher-capture-f3f01247269ad63f",
+   "payload": {
+    "diversity_target": {
+     "min_domains": 3,
+     "min_prompts": 4,
+     "min_routes_routed": 2,
+     "position_max_share": 0.9,
+     "row_diversity_min": 0.95,
+     "validator": "tools/future/teacher_corpus.py:validate_corpus"
+    },
+    "layer_range": [
+     0,
+     4
+    ],
+    "specimen": {
+     "model": "Qwen/Qwen3.8-Flash-Next",
+     "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "seal_kind": "model_lake_manifest_sha256",
+     "seal_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+     "source": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#source_identity"
+    },
+    "surface": "hidden_pre_mlp",
+    "target_row_count": 256
+   },
+   "preferred_backend": null,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "teacher_capture",
+   "status": "pending",
+   "verifier": "tools/future/teacher_corpus.py:validate_corpus",
+   "workspace": null
+  }
+ ],
+ "capture_workunits_note": "Emitted, not executed. resource_class=GPU_EXCLUSIVE. Sidecar must not seize a GPU lease. target_row_count is a bound, not a measurement.",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "dedup": {
+  "exact": "content_sha256 of captured identity; first occurrence kept",
+  "jaccard_threshold": 0.8,
+  "near": "character shingles of size 5, Jaccard >= 0.80, aligned with tools/odyssey/dedup.py (canonical) / tools/odyssey/_paths.py",
+  "shingle_size": 5
+ },
+ "diversity_measures": {
+  "capability_domain_diversity": {
+   "definition": "Distinct capability_domain values over the declared set ['math', 'code', 'prose', 'tool', 'shell'], plus normalized Shannon entropy of the domain histogram.",
+   "formula": "n_unique_domains; H_norm(domain); n_unique_domains / |declared|",
+   "inadequate_below": 3,
+   "recovered_justification": "teacher_assess T1 needs math-core and support-language; capture_moe_x prompts already span prose, code, tool, shell. A one-domain pad is inadequate for a fit that claims generality.",
+   "threshold": 3,
+   "unit": "count + entropy-ratio"
+  },
+  "prompt_diversity": {
+   "definition": "Number of distinct prompt_id values, plus normalized Shannon entropy of the prompt histogram (H / log2(k)).",
+   "formula": "n_unique_prompts; H_norm(prompt_id)",
+   "inadequate_below": 4,
+   "recovered_justification": "tools/odyssey/capture_moe_x.py ships 5 distinct prompts spanning prose/code/tool/factual/shell. teacher_assess.py records 0 natural-text windows on the GLM52 ledger \u2014 that is already a documented gap, not a license to pad one prompt.",
+   "threshold": 4,
+   "unit": "count + entropy-ratio"
+  },
+  "route_diversity": {
+   "definition": "Unique route ids in the derived route union, flattened-route histogram entropy, and coefficient of variation of per-route counts. Real MoE routing on the Qwen80 4-layer speed receipt is skewed (p10=3, p50=54, p90=221, 105 zero experts). Perfectly equal counts across many routes are a cycling synthesizer, not a router.",
+   "formula": "n_unique_routes; H_norm(route); CV(route counts)",
+   "inadequate_below": "routed surface with < 2 unique routes",
+   "recovered_justification": "receipts/QWEN80_CAPTURE_INDEX.json n_keys=24355 of 24576 LE pairs (221 never-routed). Occupancy is heavy-tailed, not uniform.",
+   "threshold": {
+    "min_routes_on_routed_surface": 2,
+    "uniform_cv_max": 0.05
+   },
+   "unit": "count + entropy-ratio + CV"
+  },
+  "row_diversity": {
+   "definition": "Unique content_sha256 values divided by total rows. content_sha256 hashes the captured identity (specimen, layer, surface, prompt, position, routes, payload) and excludes row_id/provenance so copies collide.",
+   "formula": "|unique content_sha256| / n_rows",
+   "inadequate_below": 0.95,
+   "recovered_justification": "Q80 capture index is 1,212,384 layer-rows = 25,258 tokens \u00d7 48 layers; exact activation collisions at this grain are not a natural way to reach a sample-count threshold.",
+   "threshold": 0.95,
+   "unit": "ratio"
+  },
+  "token_position_diversity": {
+   "definition": "Normalized Shannon entropy of token_position, unique position count, and the share of the most common position. Position degeneracy is all rows at one index (typical fabrication: capture position 0, copy).",
+   "formula": "H_norm(token_position); max_share; n_unique_positions",
+   "inadequate_below": "unique_positions < 2 or max_share > 0.90 (n_rows >= 8)",
+   "recovered_justification": "q80_capture_index stores step_index (position within probe) per row. A real capture spans the probe; a padded one does not.",
+   "threshold": {
+    "max_share": 0.9,
+    "min_unique_positions": 2
+   },
+   "unit": "entropy-ratio + share"
+  }
+ },
+ "era_vocabulary": {
+  "bench_state": "UNKNOWN",
+  "eras": 5,
+  "evidence_class": "STATIC_ONLY",
+  "fpga_is": "part of Accelerator / Physical Compiler / Fusion, not its own civilization",
+  "odysseys": 3
+ },
+ "gaps_closed": [
+  "Capture manifest binding every row to specimen identity (model + pinned revision + seal), layer, surface, and a provenance chain.",
+  "Per-row route_ids, route_union_membership, content_sha256, envelope_sha256.",
+  "Five computed diversity measures with recorded definitions and inadequacy thresholds: row, prompt, token-position, route, capability-domain.",
+  "Exact dedup by content hash and 5-gram Jaccard near-dup, constants aligned with tools/odyssey/dedup.py rather than forked as a new policy.",
+  "validate_corpus() anti-fabrication guard with a live negative control: a corpus that hits min_rows only by copying is REFUSED; a same-size diverse corpus is accepted.",
+  "Bounded capture WorkUnits (specimen, layer range, surface, target row count, diversity target) emitted for HCLI, not run."
+ ],
+ "negative_findings": [
+  "contract named receipts/headless/QWEN80_CAPTURE_INDEX.json; the artifact lives at receipts/QWEN80_CAPTURE_INDEX.json",
+  "contract named receipts/headless/QWEN80_CAPTURE_SPEED.json; the artifact lives at receipts/QWEN80_CAPTURE_SPEED.json",
+  "FLASH_ATTENTION_ROUTE_UNION_PARITY.json is not in HEAD; route-union shape recovered from lab/operators/q80_capture_index.py key_(layer,expert) and receipts/QWEN80_CAPTURE_INDEX.json (24,355 of 24,576 LE pairs)",
+  "FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json is not in HEAD; no L3/L4 Flash router sensitivity map was found under receipts/",
+  "No GPU capture was executed. WorkUnits are pending. Existing teacher ledgers (GLM52 capsules, Qwen80 hidden files) were not re-read as row bytes because those capture blobs are not in this sparse worktree.",
+  "HEAD missing: receipts/headless/QWEN80_CAPTURE_INDEX.json",
+  "HEAD missing: receipts/headless/QWEN80_CAPTURE_SPEED.json",
+  "HEAD missing: receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+  "HEAD missing: receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json"
+ ],
+ "purpose": "Teacher-corpus contract: bind every capture to specimen/layer/surface/provenance, compute diversity, dedup, and structurally refuse a corpus that only meets its sample-count threshold by duplication, resampling, or synthesis.",
+ "recovered_implementation": {
+  "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+  "missing_from_HEAD": [
+   "receipts/headless/QWEN80_CAPTURE_INDEX.json",
+   "receipts/headless/QWEN80_CAPTURE_SPEED.json",
+   "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+   "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json"
+  ],
+  "note": "A path missing from this sparse worktree is not evidence it is absent from the civilization. Probes used git ls-tree HEAD.",
+  "probe_results": [
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "tools/odyssey/capture_moe_x.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "tools/odyssey/teacher_assess.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "tools/odyssey/model_specimen_seal.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "tools/odyssey/dedup.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "tools/odyssey/normalize.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "hcli/agentos/modellake_receipts.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "hcli/flash_next.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "hcli/workunit.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "lab/operators/q80_capture_index.py"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "lab/operators/q80_capture_coverage.py"
+   },
+   {
+    "in_HEAD": false,
+    "on_disk": false,
+    "path": "receipts/headless/QWEN80_CAPTURE_INDEX.json"
+   },
+   {
+    "in_HEAD": false,
+    "on_disk": false,
+    "path": "receipts/headless/QWEN80_CAPTURE_SPEED.json"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "receipts/QWEN80_CAPTURE_INDEX.json"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "receipts/QWEN80_CAPTURE_SPEED.json"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "receipts/QWEN80_SOURCE_IDENTITY.json"
+   },
+   {
+    "in_HEAD": false,
+    "on_disk": true,
+    "path": "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json"
+   },
+   {
+    "in_HEAD": false,
+    "on_disk": true,
+    "path": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "workspace/campaign/governance/odyssey/resources/teacher_traces/ODYSSEY_TEACHER_TRACE_MANIFEST.json"
+   },
+   {
+    "in_HEAD": true,
+    "on_disk": true,
+    "path": "tools/future/teacher_corpus.py"
+   }
+  ],
+  "summaries": [
+   {
+    "adequate_for_this_lane": false,
+    "path": "tools/odyssey/capture_moe_x.py",
+    "what": "Truncated-model activation capture for layers 0..K-1 (exact, not a proxy). Writes X_layer{i}.npy + CAPTURE.json. 5 prompts. Refuses non-finite activations. No specimen seal, no route ids, no diversity measures, no anti-fabrication guard."
+   },
+   {
+    "adequate_for_this_lane": false,
+    "path": "tools/odyssey/teacher_assess.py",
+    "what": "Assesses GLM52 teacher-capsule ledger against T1/T3 needs. Reports PARTIAL: 118 captured / 4 failed, 0 trajectory traces, 0 natural-text windows. Not a row-level corpus validator."
+   },
+   {
+    "adequate_for_this_lane": false,
+    "aligned_constants": {
+     "JACCARD_NEAR_DUP": 0.8,
+     "SHINGLE_SIZE": 5
+    },
+    "path": "tools/odyssey/dedup.py",
+    "what": "content_sha256 + 5-gram Jaccard near-dup at 0.80. Used for train/eval overlap. This module aligns those constants rather than inventing a second threshold. Does not bind specimen/layer/surface and does not refuse sample-count padding."
+   },
+   {
+    "adequate_for_this_lane": false,
+    "path": "hcli/agentos/modellake_receipts.py",
+    "what": "Canonical vs legacy ModelLake census/supervision receipt names. Not specimen identity and not a seal."
+   },
+   {
+    "adequate_for_this_lane": false,
+    "path": "hcli/flash_next.py",
+    "what": "Pinned Flash-Next identity: Qwen/Qwen3.8-Flash-Next @ 34567a4712bc9766c4449e2e98e4468bfa24d915. Consumed as specimen binding, not re-derived."
+   },
+   {
+    "adequate_for_this_lane": false,
+    "path": "lab/operators/q80_capture_index.py",
+    "what": "Per-row arrays: layer, token_index, probe_index, step_index, input_token_id, expert_ids CSR, key_(layer,expert). This is the recovered row grain and the recovered route-union shape."
+   },
+   {
+    "adequate_for_this_lane": false,
+    "path": "receipts/QWEN80_CAPTURE_INDEX.json",
+    "what": "schema hawking.q80.capture_index.measurement.v1; n_rows=1212384; n_tokens=25258; n_keys=24355 of 24576 LE pairs (221 never-routed). NOT under receipts/headless/ (contract path was wrong)."
+   },
+   {
+    "adequate_for_this_lane": false,
+    "path": "hcli/workunit.py",
+    "what": "WorkUnit dataclass + content_identity. Capture units emitted here use the same field names; this lane does not admit or run them."
+   }
+  ],
+  "trees": {
+   "hcli/agentos": {
+    "n_files": 43,
+    "sample": [
+     "hcli/agentos/__init__.py",
+     "hcli/agentos/accelerator_regression.py",
+     "hcli/agentos/autonomy_gate.py",
+     "hcli/agentos/background.py",
+     "hcli/agentos/benchmark_boundary.py",
+     "hcli/agentos/charge.py"
+    ]
+   },
+   "tools/accelerator": {
+    "n_files": 56,
+    "sample": [
+     "tools/accelerator/air.py",
+     "tools/accelerator/akb.py",
+     "tools/accelerator/bench.py",
+     "tools/accelerator/bytes_atlas.py",
+     "tools/accelerator/c2m.py",
+     "tools/accelerator/c2m_idiom.py"
+    ]
+   },
+   "tools/headless": {
+    "n_files": 280,
+    "sample": [
+     "tools/headless/action_handoff.py",
+     "tools/headless/adversarial_sweep.py",
+     "tools/headless/affine2_g64_lsfit.py",
+     "tools/headless/affine2_native_mlp.py",
+     "tools/headless/artifact_census.py",
+     "tools/headless/attention_floor_refit.py"
+    ]
+   }
+  }
+ },
+ "row_metadata": {
+  "required": [
+   "row_id",
+   "specimen.model",
+   "specimen.pinned_revision",
+   "specimen.seal_sha256",
+   "layer",
+   "surface",
+   "prompt_id",
+   "prompt_text",
+   "token_position",
+   "route_ids",
+   "route_union_membership",
+   "capability_domain",
+   "payload",
+   "content_sha256",
+   "envelope_sha256",
+   "provenance.kind",
+   "provenance.authority",
+   "provenance.source_path"
+  ],
+  "route_union_definition": "Sorted unique route_ids over all rows sharing (specimen, layer, surface). Membership is the intersection of the row's route_ids with that union. Recovered from Q80 key_(layer, expert), not from FLASH_ATTENTION_ROUTE_UNION_PARITY (that receipt is not in HEAD)."
+ },
+ "schema": "hawking.future.teacher_corpus.v1",
+ "seal_sha256": "9d1cbe0d6a984187e6fafe179d95ce0321884bddcfdd0bc763968669a06115a2",
+ "selftest": {
+  "dedup_collision_groups": 4,
+  "dedup_kept_from_duplicated": 4,
+  "diverse_accepted": true,
+  "diverse_n": 32,
+  "diverse_unique": 32,
+  "duplicated_codes": [
+   "THRESHOLD_MET_ONLY_BY_DUPLICATION",
+   "EXCESS_EXACT_COLLISIONS",
+   "UNIQUE_RATIO_IMPLausible",
+   "NEAR_DUPLICATE_OR_RESAMPLE_PADDING",
+   "SYNTHESISED_OR_DUPLICATED_TO_THRESHOLD"
+  ],
+  "duplicated_message": "REFUSED: teacher corpus failed anti-fabrication guard (codes=['THRESHOLD_MET_ONLY_BY_DUPLICATION', 'EXCESS_EXACT_COLLISIONS', 'UNIQUE_RATIO_IMPLausible', 'NEAR_DUPLICATE_OR_RESAMPLE_PADDING', 'SYNTHESISED_OR_DUPLICATED_TO_THRESHOLD']; n_rows=32 unique=4 min_rows=32)",
+  "duplicated_n": 32,
+  "duplicated_refused": true,
+  "duplicated_unique": 4,
+  "manifest_n_captures": 4,
+  "manifest_specimens": 1,
+  "near_dup_hits_on_diverse_payloads": 0,
+  "position_degeneracy_refused_codes": [
+   "POSITION_DEGENERACY",
+   "SYNTHESISED_OR_DUPLICATED_TO_THRESHOLD"
+  ],
+  "uniform_route_refused_codes": [
+   "ROUTE_DISTRIBUTION_SUSPICIOUSLY_UNIFORM",
+   "SYNTHESISED_OR_DUPLICATED_TO_THRESHOLD"
+  ]
+ },
+ "surfaces": [
+  "hidden_pre_mlp",
+  "router",
+  "routed_expert",
+  "shared_expert",
+  "attention",
+  "combine"
+ ],
+ "version": 1
+}

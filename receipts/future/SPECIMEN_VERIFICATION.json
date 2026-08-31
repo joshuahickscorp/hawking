@@ -1,0 +1,180 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:49Z",
+  "recorded_by": "tools/future/specimen_verify.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "budget_rule": "build() is bounded so a resident can invoke it as a unit. Specimens it did not reach are named rather than silently omitted, and a prior verdict is carried forward rather than dropped.",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "corrupt": 0,
+  "incomplete": 0,
+  "partial": 0,
+  "specimens_examined": 1,
+  "whole_tree_verified": 1
+ },
+ "gaps_closed": [
+  "nothing recomputed specimen hashes offline; readiness rested on size checks"
+ ],
+ "modellake": {
+  "lake": "/Volumes/corpdrive/hawking-modellake",
+  "mounted": true,
+  "n_specimens": 44,
+  "specimens_dir": true
+ },
+ "modellake_authority": "ModelLake owns specimens. This module opens them read-only, never writes into the lake, and never edits a manifest or a seal. The verdict lives in the sidecar partition.",
+ "negative_findings": [
+  "a file with no .metadata sidecar cannot be verified offline at any effort",
+  "this does not make ModelLake wrong: its seals already say MANIFEST_ONLY"
+ ],
+ "not_reached_this_pass": [],
+ "purpose": "Earn whole-tree specimen verification offline from the HuggingFace .metadata digests, or state precisely which files cannot be verified.",
+ "recovered_implementation": [
+  "ModelLake manifests report n_sha256_verified vs n_size_only_verified",
+  "each specimen carries MODEL_LAKE_SPECIMEN_SEAL.json, currently MANIFEST_ONLY",
+  "HuggingFace .cache/huggingface/download/<file>.metadata carries the etag"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.specimen_verify.verify_specimen(name)",
+  "fails_closed": "SpecimenError on an absent specimen; MISMATCH is CORRUPT, never rounded",
+  "frontier": "FT.MODEL_CAPABILITY.hard-gates (specimen curriculum readiness)",
+  "receipt": "receipts/future/SPECIMEN_VERIFICATION.json",
+  "workunit": "one unit per specimen; CPU_VERIFY lane; genuinely long-running"
+ },
+ "results": [
+  {
+   "bytes_hashed": 15182220635,
+   "files": [
+    {
+     "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+     "bytes": 1570,
+     "digest_kind": "git_blob_sha1",
+     "expected": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "86ecc9bb1ee7df2186b5005a8b0daaa6dd0feea8",
+     "bytes": 5688,
+     "digest_kind": "git_blob_sha1",
+     "expected": "86ecc9bb1ee7df2186b5005a8b0daaa6dd0feea8",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4cc21452afbe62b111bf4ab6ab669fd0b9678f1e",
+     "bytes": 1151,
+     "digest_kind": "git_blob_sha1",
+     "expected": "4cc21452afbe62b111bf4ab6ab669fd0b9678f1e",
+     "file": "chat_template.jinja",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "c79bdb38027fb234698548cfcfc5f4f553fb8d95",
+     "bytes": 1639,
+     "digest_kind": "git_blob_sha1",
+     "expected": "c79bdb38027fb234698548cfcfc5f4f553fb8d95",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "ec6c4d25132471a007e564c440fa77872438bbad",
+     "bytes": 145,
+     "digest_kind": "git_blob_sha1",
+     "expected": "ec6c4d25132471a007e564c440fa77872438bbad",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "eb9c3e71a1625c1dd13d164ffddb6b3f03c1ebeb7994b86526b10352d2124627",
+     "bytes": 4960322992,
+     "digest_kind": "sha256",
+     "expected": "eb9c3e71a1625c1dd13d164ffddb6b3f03c1ebeb7994b86526b10352d2124627",
+     "file": "model-00001-of-00004.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "1e5a0b9e74ace5642e559d5b88a0fde6233033750a7223dcafadc84e5b433ed3",
+     "bytes": 4935762112,
+     "digest_kind": "sha256",
+     "expected": "1e5a0b9e74ace5642e559d5b88a0fde6233033750a7223dcafadc84e5b433ed3",
+     "file": "model-00002-of-00004.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "75bceb292837f48349a1ba2667763380ab00b8adeb46481bef8ec71fd9d57827",
+     "bytes": 4476288016,
+     "digest_kind": "sha256",
+     "expected": "75bceb292837f48349a1ba2667763380ab00b8adeb46481bef8ec71fd9d57827",
+     "file": "model-00003-of-00004.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "2dccc6787b572ea462e7887ff5a90b6cecf6a5848a18df479e57d6b9481dfea0",
+     "bytes": 799021184,
+     "digest_kind": "sha256",
+     "expected": "2dccc6787b572ea462e7887ff5a90b6cecf6a5848a18df479e57d6b9481dfea0",
+     "file": "model-00004-of-00004.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "21c8bcc7e2324ebc1ab8958f8d8bfd1adf0e235e",
+     "bytes": 60253,
+     "digest_kind": "git_blob_sha1",
+     "expected": "21c8bcc7e2324ebc1ab8958f8d8bfd1adf0e235e",
+     "file": "model.safetensors.index.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "631a5cbc419c6284bb7878c0cbd3279aecd3d2c1",
+     "bytes": 18981,
+     "digest_kind": "git_blob_sha1",
+     "expected": "631a5cbc419c6284bb7878c0cbd3279aecd3d2c1",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "51922642a37b5aa79b25e7f9fa119c3c272ab580cd14acb3df165e5b80ed33c6",
+     "bytes": 10534488,
+     "digest_kind": "sha256",
+     "expected": "51922642a37b5aa79b25e7f9fa119c3c272ab580cd14acb3df165e5b80ed33c6",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "bf86571461a01436560b635db68a781350b090e7",
+     "bytes": 202416,
+     "digest_kind": "git_blob_sha1",
+     "expected": "bf86571461a01436560b635db68a781350b090e7",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 13,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 13,
+   "wall_seconds": 7.21,
+   "whole_tree_verified": true
+  }
+ ],
+ "schema": "hawking.future.specimen_verify.v1",
+ "seal_sha256": "e9c28ec83b85eab179449e064ee4bae3157950c0785667ab82318fa1346d4310",
+ "verification_rule": "VERIFIED means the hash was recomputed here and matched a published digest. Size agreement is not verification. A specimen is WHOLE_TREE_VERIFIED only when every file carried a digest and every one matched; a single undigested file yields PARTIAL_NO_REMOTE_DIGEST.",
+ "version": 1,
+ "whole_tree_verified_specimens": [
+  "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+ ]
+}

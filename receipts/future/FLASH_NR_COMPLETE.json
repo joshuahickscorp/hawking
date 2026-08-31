@@ -1,0 +1,1259 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:44:37Z",
+  "recorded_by": "tools/future/flash_nr_complete.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "can_promote": false,
+ "can_promote_reason": "prospective_meta_bpw is RESEARCH_TARGET and is never a promotion predicate; qualified_complete_physical_ebpw is UNKNOWN on this host; no self-contained executable byte ledger; no capability-preserving runtime; production path does not prove direct representation consumption (dense rematerialization unknown)",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "continuous_nr": {
+  "census_family_count": 9,
+  "claim_boundary": "Complete heterogeneous portable NR candidate with exact-control fallback per organ. COMPILE_TIME_SCIENCE_ONLY. Does not claim a compact complete representation, accepted-token TPS, physical EBPW, capability preservation, or machine execution.",
+  "complete": true,
+  "ebpw_organ_count": 13,
+  "nr_v2_schema": "hawking.flash.complete_nr.v2",
+  "nr_v2_status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION",
+  "organ_count": 20,
+  "organs": [
+   {
+    "best_known": {
+     "name": "route_conditioned_compact_candidate",
+     "part_representation": "route_conditioned_compact_candidate",
+     "qualification": "compact routed-bank exact parity on verified layers; dynamic complete-bank storage not yet qualified",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "routed_experts",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "routed_experts",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 4718592000
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "routed_experts",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "best-known part representation is route_conditioned_compact_candidate but no runtime_ready compact variant occupies the slot",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 0.88
+    },
+    "source_bytes": 246625075200
+   },
+   {
+    "best_known": {
+     "name": "factorized_lookup_candidate",
+     "part_representation": "factorized_lookup_candidate",
+     "qualification": "large 128-shard n-gram table inventoried; lookup/factorization fidelity and native path remain open",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "ngram_embedding",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "ngram_engine",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 65680600
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "ngram_embedding",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "best-known part representation is factorized_lookup_candidate but no runtime_ready compact variant occupies the slot",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 0.7
+    },
+    "source_bytes": 102400491520
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "48-layer source parity and stateful organ/prefix evidence",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "linear_attention_hyperconnection",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "deltanet",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 4173020928
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "linear_attention_hyperconnection",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 4820291328
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "complete terminal control exists",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "embedding_lm_head",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "embeddings",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 5120
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "embedding_lm_head",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 3.5
+    },
+    "source_bytes": 2564759064
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "all full-attention source organs and KV organ evidence",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "full_attention",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "sparse_attention",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 1234741248
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "full_attention",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 3.0
+    },
+    "source_bytes": 1337609728
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "mlp_hyperconnection",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "residual_hyperconnections",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 1281249280
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "mlp_hyperconnection",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 1311502048
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "shared_expert",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "shared_expert",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 472104960
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "shared_expert",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 481940480
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "other",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "mtp",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 5214301696
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "other",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 457917440
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "norm",
+    "ebpw_budget_row": null,
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "norm",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 16.0
+    },
+    "source_bytes": 376320
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "complete terminal control exists",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "embedding_lm_head",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "embeddings",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 5120
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "embeddings",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 3.5
+    },
+    "source_bytes": 2564759064
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "48-layer source parity and stateful organ/prefix evidence",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "linear_attention_hyperconnection",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "deltanet",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 4173020928
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "deltanet",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 4820291328
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "all full-attention source organs and KV organ evidence",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "full_attention",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "sparse_attention",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 1234741248
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "sparse_attention",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 3.0
+    },
+    "source_bytes": 1337609728
+   },
+   {
+    "best_known": {
+     "name": "route_conditioned_compact_candidate",
+     "part_representation": "route_conditioned_compact_candidate",
+     "qualification": "compact routed-bank exact parity on verified layers; dynamic complete-bank storage not yet qualified",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "routed_experts",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "router",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 125829120
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "router",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "best-known part representation is route_conditioned_compact_candidate but no runtime_ready compact variant occupies the slot",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 0.88
+    },
+    "source_bytes": 246625075200
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "complete terminal control exists",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "embedding_lm_head",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "lm_head",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 1271398400
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "lm_head",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 3.5
+    },
+    "source_bytes": 2564759064
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "other",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "mtp",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 5214301696
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "mtp",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 457917440
+   },
+   {
+    "best_known": {
+     "name": "factorized_lookup_candidate",
+     "part_representation": "factorized_lookup_candidate",
+     "qualification": "large 128-shard n-gram table inventoried; lookup/factorization fidelity and native path remain open",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "ngram_embedding",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "ngram_engine",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 65680600
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "ngram_engine",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "best-known part representation is factorized_lookup_candidate but no runtime_ready compact variant occupies the slot",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 0.7
+    },
+    "source_bytes": 102400491520
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "other",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "vision_backbone",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 0
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "vision_backbone",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 457917440
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "mlp_hyperconnection",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "residual_hyperconnections",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 1281249280
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "residual_hyperconnections",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 1311502048
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "source graph contract",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "other",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "support_misc",
+     "representation_status": "CANDIDATE_NOT_BUILT",
+     "source_active_bytes_per_token": 0
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "support_misc",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 457917440
+   },
+   {
+    "best_known": {
+     "name": "exact_control",
+     "part_representation": "source_bf16_exact",
+     "qualification": "48-layer source parity and stateful organ/prefix evidence",
+     "runtime_ready_compact": null,
+     "runtime_required": true
+    },
+    "census_family": "linear_attention_hyperconnection",
+    "ebpw_budget_row": {
+     "capability_status": "NOT_RUN",
+     "native_kernel_status": "PLAN_ONLY",
+     "native_loader_status": "NOT_IMPLEMENTED",
+     "organ": "recurrent_state",
+     "representation_status": "REQUIRED_RESIDENT_STATE_NOT_BUILT",
+     "source_active_bytes_per_token": 235339776
+    },
+    "occupying": {
+     "capability_status": "source-control-only",
+     "complete_bits_per_weight": 16.0,
+     "kind": "EXACT_CONTROL_FALLBACK",
+     "name": "exact_control",
+     "representation": "source_bf16_exact",
+     "runtime_ready": true,
+     "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+    },
+    "organ": "recurrent_state",
+    "promotion_reasons": [
+     "occupying candidate is exact-control COMPILE_TIME_SCIENCE_ONLY",
+     "capability_status='source-control-only' is not PASSED",
+     "qualified_complete_physical_ebpw is UNKNOWN on this host"
+    ],
+    "promotion_status": "NOT_PROMOTABLE",
+    "prospective_meta_bpw_target": {
+     "promotes": false,
+     "role": "RESEARCH_TARGET",
+     "value": 2.5
+    },
+    "source_bytes": 4820291328
+   }
+  ],
+  "promotion_reason": "NR promotion_status is derived from per-organ status; 20 of 20 organs are not PROMOTABLE",
+  "promotion_status": "NOT_PROMOTABLE",
+  "required_organs": [
+   "routed_experts",
+   "ngram_embedding",
+   "linear_attention_hyperconnection",
+   "embedding_lm_head",
+   "full_attention",
+   "mlp_hyperconnection",
+   "shared_expert",
+   "other",
+   "norm",
+   "embeddings",
+   "deltanet",
+   "sparse_attention",
+   "router",
+   "lm_head",
+   "mtp",
+   "ngram_engine",
+   "vision_backbone",
+   "residual_hyperconnections",
+   "support_misc",
+   "recurrent_state"
+  ],
+  "science_marks_present": [
+   "COMPILE_TIME_SCIENCE_ONLY"
+  ]
+ },
+ "current_flash_state": {
+  "critical_path_status": "WAITING_FOR_COMPLETE_TOKEN",
+  "current_prospective_meta_bpw": 0.8871807728336929,
+  "current_qualified_physical_ebpw": "UNKNOWN",
+  "ebpw_budget_promotion_allowed": false,
+  "ebpw_budget_status": "PLANNED_UNTIL_VERIFIED_BODY",
+  "handoff_present": true,
+  "latest_bounded_chain_promotion": "not promoted; capability/TPS/EBPW gate remains open",
+  "latest_bounded_chain_status": "MEASURED_CANDIDATE",
+  "source_independent_nx_qualification": false,
+  "source_independent_nx_status": "SCAFFOLD_ONLY",
+  "stateful_gate_status": "BLOCKED_FIRST_PHYSICAL_BOUNDARY"
+ },
+ "dense_rematerialization": {
+  "live_nx_v0": {
+   "landed_remat": {
+    "decompresses_to_dense_weight_tensor": null,
+    "ok": false,
+    "path_kind": "PRODUCTION",
+    "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
+    "runs_ordinary_kernels": null
+   },
+   "ok": true,
+   "path_kind": "PRODUCTION",
+   "reason": "metadata seal is not a production consumer; dense rematerialization is unknown because no production NX exists",
+   "reconstructs_dense_checkpoint": null
+  },
+  "production": "must consume the representation directly; reconstructing a dense checkpoint is refused",
+  "verification": "MAY reconstruct a dense checkpoint; that path cannot promote"
+ },
+ "evidence_resolution": {
+  "census": {
+   "filename": "FLASH_ORGAN_CENSUS.json",
+   "present": true,
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
+   "resolved_via": "pinned"
+  },
+  "ebpw": {
+   "filename": "FLASH_EBPW_BUDGET.json",
+   "present": true,
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EBPW_BUDGET.json",
+   "resolved_via": "headless"
+  },
+  "handoff": {
+   "filename": "CODEX_ACCELERATOR_HANDOFF.json",
+   "present": true,
+   "resolved_via": "local"
+  },
+  "ledger": {
+   "filename": "FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+   "present": true,
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+   "resolved_via": "headless"
+  },
+  "meta": {
+   "filename": "FLASH_META_REPRESENTATION_SUB1.json",
+   "present": true,
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "resolved_via": "pinned"
+  },
+  "nr_v2": {
+   "filename": "FLASH_COMPLETE_V2.nr.json",
+   "present": true,
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+   "resolved_via": "pinned"
+  },
+  "nx_next": {
+   "filename": "FLASH_NEXT_MACHINE.nx.json",
+   "present": true,
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+   "resolved_via": "pinned"
+  },
+  "nx_v0": {
+   "filename": "FLASH_COMPLETE_V0.nx.json",
+   "present": true,
+   "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+   "resolved_via": "pinned"
+  }
+ },
+ "gaps_closed": [
+  "Continuous complete NR: every census family (and, when present, every EBPW-budget organ) has an occupying candidate or exact-control COMPILE_TIME_SCIENCE_ONLY fallback.",
+  "Seven Quantity subclasses (six new + landed ProspectiveMetaBpw); mixed arithmetic, comparison, bind(), and SevenLedger field assignment are CategoryError.",
+  "0.887 prospective_meta_bpw recorded as RESEARCH_TARGET; can_promote on it alone returns False with that reason, flag or not.",
+  "qualified_complete_physical_ebpw is UNKNOWN on this host and stays UNKNOWN; landed CompletePhysicalEbpw cannot bind into it.",
+  "NX that references NR at runtime without billed NR bytes raises NrBillingError; honest billed ledger is accepted; metadata-only lowers_nr is not a runtime reference.",
+  "Production path that reconstructs a dense checkpoint raises DenseRematError; verification may reconstruct and cannot promote.",
+  "NR promotion_status is derived from per-organ status, never asserted at the root.",
+  "SLEEPING GPU WorkUnit for the physical measurement; STATIC_ANALYSIS WorkUnit for --build. Fail closed: no synthetic physical EBPW."
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "integration_points": [
+  "tools/future/ebpw_categories.py (Quantity, can_promote, judge_dense_rematerialization) \u2014 imported, not forked",
+  "tools/future/flash_nx_audit.py \u2014 NX completeness; not imported at runtime to avoid missing-ledger raises",
+  "tools/future/workunit_species.py \u2014 emit_hcli_workunit when hcli is importable; local dict fallback otherwise",
+  "hcli WorkUnit field set \u2014 proposal only; this module does not schedule",
+  "resident_api.py / super_resident.py / workgraph.py / wakeup.py / frontiers.py \u2014 concurrent wave; swap at integration",
+  "F001 CLAUDE_GLOBAL_FRONTIER \u2014 this receipt feeds the continuous-NR half of that blocker"
+ ],
+ "measurement_class": "STATIC_ONLY",
+ "negative_findings": [
+  {
+   "found": "FLASH_COMPLETE_V2.nr.json is a composition document; serialized_nr_information is NOT_BUILT",
+   "looked_for": "a packed NR information payload"
+  },
+  {
+   "found": "FLASH_COMPLETE_V0.nx.json is SEALED_METADATA_ONLY; qualification.complete_system_ebpw is null",
+   "looked_for": "a serialized NX with complete_system_ebpw"
+  },
+  {
+   "found": "UNKNOWN on this host; Codex handoff current_qualified_physical_ebpw is UNKNOWN; sidecar has no GPU",
+   "looked_for": "qualified_complete_physical_ebpw"
+  },
+  {
+   "found": "NR V2 compact routed/ngram variants are not runtime_ready; occupying slots are exact-control COMPILE_TIME_SCIENCE_ONLY",
+   "looked_for": "runtime-ready compact occupying candidates"
+  },
+  {
+   "found": "sidecar produces STATIC_ONLY / bench UNKNOWN; physical blockers remain sleeping WorkUnits",
+   "looked_for": "hardware measurement"
+  },
+  {
+   "found": "header-derived static_active_ebpw_estimate is a different type and a different number from prospective_meta_bpw; assigning one to the other is a CategoryError. The two must not be added, compared, or promoted.",
+   "looked_for": "identity of static_active_ebpw_estimate with the 0.887 research target"
+  }
+ ],
+ "next_workunits": [
+  {
+   "id": "future.flash_nr_complete.build",
+   "resource_class": "STATIC_ANALYSIS",
+   "status": "pending"
+  },
+  {
+   "id": "future.flash_nr_complete.qualified_physical_ebpw",
+   "must_not_synthesize_result": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "status": "sleeping"
+  }
+ ],
+ "nr_billing": {
+  "live_nx_v0": {
+   "lowers_nr": "receipts/headless/FLASH_COMPLETE_V0.nr.json",
+   "note": "V0 NX is SEALED_METADATA_ONLY; lowers_nr is a compile-time name, not a runtime consume. A production NX that quietly points at NR without billed NR bytes is rejected by check_nr_billing.",
+   "nx_status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+   "runtime_references_nr": false
+  },
+  "rule": "If a production NX references NR at runtime, NR bytes are BILLED into the complete ledger. A quiet pointer is rejected."
+ },
+ "prospective_meta_bpw_role": "RESEARCH_TARGET",
+ "purpose": "Keep a complete heterogeneous Flash NR candidate on disk at all times, with seven strictly separated EBPW quantities, so 0.887 prospective meta-BPW cannot be laundered into a physical claim.",
+ "qualified_complete_physical_ebpw_state": "UNKNOWN",
+ "recovered_implementation": [
+  {
+   "adequate": false,
+   "gap": "five quantities, not the seven EBPW names this lane owns; no continuous NR",
+   "path": "tools/future/ebpw_categories.py",
+   "what": "Five Quantity subclasses; mixed arithmetic is CategoryError; can_promote false for prospective-only; dense remat production/verification split. EXTENDED here to seven named EBPW quantities. Not forked: new types subclass Quantity."
+  },
+  {
+   "adequate": false,
+   "gap": "audits NX promotion, does not maintain a complete-at-all-times NR",
+   "path": "tools/future/flash_nx_audit.py",
+   "what": "Seven NX completeness requirements and the BLOCKED-Flash dependency chain."
+  },
+  {
+   "adequate": false,
+   "gap": "composition snapshot, not a continuously rebuilt complete NR with derived per-organ promotion status and typed EBPW",
+   "path": "receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+   "resolved_via": "pinned",
+   "what": "status=COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION; COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION; parts cover census families; compact routed/ngram not runtime_ready."
+  },
+  {
+   "adequate": false,
+   "gap": "metadata seal, not a billed runtime NX and not a type system",
+   "path": "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+   "resolved_via": "pinned",
+   "what": "status=SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; SEALED_METADATA_ONLY; complete_system_ebpw null; lowers_nr at compile time."
+  },
+  {
+   "adequate": false,
+   "gap": "honest RESEARCH_TARGET; not typed against the other six quantities",
+   "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "resolved_via": "pinned",
+   "what": "status=PROSPECTIVE_META_ONLY; prospective_target is a description budget; physical_ebpw NULL_BY_RULE."
+  },
+  {
+   "adequate": false,
+   "gap": "census, not a candidate-per-organ NR",
+   "path": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
+   "resolved_via": "pinned",
+   "what": "STRUCTURAL_METADATA_SCREEN; family_summary is the organ authority."
+  },
+  {
+   "adequate": false,
+   "gap": "handoff; timed kernel/host fields must not enter this receipt",
+   "path": "CODEX_ACCELERATOR_HANDOFF.json",
+   "resolved_via": "local",
+   "what": "current_flash_state (source_independent_nx SCAFFOLD_ONLY, ebpw_budget, critical_path, stateful_gate); current_prospective_meta_bpw; current_qualified_physical_ebpw UNKNOWN. Training trace, not an archive this module copies numbers from."
+  },
+  {
+   "adequate": false,
+   "gap": "Codex-owned; sidecar must not mutate it; does not type-separate EBPW",
+   "path": "tools/flash_complete_nr.py",
+   "what": "Codex composer of FLASH_COMPLETE_V2.nr.json (cited by flash_nx_audit; not in this sparse tree)."
+  }
+ ],
+ "resident_callable": {
+  "callables": [
+   "build",
+   "selftest",
+   "can_promote",
+   "build_continuous_nr",
+   "check_nr_billing"
+  ],
+  "can_hcli_invoke": true,
+  "entry_point": "python3 tools/future/flash_nr_complete.py --build",
+  "fail_closed": [
+   "HardwareClaimError if a numeric hardware field is written into the receipt",
+   "IncompleteNrError if a census organ has no occupying candidate",
+   "CategoryError if one of the seven quantities is assigned/added/compared to another",
+   "can_promote(prospective_meta_bpw) is False (RESEARCH_TARGET)",
+   "NrBillingError if a production NX references NR at runtime without billed NR bytes",
+   "DenseRematError if a production path reconstructs a dense checkpoint",
+   "qualified_complete_physical_ebpw stays UNKNOWN; a synthetic 0.887 physical is refused",
+   "SLEEPING GPU WorkUnit must not synthesize a result when hardware is unqualified"
+  ],
+  "frontier_fed": "F001 Flash source-independent NX / continuous NR completeness: representation is complete-at-all-times so execution can refill against a derived promotion_status instead of waiting on a packed NX",
+  "integration_swap": "resident_api.py / super_resident.py / workgraph.py / wakeup.py / frontiers.py are concurrent-wave siblings and are not imported. HCLI discovers this module via the entry_point and the emitted WorkUnit ids. Swap those in at integration.",
+  "module": "tools.future.flash_nr_complete",
+  "receipt": "receipts/future/FLASH_NR_COMPLETE.json",
+  "work_unit_status": {
+   "future.flash_nr_complete.build": "pending",
+   "future.flash_nr_complete.qualified_physical_ebpw": "sleeping"
+  },
+  "work_units_emitted": [
+   "future.flash_nr_complete.build",
+   "future.flash_nr_complete.qualified_physical_ebpw"
+  ]
+ },
+ "schema": "hawking.future.flash_nr_complete.v1",
+ "seal_sha256": "efea5cdf010e3b5696741fb4e5898649b98ad4d40e6888ebb617288e362ced48",
+ "selftest": {
+  "billed_runtime_nr_accepted": true,
+  "cross_category_arithmetic_message": "refused source_control_ebpw + prospective_meta_bpw: EBPW categories are not interchangeable",
+  "cross_category_arithmetic_raises": true,
+  "cross_category_assignment_raises": true,
+  "dense_production_message": "production NX decompresses to a dense weight tensor and then runs ordinary kernels",
+  "dense_production_rejected": true,
+  "equal_numbers_are_not_interchangeable": true,
+  "landed_complete_physical_cannot_bind_qualified": true,
+  "meta_only_research_target_reason": "prospective_meta_bpw is RESEARCH_TARGET and never promotes alone; 0.887 is a description budget, not a representation or a claim",
+  "meta_only_research_target_refused": true,
+  "meta_with_flag_refused": true,
+  "missing_organ_rejected": true,
+  "positive_combinator_is_not_a_measurement": true,
+  "positive_combinator_opens": true,
+  "positive_combinator_reason": "all promotion predicates held",
+  "unbilled_runtime_nr_message": "NX references NR at runtime but NR bytes are not billed into the complete ledger",
+  "unbilled_runtime_nr_rejected": true,
+  "verification_may_reconstruct": true
+ },
+ "seven_quantities": {
+  "prospective_meta_bpw": {
+   "category": "prospective_meta_bpw",
+   "evidence": "RESEARCH_TARGET; description budget, not a representation, not a claim, never promotes alone",
+   "present": true,
+   "role": "RESEARCH_TARGET",
+   "source": "FLASH_META_REPRESENTATION_SUB1.metric.prospective_target",
+   "unit": "bits per source weight (description budget, not serialized bytes)",
+   "value": 0.8871807728336929
+  },
+  "qualified_complete_physical_ebpw": {
+   "category": "qualified_complete_physical_ebpw",
+   "evidence": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+   "gpu_authority": false,
+   "present": false,
+   "source": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+   "state": "UNKNOWN",
+   "unit": "bits per weight of a complete executable from PROTECTED_ABSOLUTE measurement \u2014 never from a description budget or a STATIC estimate",
+   "value": null
+  },
+  "serialized_nr_information": {
+   "category": "serialized_nr_information",
+   "evidence": "packed NR information payload is NOT_BUILT; composition document resolved_via=pinned path=/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json; document bytes are not serialized_nr_information",
+   "present": false,
+   "source": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+   "unit": "bytes of a packed NR information payload (not a composition document; not source-control EBPW)",
+   "value": null
+  },
+  "serialized_nx_ebpw": {
+   "category": "serialized_nx_ebpw",
+   "evidence": "NX status=SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; qualification.complete_system_ebpw is null; metadata seal is not serialized_nx_ebpw",
+   "present": false,
+   "source": "FLASH_COMPLETE_V0.nx.json",
+   "unit": "bits per weight of a serialized NX artifact; not qualified_complete_physical_ebpw",
+   "value": null
+  },
+  "source_control_ebpw": {
+   "category": "source_control_ebpw",
+   "evidence": "COMPILE_TIME_SCIENCE_ONLY; BF16 exact-control identity of the source; not qualified_complete_physical_ebpw",
+   "present": true,
+   "source": "FLASH_COMPLETE_V2.nr.json representation.complete_bits_per_weight",
+   "unit": "bits per source weight of the BF16 exact-control identity (COMPILE_TIME_SCIENCE_ONLY; not a packed artifact; not physical)",
+   "value": 16.0
+  },
+  "static_active_ebpw_estimate": {
+   "category": "static_active_ebpw_estimate",
+   "evidence": "STATIC estimate: 8 * sum(source_active_bytes_per_token)=18792263128.0 / n_params=179999981564 over 13 EBPW organs; not a measurement",
+   "present": true,
+   "source": "FLASH_EBPW_BUDGET.json organs[].source_active_bytes_per_token",
+   "unit": "STATIC estimate of active-path bits per source weight from census/budget headers; not a protected measurement",
+   "value": 0.8352117801220243
+  },
+  "static_complete_ebpw_estimate": {
+   "category": "static_complete_ebpw_estimate",
+   "evidence": "STATIC estimate: 8 * source_parameter_bytes_indexed=359999963128 / n_params=179999981564; header-derived; not a measurement",
+   "present": true,
+   "source": "FLASH_ORGAN_CENSUS.source_parameter_bytes_indexed",
+   "unit": "STATIC estimate of complete-system bits per source weight from indexed header payload; not a protected measurement",
+   "value": 16.0
+  }
+ },
+ "version": 1,
+ "work_units": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": null,
+   "command": [
+    "python3",
+    "tools/future/flash_nr_complete.py",
+    "--build"
+   ],
+   "content_hash": "ce228272346836bec6f14d0935b027848f70da223896073c048ac14ff34459d2",
+   "dependencies": [],
+   "description": "Rebuild the continuous complete Flash NR and the seven typed EBPW quantities from disk. STATIC_ONLY. Never measures hardware.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_nr_complete.build",
+   "output_receipt_path": "receipts/future/FLASH_NR_COMPLETE.json",
+   "preferred_backend": null,
+   "provider": "sidecar.flash_nr_complete",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.flash_nr_complete.selftest",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": "no Metal-capable GPU / Metal compiler missing under CommandLineTools / protected bench lock unproven / machine HEAVY / Flash NX SCAFFOLD_ONLY / teacher capture 0/256",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "49aaaf43d295e27e742b5a525f61ec8c07df92570cb6f367afd8fa5e5fb8511e",
+   "current_qualified_physical_ebpw": "UNKNOWN",
+   "dependencies": [
+    "future.flash_nr_complete.build"
+   ],
+   "description": "SLEEPING: measure qualified_complete_physical_ebpw for a source-independent Flash NX under a real protected GPU lease. Must not synthesize a number. Wake when hardware qualifies.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.flash_nr_complete.qualified_physical_ebpw",
+   "must_not_synthesize_result": true,
+   "output_receipt_path": "receipts/future/FLASH_NR_COMPLETE.json",
+   "preferred_backend": "metal",
+   "provider": "sidecar.flash_nr_complete",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "source_independent_nx_status": "SCAFFOLD_ONLY",
+   "species": "accelerator_candidate_qualification",
+   "status": "sleeping",
+   "verification": null,
+   "verifier": "future.flash_nr_complete.can_promote",
+   "wake_when": [
+    "MetalContext reports a Metal-capable GPU",
+    "xcrun locates the Metal compiler",
+    "protected bench lock is held by a proven pid or is free",
+    "qualification pipeline classifies the machine QUIESCENT",
+    "Flash source-independent NX is no longer SCAFFOLD_ONLY"
+   ],
+   "workspace": "repo-root"
+  }
+ ]
+}

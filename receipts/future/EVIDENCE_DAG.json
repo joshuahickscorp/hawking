@@ -1,0 +1,876 @@
+{
+ "adaptive_depth": {
+  "function": "required_level(mutation_scope, uncertainty, risk, upside, promotion_proximity)",
+  "proof": {
+   "bar_not_lowered_because_unavailable": true,
+   "cheap_admitted": "ADMITTED",
+   "cheap_not_v8": true,
+   "cheap_required": "V1",
+   "explicit_promotion_scope_required": "V9",
+   "holds": true,
+   "promotion_adjacent_required": "V8",
+   "promotion_adjacent_required_on_refusal": "V8",
+   "promotion_adjacent_v7_refused": true,
+   "promotion_adjacent_v8_claim_refused": true,
+   "risk_raises": true,
+   "scope_raises": true,
+   "tournament_adjacent_required": "V9",
+   "uncertainty_raises": true,
+   "upside_raises": true
+  },
+  "proximity_v8": 0.75,
+  "proximity_v9": 0.95
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:50Z",
+  "recorded_by": "tools/future/evidence_dag.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "cached_invariant_reuse": {
+  "byte_flip_named_the_input": true,
+  "cache_key": "recorded input sha256, not claim name",
+  "deleted_input_is_rerun": true,
+  "holds": true,
+  "no_recorded_inputs_never_reuses": true,
+  "reuse_on_identical_inputs": true,
+  "reused_from_digest_is_seal": true,
+  "reused_from_reported": true,
+  "scar_after_receipt_is_rerun": true,
+  "scar_before_receipt_still_reuses": true,
+  "static_receipt_insufficient_for_protected_ask": true,
+  "unrelated_family_scar_does_not_rerun": true,
+  "workunit_result_carries_reused_from": true
+ },
+ "claim": "evidence_dag.cached_invariant",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. V8/V9 are UNAVAILABLE and must be requested as sleeping work, never synthesized.",
+ "claim_downgrade": {
+  "diamond": {
+   "CLAIM_B": "DOWNGRADED",
+   "CLAIM_C": "VALID",
+   "CLAIM_D": "DOWNGRADED",
+   "CLAIM_JOIN": "DOWNGRADED"
+  },
+  "foundation_transitivity_holds": true,
+  "holds": true,
+  "sibling_claim_survived": true
+ },
+ "claim_family": "evidence_dag.hierarchy",
+ "diamond_invalidation": {
+  "D_refused_on_stale_parent": true,
+  "affected": [
+   "B",
+   "D"
+  ],
+  "after": {
+   "A": "VALID",
+   "B": "INVALID",
+   "C": "VALID",
+   "D": "STALE"
+  },
+  "before": {
+   "A": "VALID",
+   "B": "VALID",
+   "C": "VALID",
+   "D": "VALID"
+  },
+  "claim_C_stayed_VALID": true,
+  "claims_after": {
+   "A": "VALID",
+   "B": "INVALID",
+   "C": "VALID",
+   "CLAIM_B": "DOWNGRADED",
+   "CLAIM_C": "VALID",
+   "CLAIM_D": "DOWNGRADED",
+   "CLAIM_JOIN": "DOWNGRADED",
+   "D": "INVALID"
+  },
+  "claims_before": {
+   "A": "VALID",
+   "B": "VALID",
+   "C": "VALID",
+   "CLAIM_B": "VALID",
+   "CLAIM_C": "VALID",
+   "CLAIM_D": "VALID",
+   "CLAIM_JOIN": "VALID",
+   "D": "VALID"
+  },
+  "holds": true,
+  "precise": true,
+  "sibling_C_reuse_count_after": 1,
+  "sibling_C_reuse_count_before": 0,
+  "sibling_C_reused_without_work": true,
+  "sibling_C_survived": true
+ },
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "fpga_note": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
+ "funnel_mapping": [
+  {
+   "funnel": "diagnostic_relative_ab",
+   "level": "not a V-level this module emits; DIAGNOSTIC_RELATIVE never promotes",
+   "n_ids": 0,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  {
+   "funnel": "native_parity",
+   "level": "V2-V3",
+   "n_ids": 0,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  {
+   "funnel": "promotion",
+   "level": "V9",
+   "n_ids": 0,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  {
+   "funnel": "protected_absolute_complete_wall",
+   "level": "V8",
+   "n_ids": 13,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  {
+   "funnel": "static_validation",
+   "level": "V0-V2",
+   "n_ids": 17,
+   "source": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  }
+ ],
+ "gaps_closed": [
+  "V0\u2013V9 catalog: each level declares what it proves and what it does not",
+  "proof identity is a content hash over inputs + code + machine genome + level; reuse skips work on byte-identical inputs and does not skip when inputs change",
+  "precise invalidation on a constructed diamond: mutating B invalidates B and D; sibling C's proof survives and is reused without work",
+  "adaptive required_level(mutation_scope, uncertainty, risk, upside, promotion_proximity): cheap reversible stays below V8; promotion-adjacent floors at V8 even though V8 is UNAVAILABLE",
+  "admission is two-sided: below-required raises; a V8 claim on this host also raises (no V7 consolation prize)",
+  "request_level(V8) and request_level(V9) RAISE UnavailableLevelError rather than returning a weaker level; prove() does not count work or store a VALID V8 proof",
+  "claim downgrade on the DAG uses repro_science.ledger_invalidate: parent invalidation transitively DOWNGRADES derived claims; sibling claims stay VALID",
+  "V8 work is a SLEEPING/blocked HCLI WorkUnit, never a synthetic protected result",
+  "reuse_or_rerun(claim) -> REUSE|RERUN: sealed receipt + live input sha256 match + no family scar since seal + evidence class sufficient; otherwise RERUN naming the failed condition",
+  "a receipt that names no inputs can never be reused (nothing to verify); a named input that is gone is RERUN, never REUSE",
+  "REUSE is reported: WorkUnit result carries reused_from {receipt, digest}; silent cache is FailClosed reuse_unreported",
+  "one input byte, a deleted input, a post-seal family scar, and an empty recorded_inputs list each flip REUSE -> RERUN"
+ ],
+ "gpu_authority": false,
+ "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "host": {
+  "gpu_authority": false,
+  "note": "Unavailability is an authority fact of this sidecar, not a device query. MetalContext / xcrun were not probed.",
+  "protected_gpu": false,
+  "v8_availability": "UNAVAILABLE",
+  "v9_availability": "UNAVAILABLE"
+ },
+ "integration_points": {
+  "frontiers.py": "this-wave; not imported. Consumes required_level to refill verification depth",
+  "hcli/dag_store.py": "disk authority for live DAGs; this module's graph is in-memory + receipt",
+  "protected_window.py": "this-wave; not imported. Only that module may flip V8/V9 to AVAILABLE",
+  "repro_science": "identity, FailClosed, claim ledger \u2014 imported",
+  "resident_api.py": "this-wave; not imported. Swap: expose required_level/admit_candidate/request_level",
+  "wakeup.py": "this-wave; not imported. Wakes the SLEEPING V8 WorkUnit when hardware qualifies",
+  "workgraph.py": "this-wave; not imported. Swap: persist EvidenceDAG through DagStore",
+  "workunit_species": "emit_hcli_workunit \u2014 imported"
+ },
+ "ladder_mapping": [
+  {
+   "level": "V1",
+   "rung": "local_functional_probe"
+  },
+  {
+   "level": "V3",
+   "rung": "held_out_activation"
+  },
+  {
+   "level": "V4",
+   "rung": "adjacent_layers"
+  },
+  {
+   "level": "V4",
+   "rung": "short_chain"
+  },
+  {
+   "level": "V2",
+   "rung": "complete_organ"
+  },
+  {
+   "level": "V6",
+   "rung": "complete_token"
+  },
+  {
+   "level": "V7",
+   "rung": "coherent_generation"
+  },
+  {
+   "level": "V7",
+   "rung": "capability"
+  }
+ ],
+ "levels": [
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Numerical correctness, organ behaviour, chains, complete tokens, capability, performance, or promotion.",
+   "emits": "STATIC_ONLY",
+   "id": "V0",
+   "name": "schema/identity",
+   "ordinal": 0,
+   "parents": [],
+   "proves": "The artifact is parseable, schema-tagged, and has a content identity.",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Organ behaviour, held-out generalization, chains, complete tokens, capability, performance, or promotion.",
+   "emits": "STATIC_ONLY",
+   "id": "V1",
+   "name": "tiny numerical",
+   "ordinal": 1,
+   "parents": [
+    "V0"
+   ],
+   "proves": "A tiny deterministic numerical fixture holds (host CPU, fixed arrays).",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Held-out organs, multi-organ chains, complete tokens, capability, performance, or promotion.",
+   "emits": "STATIC_ONLY",
+   "id": "V2",
+   "name": "organ",
+   "ordinal": 2,
+   "parents": [
+    "V0",
+    "V1"
+   ],
+   "proves": "One named organ satisfies a static contract on a fixture graph.",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Multi-organ chains, complete tokens, capability, performance, or promotion.",
+   "emits": "STATIC_ONLY",
+   "id": "V3",
+   "name": "held-out organ",
+   "ordinal": 3,
+   "parents": [
+    "V0",
+    "V1",
+    "V2"
+   ],
+   "proves": "An organ withheld from the V2 subject still satisfies the static contract.",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Deep chains, complete tokens, capability, performance, or promotion.",
+   "emits": "STATIC_ONLY",
+   "id": "V4",
+   "name": "short-chain",
+   "ordinal": 4,
+   "parents": [
+    "V0",
+    "V1",
+    "V2",
+    "V3"
+   ],
+   "proves": "A short (2-hop) organ path is well-formed on the fixture graph.",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Complete accepted tokens, capability, performance, or promotion.",
+   "emits": "STATIC_ONLY",
+   "id": "V5",
+   "name": "deep-chain",
+   "ordinal": 5,
+   "parents": [
+    "V0",
+    "V1",
+    "V2",
+    "V3",
+    "V4"
+   ],
+   "proves": "A longer organ path through the fixture graph is well-formed.",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Capability, protected performance, or promotion. Does not measure complete-token wall time.",
+   "emits": "STATIC_ONLY",
+   "id": "V6",
+   "name": "complete token",
+   "ordinal": 6,
+   "parents": [
+    "V0",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5"
+   ],
+   "proves": "A static complete-token recipe (ordered organ path covering the fixture token) is well-formed.",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "AVAILABLE",
+   "does_not_prove": "Protected capability or performance, tournament admission, or promotion.",
+   "emits": "STATIC_ONLY",
+   "id": "V7",
+   "name": "capability subset",
+   "ordinal": 7,
+   "parents": [
+    "V0",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6"
+   ],
+   "proves": "A named capability-subset contract is specified and statically checkable.",
+   "requires_gpu": false,
+   "requires_protected_lease": false,
+   "unavailable_reason": null
+  },
+  {
+   "availability": "UNAVAILABLE",
+   "does_not_prove": "This host cannot prove it. Requesting V8 raises; it is not a V7 that passed.",
+   "emits": "STATIC_ONLY",
+   "id": "V8",
+   "name": "protected capability/performance",
+   "ordinal": 8,
+   "parents": [
+    "V0",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7"
+   ],
+   "proves": "Would prove capability and performance under a real protected GPU lease.",
+   "requires_gpu": true,
+   "requires_protected_lease": true,
+   "unavailable_reason": "protected GPU authority this sidecar does not have; Metal is Codex's lane and is not probed here"
+  },
+  {
+   "availability": "UNAVAILABLE",
+   "does_not_prove": "This host cannot prove it. Requesting V9 raises; it is not a quieter V8 or V7.",
+   "emits": "STATIC_ONLY",
+   "id": "V9",
+   "name": "promotion/tournament",
+   "ordinal": 9,
+   "parents": [
+    "V0",
+    "V1",
+    "V2",
+    "V3",
+    "V4",
+    "V5",
+    "V6",
+    "V7",
+    "V8"
+   ],
+   "proves": "Would prove tournament admission under protected authority.",
+   "requires_gpu": true,
+   "requires_protected_lease": true,
+   "unavailable_reason": "protected GPU authority this sidecar does not have; Metal is Codex's lane and is not probed here"
+  }
+ ],
+ "measurement_states": {
+  "DIAGNOSTIC_RELATIVE": "contaminated A/B on a busy machine; guides; never promotes; this module does not produce it",
+  "PROTECTED_ABSOLUTE": "measurement under a real protected GPU lease; decides; this module does not produce it",
+  "STATIC_ONLY": "everything this module emits"
+ },
+ "module_sha256": "22df790695b89ae17b62f557ff8d62751af98bbd3ff75ab24a07602378a801c2",
+ "n_levels": 10,
+ "n_work_units": 4,
+ "negative_findings": [
+  "this sidecar has no protected GPU lease; V8 and V9 are UNAVAILABLE by authority, not by a Metal probe (Metal was not queried)",
+  "xcrun / Metal compiler / qualification HEAVY classification were not re-measured; Codex's blockers are accepted as given and become a sleeping WorkUnit",
+  "tools/headless/composition_ladder.py and lab/verification_authority.py may be hidden by the sparse checkout; recovered via git show, not live import",
+  "this module does not rewrite receipts/future/CLAUDE_GLOBAL_FRONTIER.json (owner: tools/future/global_frontier.py, prohibited)",
+  "this-wave siblings (resident_api, workgraph, wakeup, protected_window, frontiers, super_resident) were not imported; local interfaces are named as integration points",
+  "no DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE number was produced; bench.state stays UNKNOWN",
+  "Flash NX remains SCAFFOLD_ONLY / teacher capture 0/256 \u2014 out of this lane; noted, not papered over",
+  "freshness semantic fingerprints are not a reuse key; a byte change is RERUN even when meaning is identical",
+  "default scar source is autonomy_scars in this partition; the negative_index corpus is not consulted (sparse checkout, hypothesis-keyed, not this DAG's families)",
+  "a receipt that records only logical input names (schema/payload) has nothing to re-hash and cannot be reused by this checker",
+  "STATIC_ONLY reuse never satisfies a DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE ask; this sidecar mints neither"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "proof_identity": {
+  "code_sensitive": true,
+  "identity": "c09266b72142770e67e4d899ed469145dc242a73e21cc9bfe64d189f32d6391a",
+  "input_sensitive": true,
+  "level_sensitive": true,
+  "machine_genome_sensitive": true,
+  "reproduces": true
+ },
+ "purpose": "V0\u2013V9 evidence DAG: reuse byte-identical proofs, invalidate only affected descendants, choose verification depth from mutation scope / uncertainty / risk / upside / promotion proximity, refuse V8/V9 on this host rather than silently downgrading, and reuse a sealed claim only when every named input still hashes.",
+ "recorded_inputs": [
+  {
+   "path": "tools/future/evidence_dag.py",
+   "sha256": "22df790695b89ae17b62f557ff8d62751af98bbd3ff75ab24a07602378a801c2"
+  },
+  {
+   "path": "tools/future/_common.py",
+   "sha256": "cacc92109ffa1f0d8f78a966a9797056286e984266b163808d739374412ceb23"
+  },
+  {
+   "path": "tools/future/repro_science.py",
+   "sha256": "f565c5df51465c7493d8016a6c2b03be92846779746dedb9184989f9d558e7b0"
+  },
+  {
+   "path": "tools/future/freshness.py",
+   "sha256": "33c650b2ae835f2f0936bf57eb74c6123b6848d45b3c9da0d2e835155bc210b5"
+  },
+  {
+   "path": "tools/future/evidence_snapshot.py",
+   "sha256": "a3e969a472818ce8360d2d58e9d77d15d95920c604cfb8c645aa6f082bcfc537"
+  }
+ ],
+ "recorded_inputs_probe": [
+  {
+   "path": "tools/future/evidence_dag.py",
+   "present": true,
+   "sha256": "22df790695b89ae17b62f557ff8d62751af98bbd3ff75ab24a07602378a801c2"
+  },
+  {
+   "path": "tools/future/_common.py",
+   "present": true,
+   "sha256": "cacc92109ffa1f0d8f78a966a9797056286e984266b163808d739374412ceb23"
+  },
+  {
+   "path": "tools/future/repro_science.py",
+   "present": true,
+   "sha256": "f565c5df51465c7493d8016a6c2b03be92846779746dedb9184989f9d558e7b0"
+  },
+  {
+   "path": "tools/future/freshness.py",
+   "present": true,
+   "sha256": "33c650b2ae835f2f0936bf57eb74c6123b6848d45b3c9da0d2e835155bc210b5"
+  },
+  {
+   "path": "tools/future/evidence_snapshot.py",
+   "present": true,
+   "sha256": "a3e969a472818ce8360d2d58e9d77d15d95920c604cfb8c645aa6f082bcfc537"
+  }
+ ],
+ "recovered_implementation": [
+  {
+   "path": "tools/future/repro_science.py",
+   "use": "Imported. proof_identity wraps experiment_identity; invalidate() calls ledger_invalidate; FailClosed is subclassed, not forked.",
+   "what": "Immutable experiment identity, provenance graph, claim ledger with transitive DOWNGRADED, FailClosed, content_hash. THIS IS THE FOUNDATION."
+  },
+  {
+   "path": "tools/future/_common.py",
+   "use": "used as-is; this module does not reimplement or weaken HARDWARE_FIELDS",
+   "what": "write_receipt seals STATIC_ONLY/UNKNOWN and raises HardwareClaimError"
+  },
+  {
+   "path": "tools/headless/composition_ladder.py",
+   "probe": "git show HEAD:tools/headless/composition_ladder.py",
+   "use": "Law kept as V0\u2013V9 mapping (LADDER_TO_LEVEL). Not imported (Codex tools/ surface; sparse checkout). highest-claimable is admit_candidate here.",
+   "what": "8-rung qualification ladder; a candidate that fails a rung is killed there; unreached \u2260 failed; a screen verdict is not a model verdict"
+  },
+  {
+   "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "use": "FUNNEL_TO_LEVEL. V8/V9 map onto the last two rungs and stay UNAVAILABLE.",
+   "what": "funnel: static_validation \u2192 native_parity \u2192 diagnostic_relative_ab \u2192 protected_absolute_complete_wall \u2192 promotion. measurement_contract nulls until a native protected complete-token receipt."
+  },
+  {
+   "path": "tools/future/lpc_dataset.py",
+   "use": "stale_parent refuse: a missing/INVALID parent is not treated as VALID",
+   "what": "Missing keys REJECTED; nulls carry a reason and are never imputed to 0"
+  },
+  {
+   "path": "tools/future/integration_attack.py",
+   "use": "diamond sibling, below-required admission, and V8-raise are the negative controls",
+   "what": "Adversarial completion attack and severity model; a guard never watched to fail is not a guard"
+  },
+  {
+   "path": "lab/verification_authority.py",
+   "probe": "git show HEAD:lab/verification_authority.py",
+   "use": "this module never emits PROTECTED_ABSOLUTE or DIAGNOSTIC_RELATIVE",
+   "what": "Models propose; protected controller decides; forbidden self-promotion"
+  },
+  {
+   "path": "hcli/dag_store.py",
+   "probe": "git show HEAD:hcli/dag_store.py",
+   "use": "in-memory EvidenceDAG is the static analog; swap named as integration point",
+   "what": "Durable DAG; disk is authority; interrupted \u2260 verifier failure"
+  },
+  {
+   "path": "tools/future/workunit_species.py",
+   "use": "selftest + adapt-next-mutation pending units; V8 unit blocked/SLEEPING",
+   "what": "HCLI WorkUnit field set, emit_hcli_workunit, validate_emitted_unit"
+  },
+  {
+   "path": "tools/future/qualification_pipeline.py",
+   "use": "same authority boundary: V8 is a sleeping unit, never seized",
+   "what": "execute() raises without an existing HCLI lease AND quiescence AND --execute"
+  },
+  {
+   "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
+   "use": "repro_science was adequate for identity/downgrade; this module closes the V-hierarchy gap",
+   "what": "49-system sidecar inventory; autonomous reproducible science already executable"
+  },
+  {
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "use": "WorkUnit refill is how a result changes the next verification depth",
+   "what": "F008 provenance gap (closed by repro_science). No frontier file is rewritten here."
+  },
+  {
+   "path": "tools/future/_common.py",
+   "use": "reuse_or_rerun re-hashes every named input with sha256_file; does not reimplement the hasher",
+   "what": "sha256_file + seal; HARDWARE_FIELDS raise on a numeric claim"
+  },
+  {
+   "path": "tools/future/freshness.py",
+   "use": "The byte-match half is the same guarantee. Semantic fingerprint is deliberately NOT used here: one input byte must RERUN even if meaning is identical. A stale baseline surviving a cosmetic rewrite is the defect this lane kills.",
+   "what": "byte sha vs semantic fingerprint for derived artifacts; FRESH only when sha matches"
+  },
+  {
+   "path": "tools/future/evidence_snapshot.py",
+   "use": "same live-hash-against-recorded-digest pattern; applied to named claims rather than the snapshot set",
+   "what": "pinned copy + verify() that every captured file still hashes to the manifest"
+  },
+  {
+   "path": "tools/future/repro_science.py",
+   "use": "reuse_or_rerun refuses an unsealed or corrupt receipt via seal_is_valid; does not fork the sealer",
+   "what": "seal_is_valid, FailClosed, experiment_identity"
+  },
+  {
+   "path": "tools/future/autonomy_scars.py",
+   "use": "load_default_scars(). Matching family + landed_at after receipt_written_at forces RERUN",
+   "what": "orchestrator-defect scars with families; default scar source when the caller passes none"
+  }
+ ],
+ "recovery_probes": [
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "tools/future/repro_science.py"
+  },
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "tools/headless/composition_ladder.py"
+  },
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "lab/verification_authority.py"
+  },
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/dag_store.py"
+  },
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+  },
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
+  },
+  {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/future/REPRO_SCIENCE.json"
+  }
+ ],
+ "resident_callable": {
+  "discover": [
+   "python3 tools/future/evidence_dag.py --selftest",
+   "python3 tools/future/evidence_dag.py --build",
+   "python3 tools/future/evidence_dag.py --required-level <candidate.json>",
+   "python3 tools/future/evidence_dag.py --admit <candidate.json>",
+   "python3 tools/future/evidence_dag.py --reuse-or-rerun evidence_dag.cached_invariant"
+  ],
+  "entry_point": "python3 tools/future/evidence_dag.py --selftest",
+  "fail_closed": [
+   "request_level('V8'|'V9') raises UnavailableLevelError rather than returning a weaker level",
+   "admit_candidate below required_level raises BelowRequiredLevelError rather than clamping to what is available",
+   "an achieved V8 claim on this host raises UnavailableLevelError (no synthetic protected proof)",
+   "prove() with a non-VALID parent raises FailClosed stale_parent",
+   "write_receipt raises HardwareClaimError on a numeric hardware field",
+   "unknown mutation_scope or out-of-range factor raises FailClosed",
+   "a V8 WorkUnit is blocked/SLEEPING and is never a VALID proof record",
+   "reuse_or_rerun returns RERUN (never REUSE) when the receipt is missing, unsealed, corrupt, names no inputs, names a missing input, names a hash-mismatched input, has a post-seal family scar, or is weaker than the asking evidence class",
+   "REUSE without reused_from (receipt path + digest) raises FailClosed reuse_unreported"
+  ],
+  "frontier": "FT.VERIFICATION.repro",
+  "frontier_fed": {
+   "how": "A sealed proof changes which verification depth is still required. The next WorkUnit is refilled at required_level rather than the full suite. The frontier JSON is owned by global_frontier.py and is not mutated here.",
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "related_entries": [
+    "F008"
+   ],
+   "writes_frontier_file": false
+  },
+  "hcli_can_invoke": true,
+  "invoke": "tools.future.evidence_dag:build|selftest|required_level|admit_candidate|request_level|EvidenceDAG.prove|reuse_or_rerun|execute_reuse_workunit",
+  "next_work_refills": "future.evidence-dag.adapt-next-mutation depends on selftest",
+  "persists": "receipts/future/EVIDENCE_DAG.json via write_receipt",
+  "receipt": "receipts/future/EVIDENCE_DAG.json",
+  "result_changes_a_frontier": "required_level output is the next verification WorkUnit's depth; a reused VALID proof is not re-run; an invalidated descendant is; reuse_or_rerun is the 3h-trial WorkUnit that demonstrates cached-invariant reuse",
+  "schedule": [
+   "future.evidence-dag.selftest",
+   "future.evidence-dag.adapt-next-mutation",
+   "future.evidence-dag.reuse-or-rerun",
+   "future.evidence-dag.v8-protected-capability"
+  ],
+  "verify": "python3 -m pytest tools/future/test_evidence_dag.py -q",
+  "work_units_emitted": [
+   "future.evidence-dag.selftest",
+   "future.evidence-dag.adapt-next-mutation",
+   "future.evidence-dag.reuse-or-rerun",
+   "future.evidence-dag.v8-protected-capability"
+  ],
+  "workunit": "one STATIC_ANALYSIS unit; reuse_or_rerun a named claim; REUSE result carries reused_from"
+ },
+ "reuse": {
+  "changed_inputs_did_not_reuse": true,
+  "executed_first_pass": [
+   "A",
+   "B",
+   "C",
+   "D"
+  ],
+  "reuse_count_on_C": 2,
+  "skipped_work_on_identical_inputs": true,
+  "work_after_identical_reuse": 4,
+  "work_after_input_change": 5,
+  "work_first_pass": 4
+ },
+ "schema": "hawking.future.evidence_dag.v1",
+ "seal_sha256": "8ae327c201a7b0a7979b91bad968ed83571e57c10bc22bbb764e2516368ca686",
+ "static_ladder": {
+  "holds": true,
+  "n_proved": 8,
+  "proved": [
+   "V0",
+   "V1",
+   "V2",
+   "V3",
+   "V4",
+   "V5",
+   "V6",
+   "V7"
+  ],
+  "reused_top": true,
+  "work_count": 8
+ },
+ "unavailable_levels": {
+  "V7_available": true,
+  "holds": true,
+  "no_synthetic_V8_proof": true,
+  "prove_V8_raises_before_work": true,
+  "request_V8_raises": true,
+  "request_V8_returned": null,
+  "request_V9_raises": true,
+  "silent_downgrade_to_V7": false,
+  "work_count_unchanged": true
+ },
+ "version": 1,
+ "work_units": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, take a GPU lease, or lower a verification bar.",
+   "classification": null,
+   "command": [
+    "python3",
+    "tools/future/evidence_dag.py",
+    "--selftest"
+   ],
+   "content_hash": "569b5ff62db93835ad9ba77fb525cc7b0252b83949cf65a0226f779c36a05b30",
+   "dependencies": [],
+   "description": "Run the evidence DAG selftest: V0\u2013V9 catalog, reuse, diamond invalidation, adaptive depth, V8/V9 refusal. Seals EVIDENCE_DAG.json.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.evidence-dag.selftest",
+   "output_receipt_path": "receipts/future/EVIDENCE_DAG.json",
+   "preferred_backend": null,
+   "provider": "tools.future.evidence_dag",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.evidence_dag.selftest",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "Static sidecar artifact. Adaptive depth is a plan, not a promotion.",
+   "classification": null,
+   "command": [
+    "python3",
+    "tools/future/evidence_dag.py",
+    "--required-level",
+    "-"
+   ],
+   "content_hash": "f58be27238bfacaef7d00a00498ff43de4946dded30ff476dcbf49a117c6460e",
+   "dependencies": [
+    "future.evidence-dag.selftest"
+   ],
+   "description": "Choose required_level for the next mutation from scope, uncertainty, risk, upside and promotion proximity. Do not run the full suite by default.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.evidence-dag.adapt-next-mutation",
+   "output_receipt_path": "receipts/future/EVIDENCE_DAG.json",
+   "preferred_backend": null,
+   "provider": "tools.future.evidence_dag",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.evidence_dag.required_level",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim": "evidence_dag.cached_invariant",
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Reuse is earned by live input hashes, not by claim name.",
+   "classification": null,
+   "command": [
+    "python3",
+    "tools/future/evidence_dag.py",
+    "--reuse-or-rerun",
+    "evidence_dag.cached_invariant"
+   ],
+   "content_hash": "1847b3a5f3028d2bc6f9f3d37e60bc8409dfc33bea34c92e434a2d84afe7db1a",
+   "dependencies": [
+    "future.evidence-dag.selftest"
+   ],
+   "description": "Reuse a sealed claim if every named input still hashes, no scar has landed against its family since the seal, and the receipt's evidence class covers the ask. Otherwise RERUN, naming the condition. A REUSE result MUST carry reused_from.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.evidence-dag.reuse-or-rerun",
+   "output_receipt_path": "receipts/future/EVIDENCE_DAG.json",
+   "preferred_backend": null,
+   "provider": "tools.future.evidence_dag",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "result_must_carry": "reused_from",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.evidence_dag.reuse_or_rerun",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": "V8 is UNAVAILABLE: this sidecar has no GPU authority. The unit sleeps until hardware qualifies. It is not a V7 result.",
+   "claim_boundary": "Proposal only. Sidecar cannot acquire a GPU lease or write a protected measurement. A sleeping unit is not a synthetic V8.",
+   "classification": "BLOCKED",
+   "content_hash": "b9ca7c00675ff5d428011f29bb62b16b0b600f39caa8fe348207921becd6d758",
+   "dependencies": [
+    "future.evidence-dag.selftest"
+   ],
+   "description": "SLEEPING: V8 protected capability/performance. Wakes when a protected GPU lease exists and the machine is QUIESCENT. Never a synthetic result.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.evidence-dag.v8-protected-capability",
+   "output_receipt_path": "receipts/future/EVIDENCE_DAG.json",
+   "preferred_backend": "metal",
+   "provider": "tools.future.evidence_dag",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requested_level": "V8",
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "sleeping": true,
+   "species": "independent_reproduction",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.evidence_dag.request_level_v8",
+   "wakes_when": "protected GPU authority qualifies AND machine is QUIESCENT",
+   "workspace": "repo-root"
+  }
+ ]
+}

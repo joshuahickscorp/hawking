@@ -1,0 +1,1439 @@
+{
+ "atlas_source": {
+  "fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+  "live_disk": {
+   "fingerprint_match": true,
+   "names_match": true,
+   "present": true
+  },
+  "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+  "schema": "hawking.accelerator.architecture_atlas.v1"
+ },
+ "backend_lowering": {
+  "ane_raises": true,
+  "cuda_error_prefix": "lowering to CUDA is refused: no NVIDIA CUDA device on this Apple host. receipts/headless/CUDA_CAPABILITY_CENSUS.json identities.device.api is 'Metal via MLX'; identities.transport.status is ABSENT ('no NVIDIA hardware exists on this machine",
+  "cuda_raises": true,
+  "entry": "lower_physical_graph_to_backend(graph, backend)",
+  "fpga": {
+   "availability": "PLANNED",
+   "fingerprint": "ec1f50164a8fdb8bcbe93fcb429f05705889f5a092844748b6c8fb1def92c7f1",
+   "not_a_civilization": "FPGA is part of Accelerator / Physical Compiler / Fusion. This seam is a declared interface plus an availability flag. It is not an FPGA backend.",
+   "qualification": "PLAN_ONLY"
+  },
+  "metal": {
+   "availability": "PLANNED",
+   "fingerprint": "66db1b411fc574b1ff287daaf54fd4fb4fa56141855124feed263adea9db67f9",
+   "qualification": "PLAN_ONLY"
+  }
+ },
+ "backend_seams": {
+  "ANE": {
+   "availability": "UNAVAILABLE",
+   "backend": "ANE",
+   "claim_boundary": "UNAVAILABLE. This sidecar will not return an ANE plan or latency.",
+   "interface": {
+    "emits": "never; raises BackendUnavailableError",
+    "entry": "lower_physical_graph_to_backend(graph, 'ANE')",
+    "owned_by": "Hawking PhysicalGraph (public Core ML / MLComputePlan is the only Apple authority, and it is not a runnable seam here)"
+   },
+   "missing_dependency": "ANE lowering requires compiled MLProgram assets and MLComputePlan/runtime evidence. APPLE_ANE_ATLAS.json (parent working tree, untracked in this snapshot) status is ATLAS_SCAFFOLD_COMPILE_BOUNDARY; xcodebuild unavailable (CommandLineTools only). Graph manifests do not prove compilation, placement, latency, energy, or Flash parity."
+  },
+  "CUDA": {
+   "availability": "UNAVAILABLE",
+   "backend": "CUDA",
+   "claim_boundary": "UNAVAILABLE. This sidecar will not return a CUDA plan, estimate, or performance number.",
+   "interface": {
+    "emits": "never; raises BackendUnavailableError",
+    "entry": "lower_physical_graph_to_backend(graph, 'CUDA')",
+    "owned_by": "Hawking PhysicalGraph (CUDA graphs are a source school, not this seam)"
+   },
+   "missing_dependency": "no NVIDIA CUDA device on this Apple host. receipts/headless/CUDA_CAPABILITY_CENSUS.json identities.device.api is 'Metal via MLX'; identities.transport.status is ABSENT ('no NVIDIA hardware exists on this machine'). CUDA graphs are an atlas source school, not a Hawking execution backend. Local CUDA performance claims are forbidden on Apple hardware. tools/accelerator/cuda_runtime.py is Codex-owned inventory, not this seam."
+  },
+  "FPGA": {
+   "availability": "PLANNED",
+   "backend": "FPGA",
+   "claim_boundary": "PLANNED is not a measurement. HWIR and link/cycle simulations remain diagnostic until hardware receipts exist.",
+   "interface": {
+    "does_not_emit": "a bitstream, a board timing, or an FPGA civilization",
+    "emits": "PLAN_ONLY spatial-pipeline / dataflow-region plan",
+    "entry": "lower_physical_graph_to_backend(graph, 'FPGA')",
+    "owned_by": "Hawking Physical Compiler / Fusion (FPGA is an organ of Accelerator, not its own civilization)"
+   },
+   "missing_dependency": null,
+   "not_a_civilization": "FPGA is part of Accelerator / Physical Compiler / Fusion. This seam is a declared interface plus an availability flag. It is not an FPGA backend."
+  },
+  "METAL": {
+   "availability": "PLANNED",
+   "backend": "METAL",
+   "claim_boundary": "PLANNED is not a measurement. No Metal timing, tps, or joule figure is asserted by this sidecar.",
+   "interface": {
+    "does_not_emit": "kernels, timing, or a protected measurement",
+    "emits": "PLAN_ONLY Metal command-buffer / persistent-pipeline plan",
+    "entry": "lower_physical_graph_to_backend(graph, 'METAL')",
+    "owned_by": "Hawking PhysicalGraph"
+   },
+   "missing_dependency": null
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:20Z",
+  "recorded_by": "tools/future/physical_primitives.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "directive_only_contracts": [
+  {
+   "aliases": [
+    "execution_policy.verification"
+   ],
+   "atlas_index": null,
+   "atlas_status": "NOT_IN_ATLAS",
+   "behavior_ids": [
+    "verification_region"
+   ],
+   "behavior_taxonomy": [
+    "CONDITIONAL_EXECUTION",
+    "STATIC_SCHEDULING"
+   ],
+   "cheapest_falsifier": "inserting the verification region changes the accepted output, or a diverging run cannot be bisected to a local probe",
+   "cost_removed": {
+    "mechanism": "observe in place; refuse a second semantic program that 'verifies' by rewriting",
+    "metrics": [
+     "state_movement"
+    ]
+   },
+   "fundamental_physical_idea": "verification is a PhysicalGraph execution-policy region, not a new atlas primitive",
+   "in_atlas": false,
+   "invariant": "a verification region may observe but must not change the accepted output of the region it checks",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "VerificationRegion",
+   "organ_classes": [
+    "all"
+   ],
+   "physical_graph_mapping": {
+    "execution_policy.verification": {
+     "debug": "L0_plus_L1_plus_L2_plus_L3_full_state",
+     "divergence": "checkpoint_bisection_then_local_deep_probe",
+     "fast": "L0_device_state_plus_L1_fingerprint_checkpoint",
+     "protected": "L0_plus_L1_plus_L2_sampled_probes"
+    }
+   },
+   "preconditions": [
+    "PhysicalGraph.execution_policy.verification is populated",
+    "the region is observational (L0/L1/L2/L3 as already named by PhysicalGraph)",
+    "divergence handling is checkpoint bisection, not a silent rewrite"
+   ]
+  }
+ ],
+ "gaps_closed": [
+  "executable contracts for all 17 atlas primitives (invariant, cost removed, organ classes, preconditions, cheapest falsifier, legal memory tiers)",
+  "memory-tier identity function: same semantic program at UMA vs HBM hashes differently",
+  "backend lowering seams METAL/FPGA PLANNED, CUDA/ANE UNAVAILABLE with named missing dependencies; unavailable lowering raises",
+  "NR family -> PhysicalGraph-shaped PLAN_ONLY document (no hcli import)",
+  "reconciliation of atlas 17 vs directive list (LayoutTransform kept; VerificationRegion not added to the 17)",
+  "ConditionalPhysicalProgram's two atlas entries merged into one contract"
+ ],
+ "identity_rule": {
+  "function": "physical_identity(semantic_program_id, primitive, memory_tier, backend, organ_class=..., extra=...)",
+  "memory_tier_is_component": true,
+  "negative_control": {
+   "hbm_identity": "3d6f23458835e31ff6c437dbe27bee2580a9aabef3cabfb91d49c836b84c81cf",
+   "identities_differ": true,
+   "primitive": "StationaryRepresentation",
+   "semantic_program_id": "identity-negative-control",
+   "uma_identity": "db37db904be1e5716cf1bf505c1961a4405a570e27a1329e4b55dc5016cf55e1"
+  }
+ },
+ "memory_tiers": [
+  "REGISTER",
+  "THREADGROUP",
+  "UMA",
+  "HBM",
+  "ACCEL_SRAM",
+  "REMOTE"
+ ],
+ "negative_findings": [
+  "atlas present in this worktree and live-reconciled",
+  "FLASH_COMPLETE_V2.nr.json is not in this worktree; family names recovered into FLASH_NR_FIXTURE, numeric payloads omitted",
+  "hcli/physical_graph.py is not in this sparse checkout; lowering emits a compatible shape but cannot call compile_physical_graph",
+  "tools/odyssey/physical_graph_compiler.py and noetic_compiler.py are not in this sparse checkout (read via git show)",
+  "APPLE_ANE_ATLAS.json is not in this worktree; ANE missing-dependency text recovered from the parent working tree",
+  "this sidecar has no GPU, no FPGA board, no ANE MLComputePlan; METAL/FPGA seams are PLANNED, never measured",
+  "atlas entries for AsyncPrefetch, TiledProjection, MemoryTierIdentity do not exist; contracts for those three are derived",
+  "VerificationRegion is not an atlas primitive",
+  "cannot prove a Metal/FPGA plan is faster than anything; STATIC_ONLY only"
+ ],
+ "nr_to_physical_graph": {
+  "entry": "lower_nr_to_physical_graph(nr, memory_tier=..., backend=...)",
+  "example_fingerprint": "7955d8b5aec6c6447e5048af9695c39a946cd267106ef0f3300864298867c2ec",
+  "example_memory_tier": "UMA",
+  "example_model_id": "Qwen/Qwen3.8-Flash-Next",
+  "example_nr_families": [
+   "embedding_lm_head",
+   "ngram_embedding",
+   "norm",
+   "linear_attention_hyperconnection",
+   "full_attention",
+   "mlp_hyperconnection",
+   "shared_expert",
+   "routed_experts",
+   "other"
+  ],
+  "n_instances": 25,
+  "qualification": "PLAN_ONLY"
+ },
+ "primitives": [
+  {
+   "aliases": [],
+   "atlas_index": 1,
+   "atlas_status": "IMPLEMENTED",
+   "behavior_ids": [
+    "persistent_physical_region"
+   ],
+   "behavior_taxonomy": [
+    "PERSISTENT_EXECUTION",
+    "STATE_RESIDENCY",
+    "LOCAL_MEMORY"
+   ],
+   "cheapest_falsifier": "protected complete useful wall time does not improve against the same resident control, with identical output and zero fallback",
+   "cost_removed": {
+    "mechanism": "amortize launch and binding ceremony",
+    "metrics": [
+     "experiment_turnaround_ns",
+     "host_ceremony",
+     "state_movement",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "keep executable state and reusable bindings alive across token steps",
+   "in_atlas": true,
+   "invariant": "when state and bindings remain valid, repeated host entry is not semantically required",
+   "legal_memory_tiers": [
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "PersistentPhysicalRegion",
+   "organ_classes": [
+    "decode",
+    "deltanet",
+    "moe",
+    "attention",
+    "sampling"
+   ],
+   "physical_graph_mapping": {
+    "execution_policy.process": "long_lived_executor",
+    "residency.state": "sequence",
+    "residency.weights": "resident"
+   },
+   "preconditions": [
+    "execution_policy.process is a long_lived_executor",
+    "residency.weights is resident",
+    "residency.state is sequence-scoped",
+    "bindings remain valid across token steps"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 2,
+   "atlas_status": "IMPLEMENTED",
+   "behavior_ids": [
+    "stationary_representation"
+   ],
+   "behavior_taxonomy": [
+    "DATA_STATIONARITY",
+    "LOCAL_MEMORY",
+    "LOW_BIT_ARITHMETIC"
+   ],
+   "cheapest_falsifier": "packed resident A/B has no protected complete-wall benefit or violates the no-dense-rematerialization/capability gate",
+   "cost_removed": {
+    "mechanism": "avoid repeated operand movement",
+    "metrics": [
+     "active_bytes",
+     "host_ceremony",
+     "state_movement",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "spend residency and local storage to avoid repeatedly moving the dominant operand",
+   "in_atlas": true,
+   "invariant": "the best stationary operand is the one whose reuse exceeds the cost of retaining it",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "StationaryRepresentation",
+   "organ_classes": [
+    "mlp",
+    "moe",
+    "embedding",
+    "lm_head",
+    "codebook"
+   ],
+   "physical_graph_mapping": {
+    "memory": "tier_is_executable_identity",
+    "representation": "packed_native",
+    "residency": "stationarity_contract"
+   },
+   "preconditions": [
+    "representation is packed_native at the occupying tier",
+    "residency carries an explicit stationarity_contract",
+    "memory tier is a component of executable identity",
+    "the operand is not also declared REMOTE (REMOTE is movement)"
+   ]
+  },
+  {
+   "aliases": [
+    "ASYNC_PREFETCH behavior"
+   ],
+   "atlas_entry": "absent; technique coverage folds prefetch into async_double_buffer",
+   "atlas_index": 3,
+   "atlas_status": "LIST_ONLY",
+   "behavior_ids": [
+    "async_prefetch"
+   ],
+   "behavior_taxonomy": [
+    "ASYNC_PREFETCH",
+    "STREAMING",
+    "CROSS_DEVICE_OVERLAP"
+   ],
+   "cheapest_falsifier": "the prefetch destination is still in use when the consumer starts, or a protected complete wall does not improve after the copy/fence cost",
+   "cost_removed": {
+    "mechanism": "hide independent movement behind compute without requiring two owned buffers",
+    "metrics": [
+     "state_movement",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "stage the next operand asynchronously; one-sided overlap, not dual-buffer ownership",
+   "in_atlas": true,
+   "invariant": "a prefetch is legal only when the destination is not in use by the consumer and the source remains valid until the copy completes",
+   "legal_memory_tiers": [
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM",
+    "REMOTE"
+   ],
+   "name": "AsyncPrefetch",
+   "organ_classes": [
+    "mlp",
+    "moe",
+    "deltanet",
+    "kv"
+   ],
+   "physical_graph_mapping": {
+    "execution_policy": "overlap_when_measured",
+    "memory": "async_prefetch_staging",
+    "synchronization": "source_valid_until_copy_complete"
+   },
+   "preconditions": [
+    "source remains valid until the copy completes",
+    "destination is not concurrently consumed",
+    "overlap is a measured window, not an assumed one",
+    "Fusion ISA PREFETCH is a timeline hint, not this primitive"
+   ]
+  },
+  {
+   "aliases": [
+    "async_double_buffer"
+   ],
+   "atlas_index": 4,
+   "atlas_status": "MAPPED",
+   "behavior_ids": [
+    "async_double_buffer"
+   ],
+   "behavior_taxonomy": [
+    "ASYNC_PREFETCH",
+    "DOUBLE_BUFFERING",
+    "STREAMING"
+   ],
+   "cheapest_falsifier": "measured overlap window is zero or protected complete wall is not lower after fence costs",
+   "cost_removed": {
+    "mechanism": "hide movement behind independent work",
+    "metrics": [
+     "state_movement",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "overlap independent movement and compute with two ownership-safe buffers",
+   "in_atlas": true,
+   "invariant": "a transfer can be hidden only inside a real overlap window with explicit producer/consumer ownership",
+   "legal_memory_tiers": [
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "DoubleBufferedTile",
+   "organ_classes": [
+    "mlp",
+    "moe",
+    "deltanet",
+    "kv"
+   ],
+   "physical_graph_mapping": {
+    "execution_policy": "overlap_when_measured",
+    "memory": "double_buffered_tiles",
+    "synchronization": "producer_consumer_fences"
+   },
+   "preconditions": [
+    "two ownership-safe buffers exist at the occupying tier",
+    "producer/consumer fences are explicit",
+    "overlap is measured, not assumed"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 5,
+   "atlas_status": "MAPPED",
+   "behavior_ids": [
+    "spatial_local_pipeline"
+   ],
+   "behavior_taxonomy": [
+    "SPATIAL_EXECUTION",
+    "LOCAL_MEMORY",
+    "COMPUTE_IN_TRANSIT"
+   ],
+   "cheapest_falsifier": "fused region fails numerical parity or protected complete wall increases after local-storage/fence cost",
+   "cost_removed": {
+    "mechanism": "fuse producer-consumer regions and keep intermediates local",
+    "metrics": [
+     "active_bytes",
+     "host_ceremony",
+     "state_movement",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "make locality and pipeline ownership explicit in the graph",
+   "in_atlas": true,
+   "invariant": "if an intermediate is not externally observable, its global materialization is optional",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "ACCEL_SRAM",
+    "HBM"
+   ],
+   "name": "SpatialPipeline",
+   "organ_classes": [
+    "mlp",
+    "deltanet",
+    "moe",
+    "attention"
+   ],
+   "physical_graph_mapping": {
+    "computation": "spatial_regions",
+    "data": "semantic_edges",
+    "memory": "local_intermediates"
+   },
+   "preconditions": [
+    "producer-consumer chain is placed as spatial regions",
+    "intermediates are not observable outside the region",
+    "semantic edges name payload, owner, and order"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 6,
+   "atlas_status": "PHYSICALLY_MEASURED",
+   "atlas_status_note": "PHYSICALLY_MEASURED is the atlas/Codex evidence class, not a sidecar measurement. This module emits CONTRACT_ONLY / STATIC_ONLY.",
+   "behavior_ids": [
+    "fused_decode_compute"
+   ],
+   "behavior_taxonomy": [
+    "FUSED_REPRESENTATION_DECODE",
+    "LOW_BIT_ARITHMETIC",
+    "COMPUTE_IN_TRANSIT"
+   ],
+   "cheapest_falsifier": "parity, fallback, or protected complete-wall gate fails against the same-source dense/control path",
+   "cost_removed": {
+    "mechanism": "remove dense rematerialization and its write/read",
+    "metrics": [
+     "active_bytes",
+     "experiment_turnaround_ns",
+     "flops",
+     "state_movement",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "fuse representation decode with arithmetic at the consumer",
+   "in_atlas": true,
+   "invariant": "a representation-native consumer may remove an intermediate only when its numerical contract is preserved",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "FusedDecodeCompute",
+   "organ_classes": [
+    "mlp",
+    "moe",
+    "lm_head",
+    "codebook"
+   ],
+   "physical_graph_mapping": {
+    "computation": "projection_plus_decode",
+    "memory": "no_dense_rematerialization",
+    "representation": "native_decode"
+   },
+   "preconditions": [
+    "consumer is representation-native (no dense rematerialization)",
+    "numerical contract of the unfused path is preserved",
+    "decode happens at the occupying tier, not via a host round-trip"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 7,
+   "atlas_status": "DIAGNOSTIC",
+   "behavior_ids": [
+    "direct_routed_accumulate"
+   ],
+   "behavior_taxonomy": [
+    "ROUTE_AWARE_EXECUTION",
+    "DYNAMIC_SCHEDULING",
+    "SPARSITY_SKIPPING"
+   ],
+   "cheapest_falsifier": "selected-route protected complete wall does not beat current Flash control after route/gather/accumulate costs",
+   "cost_removed": {
+    "mechanism": "skip inactive experts and eliminate staging copies",
+    "metrics": [
+     "active_bytes",
+     "flops",
+     "state_movement",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "treat routing and accumulation as one physical region around selected payloads",
+   "in_atlas": true,
+   "invariant": "for few active tokens, route metadata and selected payload locality matter more than nominal expert throughput",
+   "legal_memory_tiers": [
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "DirectRoutedAccumulate",
+   "organ_classes": [
+    "moe",
+    "router",
+    "shared_expert",
+    "expert_cache"
+   ],
+   "physical_graph_mapping": {
+    "computation": "route_then_native_expert",
+    "data": "selected_payload_only",
+    "state": "route_metadata_resident"
+   },
+   "preconditions": [
+    "route metadata is resident at the occupying tier",
+    "payloads are the selected subset only",
+    "accumulate is in the same physical region as the selected experts"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 8,
+   "atlas_status": "IMPLEMENTED",
+   "behavior_ids": [
+    "local_state_machine"
+   ],
+   "behavior_taxonomy": [
+    "STATE_RESIDENCY",
+    "PERSISTENT_EXECUTION",
+    "LOCAL_MEMORY"
+   ],
+   "cheapest_falsifier": "device-resident state does not improve protected complete wall or fails checkpoint/bisection parity",
+   "cost_removed": {
+    "mechanism": "keep mutable sequence state resident and ordered",
+    "metrics": [
+     "host_ceremony",
+     "state_movement",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "model decode as a state machine rather than reconstructing stateless operators every step",
+   "in_atlas": true,
+   "invariant": "mutable state has one authoritative owner and its update ordering is part of the executable identity",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "LocalStateMachine",
+   "organ_classes": [
+    "deltanet",
+    "kv",
+    "routing",
+    "ngram",
+    "mtp"
+   ],
+   "physical_graph_mapping": {
+    "execution_policy": "fixed_state_transitions",
+    "state": "authoritative_resident_owner",
+    "synchronization": "state_update_edges"
+   },
+   "preconditions": [
+    "exactly one authoritative resident owner for the state",
+    "state-update edges are explicit in the graph",
+    "update ordering is part of physical identity"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 9,
+   "atlas_status": "IMPLEMENTED",
+   "behavior_ids": [
+    "semantic_transport"
+   ],
+   "behavior_taxonomy": [
+    "GLOBAL_MEMORY",
+    "CROSS_DEVICE_OVERLAP",
+    "COMPUTE_IN_TRANSIT"
+   ],
+   "cheapest_falsifier": "semantic edge accounting cannot reproduce the reference output or link cost erases the proposed benefit",
+   "cost_removed": {
+    "mechanism": "avoid untyped copies and choose topology-aware movement",
+    "metrics": [
+     "active_bytes",
+     "experiment_turnaround_ns",
+     "state_movement",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "make data movement a semantic graph edge instead of an opaque memory copy",
+   "in_atlas": true,
+   "invariant": "a transfer is optimizable only when its payload, owner, ordering, and reduction semantics are explicit",
+   "legal_memory_tiers": [
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM",
+    "REMOTE"
+   ],
+   "name": "SemanticTransportEdge",
+   "organ_classes": [
+    "moe",
+    "attention",
+    "deltanet",
+    "fpga_partition"
+   ],
+   "physical_graph_mapping": {
+    "dependencies": "typed_transport_edges",
+    "device_placement": "topology_aware",
+    "synchronization": "edge_ownership_and_order"
+   },
+   "preconditions": [
+    "edges are typed (activation / state / compact_representation / partial_reduction)",
+    "owner and order are declared",
+    "the copy is not an opaque memcpy"
+   ]
+  },
+  {
+   "aliases": [
+    "tiled GEMV/GEMM technique"
+   ],
+   "atlas_entry": "absent; technique coverage files tiled GEMV/GEMM under layout_algebra",
+   "atlas_index": 10,
+   "atlas_status": "LIST_ONLY",
+   "behavior_ids": [
+    "tiled_projection"
+   ],
+   "behavior_taxonomy": [
+    "TILING",
+    "LAYOUT_TRANSFORMATION",
+    "LOW_BIT_ARITHMETIC"
+   ],
+   "cheapest_falsifier": "tiled result disagrees with the untiled projection, or a protected complete wall does not improve after tile/fence cost",
+   "cost_removed": {
+    "mechanism": "execute the projection as owned tiles rather than a whole-operand round-trip",
+    "metrics": [
+     "active_bytes",
+     "state_movement",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "the projection operator itself is tiled; layout algebra (LayoutTransform) chooses packing, this primitive is the tiled operator",
+   "in_atlas": true,
+   "invariant": "a projection may be factored into tiles only when tile ownership covers the logical result without changing the numerical contract",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "TiledProjection",
+   "organ_classes": [
+    "mlp",
+    "moe",
+    "attention",
+    "lm_head"
+   ],
+   "physical_graph_mapping": {
+    "computation": "tiled_projection",
+    "memory": "tile_working_set",
+    "representation": "tile_owned_result"
+   },
+   "preconditions": [
+    "tile ownership covers the logical result",
+    "layout (LayoutTransform) is already chosen or is the identity layout",
+    "numerical contract of the untiled projection is preserved"
+   ]
+  },
+  {
+   "aliases": [
+    "layout_algebra"
+   ],
+   "atlas_index": 11,
+   "atlas_status": "DIAGNOSTIC",
+   "behavior_ids": [
+    "layout_algebra"
+   ],
+   "behavior_taxonomy": [
+    "LAYOUT_TRANSFORMATION",
+    "TILING",
+    "LOW_BIT_ARITHMETIC"
+   ],
+   "cheapest_falsifier": "same-source protected A/B at the chosen organ shows no complete-wall or active-byte benefit",
+   "cost_removed": {
+    "mechanism": "reduce strided movement and tails through shape-aware mapping",
+    "metrics": [
+     "active_bytes",
+     "experiment_turnaround_ns",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "choose layout and thread/tile ownership as compiler objects rather than kernel folklore",
+   "in_atlas": true,
+   "invariant": "the same logical operation may have materially different movement and reduction costs under different legal layouts",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "LayoutTransform",
+   "organ_classes": [
+    "mlp",
+    "moe",
+    "attention",
+    "deltanet"
+   ],
+   "physical_graph_mapping": {
+    "computation": "tile_and_lane_mapping",
+    "precision": "representation_grouping",
+    "representation": "layout_algebra"
+   },
+   "preconditions": [
+    "logical, physical, tile, lane, and arithmetic mappings are distinct compiler objects",
+    "nominal utilization is not authority",
+    "the transform is a legal layout of the same logical tensor"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 12,
+   "atlas_status": "DIAGNOSTIC",
+   "behavior_ids": [
+    "sparse_conditional_execution"
+   ],
+   "behavior_taxonomy": [
+    "SPARSITY_SKIPPING",
+    "CONDITIONAL_EXECUTION",
+    "ROUTE_AWARE_EXECUTION"
+   ],
+   "cheapest_falsifier": "sparse control does not preserve output or its index/branch overhead exceeds the omitted work in protected complete wall",
+   "cost_removed": {
+    "mechanism": "avoid provably inactive work",
+    "metrics": [
+     "active_bytes",
+     "flops",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "make conditional work explicit in the physical program and pay only for selected operands",
+   "in_atlas": true,
+   "invariant": "skipping is legal only when the omitted contribution is proven zero or outside the selected computation",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "SparseSkip",
+   "organ_classes": [
+    "sparse_attention",
+    "moe",
+    "residual",
+    "router"
+   ],
+   "physical_graph_mapping": {
+    "computation": "conditional_regions",
+    "data": "sparse_indices_and_payloads",
+    "qualification": "parity_required"
+   },
+   "preconditions": [
+    "omitted contribution is proven zero or unselected",
+    "index/branch overhead is accounted in the complete wall",
+    "output ordering and numerical semantics are preserved"
+   ]
+  },
+  {
+   "aliases": [
+    "static_dynamic_skeleton",
+    "npu_regular_island"
+   ],
+   "atlas_index": 13,
+   "atlas_status": "IMPLEMENTED",
+   "behavior_ids": [
+    "static_dynamic_skeleton",
+    "npu_regular_island"
+   ],
+   "behavior_taxonomy": [
+    "STATIC_SCHEDULING",
+    "DYNAMIC_SCHEDULING",
+    "CONDITIONAL_EXECUTION",
+    "GRAPH_REPLAY",
+    "DATA_STATIONARITY"
+   ],
+   "cheapest_falsifier": "a bounded dynamic slot requires topology rebuild or changes output/capability under a protected replay",
+   "cost_removed": {
+    "mechanism": "precompute safe scheduling and retain dynamic controls",
+    "metrics": [
+     "experiment_turnaround_ns",
+     "host_ceremony",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "remove runtime scheduling decisions from the critical path without pretending dynamic MoE is static",
+   "in_atlas": true,
+   "invariant": "static structure and dynamic control can coexist when dynamic choices do not change buffer ownership unsafely",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "merged_atlas_entries": [
+    {
+     "atlas_status": "IMPLEMENTED",
+     "behavior_id": "static_dynamic_skeleton",
+     "role": "primary"
+    },
+    {
+     "atlas_status": "MAPPED",
+     "behavior_id": "npu_regular_island",
+     "invariant": "a backend is useful only when its transfer, compile, synchronization, and residency costs fit the graph",
+     "role": "same primitive, organ-level backend choice"
+    }
+   ],
+   "name": "ConditionalPhysicalProgram",
+   "organ_classes": [
+    "decode",
+    "deltanet",
+    "moe",
+    "kv",
+    "sampling",
+    "normalization",
+    "silu",
+    "regular_mlp"
+   ],
+   "physical_graph_mapping": {
+    "dependencies": "precomputed",
+    "device_placement": "organ_level_choice",
+    "execution_policy": "static_skeleton_plus_dynamic_slots",
+    "synchronization": "precomputed_where_safe"
+   },
+   "preconditions": [
+    "dependencies are precomputed where dynamic slots permit",
+    "dynamic slots are bounded (token, position, route, sampling, variable_state)",
+    "a backend is chosen per organ only when transfer/compile/residency costs fit the graph"
+   ]
+  },
+  {
+   "aliases": [
+    "CUDA graph / TPU compiled graph / NPU executable \u2014 source schools, not this primitive"
+   ],
+   "atlas_index": 14,
+   "atlas_status": "DIAGNOSTIC",
+   "behavior_ids": [
+    "graph_replay"
+   ],
+   "behavior_taxonomy": [
+    "GRAPH_REPLAY",
+    "STATIC_SCHEDULING",
+    "CONDITIONAL_EXECUTION"
+   ],
+   "cheapest_falsifier": "replay adds no protected complete-wall improvement or changes a dynamic route/state result",
+   "cost_removed": {
+    "mechanism": "reuse command topology and reduce rebuilds",
+    "metrics": [
+     "experiment_turnaround_ns",
+     "host_ceremony",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "compile the static skeleton once and expose only dynamic slots",
+   "in_atlas": true,
+   "invariant": "a stable dependency graph can be reused if dynamic values do not alter topology",
+   "legal_memory_tiers": [
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM"
+   ],
+   "name": "GraphReplay",
+   "organ_classes": [
+    "decode",
+    "regular_mlp",
+    "attention",
+    "moe"
+   ],
+   "physical_graph_mapping": {
+    "execution_policy.dynamic_slots": [
+     "token",
+     "position",
+     "route",
+     "sampling"
+    ],
+    "execution_policy.pipeline_state": "compile_once_reuse"
+   },
+   "preconditions": [
+    "pipeline_state is compile_once_reuse",
+    "dynamic slots are token/position/route/sampling only",
+    "replay does not change a dynamic route/state result"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 15,
+   "atlas_status": "IMPLEMENTED",
+   "behavior_ids": [
+    "collective_region"
+   ],
+   "behavior_taxonomy": [
+    "CROSS_DEVICE_OVERLAP",
+    "GLOBAL_MEMORY",
+    "STATIC_SCHEDULING"
+   ],
+   "cheapest_falsifier": "a protected multi-domain or simulated-link A/B does not match the cost ordering after complete transfer accounting",
+   "cost_removed": {
+    "mechanism": "choose topology-aware collective execution",
+    "metrics": [
+     "state_movement",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "choose ring/tree/direct movement from measured alpha/beta and message size",
+   "in_atlas": true,
+   "invariant": "synchronized work is paced by its slowest required link and cannot hide an unmodeled transfer",
+   "legal_memory_tiers": [
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM",
+    "REMOTE"
+   ],
+   "name": "CollectiveRegion",
+   "organ_classes": [
+    "moe",
+    "attention",
+    "multi_device"
+   ],
+   "physical_graph_mapping": {
+    "dependencies": "semantic_transport",
+    "device_placement": "topology_aware",
+    "synchronization": "collective_algorithm"
+   },
+   "preconditions": [
+    "the collective algorithm is an explicit graph node",
+    "every required link is modeled",
+    "NCCL/RCCL are source implementations, not this primitive"
+   ]
+  },
+  {
+   "aliases": [],
+   "atlas_index": 16,
+   "atlas_status": "IMPLEMENTED",
+   "behavior_ids": [
+    "move_or_recompute"
+   ],
+   "behavior_taxonomy": [
+    "LOCAL_MEMORY",
+    "GLOBAL_MEMORY",
+    "CROSS_DEVICE_OVERLAP"
+   ],
+   "cheapest_falsifier": "the costed plan disagrees with a protected end-to-end A/B or chooses a path with missing capability evidence",
+   "cost_removed": {
+    "mechanism": "select the lowest complete dependency cost",
+    "metrics": [
+     "active_bytes",
+     "experiment_turnaround_ns",
+     "host_ceremony",
+     "state_movement",
+     "synchronization",
+     "token_ns"
+    ]
+   },
+   "fundamental_physical_idea": "do not move an operand merely because the source framework would",
+   "in_atlas": true,
+   "invariant": "the cheapest legal way to satisfy a dependency is a physical scheduling decision",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM",
+    "REMOTE"
+   ],
+   "name": "MoveOrRecompute",
+   "organ_classes": [
+    "all"
+   ],
+   "physical_graph_mapping": {
+    "dependencies": "costed_dependency_queries",
+    "device_placement": "topology_aware",
+    "execution_policy": "measured_complete_wall"
+   },
+   "preconditions": [
+    "dependency queries are costed (not assumed from the source framework)",
+    "every candidate path has capability evidence or is refused",
+    "device placement is topology-aware"
+   ]
+  },
+  {
+   "aliases": [
+    "execution_policy.memory_tier_is_executable_identity"
+   ],
+   "atlas_entry": "absent as an atlas entry; PhysicalGraph already states memory_tier_is_executable_identity. This primitive IS that function.",
+   "atlas_index": 17,
+   "atlas_status": "LIST_ONLY",
+   "behavior_ids": [
+    "memory_tier_identity"
+   ],
+   "behavior_taxonomy": [
+    "LOCAL_MEMORY",
+    "GLOBAL_MEMORY",
+    "DATA_STATIONARITY"
+   ],
+   "cheapest_falsifier": "two instances that differ only in memory tier hash to the same physical identity (this library's negative control)",
+   "cost_removed": {
+    "mechanism": "prevent a UMA plan from being silently treated as an HBM plan (or REGISTER as THREADGROUP, etc.)",
+    "metrics": [
+     "state_movement"
+    ]
+   },
+   "fundamental_physical_idea": "the occupying tier is not a hint; it is part of what the executable is",
+   "in_atlas": true,
+   "invariant": "memory tier is a component of executable identity; the same semantic program at two tiers is two physical executables",
+   "legal_memory_tiers": [
+    "REGISTER",
+    "THREADGROUP",
+    "UMA",
+    "HBM",
+    "ACCEL_SRAM",
+    "REMOTE"
+   ],
+   "name": "MemoryTierIdentity",
+   "organ_classes": [
+    "all"
+   ],
+   "physical_graph_mapping": {
+    "execution_policy.memory_tier_is_executable_identity": true,
+    "memory": "tier_is_executable_identity"
+   },
+   "preconditions": [
+    "every primitive instance declares exactly one occupying tier",
+    "the identity function includes that tier",
+    "PhysicalGraph.execution_policy.memory_tier_is_executable_identity is true"
+   ]
+  }
+ ],
+ "purpose": "Executable contracts for the 17 atlas backend-neutral primitives, with memory-tier identity, connecting NR -> PhysicalGraph -> backend lowering. CUDA graphs / TPU compiled graphs / FPGA spatial pipelines / deterministic dataflow collapse into one Hawking-owned abstraction.",
+ "reconciliation": {
+  "atlas_count": 17,
+  "directive_only": {
+   "VerificationRegion": {
+    "aliases": [
+     "execution_policy.verification"
+    ],
+    "disposition": "IMPLEMENTED_OUTSIDE_ATLAS_SEVENTEEN",
+    "in_atlas": false,
+    "reason": "directive listed VerificationRegion; atlas does not. Implemented as a lowering of PhysicalGraph.execution_policy.verification rather than minting an 18th atlas primitive."
+   }
+  },
+  "implemented": [
+   "PersistentPhysicalRegion",
+   "StationaryRepresentation",
+   "AsyncPrefetch",
+   "DoubleBufferedTile",
+   "SpatialPipeline",
+   "FusedDecodeCompute",
+   "DirectRoutedAccumulate",
+   "LocalStateMachine",
+   "SemanticTransportEdge",
+   "TiledProjection",
+   "LayoutTransform",
+   "SparseSkip",
+   "ConditionalPhysicalProgram",
+   "GraphReplay",
+   "CollectiveRegion",
+   "MoveOrRecompute",
+   "MemoryTierIdentity"
+  ],
+  "left_out": [],
+  "merged_into_another": [
+   "npu_regular_island -> ConditionalPhysicalProgram"
+  ],
+  "not_merged_with": {
+   "PhysicalGraph.NR_PRIMITIVES": "BASIS_PROJECT / COEFFICIENT_APPLY / ... are representation operators for Gravity/NR lowering, a different vocabulary from the 17 architecture-atlas primitives.",
+   "fusion_isa.FusionOp.PREFETCH": "a timeline hint in the Fusion ISA, not AsyncPrefetch."
+  },
+  "per_primitive": {
+   "AsyncPrefetch": {
+    "aliases": [
+     "ASYNC_PREFETCH behavior"
+    ],
+    "atlas_status": "LIST_ONLY",
+    "behavior_ids": [
+     "async_prefetch"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name kept. No atlas entry (technique coverage folds prefetch into async_double_buffer). Not merged into DoubleBufferedTile: prefetch is one-sided overlap; double-buffer is two-buffer ownership."
+   },
+   "CollectiveRegion": {
+    "aliases": [],
+    "atlas_status": "IMPLEMENTED",
+    "behavior_ids": [
+     "collective_region"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "ConditionalPhysicalProgram": {
+    "aliases": [
+     "static_dynamic_skeleton",
+     "npu_regular_island"
+    ],
+    "atlas_status": "IMPLEMENTED",
+    "behavior_ids": [
+     "static_dynamic_skeleton",
+     "npu_regular_island"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas used this name for two entries (static_dynamic_skeleton IMPLEMENTED and npu_regular_island MAPPED). Merged into one contract with two behavior_ids so the name is not duplicated."
+   },
+   "DirectRoutedAccumulate": {
+    "aliases": [],
+    "atlas_status": "DIAGNOSTIC",
+    "behavior_ids": [
+     "direct_routed_accumulate"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "DoubleBufferedTile": {
+    "aliases": [
+     "async_double_buffer"
+    ],
+    "atlas_status": "MAPPED",
+    "behavior_ids": [
+     "async_double_buffer"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "FusedDecodeCompute": {
+    "aliases": [],
+    "atlas_status": "PHYSICALLY_MEASURED",
+    "behavior_ids": [
+     "fused_decode_compute"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "GraphReplay": {
+    "aliases": [
+     "CUDA graph / TPU compiled graph / NPU executable \u2014 source schools, not this primitive"
+    ],
+    "atlas_status": "DIAGNOSTIC",
+    "behavior_ids": [
+     "graph_replay"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "LayoutTransform": {
+    "aliases": [
+     "layout_algebra"
+    ],
+    "atlas_status": "DIAGNOSTIC",
+    "behavior_ids": [
+     "layout_algebra"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas name kept. The directive omitted it. Not merged into TiledProjection: layout algebra chooses packing; tiled projection is the tiled operator."
+   },
+   "LocalStateMachine": {
+    "aliases": [],
+    "atlas_status": "IMPLEMENTED",
+    "behavior_ids": [
+     "local_state_machine"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "MemoryTierIdentity": {
+    "aliases": [
+     "execution_policy.memory_tier_is_executable_identity"
+    ],
+    "atlas_status": "LIST_ONLY",
+    "behavior_ids": [
+     "memory_tier_identity"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name kept and also applied as a field on every other primitive. The primitive IS the identity function. PhysicalGraph already states memory_tier_is_executable_identity; this module does not fork a second identity scheme."
+   },
+   "MoveOrRecompute": {
+    "aliases": [],
+    "atlas_status": "IMPLEMENTED",
+    "behavior_ids": [
+     "move_or_recompute"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "PersistentPhysicalRegion": {
+    "aliases": [],
+    "atlas_status": "IMPLEMENTED",
+    "behavior_ids": [
+     "persistent_physical_region"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "SemanticTransportEdge": {
+    "aliases": [],
+    "atlas_status": "IMPLEMENTED",
+    "behavior_ids": [
+     "semantic_transport"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "SparseSkip": {
+    "aliases": [],
+    "atlas_status": "DIAGNOSTIC",
+    "behavior_ids": [
+     "sparse_conditional_execution"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "SpatialPipeline": {
+    "aliases": [],
+    "atlas_status": "MAPPED",
+    "behavior_ids": [
+     "spatial_local_pipeline"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "StationaryRepresentation": {
+    "aliases": [],
+    "atlas_status": "IMPLEMENTED",
+    "behavior_ids": [
+     "stationary_representation"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name given an executable contract"
+   },
+   "TiledProjection": {
+    "aliases": [
+     "tiled GEMV/GEMM technique"
+    ],
+    "atlas_status": "LIST_ONLY",
+    "behavior_ids": [
+     "tiled_projection"
+    ],
+    "disposition": "IMPLEMENTED",
+    "in_atlas": true,
+    "reason": "atlas list name kept. No atlas entry (technique coverage files tiled GEMV/GEMM under layout_algebra). Not merged into LayoutTransform."
+   }
+  }
+ },
+ "recovered_implementation": {
+  "atlas": {
+   "backend_neutral_primitives": [
+    "PersistentPhysicalRegion",
+    "StationaryRepresentation",
+    "AsyncPrefetch",
+    "DoubleBufferedTile",
+    "SpatialPipeline",
+    "FusedDecodeCompute",
+    "DirectRoutedAccumulate",
+    "LocalStateMachine",
+    "SemanticTransportEdge",
+    "TiledProjection",
+    "LayoutTransform",
+    "SparseSkip",
+    "ConditionalPhysicalProgram",
+    "GraphReplay",
+    "CollectiveRegion",
+    "MoveOrRecompute",
+    "MemoryTierIdentity"
+   ],
+   "behavior_taxonomy": [
+    "DATA_STATIONARITY",
+    "STREAMING",
+    "SPATIAL_EXECUTION",
+    "PERSISTENT_EXECUTION",
+    "STATIC_SCHEDULING",
+    "DYNAMIC_SCHEDULING",
+    "LOCAL_MEMORY",
+    "GLOBAL_MEMORY",
+    "ASYNC_PREFETCH",
+    "DOUBLE_BUFFERING",
+    "TILING",
+    "LAYOUT_TRANSFORMATION",
+    "LOW_BIT_ARITHMETIC",
+    "SPARSITY_SKIPPING",
+    "CONDITIONAL_EXECUTION",
+    "ROUTE_AWARE_EXECUTION",
+    "COMPUTE_IN_TRANSIT",
+    "FUSED_REPRESENTATION_DECODE",
+    "STATE_RESIDENCY",
+    "CROSS_DEVICE_OVERLAP",
+    "GRAPH_REPLAY"
+   ],
+   "duplicate_entry_name": "ConditionalPhysicalProgram used twice (static_dynamic_skeleton, npu_regular_island)",
+   "entries_missing_for": [
+    "AsyncPrefetch",
+    "TiledProjection",
+    "MemoryTierIdentity"
+   ],
+   "fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "n_entries": 15,
+   "note": "Untracked in the parent working tree (~91 KB, 17 primitives, 21-behavior taxonomy, 15 entries, 15 HWIR hypotheses). Not in this sparse snapshot's git tree. Primitive names and entry contracts were recovered from that file and embedded.",
+   "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "present_in_this_worktree": true,
+   "schema": "hawking.accelerator.architecture_atlas.v1"
+  },
+  "cuda_census": {
+   "path": "receipts/headless/CUDA_CAPABILITY_CENSUS.json",
+   "present_in_this_worktree": true,
+   "used_for": "named missing dependency of the CUDA seam"
+  },
+  "existing_sidecar": {
+   "note": "no tools/future/physical_primitives.py existed; this module is new",
+   "physical_primitives_py": false
+  },
+  "flash_nr": {
+   "families": [
+    "embedding_lm_head",
+    "ngram_embedding",
+    "norm",
+    "linear_attention_hyperconnection",
+    "full_attention",
+    "mlp_hyperconnection",
+    "shared_expert",
+    "routed_experts",
+    "other"
+   ],
+   "note": "Untracked in the parent working tree. Family names recovered and embedded as FLASH_NR_FIXTURE; numeric payloads omitted.",
+   "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+   "present_in_this_worktree": true,
+   "schema": "hawking.flash.complete_nr.v2",
+   "status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION"
+  },
+  "fusion_isa": {
+   "path": "tools/accelerator/fusion_isa.py",
+   "present_in_this_worktree": false,
+   "role": "14 Fusion commands including PREFETCH; different layer, not forked"
+  },
+  "noetic_compiler": {
+   "path": "tools/odyssey/noetic_compiler.py",
+   "present_in_this_worktree": false,
+   "role": "Foreign Model -> ArchitectureRecognizer -> OrganGraph -> Doctor -> RepresentationPlanner -> PhysicalGraphCompiler -> KernelPlanner -> DeviceCompiler -> NoeticExecutable"
+  },
+  "physical_graph": {
+   "committed_role": "provider-neutral PhysicalGraph planning boundary; compile_physical_graph from ArchitectureRecognizer organs",
+   "committed_schema": "hcli.physical_graph.v1",
+   "parent_working_tree_additions": "apply_architecture_atlas, score_physical_candidates, execution_policy.memory_tier_is_executable_identity, NR_PRIMITIVES representation-operator vocabulary, verification L0-L3 policy. Not imported here (hcli is Codex-owned and not in this sparse checkout).",
+   "path": "hcli/physical_graph.py",
+   "present_in_this_worktree": true
+  },
+  "physical_graph_compiler": {
+   "path": "tools/odyssey/physical_graph_compiler.py",
+   "present_in_this_worktree": false,
+   "role": "source graph -> OrganGraph -> PhysicalOperatorGraph collapses"
+  }
+ },
+ "schema": "hawking.future.physical_primitives.v1",
+ "seal_sha256": "074668def38527338fe167ac85196c28ea61ab7672b160610d8da21918641c87",
+ "version": 1,
+ "vocabulary": {
+  "disk_state_is_authority": true,
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is_not_a_civilization": true,
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ }
+}

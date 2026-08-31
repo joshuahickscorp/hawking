@@ -1,0 +1,624 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:42Z",
+  "recorded_by": "tools/future/scar_scheduling.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "confidence_floor": 0.01,
+ "confidence_reduction_factor": 0.5,
+ "confidence_reduction_rule": "halve transfer_confidence.value (factor 0.5) when a scar refutes a predicted success on a matching model/organ/hypothesis; floor 0.01",
+ "corpus_negative_control": {
+  "dead": {
+   "decision": "REFUSED",
+   "hypothesis_family": "cross_expert_structure",
+   "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-cross-expert-and-cross-layer-tying",
+   "source_path": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json"
+  },
+  "experiments_prevented": {
+   "bench_state": "UNKNOWN",
+   "citations": [
+    {
+     "hypothesis_family": "cross_expert_structure",
+     "kind": "refused_admission",
+     "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-cross-expert-and-cross-layer-tying",
+     "workunit_id": "future.scar-scheduling.probe.cross-expert-gate"
+    }
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "invalidated_candidate_ids": [],
+   "n_invalidated_dependents": 0,
+   "n_refused_admissions": 1,
+   "n_total": 1,
+   "n_unique": 1,
+   "refused_workunit_ids": [
+    "future.scar-scheduling.probe.cross-expert-gate"
+   ],
+   "rule": "an experiment is prevented when admit() REFUSES it or when propagate_failure() names it as a hard-invalidated descendant"
+  },
+  "near_miss_organ_rep": {
+   "decision": "ADMITTED"
+  },
+  "note": "live corpus probe, not a fixture. cross_expert_structure on qwen3-235b-a22b/gate must REFUSE; lm_head/q4 and hwir_node_types must ADMIT.",
+  "other_family": {
+   "decision": "ADMITTED"
+  }
+ },
+ "evidence_class": "STATIC_ONLY",
+ "experiments_prevented": {
+  "bench_state": "UNKNOWN",
+  "by_source": {
+   "corpus_negative_control": {
+    "bench_state": "UNKNOWN",
+    "citations": [
+     {
+      "hypothesis_family": "cross_expert_structure",
+      "kind": "refused_admission",
+      "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-cross-expert-and-cross-layer-tying",
+      "workunit_id": "future.scar-scheduling.probe.cross-expert-gate"
+     }
+    ],
+    "evidence_class": "STATIC_ONLY",
+    "invalidated_candidate_ids": [],
+    "n_invalidated_dependents": 0,
+    "n_refused_admissions": 1,
+    "n_total": 1,
+    "n_unique": 1,
+    "refused_workunit_ids": [
+     "future.scar-scheduling.probe.cross-expert-gate"
+    ],
+    "rule": "an experiment is prevented when admit() REFUSES it or when propagate_failure() names it as a hard-invalidated descendant"
+   },
+   "four_way_proof": {
+    "bench_state": "UNKNOWN",
+    "citations": [
+     {
+      "candidate_id": "fix-kronecker-child-a",
+      "failed_candidate_id": "fix-kronecker-parent",
+      "kind": "invalidated_dependent",
+      "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra"
+     },
+     {
+      "candidate_id": "fix-kronecker-child-b",
+      "failed_candidate_id": "fix-kronecker-parent",
+      "kind": "invalidated_dependent",
+      "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra"
+     },
+     {
+      "hypothesis_family": "kronecker",
+      "kind": "refused_admission",
+      "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra",
+      "workunit_id": "future.scar-scheduling.fixture.dead-kronecker-gate"
+     }
+    ],
+    "evidence_class": "STATIC_ONLY",
+    "invalidated_candidate_ids": [
+     "fix-kronecker-child-a",
+     "fix-kronecker-child-b"
+    ],
+    "n_invalidated_dependents": 2,
+    "n_refused_admissions": 1,
+    "n_total": 3,
+    "n_unique": 3,
+    "refused_workunit_ids": [
+     "future.scar-scheduling.fixture.dead-kronecker-gate"
+    ],
+    "rule": "an experiment is prevented when admit() REFUSES it or when propagate_failure() names it as a hard-invalidated descendant"
+   },
+   "ingest_probes": {
+    "bench_state": "UNKNOWN",
+    "citations": [
+     {
+      "hypothesis_family": "no_invented_teacher_rows",
+      "kind": "refused_admission",
+      "scar_id": "scar_scheduling:codex:flash-teacher-capture",
+      "workunit_id": "future.scar-scheduling.ingest-probe.flash-teacher-capture"
+     },
+     {
+      "hypothesis_family": "cross_model_equivalence_assumed",
+      "kind": "refused_admission",
+      "scar_id": "scar_scheduling:codex:lineage-and-transfer",
+      "workunit_id": "future.scar-scheduling.ingest-probe.lineage-and-transfer"
+     },
+     {
+      "hypothesis_family": "qwen_final_head_fusion",
+      "kind": "refused_admission",
+      "scar_id": "scar_scheduling:codex:qwen-final-head-fusion",
+      "workunit_id": "future.scar-scheduling.ingest-probe.qwen-final-head-fusion"
+     },
+     {
+      "hypothesis_family": "blind_lock_cleanup",
+      "kind": "refused_admission",
+      "scar_id": "scar_scheduling:codex:stale-lock-durability",
+      "workunit_id": "future.scar-scheduling.ingest-probe.stale-lock-durability"
+     },
+     {
+      "hypothesis_family": "static_preflight_proves_physical",
+      "kind": "refused_admission",
+      "scar_id": "scar_scheduling:codex:static-verifier-boundary",
+      "workunit_id": "future.scar-scheduling.ingest-probe.static-verifier-boundary"
+     }
+    ],
+    "evidence_class": "STATIC_ONLY",
+    "invalidated_candidate_ids": [],
+    "n_invalidated_dependents": 0,
+    "n_refused_admissions": 5,
+    "n_total": 5,
+    "n_unique": 5,
+    "refused_workunit_ids": [
+     "future.scar-scheduling.ingest-probe.flash-teacher-capture",
+     "future.scar-scheduling.ingest-probe.lineage-and-transfer",
+     "future.scar-scheduling.ingest-probe.qwen-final-head-fusion",
+     "future.scar-scheduling.ingest-probe.stale-lock-durability",
+     "future.scar-scheduling.ingest-probe.static-verifier-boundary"
+    ],
+    "rule": "an experiment is prevented when admit() REFUSES it or when propagate_failure() names it as a hard-invalidated descendant"
+   }
+  },
+  "evidence_class": "STATIC_ONLY",
+  "n_invalidated_dependents": 2,
+  "n_refused_admissions": 7,
+  "n_total": 9,
+  "rule": "sum of this run's admit() REFUSED outcomes and named descendant invalidations across the ingest probes, the live corpus negative control, and the isolated four-way proof. Not a historical campaign total. Derived from the lists, not a fixed bound."
+ },
+ "four_way_proof": {
+  "confidence_reductions": [
+   {
+    "after": 0.32,
+    "before": 0.64,
+    "factor": 0.5,
+    "floor": 0.01,
+    "law_id": "LAW-FIXTURE-KRONECKER-ON-GATE",
+    "rule": "halve transfer_confidence.value (factor 0.5) when a scar refutes a predicted success on a matching model/organ/hypothesis; floor 0.01",
+    "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra"
+   }
+  ],
+  "dead_admit": {
+   "decision": "REFUSED",
+   "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra"
+  },
+  "experiments_prevented": {
+   "bench_state": "UNKNOWN",
+   "citations": [
+    {
+     "candidate_id": "fix-kronecker-child-a",
+     "failed_candidate_id": "fix-kronecker-parent",
+     "kind": "invalidated_dependent",
+     "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra"
+    },
+    {
+     "candidate_id": "fix-kronecker-child-b",
+     "failed_candidate_id": "fix-kronecker-parent",
+     "kind": "invalidated_dependent",
+     "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra"
+    },
+    {
+     "hypothesis_family": "kronecker",
+     "kind": "refused_admission",
+     "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra",
+     "workunit_id": "future.scar-scheduling.fixture.dead-kronecker-gate"
+    }
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "invalidated_candidate_ids": [
+    "fix-kronecker-child-a",
+    "fix-kronecker-child-b"
+   ],
+   "n_invalidated_dependents": 2,
+   "n_refused_admissions": 1,
+   "n_total": 3,
+   "n_unique": 3,
+   "refused_workunit_ids": [
+    "future.scar-scheduling.fixture.dead-kronecker-gate"
+   ],
+   "rule": "an experiment is prevented when admit() REFUSES it or when propagate_failure() names it as a hard-invalidated descendant"
+  },
+  "invalidated_candidate_ids": [
+   "fix-kronecker-child-a",
+   "fix-kronecker-child-b"
+  ],
+  "near_miss_admit": {
+   "decision": "ADMITTED"
+  },
+  "odyssey2_scope_updates": [
+   {
+    "direction": "DOWN",
+    "law_id": "LAW-FIXTURE-KRONECKER-ON-GATE",
+    "mapping": {
+     "ARCHITECTURE_FAMILY": "MODEL_LOCAL",
+     "BACKEND_FAMILY": "ARCHITECTURE_FAMILY",
+     "GENERIC_CANDIDATE": "ARCHITECTURE_FAMILY",
+     "GENERIC_VERIFIED": "GENERIC_CANDIDATE",
+     "MACHINE_LOCAL": "MACHINE_LOCAL",
+     "MODEL_LOCAL": "MODEL_LOCAL"
+    },
+    "moved": true,
+    "rule": "Odyssey II lattice is widening; a refuting scar narrows toward MODEL_LOCAL. MACHINE_LOCAL is a machine-identity axis and does not move on a model-organ scar.",
+    "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra",
+    "scope_after": "MODEL_LOCAL",
+    "scope_before": "ARCHITECTURE_FAMILY"
+   }
+  ],
+  "odyssey3_implication": {
+   "attack_id": "LAW-FROM-SCAR-scar_scheduling_fresh_fixture_parent_alpha_gate_kronecker_kronecker_m3_ultra::causal_control",
+   "bench_state": "UNKNOWN",
+   "direction": "DOWN",
+   "evidence_class": "STATIC_ONLY",
+   "family": "causal_control",
+   "law_id": "LAW-FROM-SCAR-scar_scheduling_fresh_fixture_parent_alpha_gate_kronecker_kronecker_m3_ultra",
+   "moved": true,
+   "n_attacks": 9,
+   "scope_after": "REFUTED",
+   "scope_before": "FAMILY_VERIFIED",
+   "selected_attack_id": "LAW-FROM-SCAR-scar_scheduling_fresh_fixture_parent_alpha_gate_kronecker_kronecker_m3_ultra::causal_control",
+   "synthetic": true,
+   "verdict": "REFUTED"
+  },
+  "scar_keys": {
+   "failure_mechanism": "kronecker packing destroyed gate magnitude; capability collapsed",
+   "hypothesis_family": "kronecker",
+   "keys_filled": 6,
+   "machine": "m3_ultra",
+   "model": "fixture_parent_alpha",
+   "organ": "gate",
+   "refuse_eligible": true,
+   "representation": "kronecker",
+   "scar_id": "scar_scheduling:fresh:fixture_parent_alpha:gate:kronecker:kronecker:m3_ultra",
+   "source_path": "tools/future/scar_scheduling.py#four_way_fixture",
+   "verdict": "REFUTED"
+  },
+  "scar_stored": true,
+  "synthetic": true
+ },
+ "gaps_closed": [
+  "admit(workunit) queries the scar index before schedule and REFUSES a known-dead hypothesis as a first-class outcome recorded on the unit.",
+  "Four-way propagate_failure: (a) store six-key scar (b) name-invalidate dependents (c) stated confidence reduction (d) Odyssey II scope narrow + Odyssey III implication.",
+  "Specificity: a scar on one organ/representation pair does not block a structurally different near-miss.",
+  "Codex known_scars ingested with receipts and seals; already-present vs newly-added reported from data.",
+  "experiments_prevented is counted from actual refusals and named invalidations, not from a file existing.",
+  "Fail-closed: index exceptions become REFUSED, not silent ADMITTED.",
+  "Idempotent re-propagation of the same hypothesis does not double-halve confidence."
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "how_to_use": {
+  "admit": "from tools.future.scar_scheduling import admit; outcome = admit({'model': ..., 'organ': ..., 'representation': ..., 'hypothesis_family': ...})",
+  "propagate_failure": "from tools.future.scar_scheduling import propagate_failure; effects = propagate_failure({'model': ..., 'organ': ..., 'representation': ..., 'machine': ..., 'hypothesis_family': ..., 'mechanism': ..., 'candidate_id': ...})",
+  "refusal_is_not_an_exception": "outcome['decision'] is ADMITTED or REFUSED. REFUSED copies status=blocked classification=SCAR_REFUSED and failure_context onto the unit. Callers must not treat a return as success."
+ },
+ "ingest_probes": {
+  "n": 6,
+  "probes": [
+   {
+    "decision": "ADMITTED",
+    "hypothesis_family": "claude_six_static_abi_findings",
+    "name": "claude-six-static-abi-findings",
+    "refuse_eligible": false,
+    "scar_id": null
+   },
+   {
+    "decision": "REFUSED",
+    "hypothesis_family": "no_invented_teacher_rows",
+    "name": "flash-teacher-capture",
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:flash-teacher-capture"
+   },
+   {
+    "decision": "REFUSED",
+    "hypothesis_family": "cross_model_equivalence_assumed",
+    "name": "lineage-and-transfer",
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:lineage-and-transfer"
+   },
+   {
+    "decision": "REFUSED",
+    "hypothesis_family": "qwen_final_head_fusion",
+    "name": "qwen-final-head-fusion",
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:qwen-final-head-fusion"
+   },
+   {
+    "decision": "REFUSED",
+    "hypothesis_family": "blind_lock_cleanup",
+    "name": "stale-lock-durability",
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:stale-lock-durability"
+   },
+   {
+    "decision": "REFUSED",
+    "hypothesis_family": "static_preflight_proves_physical",
+    "name": "static-verifier-boundary",
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:static-verifier-boundary"
+   }
+  ]
+ },
+ "known_scars_ingest": {
+  "bench_state": "UNKNOWN",
+  "evidence_class": "STATIC_ONLY",
+  "handoff_path": "CODEX_ACCELERATOR_HANDOFF.json",
+  "handoff_present": true,
+  "handoff_source": "disk",
+  "n_already_present": 0,
+  "n_input": 6,
+  "n_newly_added": 6,
+  "note": null,
+  "records": [
+   {
+    "keys": {
+     "failure_mechanism": "{\"blocked_by_generation_resolved\": 1, \"dead_paths\": 0, \"intentional_aliases\": 0, \"outstanding_confirmed_defects\": 0, \"real_defects_fixed\": 5, \"reported_findings\": 6}",
+     "hypothesis_family": "claude_six_static_abi_findings",
+     "machine": "unrecorded",
+     "model": "unrecorded",
+     "organ": "gate",
+     "representation": "unrecorded"
+    },
+    "name": "claude-six-static-abi-findings",
+    "receipt": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+    "receipt_seal_sha256": "c4bc86ee6469fc8b5d2c37ca93463d1c8f5e121e8594441f666fde11a7edcf4f",
+    "refuse_eligible": false,
+    "scar_id": "scar_scheduling:codex:claude-six-static-abi-findings",
+    "sleeping": false,
+    "status": "newly_added",
+    "verdict": "RESOLVED"
+   },
+   {
+    "keys": {
+     "failure_mechanism": "0/256 rows because no Metal-capable GPU; no synthetic rows and no physical EBPW",
+     "hypothesis_family": "no_invented_teacher_rows",
+     "machine": "metal",
+     "model": "unrecorded",
+     "organ": "unrecorded",
+     "representation": "unrecorded"
+    },
+    "name": "flash-teacher-capture",
+    "receipt": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+    "receipt_seal_sha256": null,
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:flash-teacher-capture",
+    "sleeping": true,
+    "status": "newly_added",
+    "verdict": "REFUTED"
+   },
+   {
+    "keys": {
+     "failure_mechanism": "rejection hard-invalidates declared descendants; cross-model equivalence siblings are questioned, not assumed",
+     "hypothesis_family": "cross_model_equivalence_assumed",
+     "machine": "unrecorded",
+     "model": "unrecorded",
+     "organ": "mlp",
+     "representation": "unrecorded"
+    },
+    "name": "lineage-and-transfer",
+    "receipt": "receipts/future/CANDIDATE_STAGED_PLAN.json",
+    "receipt_seal_sha256": null,
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:lineage-and-transfer",
+    "sleeping": false,
+    "status": "newly_added",
+    "verdict": "RECORDED"
+   },
+   {
+    "keys": {
+     "failure_mechanism": "temporary candidate was rolled back: one Metal launch would recompute the final RMSNorm per lm-head group and increase latency",
+     "hypothesis_family": "qwen_final_head_fusion",
+     "machine": "metal",
+     "model": "unrecorded",
+     "organ": "routed_experts",
+     "representation": "unrecorded"
+    },
+    "name": "qwen-final-head-fusion",
+    "receipt": null,
+    "receipt_seal_sha256": null,
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:qwen-final-head-fusion",
+    "sleeping": false,
+    "status": "newly_added",
+    "verdict": "REFUTED"
+   },
+   {
+    "keys": {
+     "failure_mechanism": "two zero-byte .hcli protected-benchmark locks remain; Claude also reported 52 stale zero-byte .git/index.lock artifacts from Aug 27; no blind cleanup",
+     "hypothesis_family": "blind_lock_cleanup",
+     "machine": "unrecorded",
+     "model": "unrecorded",
+     "organ": "up",
+     "representation": "unrecorded"
+    },
+    "name": "stale-lock-durability",
+    "receipt": null,
+    "receipt_seal_sha256": null,
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:stale-lock-durability",
+    "sleeping": false,
+    "status": "newly_added",
+    "verdict": "REFUTED"
+   },
+   {
+    "keys": {
+     "failure_mechanism": "ERROR=0, WARNING=76, UNVERIFIABLE=533; static correctness does not prove speed or physical parity",
+     "hypothesis_family": "static_preflight_proves_physical",
+     "machine": "unrecorded",
+     "model": "unrecorded",
+     "organ": "unrecorded",
+     "representation": "unrecorded"
+    },
+    "name": "static-verifier-boundary",
+    "receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
+    "receipt_seal_sha256": null,
+    "refuse_eligible": true,
+    "scar_id": "scar_scheduling:codex:static-verifier-boundary",
+    "sleeping": false,
+    "status": "newly_added",
+    "verdict": "REFUTED"
+   }
+  ]
+ },
+ "n_overlay_scars": 6,
+ "negative_findings": [
+  "CODEX_ACCELERATOR_HANDOFF.json is not in git HEAD of this worktree; it is recovered from the primary checkout when present. Sparse absence is not treated as zero scars.",
+  "Odyssey II and Odyssey III use different scope ladders. Confidence reduction and O2 narrowing run on the O2 lattice; the O3 implication is a separately constructed law fed to apply_result.",
+  "MACHINE_LOCAL O2 laws are not narrowed by a model-organ scar (different axis). That is a stated non-move, not a missed demotion.",
+  "This lane produces STATIC_ONLY / bench UNKNOWN. It does not classify DIAGNOSTIC_RELATIVE vs PROTECTED_ABSOLUTE.",
+  "claude-six-static-abi-findings is ingested as RESOLVED (zero outstanding defects) and is not refuse-eligible. A resolved tooling scar must not block new work.",
+  "Flash teacher capture 0/256 is a hardware sleeper plus a refuse on synthetic rows; it is not a synthetic physical result.",
+  "HCLI WorkUnit constructor is not imported (this-wave resident_api / workunit wiring is concurrent). Local field set is the swap point."
+ ],
+ "odyssey2_narrow_mapping": [
+  {
+   "from": "MODEL_LOCAL",
+   "to": "MODEL_LOCAL"
+  },
+  {
+   "from": "ARCHITECTURE_FAMILY",
+   "to": "MODEL_LOCAL"
+  },
+  {
+   "from": "BACKEND_FAMILY",
+   "to": "ARCHITECTURE_FAMILY"
+  },
+  {
+   "from": "MACHINE_LOCAL",
+   "to": "MACHINE_LOCAL"
+  },
+  {
+   "from": "GENERIC_CANDIDATE",
+   "to": "ARCHITECTURE_FAMILY"
+  },
+  {
+   "from": "GENERIC_VERIFIED",
+   "to": "GENERIC_CANDIDATE"
+  }
+ ],
+ "odyssey2_store": {
+  "n": 24,
+  "n_laws_seen": 24,
+  "path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+  "present": true
+ },
+ "purpose": "Admission gate over the negative-science index, plus four-way propagation of a fresh failure. A scar now costs a schedule slot.",
+ "recovered_implementation": [
+  {
+   "adequate": "no",
+   "gap": "nothing called refuse_if_dead before a WorkUnit was scheduled; a fresh failure did not store, invalidate, demote, or attack",
+   "path": "tools/future/negative_index.py",
+   "role": "keyed index + refuse_if_dead(); 51+ dead scars; retrieval only"
+  },
+  {
+   "adequate": "no",
+   "gap": "a table in a staged plan, not an admission gate a resident can invoke",
+   "path": "tools/future/candidate_planner.py",
+   "role": "lineage_scars / descendants_of \u2014 rejection hard-invalidates declared descendants"
+  },
+  {
+   "adequate": "no",
+   "gap": "no demote(); a refuting scar could not reduce confidence or narrow scope",
+   "path": "tools/future/odyssey2_law_store.py",
+   "role": "scope lattice + transfer_confidence; promote() widens only"
+  },
+  {
+   "adequate": "no",
+   "gap": "not wired to a scheduling failure; a JSON write was not an implication",
+   "path": "tools/future/odyssey3_adversary.py",
+   "role": "emit_for_law / apply_result closed loop"
+  },
+  {
+   "adequate": "no",
+   "gap": "consumes Codex deltas, does not admit WorkUnits or count experiments prevented",
+   "path": "tools/future/propagate.py",
+   "role": "idempotent ingest-delta routing into seven consumers including the scar index"
+  },
+  {
+   "adequate": "no",
+   "gap": "not ingested into the refuse path",
+   "path": "CODEX_ACCELERATOR_HANDOFF.json known_scars",
+   "role": "six campaign scars with receipts/seals (training trace, not an archive)"
+  }
+ ],
+ "resident_callable": {
+  "admit_cli": "python3 tools/future/scar_scheduling.py --admit '{...}'",
+  "bounded_authority": [
+   "query_negative_index",
+   "propose_workunit",
+   "write_sidecar_receipt",
+   "read_receipts",
+   "seed_law_store",
+   "adversarially_attack_a_claimed_law"
+  ],
+  "can_hcli_invoke": true,
+  "entry_point": "python3 tools/future/scar_scheduling.py --selftest",
+  "fail_closed": "admit() never raises on a dead hypothesis. If the scar index raises, the decision is REFUSED with fail_closed=true (work is not scheduled). An Odyssey III implication that does not move scope is recorded as fail_closed and selftest raises. Missing hypothesis_family is not a scientific refuse (plumbing units still admit). No GPU lease is taken; hardware-blocked capture is SLEEPING in the ingest record, never a synthetic measurement.",
+  "forbidden_authority": [
+   "acquire_gpu_lease",
+   "promote_candidate",
+   "claim_hardware_measurement",
+   "mutate_codex_surface"
+  ],
+  "frontier_fed": "negative_science index overlay; Odyssey II scope lattice (narrowing); Odyssey III attack queue (implication); candidate invalidation set (descendants_of). Next admit() on a scarred hypothesis is REFUSED, so the frontier refills away from rediscovery.",
+  "import": "from tools.future.scar_scheduling import admit, propagate_failure, ingest_known_scars",
+  "receipt": "receipts/future/SCAR_SCHEDULING.json",
+  "workunit_emitted": {
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/scar_scheduling.py",
+    "--selftest"
+   ],
+   "effect_class": "READ_ONLY",
+   "id": "future.scar-scheduling.admission-gate",
+   "output_receipt_path": "receipts/future/SCAR_SCHEDULING.json",
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "species": "scar_scheduling_admission",
+   "status": "pending",
+   "verifier": "future.scar_scheduling.receipt_sealed"
+  }
+ },
+ "schema": "hawking.future.scar_scheduling.v1",
+ "seal_sha256": "dc90092c584bb86bfa61bc4e108c41dca9d46524793c36e4cccb23685e7f7bc3",
+ "version": 1,
+ "workunit": {
+  "assigned_backend": null,
+  "assigned_runtime": null,
+  "attempts": 0,
+  "backend_task_id": null,
+  "claim_boundary": "WorkUnit is a proposal; receipts/future/SCAR_SCHEDULING.json remains authoritative. STATIC_ONLY / bench UNKNOWN. Cannot acquire a GPU lease or promote evidence class.",
+  "classification": "STATIC_ONLY",
+  "command": [
+   "python3",
+   "tools/future/scar_scheduling.py",
+   "--selftest"
+  ],
+  "content_hash": null,
+  "dependencies": [],
+  "description": "Query the scar index before a unit is scheduled; refuse a known-dead hypothesis citing the scar; on a fresh failure store the scar, invalidate named dependents, reduce the confidence of any law that predicted success, narrow Odyssey II scope and emit an Odyssey III implication. Rediscovery is not free.",
+  "effect_class": "READ_ONLY",
+  "failure_context": null,
+  "finished_at": null,
+  "frontier": "negative_science",
+  "id": "future.scar-scheduling.admission-gate",
+  "output_receipt_path": "receipts/future/SCAR_SCHEDULING.json",
+  "preferred_backend": null,
+  "provider": "future.scar_scheduling",
+  "ready_at": null,
+  "repair_depth": 0,
+  "repair_exhausted": false,
+  "repair_reason": null,
+  "repair_root": null,
+  "repairs": null,
+  "requires_quiescence": false,
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "running_at": null,
+  "species": "scar_scheduling_admission",
+  "status": "pending",
+  "verification": null,
+  "verifier": "future.scar_scheduling.receipt_sealed",
+  "workspace": "repo-root"
+ }
+}

@@ -1,0 +1,132 @@
+{
+ "anchor_reconciliation": {
+  "candidate_explanations": [
+   "active_weight_bytes_per_token counts bytes the decode path does not actually re-read every token (a resident cache, or a shared organ)",
+   "337.3 GB/s and 35.5 TPS were measured on different runs or different generation lengths",
+   "the byte ledger includes metadata or codebooks the bandwidth probe excludes"
+  ],
+  "claim": "35.5 TPS x 9.8789 GB/token = 350.7 GB/s, but the production decode receipt records 337.3 GB/s. The three anchors are mutually inconsistent by about 4%.",
+  "closed_by": "receipts/future/RESIDENT_TOKEN_BUDGET.json",
+  "disagreement_pct": -0.02,
+  "implied_bandwidth_gb_s": 347.3,
+  "implied_bytes_per_token_gb": 9.8811,
+  "recorded_bandwidth_gb_s": 347.4,
+  "recorded_bytes_per_token_gb": 9.8789,
+  "resolution": "The serving resident reports 10,727,793,882 active bytes per generated token, not 9,878,901,136 \u2014 the old anchor was 8.6% low. 9.8789 GB x 35.158 TPS = 347.4 GB/s against a recorded 337.3, which is 3% and within the spread of one contended run. Both original anchors survive: the byte count was right, and 35.5 was right and was measured with the fusion env set. The two readings that briefly looked like corrections were artifacts \u2014 32.7 TPS was the UNFUSED arm of an A/B, and 10.73 GB was the resident's active_bytes_per_token inflated by (P+N)/G. See receipts/future/PER_GENERATED_TOKEN_INFLATION.json.",
+  "resolves_when": "one run reports bytes/token and TPS and effective bandwidth from the same instrumented decode",
+  "status": "CLOSED",
+  "superseded": {
+   "active_weight_bytes_per_token": 9878901136,
+   "decode_tps": 35.5,
+   "production_decode_gb_s": 337.3,
+   "superseded_by": null,
+   "why": "NOT superseded after all. Both survived measurement: the byte count was confirmed by an independent catalog census, and 35.5 TPS was confirmed as the fusion-enabled rate (35.158 measured). Kept here because two intermediate readings briefly appeared to replace them and the reversal should stay visible."
+  },
+  "why_it_is_not_papered_over": "A 4% inconsistency in the denominator is a 4% error in every roof on the ladder. Resolving it is cheap and is worth more than one more decimal place on a target."
+ },
+ "claim_boundary": "Arithmetic over measured anchors. No hardware measurement is made here and no target is claimed as achieved. The ladder says what each milestone would REQUIRE, not that any of it is attainable. The anchors themselves disagree by ~4%; see anchor_reconciliation.",
+ "current": {
+  "bytes_per_token": 9878901136,
+  "decode_tps": 35.158,
+  "mlp_share_of_bytes": 0.541335083971226,
+  "ms_per_token": 28.443
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "ladder": [
+  {
+   "lever": "EXECUTOR_RECOVERY_ONLY",
+   "ms_to_remove_from_here": 8.443,
+   "name": "M1",
+   "reachable_by_mlp_bytes_alone": true,
+   "required_remaining_mlp_fraction": 1.7837,
+   "required_total_byte_fraction": 1.4242,
+   "target_ms_per_token": 20.0,
+   "target_tps": 50.0,
+   "why": "at or below today's byte roof: no byte reduction is required, only executing today's bytes closer to the clean bandwidth"
+  },
+  {
+   "lever": "EXECUTOR_RECOVERY_ONLY",
+   "ms_to_remove_from_here": 14.359,
+   "name": "M2",
+   "note": "the current-byte roof; a checkpoint, not the destination",
+   "reachable_by_mlp_bytes_alone": true,
+   "required_remaining_mlp_fraction": 1.0055,
+   "required_total_byte_fraction": 1.003,
+   "target_ms_per_token": 14.085,
+   "target_tps": 71.0,
+   "why": "at or below today's byte roof: no byte reduction is required, only executing today's bytes closer to the clean bandwidth"
+  },
+  {
+   "lever": "BYTES_MUST_FALL",
+   "ms_to_remove_from_here": 18.443,
+   "name": "M3",
+   "reachable_by_mlp_bytes_alone": true,
+   "required_remaining_mlp_fraction": 0.4682,
+   "required_total_byte_fraction": 0.7121,
+   "target_ms_per_token": 10.0,
+   "target_tps": 100.0,
+   "why": "above today's byte roof: even at clean bandwidth this needs 53.2% of MLP bytes eliminated, or the same reduction composed across MLP, dispatch, state and the rest"
+  },
+  {
+   "lever": "BYTES_MUST_FALL",
+   "ms_to_remove_from_here": 20.443,
+   "name": "M4",
+   "reachable_by_mlp_bytes_alone": true,
+   "required_remaining_mlp_fraction": 0.2051,
+   "required_total_byte_fraction": 0.5697,
+   "target_ms_per_token": 8.0,
+   "target_tps": 125.0,
+   "why": "above today's byte roof: even at clean bandwidth this needs 79.5% of MLP bytes eliminated, or the same reduction composed across MLP, dispatch, state and the rest"
+  },
+  {
+   "lever": "BYTES_MUST_FALL",
+   "ms_to_remove_from_here": 21.776,
+   "name": "MOONSHOT",
+   "note": "by here non-MLP work is the dominant Amdahl wall",
+   "reachable_by_mlp_bytes_alone": true,
+   "required_remaining_mlp_fraction": 0.0297,
+   "required_total_byte_fraction": 0.4747,
+   "target_ms_per_token": 6.667,
+   "target_tps": 150.0,
+   "why": "above today's byte roof: even at clean bandwidth this needs 97.0% of MLP bytes eliminated, or the same reduction composed across MLP, dispatch, state and the rest"
+  }
+ ],
+ "mlp_alone_ceiling": {
+  "meaning": "Delete 100% of MLP bytes and the other 46% of traffic remains. Nothing above this is reachable by MLP representation alone, however good the representation gets. Past here the non-MLP bytes, state, routing, attention, the LM head and dispatch are the Amdahl wall and have to fall too.",
+  "ms_per_token": 6.441,
+  "the_moonshot_sits_just_under_it": "150 TPS needs 2.7% of today's MLP bytes to survive. That is not compression, it is near-total information elimination on the largest organ, and it still leaves no headroom.",
+  "tps": 155.26
+ },
+ "no_terminal_target": "When a milestone is crossed: reprofile, find the new tallest denominator, recompute the roof, and set the next milestone from the new physics. Never keep attacking the old denominator.",
+ "not_the_objective": [
+  "GPU utilization",
+  "complete-token TPS on a short generation (prefill accounting)",
+  "any single fixed TPS number, 71 included"
+ ],
+ "primary_objective": "MINIMIZE VERIFIED STEADY-STATE ACCEPTED TOKEN_NS",
+ "recorded_by": "tools/future/token_ns_objective.py",
+ "reprofile_triggers": [
+  "total bytes fall by 30%",
+  "dispatch count falls by 50%",
+  "the MLP representation changes at all"
+ ],
+ "roofs": {
+  "clean_gemv_gb_s": 703.5,
+  "current_byte_roof_at_published_peak_tps": 82.9,
+  "current_byte_roof_tps": 71.21,
+  "measured_production_gb_s": 347.4,
+  "published_peak_gb_s": 819.0,
+  "roof_is_a_function_not_a_constant": "roof_tps = clean_bandwidth / bytes_per_token. Cut bytes and the roof moves. Recompute it every time a milestone is crossed."
+ },
+ "schema": "hawking.future.token_ns_objective.v1",
+ "subject_to": "capability preserved",
+ "the_floor_question": "For each term: does it exist because of useful model function, or only because of the present representation and runtime? The true floor is what survives that question, and it is not bandwidth alone \u2014 once weight traffic falls far enough, state, routing, attention, the LM head or dispatch becomes the wall.",
+ "token_cost_terms": [
+  "necessary bytes",
+  "necessary compute",
+  "state/control",
+  "ceremony"
+ ],
+ "version": 1
+}

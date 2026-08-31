@@ -1,0 +1,411 @@
+{
+ "api": {
+  "ladder": "tools.future.adaptive_verification.ladder(candidate)",
+  "saved": "tools.future.adaptive_verification.saved(candidate)",
+  "screen": "tools.future.adaptive_verification.screen(candidate)"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T19:28:50Z",
+  "recorded_by": "tools/future/adaptive_verification.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Passing an early stage is not evidence of anything except not-yet-dead. Survival of every stage is NOT_YET_DEAD, never verified, never a promotion.",
+ "counts": {
+  "funnel_gates": 9,
+  "proofs_held": 5,
+  "recovered_families_screened": 9,
+  "saved_workunits_across_recovered": 63
+ },
+ "evidence_class": "STATIC_ONLY",
+ "flash_schools_cheapest_falsifier_field": true,
+ "funnel_child_workunits": [
+  {
+   "can_decide": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION (heterogeneous bits are expressible; uniform bits are allowed).",
+   "cannot_decide": "Teacher fit, held-out fidelity, route identity, tokens, capability, physical NR, a complete NX, or an EBPW number.",
+   "cost_class": "CHEAP_ANALYTICAL",
+   "gate_id": 1,
+   "gate_name": "analytical_structure_screen",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "allocation_plan",
+   "workunit": "future.meta_funnel.gate.1.analytical_structure_screen"
+  },
+  {
+   "can_decide": "The candidate reconstructs or predicts on the teacher corpus it was fit to.",
+   "cannot_decide": "Held-out numerical validity, route stability, logit/token identity, capability, or anything physical.",
+   "cost_class": "REAL_TEACHER_CPU",
+   "gate_id": 2,
+   "gate_name": "real_teacher_fit",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "teacher_corpus",
+   "workunit": "future.meta_funnel.gate.2.real_teacher_fit"
+  },
+  {
+   "can_decide": "Local numerical fidelity on unseen X for the stated organ.",
+   "cannot_decide": "Route identity, complete-token argmax, coherent generation, capability, NR, NX, or EBPW.",
+   "cost_class": "HELDOUT_NUMERICAL_CPU",
+   "gate_id": 3,
+   "gate_name": "held_out_numerical",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "held_out_numerical",
+   "workunit": "future.meta_funnel.gate.3.held_out_numerical"
+  },
+  {
+   "can_decide": "On the measured traces, the student selects the same experts as the teacher.",
+   "cannot_decide": "Logit/token identity beyond routing, capability, physical lowering, or EBPW.",
+   "cost_class": "ROUTE_TRACE_CPU",
+   "gate_id": 4,
+   "gate_name": "route_stability",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "route_traces",
+   "workunit": "future.meta_funnel.gate.4.route_stability"
+  },
+  {
+   "can_decide": "Token-level identity on the stated probe (argmax / short decode).",
+   "cannot_decide": "Bounded capability, a physical NR, a complete NX, or EBPW. 16 greedy tokens are not capability.",
+   "cost_class": "LOGIT_TOKEN_CPU",
+   "gate_id": 5,
+   "gate_name": "logit_token_validation",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "logit_token",
+   "workunit": "future.meta_funnel.gate.5.logit_token_validation"
+  },
+  {
+   "can_decide": "The candidate matched the incumbent on every substantive capability axis of the stated suite.",
+   "cannot_decide": "Physical NR lowering, a complete NX, protected token_ns, or EBPW.",
+   "cost_class": "BOUNDED_CAPABILITY_CPU",
+   "gate_id": 6,
+   "gate_name": "bounded_capability",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "bounded_capability",
+   "workunit": "future.meta_funnel.gate.6.bounded_capability"
+  },
+  {
+   "can_decide": "A Physical NR artifact exists and lowered without a disclosed failure. STATIC_ONLY: this sidecar did not run a kernel.",
+   "cannot_decide": "A complete NX, protected complete-token timing, or EBPW. PLAN_ONLY / NOT_IMPLEMENTED is not a pass; it is a refusal.",
+   "cost_class": "PHYSICAL_NR_STATIC",
+   "gate_id": 7,
+   "gate_name": "physical_nr_lowering",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "physical_nr",
+   "workunit": "future.meta_funnel.gate.7.physical_nr_lowering"
+  },
+  {
+   "can_decide": "A source-independent complete NX artifact exists as more than sealed metadata.",
+   "cannot_decide": "EBPW, protected TPS, or promotion. SCAFFOLD_ONLY / SEALED_METADATA_ONLY_NOT_FOR_PROMOTION is a refusal, not a pass.",
+   "cost_class": "COMPLETE_NX_STATIC",
+   "gate_id": 8,
+   "gate_name": "complete_nx",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "complete_nx",
+   "workunit": "future.meta_funnel.gate.8.complete_nx"
+  },
+  {
+   "can_decide": "A complete-system EBPW ledger exists with every required field counted.",
+   "cannot_decide": "Protected token_ns, joules, or promotion. null complete_system_bytes is a refusal, not a number.",
+   "cost_class": "EBPW_ACCOUNTING_STATIC",
+   "gate_id": 9,
+   "gate_name": "ebpw",
+   "origin": "tools/future/meta_funnel.py:GATES",
+   "required_input": "ebpw_ledger",
+   "workunit": "future.meta_funnel.gate.9.ebpw"
+  }
+ ],
+ "gaps_closed": [
+  "ladder(candidate): cheapest-first stages, each with can_decide / cannot_decide, derived from meta_funnel.GATES plus an optional cheapest_falsifier stage",
+  "screen(candidate): stop at the first kill or refusal; later stages are not called; cost is the cost_class paid, not a hardware number",
+  "saved(candidate): names the concrete un-launched future.meta_funnel.gate.N.name workunits from GATES, not an invented count",
+  "negative_index.refuse_if_dead is consulted before any stage; a hit launches zero stages",
+  "survival of every stage is NOT_YET_DEAD with verified=false; a pass is not verification",
+  "missing required input is REFUSED, never silently PASSED"
+ ],
+ "gpu_authority": false,
+ "negative_findings": [
+  "this module is not in tools/future/orchestration.py BINDINGS; invoke() will raise UnknownBinding until the connector is extended. Naming a frontier here is not a binding",
+  "saved() names funnel gates, not candidate_planner descendants \u2014 queue lineage is a different child-work graph and was not merged",
+  "flash_schools cheapest_falsifier is a prose kill criterion; without falsifier_observation the cheapest stage REFUSES rather than inventing a measurement",
+  "negative-index consult during recovered-family screens: CLEAR",
+  "passing cheapest_falsifier or any funnel gate is not evidence of teacher fit, tokens, capability, NR, NX, EBPW, or promotion",
+  "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE"
+ ],
+ "proofs": {
+  "kill_at_cheapest_falsifier_launches_zero_funnel_gates": {
+   "funnel_advance_called": [],
+   "holds": true,
+   "killed_by": "cheapest_falsifier",
+   "n_funnel_gates": 9,
+   "n_saved": 9,
+   "saved_workunits": [
+    "future.meta_funnel.gate.1.analytical_structure_screen",
+    "future.meta_funnel.gate.2.real_teacher_fit",
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "stages_called": [
+    "cheapest_falsifier"
+   ]
+  },
+  "ladder_states_what_it_cannot_decide": {
+   "funnel_stage_names": [
+    "analytical_structure_screen",
+    "real_teacher_fit",
+    "held_out_numerical",
+    "route_stability",
+    "logit_token_validation",
+    "bounded_capability",
+    "physical_nr_lowering",
+    "complete_nx",
+    "ebpw"
+   ],
+   "holds": true,
+   "n_stages": 9,
+   "workunits": [
+    "future.meta_funnel.gate.1.analytical_structure_screen",
+    "future.meta_funnel.gate.2.real_teacher_fit",
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ]
+  },
+  "missing_input_is_not_pass": {
+   "holds": true,
+   "input_state": "NOT_BUILT",
+   "later_stages_called": [],
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ]
+  },
+  "negative_index_blocks_all_stages": {
+   "funnel_advance_called": [],
+   "holds": true,
+   "saved_workunits": [
+    "future.meta_funnel.gate.1.analytical_structure_screen",
+    "future.meta_funnel.gate.2.real_teacher_fit",
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "stages_called": [],
+   "verdict": "REFUSED_DEAD"
+  },
+  "survive_is_not_verified": {
+   "holds": true,
+   "n_stages_run": 9,
+   "passing_proves": "not yet dead",
+   "verdict": "NOT_YET_DEAD",
+   "verified": false
+  }
+ },
+ "purpose": "Make cheap-falsifier-then-stop automatic: a candidate killed at the cheapest stage never launches later meta-funnel gates, and the work not done is named from those gates.",
+ "recovered_family_screens": [
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.routed_experts",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.ngram_embedding",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.linear_attention_hyperconnection",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.embedding_lm_head",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.full_attention",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.mlp_hyperconnection",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.shared_expert",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.other",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  },
+  {
+   "funnel_gates_launched": 2,
+   "id": "flash.meta.norm",
+   "killed_by": null,
+   "n_saved": 7,
+   "refused_by": "real_teacher_fit",
+   "saved_workunits": [
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ],
+   "verdict": "REFUSED",
+   "verified": false
+  }
+ ],
+ "recovered_implementation": [
+  "tools/future/meta_funnel.py GATES / Funnel.advance / Funnel.run / input_state / is_absent \u2014 composed, not forked; saved() names these gates",
+  "tools/future/negative_index.py refuse_if_dead \u2014 consulted before any stage",
+  "tools/future/flash_schools.py CANDIDATE_FIELDS.cheapest_falsifier \u2014 first ladder stage when the candidate names one",
+  "tools/future/candidate_planner.py descendants_of \u2014 lineage invalidation already exists; this module names funnel child work, not queue descendants",
+  "tools/future/qualification_pipeline.py STAGES \u2014 GPU sequencer; not forked (this ladder has no lease and no GPU)",
+  "tools/future/evidence_dag.py V0\u2013V9 \u2014 evidence-level hierarchy, a different ladder; not forked",
+  "tools/future/scar_scheduling.py admit \u2014 scheduling-side scar refusal; the pre-stage gate here is refuse_if_dead"
+ ],
+ "recovery_provenance": {
+  "meta_l4": "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+  "meta_sub1": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+  "primary_source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json"
+ },
+ "resident_callable": {
+  "entry_point": "tools.future.adaptive_verification.screen(candidate)",
+  "fails_closed": "absent input -> REFUSED, never PASSED; negative-index hit -> REFUSED_DEAD and zero stages run; survival -> NOT_YET_DEAD with verified=false, never VERIFIED",
+  "frontier": "FT.VERIFICATION.repro",
+  "receipt": "receipts/future/ADAPTIVE_VERIFICATION.json",
+  "workunit": "one CPU_ANALYSIS unit; screen one candidate cheapest-first and name the meta_funnel gates that were therefore not launched"
+ },
+ "schema": "hawking.future.adaptive_verification.v1",
+ "seal_sha256": "01394a0bd9111a28259a04fa51b465cc2c16ec736a9da5cb36c0a48c69f3af47",
+ "version": 1
+}

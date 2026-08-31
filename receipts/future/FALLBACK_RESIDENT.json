@@ -1,0 +1,761 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:44:18Z",
+  "recorded_by": "tools/future/fallback_resident.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "STATIC_ONLY",
+ "flock": false,
+ "gaps_closed": [
+  "sealed fallback identity: artifact path, specimen (mix_id/parent_params), config digest",
+  "restore_path of independently checkable steps with current_state on each",
+  "verify_restorable answers RESTORABLE_NOW | RESTORABLE_WITH_ACTION | NOT_RESTORABLE without restoring",
+  "digest mismatch of a present artifact is NOT_RESTORABLE naming the artifact",
+  "rollback_state names what reverts and what durable science does not"
+ ],
+ "gpu_authority": false,
+ "identity": {
+  "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "artifact_root": {
+   "exists": true,
+   "is_dir": true,
+   "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "source": "disk"
+  },
+  "chat_template": {
+   "exists": true,
+   "is_dir": false,
+   "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
+   "prefix_verdict": "MATCH",
+   "seal_sha256_16": "c3cf9e34abf4f9e3",
+   "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+   "size_bytes": 8952,
+   "source": "disk"
+  },
+  "claim_boundary": "Static identity of the fallback body. No hardware measurement. Sealed current_runtime TPS / physical_ebpw were not copied.",
+  "config": {
+   "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+   "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+   "chat_template_sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+   "family": "qwen3.8",
+   "mix_id": "mix_all_mlp_affine_g64_ls",
+   "mode": "auto",
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "parent_params": 26895998464,
+   "prompt_contract": {
+    "fallback_template": "qwen_closed_think",
+    "renderer": "qwen-chat-template-or-closed-think-fallback",
+    "token_count_authority": "native-resident"
+   },
+   "protocol": "hawking.qwen38.resident.v1",
+   "provider": "native",
+   "recipe_id": "mix_all_mlp_affine_g64_ls",
+   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+   "resident_identity": "sealed-3.14",
+   "runtime": "hawking-native",
+   "runtime_binary_sha256": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+   "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+   "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+  },
+  "config_digest": "2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e",
+  "copied_physical_ebpw": false,
+  "copied_runtime_tps": false,
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "id": "qwen3.8-27b-sealed-3.14",
+  "identity_presence": {
+   "present": true,
+   "recovery": "disk",
+   "rel": "hcli/hawking-native.sealed-3.14.json",
+   "source": "hcli/hawking-native.sealed-3.14.json",
+   "tracked_in_head": true
+  },
+  "mix_report": {
+   "exists": true,
+   "is_dir": false,
+   "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+   "sha256": "c1e2c8388bc5e67c57a00ff10c2413a1def214108a2f389434137551014f0110",
+   "size_bytes": 14662,
+   "source": "disk"
+  },
+  "not_a_singularity": true,
+  "performed_restore": false,
+  "prompt_contract": {
+   "fallback_template": "qwen_closed_think",
+   "renderer": "qwen-chat-template-or-closed-think-fallback",
+   "token_count_authority": "native-resident"
+  },
+  "protocol": "hawking.qwen38.resident.v1",
+  "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+  "resident_binary": {
+   "exists": true,
+   "is_dir": false,
+   "note": "HCLI_RESIDENT_SEAL.runtime_binary_sha256_16 matches 'binary' (hybrid greedy), not resident_binary. Presence is required; matching the greedy prefix is not.",
+   "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+   "role": "resident protocol binary (distinct from seal runtime_binary)",
+   "sha256": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8",
+   "size_bytes": 6481704,
+   "source": "disk"
+  },
+  "role": "CURRENT_NONFINAL_HCLI_WORKER",
+  "runtime": "hawking-native",
+  "runtime_binary": {
+   "exists": true,
+   "is_dir": false,
+   "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+   "prefix_verdict": "MATCH",
+   "role": "seal_runtime_binary (hybrid greedy)",
+   "seal_sha256_16": "d34044cffae8f320",
+   "sha256": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+   "size_bytes": 6565152,
+   "source": "disk"
+  },
+  "schema": "hawking.future.fallback_identity.v1",
+  "seal_presence": {
+   "present": true,
+   "recovery": "disk",
+   "rel": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "tracked_in_head": true
+  },
+  "seal_resident": "sealed-3.14",
+  "seal_status": "SEALED",
+  "specimen_identity": {
+   "artifact_inventory_sha16_on_seal": "1aff5df85bda1108",
+   "catalog": {
+    "exists": true,
+    "is_dir": false,
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+    "sha256": "6dda19729dc2f59d85433528feb3a2860235f1e7b2602c62687be707b29142f0",
+    "size_bytes": 224553,
+    "source": "disk"
+   },
+   "did_not_load_second_27b": true,
+   "mix_id": "mix_all_mlp_affine_g64_ls",
+   "note": "Specimen identity is MIX_REPORT mix_id/parent_params/recipe plus the HCLI seal prefixes. runtime_commit names the sealed binary's origin commit; restoring the fallback does not check out that commit.",
+   "parent_params": 26895998464,
+   "parent_params_matches_seal": true,
+   "recipe_id": "mix_all_mlp_affine_g64_ls",
+   "runtime_commit_is_not_a_required_checkout": true,
+   "runtime_commit_on_seal": "5e365a5c08c3497d8ed7553d9fb00eeb2cdbc07f"
+  },
+  "status": "SEALED",
+  "tokenizer": {
+   "exists": true,
+   "is_dir": false,
+   "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+   "prefix_verdict": "MATCH",
+   "seal_sha256_16": "0997f410c57a1f4e",
+   "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+   "size_bytes": 12809320,
+   "source": "disk"
+  },
+  "tournament_role": "CONTROL_NOT_TARGET_NOT_CEILING"
+ },
+ "negative_control": {
+  "digest_mismatch_must_be_not_restorable": true,
+  "missing_artifact_must_be_not_restorable": true,
+  "rollback_names_durable_science": true,
+  "verify_restorable_can_return_false": true
+ },
+ "negative_findings": [
+  "this sidecar does not perform a restore, start a resident, or take a GPU lease",
+  "orchestration.py BINDINGS was not edited (not in this lane's WRITE list)",
+  "frontiers.py was not given a new FT.CHILD_RESIDENT.fallback item (not in WRITE list); the receipt informs FT.CHILD_RESIDENT.install-dry-run",
+  "artifact_root weights are identified by MIX_REPORT, not by hashing ~10GB",
+  "runtime_commit on the seal is not a required git checkout",
+  "hcli/ is not materialized in this sparse worktree; identity/seal/lifecycle recovered via locate/HEAD",
+  "sealed current_runtime TPS and physical_ebpw were not copied",
+  "production recovery remains Codex-owned (recovery.py is a fixture proof)"
+ ],
+ "performed_restore": false,
+ "purpose": "Keep CURRENT_NONFINAL_HCLI_WORKER (Qwen27 sealed-3.14) restorable at every moment, including while a candidate child is shadowed. Identity, restore path, restorable-now verdict, rollback scope.",
+ "recovered_implementation": [
+  "hcli/hawking-native.sealed-3.14.json (incumbent Qwen27 sealed identity; consumed, not forked)",
+  "receipts/headless/HCLI_RESIDENT_SEAL.json (HCLI resident seal prefixes: tokenizer/runtime/chat_template)",
+  "tools/future/resident_identity.py (CURRENT_NONFINAL_HCLI_WORKER; UNKNOWN hardware slots)",
+  "tools/future/resident_install.py (14-phase contract; fallback_policy REFUSE on mismatch)",
+  "tools/future/super_resident.py (locate/load_repo_json; Qwen27 sandbox holder, not Singularity)",
+  "tools/future/succession.py (keep_parent_for_rollback / rollback_to_parent; durable-science split)",
+  "tools/future/tournament.py (Qwen27 is CONTROL incumbent, not a complete SINGULARITY NX)",
+  "hcli/hawking_native.py (connector.stop / _restart_resident; cited, not executed)",
+  "hcli/agentos/resident_gate.py (live residency proof; cited, not executed)",
+  "hcli/agentos/recovery.py (fail-closed fixture recovery; Codex owns production recovery)"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.fallback_resident.verify_restorable()",
+  "fails_closed": "missing artifact \u2192 NOT_RESTORABLE naming the artifact; digest mismatch \u2192 NOT_RESTORABLE (wrong body at the path); partial evidence never rounds into RESTORABLE_NOW",
+  "frontier": "FT.CHILD_RESIDENT.install-dry-run",
+  "hcli_can_invoke": true,
+  "python_api": {
+   "build": "build() -> Path",
+   "fallback_identity": "fallback_identity(overlay=None) -> dict",
+   "restore_path": "restore_path(overlay=None) -> dict",
+   "rollback_state": "rollback_state(overlay=None) -> dict",
+   "verify_restorable": "verify_restorable(overlay=None) -> dict"
+  },
+  "receipt": "receipts/future/FALLBACK_RESIDENT.json",
+  "started_model_process": false,
+  "took_gpu_lease": false,
+  "verdict_at_emission": "RESTORABLE_NOW",
+  "workunit": "one CPU_ANALYSIS unit; STATIC_ANALYSIS resource_class; verify_restorable + seal FALLBACK_RESIDENT.json; does not restore"
+ },
+ "restore_path": {
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "independently_checkable": [
+   "confirm_identity_document",
+   "confirm_artifact_root",
+   "confirm_specimen_mix",
+   "confirm_tokenizer_digest",
+   "confirm_chat_template_digest",
+   "confirm_runtime_binary_digest",
+   "confirm_resident_binary_present",
+   "confirm_config_digest",
+   "confirm_lifecycle_surfaces"
+  ],
+  "install_phases_the_bind_would_fill": [
+   "nx_identity",
+   "executable_identity",
+   "tokenizer_session",
+   "memory_requirements",
+   "launch_args",
+   "readiness_probe",
+   "shutdown",
+   "unload",
+   "protected_benchmark_evacuation",
+   "restart",
+   "crash_recovery",
+   "fallback_policy",
+   "capability_receipt",
+   "performance_receipt"
+  ],
+  "lifecycle_owners": {
+   "checkpoint": "hcli/agentos/checkpoint.py",
+   "incumbent_identity": "hcli/hawking-native.sealed-3.14.json",
+   "recovery": "hcli/agentos/recovery.py",
+   "resident_gate": "hcli/agentos/resident_gate.py",
+   "resident_install": "tools/future/resident_install.py",
+   "resident_seal": "receipts/headless/HCLI_RESIDENT_SEAL.json"
+  },
+  "n_steps": 12,
+  "performed_restore": false,
+  "schema": "hawking.future.fallback_restore_path.v1",
+  "started_model_process": false,
+  "step_ids": [
+   "confirm_identity_document",
+   "confirm_artifact_root",
+   "confirm_specimen_mix",
+   "confirm_tokenizer_digest",
+   "confirm_chat_template_digest",
+   "confirm_runtime_binary_digest",
+   "confirm_resident_binary_present",
+   "confirm_config_digest",
+   "confirm_lifecycle_surfaces",
+   "unload_non_fallback_body",
+   "bind_fallback_identity",
+   "probe_readiness_without_launching"
+  ],
+  "steps": [
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "sealed profile locatable; model_id='qwen3.8-27b-sealed-3.14'; residency_status='CURRENT_NONFINAL_HCLI_WORKER'",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_identity_document",
+    "names": "hcli/hawking-native.sealed-3.14.json",
+    "precondition_id": "identity_document",
+    "what": "Locate hawking-native.sealed-3.14.json and refuse if unreadable"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "artifact_root is a directory at /Users/scammermike/noetic/NOETIC_PARENT_A",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_artifact_root",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "precondition_id": "artifact_root",
+    "what": "Confirm artifact_root is a directory at the sealed path"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "MIX_REPORT mix_id='mix_all_mlp_affine_g64_ls' parent_params match seal; catalog present",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_specimen_mix",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+    "precondition_id": "specimen_mix",
+    "what": "Read MIX_REPORT.json; mix_id/parent_params must match the HCLI seal"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "tokenizer sha256 matches seal prefix 0997f410c57a1f4e",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_tokenizer_digest",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+    "precondition_id": "tokenizer",
+    "what": "Hash tokenizer.json; prefix must match HCLI_RESIDENT_SEAL.tokenizer_sha256_16"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "chat_template sha256 matches seal prefix c3cf9e34abf4f9e3",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_chat_template_digest",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
+    "precondition_id": "chat_template",
+    "what": "Hash chat_template.jinja; prefix must match HCLI_RESIDENT_SEAL.chat_template_sha256_16"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "runtime_binary sha256 matches seal prefix d34044cffae8f320",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_runtime_binary_digest",
+    "names": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    "precondition_id": "runtime_binary",
+    "what": "Hash hybrid-greedy binary; prefix must match HCLI_RESIDENT_SEAL.runtime_binary_sha256_16"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "resident_binary present at /Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_resident_binary_present",
+    "names": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "precondition_id": "resident_binary",
+    "what": "Confirm the resident protocol binary is present (distinct artifact from greedy)"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "config_digest=2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_config_digest",
+    "names": "config_digest",
+    "precondition_id": "config_digest",
+    "what": "Recompute the identity-bearing config digest and refuse on drift"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "current": "resident_gate / hawking_native / recovery locatable (disk or git HEAD)",
+    "current_state": "MET",
+    "executes_restore": false,
+    "id": "confirm_lifecycle_surfaces",
+    "names": "hcli/agentos/resident_gate.py, hcli/hawking_native.py, hcli/agentos/recovery.py",
+    "precondition_id": "lifecycle_surfaces",
+    "what": "Locate resident_gate / hawking_native.stop+_restart_resident / recovery"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": false,
+    "current": "this sidecar does not bind, unload, or probe a live process; the supervisor owns execution",
+    "current_state": "NOT_EXECUTED",
+    "executes_restore": true,
+    "id": "unload_non_fallback_body",
+    "names": null,
+    "precondition_id": null,
+    "what": "Stop/unload any shadowed child (connector.stop; drop weights; release device)"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": false,
+    "current": "this sidecar does not bind, unload, or probe a live process; the supervisor owns execution",
+    "current_state": "NOT_EXECUTED",
+    "executes_restore": true,
+    "id": "bind_fallback_identity",
+    "names": "tools/future/resident_install.py#fallback_policy",
+    "precondition_id": "install_fallback_policy",
+    "what": "Bind sealed-3.14 into the generic resident_install contract; identity mismatch REFUSES"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": false,
+    "current": "this sidecar does not bind, unload, or probe a live process; the supervisor owns execution",
+    "current_state": "NOT_EXECUTED",
+    "executes_restore": true,
+    "id": "probe_readiness_without_launching",
+    "names": null,
+    "precondition_id": null,
+    "what": "Readiness is resident_gate's pid probe; this sidecar records the slot and does not start a process"
+   }
+  ],
+  "succession_keep_parent_step": "keep_parent_for_rollback",
+  "succession_steps": [
+   "checkpoint_incumbent",
+   "seal_mission",
+   "seal_rollback",
+   "launch_child",
+   "import_mission",
+   "verify_readiness",
+   "exercise_restart",
+   "switch",
+   "keep_parent_for_rollback",
+   "unload_parent"
+  ],
+  "supervisor_owned": [
+   "unload_non_fallback_body",
+   "bind_fallback_identity",
+   "probe_readiness_without_launching"
+  ],
+  "took_gpu_lease": false,
+  "verdict": "RESTORABLE_NOW"
+ },
+ "rollback_state": {
+  "does_not_revert": [
+   "receipts/future/** (sidecar science, including this receipt)",
+   "receipts/headless/** (Codex / Accelerator receipts)",
+   "NEGATIVE_SCIENCE_INDEX / scars already recorded",
+   "specimen verification receipts and ModelLake seals",
+   "teacher-capture rows already on disk",
+   "git history, commits, and current HEAD (campaign progress)",
+   "NOETIC_PARENT_A / artifact bytes themselves (re-bound, not deleted)",
+   "HCLI_RESIDENT_SEAL.json and hawking-native.sealed-3.14.json",
+   "historical capability suite receipts",
+   "CLAUDE_GLOBAL_FRONTIER.json and FRONTIER_STATE.json",
+   "succession protocol seals (a stopped child's history remains)",
+   "completed WorkUnit records"
+  ],
+  "durable_science_rule": "A receipt already sealed is not unwritten. Rollback changes which body is bound, not what the laboratory has already learned.",
+  "durable_science_survives": true,
+  "evidence_class": "STATIC_ONLY",
+  "fallback_body": {
+   "id": "qwen3.8-27b-sealed-3.14",
+   "identity": "hcli/hawking-native.sealed-3.14.json",
+   "role": "CURRENT_NONFINAL_HCLI_WORKER",
+   "seal": "receipts/headless/HCLI_RESIDENT_SEAL.json"
+  },
+  "git_head": {
+   "reverts": false,
+   "why": "runtime_commit on HCLI_RESIDENT_SEAL identifies the sealed binary; it is not a required checkout. Campaign commits stay."
+  },
+  "gpu_authority": false,
+  "performed_restore": false,
+  "restorable_verdict": "RESTORABLE_NOW",
+  "reverts": [
+   "which body is bound as the HCLI resident (child/candidate \u2192 sealed-3.14)",
+   "live session / request-id correlation / KV-recurrent state of the evicted body",
+   "resident_install winner_id / bound slots for the experimental body",
+   "canonical mission owner (succession: back to the incumbent)",
+   "in-memory process of the experimental body (stop / unload / drop weights)"
+  ],
+  "rollback_is_not_a_restore_until_executed": true,
+  "schema": "hawking.future.fallback_rollback.v1",
+  "shadowed_child": {
+   "canonical_mission_ownership": "returns to the incumbent",
+   "live_session_of_the_child": "reverts (stop / unload)",
+   "proposals_already_written_as_sidecar_receipts": "survive"
+  }
+ },
+ "schema": "hawking.future.fallback_resident.v1",
+ "seal_sha256": "7beb07fd6da183b98edbc0eb99dd0f4da55c225b72e046101681dae30f413aa1",
+ "started_model_process": false,
+ "took_gpu_lease": false,
+ "verify_restorable": {
+  "action": null,
+  "config_digest": "2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e",
+  "evidence_class": "STATIC_ONLY",
+  "fails_closed": "MISSING artifact \u2192 NOT_RESTORABLE naming the artifact; DIGEST_MISMATCH \u2192 NOT_RESTORABLE (wrong body at the path); actionable absence \u2192 RESTORABLE_WITH_ACTION naming the action; never rounds a partial result into RESTORABLE_NOW",
+  "flock": false,
+  "gpu_authority": false,
+  "identity_id": "qwen3.8-27b-sealed-3.14",
+  "identity_status": "SEALED",
+  "n_preconditions": 10,
+  "n_unmet": 0,
+  "performed_restore": false,
+  "preconditions": [
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "hcli/hawking-native.sealed-3.14.json",
+     "source": "hcli/hawking-native.sealed-3.14.json",
+     "tracked_in_head": true
+    },
+    "id": "identity_document",
+    "kind": "IDENTITY",
+    "names": "hcli/hawking-native.sealed-3.14.json",
+    "state": "MET",
+    "why": "sealed profile locatable; model_id='qwen3.8-27b-sealed-3.14'; residency_status='CURRENT_NONFINAL_HCLI_WORKER'"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "exists": true,
+     "is_dir": true,
+     "path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+     "source": "disk"
+    },
+    "id": "artifact_root",
+    "kind": "PRESENCE",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "state": "MET",
+    "why": "artifact_root is a directory at /Users/scammermike/noetic/NOETIC_PARENT_A"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "mix": {
+      "exists": true,
+      "is_dir": false,
+      "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+      "sha256": "c1e2c8388bc5e67c57a00ff10c2413a1def214108a2f389434137551014f0110",
+      "size_bytes": 14662,
+      "source": "disk"
+     },
+     "specimen": {
+      "artifact_inventory_sha16_on_seal": "1aff5df85bda1108",
+      "catalog": {
+       "exists": true,
+       "is_dir": false,
+       "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+       "sha256": "6dda19729dc2f59d85433528feb3a2860235f1e7b2602c62687be707b29142f0",
+       "size_bytes": 224553,
+       "source": "disk"
+      },
+      "did_not_load_second_27b": true,
+      "mix_id": "mix_all_mlp_affine_g64_ls",
+      "note": "Specimen identity is MIX_REPORT mix_id/parent_params/recipe plus the HCLI seal prefixes. runtime_commit names the sealed binary's origin commit; restoring the fallback does not check out that commit.",
+      "parent_params": 26895998464,
+      "parent_params_matches_seal": true,
+      "recipe_id": "mix_all_mlp_affine_g64_ls",
+      "runtime_commit_is_not_a_required_checkout": true,
+      "runtime_commit_on_seal": "5e365a5c08c3497d8ed7553d9fb00eeb2cdbc07f"
+     }
+    },
+    "id": "specimen_mix",
+    "kind": "IDENTITY",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+    "state": "MET",
+    "why": "MIX_REPORT mix_id='mix_all_mlp_affine_g64_ls' parent_params match seal; catalog present"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "exists": true,
+     "is_dir": false,
+     "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+     "prefix_verdict": "MATCH",
+     "seal_sha256_16": "0997f410c57a1f4e",
+     "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+     "size_bytes": 12809320,
+     "source": "disk"
+    },
+    "id": "tokenizer",
+    "kind": "DIGEST",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+    "state": "MET",
+    "why": "tokenizer sha256 matches seal prefix 0997f410c57a1f4e"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "exists": true,
+     "is_dir": false,
+     "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
+     "prefix_verdict": "MATCH",
+     "seal_sha256_16": "c3cf9e34abf4f9e3",
+     "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+     "size_bytes": 8952,
+     "source": "disk"
+    },
+    "id": "chat_template",
+    "kind": "DIGEST",
+    "names": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
+    "state": "MET",
+    "why": "chat_template sha256 matches seal prefix c3cf9e34abf4f9e3"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "exists": true,
+     "is_dir": false,
+     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+     "prefix_verdict": "MATCH",
+     "role": "seal_runtime_binary (hybrid greedy)",
+     "seal_sha256_16": "d34044cffae8f320",
+     "sha256": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+     "size_bytes": 6565152,
+     "source": "disk"
+    },
+    "id": "runtime_binary",
+    "kind": "DIGEST",
+    "names": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    "state": "MET",
+    "why": "runtime_binary sha256 matches seal prefix d34044cffae8f320"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "exists": true,
+     "is_dir": false,
+     "note": "HCLI_RESIDENT_SEAL.runtime_binary_sha256_16 matches 'binary' (hybrid greedy), not resident_binary. Presence is required; matching the greedy prefix is not.",
+     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+     "role": "resident protocol binary (distinct from seal runtime_binary)",
+     "sha256": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8",
+     "size_bytes": 6481704,
+     "source": "disk"
+    },
+    "id": "resident_binary",
+    "kind": "PRESENCE",
+    "names": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "state": "MET",
+    "why": "resident_binary present at /Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "config": {
+      "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+      "chat_template_sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+      "family": "qwen3.8",
+      "mix_id": "mix_all_mlp_affine_g64_ls",
+      "mode": "auto",
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "parent_params": 26895998464,
+      "prompt_contract": {
+       "fallback_template": "qwen_closed_think",
+       "renderer": "qwen-chat-template-or-closed-think-fallback",
+       "token_count_authority": "native-resident"
+      },
+      "protocol": "hawking.qwen38.resident.v1",
+      "provider": "native",
+      "recipe_id": "mix_all_mlp_affine_g64_ls",
+      "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+      "resident_identity": "sealed-3.14",
+      "runtime": "hawking-native",
+      "runtime_binary_sha256": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+      "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+      "tokenizer_sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+     },
+     "config_digest": "2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e"
+    },
+    "id": "config_digest",
+    "kind": "IDENTITY",
+    "names": "config_digest",
+    "state": "MET",
+    "why": "config_digest=2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "connector": {
+      "in_git_head": true,
+      "on_disk": true,
+      "present": true,
+      "recovery": "disk",
+      "rel": "hcli/hawking_native.py",
+      "source": "/Users/scammermike/Downloads/hawking/hcli/hawking_native.py"
+     },
+     "recovery": {
+      "in_git_head": true,
+      "on_disk": true,
+      "present": true,
+      "recovery": "disk",
+      "rel": "hcli/agentos/recovery.py",
+      "source": "/Users/scammermike/Downloads/hawking/hcli/agentos/recovery.py"
+     },
+     "resident_gate": {
+      "in_git_head": true,
+      "on_disk": true,
+      "present": true,
+      "recovery": "disk",
+      "rel": "hcli/agentos/resident_gate.py",
+      "source": "/Users/scammermike/Downloads/hawking/hcli/agentos/resident_gate.py"
+     }
+    },
+    "id": "lifecycle_surfaces",
+    "kind": "PRESENCE",
+    "names": "hcli/agentos/resident_gate.py, hcli/hawking_native.py, hcli/agentos/recovery.py",
+    "state": "MET",
+    "why": "resident_gate / hawking_native / recovery locatable (disk or git HEAD)"
+   },
+   {
+    "action": null,
+    "checkable_without_restore": true,
+    "evidence": {
+     "on_identity_mismatch": "REFUSE naming the field",
+     "on_unsealed": "refuse unless allow-unsealed; stamp sealed=false"
+    },
+    "id": "install_fallback_policy",
+    "kind": "IDENTITY",
+    "names": "tools/future/resident_install.py#fallback_policy",
+    "state": "MET",
+    "why": "install contract refuses identity mismatch by naming the field"
+   }
+  ],
+  "reason": "every restore precondition is MET on disk/git; supervisor can restore without further artifact work",
+  "restorable": true,
+  "schema": "hawking.future.fallback_restorable.v1",
+  "started_model_process": false,
+  "took_gpu_lease": false,
+  "unmet_precondition": null,
+  "verdict": "RESTORABLE_NOW"
+ },
+ "version": 1,
+ "work_units": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt remains authoritative; this unit cannot restore, launch, or take a GPU lease.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/fallback_resident.py --build",
+   "content_hash": "5bca533b6a27a55c882003f5ad866bc4f72f4338ab098ab449f0d5b44e888b97",
+   "dependencies": [],
+   "description": "Seal the Qwen27 fallback identity and answer verify_restorable without performing a restore. CPU/disk only.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.fallback_resident.verify",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "receipts/future/FALLBACK_RESIDENT.json",
+   "preferred_backend": null,
+   "provider": "sidecar-static",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "CPU_ANALYSIS",
+   "status": "pending",
+   "verdict_at_emission": "RESTORABLE_NOW",
+   "verification": null,
+   "verifier": "future.fallback_resident.verify_restorable",
+   "workspace": "repo-root"
+  }
+ ]
+}

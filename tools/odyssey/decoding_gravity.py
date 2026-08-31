@@ -20,7 +20,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 RH = REPO / "receipts/headless"
-PARENT = Path("/Users/scammermike/models/qwen3.8-27b-abliterated-bf16")
+PARENT = Path("/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16")
 PARENT_PARAMS = 26895998464
 
 # measured in G005 / G040, ms per token

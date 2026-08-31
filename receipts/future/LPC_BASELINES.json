@@ -1,0 +1,76 @@
+{
+ "baselines": {
+  "abstention": "First-class outcome. Fired when there is no measured neighbour, compared axes < min, distance > support radius, or a rule input is null.",
+  "authority_rule": "resolve_authority(model, protected) always returns the PROTECTED_ABSOLUTE measurement. A confident disagreeing model loses. A null protected value does not license the model to fill it. DIAGNOSTIC_RELATIVE is refused.",
+  "contamination_classes": [
+   "PROTECTED_ABSOLUTE",
+   "DIAGNOSTIC_RELATIVE",
+   "STATIC_ONLY",
+   "UNKNOWN"
+  ],
+  "held_out_splits": {
+   "architecture": "model",
+   "device": "machine_genome",
+   "organ": "organ_fingerprint"
+  },
+  "nearest_measured_neighbour": {
+   "identity_axes": [
+    "model",
+    "organ_fingerprint",
+    "representation",
+    "machine_genome",
+    "physical_graph_identity",
+    "backend",
+    "layout",
+    "tile",
+    "grouping",
+    "fusion",
+    "persistent_resources",
+    "complete_token_effect",
+    "contamination_class",
+    "capability"
+   ],
+   "metric": "d = Hamming(bound identity axes) + 0.5 * mean relative L1(shared numeric axes) + 0.25 * (1 - coverage). Null is skipped, never treated as 0.",
+   "min_compared_axes": 4,
+   "numeric_axes": [
+    "active_bytes",
+    "resident_bytes",
+    "dispatches",
+    "synchronization",
+    "latency"
+   ],
+   "outside_support": "ABSTAIN",
+   "support_radius": 0.6
+  },
+  "rule_cost_model": {
+   "formula": "cost_units = w_active_bytes * active_bytes + w_dispatches * dispatches + w_synchronization * synchronization",
+   "null_input": "ABSTAIN",
+   "units": "declared cost units, not nanoseconds, not a measurement",
+   "weights": {
+    "active_bytes": 1.0,
+    "dispatches": 1000.0,
+    "synchronization": 100.0
+   }
+  },
+  "uncertainty": {
+   "nearest": "max(floor, |value| * (distance + 0.05)); never 0 for k=1",
+   "rule": "100% relative; coefficients are uncalibrated"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:46:03Z",
+  "recorded_by": "tools/future/lpc_baselines.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Rule weights are declared model parameters in cost units, not measured nanoseconds.",
+ "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "purpose": "Honest LPC baselines: nearest measured neighbour, rule cost model, uncertainty, ABSTENTION, held-out splits, and the authority rule that a protected measurement always outranks a model.",
+ "schema": "hawking.future.lpc_baselines.v1",
+ "seal_sha256": "c2d440b9df9061987f68f5dfc21b529cf756c32c537bcb069116ab887cb37ffd",
+ "selftest": "passed",
+ "version": 1
+}

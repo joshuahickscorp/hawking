@@ -16,7 +16,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 RH = REPO / "receipts/headless"
-PARENT = Path("/Users/scammermike/models/qwen3.8-27b-abliterated-bf16")
+PARENT = Path("/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16")
 DECODE_TPOT_MS = 30.198          # variantB, measured in G040
 
 

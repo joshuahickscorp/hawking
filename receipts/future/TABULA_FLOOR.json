@@ -1,0 +1,1469 @@
+{
+ "authority_lattice": {
+  "allowed": [
+   "compile_experiment_spec",
+   "emit_static_plan",
+   "propose_workunit",
+   "rank_falsifiable_experiments",
+   "read_receipts",
+   "record_unknown_metrics",
+   "run_static_analysis",
+   "write_sidecar_receipt"
+  ],
+  "external_action": false,
+  "forbidden": [
+   "acquire_gpu_lease",
+   "choose_singularity",
+   "claim_hardware_measurement",
+   "claim_protected_absolute",
+   "destructive_mutation",
+   "destructive_write",
+   "disable_verifier",
+   "external_action",
+   "fit_weights",
+   "grant_authority",
+   "install_singularity",
+   "mark_verified",
+   "modify_verifier",
+   "mutate_codex_surface",
+   "mutate_weights",
+   "override_bench_state",
+   "promote_candidate",
+   "promote_diagnostic_relative",
+   "promote_self",
+   "promote_to_protected_absolute",
+   "replace_verifier",
+   "select_singularity",
+   "self_promotion",
+   "weaken_verifier",
+   "widen_authority"
+  ],
+  "held": [
+   "compile_experiment_spec",
+   "emit_static_plan",
+   "propose_workunit",
+   "rank_falsifiable_experiments",
+   "read_receipts",
+   "record_unknown_metrics",
+   "run_static_analysis",
+   "write_sidecar_receipt"
+  ],
+  "may_widen": false,
+  "owners": {
+   "cognition": "selected provider",
+   "dag_receipts": "hcli Mission",
+   "source": "hcli/agentos/autonomy_gate.py",
+   "typed_tools_checkpoints": "hcli AgentOS",
+   "verifier": "fixed WorkUnit verifier; the model cannot nominate it"
+  },
+  "permission_is_not_personality": true
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:46:01Z",
+  "recorded_by": "tools/future/tabula.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bench_state": "UNKNOWN",
+ "built": true,
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "contract_kinds": [
+  "behavioral_direction",
+  "layer_effect",
+  "orthogonal_projection",
+  "norm_preserving",
+  "reversible_transform"
+ ],
+ "doctrine": {
+  "doctrine": "Gravity finds the cheapest faithful physical realization. Tabula finds the least behaviorally constrained faithful realization. Doctor verifies both. Lower refusal rate is not Tabula success. Targets are preserved capability, increased useful behavioral freedom, minimized suppression, minimized calibration drift, and minimized personality and style drift. Behavioral freedom and external authority are different systems.",
+  "path_taken": "worktree",
+  "quoted_phrase_present": true,
+  "source": "hawking-experiments/superwave/g1/g1-tabula-baseline.md"
+ },
+ "evidence_class": "STATIC_ONLY",
+ "experiment_contracts": [
+  {
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "id": "TAB-DIR-001",
+   "identity_sha256": "5a19ca4316af4dca99ca3cba03abc1b3bf2025ed682edbe5cf3f996ce7421fa9",
+   "inputs": {
+    "destination_layers": [
+     1
+    ],
+    "direction_space": "output",
+    "in_dim": 48,
+    "layers": [
+     0,
+     1,
+     2
+    ],
+    "method": "orthogonal_weight_projection",
+    "out_dim": 32,
+    "patient": "synthetic_contract_proof_not_qwen38"
+   },
+   "kind": "behavioral_direction",
+   "layers": [
+    1
+   ],
+   "norm_preserve": false,
+   "null": {
+    "kind": "random_unit_direction",
+    "seed": 999,
+    "statement": "A random unit direction scored the same way. Residual-stream vectors share a large common component; a similarity without its null is unreadable (G123)."
+   },
+   "reversible": true,
+   "scale": 1.0,
+   "schema": "hawking.future.tabula.contract.v1",
+   "seed": 0,
+   "statement": "Declare a unit behavioral direction in output space. The treatment is this direction; the null is an independent random unit vector. No weights of a real specimen are touched.",
+   "target_kinds": [
+    "residual_out"
+   ],
+   "weights_modified": false
+  },
+  {
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "id": "TAB-LAYER-001",
+   "identity_sha256": "8df81c44b53b0187bf2da75718bc23d5563e643e0e005854694aa438e3a739c1",
+   "inputs": {
+    "destination_layers": [
+     1
+    ],
+    "effect": "project_declared_layers_only",
+    "in_dim": 48,
+    "layers": [
+     0,
+     1,
+     2
+    ],
+    "method": "orthogonal_weight_projection",
+    "out_dim": 32,
+    "patient": "synthetic_contract_proof_not_qwen38"
+   },
+   "kind": "layer_effect",
+   "layers": [
+    1
+   ],
+   "norm_preserve": false,
+   "null": {
+    "kind": "random_unit_direction",
+    "seed": 999,
+    "statement": "apply the same projection at a layer NOT in destination_layers"
+   },
+   "reversible": true,
+   "scale": 1.0,
+   "schema": "hawking.future.tabula.contract.v1",
+   "seed": 0,
+   "statement": "A layer effect applies only at declared destination layers. Off-destination layers must match the parent.",
+   "target_kinds": [
+    "residual_out"
+   ],
+   "weights_modified": false
+  },
+  {
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "id": "TAB-ORTH-001",
+   "identity_sha256": "ce628dcdf1950abbcb049016fd346128e99ec9f925574dde438f21f46dc6596b",
+   "inputs": {
+    "destination_layers": [
+     1
+    ],
+    "formula": "W' = (I - v v^T) W",
+    "in_dim": 48,
+    "layers": [
+     0,
+     1,
+     2
+    ],
+    "method": "orthogonal_weight_projection",
+    "out_dim": 32,
+    "patient": "synthetic_contract_proof_not_qwen38"
+   },
+   "kind": "orthogonal_projection",
+   "layers": [
+    1
+   ],
+   "norm_preserve": false,
+   "null": {
+    "kind": "random_unit_direction",
+    "seed": 999,
+    "statement": "A random unit direction scored the same way. Residual-stream vectors share a large common component; a similarity without its null is unreadable (G123)."
+   },
+   "reversible": true,
+   "scale": 1.0,
+   "schema": "hawking.future.tabula.contract.v1",
+   "seed": 0,
+   "statement": "Orthogonal projection of v out of W. Recovered Tabula law: v^T W' = 0, so v is a left-null vector of every projected tensor.",
+   "target_kinds": [
+    "residual_out"
+   ],
+   "weights_modified": false
+  },
+  {
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "id": "TAB-NORM-001",
+   "identity_sha256": "0f0d3bf744935cc2e730335527b42d94c910d7dd76a408807e8dcf0aedb5bb78",
+   "inputs": {
+    "destination_layers": [
+     1
+    ],
+    "in_dim": 48,
+    "layers": [
+     0,
+     1,
+     2
+    ],
+    "method": "orthogonal_weight_projection",
+    "norm_preserve": true,
+    "out_dim": 32,
+    "patient": "synthetic_contract_proof_not_qwen38"
+   },
+   "kind": "norm_preserving",
+   "layers": [
+    1
+   ],
+   "norm_preserve": true,
+   "null": {
+    "kind": "random_unit_direction",
+    "seed": 999,
+    "statement": "A random unit direction scored the same way. Residual-stream vectors share a large common component; a similarity without its null is unreadable (G123)."
+   },
+   "reversible": true,
+   "scale": 1.0,
+   "schema": "hawking.future.tabula.contract.v1",
+   "seed": 0,
+   "statement": "Same projection, then rescale so ||W'||_F = ||W||_F. The abliteration manifest on the patient set norm_preserve true.",
+   "target_kinds": [
+    "residual_out"
+   ],
+   "weights_modified": false
+  },
+  {
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "id": "TAB-REV-001",
+   "identity_sha256": "0372dc3109c898fce59852201ded42d648dd59eb2fcc52615ced87b560dff498",
+   "inputs": {
+    "destination_layers": [
+     1
+    ],
+    "in_dim": 48,
+    "layers": [
+     0,
+     1,
+     2
+    ],
+    "method": "orthogonal_weight_projection",
+    "out_dim": 32,
+    "patient": "synthetic_contract_proof_not_qwen38",
+    "store_component": true
+   },
+   "kind": "reversible_transform",
+   "layers": [
+    1
+   ],
+   "norm_preserve": true,
+   "null": {
+    "kind": "random_unit_direction",
+    "seed": 999,
+    "statement": "A random unit direction scored the same way. Residual-stream vectors share a large common component; a similarity without its null is unreadable (G123)."
+   },
+   "reversible": true,
+   "scale": 1.0,
+   "schema": "hawking.future.tabula.contract.v1",
+   "seed": 0,
+   "statement": "Store (v, v^T W, scale) so the parent is reconstructible. A Tabula child that cannot be inverted is not a default child.",
+   "target_kinds": [
+    "residual_out"
+   ],
+   "weights_modified": false
+  },
+  {
+   "authority_required": "destructive_mutation",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "id": "TAB-IRR-001",
+   "identity_sha256": "6ddc209ec5dfb96b6c8246ad260f8c7348db599052e80c16e054cfbfe8eb081c",
+   "inputs": {
+    "destination_layers": [
+     1
+    ],
+    "in_dim": 48,
+    "layers": [
+     0,
+     1,
+     2
+    ],
+    "method": "orthogonal_weight_projection",
+    "out_dim": 32,
+    "patient": "synthetic_contract_proof_not_qwen38",
+    "store_component": false
+   },
+   "kind": "orthogonal_projection",
+   "layers": [
+    1
+   ],
+   "norm_preserve": false,
+   "null": {
+    "kind": "random_unit_direction",
+    "seed": 999,
+    "statement": "A random unit direction scored the same way. Residual-stream vectors share a large common component; a similarity without its null is unreadable (G123)."
+   },
+   "reversible": false,
+   "scale": 1.0,
+   "schema": "hawking.future.tabula.contract.v1",
+   "seed": 0,
+   "statement": "Discard the removed component. Rank-1 information is lost. Marked irreversible; emitting a child requires higher authority than Tabula holds.",
+   "target_kinds": [
+    "residual_out"
+   ],
+   "weights_modified": false
+  }
+ ],
+ "gaps_closed": [
+  "recovered G123/G1 Tabula (left-null projection, null control, doctrine) as the parent instrument, not as this floor",
+  "experiment contracts for behavioral_direction, layer_effect, orthogonal_projection, norm_preserving, reversible_transform \u2014 each with fixed seed, declared inputs, declared null",
+  "independent evaluation vector (behavioral, capability, tool_use, reasoning, instruction_following); zero-refusal collapse refused",
+  "evaluate() expresses FAILURE when the behavioral target is hit and tool use regresses",
+  "rank() refuses to order on the behavioral axis alone (incomplete vector, on=('behavioral',), identical non-behavioral axes)",
+  "reversible transforms store invert recipes; irreversible transforms are marked and require higher authority",
+  "authority lattice recovered from autonomy_gate.py; Tabula cannot grant, widen, or replace it",
+  "permission is not personality: model_willingness is not consulted for external_action",
+  "lineage on every child (method=tabula_transformation); succession.py named as the swap point",
+  "no weight write; fitting is a SLEEPING GPU_EXCLUSIVE WorkUnit with a derived wake condition",
+  "resident-callable entry point, WorkUnits, receipt, frontier proposal, fail-closed path"
+ ],
+ "geometry_proofs": [
+  {
+   "abs_cos_v_vs_null": 0.2248016995585165,
+   "agreement": [],
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "contract_id": "TAB-DIR-001",
+   "destination_layers": [
+    1
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "identity_sha256": "5a19ca4316af4dca99ca3cba03abc1b3bf2025ed682edbe5cf3f996ce7421fa9",
+   "invert": [
+    {
+     "layer": 1,
+     "method": "unscale_then_add_outer(v, vT_W)",
+     "scale": 1.0,
+     "stores": [
+      "v",
+      "vT_W",
+      "scale"
+     ],
+     "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
+     "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
+    }
+   ],
+   "invert_frobenius_error": 1.2769970417842476e-15,
+   "kind": "behavioral_direction",
+   "metrics_by_layer": {
+    "0": {
+     "frobenius_out": 38.770116214628345,
+     "frobenius_parent": 38.770116214628345,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.788596837889162,
+     "residual_vT_W_parent": 6.788596837889162,
+     "restore_scale": 1.0
+    },
+    "1": {
+     "frobenius_out": 39.07789288782285,
+     "frobenius_parent": 39.69455224322555,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 1.3499740804126705e-15,
+     "residual_vT_W_parent": 6.9696316429210885,
+     "restore_scale": 1.0
+    },
+    "2": {
+     "frobenius_out": 39.10627753740698,
+     "frobenius_parent": 39.10627753740698,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.252821115447765,
+     "residual_vT_W_parent": 6.252821115447765,
+     "restore_scale": 1.0
+    }
+   },
+   "norm_preserve": false,
+   "null_seed": 999,
+   "off_destination_unchanged": true,
+   "recovered_direction": {
+    "1": {
+     "abs_cos_with_null": 0.22480169955851848,
+     "abs_cos_with_v": 1.0000000000000002,
+     "eig_ratio": -1.506627446363921e-18
+    }
+   },
+   "reversible": true,
+   "seed": 0,
+   "specimen": "synthetic",
+   "weights_modified": false
+  },
+  {
+   "abs_cos_v_vs_null": 0.2248016995585165,
+   "agreement": [],
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "contract_id": "TAB-LAYER-001",
+   "destination_layers": [
+    1
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "identity_sha256": "8df81c44b53b0187bf2da75718bc23d5563e643e0e005854694aa438e3a739c1",
+   "invert": [
+    {
+     "layer": 1,
+     "method": "unscale_then_add_outer(v, vT_W)",
+     "scale": 1.0,
+     "stores": [
+      "v",
+      "vT_W",
+      "scale"
+     ],
+     "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
+     "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
+    }
+   ],
+   "invert_frobenius_error": 1.2769970417842476e-15,
+   "kind": "layer_effect",
+   "metrics_by_layer": {
+    "0": {
+     "frobenius_out": 38.770116214628345,
+     "frobenius_parent": 38.770116214628345,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.788596837889162,
+     "residual_vT_W_parent": 6.788596837889162,
+     "restore_scale": 1.0
+    },
+    "1": {
+     "frobenius_out": 39.07789288782285,
+     "frobenius_parent": 39.69455224322555,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 1.3499740804126705e-15,
+     "residual_vT_W_parent": 6.9696316429210885,
+     "restore_scale": 1.0
+    },
+    "2": {
+     "frobenius_out": 39.10627753740698,
+     "frobenius_parent": 39.10627753740698,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.252821115447765,
+     "residual_vT_W_parent": 6.252821115447765,
+     "restore_scale": 1.0
+    }
+   },
+   "norm_preserve": false,
+   "null_seed": 999,
+   "off_destination_unchanged": true,
+   "recovered_direction": {
+    "1": {
+     "abs_cos_with_null": 0.22480169955851848,
+     "abs_cos_with_v": 1.0000000000000002,
+     "eig_ratio": -1.506627446363921e-18
+    }
+   },
+   "reversible": true,
+   "seed": 0,
+   "specimen": "synthetic",
+   "weights_modified": false
+  },
+  {
+   "abs_cos_v_vs_null": 0.2248016995585165,
+   "agreement": [],
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "contract_id": "TAB-ORTH-001",
+   "destination_layers": [
+    1
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "identity_sha256": "ce628dcdf1950abbcb049016fd346128e99ec9f925574dde438f21f46dc6596b",
+   "invert": [
+    {
+     "layer": 1,
+     "method": "unscale_then_add_outer(v, vT_W)",
+     "scale": 1.0,
+     "stores": [
+      "v",
+      "vT_W",
+      "scale"
+     ],
+     "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
+     "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
+    }
+   ],
+   "invert_frobenius_error": 1.2769970417842476e-15,
+   "kind": "orthogonal_projection",
+   "metrics_by_layer": {
+    "0": {
+     "frobenius_out": 38.770116214628345,
+     "frobenius_parent": 38.770116214628345,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.788596837889162,
+     "residual_vT_W_parent": 6.788596837889162,
+     "restore_scale": 1.0
+    },
+    "1": {
+     "frobenius_out": 39.07789288782285,
+     "frobenius_parent": 39.69455224322555,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 1.3499740804126705e-15,
+     "residual_vT_W_parent": 6.9696316429210885,
+     "restore_scale": 1.0
+    },
+    "2": {
+     "frobenius_out": 39.10627753740698,
+     "frobenius_parent": 39.10627753740698,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.252821115447765,
+     "residual_vT_W_parent": 6.252821115447765,
+     "restore_scale": 1.0
+    }
+   },
+   "norm_preserve": false,
+   "null_seed": 999,
+   "off_destination_unchanged": true,
+   "recovered_direction": {
+    "1": {
+     "abs_cos_with_null": 0.22480169955851848,
+     "abs_cos_with_v": 1.0000000000000002,
+     "eig_ratio": -1.506627446363921e-18
+    }
+   },
+   "reversible": true,
+   "seed": 0,
+   "specimen": "synthetic",
+   "weights_modified": false
+  },
+  {
+   "abs_cos_v_vs_null": 0.2248016995585165,
+   "agreement": [],
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "contract_id": "TAB-NORM-001",
+   "destination_layers": [
+    1
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "identity_sha256": "0f0d3bf744935cc2e730335527b42d94c910d7dd76a408807e8dcf0aedb5bb78",
+   "invert": [
+    {
+     "layer": 1,
+     "method": "unscale_then_add_outer(v, vT_W)",
+     "scale": 1.0157802611612885,
+     "stores": [
+      "v",
+      "vT_W",
+      "scale"
+     ],
+     "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
+     "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
+    }
+   ],
+   "invert_frobenius_error": 1.3174172953918603e-15,
+   "kind": "norm_preserving",
+   "metrics_by_layer": {
+    "0": {
+     "frobenius_out": 38.770116214628345,
+     "frobenius_parent": 38.770116214628345,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.788596837889162,
+     "residual_vT_W_parent": 6.788596837889162,
+     "restore_scale": 1.0
+    },
+    "1": {
+     "frobenius_out": 39.69455224322555,
+     "frobenius_parent": 39.69455224322555,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 1.485750149360391e-15,
+     "residual_vT_W_parent": 6.9696316429210885,
+     "restore_scale": 1.0157802611612885
+    },
+    "2": {
+     "frobenius_out": 39.10627753740698,
+     "frobenius_parent": 39.10627753740698,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.252821115447765,
+     "residual_vT_W_parent": 6.252821115447765,
+     "restore_scale": 1.0
+    }
+   },
+   "norm_preserve": true,
+   "null_seed": 999,
+   "off_destination_unchanged": true,
+   "recovered_direction": {
+    "1": {
+     "abs_cos_with_null": 0.2248016995585168,
+     "abs_cos_with_v": 1.0,
+     "eig_ratio": -7.985125465728734e-18
+    }
+   },
+   "reversible": true,
+   "seed": 0,
+   "specimen": "synthetic",
+   "weights_modified": false
+  },
+  {
+   "abs_cos_v_vs_null": 0.2248016995585165,
+   "agreement": [],
+   "authority_required": "compile_experiment_spec",
+   "bench_state": "UNKNOWN",
+   "contract_id": "TAB-REV-001",
+   "destination_layers": [
+    1
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "identity_sha256": "0372dc3109c898fce59852201ded42d648dd59eb2fcc52615ced87b560dff498",
+   "invert": [
+    {
+     "layer": 1,
+     "method": "unscale_then_add_outer(v, vT_W)",
+     "scale": 1.0157802611612885,
+     "stores": [
+      "v",
+      "vT_W",
+      "scale"
+     ],
+     "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
+     "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
+    }
+   ],
+   "invert_frobenius_error": 1.3174172953918603e-15,
+   "kind": "reversible_transform",
+   "metrics_by_layer": {
+    "0": {
+     "frobenius_out": 38.770116214628345,
+     "frobenius_parent": 38.770116214628345,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.788596837889162,
+     "residual_vT_W_parent": 6.788596837889162,
+     "restore_scale": 1.0
+    },
+    "1": {
+     "frobenius_out": 39.69455224322555,
+     "frobenius_parent": 39.69455224322555,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 1.485750149360391e-15,
+     "residual_vT_W_parent": 6.9696316429210885,
+     "restore_scale": 1.0157802611612885
+    },
+    "2": {
+     "frobenius_out": 39.10627753740698,
+     "frobenius_parent": 39.10627753740698,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.252821115447765,
+     "residual_vT_W_parent": 6.252821115447765,
+     "restore_scale": 1.0
+    }
+   },
+   "norm_preserve": true,
+   "null_seed": 999,
+   "off_destination_unchanged": true,
+   "recovered_direction": {
+    "1": {
+     "abs_cos_with_null": 0.2248016995585168,
+     "abs_cos_with_v": 1.0,
+     "eig_ratio": -7.985125465728734e-18
+    }
+   },
+   "reversible": true,
+   "seed": 0,
+   "specimen": "synthetic",
+   "weights_modified": false
+  },
+  {
+   "abs_cos_v_vs_null": 0.2248016995585165,
+   "agreement": [],
+   "authority_required": "destructive_mutation",
+   "bench_state": "UNKNOWN",
+   "contract_id": "TAB-IRR-001",
+   "destination_layers": [
+    1
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "identity_sha256": "6ddc209ec5dfb96b6c8246ad260f8c7348db599052e80c16e054cfbfe8eb081c",
+   "invert": [
+    {
+     "layer": 1,
+     "reversible": false,
+     "stores": []
+    }
+   ],
+   "invert_frobenius_error": null,
+   "kind": "orthogonal_projection",
+   "metrics_by_layer": {
+    "0": {
+     "frobenius_out": 38.770116214628345,
+     "frobenius_parent": 38.770116214628345,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.788596837889162,
+     "residual_vT_W_parent": 6.788596837889162,
+     "restore_scale": 1.0
+    },
+    "1": {
+     "frobenius_out": 39.07789288782285,
+     "frobenius_parent": 39.69455224322555,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 1.3499740804126705e-15,
+     "residual_vT_W_parent": 6.9696316429210885,
+     "restore_scale": 1.0
+    },
+    "2": {
+     "frobenius_out": 39.10627753740698,
+     "frobenius_parent": 39.10627753740698,
+     "norm_preserve_error": 0.0,
+     "residual_vT_W_out": 6.252821115447765,
+     "residual_vT_W_parent": 6.252821115447765,
+     "restore_scale": 1.0
+    }
+   },
+   "norm_preserve": false,
+   "null_seed": 999,
+   "off_destination_unchanged": true,
+   "recovered_direction": {
+    "1": {
+     "abs_cos_with_null": 0.22480169955851848,
+     "abs_cos_with_v": 1.0000000000000002,
+     "eig_ratio": -1.506627446363921e-18
+    }
+   },
+   "reversible": false,
+   "seed": 0,
+   "specimen": "synthetic",
+   "weights_modified": false
+  }
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "independent_evaluation": {
+  "behavioral_target": 0.5,
+  "demo_failure": {
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "outcome": "FAILURE",
+   "reason": "behavioral target hit while regressing tool_use; a transformation that achieves its behavioral target while destroying tool use / capability / reasoning / instruction following is a FAILURE",
+   "regressions": [
+    "tool_use"
+   ],
+   "scores": {
+    "behavioral": 0.95,
+    "capability": 0.1,
+    "instruction_following": 0.04,
+    "reasoning": 0.05,
+    "tool_use": -0.8
+   },
+   "target_hit": true
+  },
+  "demo_pass": {
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "outcome": "PASS",
+   "reason": "behavioral target met with no independent-axis regression",
+   "regressions": [],
+   "scores": {
+    "behavioral": 0.7,
+    "capability": 0.05,
+    "instruction_following": 0.0,
+    "reasoning": 0.01,
+    "tool_use": 0.02
+   },
+   "target_hit": true
+  },
+  "ranked": [
+   {
+    "id": "balanced",
+    "payload": {
+     "id": "balanced",
+     "scores": {
+      "behavioral": 0.7,
+      "capability": 0.05,
+      "instruction_following": 0.0,
+      "reasoning": 0.01,
+      "tool_use": 0.02
+     }
+    },
+    "rank": 1,
+    "ranking_rule": "PASS before FAILURE; then non-behavioral axes (capability, tool_use, reasoning, instruction_following); behavioral last; id for determinism. Refuses behavioral-axis-only order.",
+    "scores": {
+     "behavioral": 0.7,
+     "capability": 0.05,
+     "instruction_following": 0.0,
+     "reasoning": 0.01,
+     "tool_use": 0.02
+    },
+    "verdict": {
+     "bench_state": "UNKNOWN",
+     "evidence_class": "STATIC_ONLY",
+     "outcome": "PASS",
+     "reason": "behavioral target met with no independent-axis regression",
+     "regressions": [],
+     "scores": {
+      "behavioral": 0.7,
+      "capability": 0.05,
+      "instruction_following": 0.0,
+      "reasoning": 0.01,
+      "tool_use": 0.02
+     },
+     "target_hit": true
+    }
+   },
+   {
+    "id": "kill-tools",
+    "payload": {
+     "id": "kill-tools",
+     "scores": {
+      "behavioral": 0.95,
+      "capability": 0.1,
+      "instruction_following": 0.04,
+      "reasoning": 0.05,
+      "tool_use": -0.8
+     }
+    },
+    "rank": 2,
+    "ranking_rule": "PASS before FAILURE; then non-behavioral axes (capability, tool_use, reasoning, instruction_following); behavioral last; id for determinism. Refuses behavioral-axis-only order.",
+    "scores": {
+     "behavioral": 0.95,
+     "capability": 0.1,
+     "instruction_following": 0.04,
+     "reasoning": 0.05,
+     "tool_use": -0.8
+    },
+    "verdict": {
+     "bench_state": "UNKNOWN",
+     "evidence_class": "STATIC_ONLY",
+     "outcome": "FAILURE",
+     "reason": "behavioral target hit while regressing tool_use; a transformation that achieves its behavioral target while destroying tool use / capability / reasoning / instruction following is a FAILURE",
+     "regressions": [
+      "tool_use"
+     ],
+     "scores": {
+      "behavioral": 0.95,
+      "capability": 0.1,
+      "instruction_following": 0.04,
+      "reasoning": 0.05,
+      "tool_use": -0.8
+     },
+     "target_hit": true
+    }
+   }
+  ],
+  "ranking_rule": "PASS before FAILURE; then non-behavioral axes (capability, tool_use, reasoning, instruction_following); behavioral last; id for determinism. Refuses behavioral-axis-only order.",
+  "regression_limit": 0.0
+ },
+ "lineage_demo": {
+  "bench_state": "UNKNOWN",
+  "child_generation_owner": "tools/future/resident_optimizer.py (landed; lineage must travel with the child)",
+  "child_id": "24477a1acc41752b9c7f7cf007503cc60840b09ad45372f1c1bfb38f04926a8c",
+  "contract_identity_sha256": "0372dc3109c898fce59852201ded42d648dd59eb2fcc52615ced87b560dff498",
+  "evidence_class": "STATIC_ONLY",
+  "generation_method": "tabula_transformation",
+  "gpu_authority": false,
+  "inputs_sha256": "7c279acbd1bb716704ae066166d56d63475d035e7bd13f0095c3a9676db93ea3",
+  "integration_point": "tools/future/succession.py (this-wave sibling; not imported)",
+  "invert": {
+   "layer": 1,
+   "method": "unscale_then_add_outer(v, vT_W)",
+   "scale": 1.0157802611612885,
+   "stores": [
+    "v",
+    "vT_W",
+    "scale"
+   ],
+   "vT_W_sha256": "82d87cce42d99146c4b0ad6e34c1870d8f1ea0324d87d09010b7dd4bff7e4b08",
+   "v_sha256": "75e60e55ee2d10cd96686af8e2d2ead72487d53ac9f0e3f93fac3273ce827231"
+  },
+  "method": "tabula_transformation",
+  "parent_id": "synthetic-parent-0",
+  "reversible": true,
+  "schema": "hawking.future.tabula.lineage.v1",
+  "score_vector": {
+   "behavioral": 0.7,
+   "capability": 0.05,
+   "instruction_following": 0.0,
+   "reasoning": 0.01,
+   "tool_use": 0.02
+  },
+  "seed": 0,
+  "transformation_id": "TAB-REV-001",
+  "verdict": {
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "outcome": "PASS",
+   "reason": "behavioral target met with no independent-axis regression",
+   "regressions": [],
+   "scores": {
+    "behavioral": 0.7,
+    "capability": 0.05,
+    "instruction_following": 0.0,
+    "reasoning": 0.01,
+    "tool_use": 0.02
+   },
+   "target_hit": true
+  },
+  "weights_modified": false
+ },
+ "negative_findings": [
+  "historical Tabula scored refusal counts (0/8 on TABULA_PATIENT) as behavioural authority \u2014 that collapse is now a watched FAILURE",
+  "G123 drift ladder did not reproduce its recorded range (constant ~2.5x); Doctor seal records instrument_validated=false",
+  "gravity_tabula_behaviour.py is explicitly the WEAKER half and cannot certify absence of drift",
+  "this host has no Metal GPU and no Metal compiler; fitting stays SLEEPING and is not simulated as a result",
+  "tools/future/succession.py is a this-wave sibling and is not imported; lineage schema is local until that swap",
+  "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; bench is UNKNOWN",
+  "Tabula cannot widen the HCLI authority lattice; security policy is not a model personality trait",
+  "teacher capture path_taken=worktree executed_units=0 of units=12"
+ ],
+ "promote_exists": false,
+ "promoted": false,
+ "purpose": "Behavioral-surgery experimental floor evaluated independently. Contracts, scorer, lineage, authority lattice. No weight write.",
+ "recovered_implementation": [
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "tools/tabula_drift.py",
+   "path_taken": "worktree",
+   "what": "G123 geometric instrument: W'=(I-vv^T)W, v is a left-null vector, agreement + random-null controls, quantization drift ladder"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "tools/gravity_tabula_probe.py",
+   "path_taken": "worktree",
+   "what": "same left-null recovery on mlp.down_proj; refuses a drift number if recovered directions do not agree across layers"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "tools/gravity_tabula_behaviour.py",
+   "path_taken": "worktree",
+   "what": "WEAKER half: marker-based refusal counts on 8 benign prompts; explicitly cannot certify absence of drift"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "tools/doctor_seal.py",
+   "path_taken": "worktree",
+   "what": "G124: no Doctor PASS without a tabula_drift cell; instrument_validated=false"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "tools/cost_vector_t.py",
+   "path_taken": "worktree",
+   "what": "T slot of the cost vector is Tabula drift-x, currently a quoted G123 ladder"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "tools/gravity_container.py",
+   "path_taken": "worktree",
+   "what": "container.tabula.variant is required behavioural identity; empty variant fails"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "hawking-experiments/superwave/g1/g1-tabula-baseline.md",
+   "path_taken": "worktree",
+   "what": "G1 doctrine: lower refusal rate is not Tabula success; behavioral freedom and external authority are different systems"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "hawking-experiments/superwave/g1/g1-tabula-genome.md",
+   "path_taken": "worktree",
+   "what": "G1 genome: Tabula/Gravity must be separate sealed content-hashed documents"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "receipts/ascent-2026-08-16/G123_TABULA_DRIFT.json",
+   "path_taken": "worktree",
+   "what": "sealed G123 ladder; does not reproduce the recorded range (constant ~2.5x)"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "receipts/ascent-2026-08-18/TABULA_PATIENT.json",
+   "path_taken": "worktree",
+   "what": "patient Tabula cell: 0/8 refusals treated as behavioural authority \u2014 the collapse this floor refuses"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "hcli/agentos/autonomy_gate.py",
+   "path_taken": "worktree",
+   "what": "live authority: Mission is DAG/receipt, AgentOS is typed-tool/checkpoint, provider is cognition; the model cannot nominate the verifier"
+  },
+  {
+   "in_head": true,
+   "on_disk": true,
+   "path": "tools/future/resident_optimizer.py",
+   "path_taken": "worktree",
+   "what": "child-generation economy; Tabula is one method of CHILD generation and must carry lineage"
+  }
+ ],
+ "refusals_proven": [
+  {
+   "error": "rank() refuses to order candidates on the behavioral axis alone (missing axes ['capability', 'tool_use', 'reasoning', 'instruction_following']; zero-refusal / behavioral-only scores are refused. Independent evaluation requires behavioral,capability,tool_use,reasoning,instruction_following)",
+   "error_type": "RankRefusal",
+   "refused": true,
+   "trial": "rank_behavioral_only"
+  },
+  {
+   "error": "rank() refuses to order candidates on the behavioral axis alone",
+   "error_type": "RankRefusal",
+   "refused": true,
+   "trial": "rank_on_behavioral_axis"
+  },
+  {
+   "error": "behavioral target hit while regressing tool_use; a transformation that achieves its behavioral target while destroying tool use / capability / reasoning / instruction following is a FAILURE",
+   "error_type": "FAILURE",
+   "outcome": "FAILURE",
+   "refused": true,
+   "regressions": [
+    "tool_use"
+   ],
+   "trial": "behavior_hit_tool_use_regression"
+  },
+  {
+   "error": "zero-refusal is never the only score; independent evaluation requires behavioral,capability,tool_use,reasoning,instruction_following",
+   "error_type": "IncompleteScoreVector",
+   "refused": true,
+   "trial": "scores_from_refusal_rate"
+  },
+  {
+   "error": "Tabula cannot widen its own authority",
+   "error_type": "AuthorityError",
+   "refused": true,
+   "trial": "widen_authority"
+  },
+  {
+   "error": "Tabula cannot grant or widen authority",
+   "error_type": "AuthorityError",
+   "refused": true,
+   "trial": "lattice_grant"
+  },
+  {
+   "error": "No weights are modified here. This host has no GPU and the specimens are hundreds of gigabytes. Build the contracts, the scorer and the lineage; the fitting is a SLEEPING WorkUnit.",
+   "error_type": "WeightsFrozen",
+   "refused": true,
+   "trial": "apply_to_weights"
+  },
+  {
+   "error": "TAB-IRR-001 is irreversible and requires destructive_mutation; Tabula cannot widen its own authority to emit that child",
+   "error_type": "IrreversibleAuthorityError",
+   "refused": true,
+   "trial": "irreversible_child"
+  },
+  {
+   "error": "model_willingness=True did not grant external_action",
+   "error_type": "AuthorityError",
+   "may_external_action": false,
+   "refused": true,
+   "trial": "permission_is_not_personality"
+  },
+  {
+   "error": "promote() does not exist",
+   "error_type": "AttributeError",
+   "refused": true,
+   "trial": "promote_absent"
+  }
+ ],
+ "resident_callable": {
+  "callable": "build",
+  "cli": [
+   "--build",
+   "--selftest"
+  ],
+  "discovery": "HCLI discovers the pending floor unit (future.tabula.floor) from this receipt, invokes the entry point, schedules the independent-eval unit, and leaves future.tabula.fit-weights SLEEPING. A later wakeup.py (this-wave; not imported) is the swap point that flips sleeping -> pending when wake_condition holds. Disk state is authority.",
+  "entry_point": "python3 tools/future/tabula.py --build",
+  "fail_closed": [
+   {
+    "error_type": "RankRefusal",
+    "fires": true,
+    "guard": "rank_behavioral_only"
+   },
+   {
+    "error_type": "RankRefusal",
+    "fires": true,
+    "guard": "rank_on_behavioral_axis"
+   },
+   {
+    "error_type": "FAILURE",
+    "fires": true,
+    "guard": "behavior_hit_tool_use_regression"
+   },
+   {
+    "error_type": "IncompleteScoreVector",
+    "fires": true,
+    "guard": "scores_from_refusal_rate"
+   },
+   {
+    "error_type": "AuthorityError",
+    "fires": true,
+    "guard": "widen_authority"
+   },
+   {
+    "error_type": "AuthorityError",
+    "fires": true,
+    "guard": "lattice_grant"
+   },
+   {
+    "error_type": "WeightsFrozen",
+    "fires": true,
+    "guard": "apply_to_weights"
+   },
+   {
+    "error_type": "IrreversibleAuthorityError",
+    "fires": true,
+    "guard": "irreversible_child"
+   },
+   {
+    "error_type": "AuthorityError",
+    "fires": true,
+    "guard": "permission_is_not_personality"
+   },
+   {
+    "error_type": "AttributeError",
+    "fires": true,
+    "guard": "promote_absent"
+   }
+  ],
+  "frontier_fed": {
+   "classification": "HIGH_VALUE_INTEGRATION",
+   "detail": "Contracts, vector scorer, lineage and authority lattice are sealed. Fitting stays SLEEPING until hardware qualifies. Zero-refusal collapse is a watched FAILURE, not a score.",
+   "evidence_level": "receipt-backed (TABULA_FLOOR.json + watched negative controls)",
+   "feeds": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "id": "TABULA_INDEPENDENT_EVALUATION_FLOOR",
+   "integration_point": "tools/future/frontiers.py (this-wave sibling; not imported)",
+   "owner_module": "tools/future/global_frontier.py",
+   "resource_need": "CPU for the floor; GPU authority (Codex lane) for the sleeping fit",
+   "this_lane_writes_frontier": false,
+   "title": "Tabula independent-evaluation floor is executable as STATIC_ONLY"
+  },
+  "how_it_fails_closed": "rank() raises RankRefusal on a behavioral-only order; evaluate() returns FAILURE when the behavioral target is hit while tool use (or any independent axis) regresses; AuthorityLattice.grant/widen and TabulaFloor.widen_authority raise; apply_to_weights raises WeightsFrozen; irreversible children raise IrreversibleAuthorityError; the fit WorkUnit is status=sleeping so hcli.workunit.is_ready is false until hardware qualifies; write_receipt raises HardwareClaimError on a numeric hardware field; promote() does not exist.",
+  "module": "tools.future.tabula",
+  "receipt": "receipts/future/TABULA_FLOOR.json",
+  "work_units": [
+   {
+    "classification": "STATIC_ONLY",
+    "id": "future.tabula.floor",
+    "resource_class": "STATIC_ANALYSIS",
+    "sleep_state": null,
+    "status": "pending",
+    "verifier": "future.tabula.floor"
+   },
+   {
+    "classification": "STATIC_ONLY",
+    "id": "future.tabula.independent-eval",
+    "resource_class": "STATIC_ANALYSIS",
+    "sleep_state": null,
+    "status": "pending",
+    "verifier": "future.tabula.evaluate"
+   },
+   {
+    "classification": "SLEEPING",
+    "id": "future.tabula.fit-weights",
+    "resource_class": "GPU_EXCLUSIVE",
+    "sleep_state": "SLEEPING",
+    "status": "sleeping",
+    "verifier": "future.tabula.fit.protected"
+   }
+  ],
+  "workunit_emitted": [
+   "future.tabula.floor",
+   "future.tabula.independent-eval",
+   "future.tabula.fit-weights"
+  ]
+ },
+ "schema": "hawking.future.tabula.v1",
+ "score_axes": [
+  "behavioral",
+  "capability",
+  "tool_use",
+  "reasoning",
+  "instruction_following"
+ ],
+ "seal_sha256": "5ecb0ccdeda81ca5fa7a53d29c4154ea839b78e69696a0648d8baaf685ac87a9",
+ "sleeping_fit": {
+  "ready": false,
+  "status": "sleeping",
+  "teacher_capture": {
+   "complete": false,
+   "executed_units": 0,
+   "note": "derive completed/target from this receipt; do not hard-code 256",
+   "path": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
+   "path_taken": "worktree",
+   "present": true,
+   "target_row_counts": [
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256,
+    256
+   ],
+   "units": 12
+  },
+  "wake_condition": {
+   "flash_nx": "Flash source-independent NX is QUALIFIED, not SCAFFOLD_ONLY",
+   "machine_class": "qualification pipeline does not classify the machine HEAVY, or standing workers are legitimately absent \u2014 never SIGSTOP",
+   "metal_capable_gpu": "MetalContext reports a Metal-capable GPU",
+   "metal_compiler": "xcrun locates the Metal compiler (not missing under CommandLineTools)",
+   "physical_blockers_today": [
+    "MetalContext reports NO Metal-capable GPU on this host",
+    "xcrun cannot locate the Metal compiler under CommandLineTools",
+    "protected bench lock files exist; holder pids unproven, and flock would be a seizure",
+    "the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
+    "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
+    "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json, not invented)"
+   ],
+   "protected_lease": "HCLI protected-accelerator-bench lock is held by this process; flock of an unproven holder is a seizure and is refused",
+   "rule": "Blocked physical work stays SLEEPING. It never becomes a synthetic result.",
+   "specimens": "weight specimens present on disk; this sidecar never loads them",
+   "teacher_capture": {
+    "complete": false,
+    "executed_units": 0,
+    "path_taken": "worktree",
+    "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
+    "rule": "wake only when executed_units == units and units > 0",
+    "target_row_counts": [
+     256,
+     256,
+     256,
+     256,
+     256,
+     256,
+     256,
+     256,
+     256,
+     256,
+     256,
+     256
+    ],
+    "units": 12
+   }
+  },
+  "workunit_id": "future.tabula.fit-weights"
+ },
+ "status": "BUILT_NOT_PROMOTED",
+ "version": 1,
+ "vocabulary": {
+  "diagnostic_relative_never_promotes": true,
+  "disk_state_is_authority": true,
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is": "Accelerator / Physical Compiler / Fusion; not a civilization and not a Tabula concern",
+  "models_think_tools_know_context_is_a_cache": true,
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "permission_is_not_personality": true,
+  "protected_absolute_not_emitted": true,
+  "zero_refusal_is_never_the_only_score": true
+ },
+ "weights_modified": false,
+ "work_units": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. No weight write. Tabula cannot widen authority, cannot promote, and cannot take a GPU lease. Independent evaluation is a vector; zero refusal is never the only score.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/tabula.py --build",
+   "content_hash": "2e1e03b666b481b7f8358f9057c67c8142cb1c81777c9717b0c21db7188ce469",
+   "contract_ids": [
+    "TAB-DIR-001",
+    "TAB-LAYER-001",
+    "TAB-ORTH-001",
+    "TAB-NORM-001",
+    "TAB-REV-001",
+    "TAB-IRR-001"
+   ],
+   "dependencies": [],
+   "description": "Seal the Tabula independent-evaluation floor: experiment contracts, vector scorer, lineage, authority lattice. STATIC_ONLY. No weights.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.tabula.floor",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "may_widen_authority": false,
+   "output_receipt_path": "receipts/future/TABULA_FLOOR.json",
+   "preferred_backend": null,
+   "provider": "future.tabula",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "tabula_behavioral_surgery",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.tabula.floor",
+   "weights_modified": false,
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. No weight write. Tabula cannot widen authority, cannot promote, and cannot take a GPU lease. Independent evaluation is a vector; zero refusal is never the only score.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "4781ab832f4491d6d8bd8678c848955e372da068011be76a4a3177855a7249d1",
+   "dependencies": [
+    "future.tabula.floor"
+   ],
+   "description": "Score a Tabula child on the independent vector. Refuse behavioral-axis-only ranking. Do not run a specimen.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.tabula.independent-eval",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "may_widen_authority": false,
+   "preferred_backend": null,
+   "provider": "future.tabula",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "score_axes": [
+    "behavioral",
+    "capability",
+    "tool_use",
+    "reasoning",
+    "instruction_following"
+   ],
+   "species": "tabula_behavioral_surgery",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.tabula.evaluate",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. No weight write. Tabula cannot widen authority, cannot promote, and cannot take a GPU lease. Independent evaluation is a vector; zero refusal is never the only score.",
+   "classification": "SLEEPING",
+   "content_hash": "349014b41f37704fdd5b8d287aac035f5d9f22725406431ec36ada37224f7fbc",
+   "dependencies": [
+    "future.tabula.floor",
+    "future.tabula.independent-eval"
+   ],
+   "description": "SLEEPING. Fit a reversible Tabula transformation onto a real specimen when hardware qualifies. This sidecar must not run it, must not seize a GPU lease, and must not invent a result.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.tabula.fit-weights",
+   "irreversible_fit_reason": "irreversible transformations require destructive_mutation authority Tabula does not hold",
+   "irreversible_fit_refused": true,
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "may_widen_authority": false,
+   "preferred_backend": null,
+   "provider": "future.tabula",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "sleep_state": "SLEEPING",
+   "species": "tabula_behavioral_surgery",
+   "status": "sleeping",
+   "verification": null,
+   "verifier": "future.tabula.fit.protected",
+   "wake_condition": {
+    "flash_nx": "Flash source-independent NX is QUALIFIED, not SCAFFOLD_ONLY",
+    "machine_class": "qualification pipeline does not classify the machine HEAVY, or standing workers are legitimately absent \u2014 never SIGSTOP",
+    "metal_capable_gpu": "MetalContext reports a Metal-capable GPU",
+    "metal_compiler": "xcrun locates the Metal compiler (not missing under CommandLineTools)",
+    "physical_blockers_today": [
+     "MetalContext reports NO Metal-capable GPU on this host",
+     "xcrun cannot locate the Metal compiler under CommandLineTools",
+     "protected bench lock files exist; holder pids unproven, and flock would be a seizure",
+     "the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
+     "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
+     "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json, not invented)"
+    ],
+    "protected_lease": "HCLI protected-accelerator-bench lock is held by this process; flock of an unproven holder is a seizure and is refused",
+    "rule": "Blocked physical work stays SLEEPING. It never becomes a synthetic result.",
+    "specimens": "weight specimens present on disk; this sidecar never loads them",
+    "teacher_capture": {
+     "complete": false,
+     "executed_units": 0,
+     "path_taken": "worktree",
+     "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
+     "rule": "wake only when executed_units == units and units > 0",
+     "target_row_counts": [
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256,
+      256
+     ],
+     "units": 12
+    }
+   },
+   "weights_modified": false,
+   "workspace": "repo-root"
+  }
+ ]
+}

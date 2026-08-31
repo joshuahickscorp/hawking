@@ -1,0 +1,3339 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:42Z",
+  "recorded_by": "tools/future/resident_identity.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "Named identity fields persisted to disk (tuple derived from the contract list, not a frozen count).",
+  "UNKNOWN is mandatory for qualified physical EBPW, Flash EBPW, protected TPS/token_ns, and actual_read/transient bytes; missing evidence is named.",
+  "load() recovers the full identity from disk in a fresh process with no in-memory state and no conversational input.",
+  "known_weaknesses is populated from real scars and blockers; an empty list while blockers exist is REJECTED.",
+  "residency_status is CURRENT_NONFINAL_HCLI_WORKER so nothing downstream mistakes 27B for a Singularity.",
+  "Negative controls fire: invented measurement slot REJECTED; zero-weakness identity REJECTED; hardware numeric keys refused.",
+  "Host tokenizer/binary hashed when present; UNKNOWN with the missing path named when not. Sparse checkout is not encoded as absence.",
+  "Machine genome cited as a prior; measure_bandwidth was not invoked."
+ ],
+ "gpu_authority": false,
+ "identity": {
+  "active_bytes_evidence": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+    "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json"
+   ],
+   "missing_evidence": [],
+   "note": "nested actual_read / transient / active_representation are UNKNOWN",
+   "value": {
+    "activations_included": false,
+    "active_representation_bytes_per_token": {
+     "claim_class": "STATIC_ONLY",
+     "evidence": [
+      "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+     ],
+     "missing_evidence": [
+      "protected complete-token receipt with actual_read_bytes_per_token",
+      "sidecar cannot emit DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE"
+     ],
+     "value": "UNKNOWN"
+    },
+    "actual_read_bytes_per_token": {
+     "claim_class": "STATIC_ONLY",
+     "evidence": [
+      "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+     ],
+     "missing_evidence": [
+      "protected complete-token receipt with actual_read_bytes_per_token",
+      "sidecar cannot emit DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE"
+     ],
+     "value": "UNKNOWN"
+    },
+    "catalog_weight_bytes_per_token": {
+     "claim_class": "STATIC_ONLY",
+     "evidence": [
+      "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json#headline.active_weight_bytes_per_token"
+     ],
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "missing_evidence": [],
+     "note": "catalog WEIGHT traffic only; not actual_read_bytes_per_token",
+     "value": 9878901136
+    },
+    "claim_boundary": "Catalog-derived WEIGHT traffic only. Activations, KV cache, and DeltaNet recurrent state are not counted. actual_read and transient remain UNKNOWN until a protected complete-token receipt.",
+    "kv_cache_included": false,
+    "recurrent_state_included": false,
+    "transient_bytes_per_token": {
+     "claim_class": "STATIC_ONLY",
+     "evidence": [
+      "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+     ],
+     "missing_evidence": [
+      "protected complete-token receipt with actual_read_bytes_per_token",
+      "sidecar cannot emit DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE"
+     ],
+     "value": "UNKNOWN"
+    }
+   }
+  },
+  "active_workunits": {
+   "by_status": {
+    "blocked": 39,
+    "pending": 26
+   },
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+   ],
+   "missing_evidence": [],
+   "n": 26,
+   "rule": "active = work_units whose status is not blocked (pending/running/other)",
+   "value": [
+    {
+     "blocked_reason": null,
+     "id": "accelerator.flash-semantic-transport-hwir",
+     "role": "accelerator_repatriation",
+     "species": "fpga_simulation",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-affine2-splitk4",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-attention-gate-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-ba-delta-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-commit-timing-elision",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-deltanet-inproj-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-encoder-label-elision",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-fast-profile",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-gqa-qkv-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-pipeline-cache-reuse",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-pipeline-id-resolution",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-pipeline-state-elision",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-q2f-splitk4",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.physical.qwen27-q4-vecgroup-x64",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.qwen27-async-double-buffer",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.qwen27-graph-replay-token-skeleton",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.qwen27-layout-algebra-mlp",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.qwen27-move-or-recompute-boundary",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "accelerator.qwen27-stationary-packed-weight",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "future.fusion.simulate-isa-graph",
+     "role": "science",
+     "species": "fusion_simulation",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "future.green-machine.energy-contract",
+     "role": "science",
+     "species": "green_machine_measurement",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "future.hardware-doctor.rank-atlas-hypotheses",
+     "role": "science",
+     "species": "hardware_doctor_experiment",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "future.lpc.dataset-contract",
+     "role": "science",
+     "species": "learned_compiler_experiment",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "future.odyssey-ii.seed-law-store",
+     "role": "science",
+     "species": "odyssey_ii_transfer_experiment",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "future.odyssey-iii.attack-claimed-law",
+     "role": "science",
+     "species": "odyssey_iii_adversarial_experiment",
+     "status": "pending"
+    },
+    {
+     "blocked_reason": null,
+     "id": "future.repro.replication-bundle",
+     "role": "science",
+     "species": "independent_reproduction",
+     "status": "pending"
+    }
+   ]
+  },
+  "authority_sources": {
+   "capability": {
+    "in_git_head": true,
+    "load": "ON_DISK",
+    "on_disk": true,
+    "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "source": "ON_DISK"
+   },
+   "codex_accelerator_handoff": {
+    "in_git_head": false,
+    "on_disk": true,
+    "path": "CODEX_ACCELERATOR_HANDOFF.json",
+    "source": "ON_DISK"
+   },
+   "machine_genome": {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "receipts/headless/MACHINE_GENOME.json",
+    "source": "ON_DISK"
+   },
+   "qualification_queue": [
+    {
+     "in_git_head": false,
+     "on_disk": true,
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "source": "ON_DISK"
+    },
+    {
+     "in_git_head": true,
+     "on_disk": true,
+     "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "source": "ON_DISK"
+    }
+   ],
+   "sealed_profile": {
+    "in_git_head": true,
+    "load": "ON_DISK",
+    "on_disk": true,
+    "path": "hcli/hawking-native.sealed-3.14.json",
+    "sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+    "source": "ON_DISK"
+   },
+   "teacher_capture": {
+    "in_git_head": false,
+    "on_disk": true,
+    "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+    "source": "ON_DISK"
+   }
+  },
+  "blocked_workunits": {
+   "by_status": {
+    "blocked": 39,
+    "pending": 26
+   },
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+   ],
+   "missing_evidence": [],
+   "n": 39,
+   "rule": "blocked = work_units with status blocked; physical units stay SLEEPING, never synthetic-complete",
+   "value": [
+    {
+     "blocked_reason": "public ANE compile/runtime measurement is not available in this process; plan-only until the public path is executable",
+     "id": "accelerator.ane-regular-island-probe",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash native full-model executable/weights are not available in the current protected lane; retain as detached queue work",
+     "id": "accelerator.flash-direct-routed-accumulate",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "requires the Flash protected complete-token runtime lane",
+     "id": "accelerator.flash-local-state-machine",
+     "role": "accelerator_repatriation",
+     "species": "architecture_transfer",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete-token and source-independent capability gates remain open",
+     "id": "accelerator.physical.flash-attention-gate-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-compact-moe-bf16-vec4",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent compact expert consumer is not yet qualified",
+     "id": "accelerator.physical.flash-compact-moe-epilogue",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; device mHC still requires matched parity/coherence and protected latency",
+     "id": "accelerator.physical.flash-device-mhc-state",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-encoder-label-elision",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-fullseq-catalog-cache",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "fullseq source path is not a complete source-independent Flash NX executable",
+     "id": "accelerator.physical.flash-fullseq-ordered-encoder",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected capability are not qualified",
+     "id": "accelerator.physical.flash-hc-router-topk-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX executable is not qualified",
+     "id": "accelerator.physical.flash-hc-staged-threadgroup",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "meta budget is only a prospective function description; no serialized functional artifact, source-independent Flash NX consumer, or protected complete-token path exists",
+     "id": "accelerator.physical.flash-meta-sub1-coherent",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 quantizer candidate has no byte-exact parity/coherence and protected-latency receipt",
+     "id": "accelerator.physical.flash-p6-act-quant-simdgroup",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-p6-batched-down-qat",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; this full composition still requires matched parity/coherence and protected latency",
+     "id": "accelerator.physical.flash-p6-fused-down-shared-combine",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; composition interactions require a fresh parity/coherence and latency receipt",
+     "id": "accelerator.physical.flash-p6-fused-epilogue-stack",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the single-command-buffer path has no matched parity/coherence and protected-latency receipt",
+     "id": "accelerator.physical.flash-p6-hash-single-command-buffer",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-p6-learned-expert-cache-reuse",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-p6-learned-reader-reuse",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the shared prefix has no matched parity/coherence and protected-latency receipt",
+     "id": "accelerator.physical.flash-p6-prefix-concurrent-wave",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-p6-routed-fp4-down-bf16-fused",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-p6-routed-fp4-down-bf16-simd",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP4 candidate has no NumericParity/coherence and protected-latency receipt",
+     "id": "accelerator.physical.flash-p6-routed-fp4-simdgroup",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP8 candidate has no NumericParity/coherence and protected-latency receipt",
+     "id": "accelerator.physical.flash-p6-shared-fp8-simdgroup",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the SIMD mHC reduction has no bounded parity/coherence receipt",
+     "id": "accelerator.physical.flash-p7-mhc-pre-simdgroup",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-pipeline-cache-reuse",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-pipeline-id-resolution",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-qkv-gqa-rope-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-routed-fp4-gate-up-swiglu-fused",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source-independent Flash route consumer and protected capability are not qualified",
+     "id": "accelerator.physical.flash-router-topk-fusion",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-shared-fp8-down-combine-fused",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "id": "accelerator.physical.flash-shared-fp8-gate-up-swiglu-fused",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "source oracle is a control; Flash NX and protected complete-token path are open",
+     "id": "accelerator.physical.flash-source-bf16-simd",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "STATIC_ONLY: not admitted to a runnable qualification rung",
+     "id": "accelerator.physical.qwen27-affine2-splitk4-vec",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "STATIC_ONLY: not admitted to a runnable qualification rung",
+     "id": "accelerator.physical.qwen27-q2f-splitk4-vec",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    },
+    {
+     "blocked_reason": "STATIC_ONLY: not admitted to a runnable qualification rung",
+     "id": "accelerator.physical.qwen27-resident-untimed-decode",
+     "role": "accelerator_physical_qualification",
+     "species": "accelerator_candidate_qualification",
+     "status": "blocked"
+    }
+   ]
+  },
+  "capability_receipt": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "receipts/headless/HCLI_RESIDENT_SEAL.json"
+   ],
+   "missing_evidence": [
+    "capability receipt identity_sufficient is not true; the score does not identify which body earned it"
+   ],
+   "note": "30/43 is a historical CONTROL record. identity_sufficient is false (UNIDENTIFIED). This sidecar does not re-run the suite.",
+   "source_state": "ON_DISK",
+   "value": {
+    "bench_state_on_receipt": "UNKNOWN",
+    "identity_sufficient": false,
+    "identity_verdict": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='http://127.0.0.1:8080' and label='noetic-sealed-3.14' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREMENT; what is NOT established is WHICH BODY earned it. It must not be compared against another row -- G067 measured the same body at 0/43 and 14/43 across two chat-template arms, and no row here records its arm. tools/headless/capability_suite.py now refuses such a receipt.",
+    "label": "noetic-sealed-3.14",
+    "not_a_ceiling": true,
+    "not_a_target": true,
+    "overall_passed": 30,
+    "overall_total": 43,
+    "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "role": "CONTROL_HISTORICAL_NOT_CURRENT_PROOF",
+    "schema": "hawking.headless.capability_suite.v1"
+   }
+  },
+  "children": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json",
+    "receipts/future"
+   ],
+   "integration_point": "tools/future/succession.py (this-wave sibling, not imported). Swap this collector for succession's child list when that module lands.",
+   "looked_for": [
+    "receipts/future/*SUCCESSION*",
+    "receipts/future/*CHILD_IDENTITY*"
+   ],
+   "missing_evidence": [],
+   "note": "empty list is NONE_RECORDED_ON_DISK (we looked), not UNKNOWN",
+   "status": "RECORDED",
+   "value": [
+    "receipts/future/SUCCESSION.json"
+   ]
+  },
+  "claim_class": "STATIC_ONLY",
+  "current_backend": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json",
+    "receipts/headless/MACHINE_GENOME.json"
+   ],
+   "missing_evidence": [],
+   "value": {
+    "executable_profile": "release-fast",
+    "fusion_env": {
+     "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+     "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+     "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+     "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+    },
+    "gpu_authority": false,
+    "metal_compiler": {
+     "reason": "xcrun metal is not installed; no Metal developer toolchain, so AOT metallib compilation is unavailable and kernels go through the MLX JIT",
+     "status": "ABSENT"
+    },
+    "mode": "auto",
+    "protocol": "hawking.qwen38.resident.v1",
+    "provider": "native",
+    "require_fusion_env": true,
+    "runtime": "hawking-native"
+   }
+  },
+  "current_frontiers": {
+   "claim_class": "STATIC_ONLY",
+   "counts": {
+    "by_classification": {
+     "BLOCKED": 3,
+     "HIGH_VALUE_INTEGRATION": 5,
+     "MISSING": 8,
+     "WEAK": 4
+    },
+    "probes_holding": 14,
+    "probes_resolved_by_sidecar": 6,
+    "probes_stale": 0,
+    "total": 20
+   },
+   "evidence": [
+    "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
+   ],
+   "missing_evidence": [],
+   "n": 20,
+   "note": "CLAUDE_GLOBAL_FRONTIER.json is read, not mutated (tools/future/global_frontier.py is frozen for this lane)",
+   "value": [
+    {
+     "classification": "BLOCKED",
+     "id": "F001",
+     "title": "Flash source-independent NX is the single dominant blocker"
+    },
+    {
+     "classification": "BLOCKED",
+     "id": "F002",
+     "title": "12 Qwen27 candidates are READY_PROTECTED and idle on a GPU window"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F003",
+     "title": "HWIR exists only as 15 hypotheses inside the atlas, not as an IR"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F004",
+     "title": "No Hardware Doctor"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F005",
+     "title": "No HBM Doctor"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F006",
+     "title": "No Green Machine energy accounting"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F007",
+     "title": "No Learned Physical Compiler dataset contract"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F008",
+     "title": "No provenance graph / replication bundle / fault injection"
+    },
+    {
+     "classification": "WEAK",
+     "id": "F009",
+     "title": "Negative science is a scattered corpus with no queryable index"
+    },
+    {
+     "classification": "WEAK",
+     "id": "F010",
+     "title": "Odyssey II has receipts but no scoped law store"
+    },
+    {
+     "classification": "WEAK",
+     "id": "F011",
+     "title": "Contamination metadata is partial and not a promotion gate"
+    },
+    {
+     "classification": "HIGH_VALUE_INTEGRATION",
+     "id": "F012",
+     "title": "Architecture Atlas is strong \u2014 consume it, do not rebuild it"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F013",
+     "title": "No tournament harness for FLASH_SINGULARITY.NX vs QWEN27_SINGULARITY.NX"
+    },
+    {
+     "classification": "MISSING",
+     "id": "F014",
+     "title": "No static kernel/ABI preflight independent of the GPU"
+    },
+    {
+     "classification": "HIGH_VALUE_INTEGRATION",
+     "id": "F015",
+     "title": "Codex receipts are never ingested into anything downstream"
+    },
+    {
+     "classification": "HIGH_VALUE_INTEGRATION",
+     "id": "F016",
+     "title": "Ingest deltas are emitted but nothing applies them"
+    },
+    {
+     "classification": "WEAK",
+     "id": "F017",
+     "title": "Derived artifacts cannot tell a cosmetic queue rewrite from a semantic one"
+    },
+    {
+     "classification": "BLOCKED",
+     "id": "F018",
+     "title": "Six ABI findings await a Codex verdict with no prepared response"
+    },
+    {
+     "classification": "HIGH_VALUE_INTEGRATION",
+     "id": "F019",
+     "title": "Flash meta stalls at teacher capture, and the stated GPU blocker is false"
+    },
+    {
+     "classification": "HIGH_VALUE_INTEGRATION",
+     "id": "F020",
+     "title": "Codex P6/P7 physical concepts are not projected into future hardware"
+    }
+   ]
+  },
+  "current_resource_pressure": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/future/CONTAMINATION_SCIENCE.json",
+    "receipts/future/QUALIFICATION_PIPELINE.json"
+   ],
+   "missing_evidence": [],
+   "note": "HEAVY is recorded on CONTAMINATION_SCIENCE / QUALIFICATION_PIPELINE. This sidecar does not quiesce standing workers and does not seize the lock.",
+   "value": {
+    "contamination_class": "HEAVY",
+    "contamination_reason": "at least one HEAVY probe fired",
+    "gpu_authority": false,
+    "lease_present_on_qualification_receipt": false,
+    "lock_file": {
+     "on_disk": true,
+     "path": ".hcli/locks/protected-accelerator-bench.lock",
+     "probe": "pathlib is_file only; never flock"
+    },
+    "qualification_stop": {
+     "honest_on_this_machine": "stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens",
+     "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "stage_id": "identify_lease_availability",
+     "stage_index": 1
+    }
+   }
+  },
+  "current_tools": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+   ],
+   "handoff_system_counts": {
+    "ABSENT": 0,
+    "EXECUTABLE": 49,
+    "PARTIAL": 0
+   },
+   "missing_evidence": [],
+   "n": 50,
+   "value": [
+    {
+     "id": "abi_verdict_harness",
+     "module": "tools/future/abi_verdicts.py",
+     "receipt": "receipts/future/ABI_VERDICT_HARNESS.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "ane_preboard",
+     "module": "tools/future/ane_preboard.py",
+     "receipt": "receipts/future/ANE_PREBOARD.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "autonomous_reproducible_science",
+     "module": "tools/future/repro_science.py",
+     "receipt": "receipts/future/REPRO_SCIENCE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "candidate_queue_planner",
+     "module": "tools/future/candidate_planner.py",
+     "receipt": "receipts/future/CANDIDATE_STAGED_PLAN.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "codex_mutation_surface",
+     "module": "tools/future/mutation_surface.py",
+     "receipt": "receipts/future/CODEX_MUTATION_SURFACE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "codex_receipt_ingestion",
+     "module": "tools/future/codex_ingest.py",
+     "receipt": "receipts/future/CODEX_INGEST_STATE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "contamination_science",
+     "module": "tools/future/contamination.py",
+     "receipt": "receipts/future/CONTAMINATION_SCIENCE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "cuda_lowbit_hypotheses",
+     "module": "tools/future/cuda_lowbit_hypotheses.py",
+     "receipt": "receipts/future/CUDA_LOWBIT_HYPOTHESES.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "decode_civilization",
+     "module": "tools/future/decode_civilization.py",
+     "receipt": "receipts/future/DECODE_CIVILIZATION.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "derived_freshness",
+     "module": "tools/future/freshness.py",
+     "receipt": "receipts/future/DERIVED_FRESHNESS.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "developer_platform",
+     "module": "tools/future/devplatform.py",
+     "receipt": "receipts/future/DEVELOPER_PLATFORM.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "device_ascension",
+     "module": "tools/future/device_ascension_pipeline.py",
+     "receipt": "receipts/future/DEVICE_ASCENSION_PIPELINE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "ebpw_category_validator",
+     "module": "tools/future/ebpw_categories.py",
+     "receipt": "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "evidence_snapshot",
+     "module": "tools/future/evidence_snapshot.py",
+     "receipt": "receipts/future/EVIDENCE_SNAPSHOT.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "experiment_turnaround",
+     "module": "tools/future/turnaround.py",
+     "receipt": "receipts/future/EXPERIMENT_TURNAROUND.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "expert_bank_school",
+     "module": "tools/future/expert_bank_school.py",
+     "receipt": "receipts/future/EXPERT_BANK_SCHOOL.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "flash_nx_audit",
+     "module": "tools/future/flash_nx_audit.py",
+     "receipt": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "fpga_engine_school",
+     "module": "tools/future/fpga_engines.py",
+     "receipt": "receipts/future/FPGA_ENGINE_SCHOOL.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "fpga_multifidelity",
+     "module": "tools/future/fpga_fidelity.py",
+     "receipt": "receipts/future/FPGA_MULTIFIDELITY.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "fusion",
+     "module": "tools/future/fusion_sim.py",
+     "receipt": "receipts/future/FUSION_SIMULATION.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "git_lock_durability",
+     "module": "tools/future/git_lock_doctor.py",
+     "receipt": "receipts/future/GIT_LOCK_DURABILITY_REPORT.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "global_frontier",
+     "module": "tools/future/global_frontier.py",
+     "receipt": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "green_machine",
+     "module": "tools/future/green_machine.py",
+     "receipt": "receipts/future/GREEN_MACHINE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "hardware_doctor",
+     "module": "tools/future/hardware_doctor.py",
+     "receipt": "receipts/future/HARDWARE_DOCTOR.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "hbm_doctor",
+     "module": "tools/future/hbm_doctor.py",
+     "receipt": "receipts/future/HBM_DOCTOR.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "hcli_future_workunits",
+     "module": "tools/future/workunit_species.py",
+     "receipt": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "hmf_hgvas",
+     "module": "tools/future/hmf_objects.py",
+     "receipt": "receipts/future/HMF_MANAGED_OBJECTS.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "hwir",
+     "module": "tools/future/hwir.py",
+     "receipt": "receipts/future/HWIR_V1.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "integration_attack",
+     "module": "tools/future/integration_attack.py",
+     "receipt": "receipts/future/INTEGRATION_ATTACK.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "learned_physical_compiler",
+     "module": "tools/future/lpc_dataset.py",
+     "receipt": "receipts/future/LPC_DATASET.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "meta_downstream_ready",
+     "module": "tools/future/meta_ready.py",
+     "receipt": "receipts/future/META_DOWNSTREAM_READY.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "meta_experiment_funnel",
+     "module": "tools/future/meta_funnel.py",
+     "receipt": "receipts/future/META_EXPERIMENT_FUNNEL.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "moe_physical_school",
+     "module": "tools/future/moe_physical_school.py",
+     "receipt": "receipts/future/MOE_PHYSICAL_SCHOOL.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "negative_science_index",
+     "module": "tools/future/negative_index.py",
+     "receipt": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "ngram_school",
+     "module": "tools/future/ngram_school.py",
+     "receipt": "receipts/future/NGRAM_SCHOOL.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "odyssey_ii_law_store",
+     "module": "tools/future/odyssey2_law_store.py",
+     "receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "odyssey_iii_adversary",
+     "module": "tools/future/odyssey3_adversary.py",
+     "receipt": "receipts/future/ODYSSEY3_ADVERSARY.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "p6_primitive_projection",
+     "module": "tools/future/p6_projection.py",
+     "receipt": "receipts/future/P6_PRIMITIVE_PROJECTION.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "physical_primitive_library",
+     "module": "tools/future/physical_primitives.py",
+     "receipt": "receipts/future/PHYSICAL_PRIMITIVES.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "propagation_engine",
+     "module": "tools/future/propagate.py",
+     "receipt": "receipts/future/PROPAGATION_STATE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "qualification_automation",
+     "module": "tools/future/qualification_pipeline.py",
+     "receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "qwen27_profile_schema",
+     "module": "tools/future/qwen27_profile_schema.py",
+     "receipt": "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "resident_identity",
+     "module": "tools/future/resident_identity.py",
+     "note": "this module; not yet in FUTURE_SUBSTRATE_HANDOFF inventory",
+     "receipt": "receipts/future/RESIDENT_IDENTITY.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "resident_install",
+     "module": "tools/future/resident_install.py",
+     "receipt": null,
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "resident_optimizer",
+     "module": "tools/future/resident_optimizer.py",
+     "receipt": "receipts/future/RESIDENT_OPTIMIZER.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "router_science",
+     "module": "tools/future/router_science.py",
+     "receipt": "receipts/future/ROUTER_SENSITIVE_ALLOCATION.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "static_kernel_preflight",
+     "module": "tools/future/static_kernel_verify.py",
+     "receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "static_skeleton",
+     "module": "tools/future/static_skeleton.py",
+     "receipt": "receipts/future/STATIC_SKELETON.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "teacher_corpus",
+     "module": "tools/future/teacher_corpus.py",
+     "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
+     "state": "EXECUTABLE"
+    },
+    {
+     "id": "tournament",
+     "module": "tools/future/tournament.py",
+     "receipt": "receipts/future/TOURNAMENT_READINESS.json",
+     "state": "EXECUTABLE"
+    }
+   ]
+  },
+  "ebpw": {
+   "category": "complete_physical_ebpw",
+   "claim_class": "STATIC_ONLY",
+   "copied_declared_catalog_number": false,
+   "declared_catalog_pointer": {
+    "class": "STATIC_CATALOG_IDENTITY_NOT_QUALIFIED_ON_THIS_HOST",
+    "copied_into_identity_value": false,
+    "fields": [
+     "physical_ebpw",
+     "representation.physical_ebpw"
+    ],
+    "path": "hcli/hawking-native.sealed-3.14.json",
+    "sealed_source": "ON_DISK"
+   },
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json",
+    "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+    "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+    "tools/future/ebpw_categories.py#CompletePhysicalEbpw"
+   ],
+   "flash": {
+    "claim_class": "STATIC_ONLY",
+    "evidence": [
+     "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+    ],
+    "missing_evidence": [
+     "source-independent Flash NX is not qualified (FLASH_NX_COMPLETENESS_AUDIT seven_all_met is not true)",
+     "physical_ebpw is NULL_BY_RULE / not a protected measurement for Flash"
+    ],
+    "recorded_meta_physical_ebpw": "NULL_BY_RULE",
+    "value": "UNKNOWN"
+   },
+   "kind": "qualified_physical_ebpw",
+   "missing_evidence": [
+    "qualified physical EBPW measurement on this host",
+    "sidecar has no GPU authority and cannot produce PROTECTED_ABSOLUTE"
+   ],
+   "note": "Sealed-3.14 catalog complete_ebpw lives in the sealed profile and MIX_REPORT; this identity does not copy it. Qualified physical EBPW is UNKNOWN everywhere on this host.",
+   "value": "UNKNOWN"
+  },
+  "executable_hash": {
+   "binary": {
+    "declared_prefix_match": true,
+    "declared_prefix_source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+    "declared_sha256_16": "d34044cffae8f320",
+    "exists": true,
+    "missing_evidence": [],
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    "sha256": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+    "source_state": "COMPUTED"
+   },
+   "claim_class": "STATIC_ONLY",
+   "compiler": {
+    "language": "rust",
+    "profile": "release-fast",
+    "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+   },
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json",
+    "receipts/headless/HCLI_RESIDENT_SEAL.json",
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy"
+   ],
+   "executable_profile": "release-fast",
+   "missing_evidence": [],
+   "resident_binary": {
+    "declared_prefix_match": false,
+    "declared_prefix_source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+    "declared_sha256_16": "d34044cffae8f320",
+    "exists": true,
+    "missing_evidence": [],
+    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+    "sha256": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8",
+    "source_state": "COMPUTED"
+   },
+   "seal_runtime_binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+   "value": {
+    "by_role": {
+     "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
+     "resident_binary": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+    },
+    "note": "Two executables are declared. The resident seal's runtime_binary_sha256_16 matches 'binary' (hybrid greedy) when that file is present; resident_binary is a different artifact.",
+    "seal_declared_sha256_16": "d34044cffae8f320",
+    "seal_matching_role": "binary"
+   }
+  },
+  "gpu_authority": false,
+  "known_scars": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "index_coverage": {
+    "by_hypothesis_family": [
+     {
+      "family": "0_59_mib_organ_vs_64_mib_dram_row_probe_as_a_230_occupancy_gap",
+      "n": 1
+     },
+     {
+      "family": "20_h_dsv4f_determined_teacher_x_capture_g007_route_1",
+      "n": 1
+     },
+     {
+      "family": "4_layer_residual_probe_extrapolated_to_48_layers_as_a_go",
+      "n": 1
+     },
+     {
+      "family": "535_647_gb_s_reuse_band_as_the_decode_ceiling",
+      "n": 1
+     },
+     {
+      "family": "a10_access_order_repack",
+      "n": 1
+     },
+     {
+      "family": "accelerator_dispatch_is_not_the_cost_measured_the_mlp_gate_up_pair_lever_at_17_35_us_per_removed_dispatch_against_2_64_and_2_86_for_three_other_levers_ruled_out_host_and_dram_bandwidth_and_said_in_its_own_claim_boundary_that_the_experiment_which_would_settle_it_a_kernel_that_fuses_the_dispatch_while_still_loading_the_input_twice_does_not_exist_and_was_not_built_built",
+      "n": 1
+     },
+     {
+      "family": "accelerator_the_simdgroup_span_doubles_excluded_fragmentation_2_to_32_fragments_at_one_cost_and_stride_magnitude_96_against_1184_bytes_at_one_cost_left_span_as_the_surviving_candidate_and_named_its_own_weakness_in_its_own_words_nothing_here_varies_the_span_independently_because_a_permutation_cannot_so_it_is_the_surviving_candidate_after_fragmentation_and_stride_magnitude_are_excluded_and_not_a_measured_relationship_it_named_the_probe_give_each_simdgroup_a_cont",
+      "n": 1
+     },
+     {
+      "family": "activation_corrected_q3",
+      "n": 43
+     },
+     {
+      "family": "add_separately_measured_stage_wins_and_call_the_sum_a_token",
+      "n": 1
+     },
+     {
+      "family": "adding_stage_wins_isolated_organ_products_and_calling_the_sum_a_token",
+      "n": 1
+     },
+     {
+      "family": "ane_coreml_ffn",
+      "n": 1
+     },
+     {
+      "family": "application_level_metal_shader_library_cache_mtlbinaryarchive_or_mtldynamiclibrary",
+      "n": 1
+     },
+     {
+      "family": "ask_whether_qwen3_8_is_at_its_wall_by_comparing_it_to_q80s_gather_control_then_correct_that_by_invoking_gather_vs_sequential",
+      "n": 1
+     },
+     {
+      "family": "assume_lower_storage_bpw_is_faster_per_token_density_is_velocity",
+      "n": 1
+     },
+     {
+      "family": "assuming_two_admission_entry_points_share_an_optimisation_because_they_share_a_module",
+      "n": 1
+     },
+     {
+      "family": "attack_dsv4f_path_resolve_verify_identity_tax_for_wall_time",
+      "n": 1
+     },
+     {
+      "family": "binary_quantization",
+      "n": 102
+     },
+     {
+      "family": "blame_10_of_512_gather_vs_sequential_access_for_the_q80_bandwidth_gap",
+      "n": 1
+     },
+     {
+      "family": "blanket_mtldispatchtype_serial_encoder_for_the_whole_decode_token_wave",
+      "n": 1
+     },
+     {
+      "family": "cache_decoded_dense_w_to_avoid_re_decode",
+      "n": 1
+     },
+     {
+      "family": "calibrate_or_capture_x_from_a_degraded_quantized_gibberish_baseline",
+      "n": 1
+     },
+     {
+      "family": "calibration_88_tokens_routing_frequency_allocation_calibrated_on_88_tokens",
+      "n": 1
+     },
+     {
+      "family": "cb_encoder_dispatch_topology_collapse_as_the_token_lever",
+      "n": 1
+     },
+     {
+      "family": "collapse_command_buffer_encoder_dispatch_topology_to_win_complete_token_wall",
+      "n": 1
+     },
+     {
+      "family": "compare_a_0_59_mib_isolated_q80_organ_to_a_64_mib_dram_row_probe_and_call_it_a_230x_occupancy_gap",
+      "n": 1
+     },
+     {
+      "family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
+      "n": 1
+     },
+     {
+      "family": "compress_routed_experts_to_move_fs_weight_or_token_time_the_density_campaign_on_the_9",
+      "n": 1
+     },
+     {
+      "family": "compression_scored_on_the_wrong_baseline_ranks_the_wrong_trajectory",
+      "n": 1
+     },
+     {
+      "family": "conditional_residual",
+      "n": 1
+     },
+     {
+      "family": "copy_the_q30_static_1_5_representation_approach_to_get_a_coherent_dense_moe_artifact",
+      "n": 1
+     },
+     {
+      "family": "cosine_scale_invariance_that_a_fit_quality_gate_of_observed_probed_worst_unit_cosine_can_certify_an_artifact_including_that_1_000000_means_the_weights_were_preserved",
+      "n": 1
+     },
+     {
+      "family": "cpu_gpu_pipeline_host_encode_icb_as_tps",
+      "n": 1
+     },
+     {
+      "family": "cpu_gpu_pipelining",
+      "n": 1
+     },
+     {
+      "family": "cross_engine_host_dispatch_families_on_m3_uma_amx_ane_icb_prefetcher_multi_cq",
+      "n": 1
+     },
+     {
+      "family": "cross_expert_structure",
+      "n": 11
+     },
+     {
+      "family": "cross_layer_weight_delta",
+      "n": 1
+     },
+     {
+      "family": "crushing_routed_experts_to_move_q80_token_time",
+      "n": 1
+     },
+     {
+      "family": "decode_micro_opt_a5_a6",
+      "n": 1
+     },
+     {
+      "family": "density_costs_speed_5_9_rice_reconstruction_penalty",
+      "n": 1
+     },
+     {
+      "family": "determined_20_h_dsv4f_teacher_x_capture",
+      "n": 1
+     },
+     {
+      "family": "dispatch_count_reduction_as_a_proxy_objective_for_decode_speed",
+      "n": 1
+     },
+     {
+      "family": "dram_row_interleave_gray_lut_code_permutation_as_the_token_lever",
+      "n": 1
+     },
+     {
+      "family": "dram_row_interleaving_or_expert_co_route_permutation_as_the_token_lever",
+      "n": 1
+     },
+     {
+      "family": "dsv4f_as_a_live_density_velocity_vehicle",
+      "n": 1
+     },
+     {
+      "family": "dsv4f_route_id_readback_serializer_is_the_token_wall",
+      "n": 1
+     },
+     {
+      "family": "eagle5_v1_routing_mask",
+      "n": 1
+     },
+     {
+      "family": "eagle_3_trained_head",
+      "n": 1
+     },
+     {
+      "family": "emit_a_giant_json_index_capture_result_json_class_as_the_working_format",
+      "n": 1
+     },
+     {
+      "family": "enforcing_a_quality_invariant_only_at_the_first_point_that_can_violate_it",
+      "n": 1
+     },
+     {
+      "family": "entropy_coded_pq_indices_entropy_coding_of_trained_pq_indices",
+      "n": 1
+     },
+     {
+      "family": "expert_merge",
+      "n": 3
+     },
+     {
+      "family": "expert_wave",
+      "n": 1
+     },
+     {
+      "family": "extrapolate_a_4_layer_teacher_forced_residual_probe_across_48_layers_and_call_it_a_go",
+      "n": 1
+     },
+     {
+      "family": "f16_residual_stream",
+      "n": 1
+     },
+     {
+      "family": "f16_x_into_predec_gemv",
+      "n": 1
+     },
+     {
+      "family": "ffn_block_256_sparsity",
+      "n": 1
+     },
+     {
+      "family": "fit_a_rank_r_or_full_dim_codec_on_fewer_captured_rows_than_the_fitted_dimension_then_trust_the_score",
+      "n": 1
+     },
+     {
+      "family": "fuse_q80_down_proj_l_r_x_into_one_metal_dispatch_by_recomputing_r_in_every_threadgroup",
+      "n": 1
+     },
+     {
+      "family": "fused_gate_up_swiglu_kernels_fused_candidate_on_the_q30_decode",
+      "n": 1
+     },
+     {
+      "family": "gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
+      "n": 1
+     },
+     {
+      "family": "gemv_kernel_micro_opt_axis_on_qwen3_8",
+      "n": 1
+     },
+     {
+      "family": "giant_json_capture_index",
+      "n": 1
+     },
+     {
+      "family": "glm_5_2_sub_bit_moe_expert_path",
+      "n": 1
+     },
+     {
+      "family": "global_dense_lowrank",
+      "n": 1
+     },
+     {
+      "family": "gpu_sat_idle_reclaim",
+      "n": 1
+     },
+     {
+      "family": "hadamard_lattice",
+      "n": 44
+     },
+     {
+      "family": "hgravb01_hgravr02_hgravs01_and_the_q80_mixed_gate_up_down_bundle_on_qwen3_8_attention",
+      "n": 1
+     },
+     {
+      "family": "host_per_dispatch_overhead",
+      "n": 1
+     },
+     {
+      "family": "hybrid_amx_gpu",
+      "n": 1
+     },
+     {
+      "family": "icb",
+      "n": 1
+     },
+     {
+      "family": "icb_argbuf",
+      "n": 1
+     },
+     {
+      "family": "imatrix_mixed_prec_requant",
+      "n": 1
+     },
+     {
+      "family": "indirect_command_buffer_pre_encode_and_replay_for_the_decode_token_graph",
+      "n": 1
+     },
+     {
+      "family": "keep_an_8_gib_persistent_expert_residency_arena_to_win_q80_wall_time",
+      "n": 1
+     },
+     {
+      "family": "kronecker",
+      "n": 4
+     },
+     {
+      "family": "kv_working_set_eviction",
+      "n": 1
+     },
+     {
+      "family": "large_expert_cache_aggressive_expert_cache_64gb_cap_for_a_single_lockstep_pass",
+      "n": 1
+     },
+     {
+      "family": "layer_zero_is_a_different_source_treating_all_94_layers_as_one_coding_problem",
+      "n": 1
+     },
+     {
+      "family": "layerwise_qat",
+      "n": 1
+     },
+     {
+      "family": "learned_codebook",
+      "n": 1
+     },
+     {
+      "family": "lm_head_precision",
+      "n": 4
+     },
+     {
+      "family": "low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
+      "n": 1
+     },
+     {
+      "family": "low_rank",
+      "n": 58
+     },
+     {
+      "family": "megakernel",
+      "n": 2
+     },
+     {
+      "family": "mixed_prec_rtn",
+      "n": 1
+     },
+     {
+      "family": "mla_phase_4_simdgroup_attn",
+      "n": 1
+     },
+     {
+      "family": "mlock_allocator",
+      "n": 1
+     },
+     {
+      "family": "moe_serial_route_dispatch",
+      "n": 1
+     },
+     {
+      "family": "mtlheap_residency_v2",
+      "n": 1
+     },
+     {
+      "family": "multi_cq",
+      "n": 1
+     },
+     {
+      "family": "multiseq_v4r_high_b",
+      "n": 1
+     },
+     {
+      "family": "nns_009_that_organ_cosine_0_86_0_90_or_the_d23_0_8604_residual_identity_bar_is_a_capability_certificate_hard_go_no_go",
+      "n": 1
+     },
+     {
+      "family": "nns_012_that_the_g3_shared_operator_headline_beats_q3_held_out_0_371_vs_0_401_at_24_of_the_bytes_is_a_measured_successor",
+      "n": 1
+     },
+     {
+      "family": "nns_013_that_a_narrow_shared_grouped_swiglu_operator_m_17408_can_replace_qwen3_8s_mlp_at_q3_quality_and_materially_fewer_active_bytes_including_after_honest_methodology",
+      "n": 1
+     },
+     {
+      "family": "nns_017_that_pq_vq_coding_of_the_raw_frozen_weights_is_a_route_to_one_bit_or_below_that_preserves_capability",
+      "n": 1
+     },
+     {
+      "family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
+      "n": 1
+     },
+     {
+      "family": "nns_020_that_storage_complete_physical_bpw_is_the_bpw_decode_moves_active_bpw_and_that_crushing_routed_experts_is_therefore_the_velocity_lever",
+      "n": 1
+     },
+     {
+      "family": "nns_021_that_lower_storage_bpw_is_faster_per_token_density_is_velocity_on_mixed_codecs_whose_reconstruction_is_not_in_register",
+      "n": 1
+     },
+     {
+      "family": "nns_022_that_entropy_coding_of_lloyd_optimal_pq_indices_yields_a_10_25_byte_win_or_that_rans_on_qwen3_8_q3_symbols_is_an_active_byte_tps_lever",
+      "n": 1
+     },
+     {
+      "family": "nns_025_that_selection_policy_search_over_which_sub_1_2_bpw_organs_to_replace_can_recover_coherence_or_that_beating_a_constant_mean_null_is_the_replacement_gate",
+      "n": 1
+     },
+     {
+      "family": "nns_027_that_extrapolating_a_4_layer_teacher_forced_residual_probe_across_48_layers_is_a_go_or_that_per_organ_gating_without_expert_atomic_enforcement_produces_a_runnable_hybrid",
+      "n": 1
+     },
+     {
+      "family": "nns_028_that_post_hoc_scalar_gain_on_a_pq_artifact_row_norm_stratified_codebooks_the_94_single_codeword_premise_ternary_vs_vq_at_matched_rate_or_88_token_routing_frequency_allocation_are_live_levers",
+      "n": 1
+     },
+     {
+      "family": "nns_029_that_activation_sparsity_2_mlp_max_or_uniform_bit_descent_below_q3_is_a_clean_path_under_the_qwen3_8_coherent_floor",
+      "n": 1
+     },
+     {
+      "family": "nns_030_that_a_family_which_fails_a_residual_composition_screen_to_end_to_end_cosine_0_5_can_still_be_a_sub_1_5_static_dsv4f_body",
+      "n": 1
+     },
+     {
+      "family": "nns_031_that_routing_frequency_allocation_calibrated_on_88_tokens_or_previous_token_route_set_prefetch_is_a_first_touch_allocation_win",
+      "n": 1
+     },
+     {
+      "family": "nns_032_that_a_bounded_low_bit_flash_router_study_with_one_deterministic_vector_can_establish_source_equivalent_top_k_routing_or_that_router_overlap_alone_qualifies_a_native_representation",
+      "n": 1
+     },
+     {
+      "family": "non_gemm_cpu_offload",
+      "n": 1
+     },
+     {
+      "family": "ns_calibration_88_tokens",
+      "n": 1
+     },
+     {
+      "family": "ns_entropy_coded_pq_indices",
+      "n": 1
+     },
+     {
+      "family": "ns_implementation_bug_killed_by_math",
+      "n": 1
+     },
+     {
+      "family": "ns_large_expert_cache",
+      "n": 1
+     },
+     {
+      "family": "ns_layer_zero_is_a_different_source",
+      "n": 1
+     },
+     {
+      "family": "ns_post_hoc_coding_of_frozen_weights",
+      "n": 1
+     },
+     {
+      "family": "ns_posthoc_scalar_gain",
+      "n": 1
+     },
+     {
+      "family": "ns_raw_weight_pq_vq_at_one_bit",
+      "n": 1
+     },
+     {
+      "family": "ns_row_norm_stratification_premise",
+      "n": 1
+     },
+     {
+      "family": "ns_ternary_factorization",
+      "n": 1
+     },
+     {
+      "family": "ns_uniform_subbit_allocation",
+      "n": 1
+     },
+     {
+      "family": "one_threadgroup_per_route_fusion_of_the_two_hgravs_stages_l_r_x_with_mid_in_threadgroup_memory",
+      "n": 1
+     },
+     {
+      "family": "organ_cosine_0_86_0_90_as_a_capability_certificate",
+      "n": 1
+     },
+     {
+      "family": "per_organ_representation_gating_without_expert_atomic_enforcement",
+      "n": 1
+     },
+     {
+      "family": "persistent_8_gib_expert_arena_previous_token_route_prefetch",
+      "n": 1
+     },
+     {
+      "family": "phase_2_2_trivial_op_fusion",
+      "n": 1
+     },
+     {
+      "family": "phase_y_sumy_q4_k_v3",
+      "n": 1
+     },
+     {
+      "family": "post_hoc_coding_of_frozen_weights_any_post_hoc_fixed_weight_codec_improvement_at_a_fixed_sub_bit_index_rate",
+      "n": 1
+     },
+     {
+      "family": "posthoc_scalar_gain_post_hoc_scalar_gain_correction_on_a_pq_artifact",
+      "n": 1
+     },
+     {
+      "family": "predec_4_row_ilp_default",
+      "n": 1
+     },
+     {
+      "family": "prefetch_this_tokens_experts_from_the_previous_tokens_route_set",
+      "n": 1
+     },
+     {
+      "family": "present_an_isolated_organ_product_e_g_192_ms_48_10_gate_up_down_as_a_token_time",
+      "n": 1
+     },
+     {
+      "family": "protected_islands",
+      "n": 1
+     },
+     {
+      "family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
+      "n": 1
+     },
+     {
+      "family": "q30_static_1_5_as_a_template",
+      "n": 1
+     },
+     {
+      "family": "q3_k_sub_q4_byte_cut",
+      "n": 1
+     },
+     {
+      "family": "q4_k_amx_fused",
+      "n": 1
+     },
+     {
+      "family": "q4_k_mma_rows_cols",
+      "n": 1
+     },
+     {
+      "family": "q5_0_simd_shuffle",
+      "n": 1
+     },
+     {
+      "family": "q80_403_ms_2_479_tok_s_as_a_legal_paired_gpu_baseline",
+      "n": 1
+     },
+     {
+      "family": "q80_is_host_bound_or_q80_is_bandwidth_bound_without_naming_the_vehicle",
+      "n": 1
+     },
+     {
+      "family": "q80_mixed_1p5_v1_mixed_sub655_as_genesis_vehicles",
+      "n": 1
+     },
+     {
+      "family": "q80_uniform_q4_group64_as_a_target_family_member",
+      "n": 1
+     },
+     {
+      "family": "q8_kv_layer_diff",
+      "n": 1
+     },
+     {
+      "family": "qn_binary_healing_protected_islands_healing",
+      "n": 1
+     },
+     {
+      "family": "qn_binary_injury_binary_quantization",
+      "n": 1
+     },
+     {
+      "family": "qn_coordinate_transform_coordinate_transform",
+      "n": 1
+     },
+     {
+      "family": "qn_head_redundancy_structural_elimination_heads",
+      "n": 1
+     },
+     {
+      "family": "qn_shared_k_hybrid_shared_k_hybrid",
+      "n": 1
+     },
+     {
+      "family": "qn_state_merging_depth_state_merging",
+      "n": 1
+     },
+     {
+      "family": "qtip_3_bit_quality",
+      "n": 1
+     },
+     {
+      "family": "qtip_metal_trellis_decode",
+      "n": 1
+     },
+     {
+      "family": "quote_0_135_bandwidth_efficiency_as_q80s_wall_rate",
+      "n": 1
+     },
+     {
+      "family": "quoting_an_absolute_duration_measured_under_gpu_prod_tracing_as_a_production_bucket",
+      "n": 1
+     },
+     {
+      "family": "qwen3_8_mixed_sub15_1_29_bpw_and_mixed_2p0_2_0856_bpw_as_coherent_artifacts",
+      "n": 1
+     },
+     {
+      "family": "raw_weight_pq_vq_at_one_bit_pq_vq_coding_of_the_raw_weights_as_the_route_to_one_bit_or_below",
+      "n": 1
+     },
+     {
+      "family": "raw_weight_pq_vq_uniform_sub_bit_ternary_vs_vq_as_the_route_under_1_bit",
+      "n": 1
+     },
+     {
+      "family": "reach_sub_100_fs_weight_on_this_box_with_any_existing_q80_pack",
+      "n": 1
+     },
+     {
+      "family": "reading_frac_beats_null_as_a_quality_score",
+      "n": 1
+     },
+     {
+      "family": "reading_q80_bf16_source_coherence_as_native_runtime_progress",
+      "n": 1
+     },
+     {
+      "family": "receipts_ascent_2026_08_16_q80_gk_simd_negative_json_gk_simd",
+      "n": 1
+     },
+     {
+      "family": "receipts_ascent_2026_08_18_phase_b_hybrid_refuted_json",
+      "n": 1
+     },
+     {
+      "family": "recompute_immutable_identity_sha_256_st_dev_geometry_parse_manifest_scan_inside_the_token_loop",
+      "n": 1
+     },
+     {
+      "family": "reconstruct_down_proj_w_then_multiply_representation_algebra_still_open",
+      "n": 1
+     },
+     {
+      "family": "resident_state",
+      "n": 1
+     },
+     {
+      "family": "residual_codebook",
+      "n": 20
+     },
+     {
+      "family": "rice_q1_serial_bitstream_expand_on_the_per_token_path",
+      "n": 1
+     },
+     {
+      "family": "router_distill",
+      "n": 1
+     },
+     {
+      "family": "row_norm_stratification_premise_row_norm_stratified_codebooks_declared_r5_rownorm_strat_never_run",
+      "n": 1
+     },
+     {
+      "family": "run_rice_q1_serial_bitstream_expand_on_the_per_token_path",
+      "n": 1
+     },
+     {
+      "family": "say_q80_is_host_sync_bound_or_q80_is_simply_bandwidth_bound_without_naming_the_vehicle",
+      "n": 1
+     },
+     {
+      "family": "scoring_a_candidate_representation_against_a_constant_mean_null_instead_of_against_the_incumbent_representation",
+      "n": 1
+     },
+     {
+      "family": "selection_policy_search_over_sub_1_2_bpw_expert_representations_as_a_route_to_coherence",
+      "n": 1
+     },
+     {
+      "family": "semantic_cache",
+      "n": 1
+     },
+     {
+      "family": "shader_compile_is_the_primary_current_wall",
+      "n": 1
+     },
+     {
+      "family": "shader_compile_route_id_readback_sha_per_token_as_the_live_wall",
+      "n": 1
+     },
+     {
+      "family": "shared_basis",
+      "n": 1
+     },
+     {
+      "family": "single_family_representation_across_gate_proj_up_proj_down_proj",
+      "n": 1
+     },
+     {
+      "family": "spec_decode",
+      "n": 2
+     },
+     {
+      "family": "spec_exactshared_as_is",
+      "n": 1
+     },
+     {
+      "family": "storage_complete_physical_bpw_as_the_bytes_decode_moves",
+      "n": 1
+     },
+     {
+      "family": "student_distillation_closed_that_independent_per_layer_functional_students_compose_across_a_full_moe_model_and_that_raw_activation_cosine_0_86_0_90_means_the_student_preserved_function",
+      "n": 1
+     },
+     {
+      "family": "sub_100_fs_weight_on_this_box_with_any_existing_q80_pack",
+      "n": 1
+     },
+     {
+      "family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+      "n": 1
+     },
+     {
+      "family": "super_page_mempool",
+      "n": 1
+     },
+     {
+      "family": "switching_activity_gray_lut_permutation_of_packed_codes_to_cut_energy_or_latency",
+      "n": 1
+     },
+     {
+      "family": "switching_the_runtime_speed_testbed_to_the_pure_binary_baseline_artifact",
+      "n": 1
+     },
+     {
+      "family": "synthetic_activation",
+      "n": 5
+     },
+     {
+      "family": "ternary",
+      "n": 48
+     },
+     {
+      "family": "ternary_factorization_ternary_factorization_instead_of_vq",
+      "n": 1
+     },
+     {
+      "family": "the_attention_receipt_diagnosed_its_loss_as_scalar_dot_products_every_score_computed_as_head_dim_scalar_multiply_adds_instead_of_simdgroup_matrix_instructions_that_was_the_third_diagnosis_this_program_wrote_down_and_like_the_other_two_it_was_tested_rather_than_believed_gk_simd",
+      "n": 1
+     },
+     {
+      "family": "treat_q80_403_ms_2_479_tok_s_as_a_legal_paired_gpu_baseline",
+      "n": 1
+     },
+     {
+      "family": "treat_raw_activation_cosine_0_86_0_90_as_evidence_the_codec_preserved_function",
+      "n": 1
+     },
+     {
+      "family": "treat_storage_complete_physical_bpw_as_the_bpw_decode_moves_active_bpw",
+      "n": 1
+     },
+     {
+      "family": "treat_the_0_8604_organ_cosine_bar_as_the_capability_cliff_refuse_any_recipe_below_it",
+      "n": 1
+     },
+     {
+      "family": "treating_equal_us_dispatch_as_equal_headroom",
+      "n": 1
+     },
+     {
+      "family": "underdetermined_fit_rows_rank_or_rows_dim",
+      "n": 1
+     },
+     {
+      "family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
+      "n": 1
+     },
+     {
+      "family": "uniform_q2",
+      "n": 48
+     },
+     {
+      "family": "uniform_q3",
+      "n": 43
+     },
+     {
+      "family": "uniform_q4",
+      "n": 17
+     },
+     {
+      "family": "uniform_subbit_allocation_uniform_sub_bit_allocation_across_organs_and_its_treated_variant",
+      "n": 1
+     },
+     {
+      "family": "use_the_535_637_gb_s_reuse_band_also_written_560_647_as_the_decode_ceiling",
+      "n": 1
+     },
+     {
+      "family": "use_the_uniform_q4_group64_vehicle_as_a_target_family_member_or_benchmark_subject",
+      "n": 1
+     },
+     {
+      "family": "vocab_norm_bound_screen",
+      "n": 1
+     },
+     {
+      "family": "w4a8_default_decode",
+      "n": 1
+     },
+     {
+      "family": "weight_prefetcher",
+      "n": 1
+     },
+     {
+      "family": "widening_the_calibration_corpus_to_fix_under_fitted_organs",
+      "n": 1
+     },
+     {
+      "family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0_json_hcli_coherence",
+      "n": 1
+     },
+     {
+      "family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0_json_hcli_coherence",
+      "n": 1
+     },
+     {
+      "family": "workspace_campaign_records_ascension_sandbox_physical_qwen30_tps_gate_negative_science_qwen30_hcli_coherence_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e_json_hcli_coherence",
+      "n": 1
+     }
+    ],
+    "by_model": [
+     {
+      "model": "deepseek-v4-flash",
+      "n": 24
+     },
+     {
+      "model": "glm-5.2",
+      "n": 6
+     },
+     {
+      "model": "gpt-oss-120b",
+      "n": 20
+     },
+     {
+      "model": "qwen14",
+      "n": 2
+     },
+     {
+      "model": "qwen3-235b-a22b",
+      "n": 21
+     },
+     {
+      "model": "qwen3-30b-a3b",
+      "n": 126
+     },
+     {
+      "model": "qwen3-80b",
+      "n": 380
+     },
+     {
+      "model": "qwen3.8-27b",
+      "n": 39
+     },
+     {
+      "model": "unrecorded",
+      "n": 78
+     }
+    ],
+    "by_source": [
+     {
+      "n_parsed": 40,
+      "n_scars": 40,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "lab/operators/ascension_graveyard.py"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
+     },
+     {
+      "n_parsed": 38,
+      "n_scars": 38,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/ascent-2026-08-16/Q80_GK_SIMD_NEGATIVE.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/ascent-2026-08-16/Q80_LM_HEAD_NEGATIVE.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/ascent-2026-08-18/PHASE_B_HYBRID_REFUTED.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/headless/ACCELERATOR_ATTENTION_SIMDGROUP_REFUTED.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/headless/ACCELERATOR_LM_HEAD_EXACT_BOUNDS_REFUTED.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/headless/ACCELERATOR_MLP_OPERAND_REUSE_REFUTED.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/headless/ACCELERATOR_SPAN_IS_REFUTED_COALESCING_IS_NOT.json"
+     },
+     {
+      "n_parsed": 32,
+      "n_scars": 32,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+     },
+     {
+      "n_parsed": 14,
+      "n_scars": 14,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json"
+     },
+     {
+      "n_parsed": 9,
+      "n_scars": 9,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "tools/headless/negative_science.py"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "tools/headless/noetic_negative_science.py"
+     },
+     {
+      "n_parsed": 7,
+      "n_scars": 7,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/evidence/research/doctor/DOCTOR_NEGATIVE_TRANSFER_ATLAS.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/evidence/systems/hawking/HAWKING_RESIDENT_STATE_NEGATIVE.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "workspace/campaign/governance/odyssey/state/graveyard/.gitkeep"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "workspace/campaign/governance/odyssey/state/graveyard/GRAVEYARD.json"
+     },
+     {
+      "n_parsed": 16,
+      "n_scars": 16,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json"
+     },
+     {
+      "n_parsed": 18,
+      "n_scars": 18,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/knowledge-plane/ASCENSION_NEGATIVE_SCIENCE.jsonl"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/.ASCENSION_NEGATIVE_SCIENCE.jsonl.lock"
+     },
+     {
+      "n_parsed": 256,
+      "n_scars": 256,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_544bebf4e9263d9ae56f917c05405cb397dbaddcf9a29356739d519783fc71b0.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6719d889329e3c0ec8eea9714aa1b8e9a053ca2d32a6fe0f6371bf3a32b3a7c0.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/physical/qwen30/tps-gate/negative-science/QWEN30_HCLI_COHERENCE_6959979797825d3cedf17b073e7c7a6071b23292c6b490c439daa41a0afda79e.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/.NEGATIVE_SCIENCE.jsonl.lock"
+     },
+     {
+      "n_parsed": 157,
+      "n_scars": 157,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/campaign/records/ascension-sandbox/physical/qwen80/evolution/NEGATIVE_SCIENCE.jsonl"
+     },
+     {
+      "n_parsed": 46,
+      "n_scars": 46,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "workspace/docs/guides/dead_levers.md"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "workspace/docs/plans/ascension/ASCENSION_GRAVEYARD_PLAN.md"
+     }
+    ],
+    "does_not_cover": [
+     "Protected GPU / FPGA / power-meter measurements (sidecar is STATIC_ONLY; bench state UNKNOWN).",
+     "Promotion of MODEL_SPECIFIC scars to FAMILY or GENERAL_PHYSICAL \u2014 the index never auto-promotes.",
+     "DIAGNOSTIC_RELATIVE vs PROTECTED_ABSOLUTE classification of source numbers (this lane produces neither).",
+     ".haider/bootstrap-director-v6/negative-science.jsonl (cited by noetic sweep; not in git HEAD).",
+     "Live Codex receipts/headless beyond the named / name-scanned negative and *refuted* files.",
+     "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
+     "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
+    ],
+    "n_parsed": 646,
+    "n_refuse_eligible": 576,
+    "n_scars": 653,
+    "n_sources": 31,
+    "n_unparsed": 7
+   },
+   "missing_evidence": [],
+   "n": 39,
+   "n_refuse_eligible": 24,
+   "note": "compact projection of NEGATIVE_SCIENCE_INDEX; not the full corpus dump",
+   "query": {
+    "model": "qwen3.8-27b"
+   },
+   "source_state": "ON_DISK",
+   "value": [
+    {
+     "hypothesis_family": "0_59_mib_organ_vs_64_mib_dram_row_probe_as_a_230_occupancy_gap",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#0_59_mib_organ_vs_64_mib_dram_row_probe_as_a_230_occupancy_gap",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "CATEGORY_ERROR."
+    },
+    {
+     "hypothesis_family": "synthetic_activation",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#activation_aware_vs_synthetic_evaluation_trap",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "KILLS. Same mechanism as #4, first-class graveyard class."
+    },
+    {
+     "hypothesis_family": "density_costs_speed_5_9_rice_reconstruction_penalty",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#density_costs_speed_5_9_rice_reconstruction_penalty",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "SUPERSEDED. Was a kernel-geometry artifact, then wrongly transferred to Qwen3.8."
+    },
+    {
+     "hypothesis_family": "gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "KILLS."
+    },
+    {
+     "hypothesis_family": "gemv_kernel_micro_opt_axis_on_qwen3_8",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#gemv_kernel_micro_opt_axis_on_qwen3_8",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "CLOSED on the current unique-once Q4 GEMV genome. Qwen3.8 is at the honest decode ceiling."
+    },
+    {
+     "hypothesis_family": "hgravb01_hgravr02_hgravs01_and_the_q80_mixed_gate_up_down_bundle_on_qwen3_8_attention",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#hgravb01_hgravr02_hgravs01_and_the_q80_mixed_gate_up_down_bundle_on_qwen3_8_atte",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "KILLS for Q4-equivalent quality."
+    },
+    {
+     "hypothesis_family": "q80_mixed_1p5_v1_mixed_sub655_as_genesis_vehicles",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#q80_mixed_1p5_v1_mixed_sub655_as_genesis_vehicles",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "SEALED. Weights deleted. Science retained."
+    },
+    {
+     "hypothesis_family": "qwen3_8_mixed_sub15_1_29_bpw_and_mixed_2p0_2_0856_bpw_as_coherent_artifacts",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#qwen3_8_mixed_sub15_1_29_bpw_and_mixed_2p0_2_0856_bpw_as_coherent_artifacts",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "KILLS those two recipes. Floor bracketed, not located."
+    },
+    {
+     "hypothesis_family": "storage_complete_physical_bpw_as_the_bytes_decode_moves",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#storage_complete_physical_bpw_as_the_bytes_decode_moves",
+     "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+     "verdict": "CATEGORY_ERROR."
+    },
+    {
+     "hypothesis_family": "use_the_535_637_gb_s_reuse_band_also_written_560_647_as_the_decode_ceiling",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-004",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "CATEGORY_ERROR"
+    },
+    {
+     "hypothesis_family": "synthetic_activation",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-009",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "REFUTED"
+    },
+    {
+     "hypothesis_family": "shader_compile_is_the_primary_current_wall",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-023",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "REFUTED"
+    },
+    {
+     "hypothesis_family": "ask_whether_qwen3_8_is_at_its_wall_by_comparing_it_to_q80s_gather_control_then_correct_that_by_invoking_gather_vs_sequential",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-038",
+     "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "verdict": "CATEGORY_ERROR"
+    },
+    {
+     "hypothesis_family": "synthetic_activation",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-001",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "complete_bpw_predicts_coherence_that_complete_or_active_bpw_predicts_coherence_denser_is_worse_cheaper_is_worse_the_number_is_the_capability",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-002",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "PROPERTY_OF_IDEA"
+    },
+    {
+     "hypothesis_family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-003",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "PROPERTY_OF_IDEA"
+    },
+    {
+     "hypothesis_family": "cosine_scale_invariance_that_a_fit_quality_gate_of_observed_probed_worst_unit_cosine_can_certify_an_artifact_including_that_1_000000_means_the_weights_were_preserved",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-005",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-006",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "nns_009_that_organ_cosine_0_86_0_90_or_the_d23_0_8604_residual_identity_bar_is_a_capability_certificate_hard_go_no_go",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-009",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-011",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "nns_012_that_the_g3_shared_operator_headline_beats_q3_held_out_0_371_vs_0_401_at_24_of_the_bytes_is_a_measured_successor",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-012",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "ARTIFACT_OF_METHOD"
+    },
+    {
+     "hypothesis_family": "nns_013_that_a_narrow_shared_grouped_swiglu_operator_m_17408_can_replace_qwen3_8s_mlp_at_q3_quality_and_materially_fewer_active_bytes_including_after_honest_methodology",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-013",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "PROPERTY_OF_IDEA"
+    },
+    {
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-014",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "PROPERTY_OF_IDEA"
+    },
+    {
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-015",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "kronecker",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-016",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "nns_019_that_existing_gravity_expert_families_hgravb01_hgravr02_hgravs01_or_the_q80_mixed_gate_up_down_bundle_transfer_to_attention_at_q4_equivalent_quality",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-019",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "PROPERTY_OF_IDEA"
+    },
+    {
+     "hypothesis_family": "nns_022_that_entropy_coding_of_lloyd_optimal_pq_indices_yields_a_10_25_byte_win_or_that_rans_on_qwen3_8_q3_symbols_is_an_active_byte_tps_lever",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-022",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "PROPERTY_OF_IDEA"
+    },
+    {
+     "hypothesis_family": "nns_029_that_activation_sparsity_2_mlp_max_or_uniform_bit_descent_below_q3_is_a_clean_path_under_the_qwen3_8_coherent_floor",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-029",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "PROPERTY_OF_IDEA"
+    },
+    {
+     "hypothesis_family": "nns_032_that_a_bounded_low_bit_flash_router_study_with_one_deterministic_vector_can_establish_source_equivalent_top_k_routing_or_that_router_overlap_alone_qualifies_a_native_representation",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": false,
+     "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-032",
+     "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "verdict": "LIVE_REOPEN_HOLDS"
+    },
+    {
+     "hypothesis_family": "spec_decode",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-BINARY-AS-DRAFT",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "qn_binary_healing_protected_islands_healing",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-BINARY-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "qn_binary_injury_binary_quantization",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-BINARY-INJURY",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "qn_coordinate_transform_coordinate_transform",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-COORDINATE-TRANSFORM",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "qn_head_redundancy_structural_elimination_heads",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-HEAD-REDUNDANCY",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "low_rank",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-LOWRANK-HEALING",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "shared_basis",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-SHARED-BASIS-DENSITY",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "qn_shared_k_hybrid_shared_k_hybrid",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-SHARED-K-HYBRID",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "qn_state_merging_depth_state_merging",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "tools/headless/negative_science.py#QN-STATE-MERGING",
+     "source_path": "tools/headless/negative_science.py",
+     "verdict": "NEGATIVE"
+    },
+    {
+     "hypothesis_family": "global_dense_lowrank",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38",
+     "source_path": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+     "verdict": "DEAD on that dense body. Does NOT automatically kill cross-expert low-rank structure in MoE."
+    }
+   ]
+  },
+  "known_weaknesses": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
+    "receipts/future/QUALIFICATION_PIPELINE.json",
+    "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+    "receipts/future/CONTAMINATION_SCIENCE.json",
+    "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "receipts/headless/MACHINE_GENOME.json",
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+    "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
+   ],
+   "metal_compiler": {
+    "reason": "xcrun metal is not installed; no Metal developer toolchain, so AOT metallib compilation is unavailable and kernels go through the MLX JIT",
+    "status": "ABSENT"
+   },
+   "missing_evidence": [],
+   "n": 14,
+   "value": [
+    {
+     "blocks": [
+      "advancing blocked physical candidates without hardware"
+     ],
+     "evidence": [
+      "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+     ],
+     "id": "W-BLOCKED-WORKUNITS",
+     "statement": "39 blocked WorkUnits on HCLI_FUTURE_WORKUNITS (derived, not pinned)."
+    },
+    {
+     "blocks": [
+      "comparing capability rows",
+      "holding the resident to a score"
+     ],
+     "evidence": [
+      "receipts/headless/CAPABILITY_noetic-sealed-3.14.json"
+     ],
+     "id": "W-CAPABILITY-BODY-UNIDENTIFIED",
+     "statement": "CAPABILITY_noetic-sealed-3.14.json identity_sufficient is false (UNIDENTIFIED body)."
+    },
+    {
+     "blocks": [
+      "protected window",
+      "machine quiescence"
+     ],
+     "evidence": [
+      "receipts/future/CONTAMINATION_SCIENCE.json",
+      "receipts/future/QUALIFICATION_PIPELINE.json"
+     ],
+     "id": "W-CONTAMINATION-HEAVY",
+     "statement": "Contamination class is 'HEAVY'; qualification will not quiesce standing workers."
+    },
+    {
+     "blocks": [
+      "Flash candidate qualification",
+      "Flash EBPW"
+     ],
+     "evidence": [
+      "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+     ],
+     "id": "W-FLASH-NX-SCAFFOLD-ONLY",
+     "statement": "Flash source-independent NX is not qualified (seven_all_met=False; physical_ebpw NULL_BY_RULE)."
+    },
+    {
+     "blocks": [
+      "campaign close conditions"
+     ],
+     "evidence": [
+      "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+     ],
+     "id": "W-HANDOFF-BLOCKER-01",
+     "statement": "No protected GPU authority in this campaign: every hardware quantity is UNKNOWN by rule, not by omission."
+    },
+    {
+     "blocks": [
+      "campaign close conditions"
+     ],
+     "evidence": [
+      "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+     ],
+     "id": "W-HANDOFF-BLOCKER-02",
+     "statement": "Flash has no source-independent complete NX. This is the dominant blocker: the count is read live from FLASH_NX_COMPLETENESS_AUDIT.json rather than pinned here, because Codex keeps adding candidates behind it -- it was 12 of 14 at campaign start and 27 of 28 Flash candidates by the end."
+    },
+    {
+     "blocks": [
+      "campaign close conditions"
+     ],
+     "evidence": [
+      "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+     ],
+     "id": "W-HANDOFF-BLOCKER-03",
+     "statement": "No U50 board, no CUDA node, no Core ML/ANE compiler environment: those fidelity levels and backends are declared UNAVAILABLE rather than simulated as if present."
+    },
+    {
+     "blocks": [
+      "protected accelerator benchmark"
+     ],
+     "evidence": [
+      "receipts/future/QUALIFICATION_PIPELINE.json"
+     ],
+     "id": "W-LEASE-UNPROVEN",
+     "statement": "Protected bench lock: lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure"
+    },
+    {
+     "blocks": [
+      "AOT metallib",
+      "protected Metal qualification"
+     ],
+     "evidence": [
+      "receipts/headless/MACHINE_GENOME.json"
+     ],
+     "id": "W-METAL-COMPILER-ABSENT",
+     "statement": "Machine genome records Metal compiler ABSENT (xcrun metal not installed)."
+    },
+    {
+     "blocks": [
+      "protected measurement",
+      "DIAGNOSTIC_RELATIVE",
+      "PROTECTED_ABSOLUTE"
+     ],
+     "evidence": [
+      "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
+      "receipts/future/QUALIFICATION_PIPELINE.json"
+     ],
+     "id": "W-NO-GPU-AUTHORITY",
+     "statement": "This sidecar has no GPU authority; every hardware quantity is UNKNOWN by rule."
+    },
+    {
+     "blocks": [
+      "treating sealed-3.14 as the released Hawking"
+     ],
+     "evidence": [
+      "hcli/hawking-native.sealed-3.14.json",
+      "tools/future/resident_install.py"
+     ],
+     "id": "W-NONFINAL-27B",
+     "statement": "The current 27B is CURRENT_NONFINAL_HCLI_WORKER, not a Singularity."
+    },
+    {
+     "blocks": [
+      "EBPW promotion",
+      "complete_physical_ebpw claims"
+     ],
+     "evidence": [
+      "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+      "hcli/hawking-native.sealed-3.14.json"
+     ],
+     "id": "W-QUALIFIED-EBPW-UNKNOWN",
+     "statement": "Qualified physical EBPW is UNKNOWN on this host; Flash EBPW is UNKNOWN."
+    },
+    {
+     "blocks": [
+      "Flash meta teacher capture",
+      "Flash source-independent NX"
+     ],
+     "evidence": [
+      "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
+     ],
+     "id": "W-TEACHER-CAPTURE-BLOCKED-NO-METAL-GPU",
+     "statement": "Flash teacher capture status='BLOCKED_NO_METAL_GPU' rows=0/256; error=metal: no Metal-capable GPU"
+    },
+    {
+     "blocks": [
+      "accepted_tps claims",
+      "token_ns claims"
+     ],
+     "evidence": [
+      "hcli/hawking-native.sealed-3.14.json",
+      "receipts/future/QUALIFICATION_PIPELINE.json"
+     ],
+     "id": "W-TPS-TOKEN-NS-UNMEASURED",
+     "statement": "No protected complete-token TPS/token_ns evidence exists for this sidecar to attest."
+    }
+   ]
+  },
+  "machine_genome": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/headless/MACHINE_GENOME.json",
+    "receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
+    "tools/accelerator/machine_genome.py",
+    "hcli/machine.py"
+   ],
+   "genome_py": {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "tools/accelerator/machine_genome.py",
+    "source": "ON_DISK"
+   },
+   "measure_bandwidth_invoked": false,
+   "missing_evidence": [],
+   "note": "Cited prior genome identity (soc/cores/memory/toolchain). tools/accelerator/machine_genome.py was not executed.",
+   "read_only": true,
+   "source_state": "ON_DISK",
+   "value": {
+    "arch": "arm64",
+    "bench_state_on_receipt": "UNKNOWN",
+    "cpu_cores": 28,
+    "efficiency_cores": 8,
+    "gpu_cores": 60,
+    "knowledge_level": "INSTANCE",
+    "measured_bandwidth": {
+     "claim_class": "STATIC_ONLY",
+     "evidence": [
+      "receipts/headless/MACHINE_GENOME.json",
+      "receipts/headless/ACCELERATOR_MACHINE_GENOME.json"
+     ],
+     "missing_evidence": [
+      "this sidecar did not remeasure bandwidth and does not reattest the prior receipt",
+      "prior MACHINE_GENOME.json bench.state is UNKNOWN (quiescence was not a benchmark input)"
+     ],
+     "prior_claim_boundary": "589.73 GB/s in ACCELERATOR_MACHINE_GENOME.json is Codex's prior INSTANCE measurement; not copied into this identity value",
+     "prior_receipt": "receipts/headless/MACHINE_GENOME.json",
+     "this_sidecar_does_not_reattest": true,
+     "value": "UNKNOWN"
+    },
+    "memory_bytes": 103079215104,
+    "os": "Darwin 27.0.0",
+    "os_product": "27.0",
+    "perf_cores": 20,
+    "schema": "hawking.accelerator.machine_genome.v1",
+    "soc": "Apple M3 Ultra",
+    "sustained_behaviour": {
+     "reason": "microbenchmark only; the steer requires sustained evidence to be distinguished from a microbenchmark and this is the latter",
+     "status": "ABSENT"
+    },
+    "thermal_envelope": {
+     "reason": "no sustained thermal campaign has been run; sustained behaviour is required before any production ADP (G049) and is not claimed here",
+     "status": "ABSENT"
+    },
+    "toolchain_metal_compiler": {
+     "reason": "xcrun metal is not installed; no Metal developer toolchain, so AOT metallib compilation is unavailable and kernels go through the MLX JIT",
+     "status": "ABSENT"
+    }
+   }
+  },
+  "model_family": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json#family"
+   ],
+   "missing_evidence": [],
+   "source_state": "ON_DISK",
+   "value": "qwen3.8"
+  },
+  "nx_id": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json#model_id",
+    "hcli/hawking-native.sealed-3.14.json#resident_identity"
+   ],
+   "missing_evidence": [],
+   "profile_sha256": "d0ccab6562eebde05f81fbc9e7d40698f4aa9a83ae8e19606a7372a1f3abb7ce",
+   "source_state": "ON_DISK",
+   "value": {
+    "model_id": "qwen3.8-27b-sealed-3.14",
+    "profile_schema": "hcli.provider.profile.v1",
+    "protocol": "hawking.qwen38.resident.v1",
+    "resident_identity": "sealed-3.14"
+   }
+  },
+  "parent_lineage": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json",
+    "receipts/headless/HCLI_RESIDENT_SEAL.json",
+    "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+    "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+    "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json"
+   ],
+   "missing_evidence": [],
+   "note": "parent_params / mix_id are catalog identity of NOETIC_PARENT_A, not a qualified physical EBPW",
+   "value": {
+    "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+    "did_not_load_second_27b": true,
+    "family": "qwen3.8",
+    "historical_runtime_identity": {
+     "in_git_head": true,
+     "on_disk": true,
+     "path": "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json",
+     "source": "ON_DISK"
+    },
+    "mix_id": "mix_all_mlp_affine_g64_ls",
+    "mix_report_state": "ON_DISK",
+    "parent_params": 26895998464
+   }
+  },
+  "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+  "sandbox_authority": {
+   "claim_class": "STATIC_ONLY",
+   "evidence": [
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+    "receipts/future/QUALIFICATION_PIPELINE.json"
+   ],
+   "integration_point": "tools/future/sandbox.py (this-wave sibling, not imported). Authority copied from HCLI_FUTURE_WORKUNITS.json#authority.",
+   "missing_evidence": [],
+   "value": {
+    "bounded_authority": [
+     "adversarially_attack_a_claimed_law",
+     "audit_dependency_chain",
+     "compile_experiment_spec",
+     "copy_live_workunit_fields",
+     "emit_static_plan",
+     "inject_faults_in_replica",
+     "propose_workunit",
+     "query_negative_index",
+     "rank_falsifiable_experiments",
+     "read_receipts",
+     "record_unknown_metrics",
+     "run_cpu_simulation",
+     "run_static_analysis",
+     "seed_law_store",
+     "simulate_fpga_without_board",
+     "simulate_fusion_graph",
+     "transfer_law_within_declared_scope",
+     "write_sidecar_receipt"
+    ],
+    "claim_class": "STATIC_ONLY",
+    "forbidden_authority": [
+     "acquire_gpu_lease",
+     "choose_singularity",
+     "claim_hardware_measurement",
+     "claim_protected_absolute",
+     "destructive_mutation",
+     "destructive_write",
+     "disable_verifier",
+     "install_singularity",
+     "modify_verifier",
+     "mutate_codex_surface",
+     "override_bench_state",
+     "promote_candidate",
+     "promote_diagnostic_relative",
+     "promote_self",
+     "promote_to_protected_absolute",
+     "replace_verifier",
+     "select_singularity",
+     "self_promotion",
+     "weaken_verifier"
+    ],
+    "gpu_authority": false,
+    "may_acquire_gpu_lease": false,
+    "may_choose_singularity": false,
+    "may_modify_verifier": false,
+    "may_promote": false
+   }
+  },
+  "tokenizer_identity": {
+   "claim_class": "STATIC_ONLY",
+   "declared_prefix_match": true,
+   "declared_prefix_source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "declared_sha256_16": "0997f410c57a1f4e",
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json",
+    "receipts/headless/HCLI_RESIDENT_SEAL.json"
+   ],
+   "exists": true,
+   "missing_evidence": [],
+   "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+   "prompt_contract": {
+    "fallback_template": "qwen_closed_think",
+    "renderer": "qwen-chat-template-or-closed-think-fallback",
+    "token_count_authority": "native-resident"
+   },
+   "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+   "source_state": "COMPUTED",
+   "value": {
+    "declared_prefix_match": true,
+    "declared_sha256_16": "0997f410c57a1f4e",
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+    "prompt_contract": {
+     "fallback_template": "qwen_closed_think",
+     "renderer": "qwen-chat-template-or-closed-think-fallback",
+     "token_count_authority": "native-resident"
+    },
+    "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3"
+   }
+  },
+  "tps_token_ns_evidence": {
+   "claim_class": "STATIC_ONLY",
+   "copied_sealed_runtime_numbers": false,
+   "declared_runtime_pointer": {
+    "class": "HISTORICAL_RECORD_NOT_A_SIDECAR_MEASUREMENT",
+    "copied_into_identity_value": false,
+    "do_not_promote": true,
+    "fields": [
+     "current_runtime.complete_tps_current_measured",
+     "current_runtime.complete_tps_historical_qualified"
+    ],
+    "path": "hcli/hawking-native.sealed-3.14.json"
+   },
+   "evidence": [
+    "hcli/hawking-native.sealed-3.14.json",
+    "receipts/future/QUALIFICATION_PIPELINE.json",
+    "receipts/future/evidence/QWEN27_TOKEN_NS_BUDGET.json"
+   ],
+   "missing_evidence": [
+    "PROTECTED_ABSOLUTE complete-token measurement under a proven HCLI lease",
+    "sidecar has no GPU authority; copying sealed current_runtime numbers would launder a hardware claim"
+   ],
+   "token_ns_budget_pointer": {
+    "lifecycle_buckets": "null slots until a native protected complete-token receipt",
+    "path": "receipts/future/evidence/QWEN27_TOKEN_NS_BUDGET.json"
+   },
+   "value": "UNKNOWN"
+  }
+ },
+ "identity_validation": {
+  "blockers_evident": [
+   "blocked_workunits",
+   "sandbox_authority.gpu_authority=false",
+   "gpu_authority=false",
+   "contamination_class=HEAVY",
+   "qualified_physical_ebpw=UNKNOWN",
+   "tps_token_ns_evidence=UNKNOWN"
+  ],
+  "named_refusal": null,
+  "reasons": [],
+  "status": "ACCEPTED"
+ },
+ "n_persisted_fields": 20,
+ "negative_control": {
+  "invented_tps": {
+   "fires": true,
+   "result": {
+    "blockers_evident": [
+     "blocked_workunits",
+     "sandbox_authority.gpu_authority=false",
+     "gpu_authority=false",
+     "contamination_class=HEAVY",
+     "qualified_physical_ebpw=UNKNOWN"
+    ],
+    "named_refusal": "REJECTED: tps_token_ns_evidence: protected TPS/token_ns must be UNKNOWN; got 24.4086",
+    "reasons": [
+     "tps_token_ns_evidence: protected TPS/token_ns must be UNKNOWN; got 24.4086"
+    ],
+    "status": "REJECTED"
+   }
+  },
+  "zero_weaknesses": {
+   "fires": true,
+   "result": {
+    "blockers_evident": [
+     "blocked_workunits",
+     "sandbox_authority.gpu_authority=false",
+     "gpu_authority=false",
+     "contamination_class=HEAVY",
+     "qualified_physical_ebpw=UNKNOWN",
+     "tps_token_ns_evidence=UNKNOWN"
+    ],
+    "named_refusal": "REJECTED: known_weaknesses is empty while real blockers exist: blocked_workunits, sandbox_authority.gpu_authority=false, gpu_authority=false, contamination_class=HEAVY, qualified_physical_ebpw=UNKNOWN, tps_token_ns_evidence=UNKNOWN",
+    "reasons": [
+     "known_weaknesses is empty while real blockers exist: blocked_workunits, sandbox_authority.gpu_authority=false, gpu_authority=false, contamination_class=HEAVY, qualified_physical_ebpw=UNKNOWN, tps_token_ns_evidence=UNKNOWN"
+    ],
+    "status": "REJECTED"
+   }
+  }
+ },
+ "negative_findings": [
+  "CODEX_ACCELERATOR_HANDOFF.json is not visible in this worktree disk or git HEAD; current_qwen27_incumbent_control_identity is therefore not copied. The collector copes if the file later appears.",
+  "hcli/ is not materialized in this sparse checkout; sealed profile and machine.py were recovered via git show / load_authority.",
+  "hcli/agentos/resident.py is not a git blob; resident_gate.py is the live lifecycle.",
+  "CAPABILITY_noetic-sealed-3.14.json identity_sufficient is false (UNIDENTIFIED); 30/43 is CONTROL, not a body-identified current proof.",
+  "Sealed profile current_runtime TPS numbers were not copied into this identity; copying them would launder a hardware claim.",
+  "Qualified physical EBPW is UNKNOWN on this host; Flash physical_ebpw is NULL_BY_RULE.",
+  "This sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+  "tools/future/sandbox.py, succession.py, workgraph.py, wakeup.py, super_resident.py are this-wave siblings and were not imported.",
+  "Protected bench flock is never taken; lock presence is pathlib only.",
+  "Teacher capture 0/256 is cited from FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY, not invented."
+ ],
+ "next_workunits": [
+  {
+   "blocked_reason": "no GPU authority; Metal compiler ABSENT; contamination HEAVY",
+   "description": "Reload and refill identity when a protected GPU window qualifies; wake SLEEPING physical WorkUnits. Never synthesize a result.",
+   "id": "future.resident-identity.refill-on-hardware",
+   "integration_point": "tools/future/wakeup.py (this-wave sibling, not imported)",
+   "species": "resident_identity_persistence",
+   "status": "blocked"
+  },
+  {
+   "description": "Replace local sandbox_authority projection with sandbox.py once that sibling lands.",
+   "id": "future.resident-identity.bind-sandbox",
+   "integration_point": "tools/future/sandbox.py (this-wave sibling, not imported)",
+   "species": "resident_identity_persistence",
+   "status": "pending"
+  },
+  {
+   "description": "Bind children[] from succession.py once that sibling lands.",
+   "id": "future.resident-identity.bind-succession",
+   "integration_point": "tools/future/succession.py (this-wave sibling, not imported)",
+   "species": "resident_identity_persistence",
+   "status": "pending"
+  }
+ ],
+ "nomenclature": {
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga": "Accelerator / Physical Compiler / Fusion; not its own civilization",
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ },
+ "persisted_fields": [
+  "model_family",
+  "nx_id",
+  "parent_lineage",
+  "tokenizer_identity",
+  "executable_hash",
+  "ebpw",
+  "active_bytes_evidence",
+  "capability_receipt",
+  "tps_token_ns_evidence",
+  "machine_genome",
+  "current_backend",
+  "current_tools",
+  "current_resource_pressure",
+  "current_frontiers",
+  "active_workunits",
+  "blocked_workunits",
+  "known_scars",
+  "known_weaknesses",
+  "children",
+  "sandbox_authority"
+ ],
+ "purpose": "Restart-survivable resident identity. Disk is authority. UNKNOWN where this sidecar cannot know. Models think; tools know; context is a cache.",
+ "recovered_implementation": {
+  "capability_receipt": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+   "source": "ON_DISK"
+  },
+  "codex_accelerator_handoff": {
+   "in_git_head": false,
+   "on_disk": true,
+   "path": "CODEX_ACCELERATOR_HANDOFF.json",
+   "role": "current_qwen27_incumbent_control_identity if present; this worktree copes with either ON_DISK or ABSENT and does not invent the block",
+   "source": "ON_DISK"
+  },
+  "fork_decision": "No restart-survivable identity document existed. Sealed-3.14 + qwen27_runtime_identity + resident_install + profile schema are consumed, not forked.",
+  "gap_closed": "Persist the full named identity to receipts/future/RESIDENT_IDENTITY.json; load() reconstructs it in a fresh process from disk alone.",
+  "hcli_resident_seal": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "source": "ON_DISK"
+  },
+  "incumbent_sealed_profile": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "hcli/hawking-native.sealed-3.14.json",
+   "role": "real shape of the Qwen27 resident as it exists today",
+   "source": "ON_DISK"
+  },
+  "machine_genome_module": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "tools/accelerator/machine_genome.py",
+   "role": "READ-ONLY; measure_bandwidth was not called",
+   "source": "ON_DISK"
+  },
+  "machine_genome_receipt": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "receipts/headless/MACHINE_GENOME.json",
+   "source": "ON_DISK"
+  },
+  "machine_prior": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "hcli/machine.py",
+   "role": "genome is a PRIOR; STALE genomes are not used as live numbers",
+   "source": "ON_DISK"
+  },
+  "qwen27_profile_schema": {
+   "path": "receipts/future/QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+   "role": "CONTROL profile for optimizations; not a restart-survivable 19-field identity"
+  },
+  "resident_install_contract": {
+   "path": "tools/future/resident_install.py",
+   "role": "generic tournament-winner install slots; not identity persistence"
+  },
+  "resident_lifecycle": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "hcli/agentos/resident_gate.py",
+   "role": "live resident_gate; hcli/agentos/resident.py is not a git blob (gate is)",
+   "source": "ON_DISK"
+  },
+  "runtime_identity_module": {
+   "in_git_head": true,
+   "on_disk": true,
+   "path": "hcli/agentos/qwen27_runtime_identity.py",
+   "role": "historical vs current dispatch-fusion archaeology; not restart identity",
+   "source": "ON_DISK"
+  }
+ },
+ "residency_status": "CURRENT_NONFINAL_HCLI_WORKER",
+ "resident_callable": {
+  "entry_point": "python3 tools/future/resident_identity.py --build|--load|--selftest",
+  "fail_closed": [
+   "invented qualified EBPW / TPS / actual_read -> IdentityRejectedError naming the field",
+   "empty known_weaknesses while blockers exist -> IdentityRejectedError",
+   "residency_status other than CURRENT_NONFINAL_HCLI_WORKER -> IdentityRejectedError",
+   "numeric HARDWARE_FIELDS -> HardwareClaimError from write_receipt",
+   "missing/corrupt receipt on load -> IdentityRejectedError",
+   "Singularity status -> IdentityRejectedError"
+  ],
+  "frontier_fed": "Reads CLAUDE_GLOBAL_FRONTIER.json as disk authority. Does not mutate it (global_frontier.py is frozen). After restart, load() is how the resident knows which frontier entries remain BLOCKED without conversational reconstruction.",
+  "how_hcli_invokes": "HCLI imports tools.future.resident_identity.load after restart, or runs the --load entry point. It must not reconstruct identity from chat.",
+  "integration_point_resident_api": "tools/future/resident_api.py (this-wave sibling, not imported). load() is the swap-in implementation of 'who am I'.",
+  "python_api": {
+   "accept": "accept(identity) -> dict  # raises IdentityRejectedError",
+   "build": "build() -> Path",
+   "collect": "collect() -> dict",
+   "load": "load(path=None) -> dict  # disk only, no collect()"
+  },
+  "receipt": "receipts/future/RESIDENT_IDENTITY.json",
+  "work_unit_emitted": {
+   "assigned_runtime": null,
+   "blocked_reason": null,
+   "claim_boundary": "STATIC_ONLY. No hardware measurement.",
+   "description": "Persist the incumbent HCLI resident identity to disk and prove restart recovery with no conversational reconstruction.",
+   "effect_class": "REVERSIBLE",
+   "id": "future.resident-identity.persist",
+   "integration_point": "tools/future/workgraph.py (this-wave sibling, not imported). This dict is the local WorkUnit shape until workgraph lands.",
+   "output_receipt_path": "receipts/future/RESIDENT_IDENTITY.json",
+   "preferred_backend": "cpu",
+   "requires_quiescence": false,
+   "resource_class": "cpu",
+   "role": "resident_identity",
+   "species": "resident_identity_persistence",
+   "status": "complete",
+   "verifier": "tools/future/test_resident_identity.py"
+  }
+ },
+ "schema": "hawking.future.resident_identity.v1",
+ "seal_sha256": "99deb184352ea90e00d8bd87c2a89a36b96861372e6aba3a0f7ce5ed13a0f8ef",
+ "version": 1,
+ "work_unit": {
+  "assigned_runtime": null,
+  "blocked_reason": null,
+  "claim_boundary": "STATIC_ONLY. No hardware measurement.",
+  "description": "Persist the incumbent HCLI resident identity to disk and prove restart recovery with no conversational reconstruction.",
+  "effect_class": "REVERSIBLE",
+  "id": "future.resident-identity.persist",
+  "integration_point": "tools/future/workgraph.py (this-wave sibling, not imported). This dict is the local WorkUnit shape until workgraph lands.",
+  "output_receipt_path": "receipts/future/RESIDENT_IDENTITY.json",
+  "preferred_backend": "cpu",
+  "requires_quiescence": false,
+  "resource_class": "cpu",
+  "role": "resident_identity",
+  "species": "resident_identity_persistence",
+  "status": "complete",
+  "verifier": "tools/future/test_resident_identity.py"
+ }
+}

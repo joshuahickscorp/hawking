@@ -1,0 +1,1456 @@
+{
+ "associativity_policy": "Every reduction names sequential_left_to_right or tree_midpoint_split. A spatial implementation that reorders a float32 reduction is a different number and must either match this golden's declared order or carry an explicit associativity waiver. Integer + is associative.",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:54Z",
+  "recorded_by": "tools/future/fpga_engines.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "civilization_boundary": "FPGA is Accelerator / Physical Compiler / Fusion. Not its own civilization. Five eras, three odysseys. Sidecar has no GPU and produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "emits_hdl": false,
+ "engine_names": [
+  "qgemv",
+  "lowbit_gemm",
+  "basis_projection",
+  "factorized_projection",
+  "codebook_arithmetic",
+  "dictionary_arithmetic",
+  "sparse_residual",
+  "routed_expert_accumulate",
+  "recurrent_state_transition",
+  "attention_primitives",
+  "reductions",
+  "semantic_transport_transform"
+ ],
+ "engines": [
+  {
+   "associativity": "sequential_left_to_right over K of (dequant(code)*x)",
+   "dtype_contract": {
+    "codes": "int8[M,K] symmetric signed weight_bits",
+    "group_size": "positive divisor of K",
+    "scales": "float32[M,K/group_size]",
+    "weight_bits": "1..8",
+    "x": "float32[K]",
+    "y": "float32[M]"
+   },
+   "name": "qgemv",
+   "scheme_recovered": "symmetric_signed_4bit_group64_with_fp16_scales"
+  },
+  {
+   "associativity": "sequential_left_to_right over K for each (m,n)",
+   "dtype_contract": {
+    "b": "float32[K,N]",
+    "c": "float32[M,N]",
+    "codes": "int8[M,K]",
+    "scales": "float32[M,K/group_size]"
+   },
+   "name": "lowbit_gemm",
+   "scheme_recovered": "packed low-bit GEMV lifted to matrix-matrix; same dequant"
+  },
+  {
+   "associativity": "sequential_left_to_right over D",
+   "dtype_contract": {
+    "basis": "float32[R,D]",
+    "p": "float32[R]",
+    "x": "float32[D]"
+   },
+   "name": "basis_projection",
+   "scheme_recovered": "shared_bf16_basis / representation_library.shared_basis"
+  },
+  {
+   "associativity": "inner-first: sequential over D then sequential over R; never materialize U@V",
+   "dtype_contract": {
+    "u": "float32[M,R]",
+    "v": "float32[R,D]",
+    "x": "float32[D]",
+    "y": "float32[M]"
+   },
+   "name": "factorized_projection",
+   "scheme_recovered": "representation_library.low_rank"
+  },
+  {
+   "associativity": "sequential over (chunk, subspace, sub)",
+   "dtype_contract": {
+    "codebook": "float32[card,sub] or float32[S,card,sub]",
+    "indices": "int32[M,nchunk] or int32[M,nchunk,S]",
+    "x": "float32[nchunk*sub]",
+    "y": "float32[M]"
+   },
+   "name": "codebook_arithmetic",
+   "scheme_recovered": "C4 fused_adc_pq_matvec / gravity_pq; NF4 residual codebook"
+  },
+  {
+   "associativity": "sequential over selected atoms in given order",
+   "dtype_contract": {
+    "atom_ids": "int32[K]",
+    "coeffs": "float32[K]",
+    "dictionary": "float32[D,n_atoms]",
+    "y": "float32[D]"
+   },
+   "name": "dictionary_arithmetic",
+   "scheme_recovered": "ngram lookup/compositional generator; dictionary execution"
+  },
+  {
+   "associativity": "sequential over residual terms; collisions add in given order",
+   "dtype_contract": {
+    "indices": "int32[nnz]",
+    "partial": "float32[D]",
+    "values": "float32[nnz]",
+    "y": "float32[D]"
+   },
+   "name": "sparse_residual",
+   "scheme_recovered": "binary_sparse_residual / NF4 residual on a shared-basis partial"
+  },
+  {
+   "associativity": "sequential over given top-K order (not resorted by expert id)",
+   "dtype_contract": {
+    "expert_outputs": "float32[E,D]",
+    "scales": "float32[K]",
+    "topk_ids": "int32[K]",
+    "y": "float32[D]"
+   },
+   "name": "routed_expert_accumulate",
+   "scheme_recovered": "Flash router_topk_and_gather / routed_plus_shared_expert"
+  },
+  {
+   "associativity": "sequential over ki for kv and output reductions",
+   "dtype_contract": {
+    "beta": "float32",
+    "decay": "float32",
+    "key": "float32[K]",
+    "out_state": "float32[K,V]",
+    "output": "float32[V]",
+    "query": "float32[K]",
+    "state": "float32[K,V]",
+    "value": "float32[V]"
+   },
+   "name": "recurrent_state_transition",
+   "scheme_recovered": "qwen38_gated_delta_decode_vi (DeltaNet gated-delta)"
+  },
+  {
+   "associativity": "score: sequential over D; softmax: sequential max then sequential exp-sum; values: sequential over Tk",
+   "dtype_contract": {
+    "k": "float32[Tk,D]",
+    "output": "float32[Tq,Dv]",
+    "q": "float32[Tq,D]",
+    "scale": "float32",
+    "scores": "float32[Tq,Tk]",
+    "v": "float32[Tk,Dv]",
+    "weights": "float32[Tq,Tk]"
+   },
+   "name": "attention_primitives",
+   "scheme_recovered": "separable score/softmax/value; Flash sparse_attention reductions"
+  },
+  {
+   "associativity": "mode=sequential: left fold; mode=tree: midpoint split. Integer + matches; float32 may not.",
+   "dtype_contract": {
+    "x": "int64-or-float32[N]",
+    "y": "scalar same family"
+   },
+   "name": "reductions",
+   "scheme_recovered": "ACCELERATOR reduce tails (serial vs tree) as a functional fact, not a timed one"
+  },
+  {
+   "associativity": "reduce step is sequential over the last axis; digest is of that reduced tensor",
+   "dtype_contract": {
+    "digest": "sha256 hex of little-endian C-contiguous bytes",
+    "payload": "float32 or integer tensor",
+    "pipeline": "ordered subset of quantize|transpose|reduce|digest|pack"
+   },
+   "name": "semantic_transport_transform",
+   "scheme_recovered": "fusion_isa REDUCE/DIGEST/COPY + preboard activations/partial-reductions transport"
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "flash_chosen_representation": {
+  "note": "FLASH_COMPLETE_V2.nr.json is not in HEAD; this is the closest sealed representation record.",
+  "quality_alternate": "shared_bf16_basis_nf4_residual",
+  "selected_candidate": "independent_q4_g64",
+  "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+ },
+ "gaps_closed": [
+  "twelve engine functional references with explicit dtype/width contracts",
+  "VECTORS table with hardcoded expected outputs and declared associativity",
+  "organ-to-engine map recovered from Flash and Qwen27 FPGA organ maps",
+  "NF4 codebook constant recovered from the Flash representation experiment",
+  "tree vs sequential float32 divergence recorded as a load-bearing fact"
+ ],
+ "hardware_required_to_measure": [
+  "cycle_count",
+  "throughput",
+  "board_timing",
+  "hbm_bandwidth",
+  "gpu_token_timing"
+ ],
+ "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "negative_findings": [
+  "receipts/headless/FLASH_COMPLETE_V2.nr.json is not a blob at HEAD; representation recovered instead from FLASH_NEXT_NOETIC_EXECUTABLE.json and FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+  "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json is not a blob at HEAD (frontier F012 probed it on a machine where it was materialized)",
+  "no existing NumPy bit-exact golden for these twelve engines; Metal kernels and design receipts are not a substitute",
+  "cycle counts, throughput, HBM bandwidth, and board timing remain UNKNOWN because this sidecar has no FPGA and no GPU lease",
+  "this worktree is a sparse checkout; recovered files were read with git show, not from a materialized working tree"
+ ],
+ "nf4_codebook": [
+  -1.0,
+  -0.6961928009986877,
+  -0.5250730514526367,
+  -0.39491748809814453,
+  -0.28444138169288635,
+  -0.18477343022823334,
+  -0.09105004370212555,
+  0.0,
+  0.07958029955625534,
+  0.16093020141124725,
+  0.24611230194568634,
+  0.33791524171829224,
+  0.44070982933044434,
+  0.5626170039176941,
+  0.7229568362236023,
+  1.0
+ ],
+ "nf4_codebook_source": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json candidates.shared_bf16_basis_nf4_residual.residual_codebook",
+ "not_an_fpga_backend": true,
+ "organ_engine_map": {
+  "flash-next": {
+   "deltanet_persistent_state": [
+    "recurrent_state_transition"
+   ],
+   "expert_bank": [
+    "qgemv",
+    "codebook_arithmetic",
+    "dictionary_arithmetic",
+    "basis_projection"
+   ],
+   "mtp_draft_verify_rollback": [
+    "reductions",
+    "semantic_transport_transform"
+   ],
+   "ngram_lookup_or_generator": [
+    "dictionary_arithmetic",
+    "codebook_arithmetic"
+   ],
+   "routed_plus_shared_expert": [
+    "routed_expert_accumulate",
+    "qgemv",
+    "sparse_residual"
+   ],
+   "router_topk_and_gather": [
+    "routed_expert_accumulate"
+   ],
+   "sparse_attention": [
+    "attention_primitives",
+    "sparse_residual",
+    "reductions"
+   ]
+  },
+  "qwen27": {
+   "command_buffer_graph": [
+    "semantic_transport_transform"
+   ],
+   "deltanet_state_and_input_projection": [
+    "recurrent_state_transition",
+    "qgemv"
+   ],
+   "gqa_qkv_and_output": [
+    "qgemv",
+    "attention_primitives",
+    "basis_projection",
+    "factorized_projection",
+    "semantic_transport_transform"
+   ],
+   "lm_head_and_sampling": [
+    "qgemv",
+    "reductions"
+   ],
+   "mlp_gate_up_down": [
+    "qgemv",
+    "lowbit_gemm",
+    "factorized_projection"
+   ],
+   "norm_add_epilogues": [
+    "reductions"
+   ]
+  }
+ },
+ "purpose": "Bit-exact functional references for every arithmetic engine a spatial accelerator needs to execute a Hawking model. Golden models only. Not an FPGA backend; no HDL; no cycle count; no throughput.",
+ "recovered_implementation": {
+  "adequate_existing_golden": false,
+  "architecture_atlas_present_in_head": false,
+  "flash_complete_v2_nr_present_in_head": false,
+  "paths": [
+   {
+    "materialized": true,
+    "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/HCLI_FPGA_PREBOARD.json",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "hcli/agentos/fpga_preboard.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/accelerator/gemm.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/accelerator/kernel_forge.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/accelerator/gravity_native.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/accelerator/fusion_isa.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/headless/c4codebook_design.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/headless/representation_library.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/headless/deltanet_organ.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "tools/headless/test_lowbit_codec.py",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/C4CODEBOOK_DESIGN.json",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/REPRESENTATION_LIBRARY.json",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "crates/hawking-core/shaders/qwen38_device_activations.metal",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "crates/hawking-core/shaders/gravity_pq.metal",
+    "present_in_head": true
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+    "present_in_head": false
+   },
+   {
+    "materialized": true,
+    "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "present_in_head": false
+   }
+  ],
+  "summary": "Organ maps and the FPGA preboard name organs and a mock link simulator; they do not implement arithmetic. tools/accelerator/gemm.py is a Metal tiled GEMM that loses to MLX and is not a NumPy golden. kernel_forge.py searches kernel variants; it does not define engine contracts. gravity_native.py has the sequential q4 group-64 dequant-matvec used as the qgemv width contract. C4 codebook design names fused ADC. DeltaNet gated-delta lives in the qwen38 Metal shader. Representation library lists families (shared_basis, low_rank, binary_sparse_residual, conventional_low_bit) without executable goldens. No tools/future/fpga_engines.py existed."
+ },
+ "schema": "hawking.future.fpga_engines.v1",
+ "seal_sha256": "7030f1c4a153bec30666dff8f2a3c7099eb898c8fc5a271fada5aa7cfecc3841",
+ "selftest_vectors": [
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "id": "qgemv_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "id": "qgemv_grouped",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "id": "qgemv_1bit_sign",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "id": "qgemv_seeded",
+   "match": true,
+   "seed": 20260829
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "lowbit_gemm",
+   "id": "lowbit_gemm_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "lowbit_gemm",
+   "id": "lowbit_gemm_seeded",
+   "match": true,
+   "seed": 20260829
+  },
+  {
+   "associativity": "sequential_left_to_right over D",
+   "engine": "basis_projection",
+   "id": "basis_projection_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "inner-first sequential (V then U)",
+   "engine": "factorized_projection",
+   "id": "factorized_projection_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over (chunk, sub)",
+   "engine": "codebook_arithmetic",
+   "id": "codebook_arithmetic_vector",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over (chunk, subspace, sub)",
+   "engine": "codebook_arithmetic",
+   "id": "codebook_arithmetic_nf4_product",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over selected atoms in given order",
+   "engine": "dictionary_arithmetic",
+   "id": "dictionary_arithmetic_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over residual terms; index 1 is hit twice",
+   "engine": "sparse_residual",
+   "id": "sparse_residual_collision",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over given top-K order [2,0], not sorted ids",
+   "engine": "routed_expert_accumulate",
+   "id": "routed_expert_accumulate_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over ki",
+   "engine": "recurrent_state_transition",
+   "id": "recurrent_state_transition_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over D, sequential softmax, sequential over Tk",
+   "engine": "attention_primitives",
+   "id": "attention_primitives_hand",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "int64 + is associative: sequential and tree match",
+   "engine": "reductions",
+   "id": "reductions_int_both_modes",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "sequential left-to-right float32",
+   "engine": "reductions",
+   "id": "reductions_float_sequential",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "tree midpoint-split float32",
+   "engine": "reductions",
+   "id": "reductions_float_tree",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "quantize sequential amax; reduce sequential last axis",
+   "engine": "semantic_transport_transform",
+   "id": "semantic_transport_qtrd",
+   "match": true,
+   "seed": 0
+  },
+  {
+   "associativity": "n/a (bit pack, no reduction)",
+   "engine": "semantic_transport_transform",
+   "id": "semantic_transport_pack4",
+   "match": true,
+   "seed": 0
+  }
+ ],
+ "vectors": [
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "expected": [
+    10.0,
+    1.5
+   ],
+   "id": "qgemv_hand",
+   "inputs": {
+    "codes": [
+     [
+      1,
+      -1,
+      2,
+      0
+     ],
+     [
+      3,
+      1,
+      -2,
+      1
+     ]
+    ],
+    "scales": [
+     [
+      2.0
+     ],
+     [
+      0.5
+     ]
+    ],
+    "x": [
+     1.0,
+     2.0,
+     3.0,
+     4.0
+    ]
+   },
+   "note": "one group per row; integer-valued so float32 is exact",
+   "params": {
+    "group_size": 4,
+    "weight_bits": 4
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "expected": [
+    22.0
+   ],
+   "id": "qgemv_grouped",
+   "inputs": {
+    "codes": [
+     [
+      1,
+      1,
+      2,
+      2
+     ]
+    ],
+    "scales": [
+     [
+      3.0,
+      4.0
+     ]
+    ],
+    "x": [
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "note": "two groups; scale changes at k=2",
+   "params": {
+    "group_size": 2,
+    "weight_bits": 4
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "expected": [
+    0.0
+   ],
+   "id": "qgemv_1bit_sign",
+   "inputs": {
+    "codes": [
+     [
+      1,
+      -1,
+      1,
+      -1
+     ]
+    ],
+    "scales": [
+     [
+      2.0
+     ]
+    ],
+    "x": [
+     1.0,
+     1.0,
+     1.0,
+     1.0
+    ]
+   },
+   "note": "1-bit is a sign code, not deletion (tools/headless/test_lowbit_codec.py)",
+   "params": {
+    "group_size": 4,
+    "weight_bits": 1
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "qgemv",
+   "expected": [
+    57.0,
+    9.0,
+    21.0
+   ],
+   "id": "qgemv_seeded",
+   "inputs": {
+    "codes": [
+     [
+      -6,
+      1,
+      4,
+      -6,
+      3,
+      2,
+      -6,
+      -6
+     ],
+     [
+      6,
+      -3,
+      -1,
+      -6,
+      2,
+      -1,
+      4,
+      2
+     ],
+     [
+      5,
+      -5,
+      -2,
+      4,
+      0,
+      3,
+      6,
+      -1
+     ]
+    ],
+    "scales": [
+     [
+      3.0,
+      2.0
+     ],
+     [
+      1.0,
+      3.0
+     ],
+     [
+      2.0,
+      3.0
+     ]
+    ],
+    "x": [
+     0.0,
+     -1.0,
+     0.0,
+     -2.0,
+     0.0,
+     0.0,
+     1.0,
+     -3.0
+    ]
+   },
+   "note": "RandomState(20260829) integer draw, still exact in float32",
+   "params": {
+    "group_size": 4,
+    "weight_bits": 4
+   },
+   "seed": 20260829
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "lowbit_gemm",
+   "expected": [
+    [
+     6.0,
+     2.0
+    ],
+    [
+     0.5,
+     0.5
+    ]
+   ],
+   "id": "lowbit_gemm_hand",
+   "inputs": {
+    "b": [
+     [
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0
+     ],
+     [
+      1.0,
+      1.0
+     ],
+     [
+      0.0,
+      2.0
+     ]
+    ],
+    "codes": [
+     [
+      1,
+      -1,
+      2,
+      0
+     ],
+     [
+      3,
+      1,
+      -2,
+      1
+     ]
+    ],
+    "scales": [
+     [
+      2.0
+     ],
+     [
+      0.5
+     ]
+    ]
+   },
+   "params": {
+    "group_size": 4,
+    "weight_bits": 4
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "sequential_left_to_right over K",
+   "engine": "lowbit_gemm",
+   "expected": [
+    [
+     -22.0,
+     6.0,
+     6.0
+    ],
+    [
+     -29.0,
+     11.0,
+     -1.0
+    ],
+    [
+     7.0,
+     45.0,
+     -43.0
+    ]
+   ],
+   "id": "lowbit_gemm_seeded",
+   "inputs": {
+    "b": [
+     [
+      2.0,
+      -1.0,
+      2.0
+     ],
+     [
+      0.0,
+      -2.0,
+      2.0
+     ],
+     [
+      2.0,
+      1.0,
+      1.0
+     ],
+     [
+      2.0,
+      0.0,
+      0.0
+     ],
+     [
+      -1.0,
+      -1.0,
+      2.0
+     ],
+     [
+      -1.0,
+      0.0,
+      0.0
+     ],
+     [
+      -1.0,
+      2.0,
+      -2.0
+     ],
+     [
+      -2.0,
+      -1.0,
+      1.0
+     ]
+    ],
+    "codes": [
+     [
+      -6,
+      1,
+      4,
+      -6,
+      3,
+      2,
+      -6,
+      -6
+     ],
+     [
+      6,
+      -3,
+      -1,
+      -6,
+      2,
+      -1,
+      4,
+      2
+     ],
+     [
+      5,
+      -5,
+      -2,
+      4,
+      0,
+      3,
+      6,
+      -1
+     ]
+    ],
+    "scales": [
+     [
+      3.0,
+      2.0
+     ],
+     [
+      1.0,
+      3.0
+     ],
+     [
+      2.0,
+      3.0
+     ]
+    ]
+   },
+   "params": {
+    "group_size": 4,
+    "weight_bits": 4
+   },
+   "seed": 20260829
+  },
+  {
+   "associativity": "sequential_left_to_right over D",
+   "engine": "basis_projection",
+   "expected": [
+    5.0,
+    9.0
+   ],
+   "id": "basis_projection_hand",
+   "inputs": {
+    "basis": [
+     [
+      1.0,
+      1.0,
+      0.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0,
+      1.0
+     ]
+    ],
+    "x": [
+     2.0,
+     3.0,
+     4.0,
+     5.0
+    ]
+   },
+   "params": {},
+   "seed": 0
+  },
+  {
+   "associativity": "inner-first sequential (V then U)",
+   "engine": "factorized_projection",
+   "expected": [
+    4.0,
+    6.0,
+    10.0
+   ],
+   "id": "factorized_projection_hand",
+   "inputs": {
+    "u": [
+     [
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0
+     ],
+     [
+      1.0,
+      1.0
+     ]
+    ],
+    "v": [
+     [
+      1.0,
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0,
+      1.0
+     ]
+    ],
+    "x": [
+     1.0,
+     2.0,
+     3.0,
+     4.0
+    ]
+   },
+   "params": {},
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over (chunk, sub)",
+   "engine": "codebook_arithmetic",
+   "expected": [
+    9.0,
+    17.0
+   ],
+   "id": "codebook_arithmetic_vector",
+   "inputs": {
+    "codebook": [
+     [
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0
+     ],
+     [
+      1.0,
+      1.0
+     ],
+     [
+      2.0,
+      0.0
+     ]
+    ],
+    "indices": [
+     [
+      0,
+      1
+     ],
+     [
+      2,
+      3
+     ]
+    ],
+    "x": [
+     3.0,
+     4.0,
+     5.0,
+     6.0
+    ]
+   },
+   "params": {},
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over (chunk, subspace, sub)",
+   "engine": "codebook_arithmetic",
+   "expected": [
+    1.0
+   ],
+   "id": "codebook_arithmetic_nf4_product",
+   "inputs": {
+    "codebook": [
+     [
+      [
+       -1.0
+      ],
+      [
+       0.0
+      ],
+      [
+       1.0
+      ]
+     ],
+     [
+      [
+       0.5
+      ],
+      [
+       -0.5
+      ],
+      [
+       0.25
+      ]
+     ]
+    ],
+    "indices": [
+     [
+      [
+       0,
+       2
+      ],
+      [
+       2,
+       1
+      ]
+     ]
+    ],
+    "x": [
+     4.0,
+     8.0
+    ]
+   },
+   "note": "product codebook S=2, sub=1: (-1)*4+(0.25)*4 + (1)*8+(-0.5)*8 = 1",
+   "params": {},
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over selected atoms in given order",
+   "engine": "dictionary_arithmetic",
+   "expected": [
+    11.0,
+    0.0,
+    4.0,
+    3.0
+   ],
+   "id": "dictionary_arithmetic_hand",
+   "inputs": {
+    "atom_ids": [
+     0,
+     2
+    ],
+    "coeffs": [
+     3.0,
+     4.0
+    ],
+    "dictionary": [
+     [
+      1.0,
+      0.0,
+      2.0
+     ],
+     [
+      0.0,
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      0.0,
+      1.0
+     ],
+     [
+      1.0,
+      1.0,
+      0.0
+     ]
+    ]
+   },
+   "params": {},
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over residual terms; index 1 is hit twice",
+   "engine": "sparse_residual",
+   "expected": [
+    10.0,
+    26.0,
+    30.0,
+    38.0
+   ],
+   "id": "sparse_residual_collision",
+   "inputs": {
+    "indices": [
+     1,
+     3,
+     1
+    ],
+    "partial": [
+     10.0,
+     20.0,
+     30.0,
+     40.0
+    ],
+    "values": [
+     5.0,
+     -2.0,
+     1.0
+    ]
+   },
+   "params": {},
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over given top-K order [2,0], not sorted ids",
+   "engine": "routed_expert_accumulate",
+   "expected": [
+    4.5,
+    7.0
+   ],
+   "id": "routed_expert_accumulate_hand",
+   "inputs": {
+    "expert_outputs": [
+     [
+      1.0,
+      2.0
+     ],
+     [
+      3.0,
+      4.0
+     ],
+     [
+      5.0,
+      6.0
+     ]
+    ],
+    "scales": [
+     0.5,
+     2.0
+    ],
+    "topk_ids": [
+     2,
+     0
+    ]
+   },
+   "params": {},
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over ki",
+   "engine": "recurrent_state_transition",
+   "expected": {
+    "output": [
+     0.0,
+     1.0
+    ],
+    "state": [
+     [
+      2.0,
+      3.0
+     ],
+     [
+      0.0,
+      1.0
+     ]
+    ]
+   },
+   "id": "recurrent_state_transition_hand",
+   "inputs": {
+    "key": [
+     1.0,
+     0.0
+    ],
+    "query": [
+     0.0,
+     1.0
+    ],
+    "state": [
+     [
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0
+     ]
+    ],
+    "value": [
+     2.0,
+     3.0
+    ]
+   },
+   "params": {
+    "beta": 1.0,
+    "decay": 1.0
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "sequential over D, sequential softmax, sequential over Tk",
+   "engine": "attention_primitives",
+   "expected": {
+    "output": [
+     [
+      2.5378828048706055,
+      3.5378828048706055
+     ]
+    ],
+    "scores": [
+     [
+      1.0,
+      0.0
+     ]
+    ],
+    "weights": [
+     [
+      0.7310585975646973,
+      0.2689414322376251
+     ]
+    ]
+   },
+   "id": "attention_primitives_hand",
+   "inputs": {
+    "k": [
+     [
+      1.0,
+      0.0
+     ],
+     [
+      0.0,
+      1.0
+     ]
+    ],
+    "q": [
+     [
+      1.0,
+      0.0
+     ]
+    ],
+    "v": [
+     [
+      2.0,
+      3.0
+     ],
+     [
+      4.0,
+      5.0
+     ]
+    ]
+   },
+   "params": {
+    "scale": 1.0
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "int64 + is associative: sequential and tree match",
+   "engine": "reductions",
+   "expected": 10,
+   "id": "reductions_int_both_modes",
+   "inputs": {
+    "x": [
+     3,
+     1,
+     4,
+     2
+    ]
+   },
+   "paired_tree_expected": 10,
+   "params": {
+    "int_mode": true,
+    "mode": "sequential"
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "sequential left-to-right float32",
+   "engine": "reductions",
+   "expected": 1.0,
+   "id": "reductions_float_sequential",
+   "inputs": {
+    "x": [
+     1.0,
+     5.960464477539063e-08,
+     5.960464477539063e-08
+    ]
+   },
+   "note": "1.0 + 2^-24 + 2^-24 loses both ulps sequentially",
+   "params": {
+    "mode": "sequential"
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "tree midpoint-split float32",
+   "engine": "reductions",
+   "expected": 1.0000001192092896,
+   "id": "reductions_float_tree",
+   "inputs": {
+    "x": [
+     1.0,
+     5.960464477539063e-08,
+     5.960464477539063e-08
+    ]
+   },
+   "note": "tree pairs the two ulps first; 1.0 + 2^-23 is the next float32 after 1.0",
+   "params": {
+    "mode": "tree"
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "quantize sequential amax; reduce sequential last axis",
+   "engine": "semantic_transport_transform",
+   "expected": {
+    "digest": "2dd32742d69eed1efc2bb463da0b46aaff58abbf6252dd62d823e3402793988f",
+    "packed": null,
+    "pipeline": [
+     "quantize",
+     "transpose",
+     "reduce",
+     "digest"
+    ],
+    "scale": 0.07086614519357681,
+    "tensor": [
+     85,
+     113,
+     141,
+     183
+    ]
+   },
+   "id": "semantic_transport_qtrd",
+   "inputs": {
+    "payload": [
+     [
+      1.0,
+      2.0,
+      3.0,
+      4.0
+     ],
+     [
+      5.0,
+      6.0,
+      7.0,
+      9.0
+     ]
+    ]
+   },
+   "params": {
+    "pipeline": [
+     "quantize",
+     "transpose",
+     "reduce",
+     "digest"
+    ],
+    "quant_bits": 8
+   },
+   "seed": 0
+  },
+  {
+   "associativity": "n/a (bit pack, no reduction)",
+   "engine": "semantic_transport_transform",
+   "expected": {
+    "digest": null,
+    "packed": [
+     104,
+     121,
+     138,
+     133
+    ],
+    "pipeline": [
+     "pack"
+    ],
+    "scale": null,
+    "tensor": [
+     1,
+     -1,
+     2,
+     0,
+     3,
+     1,
+     -2,
+     1
+    ]
+   },
+   "id": "semantic_transport_pack4",
+   "inputs": {
+    "payload": [
+     1,
+     -1,
+     2,
+     0,
+     3,
+     1,
+     -2,
+     1
+    ]
+   },
+   "note": "payload already int-valued codes; pack nibble-packs with bound=7",
+   "params": {
+    "pack_bits": 4,
+    "pipeline": [
+     "pack"
+    ]
+   },
+   "seed": 0
+  }
+ ],
+ "version": 1
+}

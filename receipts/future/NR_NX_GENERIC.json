@@ -1,0 +1,2163 @@
+{
+ "FLASH_NX_READY": false,
+ "GENERIC_NR_NX_PIPELINE_CALLABLE": false,
+ "adaptation": {
+  "architectures": [
+   "Qwen3ForCausalLM"
+  ],
+  "collapse_plan": [
+   {
+    "collapse": "gate_up_swiglu",
+    "down": "model.layers.0.mlp.down_proj.weight",
+    "expert": null,
+    "gate": "model.layers.0.mlp.gate_proj.weight",
+    "layer": 0,
+    "up": "model.layers.0.mlp.up_proj.weight"
+   }
+  ],
+  "compiler_hardcoded_overlap": {
+   "doctor_parent": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+   "doctor_probes": [
+    "model.language_model.layers.2.mlp.gate_proj.weight",
+    "model.language_model.layers.30.mlp.gate_proj.weight",
+    "model.language_model.layers.58.mlp.gate_proj.weight",
+    "model.language_model.layers.2.mlp.down_proj.weight",
+    "model.language_model.layers.30.mlp.down_proj.weight",
+    "model.language_model.layers.58.mlp.down_proj.weight",
+    "model.language_model.layers.3.self_attn.q_proj.weight",
+    "model.language_model.layers.31.self_attn.q_proj.weight",
+    "model.language_model.layers.59.self_attn.q_proj.weight",
+    "model.language_model.layers.2.linear_attn.out_proj.weight",
+    "model.language_model.layers.30.linear_attn.out_proj.weight",
+    "model.language_model.layers.58.linear_attn.out_proj.weight"
+   ],
+   "doctor_probes_absent": [
+    "model.language_model.layers.2.mlp.gate_proj.weight",
+    "model.language_model.layers.30.mlp.gate_proj.weight",
+    "model.language_model.layers.58.mlp.gate_proj.weight",
+    "model.language_model.layers.2.mlp.down_proj.weight",
+    "model.language_model.layers.30.mlp.down_proj.weight",
+    "model.language_model.layers.58.mlp.down_proj.weight",
+    "model.language_model.layers.3.self_attn.q_proj.weight",
+    "model.language_model.layers.31.self_attn.q_proj.weight",
+    "model.language_model.layers.59.self_attn.q_proj.weight",
+    "model.language_model.layers.2.linear_attn.out_proj.weight",
+    "model.language_model.layers.30.linear_attn.out_proj.weight",
+    "model.language_model.layers.58.linear_attn.out_proj.weight"
+   ],
+   "doctor_probes_present": [],
+   "pgc_collapse_absent": [
+    "model.layers.0.mlp.experts.0.gate_proj.weight",
+    "model.layers.0.mlp.experts.0.up_proj.weight",
+    "model.layers.0.mlp.experts.0.down_proj.weight",
+    "model.layers.0.mlp.gate.weight"
+   ],
+   "pgc_collapse_present": []
+  },
+  "family": "dense_swiglu_transformer",
+  "hidden_act": "silu",
+  "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "layer_prefix": "model",
+  "missing": [],
+  "mlp_kind": "dense",
+  "model_type": "qwen3",
+  "moe": false,
+  "n_layers": 28,
+  "n_tensors": 311,
+  "names_via": "model.safetensors header",
+  "num_experts": null,
+  "num_experts_per_tok": null,
+  "ok": true,
+  "pipeline_can_start": true,
+  "probe_plan": [
+   {
+    "layer": 0,
+    "organ": "mlp",
+    "role": "gate",
+    "tensor": "model.layers.0.mlp.gate_proj.weight"
+   },
+   {
+    "layer": 14,
+    "organ": "mlp",
+    "role": "gate",
+    "tensor": "model.layers.14.mlp.gate_proj.weight"
+   },
+   {
+    "layer": 27,
+    "organ": "mlp",
+    "role": "gate",
+    "tensor": "model.layers.27.mlp.gate_proj.weight"
+   },
+   {
+    "layer": 0,
+    "organ": "mlp",
+    "role": "down",
+    "tensor": "model.layers.0.mlp.down_proj.weight"
+   },
+   {
+    "layer": 14,
+    "organ": "mlp",
+    "role": "down",
+    "tensor": "model.layers.14.mlp.down_proj.weight"
+   },
+   {
+    "layer": 27,
+    "organ": "mlp",
+    "role": "down",
+    "tensor": "model.layers.27.mlp.down_proj.weight"
+   },
+   {
+    "layer": 0,
+    "organ": "attention_gqa",
+    "role": "q",
+    "tensor": "model.layers.0.self_attn.q_proj.weight"
+   },
+   {
+    "layer": 14,
+    "organ": "attention_gqa",
+    "role": "q",
+    "tensor": "model.layers.14.self_attn.q_proj.weight"
+   },
+   {
+    "layer": 27,
+    "organ": "attention_gqa",
+    "role": "q",
+    "tensor": "model.layers.27.self_attn.q_proj.weight"
+   }
+  ],
+  "router_collapse": {
+   "applicable": false,
+   "missing_input": null,
+   "template": null,
+   "why": "dense MLP has no expert router; router collapse is not an operator on this architecture"
+  },
+  "swiglu": true,
+  "templates": {
+   "down": "model.layers.{L}.mlp.down_proj.weight",
+   "gate": "model.layers.{L}.mlp.gate_proj.weight",
+   "q_proj": "model.layers.{L}.self_attn.q_proj.weight",
+   "recurrent": null,
+   "router": null,
+   "up": "model.layers.{L}.mlp.up_proj.weight"
+  },
+  "why": "family=dense_swiglu_transformer mlp=dense swiglu=True n_layers=28 n_tensors=311 collapse=1 probes=9; compiler-hardcoded doctor probes present 0/12; compiler-hardcoded PGC MoE tensors present 0/4"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T22:21:50Z",
+  "recorded_by": "tools/future/nr_nx_generic.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "compiler_entry_points": {
+  "ArchitectureRecognizer": "tools/odyssey/arch_recognizer.py:recognize",
+  "DeviceCompiler": "NO CALLABLE; tools/odyssey/noetic_compiler.py BLOCKED map",
+  "Doctor": "parameterized _doctor_stats; doctor_tournament.probes() not called (PARENT hardcoded)",
+  "KernelPlanner": "receipts/headless/KERNEL_LIBRARY.json (no specimen field)",
+  "NoeticExecutable": "tools/headless/first_noetic_executable.py (Qwen38 27B only)",
+  "OrganGraph": "tools/odyssey/physical_graph_compiler.py:organ_graph",
+  "PhysicalGraphCompiler": "parameterized gate_up_swiglu + compiler main() still hardcoded",
+  "RepresentationPlanner": "tools.headless.representation_library.seed (rehearse not called)",
+  "adapt": "tools.future.nr_nx_generic.adapt",
+  "callable_on": "tools.future.nr_nx_generic.callable_on",
+  "native_loader": "crates/hawking-core/src/model/mod.rs",
+  "nx_verifier": "tools.future.flash_nx_audit.py:check_nx",
+  "probe_specimen": "tools.future.nr_nx_generic.probe_specimen",
+  "run": "tools.future.nr_nx_generic.run"
+ },
+ "evidence_class": "STATIC_ONLY",
+ "facts_are_independent": true,
+ "first_failing_stage": {
+  "error": null,
+  "stage": "KernelPlanner",
+  "status": "FAILED",
+  "why": "KERNEL_LIBRARY.json was read and compared to this specimen's organs. role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. None of the 16 role-matched kernels carry this specimen's id or shapes. A shared organ name is not a compiled kernel for this body. specimen_field=None"
+ },
+ "first_nx_lower_failure": {
+  "error": "no_entry_point",
+  "stage": "DeviceCompiler",
+  "status": "BLOCKED",
+  "why": "no DeviceCompiler callable exists in tools/odyssey or hcli. noetic_compiler.BLOCKED['DeviceCompiler'] is a hardcoded note for the Qwen3-30B-A3B pipeline, not a drive of this specimen. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family). adapted family='dense_swiglu_transformer'"
+ },
+ "flash": {
+  "FLASH_NX_READY": false,
+  "failed_requirements": [
+   "complete_byte_ledger",
+   "self_contained_dependencies",
+   "accepted_generation",
+   "capability",
+   "reproducibility",
+   "protected_performance",
+   "no_forbidden_fallback"
+  ],
+  "metadata_only": true,
+  "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+  "promotable": false,
+  "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+  "why": "FLASH_COMPLETE_V0.nx status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; check_nx.promotable=False"
+ },
+ "gaps_closed": [
+  "probe_specimen reads the real safetensors index/header instead of assuming Qwen3.8-27B names",
+  "adapt() derives gate/up/down/router/attention/recurrent templates from the index, not from a specimen-id branch",
+  "callable_on names the first stage that lacks an input instead of a single hardcoded False",
+  "Doctor CPU preconditions run on this specimen's tensors; compiler PARENT probes are overlap evidence only",
+  "PhysicalGraphCompiler SwiGLU collapse runs on dense single-shard names; compiler main() remains hardcoded and is recorded as such",
+  "RepresentationPlanner seeds from representation_library on local organs; rehearse() is not called (it would fetch)",
+  "GENERIC_NR_NX_PIPELINE_CALLABLE stays False: no packed NX was produced"
+ ],
+ "gpu_authority": false,
+ "is_a_measurement": false,
+ "launch_criterion_still_flash_specific": "odyssey_launch._eval_nr_nx keys nr_nx_path_callable on GENERIC_NR_NX_PIPELINE_CALLABLE from this module. FLASH_NX_READY is a separate field. Parameterizing tensor names closed the Doctor/PGC naming miss; it did not pack an NX. The generic path is still not callable, so the launch criterion stays unmet for a precise remaining reason, not the original hardcoded-name reason",
+ "measurement_class": "STATIC_ONLY",
+ "native_engine": {
+  "architectures": [
+   "llama",
+   "llama",
+   "llama2",
+   "llama3",
+   "llama3.1",
+   "llama3.2",
+   "mistral",
+   "deepseek2",
+   "deepseek-v2",
+   "deepseek2-lite",
+   "qwen2",
+   "qwen2.5",
+   "qwen",
+   "qwen2moe",
+   "qwen3moe",
+   "qwen-moe",
+   "rwkv7",
+   "rwkv-7"
+  ],
+  "includes_falcon_h1": false,
+  "includes_qwen2": true,
+  "includes_qwen3_dense": false,
+  "includes_qwen3moe": true,
+  "ok": true,
+  "path": "crates/hawking-core/src/model/mod.rs"
+ },
+ "negative_findings": [
+  "GENERIC_NR_NX_PIPELINE_CALLABLE is False: DeviceCompiler has no callable and no packed NX exists",
+  "FLASH_NX_READY is False; FLASH_COMPLETE_V0.nx remains a metadata seal of a different model",
+  "doctor_tournament.probes() is still hardcoded to Qwen3.8-27B PARENT; it was not called",
+  "physical_graph_compiler.main() still requires model.safetensors.index.json, an X_layer capture, and MoE expert tensors",
+  "KERNEL_LIBRARY.json has no specimen field; role-name overlap is not a kernel for this body",
+  "native engine match arms include qwen2 and qwen3moe, not dense qwen3, not falcon_h1",
+  "no generic NX packer; first_noetic_executable is a 27B mix",
+  "no physical EBPW was written"
+ ],
+ "next_workunits": [
+  {
+   "id": "WU.CPU.nr-nx-generic.device-compiler-entry",
+   "owner": "Codex (native reader + DeviceCompiler are Codex-owned)",
+   "schedule": "CPU_NEXT",
+   "wake": "a DeviceCompiler callable that accepts the adapted family, then a generic NX packer"
+  },
+  {
+   "id": "future.nr-nx-generic.sleep.nx-lower",
+   "schedule": "SLEEPING",
+   "wake_unmet": [
+    "native_engine_match_arm_includes_this_family",
+    "device_compiler_entry_point_exists",
+    "generic_packer_accepts_this_specimen",
+    "packed_source_independent_nx_on_disk"
+   ]
+  }
+ ],
+ "physical_ebpw": null,
+ "physical_ebpw_written": false,
+ "preflight": {
+  "adaptation_family": "dense_swiglu_transformer",
+  "first_failing_stage": "KernelPlanner",
+  "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "missing_input": "KERNEL_LIBRARY has no specimen field and no shape-matched kernels for this specimen",
+  "ok": false,
+  "pipeline_can_start": true,
+  "probe_ok": true,
+  "stage_preview": [
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "SpecimenSelect"
+   },
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "SpecimenPresent"
+   },
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "ArchitectureRecognizer"
+   },
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "OrganGraph"
+   },
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "NrIdentifyOrCreate"
+   },
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "Doctor"
+   },
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "RepresentationPlanner"
+   },
+   {
+    "missing_input": null,
+    "ready": true,
+    "stage": "PhysicalGraphCompiler"
+   },
+   {
+    "missing_input": "KERNEL_LIBRARY has no specimen field and no shape-matched kernels for this specimen",
+    "ready": false,
+    "stage": "KernelPlanner"
+   },
+   {
+    "missing_input": "no DeviceCompiler callable; native GGUF match arms ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7'] do not make a safetensors packer",
+    "ready": false,
+    "stage": "DeviceCompiler"
+   },
+   {
+    "missing_input": "no generic NX packer; first_noetic_executable.py is Qwen3.8-27B-specific",
+    "ready": false,
+    "stage": "NoeticExecutable"
+   },
+   {
+    "missing_input": "no packed NX body",
+    "ready": false,
+    "stage": "SourceIndependence"
+   },
+   {
+    "missing_input": "no packed NX body",
+    "ready": false,
+    "stage": "ExecutableDependencyAccounting"
+   },
+   {
+    "missing_input": "no packed NX body",
+    "ready": false,
+    "stage": "Verifier"
+   }
+  ],
+  "why": "KernelPlanner: KERNEL_LIBRARY has no specimen field and no shape-matched kernels for this specimen"
+ },
+ "probe": {
+  "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "n_tensors": 311,
+  "names_via": "model.safetensors header",
+  "ok": true,
+  "repo": "Qwen/Qwen3-0.6B",
+  "revision": "c1899de289a0",
+  "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+  "why": "read 311 tensor names via model.safetensors header"
+ },
+ "purpose": "Parameterize the NR\u2192NX compiler stages from a specimen's own config and tensor index, drive them on the cheapest whole-tree-verified body adapt() accepts, and keep GENERIC_NR_NX_PIPELINE_CALLABLE separate from FLASH_NX_READY",
+ "recovered_implementation": [
+  "tools/future/nr_nx_generic.py \u2014 EXTENDED: probe_specimen/adapt/callable_on/run; previous stage driver kept and parameterized",
+  "tools/future/nr_nx_path.py \u2014 seven-requirement map, SLEEPING units, physical_ebpw refusal; EXTENDED, not forked",
+  "tools/future/flash_nx_audit.py \u2014 check_nx, evidence_path, METADATA_ONLY, synthetic_promotable_nx",
+  "tools/future/flash_nr_complete.py \u2014 composition NR is not serialized_nr_information",
+  "tools/future/ebpw_categories.py \u2014 typed EBPW; physical remains unwritten",
+  "tools/future/specimen_verify.py \u2014 WHOLE_TREE_VERIFIED list; ModelLake not mutated",
+  "tools/odyssey/arch_recognizer.py \u2014 invoked on local config+names, no network, no weights",
+  "tools/odyssey/physical_graph_compiler.py \u2014 organ_graph + silu invoked; main() still MoE-hardcoded",
+  "tools/odyssey/doctor_tournament.py \u2014 algorithm reused on adapted names; probes() not called",
+  "tools/headless/representation_library.py \u2014 seed() invoked on this specimen's organs",
+  "tools/odyssey/noetic_compiler.py \u2014 BLOCKED map cited as a note, not as a drive of this specimen",
+  "crates/hawking-core/src/model/mod.rs \u2014 shipping GGUF match arms",
+  "tools/future/odyssey_launch.py _eval_nr_nx \u2014 reads GENERIC_NR_NX_PIPELINE_CALLABLE, not rewritten",
+  "tools/future/workunit_species.py emit_hcli_workunit \u2014 SLEEPING unit, never pending"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.nr_nx_generic.run()",
+  "fails_closed": "absent specimen/config/index is REFUSED; a stage that cannot run is FAILED/BLOCKED by name, never SKIPPED; adapt() does not branch on specimen id; source independence fails on a source-tree read; GENERIC_NR_NX_PIPELINE_CALLABLE cannot be True if any stage was skipped or no packed NX exists; physical_ebpw cannot be written",
+  "frontier": "FT.MODEL_EXECUTION.complete-token",
+  "receipt": "receipts/future/NR_NX_GENERIC.json",
+  "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages on a real specimen; no GPU authority; no packer; no minted NX"
+ },
+ "schema": "hawking.future.nr_nx_generic.v1",
+ "seal_sha256": "60a8266fe9d894be3a82377026bb692cac535e70c9d375afd5e66cab85099a8e",
+ "sleeping_workunit": {
+  "blocked_reason": "NX_LOWER blocked at stage DeviceCompiler: no_entry_point",
+  "classification": "SLEEPING",
+  "exact_error": "no_entry_point",
+  "first_failing_stage": "DeviceCompiler",
+  "id": "future.nr-nx-generic.sleep.nx-lower",
+  "resource_class": "COMPILE",
+  "status": "sleeping",
+  "synthetic_result_forbidden": true,
+  "verifier": "future.nr_nx_generic.source_independence",
+  "wake_conditions": [
+   {
+    "evidence": "parameterized gate_up_swiglu numerically equivalent on this specimen",
+    "holds": true,
+    "id": "parameterized_physical_graph_holds"
+   },
+   {
+    "evidence": "architectures=['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']",
+    "holds": false,
+    "id": "native_engine_match_arm_includes_this_family"
+   },
+   {
+    "evidence": "no DeviceCompiler callable; noetic_compiler.BLOCKED is a note, not a driver",
+    "holds": false,
+    "id": "device_compiler_entry_point_exists"
+   },
+   {
+    "evidence": "first_noetic_executable.py is Qwen3.8-27B-specific",
+    "holds": false,
+    "id": "generic_packer_accepts_this_specimen"
+   },
+   {
+    "evidence": "no NX body was packed for this specimen; a metadata seal of another model is not this path",
+    "holds": false,
+    "id": "packed_source_independent_nx_on_disk"
+   }
+  ],
+  "wake_unmet": [
+   "native_engine_match_arm_includes_this_family",
+   "device_compiler_entry_point_exists",
+   "generic_packer_accepts_this_specimen",
+   "packed_source_independent_nx_on_disk"
+  ]
+ },
+ "sparse_sys_path_added": [],
+ "specimen": {
+  "adaptation": {
+   "architectures": [
+    "Qwen3ForCausalLM"
+   ],
+   "collapse_plan": [
+    {
+     "collapse": "gate_up_swiglu",
+     "down": "model.layers.0.mlp.down_proj.weight",
+     "expert": null,
+     "gate": "model.layers.0.mlp.gate_proj.weight",
+     "layer": 0,
+     "up": "model.layers.0.mlp.up_proj.weight"
+    }
+   ],
+   "compiler_hardcoded_overlap": {
+    "doctor_parent": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+    "doctor_probes": [
+     "model.language_model.layers.2.mlp.gate_proj.weight",
+     "model.language_model.layers.30.mlp.gate_proj.weight",
+     "model.language_model.layers.58.mlp.gate_proj.weight",
+     "model.language_model.layers.2.mlp.down_proj.weight",
+     "model.language_model.layers.30.mlp.down_proj.weight",
+     "model.language_model.layers.58.mlp.down_proj.weight",
+     "model.language_model.layers.3.self_attn.q_proj.weight",
+     "model.language_model.layers.31.self_attn.q_proj.weight",
+     "model.language_model.layers.59.self_attn.q_proj.weight",
+     "model.language_model.layers.2.linear_attn.out_proj.weight",
+     "model.language_model.layers.30.linear_attn.out_proj.weight",
+     "model.language_model.layers.58.linear_attn.out_proj.weight"
+    ],
+    "doctor_probes_absent": [
+     "model.language_model.layers.2.mlp.gate_proj.weight",
+     "model.language_model.layers.30.mlp.gate_proj.weight",
+     "model.language_model.layers.58.mlp.gate_proj.weight",
+     "model.language_model.layers.2.mlp.down_proj.weight",
+     "model.language_model.layers.30.mlp.down_proj.weight",
+     "model.language_model.layers.58.mlp.down_proj.weight",
+     "model.language_model.layers.3.self_attn.q_proj.weight",
+     "model.language_model.layers.31.self_attn.q_proj.weight",
+     "model.language_model.layers.59.self_attn.q_proj.weight",
+     "model.language_model.layers.2.linear_attn.out_proj.weight",
+     "model.language_model.layers.30.linear_attn.out_proj.weight",
+     "model.language_model.layers.58.linear_attn.out_proj.weight"
+    ],
+    "doctor_probes_present": [],
+    "pgc_collapse_absent": [
+     "model.layers.0.mlp.experts.0.gate_proj.weight",
+     "model.layers.0.mlp.experts.0.up_proj.weight",
+     "model.layers.0.mlp.experts.0.down_proj.weight",
+     "model.layers.0.mlp.gate.weight"
+    ],
+    "pgc_collapse_present": []
+   },
+   "family": "dense_swiglu_transformer",
+   "hidden_act": "silu",
+   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "layer_prefix": "model",
+   "missing": [],
+   "mlp_kind": "dense",
+   "model_type": "qwen3",
+   "moe": false,
+   "n_layers": 28,
+   "n_tensors": 311,
+   "names_via": "model.safetensors header",
+   "num_experts": null,
+   "num_experts_per_tok": null,
+   "ok": true,
+   "pipeline_can_start": true,
+   "probe_plan": [
+    {
+     "layer": 0,
+     "organ": "mlp",
+     "role": "gate",
+     "tensor": "model.layers.0.mlp.gate_proj.weight"
+    },
+    {
+     "layer": 14,
+     "organ": "mlp",
+     "role": "gate",
+     "tensor": "model.layers.14.mlp.gate_proj.weight"
+    },
+    {
+     "layer": 27,
+     "organ": "mlp",
+     "role": "gate",
+     "tensor": "model.layers.27.mlp.gate_proj.weight"
+    },
+    {
+     "layer": 0,
+     "organ": "mlp",
+     "role": "down",
+     "tensor": "model.layers.0.mlp.down_proj.weight"
+    },
+    {
+     "layer": 14,
+     "organ": "mlp",
+     "role": "down",
+     "tensor": "model.layers.14.mlp.down_proj.weight"
+    },
+    {
+     "layer": 27,
+     "organ": "mlp",
+     "role": "down",
+     "tensor": "model.layers.27.mlp.down_proj.weight"
+    },
+    {
+     "layer": 0,
+     "organ": "attention_gqa",
+     "role": "q",
+     "tensor": "model.layers.0.self_attn.q_proj.weight"
+    },
+    {
+     "layer": 14,
+     "organ": "attention_gqa",
+     "role": "q",
+     "tensor": "model.layers.14.self_attn.q_proj.weight"
+    },
+    {
+     "layer": 27,
+     "organ": "attention_gqa",
+     "role": "q",
+     "tensor": "model.layers.27.self_attn.q_proj.weight"
+    }
+   ],
+   "router_collapse": {
+    "applicable": false,
+    "missing_input": null,
+    "template": null,
+    "why": "dense MLP has no expert router; router collapse is not an operator on this architecture"
+   },
+   "swiglu": true,
+   "templates": {
+    "down": "model.layers.{L}.mlp.down_proj.weight",
+    "gate": "model.layers.{L}.mlp.gate_proj.weight",
+    "q_proj": "model.layers.{L}.self_attn.q_proj.weight",
+    "recurrent": null,
+    "router": null,
+    "up": "model.layers.{L}.mlp.up_proj.weight"
+   },
+   "why": "family=dense_swiglu_transformer mlp=dense swiglu=True n_layers=28 n_tensors=311 collapse=1 probes=9; compiler-hardcoded doctor probes present 0/12; compiler-hardcoded PGC MoE tensors present 0/4"
+  },
+  "architectures_expected": [
+   "Qwen3ForCausalLM"
+  ],
+  "attempts": [
+   {
+    "chosen": true,
+    "family": "dense_swiglu_transformer",
+    "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "mlp_kind": "dense",
+    "n_tensors": 311,
+    "names_via": "model.safetensors header",
+    "not_chosen_because": null,
+    "pipeline_can_start": true,
+    "present": true,
+    "verified": true
+   },
+   {
+    "chosen": false,
+    "family": "hybrid_recurrent",
+    "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+    "mlp_kind": "dense",
+    "n_tensors": 751,
+    "names_via": "model.safetensors.index.json",
+    "not_chosen_because": null,
+    "pipeline_can_start": true,
+    "present": true,
+    "verified": true
+   },
+   {
+    "chosen": false,
+    "family": "moe_swiglu_transformer",
+    "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+    "mlp_kind": "moe",
+    "n_tensors": 18867,
+    "names_via": "model.safetensors.index.json",
+    "not_chosen_because": null,
+    "pipeline_can_start": true,
+    "present": true,
+    "verified": true
+   }
+  ],
+  "bytes_hashed": 1519209243,
+  "family": "dense_swiglu_transformer",
+  "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+  "lake_mounted": true,
+  "later_candidates": [
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1"
+  ],
+  "n_files": 10,
+  "ok": true,
+  "probe": {
+   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "n_tensors": 311,
+   "names_via": "model.safetensors header",
+   "ok": true,
+   "repo": "Qwen/Qwen3-0.6B",
+   "revision": "c1899de289a0",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+   "why": "read 311 tensor names via model.safetensors header"
+  },
+  "repo": "Qwen/Qwen3-0.6B",
+  "revision": "c1899de289a0",
+  "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+  "verification_status": "WHOLE_TREE_VERIFIED",
+  "verification_via": "/Users/scammermike/Downloads/hawking/receipts/future/SPECIMEN_VERIFICATION.json",
+  "why_chosen": "first cheapness-ordered candidate whose adapt() derived a SwiGLU collapse and a probe plan from this specimen's own index (family=dense_swiglu_transformer, mlp=dense, n_tensors=311, via=model.safetensors header)",
+  "why_not_later_candidates": "later candidates were not needed; adapt() already accepted a cheaper body. tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: not reached; Qwen--Qwen3-30B-A3B@ad44e777bcd1: not reached"
+ },
+ "stages": [
+  {
+   "error": null,
+   "evidence": {
+    "attempts": [
+     {
+      "chosen": true,
+      "family": "dense_swiglu_transformer",
+      "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+      "mlp_kind": "dense",
+      "n_tensors": 311,
+      "names_via": "model.safetensors header",
+      "not_chosen_because": null,
+      "pipeline_can_start": true,
+      "present": true,
+      "verified": true
+     },
+     {
+      "chosen": false,
+      "family": "hybrid_recurrent",
+      "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+      "mlp_kind": "dense",
+      "n_tensors": 751,
+      "names_via": "model.safetensors.index.json",
+      "not_chosen_because": null,
+      "pipeline_can_start": true,
+      "present": true,
+      "verified": true
+     },
+     {
+      "chosen": false,
+      "family": "moe_swiglu_transformer",
+      "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+      "mlp_kind": "moe",
+      "n_tensors": 18867,
+      "names_via": "model.safetensors.index.json",
+      "not_chosen_because": null,
+      "pipeline_can_start": true,
+      "present": true,
+      "verified": true
+     }
+    ],
+    "bytes_hashed": 1519209243,
+    "family": "dense_swiglu_transformer",
+    "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "repo": "Qwen/Qwen3-0.6B",
+    "why_not_later_candidates": "later candidates were not needed; adapt() already accepted a cheaper body. tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: not reached; Qwen--Qwen3-30B-A3B@ad44e777bcd1: not reached"
+   },
+   "invoked": true,
+   "stage": "SpecimenSelect",
+   "status": "PASSED",
+   "why": "first cheapness-ordered candidate whose adapt() derived a SwiGLU collapse and a probe plan from this specimen's own index (family=dense_swiglu_transformer, mlp=dense, n_tensors=311, via=model.safetensors header)"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "index_json": false,
+    "model_safetensors_bytes": 1503300328,
+    "n_tensors": 311,
+    "names_via": "model.safetensors header",
+    "on_disk": true,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+    "single_shard": true
+   },
+   "invoked": true,
+   "stage": "SpecimenPresent",
+   "status": "PASSED",
+   "why": "specimen config and tensor names are in hand (index or header, not assumed)"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "compiler_as_invoked_novelty": {
+     "n_unrecognized_clusters": 0,
+     "new_scale_regime": 28,
+     "novel_axes": [],
+     "novel_organs": [
+      "lm_head",
+      "rmsnorm"
+     ],
+     "transfer_test_value": 1.0
+    },
+    "compiler_known_organs_empty_in_this_checkout": false,
+    "did_not_fetch_network": true,
+    "folded_organ": null,
+    "library_present": true,
+    "library_via": "/Users/scammermike/Downloads/hawking/receipts/headless/ORGAN_FRONTIER_MATRIX.json",
+    "loaded_weights": false,
+    "model_type": "qwen3",
+    "n_tensors": 311,
+    "n_unmatched": 0,
+    "names_via": "model.safetensors header",
+    "organs": [
+     {
+      "confidence": 0.32,
+      "example": [
+       "model.embed_tokens.weight"
+      ],
+      "n_layers": 0,
+      "n_tensors": 1,
+      "organ": "embed",
+      "status": "KNOWN"
+     },
+     {
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.self_attn.k_proj.weight",
+       "model.layers.0.self_attn.o_proj.weight"
+      ],
+      "n_layers": 28,
+      "n_tensors": 112,
+      "organ": "gqa_attention",
+      "status": "KNOWN"
+     },
+     {
+      "confidence": 0.32,
+      "example": [
+       "lm_head.weight"
+      ],
+      "n_layers": 0,
+      "n_tensors": 1,
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED"
+     },
+     {
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.mlp.down_proj.weight",
+       "model.layers.1.mlp.down_proj.weight"
+      ],
+      "n_layers": 28,
+      "n_tensors": 28,
+      "organ": "mlp_down",
+      "status": "KNOWN"
+     },
+     {
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.mlp.gate_proj.weight",
+       "model.layers.0.mlp.up_proj.weight"
+      ],
+      "n_layers": 28,
+      "n_tensors": 56,
+      "organ": "mlp_gate_up",
+      "status": "KNOWN"
+     },
+     {
+      "confidence": 0.98,
+      "example": [
+       "model.layers.0.input_layernorm.weight",
+       "model.layers.0.post_attention_layernorm.weight"
+      ],
+      "n_layers": 28,
+      "n_tensors": 113,
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED"
+     }
+    ],
+    "repo": "Qwen/Qwen3-0.6B",
+    "revision": "c1899de289a0",
+    "unrecognized": []
+   },
+   "invoked": true,
+   "loaded_weights": false,
+   "stage": "ArchitectureRecognizer",
+   "status": "PASSED",
+   "why": "invoked tools.odyssey.arch_recognizer.recognize on local config+tensor names (model.safetensors header); 6 organs, unmatched=0; weights were not loaded"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "folded_organ": null,
+    "law": "an organ is a ROLE, not a tensor name; feed_forward.w1 and mlp.gate_proj are the same node",
+    "n_nodes": 6,
+    "n_unrecognized": 0,
+    "nodes": [
+     {
+      "n_layers": 0,
+      "n_tensors": 1,
+      "organ": "embed",
+      "status": "KNOWN"
+     },
+     {
+      "n_layers": 28,
+      "n_tensors": 112,
+      "organ": "gqa_attention",
+      "status": "KNOWN"
+     },
+     {
+      "n_layers": 0,
+      "n_tensors": 1,
+      "organ": "lm_head",
+      "status": "DECLARED_UNMEASURED"
+     },
+     {
+      "n_layers": 28,
+      "n_tensors": 28,
+      "organ": "mlp_down",
+      "status": "KNOWN"
+     },
+     {
+      "n_layers": 28,
+      "n_tensors": 56,
+      "organ": "mlp_gate_up",
+      "status": "KNOWN"
+     },
+     {
+      "n_layers": 28,
+      "n_tensors": 113,
+      "organ": "rmsnorm",
+      "status": "DECLARED_UNMEASURED"
+     }
+    ]
+   },
+   "invoked": true,
+   "stage": "OrganGraph",
+   "status": "PASSED",
+   "why": "invoked tools.odyssey.physical_graph_compiler.organ_graph (CPU, no weight load)"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "claim_boundary": "exact-control occupying per organ. COMPILE_TIME_SCIENCE_ONLY. Not a packed NR. Not physical EBPW",
+    "flash_nr_is_this_specimen": false,
+    "flash_nr_v2_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+    "flash_nr_v2_status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION",
+    "kind": "COMPOSITION_ORGAN_INVENTORY",
+    "organ_count": 6,
+    "organs": [
+     {
+      "n_tensors": 1,
+      "occupying": {
+       "kind": "EXACT_CONTROL_FALLBACK",
+       "representation": "source_bf16_exact",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "embed",
+      "packed_nr_information": false
+     },
+     {
+      "n_tensors": 112,
+      "occupying": {
+       "kind": "EXACT_CONTROL_FALLBACK",
+       "representation": "source_bf16_exact",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "gqa_attention",
+      "packed_nr_information": false
+     },
+     {
+      "n_tensors": 1,
+      "occupying": {
+       "kind": "EXACT_CONTROL_FALLBACK",
+       "representation": "source_bf16_exact",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "lm_head",
+      "packed_nr_information": false
+     },
+     {
+      "n_tensors": 28,
+      "occupying": {
+       "kind": "EXACT_CONTROL_FALLBACK",
+       "representation": "source_bf16_exact",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "mlp_down",
+      "packed_nr_information": false
+     },
+     {
+      "n_tensors": 56,
+      "occupying": {
+       "kind": "EXACT_CONTROL_FALLBACK",
+       "representation": "source_bf16_exact",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "mlp_gate_up",
+      "packed_nr_information": false
+     },
+     {
+      "n_tensors": 113,
+      "occupying": {
+       "kind": "EXACT_CONTROL_FALLBACK",
+       "representation": "source_bf16_exact",
+       "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
+      },
+      "organ": "rmsnorm",
+      "packed_nr_information": false
+     }
+    ],
+    "packed": false,
+    "specimen": "Qwen--Qwen3-0.6B@c1899de289a0"
+   },
+   "invoked": true,
+   "stage": "NrIdentifyOrCreate",
+   "status": "PASSED",
+   "why": "identified a composition organ inventory for this specimen. Packed NR information payload is NOT_BUILT; composition bytes are not serialized_nr_information. Flash NR V2 is a different model"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "adapted_probe_tensors": [
+     "model.layers.0.mlp.gate_proj.weight",
+     "model.layers.14.mlp.gate_proj.weight",
+     "model.layers.27.mlp.gate_proj.weight",
+     "model.layers.0.mlp.down_proj.weight",
+     "model.layers.14.mlp.down_proj.weight",
+     "model.layers.27.mlp.down_proj.weight",
+     "model.layers.0.self_attn.q_proj.weight",
+     "model.layers.14.self_attn.q_proj.weight",
+     "model.layers.27.self_attn.q_proj.weight"
+    ],
+    "claim_boundary": "CPU weights-only preconditions. Not a hardware measurement. Not physical EBPW. Not a packed NR.",
+    "compiler_hardcoded_overlap": {
+     "doctor_parent": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "doctor_probes": [
+      "model.language_model.layers.2.mlp.gate_proj.weight",
+      "model.language_model.layers.30.mlp.gate_proj.weight",
+      "model.language_model.layers.58.mlp.gate_proj.weight",
+      "model.language_model.layers.2.mlp.down_proj.weight",
+      "model.language_model.layers.30.mlp.down_proj.weight",
+      "model.language_model.layers.58.mlp.down_proj.weight",
+      "model.language_model.layers.3.self_attn.q_proj.weight",
+      "model.language_model.layers.31.self_attn.q_proj.weight",
+      "model.language_model.layers.59.self_attn.q_proj.weight",
+      "model.language_model.layers.2.linear_attn.out_proj.weight",
+      "model.language_model.layers.30.linear_attn.out_proj.weight",
+      "model.language_model.layers.58.linear_attn.out_proj.weight"
+     ],
+     "doctor_probes_absent": [
+      "model.language_model.layers.2.mlp.gate_proj.weight",
+      "model.language_model.layers.30.mlp.gate_proj.weight",
+      "model.language_model.layers.58.mlp.gate_proj.weight",
+      "model.language_model.layers.2.mlp.down_proj.weight",
+      "model.language_model.layers.30.mlp.down_proj.weight",
+      "model.language_model.layers.58.mlp.down_proj.weight",
+      "model.language_model.layers.3.self_attn.q_proj.weight",
+      "model.language_model.layers.31.self_attn.q_proj.weight",
+      "model.language_model.layers.59.self_attn.q_proj.weight",
+      "model.language_model.layers.2.linear_attn.out_proj.weight",
+      "model.language_model.layers.30.linear_attn.out_proj.weight",
+      "model.language_model.layers.58.linear_attn.out_proj.weight"
+     ],
+     "doctor_probes_present": [],
+     "pgc_collapse_absent": [
+      "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "model.layers.0.mlp.experts.0.up_proj.weight",
+      "model.layers.0.mlp.experts.0.down_proj.weight",
+      "model.layers.0.mlp.gate.weight"
+     ],
+     "pgc_collapse_present": []
+    },
+    "cross_layer": {
+     "attention_gqa": {
+      "max_abs_cosine": 0.00141,
+      "pairs": [
+       {
+        "cosine": 0.00031,
+        "layers": [
+         0,
+         14
+        ]
+       },
+       {
+        "cosine": -0.00113,
+        "layers": [
+         0,
+         27
+        ]
+       },
+       {
+        "cosine": -0.00141,
+        "layers": [
+         14,
+         27
+        ]
+       }
+      ]
+     },
+     "mlp": {
+      "max_abs_cosine": 0.0023,
+      "pairs": [
+       {
+        "cosine": -0.00192,
+        "layers": [
+         0,
+         14
+        ]
+       },
+       {
+        "cosine": -0.00119,
+        "layers": [
+         0,
+         27
+        ]
+       },
+       {
+        "cosine": 0.0023,
+        "layers": [
+         14,
+         27
+        ]
+       }
+      ]
+     }
+    },
+    "diagnosis": {
+     "attention_gqa": [
+      {
+       "excess_kurtosis": 3.758,
+       "full_rank": 1024,
+       "layer": 0,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.002563,
+       "r90_over_full_rank": 0.5938,
+       "rank_for_50pct_energy": 182,
+       "rank_for_90pct_energy": 608,
+       "shape": [
+        2048,
+        1024
+       ],
+       "tensor": "model.layers.0.self_attn.q_proj.weight"
+      },
+      {
+       "excess_kurtosis": 3.922,
+       "full_rank": 1024,
+       "layer": 14,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.004615,
+       "r90_over_full_rank": 0.4648,
+       "rank_for_50pct_energy": 118,
+       "rank_for_90pct_energy": 476,
+       "shape": [
+        2048,
+        1024
+       ],
+       "tensor": "model.layers.14.self_attn.q_proj.weight"
+      },
+      {
+       "excess_kurtosis": 2.502,
+       "full_rank": 1024,
+       "layer": 27,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.002929,
+       "r90_over_full_rank": 0.5859,
+       "rank_for_50pct_energy": 180,
+       "rank_for_90pct_energy": 600,
+       "shape": [
+        2048,
+        1024
+       ],
+       "tensor": "model.layers.27.self_attn.q_proj.weight"
+      }
+     ],
+     "mlp": [
+      {
+       "excess_kurtosis": 1.024,
+       "full_rank": 1024,
+       "layer": 0,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.001234,
+       "r90_over_full_rank": 0.6084,
+       "rank_for_50pct_energy": 185,
+       "rank_for_90pct_energy": 623,
+       "shape": [
+        2048,
+        1024
+       ],
+       "tensor": "model.layers.0.mlp.gate_proj.weight"
+      },
+      {
+       "excess_kurtosis": 3.111,
+       "full_rank": 1024,
+       "layer": 14,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.002818,
+       "r90_over_full_rank": 0.5488,
+       "rank_for_50pct_energy": 163,
+       "rank_for_90pct_energy": 562,
+       "shape": [
+        2048,
+        1024
+       ],
+       "tensor": "model.layers.14.mlp.gate_proj.weight"
+      },
+      {
+       "excess_kurtosis": 11.536,
+       "full_rank": 1024,
+       "layer": 27,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.002116,
+       "r90_over_full_rank": 0.6025,
+       "rank_for_50pct_energy": 180,
+       "rank_for_90pct_energy": 617,
+       "shape": [
+        2048,
+        1024
+       ],
+       "tensor": "model.layers.27.mlp.gate_proj.weight"
+      },
+      {
+       "excess_kurtosis": 0.561,
+       "full_rank": 1024,
+       "layer": 0,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.000431,
+       "r90_over_full_rank": 0.7168,
+       "rank_for_50pct_energy": 278,
+       "rank_for_90pct_energy": 734,
+       "shape": [
+        1024,
+        3072
+       ],
+       "tensor": "model.layers.0.mlp.down_proj.weight"
+      },
+      {
+       "excess_kurtosis": 1.187,
+       "full_rank": 1024,
+       "layer": 14,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.001047,
+       "r90_over_full_rank": 0.6074,
+       "rank_for_50pct_energy": 194,
+       "rank_for_90pct_energy": 622,
+       "shape": [
+        1024,
+        3072
+       ],
+       "tensor": "model.layers.14.mlp.down_proj.weight"
+      },
+      {
+       "excess_kurtosis": 1.508,
+       "full_rank": 1024,
+       "layer": 27,
+       "near_zero_row_frac": 0.0,
+       "outlier_frac_beyond_4sigma": 0.000743,
+       "r90_over_full_rank": 0.7051,
+       "rank_for_50pct_energy": 262,
+       "rank_for_90pct_energy": 722,
+       "shape": [
+        1024,
+        3072
+       ],
+       "tensor": "model.layers.27.mlp.down_proj.weight"
+      }
+     ]
+    },
+    "did_not_call_probes": true,
+    "did_not_load_compiler_parent": true,
+    "entry_point": "tools.future.nr_nx_generic._doctor_stats (doctor_tournament algorithm, parameterized names)",
+    "loaded_weights": true,
+    "n_probed": 9
+   },
+   "invoked": true,
+   "loaded_weights": true,
+   "stage": "Doctor",
+   "status": "PASSED",
+   "why": "weights-only preconditions on 9 tensors derived from this specimen's index (not doctor_tournament.PROBE_TENSORS / PARENT). probes() was not called: it hardcodes PARENT=/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16. compiler-hardcoded names present 0/12"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "claim_boundary": "COMPILE_TIME_SCIENCE_ONLY candidate ranking. MODEL_SPECIFIC Qwen failures warn, they do not prune. Not a packed NR. Not physical EBPW",
+    "did_not_call_rehearse": true,
+    "did_not_fetch_network": true,
+    "entry_point": "tools.headless.representation_library.seed",
+    "organs_seeded": [
+     "embed",
+     "gqa_attention",
+     "lm_head",
+     "mlp_down",
+     "mlp_gate_up",
+     "rmsnorm"
+    ],
+    "seeds": [
+     {
+      "arch_class": "qwen3",
+      "family_name": "embed",
+      "law": "a MODEL_SPECIFIC failure on another architecture warns, it never prunes (directive \u00a781)",
+      "n_excluded": 0,
+      "n_ranked": 20,
+      "organ": "embed",
+      "top": [
+       {
+        "evidence": "measured coherent on embed for qwen3.8-27b-abliterated",
+        "family": "conventional_low_bit",
+        "score": 2.5
+       },
+       {
+        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
+        "family": "shared_basis",
+        "score": 1.267
+       },
+       {
+        "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
+        "family": "q2_affine",
+        "score": 1.07
+       }
+      ]
+     },
+     {
+      "arch_class": "qwen3",
+      "family_name": "gqa_attention",
+      "law": "a MODEL_SPECIFIC failure on another architecture warns, it never prunes (directive \u00a781)",
+      "n_excluded": 0,
+      "n_ranked": 20,
+      "organ": "gqa_attention",
+      "top": [
+       {
+        "evidence": "measured coherent on gqa_attention for qwen3.8-27b-abliterated",
+        "family": "conventional_low_bit",
+        "score": 2.5
+       },
+       {
+        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
+        "family": "shared_basis",
+        "score": 1.267
+       },
+       {
+        "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
+        "family": "q2_affine",
+        "score": 1.07
+       }
+      ]
+     },
+     {
+      "arch_class": "qwen3",
+      "family_name": "lm_head",
+      "law": "a MODEL_SPECIFIC failure on another architecture warns, it never prunes (directive \u00a781)",
+      "n_excluded": 0,
+      "n_ranked": 20,
+      "organ": "lm_head",
+      "top": [
+       {
+        "evidence": "measured coherent on lm_head for qwen3.8-27b-abliterated",
+        "family": "conventional_low_bit",
+        "score": 2.5
+       },
+       {
+        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
+        "family": "shared_basis",
+        "score": 1.267
+       },
+       {
+        "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
+        "family": "q2_affine",
+        "score": 1.07
+       }
+      ]
+     },
+     {
+      "arch_class": "qwen3",
+      "family_name": "mlp_down",
+      "law": "a MODEL_SPECIFIC failure on another architecture warns, it never prunes (directive \u00a781)",
+      "n_excluded": 0,
+      "n_ranked": 20,
+      "organ": "mlp_down",
+      "top": [
+       {
+        "evidence": "measured coherent on mlp_down for qwen3.8-27b-abliterated; measured density frontier 1.25 bpw",
+        "family": "binary",
+        "score": 3.0
+       },
+       {
+        "evidence": "measured coherent on mlp_down for qwen3.8-27b-abliterated; measured density frontier 2.25 bpw",
+        "family": "q2_affine",
+        "score": 3.0
+       },
+       {
+        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
+        "family": "shared_basis",
+        "score": 1.267
+       }
+      ]
+     },
+     {
+      "arch_class": "qwen3",
+      "family_name": "mlp_gate_up",
+      "law": "a MODEL_SPECIFIC failure on another architecture warns, it never prunes (directive \u00a781)",
+      "n_excluded": 0,
+      "n_ranked": 20,
+      "organ": "mlp_gate_up",
+      "top": [
+       {
+        "evidence": "measured coherent on mlp_gate_up for qwen3.8-27b-abliterated; measured density frontier 1.25 bpw",
+        "family": "binary",
+        "score": 3.0
+       },
+       {
+        "evidence": "measured coherent on mlp_gate_up for qwen3.8-27b-abliterated; measured density frontier 2.25 bpw",
+        "family": "q2_affine",
+        "score": 3.0
+       },
+       {
+        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
+        "family": "shared_basis",
+        "score": 1.267
+       }
+      ]
+     },
+     {
+      "arch_class": "qwen3",
+      "family_name": "normalization",
+      "law": "a MODEL_SPECIFIC failure on another architecture warns, it never prunes (directive \u00a781)",
+      "n_excluded": 0,
+      "n_ranked": 20,
+      "organ": "rmsnorm",
+      "top": [
+       {
+        "evidence": "measured coherent on normalization for qwen3.8-27b-abliterated; measured density frontier 32.0 bpw",
+        "family": "leftover_f32",
+        "score": 2.535
+       },
+       {
+        "evidence": "measured density frontier 0.53125 bpw; attacks ZERO_INDEPENDENT_INFORMATION, searched before plain representation; unknown organ: conservative prior favours the higher-precision family (0.53125 bpw)",
+        "family": "shared_basis",
+        "score": 1.267
+       },
+       {
+        "evidence": "measured density frontier 2.25 bpw; unknown organ: conservative prior favours the higher-precision family (2.25 bpw)",
+        "family": "q2_affine",
+        "score": 1.07
+       }
+      ]
+     }
+    ]
+   },
+   "invoked": true,
+   "stage": "RepresentationPlanner",
+   "status": "PASSED",
+   "why": "invoked tools.headless.representation_library.seed on this specimen's organs (['embed', 'gqa_attention', 'lm_head', 'mlp_down', 'mlp_gate_up', 'rmsnorm']) and arch_class='qwen3'. rehearse() was not called (it fetches when fixtures miss). This is a seeded candidate list, not a packed representation"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "collapse_plan": [
+     {
+      "collapse": "gate_up_swiglu",
+      "down": "model.layers.0.mlp.down_proj.weight",
+      "expert": null,
+      "gate": "model.layers.0.mlp.gate_proj.weight",
+      "layer": 0,
+      "up": "model.layers.0.mlp.up_proj.weight"
+     }
+    ],
+    "compiler_hardcoded_overlap": {
+     "doctor_parent": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "doctor_probes": [
+      "model.language_model.layers.2.mlp.gate_proj.weight",
+      "model.language_model.layers.30.mlp.gate_proj.weight",
+      "model.language_model.layers.58.mlp.gate_proj.weight",
+      "model.language_model.layers.2.mlp.down_proj.weight",
+      "model.language_model.layers.30.mlp.down_proj.weight",
+      "model.language_model.layers.58.mlp.down_proj.weight",
+      "model.language_model.layers.3.self_attn.q_proj.weight",
+      "model.language_model.layers.31.self_attn.q_proj.weight",
+      "model.language_model.layers.59.self_attn.q_proj.weight",
+      "model.language_model.layers.2.linear_attn.out_proj.weight",
+      "model.language_model.layers.30.linear_attn.out_proj.weight",
+      "model.language_model.layers.58.linear_attn.out_proj.weight"
+     ],
+     "doctor_probes_absent": [
+      "model.language_model.layers.2.mlp.gate_proj.weight",
+      "model.language_model.layers.30.mlp.gate_proj.weight",
+      "model.language_model.layers.58.mlp.gate_proj.weight",
+      "model.language_model.layers.2.mlp.down_proj.weight",
+      "model.language_model.layers.30.mlp.down_proj.weight",
+      "model.language_model.layers.58.mlp.down_proj.weight",
+      "model.language_model.layers.3.self_attn.q_proj.weight",
+      "model.language_model.layers.31.self_attn.q_proj.weight",
+      "model.language_model.layers.59.self_attn.q_proj.weight",
+      "model.language_model.layers.2.linear_attn.out_proj.weight",
+      "model.language_model.layers.30.linear_attn.out_proj.weight",
+      "model.language_model.layers.58.linear_attn.out_proj.weight"
+     ],
+     "doctor_probes_present": [],
+     "pgc_collapse_absent": [
+      "model.layers.0.mlp.experts.0.gate_proj.weight",
+      "model.layers.0.mlp.experts.0.up_proj.weight",
+      "model.layers.0.mlp.experts.0.down_proj.weight",
+      "model.layers.0.mlp.gate.weight"
+     ],
+     "pgc_collapse_present": []
+    },
+    "compiler_main": "tools/odyssey/physical_graph_compiler.py:main",
+    "compiler_main_invoked": true,
+    "compiler_main_returncode": 1,
+    "emit_written": false,
+    "entry_point": "tools.future.nr_nx_generic._parameterized_gate_up_swiglu",
+    "index_json_present": false,
+    "parameterized_collapse": {
+     "collapse": "gate_up_swiglu",
+     "down": "model.layers.0.mlp.down_proj.weight",
+     "gate": "model.layers.0.mlp.gate_proj.weight",
+     "intermediates_materialized_after": 0,
+     "intermediates_materialized_before": 2,
+     "max_abs_diff": 0.0,
+     "max_abs_value": 6.685502489290258,
+     "n_physical_nodes": 1,
+     "n_source_nodes": 4,
+     "numerically_equivalent": true,
+     "physical_nodes": [
+      "gate_up_swiglu (one fused operator)"
+     ],
+     "relative": 0.0,
+     "semantic_justification": "gate and up read the same activation vector and their outputs are consumed only by the SwiGLU, so the intermediates are not observable outside the region",
+     "source_nodes": [
+      "gate_proj matvec",
+      "up_proj matvec",
+      "silu",
+      "elementwise multiply"
+     ],
+     "tolerance": 1e-09,
+     "up": "model.layers.0.mlp.up_proj.weight",
+     "used_compiler_silu": true,
+     "weight_reads_after": 2,
+     "weight_reads_before": 3
+    },
+    "parameterized_error": null,
+    "router_collapse": {
+     "applicable": false,
+     "missing_input": null,
+     "template": null,
+     "why": "dense MLP has no expert router; router collapse is not an operator on this architecture"
+    },
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 219, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 128, in main\n    idx = json.load(open(md / \"model.safetensors.index.json\"))[\"weight_map\"]\n                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/model.safetensors.index.json'\n",
+    "stdout_tail": "",
+    "used_compiler_silu": true
+   },
+   "invoked": true,
+   "stage": "PhysicalGraphCompiler",
+   "status": "PASSED",
+   "why": "parameterized gate_up_swiglu on tensors derived from this specimen's index is numerically equivalent (max_abs_diff=0.0, used_compiler_silu=True). compiler main() still hardcoded to MoE index.json (returncode=1, index_json=False); that is a Codex-owned compiler gap, not a miss in this specimen's names"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "intersection": [
+     "gqa_attention",
+     "mlp_down",
+     "mlp_gate_up"
+    ],
+    "library_organs": [
+     "deltanet",
+     "gqa_attention",
+     "mlp_down",
+     "mlp_gate_up"
+    ],
+    "n_kernels": 17,
+    "names_this_specimen": false,
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/KERNEL_LIBRARY.json",
+    "role_matched_kernels": [
+     {
+      "kernel_identity": "q2f_group64_matvec",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "q2f_group64_matvec_geo_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "affine2_group32_matvec_geo_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "affine2_group64_matvec_geo_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "qwen80_add_residual_rmsnorm_tg",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "gqa_attention",
+      "representation_identity": "q4_control"
+     },
+     {
+      "kernel_identity": "q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "affine2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "q2_affine"
+     },
+     {
+      "kernel_identity": "ternary_5in8_g64_matvec_geo_c5120_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "ternary"
+     },
+     {
+      "kernel_identity": "ternary_5in8_g64_matvec_geo_c17408_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_gate_up",
+      "representation_identity": "ternary"
+     },
+     {
+      "kernel_identity": "binary_g64_matvec_geo_c5120_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "binary"
+     },
+     {
+      "kernel_identity": "shared_binary_k2_group_dots_c5120_g64_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "shared_basis"
+     },
+     {
+      "kernel_identity": "shared_binary_k2_scale_contract_gpr80",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "shared_basis"
+     },
+     {
+      "kernel_identity": "binary_sparse_fused_geo_c5120_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "binary_sparse_residual"
+     },
+     {
+      "kernel_identity": "q2f_g64_matvec_geo_c5120_tpr64_tg128",
+      "machine_identity": {
+       "chipset": "Apple M3 Ultra",
+       "command": "NOETIC_PARENT_A.MachineGenome",
+       "device_measured_sustained_gb_s": {
+        "absent_reason": null,
+        "command": "BANDWIDTH_ROOF.anchor_roof.correction.new_roof_gb_s",
+        "kind": "CITED",
+        "note": "N017 sequential unique-once DRAM roof, sealed as 778.8. Copied, not re-derived. Raw highest_dram_read_gb_s=778.7585851761676 is the measurement that sealed this figure.",
+        "source": "receipts/headless/BANDWIDTH_ROOF.json",
+        "unit": "GB/s",
+        "value": 778.8
+       },
+       "gpu_cores": 60,
+       "metal_family": "Metal 4",
+       "parent_genome_roof_gb_s_is_not_the_campaign_roof": {
+        "note": "595.9 is the G072 family scoring reference sealed into NOETIC_PARENT_A.MachineGenome, not DEVICE_MEASURED_SUSTAINED. Canon law 10. Current DRAM roof is 778.8.",
+        "parent_machinegenome_measured_roof_gb_s": 595.9,
+        "source": "receipts/headless/NOETIC_PARENT_A.json"
+       },
+       "source": "receipts/headless/NOETIC_PARENT_A.json",
+       "unified_memory_bytes": 103079215104
+      },
+      "organ_identity": "mlp_down",
+      "representation_identity": "q2_affine"
+     }
+    ],
+    "specimen_field": null,
+    "specimen_organs": [
+     "embed",
+     "gqa_attention",
+     "lm_head",
+     "mlp_down",
+     "mlp_gate_up",
+     "rmsnorm"
+    ]
+   },
+   "invoked": true,
+   "stage": "KernelPlanner",
+   "status": "FAILED",
+   "why": "KERNEL_LIBRARY.json was read and compared to this specimen's organs. role intersection=['gqa_attention', 'mlp_down', 'mlp_gate_up']. None of the 16 role-matched kernels carry this specimen's id or shapes. A shared organ name is not a compiled kernel for this body. specimen_field=None"
+  },
+  {
+   "error": "no_entry_point",
+   "evidence": {
+    "adapted_family": "dense_swiglu_transformer",
+    "copied_as_this_specimen": false,
+    "entry_points_searched": [
+     "tools/odyssey/noetic_compiler.py (BLOCKED map, not a compiler)",
+     "crates/hawking-core/src/model/mod.rs",
+     "hcli/agentos/flash_executable.py (Flash scaffold, Codex-owned)"
+    ],
+    "native": {
+     "architectures": [
+      "llama",
+      "llama",
+      "llama2",
+      "llama3",
+      "llama3.1",
+      "llama3.2",
+      "mistral",
+      "deepseek2",
+      "deepseek-v2",
+      "deepseek2-lite",
+      "qwen2",
+      "qwen2.5",
+      "qwen",
+      "qwen2moe",
+      "qwen3moe",
+      "qwen-moe",
+      "rwkv7",
+      "rwkv-7"
+     ],
+     "includes_falcon_h1": false,
+     "includes_qwen2": true,
+     "includes_qwen3_dense": false,
+     "includes_qwen3moe": true,
+     "path": "crates/hawking-core/src/model/mod.rs"
+    },
+    "noetic_compiler_blocked_why": "the DeviceCompiler emits a Metal genome for an architecture the runtime can read. crates/hawking-core has a qwen38 reader and no qwen3_moe reader, so there is nothing to compile a device genome against for this specimen.",
+    "noetic_compiler_missing_capability": "a qwen3_moe artifact reader in the native runtime"
+   },
+   "invoked": true,
+   "stage": "DeviceCompiler",
+   "status": "BLOCKED",
+   "why": "no DeviceCompiler callable exists in tools/odyssey or hcli. noetic_compiler.BLOCKED['DeviceCompiler'] is a hardcoded note for the Qwen3-30B-A3B pipeline, not a drive of this specimen. Native GGUF match arms are ['llama', 'llama', 'llama2', 'llama3', 'llama3.1', 'llama3.2', 'mistral', 'deepseek2', 'deepseek-v2', 'deepseek2-lite', 'qwen2', 'qwen2.5', 'qwen', 'qwen2moe', 'qwen3moe', 'qwen-moe', 'rwkv7', 'rwkv-7']; qwen3 dense is absent (qwen3moe is a different family). adapted family='dense_swiglu_transformer'"
+  },
+  {
+   "error": "no_generic_packer",
+   "evidence": {
+    "did_not_execute_first_noetic_executable": true,
+    "did_not_load_27b": true,
+    "did_not_mint_nx": true,
+    "parent_line": "PARENT_BF16 = Path(",
+    "producer": "tools/headless/first_noetic_executable.py",
+    "producer_in_git": true,
+    "producer_on_disk": true,
+    "specimen": "Qwen--Qwen3-0.6B@c1899de289a0"
+   },
+   "invoked": true,
+   "stage": "NoeticExecutable",
+   "status": "BLOCKED",
+   "why": "the only packed-NX producer in git is tools/headless/first_noetic_executable.py, which hardlinks a Qwen3.8-27B uniform-q4 catalog and is not this specimen (Qwen--Qwen3-0.6B@c1899de289a0). No generic DeviceCompiler\u2192NX entry exists. No packed NX was minted here: a renamed source pointer is not an NX"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "hits": [],
+    "ok": false,
+    "why": "no NX document; absence is not source independence"
+   },
+   "invoked": true,
+   "stage": "SourceIndependence",
+   "status": "FAILED",
+   "why": "no NX document; absence is not source independence"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "dependencies": [
+     {
+      "need": "serialized_nx_body",
+      "present": false
+     },
+     {
+      "need": "physical_loader",
+      "present": false
+     },
+     {
+      "need": "native_kernel_catalog",
+      "present": false
+     },
+     {
+      "need": "byte_ledger_closed",
+      "present": false
+     },
+     {
+      "need": "runtime_genome_digests",
+      "present": false
+     }
+    ],
+    "missing": [
+     "serialized_nx_body",
+     "physical_loader",
+     "native_kernel_catalog",
+     "byte_ledger_closed",
+     "runtime_genome_digests"
+    ],
+    "packed_nx_present": false
+   },
+   "invoked": true,
+   "stage": "ExecutableDependencyAccounting",
+   "status": "FAILED",
+   "why": "accounted the executable dependencies a lowered NX would have to carry; missing=['serialized_nx_body', 'physical_loader', 'native_kernel_catalog', 'byte_ledger_closed', 'runtime_genome_digests']"
+  },
+  {
+   "error": null,
+   "evidence": {
+    "failed_requirements": [
+     "complete_byte_ledger",
+     "self_contained_dependencies",
+     "accepted_generation",
+     "capability",
+     "reproducibility",
+     "protected_performance",
+     "no_forbidden_fallback"
+    ],
+    "promotable": false,
+    "reasons": [
+     "complete_byte_ledger: no complete-system byte ledger on the NX (cited byte_ledger=None)",
+     "self_contained_dependencies: missing serialized artifact and/or source-independent loader/kernel; source-bound executors are not a self-contained NX (cited serialized_artifact=None)",
+     "accepted_generation: no multi-token accepted generation; a single terminal argmax is not accepted generation (cited qualification.accepted_multitoken_tps=None)",
+     "capability: no capability suite result on the NX (cited capability=None)",
+     "reproducibility: no executable closure hash; metadata hashes of source files are not byte reproducibility (cited reproducibility=None)",
+     "protected_performance: no PROTECTED_ABSOLUTE complete-token measurement (cited bench.state=None)",
+     "no_forbidden_fallback: fallback_count is undisclosed; missing is not zero (cited fallback_count={'fallback_count': None, 'dense_rematerialization': None, 'source_independent': None})"
+    ],
+    "requirements": {
+     "accepted_generation": {
+      "cited_field": "qualification.accepted_multitoken_tps",
+      "cited_value": null,
+      "ok": false,
+      "requirement": "accepted_generation",
+      "state": "NOT_MET",
+      "why": "no multi-token accepted generation; a single terminal argmax is not accepted generation"
+     },
+     "capability": {
+      "cited_field": "capability",
+      "cited_value": null,
+      "ok": false,
+      "requirement": "capability",
+      "state": "NOT_MET",
+      "why": "no capability suite result on the NX"
+     },
+     "complete_byte_ledger": {
+      "cited_field": "byte_ledger",
+      "cited_value": null,
+      "ok": false,
+      "requirement": "complete_byte_ledger",
+      "state": "NOT_MET",
+      "why": "no complete-system byte ledger on the NX"
+     },
+     "no_forbidden_fallback": {
+      "cited_field": "fallback_count",
+      "cited_value": {
+       "dense_rematerialization": null,
+       "fallback_count": null,
+       "source_independent": null
+      },
+      "ok": false,
+      "requirement": "no_forbidden_fallback",
+      "state": "NOT_MET",
+      "why": "fallback_count is undisclosed; missing is not zero"
+     },
+     "protected_performance": {
+      "cited_field": "bench.state",
+      "cited_value": null,
+      "ok": false,
+      "requirement": "protected_performance",
+      "state": "NOT_MET",
+      "why": "no PROTECTED_ABSOLUTE complete-token measurement"
+     },
+     "reproducibility": {
+      "cited_field": "reproducibility",
+      "cited_value": null,
+      "ok": false,
+      "requirement": "reproducibility",
+      "state": "NOT_MET",
+      "why": "no executable closure hash; metadata hashes of source files are not byte reproducibility"
+     },
+     "self_contained_dependencies": {
+      "cited_field": "serialized_artifact",
+      "cited_value": null,
+      "ok": false,
+      "requirement": "self_contained_dependencies",
+      "state": "NOT_MET",
+      "why": "missing serialized artifact and/or source-independent loader/kernel; source-bound executors are not a self-contained NX"
+     }
+    },
+    "status": null
+   },
+   "invoked": true,
+   "stage": "Verifier",
+   "status": "FAILED",
+   "why": "invoked flash_nx_audit.check_nx; there is no NX document to verify"
+  }
+ ],
+ "version": 1,
+ "what_this_cannot_establish": [
+  "a packed source-independent NX for this specimen, Falcon-H1, Qwen3-30B-A3B, or Flash",
+  "that editing tools/odyssey/physical_graph_compiler.py to accept dense names would be accepted by Codex",
+  "that adding a qwen3 GGUF match arm would load this safetensors specimen",
+  "protected complete-token performance or physical EBPW",
+  "that Odyssey I can launch; nr_nx_path_callable stays unmet until a real NX exists"
+ ]
+}

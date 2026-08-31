@@ -1,0 +1,1519 @@
+{
+ "backend_usability": {
+  "ANE_GRAPH_SEGMENT": {
+   "consumes": [
+    "STATIC subgraphs that lower to an MLProgram (elementwise, GEMV, norm)",
+    "SLOT_INDEXED gathers that ANE can express as gather/select"
+   ],
+   "graph_replay": "ANE compiles a static graph segment. Slots that are not expressible as tensor indices become host round-trips between segments.",
+   "module": null,
+   "path_hits_named_ane": [
+    "tools/future/ane_preboard.py",
+    "tools/future/test_ane_preboard.py"
+   ],
+   "physical_device_authority": false,
+   "present_on_disk": false,
+   "probe": "basename starts with ane, contains _ane_, or names neural_engine/coreml/mlcompute; substring hits like lane/plane are not ANE",
+   "slot_becomes_indirection": {
+    "EXPERT_ID": "a gather over a packed expert tensor if the bank fits the ANE weight surface; otherwise a CPU/GPU graph break. ANE cannot recompile per token, so VALUE_GATED topology is a hard refusal.",
+    "REPRESENTATION_FRAGMENT": "row_start/row_count (or group window) uniform. The kernel stays; the window is an offset into a packed body.",
+    "SAMPLING": "typically a graph break: ANE segments stop before sampling.",
+    "STATE_VALUE": "payload of a persistent buffer the STATIC recurrence node already reads and writes. Values are data, not topology. A backend that cannot keep the buffer resident has a transport problem, not a graph-replay problem.",
+    "TOKEN_POSITION": "index into KV / conv / RoPE tables. Not a new dispatch. Prefill vs decode are distinct captured skeletons, not a TOKEN_POSITION branch."
+   },
+   "would_need_hardware_to_claim": [
+    "ANE compile success",
+    "ANE segment latency"
+   ]
+  },
+  "CUDA": {
+   "air_analogue_in_git": true,
+   "consumes": [
+    "STATIC nodes as cudaGraph kernel nodes",
+    "STATIC edges as graph dependencies"
+   ],
+   "cuda_graph_api": "tools/accelerator/cuda_runtime.py lists cudaGraphLaunch as an UNSUPPORTED host form (Metal translation of a CUDA HOST subset). No CUDA device is claimed.",
+   "graph_replay": "cudaGraphLaunch of the captured skeleton; slot binds via node params",
+   "physical_device_authority": false,
+   "present_on_disk": true,
+   "slot_becomes_indirection": {
+    "EXPERT_ID": "cudaKernelNodeSetParams / kernel argument for the expert index; the graph stays captured. Instantiating a new graph per expert id would be treating a slot as topology and is the thing this validator exists to refuse.",
+    "REPRESENTATION_FRAGMENT": "row_start/row_count (or group window) uniform. The kernel stays; the window is an offset into a packed body.",
+    "SAMPLING": "parameter of the terminal sample node (argmax vs temperature/top-k). A sampling-mode change that swaps the node kind is a second skeleton, not a slot bind; backends that cannot parameterize the sample op take a graph break here.",
+    "STATE_VALUE": "payload of a persistent buffer the STATIC recurrence node already reads and writes. Values are data, not topology. A backend that cannot keep the buffer resident has a transport problem, not a graph-replay problem.",
+    "TOKEN_POSITION": "index into KV / conv / RoPE tables. Not a new dispatch. Prefill vs decode are distinct captured skeletons, not a TOKEN_POSITION branch."
+   },
+   "would_need_hardware_to_claim": [
+    "cuda graph launch ns",
+    "copy-engine overlap"
+   ]
+  },
+  "FPGA": {
+   "availability_evidence": "receipts/headless/HCLI_FPGA_PREBOARD.json",
+   "consumes": [
+    "STATIC skeleton as a spatial pipeline (HWIR organ nodes in hcli/agentos/fpga_preboard.py)",
+    "declared buffers (resident_weight_shards, activations, persistent_state)"
+   ],
+   "graph_replay": "The spatial pipeline IS the captured graph. Slots are wires. FPGA is part of Accelerator / Physical Compiler / Fusion, not its own civilization; this lane does not build an FPGA backend.",
+   "physical_board_present": false,
+   "physical_device_authority": false,
+   "present_on_disk": true,
+   "slot_becomes_indirection": {
+    "EXPERT_ID": "mux / address generator over an HBM-resident expert bank. Runtime bitstream reconfiguration is NOT a slot; it would be VALUE_GATED topology and is refused.",
+    "REPRESENTATION_FRAGMENT": "row_start/row_count (or group window) uniform. The kernel stays; the window is an offset into a packed body.",
+    "SAMPLING": "parameter of the terminal sample node (argmax vs temperature/top-k). A sampling-mode change that swaps the node kind is a second skeleton, not a slot bind; backends that cannot parameterize the sample op take a graph break here.",
+    "STATE_VALUE": "payload of a persistent buffer the STATIC recurrence node already reads and writes. Values are data, not topology. A backend that cannot keep the buffer resident has a transport problem, not a graph-replay problem.",
+    "TOKEN_POSITION": "index into KV / conv / RoPE tables. Not a new dispatch. Prefill vs decode are distinct captured skeletons, not a TOKEN_POSITION branch."
+   },
+   "would_need_hardware_to_claim": [
+    "bitstream timing",
+    "HBM bandwidth",
+    "U50 occupancy"
+   ]
+  },
+  "METAL": {
+   "consumes": [
+    "STATIC nodes as Metal dispatches",
+    "STATIC edges as producer/consumer ordering in one command buffer",
+    "declared kernel names (already in DISPATCH_LEDGER)",
+    "AirGraph one-submission capture (tools/accelerator/air.py) as the Apple-side CUDA-graph analogue"
+   ],
+   "graph_replay": "AirGraph records a DAG as one submission. SLOT_INDEXED binds become setBytes/argument-buffer writes before replay. VALUE_GATED topology cannot be captured.",
+   "physical_device_authority": false,
+   "present_on_disk": true,
+   "shader_count": 46,
+   "slot_becomes_indirection": {
+    "EXPERT_ID": "index into a compile-time expert bank (buffer offset / argument-buffer id / FPGA mux select). The bank is the captured topology.",
+    "REPRESENTATION_FRAGMENT": "row_start/row_count (or group window) uniform. The kernel stays; the window is an offset into a packed body.",
+    "SAMPLING": "parameter of the terminal sample node (argmax vs temperature/top-k). A sampling-mode change that swaps the node kind is a second skeleton, not a slot bind; backends that cannot parameterize the sample op take a graph break here.",
+    "STATE_VALUE": "payload of a persistent buffer the STATIC recurrence node already reads and writes. Values are data, not topology. A backend that cannot keep the buffer resident has a transport problem, not a graph-replay problem.",
+    "TOKEN_POSITION": "index into KV / conv / RoPE tables. Not a new dispatch. Prefill vs decode are distinct captured skeletons, not a TOKEN_POSITION branch."
+   },
+   "would_need_hardware_to_claim": [
+    "command-buffer replay ns",
+    "whether Metal concurrent dispatches match CUDA streams"
+   ]
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:57Z",
+  "recorded_by": "tools/future/static_skeleton.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "demonstration": {
+  "flash_moe_bounded_component": {
+   "accepted": true,
+   "errors": [],
+   "reading": "Flash layer-0 router is STATIC. The expert body is a SLOT_INDEXED bank of config.router.num_experts with a compile-time dispatch_bound of num_experts_per_tok. Replayable_fraction is 1.0; topology is not 100% STATIC because the expert edge is a slot bind. The receipts do not contain a composed complete-token Flash layer, so this is a bounded component, not a full-layer fraction.",
+   "skeleton": {
+    "edges": [
+     {
+      "dst": "router_q4_matvec",
+      "existence": "STATIC",
+      "gated_on": null,
+      "kind": "dataflow",
+      "slot": null,
+      "src": "router_body_load"
+     },
+     {
+      "dst": "router_fp32_softmax",
+      "existence": "STATIC",
+      "gated_on": null,
+      "kind": "dataflow",
+      "slot": null,
+      "src": "router_q4_matvec"
+     },
+     {
+      "dst": "router_top_k",
+      "existence": "STATIC",
+      "gated_on": null,
+      "kind": "dataflow",
+      "slot": null,
+      "src": "router_fp32_softmax"
+     },
+     {
+      "dst": "expert_bank",
+      "existence": "SLOT_INDEXED",
+      "gated_on": null,
+      "kind": "dataflow",
+      "slot": "expert_id",
+      "src": "router_top_k"
+     },
+     {
+      "dst": "shared_expert",
+      "existence": "STATIC",
+      "gated_on": null,
+      "kind": "dataflow",
+      "slot": null,
+      "src": "router_top_k"
+     }
+    ],
+    "externals": [],
+    "name": "flash.layer0.router_plus_expert_bank",
+    "nodes": [
+     {
+      "binds_slots": [],
+      "dispatch_count": 1,
+      "dispatch_count_from_slot": null,
+      "dispatch_count_gated_on": null,
+      "existence": "STATIC",
+      "gated_on": null,
+      "id": "router_body_load",
+      "kind": "source_independent_component_body",
+      "mixer": null,
+      "operator": null,
+      "resources": {},
+      "slot": null
+     },
+     {
+      "binds_slots": [],
+      "dispatch_count": 1,
+      "dispatch_count_from_slot": null,
+      "dispatch_count_gated_on": null,
+      "existence": "STATIC",
+      "gated_on": null,
+      "id": "router_q4_matvec",
+      "kind": "native_kernel_dispatch",
+      "mixer": null,
+      "operator": null,
+      "resources": {
+       "kernel": "qwen_uniform_q4_group64_matvec"
+      },
+      "slot": null
+     },
+     {
+      "binds_slots": [],
+      "dispatch_count": 1,
+      "dispatch_count_from_slot": null,
+      "dispatch_count_gated_on": null,
+      "existence": "STATIC",
+      "gated_on": null,
+      "id": "router_fp32_softmax",
+      "kind": "router_probability_normalization",
+      "mixer": null,
+      "operator": null,
+      "resources": {},
+      "slot": null
+     },
+     {
+      "binds_slots": [
+       "expert_id"
+      ],
+      "dispatch_count": 1,
+      "dispatch_count_from_slot": null,
+      "dispatch_count_gated_on": null,
+      "existence": "STATIC",
+      "gated_on": null,
+      "id": "router_top_k",
+      "kind": "router_top_k_selection",
+      "mixer": null,
+      "operator": null,
+      "resources": {},
+      "slot": null
+     },
+     {
+      "binds_slots": [
+       "expert_row_window"
+      ],
+      "dispatch_count": 10,
+      "dispatch_count_from_slot": "expert_id",
+      "dispatch_count_gated_on": null,
+      "existence": "SLOT_INDEXED",
+      "gated_on": null,
+      "id": "expert_bank",
+      "kind": "routed_expert_body",
+      "mixer": null,
+      "operator": null,
+      "resources": {
+       "bank_size": 512,
+       "component_window": {
+        "expert_index": 0,
+        "row_count": 128,
+        "row_start": 0
+       },
+       "declared_from": "receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GRAPH.json",
+       "kernel": "qwen_uniform_q4_group64_matvec"
+      },
+      "slot": "expert_id"
+     },
+     {
+      "binds_slots": [],
+      "dispatch_count": 1,
+      "dispatch_count_from_slot": null,
+      "dispatch_count_gated_on": null,
+      "existence": "STATIC",
+      "gated_on": null,
+      "id": "shared_expert",
+      "kind": "shared_expert_body",
+      "mixer": null,
+      "operator": null,
+      "resources": {
+       "note": "config.router.shared_expert_sigmoid_is_not_router_selection=true; shared path is not EXPERT_ID-gated"
+      },
+      "slot": null
+     }
+    ],
+    "slots": [
+     {
+      "bound_basis": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#config.router.num_experts=512, num_experts_per_tok=10",
+      "dispatch_bound": 10,
+      "dtype": "u16",
+      "hi": 511,
+      "kind": "EXPERT_ID",
+      "lo": 0,
+      "meaning": "Flash routed-expert index; bank is static, bind is the slot",
+      "name": "expert_id",
+      "shape": null
+     },
+     {
+      "bound_basis": "receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GRAPH.json#component_window.row_count=128",
+      "dispatch_bound": null,
+      "dtype": "u32",
+      "hi": 127,
+      "kind": "REPRESENTATION_FRAGMENT",
+      "lo": 0,
+      "meaning": "row window into a packed expert body (Flash component_window)",
+      "name": "expert_row_window",
+      "shape": null
+     }
+    ],
+    "source": {
+     "complete_layer": false,
+     "complete_token_runtime": "NOT_TESTED",
+     "next_action_on_disk": "improve or compare router representations until source top-k parity is qualified, then connect the selection edge to expert dispatch and a protected complete-token graph",
+     "note": "Bounded component: router selection is composed; expert dispatch is a SLOT_INDEXED bank. The receipts themselves say the selection edge is not yet connected to a protected complete-token graph.",
+     "receipts": [
+      "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+      "receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GRAPH.json"
+     ]
+    }
+   },
+   "static_fraction": {
+    "dispatch_counts": {
+     "from_slot_bound": 1,
+     "n": 6,
+     "static": 5,
+     "value_gated": 0
+    },
+    "edges": {
+     "SLOT_INDEXED": 1,
+     "STATIC": 4,
+     "VALUE_GATED": 0,
+     "n": 5
+    },
+    "nodes": {
+     "SLOT_INDEXED": 1,
+     "STATIC": 5,
+     "VALUE_GATED": 0,
+     "n": 6
+    },
+    "reading": "STATIC units are captured once. SLOT_INDEXED units are a compile-time bank plus an allowed slot bind; they still replay. VALUE_GATED units cannot be replayed.",
+    "replayable_fraction": 1.0,
+    "slot_indexed_units": 3,
+    "static_units": 14,
+    "topology_static_fraction": 0.8235294117647058,
+    "topology_units": 17,
+    "value_gated_units": 0
+   }
+  },
+  "layers": {
+   "dispatch_ledger_layer_30": {
+    "accepted": true,
+    "compile_time_critical_path": {
+     "is_dag": true,
+     "length_nodes": 11,
+     "note": "node-count longest path; not a hardware latency",
+     "path": [
+      "input_rmsnorm",
+      "dn_qkvz_ba_concat",
+      "ba_to_decay_beta",
+      "gated_delta",
+      "gated_rmsnorm",
+      "out_proj",
+      "mixer_residual",
+      "post_attention_rmsnorm",
+      "gate_up_swiglu",
+      "down_proj",
+      "mlp_residual"
+     ],
+     "unit": "nodes"
+    },
+    "errors": [],
+    "externals": [
+     "L29.mlp.residual",
+     "L30.hidden_in"
+    ],
+    "layer": 30,
+    "mixer": "deltanet",
+    "n_edges": 15,
+    "n_nodes": 12,
+    "n_slots": 2,
+    "node_ids": [
+     "input_rmsnorm",
+     "dn_qkvz_ba_concat",
+     "qkvz_rearrange_conv_l2",
+     "ba_to_decay_beta",
+     "gated_delta",
+     "gated_rmsnorm",
+     "out_proj",
+     "mixer_residual",
+     "post_attention_rmsnorm",
+     "gate_up_swiglu",
+     "down_proj",
+     "mlp_residual"
+    ],
+    "reading": "Every node and edge in this layer is STATIC and every dispatch_count is 1. The ledger is a dense DeltaNet+MLP hybrid (not Flash MoE): there is no EXPERT_ID in this layer. Recurrent state and token position bind as slots on STATIC nodes; they do not change topology. Graph replay applies to 100% of this layer's topology. That is a positive bound on the hypothesis for this model, not a Flash MoE claim.",
+    "skeleton": {
+     "edges": [
+      {
+       "dst": "input_rmsnorm",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "L29.mlp.residual"
+      },
+      {
+       "dst": "dn_qkvz_ba_concat",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "input_rmsnorm"
+      },
+      {
+       "dst": "qkvz_rearrange_conv_l2",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "dn_qkvz_ba_concat"
+      },
+      {
+       "dst": "ba_to_decay_beta",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "dn_qkvz_ba_concat"
+      },
+      {
+       "dst": "gated_delta",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "qkvz_rearrange_conv_l2"
+      },
+      {
+       "dst": "gated_delta",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "ba_to_decay_beta"
+      },
+      {
+       "dst": "gated_rmsnorm",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "gated_delta"
+      },
+      {
+       "dst": "out_proj",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "gated_rmsnorm"
+      },
+      {
+       "dst": "mixer_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "out_proj"
+      },
+      {
+       "dst": "mixer_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "L30.hidden_in"
+      },
+      {
+       "dst": "post_attention_rmsnorm",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "mixer_residual"
+      },
+      {
+       "dst": "gate_up_swiglu",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "post_attention_rmsnorm"
+      },
+      {
+       "dst": "down_proj",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "gate_up_swiglu"
+      },
+      {
+       "dst": "mlp_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "down_proj"
+      },
+      {
+       "dst": "mlp_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "mixer_residual"
+      }
+     ],
+     "externals": [
+      "L29.mlp.residual",
+      "L30.hidden_in"
+     ],
+     "name": "dispatch_ledger.layer_30",
+     "nodes": [
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "input_rmsnorm",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "input_rmsnorm",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 25600,
+        "kernel": "qwen80_residual_rmsnorm_tg",
+        "ledger_index": 354,
+        "organ": "mixer.norm",
+        "weight_read_bytes": 20480
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "dn_qkvz_ba_concat",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "dn_qkvz_ba_concat",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 65920,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 168755200,
+        "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+        "ledger_index": 355,
+        "organ": "linear_attn.in_proj",
+        "weight_read_bytes": 44825600
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [
+        "token_position"
+       ],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "qkvz_rearrange_conv_l2",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "qkvz_rearrange_conv_l2",
+       "resources": {
+        "activation_read_bytes": 188416,
+        "activation_write_bytes": 221184,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 153600,
+        "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+        "ledger_index": 356,
+        "organ": "linear_attn.conv",
+        "weight_read_bytes": 163840
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "ba_to_decay_beta",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "ba_to_decay_beta",
+       "resources": {
+        "activation_read_bytes": 384,
+        "activation_write_bytes": 384,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 576,
+        "kernel": "qwen80_ba_to_decay_beta_f32",
+        "ledger_index": 357,
+        "organ": "linear_attn.ba",
+        "weight_read_bytes": 384
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [
+        "dn_recurrent_state",
+        "token_position"
+       ],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "gated_delta",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "gated_delta",
+       "resources": {
+        "activation_read_bytes": 3195264,
+        "activation_write_bytes": 3170304,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 5505024,
+        "kernel": "qwen38_gated_delta_decode_vi_simd",
+        "ledger_index": 358,
+        "organ": "linear_attn.recurrence",
+        "weight_read_bytes": 0
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "gated_rmsnorm",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "gated_rmsnorm",
+       "resources": {
+        "activation_read_bytes": 49152,
+        "activation_write_bytes": 24576,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 30720,
+        "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+        "ledger_index": 359,
+        "organ": "linear_attn.norm",
+        "weight_read_bytes": 24576
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "out_proj",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "out_proj",
+       "resources": {
+        "activation_read_bytes": 24576,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 62914560,
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "ledger_index": 360,
+        "organ": "linear_attn.out_proj",
+        "weight_read_bytes": 16711680
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "mixer_residual",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "mixer_residual",
+       "resources": {
+        "activation_read_bytes": 40960,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 5120,
+        "kernel": "qwen_next_add_residual",
+        "ledger_index": 361,
+        "organ": "mixer.residual",
+        "weight_read_bytes": 0
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "post_attention_rmsnorm",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "post_attention_rmsnorm",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 25600,
+        "kernel": "qwen80_residual_rmsnorm_tg",
+        "ledger_index": 362,
+        "organ": "mlp.norm",
+        "weight_read_bytes": 20480
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "gate_up_swiglu",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "gate_up_swiglu",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 69632,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 356602880,
+        "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "ledger_index": 363,
+        "organ": "mlp.gate_up",
+        "weight_read_bytes": 55705600
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "down_proj",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "down_proj",
+       "resources": {
+        "activation_read_bytes": 69632,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 178257920,
+        "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+        "ledger_index": 364,
+        "organ": "mlp.down",
+        "weight_read_bytes": 27852800
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "mlp_residual",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "mlp_residual",
+       "resources": {
+        "activation_read_bytes": 40960,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 5120,
+        "kernel": "qwen_next_add_residual",
+        "ledger_index": 365,
+        "organ": "mlp.residual",
+        "weight_read_bytes": 0
+       },
+       "slot": null
+      }
+     ],
+     "slots": [
+      {
+       "bound_basis": "receipts/headless/DISPATCH_LEDGER.json#seq_len_for_kv_bytes=42; captured for this compile-time max, not a model-card context",
+       "dispatch_bound": null,
+       "dtype": "u32",
+       "hi": 41,
+       "kind": "TOKEN_POSITION",
+       "lo": 0,
+       "meaning": "decode-step index into conv/recurrent state",
+       "name": "token_position",
+       "shape": null
+      },
+      {
+       "bound_basis": "receipts/headless/DISPATCH_LEDGER.json classes.gated_delta fusion_candidacy_why '48\u00d7128\u00d7128 rec state' / 48 DN layers",
+       "dispatch_bound": null,
+       "dtype": "f32",
+       "hi": null,
+       "kind": "STATE_VALUE",
+       "lo": null,
+       "meaning": "gated-delta recurrent state written/read by linear_attn.recurrence",
+       "name": "dn_recurrent_state",
+       "shape": [
+        128,
+        128
+       ]
+      }
+     ],
+     "source": {
+      "layer": 30,
+      "ledger_graph_formula": "embed 1 + 48\u00d78 DN + 16\u00d77 GQA + 64\u00d74 MLP + terminal 3 = 1+384+112+256+3 = 756",
+      "mixer": "deltanet",
+      "n_dispatches_in_layer": 12,
+      "note": "Named FLASH_LAYER46_DISPATCH_LEDGER.json is absent from git. This skeleton is layer 30 of the real sealed receipts/headless/DISPATCH_LEDGER.json (Qwen38/80 hybrid, dense MLP, not Flash MoE).",
+      "parent_fused_dispatches": 756,
+      "receipt": "receipts/headless/DISPATCH_LEDGER.json",
+      "schema": "hawking.headless.dispatch_ledger.v1"
+     }
+    },
+    "slot_kinds_used": [
+     "STATE_VALUE",
+     "TOKEN_POSITION"
+    ],
+    "static_fraction": {
+     "dispatch_counts": {
+      "from_slot_bound": 0,
+      "n": 12,
+      "static": 12,
+      "value_gated": 0
+     },
+     "edges": {
+      "SLOT_INDEXED": 0,
+      "STATIC": 15,
+      "VALUE_GATED": 0,
+      "n": 15
+     },
+     "nodes": {
+      "SLOT_INDEXED": 0,
+      "STATIC": 12,
+      "VALUE_GATED": 0,
+      "n": 12
+     },
+     "reading": "STATIC units are captured once. SLOT_INDEXED units are a compile-time bank plus an allowed slot bind; they still replay. VALUE_GATED units cannot be replayed.",
+     "replayable_fraction": 1.0,
+     "slot_indexed_units": 0,
+     "static_units": 39,
+     "topology_static_fraction": 1.0,
+     "topology_units": 39,
+     "value_gated_units": 0
+    }
+   },
+   "dispatch_ledger_layer_46": {
+    "accepted": true,
+    "compile_time_critical_path": {
+     "is_dag": true,
+     "length_nodes": 11,
+     "note": "node-count longest path; not a hardware latency",
+     "path": [
+      "input_rmsnorm",
+      "dn_qkvz_ba_concat",
+      "ba_to_decay_beta",
+      "gated_delta",
+      "gated_rmsnorm",
+      "out_proj",
+      "mixer_residual",
+      "post_attention_rmsnorm",
+      "gate_up_swiglu",
+      "down_proj",
+      "mlp_residual"
+     ],
+     "unit": "nodes"
+    },
+    "errors": [],
+    "externals": [
+     "L45.mlp.residual",
+     "L46.hidden_in"
+    ],
+    "layer": 46,
+    "mixer": "deltanet",
+    "n_edges": 15,
+    "n_nodes": 12,
+    "n_slots": 2,
+    "node_ids": [
+     "input_rmsnorm",
+     "dn_qkvz_ba_concat",
+     "qkvz_rearrange_conv_l2",
+     "ba_to_decay_beta",
+     "gated_delta",
+     "gated_rmsnorm",
+     "out_proj",
+     "mixer_residual",
+     "post_attention_rmsnorm",
+     "gate_up_swiglu",
+     "down_proj",
+     "mlp_residual"
+    ],
+    "reading": "Every node and edge in this layer is STATIC and every dispatch_count is 1. The ledger is a dense DeltaNet+MLP hybrid (not Flash MoE): there is no EXPERT_ID in this layer. Recurrent state and token position bind as slots on STATIC nodes; they do not change topology. Graph replay applies to 100% of this layer's topology. That is a positive bound on the hypothesis for this model, not a Flash MoE claim.",
+    "skeleton": {
+     "edges": [
+      {
+       "dst": "input_rmsnorm",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "L45.mlp.residual"
+      },
+      {
+       "dst": "dn_qkvz_ba_concat",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "input_rmsnorm"
+      },
+      {
+       "dst": "qkvz_rearrange_conv_l2",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "dn_qkvz_ba_concat"
+      },
+      {
+       "dst": "ba_to_decay_beta",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "dn_qkvz_ba_concat"
+      },
+      {
+       "dst": "gated_delta",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "qkvz_rearrange_conv_l2"
+      },
+      {
+       "dst": "gated_delta",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "ba_to_decay_beta"
+      },
+      {
+       "dst": "gated_rmsnorm",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "gated_delta"
+      },
+      {
+       "dst": "out_proj",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "gated_rmsnorm"
+      },
+      {
+       "dst": "mixer_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "out_proj"
+      },
+      {
+       "dst": "mixer_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "L46.hidden_in"
+      },
+      {
+       "dst": "post_attention_rmsnorm",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "mixer_residual"
+      },
+      {
+       "dst": "gate_up_swiglu",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "post_attention_rmsnorm"
+      },
+      {
+       "dst": "down_proj",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "gate_up_swiglu"
+      },
+      {
+       "dst": "mlp_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "down_proj"
+      },
+      {
+       "dst": "mlp_residual",
+       "existence": "STATIC",
+       "gated_on": null,
+       "kind": "dataflow",
+       "slot": null,
+       "src": "mixer_residual"
+      }
+     ],
+     "externals": [
+      "L45.mlp.residual",
+      "L46.hidden_in"
+     ],
+     "name": "dispatch_ledger.layer_46",
+     "nodes": [
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "input_rmsnorm",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "input_rmsnorm",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 25600,
+        "kernel": "qwen80_residual_rmsnorm_tg",
+        "ledger_index": 542,
+        "organ": "mixer.norm",
+        "weight_read_bytes": 20480
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "dn_qkvz_ba_concat",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "dn_qkvz_ba_concat",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 65920,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 168755200,
+        "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+        "ledger_index": 543,
+        "organ": "linear_attn.in_proj",
+        "weight_read_bytes": 44825600
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [
+        "token_position"
+       ],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "qkvz_rearrange_conv_l2",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "qkvz_rearrange_conv_l2",
+       "resources": {
+        "activation_read_bytes": 188416,
+        "activation_write_bytes": 221184,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 153600,
+        "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+        "ledger_index": 544,
+        "organ": "linear_attn.conv",
+        "weight_read_bytes": 163840
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "ba_to_decay_beta",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "ba_to_decay_beta",
+       "resources": {
+        "activation_read_bytes": 384,
+        "activation_write_bytes": 384,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 576,
+        "kernel": "qwen80_ba_to_decay_beta_f32",
+        "ledger_index": 545,
+        "organ": "linear_attn.ba",
+        "weight_read_bytes": 384
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [
+        "dn_recurrent_state",
+        "token_position"
+       ],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "gated_delta",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "gated_delta",
+       "resources": {
+        "activation_read_bytes": 3195264,
+        "activation_write_bytes": 3170304,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 5505024,
+        "kernel": "qwen38_gated_delta_decode_vi_simd",
+        "ledger_index": 546,
+        "organ": "linear_attn.recurrence",
+        "weight_read_bytes": 0
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "gated_rmsnorm",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "gated_rmsnorm",
+       "resources": {
+        "activation_read_bytes": 49152,
+        "activation_write_bytes": 24576,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 30720,
+        "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+        "ledger_index": 547,
+        "organ": "linear_attn.norm",
+        "weight_read_bytes": 24576
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "out_proj",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "out_proj",
+       "resources": {
+        "activation_read_bytes": 24576,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 62914560,
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "ledger_index": 548,
+        "organ": "linear_attn.out_proj",
+        "weight_read_bytes": 16711680
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "mixer_residual",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "mixer_residual",
+       "resources": {
+        "activation_read_bytes": 40960,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 5120,
+        "kernel": "qwen_next_add_residual",
+        "ledger_index": 549,
+        "organ": "mixer.residual",
+        "weight_read_bytes": 0
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "post_attention_rmsnorm",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "post_attention_rmsnorm",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 25600,
+        "kernel": "qwen80_residual_rmsnorm_tg",
+        "ledger_index": 550,
+        "organ": "mlp.norm",
+        "weight_read_bytes": 20480
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "gate_up_swiglu",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "gate_up_swiglu",
+       "resources": {
+        "activation_read_bytes": 20480,
+        "activation_write_bytes": 69632,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 356602880,
+        "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "ledger_index": 551,
+        "organ": "mlp.gate_up",
+        "weight_read_bytes": 55705600
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "down_proj",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "down_proj",
+       "resources": {
+        "activation_read_bytes": 69632,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 178257920,
+        "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+        "ledger_index": 552,
+        "organ": "mlp.down",
+        "weight_read_bytes": 27852800
+       },
+       "slot": null
+      },
+      {
+       "binds_slots": [],
+       "dispatch_count": 1,
+       "dispatch_count_from_slot": null,
+       "dispatch_count_gated_on": null,
+       "existence": "STATIC",
+       "gated_on": null,
+       "id": "mlp_residual",
+       "kind": "dispatch",
+       "mixer": "deltanet",
+       "operator": "mlp_residual",
+       "resources": {
+        "activation_read_bytes": 40960,
+        "activation_write_bytes": 20480,
+        "command_buffer": 1,
+        "declared_from": "receipts/headless/DISPATCH_LEDGER.json",
+        "flops": 5120,
+        "kernel": "qwen_next_add_residual",
+        "ledger_index": 553,
+        "organ": "mlp.residual",
+        "weight_read_bytes": 0
+       },
+       "slot": null
+      }
+     ],
+     "slots": [
+      {
+       "bound_basis": "receipts/headless/DISPATCH_LEDGER.json#seq_len_for_kv_bytes=42; captured for this compile-time max, not a model-card context",
+       "dispatch_bound": null,
+       "dtype": "u32",
+       "hi": 41,
+       "kind": "TOKEN_POSITION",
+       "lo": 0,
+       "meaning": "decode-step index into conv/recurrent state",
+       "name": "token_position",
+       "shape": null
+      },
+      {
+       "bound_basis": "receipts/headless/DISPATCH_LEDGER.json classes.gated_delta fusion_candidacy_why '48\u00d7128\u00d7128 rec state' / 48 DN layers",
+       "dispatch_bound": null,
+       "dtype": "f32",
+       "hi": null,
+       "kind": "STATE_VALUE",
+       "lo": null,
+       "meaning": "gated-delta recurrent state written/read by linear_attn.recurrence",
+       "name": "dn_recurrent_state",
+       "shape": [
+        128,
+        128
+       ]
+      }
+     ],
+     "source": {
+      "layer": 46,
+      "ledger_graph_formula": "embed 1 + 48\u00d78 DN + 16\u00d77 GQA + 64\u00d74 MLP + terminal 3 = 1+384+112+256+3 = 756",
+      "mixer": "deltanet",
+      "n_dispatches_in_layer": 12,
+      "note": "Named FLASH_LAYER46_DISPATCH_LEDGER.json is absent from git. This skeleton is layer 46 of the real sealed receipts/headless/DISPATCH_LEDGER.json (Qwen38/80 hybrid, dense MLP, not Flash MoE).",
+      "parent_fused_dispatches": 756,
+      "receipt": "receipts/headless/DISPATCH_LEDGER.json",
+      "schema": "hawking.headless.dispatch_ledger.v1"
+     }
+    },
+    "slot_kinds_used": [
+     "STATE_VALUE",
+     "TOKEN_POSITION"
+    ],
+    "static_fraction": {
+     "dispatch_counts": {
+      "from_slot_bound": 0,
+      "n": 12,
+      "static": 12,
+      "value_gated": 0
+     },
+     "edges": {
+      "SLOT_INDEXED": 0,
+      "STATIC": 15,
+      "VALUE_GATED": 0,
+      "n": 15
+     },
+     "nodes": {
+      "SLOT_INDEXED": 0,
+      "STATIC": 12,
+      "VALUE_GATED": 0,
+      "n": 12
+     },
+     "reading": "STATIC units are captured once. SLOT_INDEXED units are a compile-time bank plus an allowed slot bind; they still replay. VALUE_GATED units cannot be replayed.",
+     "replayable_fraction": 1.0,
+     "slot_indexed_units": 0,
+     "static_units": 39,
+     "topology_static_fraction": 1.0,
+     "topology_units": 39,
+     "value_gated_units": 0
+    }
+   }
+  },
+  "primary": "dispatch_ledger_layer_46",
+  "primary_topology_static_fraction": 1.0
+ },
+ "discrimination_selftest": {
+  "guard_watched_failing": true,
+  "illegal_activation_gated_dispatch_count_errors": [
+   "node 'sparse_mlp' dispatch_count_gated_on='routed_activation_value': a dispatch count that depends on a runtime value is data-dependent topology and is refused. Permitted slot kinds: ['EXPERT_ID', 'TOKEN_POSITION', 'SAMPLING', 'REPRESENTATION_FRAGMENT', 'STATE_VALUE']"
+  ],
+  "illegal_activation_gated_dispatch_count_refused": true,
+  "illegal_activation_gated_edges_errors": [
+   "edge 'router->expert_0' existence=VALUE_GATED gated_on='routed_activation_value': topology may not depend on a runtime value outside ['EXPERT_ID', 'TOKEN_POSITION', 'SAMPLING', 'REPRESENTATION_FRAGMENT', 'STATE_VALUE']. Data-dependent topology cannot be replayed.",
+   "edge 'router->expert_1' existence=VALUE_GATED gated_on='routed_activation_value': topology may not depend on a runtime value outside ['EXPERT_ID', 'TOKEN_POSITION', 'SAMPLING', 'REPRESENTATION_FRAGMENT', 'STATE_VALUE']. Data-dependent topology cannot be replayed."
+  ],
+  "illegal_activation_gated_edges_refused": true,
+  "legal_expert_id_accepted": true
+ },
+ "existence_modes": [
+  "STATIC",
+  "SLOT_INDEXED",
+  "VALUE_GATED"
+ ],
+ "gaps_closed": [
+  "typed Slot / Node / Edge / Skeleton IR with exactly five slot kinds",
+  "validate() that refuses VALUE_GATED topology and activation-gated dispatch counts",
+  "discriminating fixtures: EXPERT_ID SLOT_INDEXED accepted, activation-gated edges refused",
+  "backend usability map for METAL / FPGA / CUDA / ANE_GRAPH_SEGMENT with presence flags and slot-to-indirection",
+  "real-layer demonstration from receipts/headless/DISPATCH_LEDGER.json layer 46 (and layer 30 as the same DeltaNet shape)",
+  "PhysicalGraph wrapper that does not fork hcli/physical_graph.py"
+ ],
+ "integration": {
+  "require_valid": "require_valid(skeleton) -> Skeleton  # raises SkeletonRefused",
+  "skeleton_from_ledger_layer": "skeleton_from_ledger_layer(ledger: Mapping, layer: int) -> Skeleton",
+  "skeleton_from_physical_graph": "skeleton_from_physical_graph(pg: Mapping) -> Skeleton",
+  "static_fraction": "static_fraction(skeleton) -> dict",
+  "validate": "validate(skeleton: Skeleton | Mapping) -> ValidationResult"
+ },
+ "negative_findings": [
+  "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json is not in git HEAD and not on this sparse disk; could not read the 'static skeleton + dynamic slots' taxonomy entry",
+  "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json does not exist; used receipts/headless/DISPATCH_LEDGER.json layer 46 instead",
+  "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json does not exist; compile-time critical path is computed from the layer DAG (node count, not ns)",
+  "hcli/physical_graph.py has no static_skeleton token; the existing object is PhysicalGraph (PLAN_ONLY), which this module extends rather than forks"
+ ],
+ "purpose": "Static physical skeleton with typed dynamic slots, plus a validator that refuses data-dependent topology so graph replay / CUDA graphs / TPU compiled graphs / FPGA spatial pipelines are the same idea.",
+ "recovered_implementation": {
+  "hcli/physical_graph.py": {
+   "decision": "extend, do not fork: this module wraps PhysicalGraph lists as STATIC nodes/edges and adds slots + the refusal. hcli/ is not written.",
+   "in_git": true,
+   "mentions_static_skeleton": false,
+   "schema_line": "SCHEMA = \"hcli.physical_graph.v1\"",
+   "what_it_is": "Provider-neutral PhysicalGraph planning boundary: computation, data, representation, memory, residency, state, precision, dependencies, device_placement, synchronization. qualification=PLAN_ONLY. It does not distinguish STATIC topology from dynamic control and has no validator against data-dependent edges."
+  },
+  "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json": {
+   "in_git_or_disk": false,
+   "note": "Frontier F012 probes this path as present on a full checkout. It is not in git HEAD of this worktree and not on the sparse disk, so the 'static skeleton + dynamic slots' taxonomy entry could not be consumed. Slot kinds are taken from this lane's contract."
+  },
+  "receipts/headless/DISPATCH_LEDGER.json": {
+   "in_git_or_disk": true,
+   "n_dispatches": 756,
+   "schema": "hawking.headless.dispatch_ledger.v1",
+   "used_as": "the real layer topology source (layer 46 and, as a check, layer 30)"
+  },
+  "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json": {
+   "in_git_or_disk": false
+  },
+  "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json": {
+   "in_git_or_disk": false
+  },
+  "receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GRAPH.json": {
+   "component_window": {
+    "expert_index": 0,
+    "row_count": 128,
+    "row_start": 0
+   },
+   "in_git_or_disk": true
+  },
+  "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json": {
+   "in_git_or_disk": true,
+   "num_experts": 512,
+   "num_experts_per_tok": 10
+  },
+  "receipts/headless/HCLI_FPGA_PREBOARD.json": {
+   "in_git_or_disk": true,
+   "physical_board_present": null
+  },
+  "tools/accelerator/air.py": {
+   "in_git": true,
+   "role": "AirGraph: Apple-side CUDA-graph analogue (one submission)"
+  },
+  "tools/accelerator/cuda_runtime.py": {
+   "in_git": true,
+   "role": "CUDA HOST subset translated to Metal; cudaGraphLaunch unsupported"
+  }
+ },
+ "relationship_to_physical_graph": {
+  "decision": "extend, do not fork: this module wraps PhysicalGraph lists as STATIC nodes/edges and adds slots + the refusal. hcli/ is not written.",
+  "in_git": true,
+  "mentions_static_skeleton": false,
+  "schema_line": "SCHEMA = \"hcli.physical_graph.v1\"",
+  "what_it_is": "Provider-neutral PhysicalGraph planning boundary: computation, data, representation, memory, residency, state, precision, dependencies, device_placement, synchronization. qualification=PLAN_ONLY. It does not distinguish STATIC topology from dynamic control and has no validator against data-dependent edges."
+ },
+ "schema": "hawking.future.static_skeleton.v1",
+ "seal_sha256": "546a99443dbdd64d79be1abcc9f388d112c9da1fa8702b5a38e76b0e554ba75a",
+ "slot_kinds": [
+  "EXPERT_ID",
+  "TOKEN_POSITION",
+  "SAMPLING",
+  "REPRESENTATION_FRAGMENT",
+  "STATE_VALUE"
+ ],
+ "validator_law": {
+  "accepts": "STATIC topology; SLOT_INDEXED topology whose index is one of slot_kinds",
+  "refuses": "VALUE_GATED node/edge existence; dispatch counts gated on a runtime value; unknown slot kinds; unbounded slots",
+  "why": "a data-dependent topology cannot be replayed"
+ },
+ "version": 1
+}

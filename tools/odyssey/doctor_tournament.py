@@ -25,7 +25,7 @@ from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
 RH = REPO / "receipts/headless"
-PARENT = Path("/Users/scammermike/models/qwen3.8-27b-abliterated-bf16")
+PARENT = Path("/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16")
 
 CANONICAL_ORDER = ["ELIMINATE", "COORDINATES", "SHARE", "FACTOR", "GENERATE", "CODEBOOK",
                    "ROUTE", "SENSITIVITY", "HEAL", "QUANTIZE", "NATIVE", "STATE",

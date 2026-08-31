@@ -1,0 +1,126 @@
+{
+  "schema": "hawking.flash.meta_coherence_screen.v1",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "status": "UNSAFE_SMALL_PROBE_NOT_PROMOTABLE",
+  "representation": {
+    "kind": "shared_input_latent_plus_expert_local_output_readout",
+    "organ": "layer_4.routed_experts.gate_up_proj",
+    "dense_rematerialization": false,
+    "runtime_artifact_emitted": false,
+    "physical_ebpw": null
+  },
+  "teacher_trace": {
+    "files": [
+      {
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DENSE_L0_L3_V1/layer-3/state.f32",
+        "sha256": "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+        "rows": 4,
+        "width": 2560
+      }
+    ],
+    "rows": 4,
+    "raw_rows": 4,
+    "unique_row_hashes": 4,
+    "width": 2560,
+    "layer_input": 3,
+    "route_layer": 4,
+    "min_rows_required": 256,
+    "unsafe_small_probe": true
+  },
+  "source": {
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "parity_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FAST_COMPACT_L0_L7_PARITY.json",
+    "parity_sha256": "bec03848cfe1fa0b9bfa4b353323c818c988e982d26c401a99365afb87ee4a42",
+    "route_ids": [
+      309,
+      252,
+      59,
+      106,
+      410,
+      475,
+      453,
+      41,
+      162,
+      108
+    ],
+    "tensor": "model.language_model.layers.4.mlp.experts.gate_up_proj",
+    "tensor_shape": [
+      512,
+      1280,
+      2560
+    ],
+    "tensor_dtype": "BF16",
+    "tensor_shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00103-of-00131.safetensors",
+    "selected_expert_count": 10,
+    "selected_dense_source_bytes": 65536000,
+    "selected_dense_loaded_f32_bytes": 131072000
+  },
+  "coherence_contract": {
+    "fit_holdout_required": true,
+    "min_heldout_cosine": 0.999,
+    "max_heldout_relative_fro_error": 0.05,
+    "must_beat_per_expert_q4": true,
+    "router_topk_membership_and_order": "protected exact; not replaced by this organ screen",
+    "recurrent_and_kv_state": "protected exact; not measured here",
+    "generated_token_capability": "required later"
+  },
+  "measurement_state": {
+    "teacher_surface": "UNSAFE_SMALL_PROBE",
+    "serialized_artifact": "NOT_BUILT",
+    "native_kernel": "NOT_BUILT",
+    "physical_ebpw": "NULL_BY_RULE",
+    "complete_token": "NOT_MEASURED",
+    "promotion_allowed": false
+  },
+  "claim_boundary": "This screen can only evaluate a bounded teacher hidden-state surface. It cannot prove a whole-model functional representation, serialized bytes, physical EBPW, route stability, capability, residency, GPU latency, or TPS.",
+  "surface": {
+    "organ": "gate_up_proj",
+    "rows": [
+      {
+        "rank": 1,
+        "fit_rows": 3,
+        "heldout_rows": 1,
+        "fit_relative_fro_error": 0.477694467157535,
+        "heldout_relative_fro_error": 0.8994252836511419,
+        "heldout_cosine": 0.43707597079077354,
+        "per_expert_q4_heldout_relative_fro_error": 0.10081544666462258,
+        "beats_per_expert_q4_on_heldout": false,
+        "diagnostic_factor_equivalent_bpw": 0.0075,
+        "diagnostic_factor_bytes": 30720,
+        "selected_dense_source_bytes": 65536000,
+        "selected_dense_loaded_f32_bytes": 131072000,
+        "surface_gate_pass": false
+      },
+      {
+        "rank": 2,
+        "fit_rows": 3,
+        "heldout_rows": 1,
+        "fit_relative_fro_error": 0.12493953267747654,
+        "heldout_relative_fro_error": 0.744677138054663,
+        "heldout_cosine": 0.6678648138054609,
+        "per_expert_q4_heldout_relative_fro_error": 0.10081544666462258,
+        "beats_per_expert_q4_on_heldout": false,
+        "diagnostic_factor_equivalent_bpw": 0.015,
+        "diagnostic_factor_bytes": 61440,
+        "selected_dense_source_bytes": 65536000,
+        "selected_dense_loaded_f32_bytes": 131072000,
+        "surface_gate_pass": false
+      }
+    ],
+    "frontier": [],
+    "fit_rows": 3,
+    "heldout_rows": 1
+  },
+  "next_gate": "collect broader teacher traces, distill router/hidden/routed-output/terminal-logit surfaces, then build a serializer and direct generated-tile consumer",
+  "bench": {
+    "state": "UNKNOWN",
+    "measurement_state": "MEASURED_OFFLINE_META_SURFACE",
+    "recorded_by": "tools/flash_meta_coherence_screen.py",
+    "machine": "Apple host CPU; selected Flash source expert ranges",
+    "rule": "S032 \u00a73 -- offline surface screen is not native execution",
+    "elapsed_ns": 2786937125
+  },
+  "seal_sha256": "3f6ee9bc0db5b8ac0c249263b6af4281ef7c7faad696a9a49977752a61f09fb0"
+}

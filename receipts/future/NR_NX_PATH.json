@@ -1,0 +1,1228 @@
+{
+ "audit": {
+  "nx_status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+  "refused": false,
+  "seven_all_met": false,
+  "via": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+  "why": null
+ },
+ "audit_disagreements": [
+  {
+   "audit_text": "sidecar has no GPU; all numbers that would require a lease remain unclaimed here",
+   "id": "audit_negative_finding_sidecar_has_no_gpu",
+   "kind": "causal_label",
+   "looked_for": "hardware measurement",
+   "resolution": "REPORTED_NOT_RESOLVED",
+   "today": "METAL_REACHABILITY verdict=FALSIFIED_AS_A_HOST_PROPERTY; device='Apple M3 Ultra'; gpu_authority remains false",
+   "verdict": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+   "what_is_false": "this host has no Metal-capable GPU",
+   "what_remains_true": "sidecar has no GPU authority; no PROTECTED_ABSOLUTE NX measurement exists"
+  },
+  {
+   "audit_text": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+   "id": "flash_nr_complete_host_of_record_has_no_gpu",
+   "kind": "causal_label",
+   "resolution": "REPORTED_NOT_RESOLVED",
+   "today": "METAL_REACHABILITY verdict=FALSIFIED_AS_A_HOST_PROPERTY; device='Apple M3 Ultra'; gpu_authority remains false",
+   "verdict": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+   "what_is_false": "this host has no Metal-capable GPU",
+   "what_remains_true": "sidecar has no GPU authority; no PROTECTED_ABSOLUTE NX measurement exists"
+  },
+  {
+   "capture_rows": 1024,
+   "capture_status": "CAPTURED_SOURCE_MLP_INPUT_NOT_CAPABILITY_PROVEN",
+   "contract_executed": 0,
+   "contract_workunits": 12,
+   "does_not_satisfy": "accepted_generation / capability / protected_performance",
+   "id": "teacher_contract_workunits_unexecuted_but_capture_exists",
+   "kind": "declared_vs_executed",
+   "resolution": "REPORTED_NOT_RESOLVED",
+   "why": "TEACHER_CORPUS_CONTRACT.capture_workunits executed=0/12; a source-BF16 L4 capture receipt is on disk. Naming the workunit is not evidence it ran; the capture receipt is."
+  }
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T16:41:59Z",
+  "recorded_by": "tools/future/nr_nx_path.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "cpu_contracts": {
+  "complete_system_ledger": {
+   "also_missing_from_promotion_gate": [
+    "MTP accounting",
+    "complete-system byte ledger",
+    "fallback_count disclosure",
+    "native executable"
+   ],
+   "closed": false,
+   "complete_storage_bytes_is_null": true,
+   "cpu_work_done_this_lane": "field-set contract extracted from promotion_gate.missing_or_refused and scored against BYTE_LEDGER; ledger remains open",
+   "ebpw_accounting_present": false,
+   "missing_fields": [
+    {
+     "field": "ebpw_accounting.all_required_bytes_included=true",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.bases.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.dictionaries.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.expert_indices.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.generators.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.lookup_structures.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.mtp_representation.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.ngram_representation.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.required_executable_metadata.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.residuals.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.routing_metadata.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.scales.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.weight_codes.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    },
+    {
+     "field": "ebpw_accounting.zero_points.bytes",
+     "present_on_byte_ledger": false,
+     "value": null
+    }
+   ],
+   "promotion_allowed": false,
+   "refused": true,
+   "refused_to_fill_from_exact_control": "complete_exact_control is source_bf16_exact identity; copying runtime_required_bytes into complete_storage_bytes would launder exact-control as compact complete-system storage",
+   "status": "MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE",
+   "why_cannot_close_here": "compact/complete-candidate storage bytes are null; the packed NX body is NOT_BUILT; this lane's write list forbids packing; tools/flash_complete_byte_ledger.py is Codex-owned"
+  },
+  "dense_rematerialization": {
+   "decompresses_to_dense_weight_tensor": null,
+   "ok": false,
+   "path_kind": "PRODUCTION",
+   "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
+   "runs_ordinary_kernels": null
+  },
+  "kernel_catalog": {
+   "built_count": 4,
+   "dense_rematerialization_policy": "FORBIDDEN_BY_FINAL_RUNTIME_POLICY",
+   "metal_compile_is_a_host_wall": false,
+   "native_kernels_status": "PLAN_ONLY",
+   "not_built_count": 11,
+   "organs": [
+    {
+     "built": false,
+     "kernel": "partitioned_embedding_lookup",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "embeddings",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": true,
+     "kernel": "native_nf_expert_gemv",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "routed_experts",
+     "status": "BOUNDED_LAYER0_SELECTED_TOP10_COMPOSITION_ONLY"
+    },
+    {
+     "built": true,
+     "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu + qwen_uniform_q4_group64_matvec + qwen_next_shared_expert_sigmoid_gate",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "shared_expert",
+     "status": "BOUNDED_LAYER0_COMPOSITION_ONLY"
+    },
+    {
+     "built": true,
+     "kernel": "qwen_next_moe_weighted_sum + qwen_next_moe_add_shared",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "moe_join",
+     "status": "BOUNDED_LAYER0_EXACT_MOE_JOIN"
+    },
+    {
+     "built": false,
+     "kernel": "router_topk_gather",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "router",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "persistent_state_update",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "deltanet",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "resident_state_read_modify_write",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "recurrent_state",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "budgeted_sparse_gather_reduce",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "sparse_attention",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "lookup_or_compositional_generator",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "ngram_engine",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "draft_verify_rollback",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "mtp",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "fused_norm_epilogue",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "norms",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "vocabulary_projection_and_reduce",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "lm_head",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": false,
+     "kernel": "conditional_multimodal_vision_path",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "vision_backbone",
+     "status": "NOT_IMPLEMENTED"
+    },
+    {
+     "built": true,
+     "kernel": "qwen_next_expand_shared_to_hyper_state + qwen_uniform_q4_group64_matvec + qwen_next_hyperconnection_residual_mix_candidate",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "residual_hyperconnections",
+     "status": "BOUNDED_LAYER0_CANDIDATE_ONLY"
+    },
+    {
+     "built": false,
+     "kernel": "ownership_audit_required",
+     "metal_compile_is_a_host_wall": false,
+     "organ": "support_misc",
+     "status": "UNRESOLVED"
+    }
+   ],
+   "source_compile_today": "OK",
+   "still_plan_only": true,
+   "why_compile_is_not_the_wall": "metal crate source compile returned OK on this host; load_or_compile_shader_library falls back to new_library_with_source; the missing xcrun precompile path is a cost"
+  },
+  "reproducibility_closure": {
+   "all_digests_present": false,
+   "byte_reproducible": false,
+   "cpu_work_done_this_lane": "closure inventory scored against FLASH_NEXT_NOETIC_EXECUTABLE and V0 NX",
+   "fields": [
+    {
+     "field": "runtime_genome.executable_sha256",
+     "present": false,
+     "value": null
+    },
+    {
+     "field": "runtime_genome.loader_sha256",
+     "present": false,
+     "value": null
+    },
+    {
+     "field": "runtime_genome.compiler_identity",
+     "present": false,
+     "value": null
+    },
+    {
+     "field": "runtime_genome.device_identity",
+     "present": false,
+     "value": null
+    },
+    {
+     "field": "reproducibility.closure_sha256",
+     "present": false,
+     "value": null
+    }
+   ],
+   "why_cannot_hash_here": "runtime_genome.executable_sha256 and loader_sha256 are null; metadata hashes of .rs/.metal source files are not an executable closure; this lane does not pack the NX body"
+  }
+ },
+ "criterion": {
+  "callable_path": false,
+  "id": "nr_nx_path_callable",
+  "met": false,
+  "nr_status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION",
+  "nx_status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+  "reason": "NR/NX path is not callable. seven_all_met=False FLASH_COMPLETE_V0.nx status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' nr_v2='COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION'. Flash source-independent NX is SCAFFOLD_ONLY / metadata, not qualified.",
+  "seven_all_met": false,
+  "why_the_criterion_collapses_the_seven": "odyssey_launch._eval_nr_nx treats seven_all_met=False identically regardless of whether a miss is WORK_NOT_DONE or PHYSICAL_AUTHORITY. That collapse is why this module exists."
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "the seven misses are no longer reported identically: WORK_NOT_DONE vs PHYSICAL_AUTHORITY vs PRIOR_ARTIFACT",
+  "HOST_HAS_NO_GPU is rejected as an inherited causal class; Metal GPU present is a holding wake condition, not a qualified NX",
+  "complete-system ledger field-set contract scored against BYTE_LEDGER without closing it",
+  "reproducibility closure inventory scored against null digests",
+  "fallback_count=0 refused on the metadata NX",
+  "SLEEPING WorkUnits for accepted_generation, capability, protected_performance with wake conditions split into holding vs unmet",
+  "1024-row source-BF16 teacher capture is on disk and is refused as accepted_generation"
+ ],
+ "gpu_authority": false,
+ "is_a_measurement": false,
+ "launch_gate_unmet": [
+  "resident_autonomy_trial_pass",
+  "specimen_curriculum_ready",
+  "nr_nx_path_callable",
+  "protected_scheduling"
+ ],
+ "launch_via": "/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_LAUNCH_GATE.json",
+ "live_nx": {
+  "error": null,
+  "failed_requirements": [
+   "complete_byte_ledger",
+   "self_contained_dependencies",
+   "accepted_generation",
+   "capability",
+   "reproducibility",
+   "protected_performance",
+   "no_forbidden_fallback"
+  ],
+  "nr_status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION",
+  "packed": false,
+  "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+  "promotable": false,
+  "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+ },
+ "measurement_class": "STATIC_ONLY",
+ "negative_findings": [
+  "seven_all_met remains False; FLASH_COMPLETE_V0.nx remains SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+  "no packed source-independent Flash NX body exists to close self_contained_dependencies",
+  "no GPU lease with a proven holder pid; contamination_class is HEAVY; protected_performance stays SLEEPING",
+  "the L4 REAL1024 coherence screen is OFFLINE_META_SURFACE_GATE_FAILED; more rows made the family worse, which does not qualify an NX",
+  "TEACHER_CORPUS_CONTRACT still records executed=0 while a capture receipt exists \u2014 declared capability is not executed capability",
+  "audit negative_findings still say 'sidecar has no GPU'; that causal label disagrees with METAL_REACHABILITY and is reported, not silently rewritten",
+  "this module cannot pack Flash, cannot take a lease, and cannot establish physical EBPW"
+ ],
+ "next_workunits": [
+  {
+   "done_this_lane": "field-set contract extracted from promotion_gate.missing_or_refused and scored against BYTE_LEDGER; ledger remains open",
+   "id": "WU.CPU.nr-nx.complete_byte_ledger",
+   "owner": "this sidecar (field-set / disclosure / inventory)",
+   "requirement": "complete_byte_ledger",
+   "schedule": "CPU_NEXT",
+   "still_open": "compact/complete-candidate storage bytes are null; the packed NX body is NOT_BUILT; this lane's write list forbids packing; tools/flash_complete_byte_ledger.py is Codex-owned"
+  },
+  {
+   "done_this_lane": "reclassified Metal source compile as not a host wall; packing the NX body remains Codex-owned work-not-done",
+   "id": "WU.CPU.nr-nx.self_contained_dependencies",
+   "owner": "Codex (pack NX / loader / kernel catalog)",
+   "requirement": "self_contained_dependencies",
+   "schedule": "CPU_NEXT",
+   "still_open": "this lane's write list forbids building an NX; tools/flash_nx_genome.py and hcli/agentos/flash_executable.py are Codex-owned; the V0/V1/V2 seals are metadata; the bounded Q4 128-row expert slice is not a whole-model NX"
+  },
+  {
+   "id": "WU.SLEEPING.nr-nx.accepted_generation",
+   "requirement": "accepted_generation",
+   "schedule": "SLEEPING",
+   "wake_unmet": [
+    "source_independent_nx_on_disk",
+    "gpu_lease_proven_holder",
+    "machine_quiesced"
+   ],
+   "workunit": "future.nr-nx.sleep.accepted_generation"
+  },
+  {
+   "id": "WU.SLEEPING.nr-nx.capability",
+   "requirement": "capability",
+   "schedule": "SLEEPING",
+   "wake_unmet": [
+    "source_independent_nx_on_disk",
+    "gpu_lease_proven_holder",
+    "machine_quiesced"
+   ],
+   "workunit": "future.nr-nx.sleep.capability"
+  },
+  {
+   "done_this_lane": "closure inventory scored against FLASH_NEXT_NOETIC_EXECUTABLE and V0 NX",
+   "id": "WU.CPU.nr-nx.reproducibility",
+   "owner": "this sidecar (field-set / disclosure / inventory)",
+   "requirement": "reproducibility",
+   "schedule": "CPU_NEXT",
+   "still_open": "runtime_genome.executable_sha256 and loader_sha256 are null; metadata hashes of .rs/.metal source files are not an executable closure; this lane does not pack the NX body"
+  },
+  {
+   "id": "WU.SLEEPING.nr-nx.protected_performance",
+   "requirement": "protected_performance",
+   "schedule": "SLEEPING",
+   "wake_unmet": [
+    "source_independent_nx_on_disk",
+    "gpu_lease_proven_holder",
+    "machine_quiesced"
+   ],
+   "workunit": "future.nr-nx.sleep.protected_performance"
+  },
+  {
+   "done_this_lane": "refused to stamp fallback_count=0 on the metadata NX",
+   "id": "WU.CPU.nr-nx.no_forbidden_fallback",
+   "owner": "this sidecar (field-set / disclosure / inventory)",
+   "requirement": "no_forbidden_fallback",
+   "schedule": "CPU_NEXT",
+   "still_open": "metadata NX / source-oracle path is the runtime; missing fallback_count is not zero, and stamping 0 would hide the fallback"
+  }
+ ],
+ "nr_complete_via": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NR_COMPLETE.json",
+ "physical_ebpw": null,
+ "physical_ebpw_written": false,
+ "purpose": "Map each of the seven Flash NX completeness requirements onto WORK_NOT_DONE vs PHYSICAL_AUTHORITY using today's Metal and teacher evidence, advance the CPU contracts that do not require packing an NX, and emit SLEEPING WorkUnits with wake conditions for the rest.",
+ "recovered_implementation": [
+  "tools/future/flash_nx_audit.py \u2014 owns SEVEN_REQUIREMENTS, check_nx, seven_from_disk, dependency_chain; EXTENDED, not forked",
+  "tools/future/odyssey_launch.py _eval_nr_nx \u2014 the criterion that collapses seven_all_met; read, not rewritten",
+  "tools/future/flash_nr_complete.py \u2014 continuous NR + typed EBPW; qualified_complete_physical_ebpw stays UNKNOWN",
+  "tools/future/ebpw_categories.py \u2014 can_promote / judge_dense_rematerialization reused",
+  "tools/future/metal_reachability.py \u2014 FALSIFIED_AS_A_HOST_PROPERTY receipt; not re-probed",
+  "tools/future/workunit_species.py emit_hcli_workunit \u2014 SLEEPING units, never pending",
+  "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json \u2014 source of requirement state",
+  "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL1024.json \u2014 teacher capture ran; screen failed"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.nr_nx_path.build()",
+  "fails_closed": "absent audit/NX is a recorded refusal; MET requires an on-disk artifact; physical requirements are SLEEPING never pending; physical_ebpw cannot be written",
+  "frontier": "FT.MODEL_EXECUTION.complete-token",
+  "receipt": "receipts/future/NR_NX_PATH.json",
+  "workunit": "one CPU_ANALYSIS unit; classification + CPU contracts; no GPU authority"
+ },
+ "schema": "hawking.future.nr_nx_path.v1",
+ "seal_sha256": "303a2a87a7a95c28834dd91054c5fb6f12e44bc089a99b6eb21cf8c7cc5f5def",
+ "seven": [
+  {
+   "audit_cited": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": "MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE"
+    },
+    {
+     "field": "promotion_allowed",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": false
+    },
+    {
+     "field": "routed_expert_sensitivity.complete_storage_bytes",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": null
+    },
+    {
+     "field": "measured_fastpath_profile.complete_ebpw",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": null
+    },
+    {
+     "field": "promotion.blockers",
+     "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "value": [
+      "complete accepted-token session",
+      "complete candidate byte ledger",
+      "capability suite",
+      "machine-bound NX compilation"
+     ]
+    },
+    {
+     "field": "promotion_gate.missing_or_refused",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": [
+      "MTP accounting",
+      "complete-system byte ledger",
+      "dense-versus-NF A/B receipt",
+      "ebpw_accounting.all_required_bytes_included=true",
+      "ebpw_accounting.bases.bytes",
+      "ebpw_accounting.dictionaries.bytes",
+      "ebpw_accounting.expert_indices.bytes",
+      "ebpw_accounting.generators.bytes",
+      "ebpw_accounting.lookup_structures.bytes",
+      "ebpw_accounting.mtp_representation.bytes",
+      "ebpw_accounting.ngram_representation.bytes",
+      "ebpw_accounting.required_executable_metadata.bytes",
+      "ebpw_accounting.residuals.bytes",
+      "ebpw_accounting.routing_metadata.bytes",
+      "ebpw_accounting.scales.bytes",
+      "ebpw_accounting.weight_codes.bytes",
+      "ebpw_accounting.zero_points.bytes",
+      "fallback_count disclosure",
+      "native executable",
+      "protected capability contract",
+      "reproducible protected receipt",
+      "runtime/kernel genome",
+      "whole-model reference comparison"
+     ]
+    }
+   ],
+   "audit_note": "FLASH_COMPLETE_V0.BYTE_LEDGER.json closes the exact-control 16.0 EBPW book and explicitly leaves compact/complete-candidate storage open. NR V2 still lists 'complete candidate byte ledger' as a promotion blocker. evaluate_flash_promotion reports the complete-system byte-field set missing.",
+   "audit_state": "NOT_MET",
+   "audit_why": "bound ledger is exact-control / I/O profile only; complete candidate ledger remains open",
+   "blocker_classes": [
+    "PRIOR_ARTIFACT",
+    "WORK_NOT_DONE"
+   ],
+   "cpu_work_done_this_lane": "field-set contract extracted from promotion_gate.missing_or_refused and scored against BYTE_LEDGER; ledger remains open",
+   "judge": {
+    "artifact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "state": "NOT_MET",
+    "why": "bound ledger is exact-control / I/O profile only; complete candidate ledger remains open"
+   },
+   "live_checker_state": "NOT_MET",
+   "needs": {
+    "cpu_only_to_satisfy": true,
+    "cpu_work": true,
+    "gpu_authority": false,
+    "metal_compile": false,
+    "metal_compile_is_a_host_wall": false,
+    "teacher_corpus": false
+   },
+   "ok": false,
+   "rejected_inherited_class": "HOST_HAS_NO_GPU",
+   "requirement": "complete_byte_ledger",
+   "satisfying_artifact": {
+    "kind": "closed complete-system byte ledger on the NX, not the exact-control 16.0 book",
+    "path": "the NX itself (byte_ledger.*) or receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json with promotion_allowed and compact complete_storage_bytes",
+    "predicates": [
+     "byte_ledger.status in {CLOSED, COMPLETE, COMPLETE_SYSTEM_CLOSED}",
+     "byte_ledger.all_required_bytes_included is True",
+     "byte_ledger.complete_system is True",
+     "OR bound ledger promotion_allowed is True AND complete_storage_bytes is not null AND status is not exact-control I/O profile"
+    ]
+   },
+   "schedule": "CPU_NEXT",
+   "sleeping_workunit": null,
+   "state_agreement": "AGREE",
+   "wake_conditions": [],
+   "why_cpu_cannot_close_here": "compact/complete-candidate storage bytes are null; the packed NX body is NOT_BUILT; this lane's write list forbids packing; tools/flash_complete_byte_ledger.py is Codex-owned"
+  },
+  {
+   "audit_cited": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+    },
+    {
+     "field": "physical_program.source_binding",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "exact Flash fast-chain executor plus both organ executors; shader files are content-bound"
+    },
+    {
+     "field": "measurement_state.serialized_artifact",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_BUILT"
+    },
+    {
+     "field": "measurement_state.physical_loader",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_BUILT"
+    },
+    {
+     "field": "native_loader.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_IMPLEMENTED"
+    },
+    {
+     "field": "first_physical_failure_boundary.stage",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "value": "whole_token_weight_loader"
+    }
+   ],
+   "audit_note": "V0/V1/V2 NX files are metadata seals that bind source .rs executors and the Metal shader tree. There is no packed NX body. The packed Qwen38 greedy loader refuses the raw Flash specimen. native_loader.status is NOT_IMPLEMENTED. serialized_artifact and physical_loader are NOT_BUILT.",
+   "audit_state": "NOT_MET",
+   "audit_why": "NX is a metadata seal, not a self-contained executable",
+   "blocker_classes": [
+    "WORK_NOT_DONE"
+   ],
+   "cpu_work_done_this_lane": "reclassified Metal source compile as not a host wall; packing the NX body remains Codex-owned work-not-done",
+   "judge": {
+    "artifact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "state": "NOT_MET",
+    "why": "NX is a metadata seal, not a self-contained executable"
+   },
+   "live_checker_state": "NOT_MET",
+   "needs": {
+    "cpu_only_to_satisfy": true,
+    "cpu_work": true,
+    "gpu_authority": false,
+    "metal_compile": true,
+    "metal_compile_is_a_host_wall": false,
+    "teacher_corpus": false
+   },
+   "ok": false,
+   "rejected_inherited_class": "HOST_HAS_NO_GPU",
+   "requirement": "self_contained_dependencies",
+   "satisfying_artifact": {
+    "kind": "packed source-independent Flash NX body + physical loader + native kernel catalog",
+    "path": "receipts/headless/FLASH_COMPLETE_V*.nx.json whose status is not SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "predicates": [
+     "status is not METADATA_ONLY / NOT_FOR_PROMOTION",
+     "serialized_artifact status not in {None, NOT_BUILT, ABSENT} and sha256 and self_contained is True",
+     "physical_loader.status in {BUILT, IMPLEMENTED, PASSED} and source_independent is True",
+     "native_kernel.status in {BUILT, IMPLEMENTED, PASSED, BOUND}"
+    ]
+   },
+   "schedule": "CPU_NEXT",
+   "sleeping_workunit": null,
+   "state_agreement": "AGREE",
+   "wake_conditions": [],
+   "why_cpu_cannot_close_here": "this lane's write list forbids building an NX; tools/flash_nx_genome.py and hcli/agentos/flash_executable.py are Codex-owned; the V0/V1/V2 seals are metadata; the bounded Q4 128-row expert slice is not a whole-model NX"
+  },
+  {
+   "audit_cited": [
+    {
+     "field": "qualification.accepted_multitoken_tps",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": null
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": "MEASURED_SINGLE_TERMINAL_TOKEN"
+    },
+    {
+     "field": "terminal_token.classification",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": "single terminal argmax probe; not multi-token accepted generation"
+    },
+    {
+     "field": "terminal_token.accepted_generation_tokens",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": null
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED"
+    },
+    {
+     "field": "accepted_generation_tokens",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": 1
+    },
+    {
+     "field": "promotion_allowed",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": false
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
+     "value": "PASSED_COMPLETE_FORWARD_CANDIDATE_REJECTED"
+    }
+   ],
+   "audit_note": "The device-resident receipt is a single terminal argmax probe, not multi-token accepted generation. The stateful acceptance receipt records one token and refuses promotion; continuation state is not advanced. The session receipt is PASSED_COMPLETE_FORWARD_CANDIDATE_REJECTED. NX accepted_multitoken_tps is null.",
+   "audit_state": "NOT_MET",
+   "audit_why": "no multi-token accepted generation; a single terminal argmax is not accepted generation",
+   "blocker_classes": [
+    "PRIOR_ARTIFACT",
+    "PHYSICAL_AUTHORITY"
+   ],
+   "cpu_work_done_this_lane": "wake conditions split into already-holding (Metal GPU, source compile) and unmet (packed NX, lease, QUIESCED); teacher capture refused as a substitute",
+   "judge": {
+    "artifact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "state": "NOT_MET",
+    "why": "no multi-token accepted generation; a single terminal argmax is not accepted generation"
+   },
+   "live_checker_state": "NOT_MET",
+   "needs": {
+    "cpu_only_to_satisfy": false,
+    "cpu_work": true,
+    "gpu_authority": true,
+    "metal_compile": true,
+    "metal_compile_is_a_host_wall": false,
+    "teacher_corpus": false
+   },
+   "ok": false,
+   "rejected_inherited_class": "HOST_HAS_NO_GPU",
+   "requirement": "accepted_generation",
+   "satisfying_artifact": {
+    "kind": "multi-token accepted generation PASSED on the source-independent NX",
+    "path": "the NX accepted_generation block; not FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1 and not a teacher mlp_input capture",
+    "predicates": [
+     "accepted_generation.status == PASSED",
+     "accepted_generation.multi_token is True"
+    ]
+   },
+   "schedule": "SLEEPING",
+   "sleeping_workunit": {
+    "blocked_reason": "The device-resident receipt is a single terminal argmax probe, not multi-token accepted generation. The stateful acceptance receipt records one token and refuses promotion; continuation state is not advanced. The session receipt is PASSED_COMPLETE_FORWARD_CANDIDATE_REJECTED. NX accepted_multitoken_tps is null.",
+    "classification": "SLEEPING",
+    "id": "future.nr-nx.sleep.accepted_generation",
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "status": "sleeping",
+    "synthetic_result_forbidden": true,
+    "verifier": "future.nr_nx_path.wakeup:accepted_generation",
+    "wake_unmet": [
+     "source_independent_nx_on_disk",
+     "gpu_lease_proven_holder",
+     "machine_quiesced"
+    ]
+   },
+   "state_agreement": "AGREE",
+   "wake_conditions": [
+    {
+     "evidence": "METAL_REACHABILITY verdict='FALSIFIED_AS_A_HOST_PROPERTY' device='Apple M3 Ultra'",
+     "holds": true,
+     "id": "metal_gpu_present",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    },
+    {
+     "evidence": "runtime_source_compile='OK'",
+     "holds": true,
+     "id": "metal_source_compile",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    },
+    {
+     "evidence": "FLASH_COMPLETE_V0.nx is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+     "holds": false,
+     "id": "source_independent_nx_on_disk",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "holds": false,
+     "id": "gpu_lease_proven_holder",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "contamination_class='HEAVY'; HEAVY or unknown is not a protected window; sidecar will not SIGSTOP standing workers",
+     "holds": false,
+     "id": "machine_quiesced",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "a 1024-row source-BF16 mlp_input capture exists; it does not satisfy accepted_generation, capability, or protected_performance",
+     "holds": true,
+     "id": "teacher_capture_is_not_this_requirement",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    }
+   ],
+   "why_cpu_cannot_close_here": "satisfying this requirement is a protected GPU run on a source-independent NX that does not exist; this sidecar has no GPU authority and will not flock"
+  },
+  {
+   "audit_cited": [
+    {
+     "field": "measurement_state.capability",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_MEASURED"
+    },
+    {
+     "field": "capability_contract.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_RUN"
+    },
+    {
+     "field": "promotion.blockers",
+     "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "value": [
+      "complete accepted-token session",
+      "complete candidate byte ledger",
+      "capability suite",
+      "machine-bound NX compilation"
+     ]
+    }
+   ],
+   "audit_note": "No capability suite has been run on a source-independent Flash NX. FLASH_NEXT_NOETIC_EXECUTABLE.capability_contract.status is NOT_RUN. NR V2 lists 'capability suite' as a promotion blocker.",
+   "audit_state": "NOT_MET",
+   "audit_why": "no capability suite result on the NX",
+   "blocker_classes": [
+    "PRIOR_ARTIFACT",
+    "PHYSICAL_AUTHORITY"
+   ],
+   "cpu_work_done_this_lane": "wake conditions split into already-holding (Metal GPU, source compile) and unmet (packed NX, lease, QUIESCED); teacher capture refused as a substitute",
+   "judge": {
+    "artifact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "state": "NOT_MET",
+    "why": "no capability suite result on the NX"
+   },
+   "live_checker_state": "NOT_MET",
+   "needs": {
+    "cpu_only_to_satisfy": false,
+    "cpu_work": true,
+    "gpu_authority": true,
+    "metal_compile": true,
+    "metal_compile_is_a_host_wall": false,
+    "teacher_corpus": false
+   },
+   "ok": false,
+   "rejected_inherited_class": "HOST_HAS_NO_GPU",
+   "requirement": "capability",
+   "satisfying_artifact": {
+    "kind": "capability suite PASSED on the source-independent NX",
+    "path": "the NX capability / capability_contract block; not FLASH_NEXT_NOETIC_EXECUTABLE.capability_contract.status=NOT_RUN",
+    "predicates": [
+     "capability.status == PASSED"
+    ]
+   },
+   "schedule": "SLEEPING",
+   "sleeping_workunit": {
+    "blocked_reason": "No capability suite has been run on a source-independent Flash NX. FLASH_NEXT_NOETIC_EXECUTABLE.capability_contract.status is NOT_RUN. NR V2 lists 'capability suite' as a promotion blocker.",
+    "classification": "SLEEPING",
+    "id": "future.nr-nx.sleep.capability",
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "status": "sleeping",
+    "synthetic_result_forbidden": true,
+    "verifier": "future.nr_nx_path.wakeup:capability",
+    "wake_unmet": [
+     "source_independent_nx_on_disk",
+     "gpu_lease_proven_holder",
+     "machine_quiesced"
+    ]
+   },
+   "state_agreement": "AGREE",
+   "wake_conditions": [
+    {
+     "evidence": "METAL_REACHABILITY verdict='FALSIFIED_AS_A_HOST_PROPERTY' device='Apple M3 Ultra'",
+     "holds": true,
+     "id": "metal_gpu_present",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    },
+    {
+     "evidence": "runtime_source_compile='OK'",
+     "holds": true,
+     "id": "metal_source_compile",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    },
+    {
+     "evidence": "FLASH_COMPLETE_V0.nx is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+     "holds": false,
+     "id": "source_independent_nx_on_disk",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "holds": false,
+     "id": "gpu_lease_proven_holder",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "contamination_class='HEAVY'; HEAVY or unknown is not a protected window; sidecar will not SIGSTOP standing workers",
+     "holds": false,
+     "id": "machine_quiesced",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "a 1024-row source-BF16 mlp_input capture exists; it does not satisfy accepted_generation, capability, or protected_performance",
+     "holds": true,
+     "id": "teacher_capture_is_not_this_requirement",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    }
+   ],
+   "why_cpu_cannot_close_here": "satisfying this requirement is a protected GPU run on a source-independent NX that does not exist; this sidecar has no GPU authority and will not flock"
+  },
+  {
+   "audit_cited": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+    },
+    {
+     "field": "runtime_genome.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "BOUNDED_MULTI_COMPONENT_ONLY"
+    },
+    {
+     "field": "runtime_genome.executable_sha256",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": null
+    },
+    {
+     "field": "runtime_genome.loader_sha256",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": null
+    },
+    {
+     "field": "promotion_gate.evidence.reproducible_protected_receipt",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": false
+    }
+   ],
+   "audit_note": "The metadata NX hashes source files and a machine genome. There is no packed executable digest, no loader digest, and no byte-reproducible closure. runtime_genome.executable_sha256 and loader_sha256 are null. reproducible_protected_receipt is false.",
+   "audit_state": "NOT_MET",
+   "audit_why": "no executable closure hash; metadata hashes of source files are not byte reproducibility",
+   "blocker_classes": [
+    "PRIOR_ARTIFACT",
+    "WORK_NOT_DONE"
+   ],
+   "cpu_work_done_this_lane": "closure inventory scored against FLASH_NEXT_NOETIC_EXECUTABLE and V0 NX",
+   "judge": {
+    "artifact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "state": "NOT_MET",
+    "why": "no executable closure hash; metadata hashes of source files are not byte reproducibility"
+   },
+   "live_checker_state": "NOT_MET",
+   "needs": {
+    "cpu_only_to_satisfy": true,
+    "cpu_work": true,
+    "gpu_authority": false,
+    "metal_compile": true,
+    "metal_compile_is_a_host_wall": false,
+    "teacher_corpus": false
+   },
+   "ok": false,
+   "rejected_inherited_class": "HOST_HAS_NO_GPU",
+   "requirement": "reproducibility",
+   "satisfying_artifact": {
+    "kind": "byte-reproducible executable closure of the packed NX",
+    "path": "the NX reproducibility block plus runtime_genome executable_sha256 and loader_sha256",
+    "predicates": [
+     "reproducibility.status == PASSED",
+     "reproducibility.byte_reproducible is True",
+     "reproducibility.closure_sha256 is a 64-char digest"
+    ]
+   },
+   "schedule": "CPU_NEXT",
+   "sleeping_workunit": null,
+   "state_agreement": "AGREE",
+   "wake_conditions": [],
+   "why_cpu_cannot_close_here": "runtime_genome.executable_sha256 and loader_sha256 are null; metadata hashes of .rs/.metal source files are not an executable closure; this lane does not pack the NX body"
+  },
+  {
+   "audit_cited": [
+    {
+     "field": "bench.state",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "UNKNOWN"
+    },
+    {
+     "field": "measurement_state.complete_token",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_MEASURED"
+    },
+    {
+     "field": "complete_token_timing.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_MEASURED"
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+     "value": "PLANNED_UNTIL_NATIVE_EXECUTION"
+    },
+    {
+     "field": "funnel.promotion_rule",
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "value": "only a protected complete-token receipt with capability and zero-fallback gates may promote"
+    },
+    {
+     "field": "bench.state",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": "UNKNOWN"
+    },
+    {
+     "field": "bench.state",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": "UNKNOWN"
+    }
+   ],
+   "audit_note": "Every Flash NX/token receipt on disk has bench.state UNKNOWN. complete_token is NOT_MEASURED. The token-ns budget is PLANNED_UNTIL_NATIVE_EXECUTION. Queue promotion requires a protected complete-token receipt. Existing token receipts are not PROTECTED_ABSOLUTE and must not be read as such.",
+   "audit_state": "NOT_MET",
+   "audit_why": "bench.state is UNKNOWN; DIAGNOSTIC_RELATIVE and metadata seals do not decide",
+   "blocker_classes": [
+    "PRIOR_ARTIFACT",
+    "PHYSICAL_AUTHORITY"
+   ],
+   "cpu_work_done_this_lane": "wake conditions split into already-holding (Metal GPU, source compile) and unmet (packed NX, lease, QUIESCED); teacher capture refused as a substitute",
+   "judge": {
+    "artifact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "state": "NOT_MET",
+    "why": "bench.state is UNKNOWN; DIAGNOSTIC_RELATIVE and metadata seals do not decide"
+   },
+   "live_checker_state": "NOT_MET",
+   "needs": {
+    "cpu_only_to_satisfy": false,
+    "cpu_work": true,
+    "gpu_authority": true,
+    "metal_compile": true,
+    "metal_compile_is_a_host_wall": false,
+    "teacher_corpus": false
+   },
+   "ok": false,
+   "rejected_inherited_class": "HOST_HAS_NO_GPU",
+   "requirement": "protected_performance",
+   "satisfying_artifact": {
+    "kind": "PROTECTED_ABSOLUTE complete-token measurement under a QUIESCED lease",
+    "path": "the NX protected_performance / bench block; not DIAGNOSTIC_RELATIVE token receipts, not the teacher capture",
+    "predicates": [
+     "measurement_class in {PROTECTED_ABSOLUTE, QUALIFIED_PROTECTED}",
+     "bench.state == QUIESCED",
+     "complete_token_measured is True",
+     "protected_window is True"
+    ]
+   },
+   "schedule": "SLEEPING",
+   "sleeping_workunit": {
+    "blocked_reason": "Every Flash NX/token receipt on disk has bench.state UNKNOWN. complete_token is NOT_MEASURED. The token-ns budget is PLANNED_UNTIL_NATIVE_EXECUTION. Queue promotion requires a protected complete-token receipt. Existing token receipts are not PROTECTED_ABSOLUTE and must not be read as such.",
+    "classification": "SLEEPING",
+    "id": "future.nr-nx.sleep.protected_performance",
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "status": "sleeping",
+    "synthetic_result_forbidden": true,
+    "verifier": "future.nr_nx_path.wakeup:protected_performance",
+    "wake_unmet": [
+     "source_independent_nx_on_disk",
+     "gpu_lease_proven_holder",
+     "machine_quiesced"
+    ]
+   },
+   "state_agreement": "AGREE",
+   "wake_conditions": [
+    {
+     "evidence": "METAL_REACHABILITY verdict='FALSIFIED_AS_A_HOST_PROPERTY' device='Apple M3 Ultra'",
+     "holds": true,
+     "id": "metal_gpu_present",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    },
+    {
+     "evidence": "runtime_source_compile='OK'",
+     "holds": true,
+     "id": "metal_source_compile",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    },
+    {
+     "evidence": "FLASH_COMPLETE_V0.nx is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+     "holds": false,
+     "id": "source_independent_nx_on_disk",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+     "holds": false,
+     "id": "gpu_lease_proven_holder",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "contamination_class='HEAVY'; HEAVY or unknown is not a protected window; sidecar will not SIGSTOP standing workers",
+     "holds": false,
+     "id": "machine_quiesced",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "SLEEPING"
+    },
+    {
+     "evidence": "a 1024-row source-BF16 mlp_input capture exists; it does not satisfy accepted_generation, capability, or protected_performance",
+     "holds": true,
+     "id": "teacher_capture_is_not_this_requirement",
+     "never_pending": true,
+     "schedule_if_this_were_the_only_gate": "MET_PRECONDITION"
+    }
+   ],
+   "why_cpu_cannot_close_here": "satisfying this requirement is a protected GPU run on a source-independent NX that does not exist; this sidecar has no GPU authority and will not flock"
+  },
+  {
+   "audit_cited": [
+    {
+     "field": "representation.parts[routed_experts].representation",
+     "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "value": "route_conditioned_compact_candidate"
+    },
+    {
+     "field": "complete_exact_control.representation",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": "source_bf16_exact fallback for every family"
+    },
+    {
+     "field": "fallback_count",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": null
+    },
+    {
+     "field": "native_kernels.dense_rematerialization",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "FORBIDDEN_BY_FINAL_RUNTIME_POLICY"
+    },
+    {
+     "field": "next",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": "Use the accepted token as the next session input in a route-safe persistent executor; measure repeated accepted decode and eliminate dense source-bank reloads."
+    },
+    {
+     "field": "queue_policy.flash_source_oracle_is_not_flash_nx",
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "value": true
+    }
+   ],
+   "audit_note": "fallback_count is undisclosed on the scaffold. Exact-control NR/ledger still name source_bf16_exact as the runtime fallback. The source oracle is policy-not-NX. Dense rematerialization is forbidden by policy and not evidenced as absent on a whole-model NX, because that NX is not built. The accepted-token next-step still asks to eliminate dense source-bank reloads.",
+   "audit_state": "NOT_MET",
+   "audit_why": "fallback_count is undisclosed; missing is not zero",
+   "blocker_classes": [
+    "PRIOR_ARTIFACT",
+    "WORK_NOT_DONE"
+   ],
+   "cpu_work_done_this_lane": "refused to stamp fallback_count=0 on the metadata NX",
+   "judge": {
+    "artifact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "state": "NOT_MET",
+    "why": "fallback_count is undisclosed; missing is not zero"
+   },
+   "live_checker_state": "NOT_MET",
+   "needs": {
+    "cpu_only_to_satisfy": true,
+    "cpu_work": true,
+    "gpu_authority": false,
+    "metal_compile": false,
+    "metal_compile_is_a_host_wall": false,
+    "teacher_corpus": false
+   },
+   "ok": false,
+   "rejected_inherited_class": "HOST_HAS_NO_GPU",
+   "requirement": "no_forbidden_fallback",
+   "satisfying_artifact": {
+    "kind": "disclosed zero-fallback source-independent production NX with no dense rematerialization",
+    "path": "the NX fallback / accepted_generation / physical_loader block; not a metadata seal of the source oracle",
+    "predicates": [
+     "fallback_count == 0 (int, disclosed; missing is not zero)",
+     "dense_rematerialization in {False, forbidden, FORBIDDEN_BY_FINAL_RUNTIME_POLICY}",
+     "source_independent is True"
+    ]
+   },
+   "schedule": "CPU_NEXT",
+   "sleeping_workunit": null,
+   "state_agreement": "AGREE",
+   "wake_conditions": [],
+   "why_cpu_cannot_close_here": "metadata NX / source-oracle path is the runtime; missing fallback_count is not zero, and stamping 0 would hide the fallback"
+  }
+ ],
+ "seven_all_met": false,
+ "today": {
+  "host": {
+   "device_name": "Apple M3 Ultra",
+   "gpu_authority": false,
+   "gpu_present": true,
+   "gpu_present_state": "PRESENT",
+   "is_a_measurement": false,
+   "metal_crate_version": "0.29.0",
+   "metal_receipt": "receipts/future/METAL_REACHABILITY.json",
+   "metal_via": "/Users/scammermike/Downloads/hawking/receipts/future/METAL_REACHABILITY.json",
+   "n_devices": 1,
+   "runtime_binding_device": "Apple M3 Ultra",
+   "source_compile": "OK",
+   "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
+   "what_this_does_not_establish": [
+    "that the blocked capture will now succeed; that binary was not run here",
+    "the cause of the process-side failure; sandbox, launch context and build target are all consistent with what was observed and nothing here distinguishes them"
+   ],
+   "why": "MTLCreateSystemDefaultDevice() returned 'Apple M3 Ultra' from an ordinary command-line process on this host, and MTLCopyAllDevices() reports 1 device(s). A Rust Device::system_default() returning None is therefore a property of that process, not of the machine.",
+   "xcrun_metal": {
+    "found": false,
+    "path": null,
+    "probed": true,
+    "returncode": 72
+   }
+  },
+  "lease": {
+   "contamination_class": "HEAVY",
+   "contamination_via": "/Users/scammermike/Downloads/hawking/receipts/future/CONTAMINATION_SCIENCE.json",
+   "dry_run_stop_reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+   "dry_run_stop_stage": "identify_lease_availability",
+   "lease_proven": false,
+   "machine_quiesced": false,
+   "qualification_via": "/Users/scammermike/Downloads/hawking/receipts/future/QUALIFICATION_PIPELINE.json",
+   "why_lease_not_proven": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+   "why_not_quiesced": "contamination_class='HEAVY'; HEAVY or unknown is not a protected window; sidecar will not SIGSTOP standing workers"
+  },
+  "teacher": {
+   "capture_present": true,
+   "capture_rows": 1024,
+   "capture_status": "CAPTURED_SOURCE_MLP_INPUT_NOT_CAPABILITY_PROVEN",
+   "complete_token_on_screen": "NOT_MEASURED",
+   "contract_executed": 0,
+   "contract_via": "/Users/scammermike/Downloads/hawking/receipts/future/TEACHER_CORPUS_CONTRACT.json",
+   "contract_workunits": 12,
+   "declared_vs_executed": "TEACHER_CORPUS_CONTRACT.capture_workunits executed=0/12; a source-BF16 L4 capture receipt is on disk. Naming the workunit is not evidence it ran; the capture receipt is.",
+   "physical_ebpw_on_screen": null,
+   "promotion_allowed": false,
+   "screen_status": "OFFLINE_META_SURFACE_GATE_FAILED",
+   "screen_via": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL1024.json",
+   "source_pipeline": "dense source-BF16 layers 0..2 -> stateful source-BF16 layer 3 -> dense source-BF16 layer 4",
+   "teacher_via": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_TEACHER_L4_REAL1024.json"
+  },
+  "teacher_is_not_accepted_generation": {
+   "capture_present": true,
+   "ok": false,
+   "screen_status": "OFFLINE_META_SURFACE_GATE_FAILED",
+   "why": "teacher status='CAPTURED_SOURCE_MLP_INPUT_NOT_CAPABILITY_PROVEN' rows=1024 pipeline='dense source-BF16 layers 0..2 -> stateful source-BF16 layer 3 -> dense source-BF16 layer 4' is a bounded mlp_input source-BF16 surface. Queue policy: the source oracle is not Flash NX. A single organ hidden-state capture is not multi-token accepted generation on an NX."
+  }
+ },
+ "version": 1,
+ "what_this_cannot_establish": [
+  "a qualified source-independent Flash NX",
+  "protected complete-token ns / accepted TPS / physical EBPW",
+  "why a previous Rust process saw Device::system_default() return None",
+  "that the blocked Codex capture binaries will now succeed",
+  "capability preservation of any compact organ"
+ ]
+}

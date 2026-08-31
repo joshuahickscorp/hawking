@@ -1,0 +1,412 @@
+diff --git a/crates/hawking-core/src/metal/mod.rs b/crates/hawking-core/src/metal/mod.rs
+index f96d17fa7..f250e5418 100644
+--- a/crates/hawking-core/src/metal/mod.rs
++++ b/crates/hawking-core/src/metal/mod.rs
+@@ -712,10 +712,21 @@ mod imp {
+         cost_ledger::record_counter_sample_capability(true, Some(supported));
+     }
+     use parking_lot::Mutex;
++    use std::cell::RefCell;
+     use std::collections::HashMap;
+     use std::sync::atomic::{AtomicUsize, Ordering};
+     use std::time::Instant;
+ 
++    thread_local! {
++        /// Last pipeline resolved on this thread. Catalog addressing fires
++        /// the same kernel hundreds of times per token; skipping the
++        /// HashMap mutex on a hit is the host-side analog of hoisting a
++        /// catalog offset. Keyed by `Arc::as_ptr(inner)` so two Metal
++        /// contexts (strict-math vs default) cannot alias pipelines.
++        static LAST_PIPELINE: RefCell<Option<(usize, String, ComputePipelineState)>> =
++            const { RefCell::new(None) };
++    }
++
+     /// Wave-6 residency lever (`HAWKING_QWEN_RESIDENCY=1`, DEFAULT-OFF).
+     ///
+     /// Create one `MTLResidencySet` on `device`, add every buffer in
+@@ -2699,6 +2710,23 @@ mod imp {
+         /// Look up -- or create + cache -- a compute pipeline for a
+         /// kernel function.
+         pub fn pipeline(&self, fn_name: &str) -> Result<ComputePipelineState> {
++            let ctx_key = Arc::as_ptr(&self.inner) as usize;
++            LAST_PIPELINE.with(|slot| {
++                {
++                    let hit = slot.borrow();
++                    if let Some((key, name, pipe)) = hit.as_ref() {
++                        if *key == ctx_key && name == fn_name {
++                            return Ok(pipe.clone());
++                        }
++                    }
++                }
++                let pipe = self.pipeline_uncached(fn_name)?;
++                *slot.borrow_mut() = Some((ctx_key, fn_name.to_owned(), pipe.clone()));
++                Ok(pipe)
++            })
++        }
++
++        fn pipeline_uncached(&self, fn_name: &str) -> Result<ComputePipelineState> {
+             let mut pipes = self.inner.pipelines.lock();
+             if let Some(p) = pipes.get(fn_name) {
+                 return Ok(p.clone());
+diff --git a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+index db814f9df..24ce5f5e9 100644
+--- a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
++++ b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+@@ -130,6 +130,33 @@ pub fn qwen38_fuse_dn_inproj_enabled() -> bool {
+     crate::env_on("HAWKING_QWEN38_FUSE_DN_INPROJ")
+ }
+ 
++pub fn qwen38_serial_token_encoder_enabled() -> bool {
++    crate::env_on("HAWKING_QWEN38_SERIAL_TOKEN_ENCODER")
++}
++
++/// Power-of-two threadgroup env used by RMSNorm / rope / DN gated-RMS.
++/// `0` selects the scalar one-thread-per-head form. Unset uses `default`.
++/// Parsed once at session attach; the token loop must not call `getenv`.
++pub fn qwen38_parse_threadgroup_env(name: &str, default: u32) -> u32 {
++    std::env::var(name)
++        .ok()
++        .and_then(|v| v.parse::<u32>().ok())
++        .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
++        .unwrap_or(default)
++}
++
++/// `groups_per_row` the production encode path actually binds.
++/// Group-128 uses truncating `/ 128` because that bind already requires
++/// `cols % 128 == 0`. Every other tensor uses `div_ceil(64)` — the
++/// uniform-Q4 group — even if the header's group_size differs.
++pub fn q4_groups_per_row(cols: usize, group_size: usize) -> u32 {
++    if group_size == UNIFORM_Q4_GROUP_SIZE_128 {
++        (cols / UNIFORM_Q4_GROUP_SIZE_128) as u32
++    } else {
++        cols.div_ceil(UNIFORM_Q4_GROUP_SIZE) as u32
++    }
++}
++
+ /// Residual add + the following RMSNorm. Default Off.
+ ///
+ /// `HAWKING_QWEN38_FUSE_ADD_RMSNORM=1`   — (1+w) production math
+@@ -1433,6 +1460,9 @@ mod device {
+         rows: usize,
+         cols: usize,
+         group_size: usize,
++        /// Load-time `groups_per_row` for the production bind. Token encode
++        /// must not recompute this from `cols` / `group_size`.
++        groups_per_row: u32,
+         codes: PinnedBuffer,
+         scales: PinnedBuffer,
+     }
+@@ -1585,6 +1615,7 @@ mod device {
+                                 rows: rows_n,
+                                 cols,
+                                 group_size: header.group_size,
++                                groups_per_row: q4_groups_per_row(cols, header.group_size),
+                                 codes: context.new_buffer_with_bytes_checked(codes)?,
+                                 scales: context.new_buffer_with_bytes_checked(scales)?,
+                             },
+@@ -1675,6 +1706,7 @@ mod device {
+                                 rows: rows_n,
+                                 cols,
+                                 group_size: header.group_size,
++                                groups_per_row: q4_groups_per_row(cols, header.group_size),
+                                 codes: context.new_buffer_with_bytes_checked(codes)?,
+                                 scales: context.new_buffer_with_bytes_checked(scales)?,
+                             },
+@@ -2145,6 +2177,12 @@ mod device {
+         /// (one encoder per dispatch). Opt-in attack on encoder-boundary idle
+         /// and host command construction. Independent of `concurrent_independent`.
+         pub serial_token_encoder: bool,
++        /// Snapshotted at attach. Token encode must not call `getenv`.
++        rmsnorm_tg: u32,
++        dn_rmsnorm_tg: u32,
++        rope_tg: u32,
++        dn_vi_simd: bool,
++        argmax_two_pass: bool,
+     }
+ 
+     impl Qwen38HybridDecodeSession {
+@@ -2199,7 +2237,16 @@ mod device {
+                 affine2_geo: Affine2Geo::from_env(),
+                 dense_w_materialized,
+                 q2f_force_serial: false,
+-                serial_token_encoder: false,
++                serial_token_encoder: qwen38_serial_token_encoder_enabled(),
++                rmsnorm_tg: qwen38_parse_threadgroup_env("HAWKING_RMSNORM_TG", 1024),
++                dn_rmsnorm_tg: qwen38_parse_threadgroup_env("HAWKING_DN_RMSNORM_TG", 256),
++                rope_tg: qwen38_parse_threadgroup_env("HAWKING_ROPE_TG", 256),
++                dn_vi_simd: std::env::var("HAWKING_DN_VI_SIMD")
++                    .map(|v| v != "0")
++                    .unwrap_or(true),
++                argmax_two_pass: std::env::var("HAWKING_ARGMAX_TWO_PASS")
++                    .map(|v| v != "0")
++                    .unwrap_or(false),
+             };
+             // `MetalContext` clones share `Arc<DispatchTrace>`. If that ever
+             // becomes a fresh buffer, `drain_trace` on the session would miss
+@@ -3027,7 +3074,7 @@ mod device {
+                             "{name} HQ30UQ4 group_size=128 does not bind geo_tpr64 (cols={cols})"
+                         ))
+                     })?;
+-                let groups_per_row = (weight.cols / UNIFORM_Q4_GROUP_SIZE_128) as u32;
++                let groups_per_row = weight.groups_per_row;
+                 return tcb.dispatch_threads(kname, grid, tg, |encoder| {
+                     encoder.set_buffer(0, Some(&weight.codes), 0);
+                     encoder.set_buffer(1, Some(&weight.scales), 0);
+@@ -3038,7 +3085,7 @@ mod device {
+                     encoder.set_bytes(6, 4, &groups_per_row as *const u32 as *const _);
+                 });
+             }
+-            let groups_per_row = weight.cols.div_ceil(UNIFORM_Q4_GROUP_SIZE) as u32;
++            let groups_per_row = weight.groups_per_row;
+             let (grid, tg) = self.matvec_kernel.launch(rows);
+             tcb.dispatch_threads(kernel, grid, tg, |encoder| {
+                 encoder.set_buffer(0, Some(&weight.codes), 0);
+@@ -3221,7 +3268,7 @@ mod device {
+             }
+             let rows = gate.rows as u32;
+             let cols = gate.cols as u32;
+-            let gpr = (gate.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
++            let gpr = gate.groups_per_row;
+             let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(rows);
+             if with_swiglu {
+                 tcb.dispatch_threads(QWEN38_Q4_GATE_UP_SWIGLU_KERNEL, grid, tg, |enc| {
+@@ -3276,7 +3323,7 @@ mod device {
+             let a_rows = a.rows as u32;
+             let b_rows = b.rows as u32;
+             let cols = a.cols as u32;
+-            let gpr = (a.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
++            let gpr = a.groups_per_row;
+             let total = a_rows.saturating_add(b_rows);
+             let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
+             tcb.dispatch_threads(QWEN38_Q4_PAIR_CONCAT_KERNEL, grid, tg, |enc| {
+@@ -3316,7 +3363,7 @@ mod device {
+             let k_rows = k.rows as u32;
+             let v_rows = v.rows as u32;
+             let cols = q.cols as u32;
+-            let gpr = (q.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
++            let gpr = q.groups_per_row;
+             let total = q_rows.saturating_add(k_rows).saturating_add(v_rows);
+             let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
+             tcb.dispatch_threads(QWEN38_Q4_QKV_GEO_KERNEL, grid, tg, |enc| {
+@@ -3361,9 +3408,7 @@ mod device {
+                 // while 127 lanes wait. HAWKING_DN_VI_SIMD=0 restores it; the
+                 // simd sibling is not bit-identical (tree vs serial
+                 // association) and is gated on greedy token identity.
+-                let simd = std::env::var("HAWKING_DN_VI_SIMD")
+-                    .map(|v| v != "0")
+-                    .unwrap_or(true);
++                let simd = self.dn_vi_simd;
+                 (
+                     if simd {
+                         "qwen38_gated_delta_decode_vi_simd"
+@@ -4604,16 +4649,7 @@ mod device {
+         ) -> Result<()> {
+             let layout = Qwen38DeltaNetLayout::source_exact();
+             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
+-            let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
+-                // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
+-                // 2.54% faster, every pair favouring the retile, and token-identical on 24
+-                // greedy tokens despite the tree reduction changing summation order.
+-                // Set HAWKING_DN_RMSNORM_TG=0 to restore the scalar one-thread-per-head form.
+-                .unwrap_or(256);
++            let dn_tg = self.dn_rmsnorm_tg;
+             let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
+                 ("qwen80_deltanet_gated_rmsnorm_tg",
+                  (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+@@ -4648,15 +4684,7 @@ mod device {
+             let cache_off = (slot * slot_elems * 4) as u64;
+             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
+             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
+-            let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
+-                // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
+-                // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
+-                // tokens. Set HAWKING_ROPE_TG=0 to restore the one-thread-per-head form.
+-                .unwrap_or(256);
++            let rope_tg = self.rope_tg;
+             let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
+                 ("qwen38_gqa_qk_norm_rope_cache_tg",
+                  (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+@@ -4743,9 +4771,7 @@ mod device {
+             // dispatch and two buffers for an unmeasurable win is not worth it.
+             // HAWKING_ARGMAX_TWO_PASS=1 enables it; see
+             // receipts/ascent-2026-08-16/ARGMAX_TWO_PASS_NO_TRANSFER.json.
+-            let two_pass = std::env::var("HAWKING_ARGMAX_TWO_PASS")
+-                .map(|v| v != "0")
+-                .unwrap_or(false);
++            let two_pass = self.argmax_two_pass;
+             if !two_pass {
+                 return sample_argmax_f32_tcb(
+                     tcb,
+@@ -5201,15 +5227,7 @@ mod device {
+             hidden: u32,
+         ) -> Result<()> {
+             let weight = self.f32(weight_name)?;
+-            let rms_tg: u32 = std::env::var("HAWKING_RMSNORM_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                // MEASURED, interleaved A/B, 3 paired reps on G0: 256 gives
+-                // 35.569/35.840/35.967 and 1024 gives 34.239/34.467/34.095 ms per token.
+-                // Mean 35.792 -> 34.267, 4.26% faster, every pair favouring the retile,
+-                // token-identical. HAWKING_RMSNORM_TG=0 restores the 256-pinned kernel.
+-                .unwrap_or(1024);
++            let rms_tg = self.rmsnorm_tg;
+             let xsum = self.affine2_geo.uses_xsum();
+             let (rms_name, rms_n) = if xsum {
+                 (QWEN38_RMSNORM_XSUM64_KERNEL, if rms_tg > 0 { rms_tg } else { 256 })
+@@ -5270,11 +5288,7 @@ mod device {
+             x_norm: &PinnedBuffer,
+         ) -> Result<()> {
+             let weight = self.f32(weight_name)?;
+-            let rms_tg: u32 = std::env::var("HAWKING_RMSNORM_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                .unwrap_or(1024);
++            let rms_tg = self.rmsnorm_tg;
+             let tg = if rms_tg > 0 { rms_tg } else { 256 };
+             let hidden = QWEN38_HIDDEN as u32;
+             let xsum = self.affine2_geo.uses_xsum() && !self.fuse_add_rmsnorm_bad;
+@@ -5484,16 +5498,7 @@ mod device {
+             )?;
+             self.encode_dn_ba_and_delta(tcb, layer, rec_off)?;
+             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
+-            let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
+-                // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
+-                // 2.54% faster, every pair favouring the retile, and token-identical on 24
+-                // greedy tokens despite the tree reduction changing summation order.
+-                // Set HAWKING_DN_RMSNORM_TG=0 to restore the scalar one-thread-per-head form.
+-                .unwrap_or(256);
++            let dn_tg = self.dn_rmsnorm_tg;
+             let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
+                 ("qwen80_deltanet_gated_rmsnorm_tg",
+                  (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+@@ -5598,15 +5603,7 @@ mod device {
+             }
+             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
+             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
+-            let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
+-                // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
+-                // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
+-                // tokens. Set HAWKING_ROPE_TG=0 to restore the one-thread-per-head form.
+-                .unwrap_or(256);
++            let rope_tg = self.rope_tg;
+             let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
+                 ("qwen38_gqa_qk_norm_rope_cache_tg",
+                  (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+@@ -5979,16 +5976,7 @@ mod device {
+             )?;
+             self.encode_dn_ba_and_delta(tcb, layer, rec_off)?;
+             let norm_w = self.f32(&qwen38_layer_name(layer, "linear_attn.norm.weight"))?;
+-            let dn_tg: u32 = std::env::var("HAWKING_DN_RMSNORM_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 38.667/38.440/38.399
+-                // vs threadgroup-256 37.662/37.362/37.549 ms per token. Mean 38.502 -> 37.525,
+-                // 2.54% faster, every pair favouring the retile, and token-identical on 24
+-                // greedy tokens despite the tree reduction changing summation order.
+-                // Set HAWKING_DN_RMSNORM_TG=0 to restore the scalar one-thread-per-head form.
+-                .unwrap_or(256);
++            let dn_tg = self.dn_rmsnorm_tg;
+             let (dn_name, dn_grid, dn_tgd) = if dn_tg > 0 {
+                 ("qwen80_deltanet_gated_rmsnorm_tg",
+                  (layout.value_heads as u32 * dn_tg, 1, 1), (dn_tg, 1, 1))
+@@ -6084,15 +6072,7 @@ mod device {
+             }
+             let q_norm = self.f32(&qwen38_layer_name(layer, "self_attn.q_norm.weight"))?;
+             let k_norm = self.f32(&qwen38_layer_name(layer, "self_attn.k_norm.weight"))?;
+-            let rope_tg: u32 = std::env::var("HAWKING_ROPE_TG")
+-                .ok()
+-                .and_then(|v| v.parse::<u32>().ok())
+-                .filter(|v| *v == 0 || (v.is_power_of_two() && (32..=1024).contains(v)))
+-                // MEASURED, interleaved A/B, 3 paired reps on G0: scalar 37.593/37.256/37.508
+-                // vs threadgroup-256 35.850/35.868/35.967 ms per token. Mean 37.452 -> 35.895,
+-                // 4.16% faster, every pair favouring the retile, token-identical on 24 greedy
+-                // tokens. Set HAWKING_ROPE_TG=0 to restore the one-thread-per-head form.
+-                .unwrap_or(256);
++            let rope_tg = self.rope_tg;
+             let (rope_name, rope_grid, rope_tgd) = if rope_tg > 0 {
+                 ("qwen38_gqa_qk_norm_rope_cache_tg",
+                  (QWEN38_GQA_HEADS as u32 * rope_tg, 1, 1), (rope_tg, 1, 1))
+@@ -6882,6 +6862,64 @@ mod mlp_fusion_env_tests {
+     }
+ }
+ 
++#[cfg(test)]
++mod catalog_addressing_hoist_tests {
++    use super::*;
++
++    #[test]
++    fn q4_groups_per_row_matches_the_production_bind_formulas() {
++        assert_eq!(q4_groups_per_row(5_120, UNIFORM_Q4_GROUP_SIZE), 80);
++        assert_eq!(
++            q4_groups_per_row(5_120, UNIFORM_Q4_GROUP_SIZE),
++            5_120usize.div_ceil(UNIFORM_Q4_GROUP_SIZE) as u32
++        );
++        assert_eq!(
++            q4_groups_per_row(5_120, UNIFORM_Q4_GROUP_SIZE_128),
++            (5_120 / UNIFORM_Q4_GROUP_SIZE_128) as u32
++        );
++        assert_eq!(q4_groups_per_row(6_144, UNIFORM_Q4_GROUP_SIZE), 96);
++        // Non-64 header still binds div_ceil(64), matching the encode path
++        // before this hoist. Do not switch this to header.group_size.
++        assert_eq!(q4_groups_per_row(5_120, 32), 80);
++    }
++
++    #[test]
++    fn threadgroup_env_is_parsed_once_the_same_way_the_token_loop_used_to() {
++        const K: &str = "HAWKING_RMSNORM_TG";
++        let restore = std::env::var(K).ok();
++        std::env::remove_var(K);
++        assert_eq!(qwen38_parse_threadgroup_env(K, 1024), 1024);
++        std::env::set_var(K, "256");
++        assert_eq!(qwen38_parse_threadgroup_env(K, 1024), 256);
++        std::env::set_var(K, "0");
++        assert_eq!(qwen38_parse_threadgroup_env(K, 1024), 0);
++        std::env::set_var(K, "12");
++        assert_eq!(qwen38_parse_threadgroup_env(K, 1024), 1024);
++        std::env::set_var(K, "2048");
++        assert_eq!(qwen38_parse_threadgroup_env(K, 1024), 1024);
++        match restore {
++            Some(v) => std::env::set_var(K, v),
++            None => std::env::remove_var(K),
++        }
++    }
++
++    #[test]
++    fn serial_token_encoder_stays_off_unless_explicitly_enabled() {
++        const K: &str = "HAWKING_QWEN38_SERIAL_TOKEN_ENCODER";
++        let restore = std::env::var(K).ok();
++        std::env::remove_var(K);
++        assert!(!qwen38_serial_token_encoder_enabled());
++        std::env::set_var(K, "1");
++        assert!(qwen38_serial_token_encoder_enabled());
++        std::env::set_var(K, "0");
++        assert!(!qwen38_serial_token_encoder_enabled());
++        match restore {
++            Some(v) => std::env::set_var(K, v),
++            None => std::env::remove_var(K),
++        }
++    }
++}
++
+ #[cfg(test)]
+ mod mixed_catalog_contract_tests {
+     use super::*;

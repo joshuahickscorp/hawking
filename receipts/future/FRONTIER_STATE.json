@@ -1,0 +1,4932 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:58Z",
+  "recorded_by": "tools/future/frontiers.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bench_state": "UNKNOWN",
+ "branch": "grok/l36-torture-wiring-20260830-182109",
+ "busywork": {
+  "admission_refusals_during_next_work": [],
+  "rule": "score by expected information gain, redundancy against already-queued work, and overlap with recorded scars; a flood of low-value units is REFUSED at admission",
+  "thresholds": {
+   "info_none_refused": 0,
+   "low_gain_redundancy": 0.5,
+   "redundancy_exact": 0.85
+  }
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "eras": [
+  "I",
+  "II",
+  "III",
+  "IV",
+  "V"
+ ],
+ "fpga_civilization": "FPGA belongs to Accelerator / Physical Compiler / Fusion; it is not its own civilization",
+ "frontier_names": [
+  "MODEL_REPRESENTATION",
+  "MODEL_CAPABILITY",
+  "MODEL_EXECUTION",
+  "LATENCY",
+  "TPS",
+  "ACTIVE_BYTES",
+  "GPU_KERNELS",
+  "STATE",
+  "DECODING",
+  "HCLI_SELF",
+  "EXPERIMENT_TURNAROUND",
+  "PHYSICAL_GRAPH",
+  "FPGA",
+  "ANE",
+  "ARCHITECTURE_REPATRIATION",
+  "TOOLS",
+  "CONTEXT",
+  "MEMORY",
+  "VERIFICATION",
+  "ODYSSEY_TRANSFER",
+  "ODYSSEY_ADVERSARY",
+  "CHILD_RESIDENT"
+ ],
+ "frontiers": {
+  "ACTIVE_BYTES": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Sidecar has no GPU authority. Active-byte measurement sleeps.",
+     "evidence": [
+      "receipts/future/HBM_DOCTOR.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ACTIVE_BYTES",
+     "hypothesis_family": "measured_active_bytes",
+     "id": "FT.ACTIVE_BYTES.measured",
+     "kind": "BLOCKED",
+     "redundancy_key": "ACTIVE_BYTES|measured_active_bytes|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "species": "accelerator_candidate_qualification",
+     "title": "Measured active-byte / bandwidth figures require a protected window",
+     "verifier": "accelerator.physical.active_bytes",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "ACTIVE_BYTES",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "hbm_doctor.py decides what 8 GB of HBM is for. CPU ranking of ResidentCandidate records; no invented bandwidth_gbps.",
+     "evidence": [
+      "receipts/future/HBM_DOCTOR.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ACTIVE_BYTES",
+     "hypothesis_family": "hbm_residency_rank",
+     "id": "FT.ACTIVE_BYTES.hbm-rank",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ACTIVE_BYTES|hbm_residency_rank|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F005",
+     "species": "hardware_doctor_experiment",
+     "title": "Rank HBM residency candidates from organ census; meter fields stay UNKNOWN",
+     "verifier": "future.hbm_doctor.rank"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "ANE": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "APPLE_ANE_ATLAS is ATLAS_SCAFFOLD_COMPILE_BOUNDARY; device profile PLAN_READY. No Flash-shaped ANE result. Sleeps.",
+     "evidence": [
+      "CODEX_ACCELERATOR_HANDOFF.json",
+      "receipts/headless/APPLE_ANE_ATLAS.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ANE",
+     "hypothesis_family": "ane_flash_execution",
+     "id": "FT.ANE.execution",
+     "kind": "BLOCKED",
+     "redundancy_key": "ANE|ane_flash_execution|",
+     "required_lanes": [
+      "ANE"
+     ],
+     "species": "architecture_transfer",
+     "title": "Flash-shaped ANE execution / latency / energy / residency is not authorized",
+     "verifier": "accelerator.ane.flash_shaped",
+     "wake_all_of": [
+      "Core ML / ANE compiler environment available",
+      "Flash-shaped ANE execution is authorized on this host"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "ANE",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "ane_preboard.py is STATIC_ONLY. estimate_ane_latency / measure_prediction must raise. CPU work is corpus + placement schema, not an ANE number.",
+     "evidence": [
+      "receipts/future/ANE_PREBOARD.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ANE",
+     "hypothesis_family": "ane_preboard_corpus",
+     "id": "FT.ANE.preboard",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ANE|ane_preboard_corpus|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Keep the ANE preboard graph corpus current; execution entry points must keep raising while the toolchain is missing",
+     "verifier": "future.ane_preboard.corpus"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "ARCHITECTURE_REPATRIATION": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "CUDA is a source school on this Apple host, not an execution backend. Metal window is blocked. ANE execution is blocked. Sleeps.",
+     "evidence": [
+      "receipts/future/CUDA_LOWBIT_HYPOTHESES.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ARCHITECTURE_REPATRIATION",
+     "hypothesis_family": "repatriation_device_run",
+     "id": "FT.ARCHITECTURE_REPATRIATION.device-run",
+     "kind": "BLOCKED",
+     "redundancy_key": "ARCHITECTURE_REPATRIATION|repatriation_device_run|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "species": "architecture_transfer",
+     "title": "Metal/CUDA/ANE repatriation runs wait on their devices",
+     "verifier": "accelerator.repatriation.device_run",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 1,
+    "runnable_questions": 1
+   },
+   "name": "ARCHITECTURE_REPATRIATION",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "architecture_transfer species copies live work_unit fields. CPU compile of specs from the repatriation queue / atlas.",
+     "evidence": [
+      "receipts/future/CANDIDATE_STAGED_PLAN.json",
+      "receipts/future/PHYSICAL_PRIMITIVES.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ARCHITECTURE_REPATRIATION",
+     "hypothesis_family": "repatriation_spec_compile",
+     "id": "FT.ARCHITECTURE_REPATRIATION.compile-specs",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ARCHITECTURE_REPATRIATION|repatriation_spec_compile|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F012",
+     "species": "architecture_transfer",
+     "title": "Compile repatriation experiment specs as STATIC_ONLY; do not run them",
+     "verifier": "future.architecture_transfer.compile_spec"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Fourteen P6/P7 candidates encode reusable physical concepts -- routed gate/up fusion, W2/down fusion, shared FP8 fusion, concurrent prefix, learned reader reuse, bounded expert cache reuse. None has a Hawking primitive, an HWIR hypothesis, an FPGA realization, a transfer scope or an Odyssey III counterexample. All are BLOCKED and unmeasured, so nothing may be claimed.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/p6_projection.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ARCHITECTURE_REPATRIATION",
+     "hypothesis_family": "campaign_f020",
+     "id": "FT.ARCHITECTURE_REPATRIATION.campaign.F020",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "ARCHITECTURE_REPATRIATION|campaign_f020|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F020",
+     "species": "independent_reproduction",
+     "title": "Codex P6/P7 physical concepts are not projected into future hardware",
+     "verifier": "future.global_frontier.F020"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "CHILD_RESIDENT": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Sleeps on an authorized HCLI resident lane. Never a synthetic 'installed' result.",
+     "evidence": [
+      "receipts/future/RESIDENT_INSTALL_CONTRACT.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 1,
+     "frontier": "CHILD_RESIDENT",
+     "hypothesis_family": "child_resident_launch",
+     "id": "FT.CHILD_RESIDENT.launch",
+     "kind": "BLOCKED",
+     "redundancy_key": "CHILD_RESIDENT|child_resident_launch|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "species": "independent_reproduction",
+     "title": "Launching a child resident / taking a GPU lease is forbidden in this sidecar",
+     "verifier": "future.resident_install.launch",
+     "wake_all_of": [
+      "authorized HCLI resident-install lane",
+      "existing HCLI lease with proven holder"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 2,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "CHILD_RESIDENT",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "resident_install.py bind_winner / validate_contract. Must not launch, install, or unload a resident.",
+     "evidence": [
+      "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+      "receipts/future/RESIDENT_OPTIMIZER.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "CHILD_RESIDENT",
+     "hypothesis_family": "resident_install_dry_run",
+     "id": "FT.CHILD_RESIDENT.install-dry-run",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "CHILD_RESIDENT|resident_install_dry_run|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "source_f": "F013",
+     "species": "independent_reproduction",
+     "title": "Dry-run the resident install contract against Flash NX / Qwen genomes without launching a process",
+     "verifier": "future.resident_install.dry_run"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "resident_optimizer.py is BUILT_NOT_PROMOTED. Next: generate() against current LPC / law-store / hardware-doctor receipts.",
+     "evidence": [
+      "receipts/future/RESIDENT_OPTIMIZER.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "CHILD_RESIDENT",
+     "hypothesis_family": "resident_optimizer_hypotheses",
+     "id": "FT.CHILD_RESIDENT.optimizer",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "CHILD_RESIDENT|resident_optimizer_hypotheses|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "learned_compiler_experiment",
+     "title": "Emit bounded resident-optimizer hypotheses; promote() must keep not existing",
+     "verifier": "future.resident_optimizer.generate"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "CONTEXT": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 1,
+    "open_questions": 1,
+    "runnable_questions": 1
+   },
+   "name": "CONTEXT",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Any context blob that is treated as a source of truth against a sealed receipt is a bug. CPU audit of what HCLI context caches vs what receipts decide.",
+     "evidence": [
+      "receipts/future/EVIDENCE_SNAPSHOT.json",
+      "receipts/future/CODEX_INGEST_STATE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "CONTEXT",
+     "hypothesis_family": "context_is_a_cache",
+     "id": "FT.CONTEXT.disk-authority",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "CONTEXT|context_is_a_cache|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Map HCLI context surfaces onto receipts: disk is authority, models think, context is a cache",
+     "verifier": "future.context.disk_authority"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "A cache without a TTL against disk state is how stale context becomes a competing authority.",
+     "evidence": [
+      "receipts/future/EVIDENCE_SNAPSHOT.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "CONTEXT",
+     "hypothesis_family": "context_ttl",
+     "id": "FT.CONTEXT.open-question",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "CONTEXT|context_ttl|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Which HCLI context keys are allowed to outlive the receipt that minted them?",
+     "verifier": "future.context.ttl"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "DECODING": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 1,
+    "open_questions": 1,
+    "runnable_questions": 1
+   },
+   "name": "DECODING",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "decode_civilization.py already refuses to treat byte savings as a GO. Next unit is a refresh against current organ maps.",
+     "evidence": [
+      "receipts/future/DECODE_CIVILIZATION.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "DECODING",
+     "hypothesis_family": "decode_cost_models",
+     "id": "FT.DECODING.cost-model",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "DECODING|decode_cost_models|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Refresh decode cost models (accepted-token, KV byte classes); capability stays ABSENT until gated",
+     "verifier": "future.decode_civilization.cost_models"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "decode_civilization.speculative_interfaces is the inventory. CPU question; no TPS claim.",
+     "evidence": [
+      "receipts/future/DECODE_CIVILIZATION.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "DECODING",
+     "hypothesis_family": "speculative_decode_interfaces",
+     "id": "FT.DECODING.speculative",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "DECODING|speculative_decode_interfaces|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Which speculative-decode interfaces are wired vs still a named hole?",
+     "verifier": "future.decode_civilization.speculative_interfaces"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "EXPERIMENT_TURNAROUND": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "This campaign must not run cargo build or touch the GPU. Those phases sleep.",
+     "evidence": [
+      "receipts/future/EXPERIMENT_TURNAROUND.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 1,
+     "frontier": "EXPERIMENT_TURNAROUND",
+     "hypothesis_family": "turnaround_gpu_phases",
+     "id": "FT.EXPERIMENT_TURNAROUND.cargo",
+     "kind": "BLOCKED",
+     "redundancy_key": "EXPERIMENT_TURNAROUND|turnaround_gpu_phases|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "species": "independent_reproduction",
+     "title": "compile/link/shader_compile/launch/execution phases require cargo and/or GPU",
+     "verifier": "future.turnaround.gpu_phases",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "cargo build authorized without contending for the shared target-dir"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "EXPERIMENT_TURNAROUND",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Same shape as token latency, currently all-null on the Accelerator scoreboard for GPU phases. CPU phases are the honest work.",
+     "evidence": [
+      "receipts/future/EXPERIMENT_TURNAROUND.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "EXPERIMENT_TURNAROUND",
+     "hypothesis_family": "experiment_turnaround_cpu",
+     "id": "FT.EXPERIMENT_TURNAROUND.refresh",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "EXPERIMENT_TURNAROUND|experiment_turnaround_cpu|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "species": "independent_reproduction",
+     "title": "Refresh CPU experiment-turnaround receipt; cargo/GPU phases remain UNKNOWN",
+     "verifier": "future.turnaround.refresh"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "FPGA": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "No U50. device_ascension_pipeline.py is the arrival floor; it does not impersonate a board.",
+     "evidence": [
+      "receipts/future/DEVICE_ASCENSION_PIPELINE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "FPGA",
+     "hypothesis_family": "u50_arrival",
+     "id": "FT.FPGA.u50",
+     "kind": "BLOCKED",
+     "redundancy_key": "FPGA|u50_arrival|",
+     "required_lanes": [
+      "FPGA"
+     ],
+     "species": "fpga_simulation",
+     "title": "U50 board arrival work sleeps until the board is here",
+     "verifier": "future.device_ascension.u50",
+     "wake_all_of": [
+      "U50 / FPGA board present and the physical-compiler/fusion lane owns it"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 2,
+    "open_questions": 1,
+    "runnable_questions": 1
+   },
+   "name": "FPGA",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "FPGA is Accelerator/Physical Compiler/Fusion, not its own civilization. No HDL emit. No board.",
+     "evidence": [
+      "receipts/future/FPGA_ENGINE_SCHOOL.json",
+      "receipts/future/FPGA_MULTIFIDELITY.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "FPGA",
+     "hypothesis_family": "fpga_engine_simulation",
+     "id": "FT.FPGA.engine-sim",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "FPGA|fpga_engine_simulation|",
+     "required_lanes": [
+      "CPU",
+      "SIMULATION"
+     ],
+     "species": "fpga_simulation",
+     "title": "Simulate FPGA engine-school goldens on CPU; associativity is part of the number",
+     "verifier": "future.fpga_engines.simulate"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F004 closed by sidecar. Next: keep the ranked queue current as Codex adds P6/P7 concepts.",
+     "evidence": [
+      "receipts/future/HARDWARE_DOCTOR.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "FPGA",
+     "hypothesis_family": "hardware_doctor_rank",
+     "id": "FT.FPGA.hardware-doctor",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "FPGA|hardware_doctor_rank|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F004",
+     "species": "hardware_doctor_experiment",
+     "title": "Rank Hardware Doctor experiments against atlas hypotheses; ranking is not execution",
+     "verifier": "future.hardware_doctor.rank"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Fourteen P6/P7 candidates encode reusable physical concepts -- routed gate/up fusion, W2/down fusion, shared FP8 fusion, concurrent prefix, learned reader reuse, bounded expert cache reuse. None has a Hawking primitive, an HWIR hypothesis, an FPGA realization, a transfer scope or an Odyssey III counterexample. All are BLOCKED and unmeasured, so nothing may be claimed.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/p6_projection.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "FPGA",
+     "hypothesis_family": "campaign_f020",
+     "id": "FT.FPGA.campaign.F020",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "FPGA|campaign_f020|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F020",
+     "species": "independent_reproduction",
+     "title": "Codex P6/P7 physical concepts are not projected into future hardware",
+     "verifier": "future.global_frontier.F020"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "GPU_KERNELS": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Dominant blocker: 12+ Flash candidates collapse to this missing dependency. Audit is CPU; qualification is GPU. This item is the qualification half and sleeps.",
+     "evidence": [
+      "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "GPU_KERNELS",
+     "hypothesis_family": "flash_source_independent_nx",
+     "id": "FT.GPU_KERNELS.flash-nx",
+     "kind": "BLOCKED",
+     "redundancy_key": "GPU_KERNELS|flash_source_independent_nx|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "F001",
+     "species": "accelerator_candidate_qualification",
+     "title": "Flash source-independent NX remains SCAFFOLD_ONLY / sealed-metadata",
+     "verifier": "accelerator.physical.flash_nx",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "13 READY_PROTECTED identities derived from queue: qwen27-affine2-splitk4, qwen27-attention-gate-fusion, qwen27-ba-delta-fusion, qwen27-commit-timing-elision, qwen27-deltanet-inproj-fusion, qwen27-encoder-label-elision, qwen27-fast-profile, qwen27-gqa-qkv-fusion, qwen27-pipeline-cache-reuse, qwen27-pipeline-id-resolution, qwen27-pipeline-state-elision, qwen27-q2f-splitk4, qwen27-q4-vecgroup-x64. One SLEEPING unit; HCLI wakes it when GPU_PROTECTED qualifies. Never a synthetic result.",
+     "evidence": [
+      "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+      "receipts/future/CANDIDATE_STAGED_PLAN.json",
+      "receipts/future/QUALIFICATION_PIPELINE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "GPU_KERNELS",
+     "hypothesis_family": "ready_protected_qualification",
+     "id": "FT.GPU_KERNELS.ready-protected",
+     "kind": "BLOCKED",
+     "redundancy_key": "GPU_KERNELS|ready_protected_qualification|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "F002",
+     "species": "accelerator_candidate_qualification",
+     "title": "READY_PROTECTED Qwen27 candidates wait on a GPU window this sidecar must not seize",
+     "verifier": "accelerator.physical.ready_protected_batch",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 2,
+    "next_work": 1,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "GPU_KERNELS",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F018 ABI findings were adjudicated. Preflight still carries WARNINGs/UNVERIFIABLE. CPU triage against CLAUDE_SIDECAR_ABI_ADJUDICATION.",
+     "evidence": [
+      "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
+      "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+      "receipts/future/ABI_VERDICT_HARNESS.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "GPU_KERNELS",
+     "hypothesis_family": "static_kernel_warning_triage",
+     "id": "FT.GPU_KERNELS.static-warnings",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "GPU_KERNELS|static_kernel_warning_triage|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F018",
+     "species": "independent_reproduction",
+     "title": "Triage remaining static kernel WARNINGs; do not re-raise adjudicated ERRORs",
+     "verifier": "future.static_kernel_verify.warning_triage"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "HCLI_SELF": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Contract forbids starting a resident model process or taking a GPU lease. The launch half sleeps on an authorized HCLI resident lane, which this campaign is not.",
+     "evidence": [
+      "receipts/future/RESIDENT_INSTALL_CONTRACT.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "HCLI_SELF",
+     "hypothesis_family": "resident_process_launch",
+     "id": "FT.HCLI_SELF.no-launch",
+     "kind": "BLOCKED",
+     "redundancy_key": "HCLI_SELF|resident_process_launch|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "species": "independent_reproduction",
+     "title": "A live resident model process must not be started from this sidecar",
+     "verifier": "future.resident_install.no_launch",
+     "wake_all_of": [
+      "an authorized HCLI resident-install lane distinct from this sidecar"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "HCLI_SELF",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "A subsystem is not operational until the resident can discover, invoke, schedule and verify it. This unit is that wiring, via the landed species constructor.",
+     "evidence": [
+      "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+      "receipts/future/RESIDENT_OPTIMIZER.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "HCLI_SELF",
+     "hypothesis_family": "hcli_frontier_callable",
+     "id": "FT.HCLI_SELF.emit-workunits",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "HCLI_SELF|hcli_frontier_callable|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "species": "independent_reproduction",
+     "title": "Emit this book's next_work as HCLI WorkUnits the resident can schedule",
+     "verifier": "future.frontiers.resident_callable"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "LATENCY": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "No Metal-capable GPU; xcrun has no Metal compiler under CommandLineTools. Sleeps. UNKNOWN is the correct latency answer.",
+     "evidence": [
+      "CODEX_ACCELERATOR_HANDOFF.json",
+      "receipts/future/HARDWARE_DOCTOR.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "LATENCY",
+     "hypothesis_family": "protected_latency",
+     "id": "FT.LATENCY.gpu-ns",
+     "kind": "BLOCKED",
+     "redundancy_key": "LATENCY|protected_latency|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "F002",
+     "species": "accelerator_candidate_qualification",
+     "title": "Protected kernel/token latency is blocked on GPU_PROTECTED",
+     "verifier": "accelerator.physical.latency",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "LATENCY",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "turnaround.py already times source_discovery/transform/verify/receipt/ledger/next_decision. Refresh. cargo/GPU phases stay UNKNOWN.",
+     "evidence": [
+      "receipts/future/EXPERIMENT_TURNAROUND.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "LATENCY",
+     "hypothesis_family": "cpu_turnaround_phases",
+     "id": "FT.LATENCY.cpu-turnaround",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "LATENCY|cpu_turnaround_phases|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "species": "independent_reproduction",
+     "title": "Remeasure CPU-side experiment-turnaround phases; leave GPU phases UNKNOWN",
+     "verifier": "future.turnaround.cpu_phases"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "MEMORY": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 2,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "MEMORY",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Distinct from ACTIVE_BYTES ranking: this is the memory-tier identity question (MoveOrRecompute vs PersistentPhysicalRegion).",
+     "evidence": [
+      "receipts/future/HBM_DOCTOR.json",
+      "receipts/future/PHYSICAL_PRIMITIVES.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MEMORY",
+     "hypothesis_family": "memory_tier_identity",
+     "id": "FT.MEMORY.hbm",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|memory_tier_identity|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F005",
+     "species": "hardware_doctor_experiment",
+     "title": "Keep the HBM residency ranking current as organ census fields arrive",
+     "verifier": "future.hbm_doctor.memory_tiers"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "HMF_MANAGED_OBJECTS.json is executable. Next: walk object_legal_transitions against current organ maps.",
+     "evidence": [
+      "receipts/future/HMF_MANAGED_OBJECTS.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MEMORY",
+     "hypothesis_family": "hmf_legal_transitions",
+     "id": "FT.MEMORY.hmf",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|hmf_legal_transitions|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Audit HMF managed-object legal transitions; tri-state coherence must not collapse to a boolean",
+     "verifier": "future.hmf.transitions"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "MODEL_CAPABILITY": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 2,
+    "open_questions": 2,
+    "runnable_questions": 2
+   },
+   "name": "MODEL_CAPABILITY",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "This frontier carried only an OPEN_QUESTION, so refill could never yield work on it and doctor_callable / gravity_callable were structurally unreachable. That is no longer the state: odyssey_tool_driver.py invokes doctor_seal for real and routes the receipt, and the remaining tools have named, checkable blockers rather than unknown ones -- doctor_tournament needs torch importable in the resident interpreter for its 52GB SVD, and the gravity mains need prior measurement files that are absent and must not be invented. The pending CPU work is to drive what can be driven and record the refusal for the rest.",
+     "evidence": [
+      "receipts/future/ODYSSEY_TOOL_DRIVER.json",
+      "receipts/future/ODYSSEY_LAUNCH_GATE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "resident_tool_operation",
+     "id": "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|resident_tool_operation|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F007",
+     "species": "odyssey_tool_invocation",
+     "title": "Drive the Odyssey Doctor and Gravity tools from the resident and route their receipts",
+     "verifier": "future.odyssey_tool_driver.invoke"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F013: FLASH_SINGULARITY.NX vs QWEN27_SINGULARITY.NX. The harness must refuse, not invent a winner. CPU work: re-seal readiness against current NX seals.",
+     "evidence": [
+      "receipts/future/TOURNAMENT_READINESS.json",
+      "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "tournament_refuse_to_run",
+     "id": "FT.MODEL_CAPABILITY.tournament-refuse",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|tournament_refuse_to_run|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F013",
+     "species": "independent_reproduction",
+     "title": "Keep the NX-vs-NX tournament harness in refuse-to-run until both contenders are complete",
+     "verifier": "future.tournament.refuse_until_complete"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "All nine real Flash meta families stall at gate 2 real_teacher_fit. Codex attempted the capture and recorded BLOCKED_NO_METAL_GPU with 0 of 256 required rows, failing at dense_source_bf16_prefix_initialization -- and this sidecar's meta funnel independently placed the same nine families at the same gate, so the STALL is corroborated. The stated CAUSE is not. METAL_REACHABILITY.json shows the host GPU is an Apple M3 Ultra, that the exact metal crate the runtime uses returns that device from an ordinary process here, and that shaders compile from source. The blocker is the process context of that one run, which nothing has yet identified -- not the machine.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/meta_ready.py prepares gates 3-9 to start on arrival"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "campaign_f019",
+     "id": "FT.MODEL_CAPABILITY.campaign.F019",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "MODEL_CAPABILITY|campaign_f019|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F019",
+     "species": "independent_reproduction",
+     "title": "Flash meta stalls at teacher capture, and the stated GPU blocker is false",
+     "verifier": "future.global_frontier.F019"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Tournament hard gates cite capability_suite and resident_gate. Inventory which items are receipt-decidable vs GPU-bound.",
+     "evidence": [
+      "receipts/future/TOURNAMENT_READINESS.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "capability_hard_gates",
+     "id": "FT.MODEL_CAPABILITY.hard-gates",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "MODEL_CAPABILITY|capability_hard_gates|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Which capability hard-gates can be decided from sealed receipts without a protected window?",
+     "verifier": "future.tournament.hard_gate_inventory"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "MODEL_EXECUTION": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Flash critical path WAITING_FOR_COMPLETE_TOKEN; source-independent NX is SCAFFOLD_ONLY. Sleeps.",
+     "evidence": [
+      "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "complete_token_protected",
+     "id": "FT.MODEL_EXECUTION.complete-token",
+     "kind": "BLOCKED",
+     "redundancy_key": "MODEL_EXECUTION|complete_token_protected|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "F001",
+     "species": "accelerator_candidate_qualification",
+     "title": "Protected complete-token execution is blocked on Metal + NX",
+     "verifier": "accelerator.physical.complete_token",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 2,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "MODEL_EXECUTION",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "fusion_simulation.py is executable. Run the simulation receipt refresh; do not claim token_ns.",
+     "evidence": [
+      "receipts/future/FUSION_SIMULATION.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "fusion_isa_graph",
+     "id": "FT.MODEL_EXECUTION.fusion-sim",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|fusion_isa_graph|",
+     "required_lanes": [
+      "CPU",
+      "SIMULATION"
+     ],
+     "species": "fusion_simulation",
+     "title": "CPU-simulate fusion_planner / fusion_isa graphs; graph shape is not a timing result",
+     "verifier": "future.fusion.simulate"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "STATIC_SKELETON.json already names backend usability. Next: re-run the validator against current organ maps.",
+     "evidence": [
+      "receipts/future/STATIC_SKELETON.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "static_skeleton_slots",
+     "id": "FT.MODEL_EXECUTION.static-skeleton",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|static_skeleton_slots|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Validate static decode skeletons so slot-as-topology remains refused",
+     "verifier": "future.static_skeleton.validate"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "MODEL_REPRESENTATION": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY status BLOCKED_NO_METAL_GPU at dense_source_bf16_prefix_initialization. Sleeps. No synthetic rows. The STATUS is not the CAUSE: METAL_REACHABILITY.json shows this host's GPU is reachable from the same metal crate, so the wake condition is identifying that process's context, not acquiring hardware.",
+     "evidence": [
+      "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+      "receipts/future/TEACHER_CORPUS_CONTRACT.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "teacher_capture",
+     "id": "FT.MODEL_REPRESENTATION.teacher-capture",
+     "kind": "BLOCKED",
+     "redundancy_key": "MODEL_REPRESENTATION|teacher_capture|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "F019",
+     "species": "learned_compiler_experiment",
+     "title": "Flash teacher capture is 0/256 and blocked on Metal",
+     "verifier": "future.teacher_corpus.capture",
+     "wake_all_of": [
+      "Metal-capable GPU for dense source-BF16 prefix initialization",
+      "teacher capture rows meet the minimum (disk count, never a synthetic corpus)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 2,
+    "open_questions": 1,
+    "runnable_questions": 1
+   },
+   "name": "MODEL_REPRESENTATION",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F019 stalls all nine real Flash meta families at gate 2 (real_teacher_fit). meta_ready.py already writes the dossier; the remaining CPU work is to keep gates 3-9 wired to the corpus-arrival contract without fabricating teacher rows.",
+     "evidence": [
+      "receipts/future/META_DOWNSTREAM_READY.json",
+      "receipts/future/META_EXPERIMENT_FUNNEL.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "meta_funnel_readiness",
+     "id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|meta_funnel_readiness|",
+     "required_lanes": [
+      "CPU",
+      "REPRESENTATION"
+     ],
+     "source_f": "F019",
+     "species": "learned_compiler_experiment",
+     "title": "Prepare meta funnel gates 3-9 so they can start the moment teacher rows arrive",
+     "verifier": "future.meta_ready.gates_3_9"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "ngram_school.py is executable; the next unit is a fresh candidate set scored against the negative index, not a GPU fit.",
+     "evidence": [
+      "receipts/future/NGRAM_SCHOOL.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "ngram_school_candidates",
+     "id": "FT.MODEL_REPRESENTATION.ngram-school",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|ngram_school_candidates|",
+     "required_lanes": [
+      "CPU",
+      "REPRESENTATION"
+     ],
+     "species": "learned_compiler_experiment",
+     "title": "Generate n-gram-school representation candidates below Q4 without fitting weights",
+     "verifier": "future.ngram_school.candidates"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Directive section 31 is explicit that data contracts precede any ML. Neither exists.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/lpc_dataset.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "campaign_f007",
+     "id": "FT.MODEL_REPRESENTATION.campaign.F007",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "MODEL_REPRESENTATION|campaign_f007|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F007",
+     "species": "independent_reproduction",
+     "title": "No Learned Physical Compiler dataset contract",
+     "verifier": "future.global_frontier.F007"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "ODYSSEY_ADVERSARY": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 1,
+    "open_questions": 2,
+    "runnable_questions": 2
+   },
+   "name": "ODYSSEY_ADVERSARY",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "odyssey3_adversary.py: LAW -> TRANSFER HYPOTHESIS -> ADVERSARIAL TARGET -> EXPERIMENT SPEC. STATIC_ONLY specs, not measurements.",
+     "evidence": [
+      "receipts/future/ODYSSEY3_ADVERSARY.json",
+      "receipts/future/ODYSSEY2_LAW_STORE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_ADVERSARY",
+     "hypothesis_family": "odyssey3_attack_generation",
+     "id": "FT.ODYSSEY_ADVERSARY.attacks",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_ADVERSARY|odyssey3_attack_generation|",
+     "required_lanes": [
+      "CPU",
+      "ODYSSEY"
+     ],
+     "species": "odyssey_iii_adversarial_experiment",
+     "title": "Generate Odyssey III attack specs against every current law; a law with no attack is refused",
+     "verifier": "future.odyssey_iii.adversary"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "codex_ingest classifies 1671 Codex artifacts and emits ~800 deltas, each naming its downstream consumers (Odyssey II, Odyssey III, atlas, PhysicalGraph, LPC, HWIR). No consumer reads them. The compounding loop is therefore open: the sidecar records that the frontier moved without any store changing.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/propagate.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ODYSSEY_ADVERSARY",
+     "hypothesis_family": "campaign_f016",
+     "id": "FT.ODYSSEY_ADVERSARY.campaign.F016",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "ODYSSEY_ADVERSARY|campaign_f016|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F016",
+     "species": "independent_reproduction",
+     "title": "Ingest deltas are emitted but nothing applies them",
+     "verifier": "future.global_frontier.F016"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "A refutation that does not move scope DOWN is a bug in the loop. Disk is authority.",
+     "evidence": [
+      "receipts/future/ODYSSEY3_ADVERSARY.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_ADVERSARY",
+     "hypothesis_family": "odyssey3_scope_moved",
+     "id": "FT.ODYSSEY_ADVERSARY.closed-loop",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "ODYSSEY_ADVERSARY|odyssey3_scope_moved|",
+     "required_lanes": [
+      "CPU",
+      "ODYSSEY"
+     ],
+     "species": "odyssey_iii_adversarial_experiment",
+     "title": "Has any refutation actually moved a law scope DOWN, or is the loop still open?",
+     "verifier": "future.odyssey_iii.scope_moved"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "ODYSSEY_TRANSFER": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 1,
+    "open_questions": 3,
+    "runnable_questions": 3
+   },
+   "name": "ODYSSEY_TRANSFER",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "odyssey2_law_store.py holds  the seeded laws. GENERIC_VERIFIED is empty. Transfer is a PROPOSAL, not Law.promote().",
+     "evidence": [
+      "receipts/future/ODYSSEY2_LAW_STORE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "odyssey2_reearn_model_local",
+     "id": "FT.ODYSSEY_TRANSFER.re-earn",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|odyssey2_reearn_model_local|",
+     "required_lanes": [
+      "CPU",
+      "ODYSSEY"
+     ],
+     "source_f": "F010",
+     "species": "odyssey_ii_transfer_experiment",
+     "title": "Propose re-earn of MODEL_LOCAL Odyssey II laws on named targets without widening scope",
+     "verifier": "future.odyssey_ii.law_scope"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "receipts/headless holds 997 artifacts and grows live. Nothing reads new ones and turns them into Odyssey II laws, Odyssey III attacks, atlas updates or learned-compiler rows. Every Codex result currently dies where it lands.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/codex_ingest.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "campaign_f015",
+     "id": "FT.ODYSSEY_TRANSFER.campaign.F015",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "ODYSSEY_TRANSFER|campaign_f015|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F015",
+     "species": "independent_reproduction",
+     "title": "Codex receipts are never ingested into anything downstream",
+     "verifier": "future.global_frontier.F015"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "codex_ingest classifies 1671 Codex artifacts and emits ~800 deltas, each naming its downstream consumers (Odyssey II, Odyssey III, atlas, PhysicalGraph, LPC, HWIR). No consumer reads them. The compounding loop is therefore open: the sidecar records that the frontier moved without any store changing.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/propagate.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "campaign_f016",
+     "id": "FT.ODYSSEY_TRANSFER.campaign.F016",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "ODYSSEY_TRANSFER|campaign_f016|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F016",
+     "species": "independent_reproduction",
+     "title": "Ingest deltas are emitted but nothing applies them",
+     "verifier": "future.global_frontier.F016"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "The transfer school exists; GENERIC_VERIFIED is 0. CPU: list laws whose scope exceeds evidence_strength.",
+     "evidence": [
+      "receipts/future/ODYSSEY2_LAW_STORE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "flash_qwen27_transfer_scope",
+     "id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "ODYSSEY_TRANSFER|flash_qwen27_transfer_scope|",
+     "required_lanes": [
+      "CPU",
+      "ODYSSEY"
+     ],
+     "species": "odyssey_ii_transfer_experiment",
+     "title": "Which Flash\u2194Qwen27 transfer hypotheses are still unevidenced at ARCHITECTURE_FAMILY?",
+     "verifier": "future.odyssey_ii.scope_vs_evidence"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "PHYSICAL_GRAPH": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 2,
+    "open_questions": 1,
+    "runnable_questions": 1
+   },
+   "name": "PHYSICAL_GRAPH",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "hwir.py exists (F003 closed by sidecar). Remaining work is consumption, not a second IR.",
+     "evidence": [
+      "receipts/future/HWIR_V1.json",
+      "receipts/future/PHYSICAL_PRIMITIVES.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "PHYSICAL_GRAPH",
+     "hypothesis_family": "hwir_lowering",
+     "id": "FT.PHYSICAL_GRAPH.hwir-lower",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "PHYSICAL_GRAPH|hwir_lowering|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F003",
+     "species": "hardware_doctor_experiment",
+     "title": "Lower current PhysicalGraph-shaped receipts into HWIR node/edge records",
+     "verifier": "future.hwir.lower"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F020: fourteen P6/P7 candidates encode reusable concepts and have no primitive, HWIR hypothesis, FPGA realization, transfer scope or Odyssey III counterexample. All BLOCKED and unmeasured \u2014 project, do not claim.",
+     "evidence": [
+      "receipts/future/P6_PRIMITIVE_PROJECTION.json",
+      "receipts/future/PHYSICAL_PRIMITIVES.json",
+      "receipts/future/HWIR_V1.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "PHYSICAL_GRAPH",
+     "hypothesis_family": "p6_p7_projection",
+     "id": "FT.PHYSICAL_GRAPH.p6-projection",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "PHYSICAL_GRAPH|p6_p7_projection|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F020",
+     "species": "hardware_doctor_experiment",
+     "title": "Project Codex P6/P7 physical concepts onto Hawking primitives / HWIR / FPGA / transfer",
+     "verifier": "future.p6_projection.project"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "14 source schools, 21 behavior taxonomy entries, 17 backend-neutral primitives, 15 HWIR hypotheses, an ASIC candidate ledger and an experiment queue already exist. The value now is downstream wiring: primitives into a real library, hypotheses into a real IR.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/physical_primitives.py + hwir.py consume it"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "PHYSICAL_GRAPH",
+     "hypothesis_family": "campaign_f012",
+     "id": "FT.PHYSICAL_GRAPH.campaign.F012",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "PHYSICAL_GRAPH|campaign_f012|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F012",
+     "species": "independent_reproduction",
+     "title": "Architecture Atlas is strong \u2014 consume it, do not rebuild it",
+     "verifier": "future.global_frontier.F012"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "STATE": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Newest stateful attention receipt proves two-position persistent KV slots; full 48-layer executor integration remains open. Sleeps.",
+     "evidence": [
+      "CODEX_ACCELERATOR_HANDOFF.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "STATE",
+     "hypothesis_family": "full_layer_kv",
+     "id": "FT.STATE.full-kv",
+     "kind": "BLOCKED",
+     "redundancy_key": "STATE|full_layer_kv|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "species": "accelerator_candidate_qualification",
+     "title": "Complete 48-layer per-layer KV integration is absent",
+     "verifier": "accelerator.physical.full_kv",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 1,
+    "runnable_questions": 1
+   },
+   "name": "STATE",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Flash critical-path blockers: attention and recurrent state organs are not in the candidate graph. CPU coverage audit against stateful receipts.",
+     "evidence": [
+      "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+      "receipts/future/PHYSICAL_PRIMITIVES.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "STATE",
+     "hypothesis_family": "state_organ_coverage",
+     "id": "FT.STATE.coverage-audit",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "STATE|state_organ_coverage|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F001",
+     "species": "independent_reproduction",
+     "title": "Audit which state organs are actually in the candidate graph vs merely named",
+     "verifier": "future.state.organ_coverage"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "All nine real Flash meta families stall at gate 2 real_teacher_fit. Codex attempted the capture and recorded BLOCKED_NO_METAL_GPU with 0 of 256 required rows, failing at dense_source_bf16_prefix_initialization -- and this sidecar's meta funnel independently placed the same nine families at the same gate, so the STALL is corroborated. The stated CAUSE is not. METAL_REACHABILITY.json shows the host GPU is an Apple M3 Ultra, that the exact metal crate the runtime uses returns that device from an ordinary process here, and that shaders compile from source. The blocker is the process context of that one run, which nothing has yet identified -- not the machine.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/meta_ready.py prepares gates 3-9 to start on arrival"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "STATE",
+     "hypothesis_family": "campaign_f019",
+     "id": "FT.STATE.campaign.F019",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "STATE|campaign_f019|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F019",
+     "species": "independent_reproduction",
+     "title": "Flash meta stalls at teacher capture, and the stated GPU blocker is false",
+     "verifier": "future.global_frontier.F019"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "TOOLS": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 3,
+    "open_questions": 3,
+    "runnable_questions": 3
+   },
+   "name": "TOOLS",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F017: Codex rewrote the queue 37\u219241\u219244\u219247\u219249. freshness.py distinguishes STALE_FINGERPRINT_ONLY vs STALE_SEMANTIC. Run it.",
+     "evidence": [
+      "receipts/future/DERIVED_FRESHNESS.json",
+      "receipts/future/CANDIDATE_STAGED_PLAN.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "TOOLS",
+     "hypothesis_family": "derived_freshness_resync",
+     "id": "FT.TOOLS.freshness",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "TOOLS|derived_freshness_resync|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "source_f": "F017",
+     "species": "independent_reproduction",
+     "title": "Resync derived artifacts with semantic fingerprints, not sha-only",
+     "verifier": "future.freshness.resync"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "The idle state is the failure. Refill is the loop: discover, invoke, schedule, verify, persist, refill.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "TOOLS",
+     "hypothesis_family": "frontier_refill",
+     "id": "FT.TOOLS.frontiers-refill",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "TOOLS|frontier_refill|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "species": "independent_reproduction",
+     "title": "Rebuild this frontier book from disk after every sealed sidecar receipt",
+     "verifier": "future.frontiers.refill"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F016 closed the routing loop; PROPAGATION_STATE shows applied=0 and skipped_as_duplicate in the hundreds. That is not compounding. CPU work: name the real novel deltas, if any.",
+     "evidence": [
+      "receipts/future/PROPAGATION_STATE.json",
+      "receipts/future/CODEX_INGEST_STATE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "TOOLS",
+     "hypothesis_family": "propagate_novel_deltas",
+     "id": "FT.TOOLS.propagate-skips",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "TOOLS|propagate_novel_deltas|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "source_f": "F016",
+     "species": "independent_reproduction",
+     "title": "Inspect why propagate applied 0 records and skipped every delta as duplicate",
+     "verifier": "future.propagate.novel_deltas"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Directive section 31 is explicit that data contracts precede any ML. Neither exists.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/lpc_dataset.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "TOOLS",
+     "hypothesis_family": "campaign_f007",
+     "id": "FT.TOOLS.campaign.F007",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "TOOLS|campaign_f007|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F007",
+     "species": "independent_reproduction",
+     "title": "No Learned Physical Compiler dataset contract",
+     "verifier": "future.global_frontier.F007"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "Scars live in receipts/**, workspace/campaign/**, tools/foundry/NEGATIVE_TRANSFER_ATLAS.json and tools/headless/negative_science.py outputs. Nothing queries them before an experiment is proposed, so rediscovery is currently free.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/negative_index.py, queried by G009/G014/G020/G021"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "TOOLS",
+     "hypothesis_family": "campaign_f009",
+     "id": "FT.TOOLS.campaign.F009",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "TOOLS|campaign_f009|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F009",
+     "species": "independent_reproduction",
+     "title": "Negative science is a scattered corpus with no queryable index",
+     "verifier": "future.global_frontier.F009"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "receipts/headless holds 997 artifacts and grows live. Nothing reads new ones and turns them into Odyssey II laws, Odyssey III attacks, atlas updates or learned-compiler rows. Every Codex result currently dies where it lands.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/codex_ingest.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "TOOLS",
+     "hypothesis_family": "campaign_f015",
+     "id": "FT.TOOLS.campaign.F015",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "TOOLS|campaign_f015|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F015",
+     "species": "independent_reproduction",
+     "title": "Codex receipts are never ingested into anything downstream",
+     "verifier": "future.global_frontier.F015"
+    }
+   ],
+   "status": "ACTIVE"
+  },
+  "TPS": {
+   "blocked": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "FLASH_STATEFUL_TPS_GATE_V14 is BLOCKED_FIRST_PHYSICAL_BOUNDARY. Continuation state, repeated decode, protected TPS remain open. Sleeps.",
+     "evidence": [
+      "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+      "CODEX_ACCELERATOR_HANDOFF.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "TPS",
+     "hypothesis_family": "protected_accepted_tps",
+     "id": "FT.TPS.protected-tps",
+     "kind": "BLOCKED",
+     "redundancy_key": "TPS|protected_accepted_tps|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "F002",
+     "species": "accelerator_candidate_qualification",
+     "title": "Protected accepted-token TPS is blocked; Flash has one accepted stateful token",
+     "verifier": "accelerator.physical.accepted_tps",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    }
+   ],
+   "counts": {
+    "blocked": 1,
+    "next_work": 1,
+    "open_questions": 0,
+    "runnable_questions": 0
+   },
+   "name": "TPS",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "decode_civilization.py models accepted-token cost with rollback in the numerator. Relative units only; accepted_tps stays UNKNOWN.",
+     "evidence": [
+      "receipts/future/DECODE_CIVILIZATION.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "TPS",
+     "hypothesis_family": "accepted_complete_token_cost",
+     "id": "FT.TPS.accepted-token-cost",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "TPS|accepted_complete_token_cost|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "species": "independent_reproduction",
+     "title": "Refresh accepted_complete_token_cost in relative units (not a TPS number)",
+     "verifier": "future.decode_civilization.accepted_token_cost"
+    }
+   ],
+   "open_questions": [],
+   "status": "ACTIVE"
+  },
+  "VERIFICATION": {
+   "blocked": [],
+   "counts": {
+    "blocked": 0,
+    "next_work": 2,
+    "open_questions": 2,
+    "runnable_questions": 2
+   },
+   "name": "VERIFICATION",
+   "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F009: rediscovery was free. admit() must keep refusing scar-eligible families. CPU: keep the index current via ingest, do not restatement.",
+     "evidence": [
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "VERIFICATION",
+     "hypothesis_family": "negative_index_admission_gate",
+     "id": "FT.VERIFICATION.negative-index",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "VERIFICATION|negative_index_admission_gate|",
+     "required_lanes": [
+      "CPU",
+      "TOOLING"
+     ],
+     "source_f": "F009",
+     "species": "independent_reproduction",
+     "title": "Query the negative-science index before every new experiment proposal (this module's admit() is that gate)",
+     "verifier": "future.negative_index.refuse_if_dead"
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F008: autonomy can launder weak evidence. repro_science.py exists. Replica does not become the source.",
+     "evidence": [
+      "receipts/future/REPRO_SCIENCE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "VERIFICATION",
+     "hypothesis_family": "replication_bundle",
+     "id": "FT.VERIFICATION.repro",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "VERIFICATION|replication_bundle|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F008",
+     "species": "independent_reproduction",
+     "title": "Build an independent reproduction bundle with fault injection for one sealed Codex receipt",
+     "verifier": "future.repro.bundle"
+    }
+   ],
+   "open_questions": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "The static preflight raised 6 ERROR-class host/shader findings. Codex owns the investigation. Without a prepared response per verdict class, a false positive will simply be re-raised next scan and a confirmed bug will not become permanently detectable.",
+     "evidence": [
+      "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+      "tools/future/abi_verdicts.py"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "VERIFICATION",
+     "hypothesis_family": "campaign_f018",
+     "id": "FT.VERIFICATION.campaign.F018",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "VERIFICATION|campaign_f018|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F018",
+     "species": "independent_reproduction",
+     "title": "Six ABI findings await a Codex verdict with no prepared response",
+     "verifier": "future.global_frontier.F018",
+     "wake_all_of": [
+      "Codex's verdict; the sidecar must not pre-judge or edit Codex files"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "F011. contamination.py exists. A DIAGNOSTIC_RELATIVE number must not promote as PROTECTED_ABSOLUTE. This sidecar produces neither; it only refuses the promotion path.",
+     "evidence": [
+      "receipts/future/CONTAMINATION_SCIENCE.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 2,
+     "frontier": "VERIFICATION",
+     "hypothesis_family": "contamination_promotion_gate",
+     "id": "FT.VERIFICATION.contamination",
+     "kind": "OPEN_QUESTION",
+     "redundancy_key": "VERIFICATION|contamination_promotion_gate|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "F011",
+     "species": "independent_reproduction",
+     "title": "Is contamination metadata actually a promotion gate yet, or still a record?",
+     "verifier": "future.contamination.promotion_gate"
+    }
+   ],
+   "status": "ACTIVE"
+  }
+ },
+ "gaps_closed": [
+  "twenty-two named persistent frontiers, each with open questions, SLEEPING blocked items (wake conditions), and next work",
+  "next_work(available_lanes) yields CPU analysis / simulation / representation / tooling / Odyssey work while GPU_PROTECTED and ANE are blocked",
+  "is_idle() is a conjunction over all frontiers and is false on the real current book",
+  "busywork refused at admission by information gain, queued redundancy, and scar overlap",
+  "READY_PROTECTED candidates collapse to one SLEEPING unit; identity set is derived from the recovered queue, not a hard-coded N",
+  "verified non-dominated frontier-move metric reports UNKNOWN until a real move is recorded; no fabricated baseline",
+  "blocked physical work is SLEEPING, never a synthetic result",
+  "HCLI WorkUnits emitted through the landed species constructor"
+ ],
+ "global_frontier_consumed": {
+  "n_entries": 20,
+  "note": "CLAUDE_GLOBAL_FRONTIER is the campaign gap tracker. This module extends it as an operating layer; it does not rewrite it.",
+  "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+  "resolved_entries": [
+   "F003",
+   "F004",
+   "F005",
+   "F006",
+   "F010",
+   "F014"
+  ],
+  "schema": "hawking.future.claude_global_frontier.v1",
+  "stale_entries": []
+ },
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "idle_proof": {
+  "active": [
+   "ACTIVE_BYTES",
+   "ANE",
+   "ARCHITECTURE_REPATRIATION",
+   "CHILD_RESIDENT",
+   "CONTEXT",
+   "DECODING",
+   "EXPERIMENT_TURNAROUND",
+   "FPGA",
+   "GPU_KERNELS",
+   "HCLI_SELF",
+   "LATENCY",
+   "MEMORY",
+   "MODEL_CAPABILITY",
+   "MODEL_EXECUTION",
+   "MODEL_REPRESENTATION",
+   "ODYSSEY_ADVERSARY",
+   "ODYSSEY_TRANSFER",
+   "PHYSICAL_GRAPH",
+   "STATE",
+   "TOOLS",
+   "TPS",
+   "VERIFICATION"
+  ],
+  "blocked": [],
+  "exhausted": [],
+  "is_idle": false,
+  "n_active": 22,
+  "n_blocked": 0,
+  "n_exhausted": 0,
+  "n_frontiers": 22,
+  "rule": "is_idle may only be true when every frontier is EXHAUSTED or BLOCKED. A blocked GPU/ANE lane never makes the daemon idle while CPU/Odyssey/tooling/representation work remains."
+ },
+ "is_idle": false,
+ "lanes": {
+  "all": [
+   "CPU",
+   "ANALYSIS",
+   "SIMULATION",
+   "REPRESENTATION",
+   "TOOLING",
+   "ODYSSEY",
+   "GPU_PROTECTED",
+   "ANE",
+   "FPGA"
+  ],
+  "blocked_on_this_host": [
+   "GPU_PROTECTED",
+   "ANE",
+   "FPGA"
+  ],
+  "cpu_class": [
+   "CPU",
+   "ANALYSIS",
+   "SIMULATION",
+   "REPRESENTATION",
+   "TOOLING",
+   "ODYSSEY"
+  ],
+  "hardware": [
+   "GPU_PROTECTED",
+   "ANE",
+   "FPGA"
+  ],
+  "next_work_available_lanes": [
+   "ANALYSIS",
+   "CPU",
+   "ODYSSEY",
+   "REPRESENTATION",
+   "SIMULATION",
+   "TOOLING"
+  ],
+  "this_host_available": [
+   "CPU",
+   "ANALYSIS",
+   "SIMULATION",
+   "REPRESENTATION",
+   "TOOLING",
+   "ODYSSEY"
+  ]
+ },
+ "measurement_class": "STATIC_ONLY",
+ "movement": {
+  "bench_state": "UNKNOWN",
+  "evidence_class": "STATIC_ONLY",
+  "moves": [],
+  "n_moves": 0,
+  "primary_metric": "verified_non_dominated_frontier_moves_over_wall_time",
+  "reason": "no verified non-dominated moves have been recorded; a fabricated baseline is refused",
+  "state": "UNKNOWN",
+  "supporting_rates": {
+   "admitted_units_per_wall_second": "UNKNOWN",
+   "moves_per_wall_second": "UNKNOWN",
+   "refused_units_per_wall_second": "UNKNOWN"
+  }
+ },
+ "n_frontiers": 22,
+ "n_next_work": 32,
+ "n_sleeping": 14,
+ "negative_findings": [
+  "MetalContext reports no Metal-capable GPU on this host (Codex handoff / contract)",
+  "xcrun cannot locate the Metal compiler under CommandLineTools",
+  "protected bench lock files exist; holder pids unproven; flock would be a seizure",
+  "qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
+  "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
+  "teacher capture is 0/256; no synthetic rows",
+  "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
+  "movement rate over wall time is UNKNOWN; hashed content must not carry a wall clock",
+  "global_frontier.py F007/F008 probes still hold on *learned_physical* / *replication_bundle* even though lpc_dataset.py and repro_science.py exist \u2014 the campaign tracker is protected and is not edited here",
+  "propagate.py closed the routing loop but applied 0 records (skipped_as_duplicate); compounding is not yet moving stores"
+ ],
+ "next_work": [
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.0
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "73f7802a1f71d2e26231557839812a76d267e2ec24244171e75a15020f0a488a",
+   "dependencies": [],
+   "description": "hbm_doctor.py decides what 8 GB of HBM is for. CPU ranking of ResidentCandidate records; no invented bandwidth_gbps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HBM_DOCTOR.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ACTIVE_BYTES",
+   "hypothesis_family": "hbm_residency_rank",
+   "id": "FT.ACTIVE_BYTES.hbm-rank",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ACTIVE_BYTES|hbm_residency_rank|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F005",
+   "species": "hardware_doctor_experiment",
+   "status": "pending",
+   "title": "Rank HBM residency candidates from organ census; meter fields stay UNKNOWN",
+   "verification": null,
+   "verifier": "future.hbm_doctor.rank",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.024390243902439025
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "4ed97037ff1fa84e48430e9cb478e1cbea390060efb6d05109686b798cbaeade",
+   "dependencies": [],
+   "description": "resident_install.py bind_winner / validate_contract. Must not launch, install, or unload a resident.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+    "receipts/future/RESIDENT_OPTIMIZER.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "CHILD_RESIDENT",
+   "hypothesis_family": "resident_install_dry_run",
+   "id": "FT.CHILD_RESIDENT.install-dry-run",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "CHILD_RESIDENT|resident_install_dry_run|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F013",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Dry-run the resident install contract against Flash NX / Qwen genomes without launching a process",
+   "verification": null,
+   "verifier": "future.resident_install.dry_run",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.0425531914893617
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "c1a96d958dd7dab26ceaecd9cf5432bacac0ec39d79343a6b516512ca072de79",
+   "dependencies": [],
+   "description": "Any context blob that is treated as a source of truth against a sealed receipt is a bug. CPU audit of what HCLI context caches vs what receipts decide.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/EVIDENCE_SNAPSHOT.json",
+    "receipts/future/CODEX_INGEST_STATE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "CONTEXT",
+   "hypothesis_family": "context_is_a_cache",
+   "id": "FT.CONTEXT.disk-authority",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "CONTEXT|context_is_a_cache|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Map HCLI context surfaces onto receipts: disk is authority, models think, context is a cache",
+   "verification": null,
+   "verifier": "future.context.disk_authority",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.047619047619047616
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "29126ef2ef750f0362996f791a744c4142017156205de2a8934e232dfded261c",
+   "dependencies": [],
+   "description": "decode_civilization.py already refuses to treat byte savings as a GO. Next unit is a refresh against current organ maps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/DECODE_CIVILIZATION.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "DECODING",
+   "hypothesis_family": "decode_cost_models",
+   "id": "FT.DECODING.cost-model",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "DECODING|decode_cost_models|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Refresh decode cost models (accepted-token, KV byte classes); capability stays ABSENT until gated",
+   "verification": null,
+   "verifier": "future.decode_civilization.cost_models",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.024390243902439025
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "6b57c9d523ce66a5c5db4e5e0b43b1f0f7b6219df52272a02bd37199eae870e9",
+   "dependencies": [],
+   "description": "FPGA is Accelerator/Physical Compiler/Fusion, not its own civilization. No HDL emit. No board.",
+   "effect_class": "REVERSIBLE",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/FPGA_ENGINE_SCHOOL.json",
+    "receipts/future/FPGA_MULTIFIDELITY.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "FPGA",
+   "hypothesis_family": "fpga_engine_simulation",
+   "id": "FT.FPGA.engine-sim",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "FPGA|fpga_engine_simulation|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "SIMULATION"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "COMPILE",
+   "role": "science",
+   "running_at": null,
+   "species": "fpga_simulation",
+   "status": "pending",
+   "title": "Simulate FPGA engine-school goldens on CPU; associativity is part of the number",
+   "verification": null,
+   "verifier": "future.fpga_engines.simulate",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.0425531914893617
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "b6bc0637be374eb0a42b50f434ab05b666d1a8d7aa17ae5076e88c5fe412ddc1",
+   "dependencies": [],
+   "description": "F018 ABI findings were adjudicated. Preflight still carries WARNINGs/UNVERIFIABLE. CPU triage against CLAUDE_SIDECAR_ABI_ADJUDICATION.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
+    "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+    "receipts/future/ABI_VERDICT_HARNESS.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "GPU_KERNELS",
+   "hypothesis_family": "static_kernel_warning_triage",
+   "id": "FT.GPU_KERNELS.static-warnings",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "GPU_KERNELS|static_kernel_warning_triage|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F018",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Triage remaining static kernel WARNINGs; do not re-raise adjudicated ERRORs",
+   "verification": null,
+   "verifier": "future.static_kernel_verify.warning_triage",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.02564102564102564
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "d6a85129ab98608d8f37f1606a1626368a992ffae318a40cf053d768bef785b3",
+   "dependencies": [],
+   "description": "A subsystem is not operational until the resident can discover, invoke, schedule and verify it. This unit is that wiring, via the landed species constructor.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+    "receipts/future/RESIDENT_OPTIMIZER.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "HCLI_SELF",
+   "hypothesis_family": "hcli_frontier_callable",
+   "id": "FT.HCLI_SELF.emit-workunits",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "HCLI_SELF|hcli_frontier_callable|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Emit this book's next_work as HCLI WorkUnits the resident can schedule",
+   "verification": null,
+   "verifier": "future.frontiers.resident_callable",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.07692307692307693
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "2023f6ce70a71773a43235e4483e01f8828b48f548f2385669ed7ed3e7f3c0a1",
+   "dependencies": [],
+   "description": "This frontier carried only an OPEN_QUESTION, so refill could never yield work on it and doctor_callable / gravity_callable were structurally unreachable. That is no longer the state: odyssey_tool_driver.py invokes doctor_seal for real and routes the receipt, and the remaining tools have named, checkable blockers rather than unknown ones -- doctor_tournament needs torch importable in the resident interpreter for its 52GB SVD, and the gravity mains need prior measurement files that are absent and must not be invented. The pending CPU work is to drive what can be driven and record the refusal for the rest.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/ODYSSEY_TOOL_DRIVER.json",
+    "receipts/future/ODYSSEY_LAUNCH_GATE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_CAPABILITY",
+   "hypothesis_family": "resident_tool_operation",
+   "id": "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_CAPABILITY|resident_tool_operation|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F007",
+   "species": "odyssey_tool_invocation",
+   "status": "pending",
+   "title": "Drive the Odyssey Doctor and Gravity tools from the resident and route their receipts",
+   "verification": null,
+   "verifier": "future.odyssey_tool_driver.invoke",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.05660377358490566
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "b84d65ef7094281df5ccfb2220d5ce7c396a191cf806ef576f25686d9412dbc7",
+   "dependencies": [],
+   "description": "F019 stalls all nine real Flash meta families at gate 2 (real_teacher_fit). meta_ready.py already writes the dossier; the remaining CPU work is to keep gates 3-9 wired to the corpus-arrival contract without fabricating teacher rows.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/META_DOWNSTREAM_READY.json",
+    "receipts/future/META_EXPERIMENT_FUNNEL.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_REPRESENTATION",
+   "hypothesis_family": "meta_funnel_readiness",
+   "id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_REPRESENTATION|meta_funnel_readiness|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "REPRESENTATION"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F019",
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "title": "Prepare meta funnel gates 3-9 so they can start the moment teacher rows arrive",
+   "verification": null,
+   "verifier": "future.meta_ready.gates_3_9",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.06818181818181818
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "2158c1afd2deb0e2d62043d6118534f707de6761ed8f0247c5027a7a9751c939",
+   "dependencies": [],
+   "description": "odyssey3_adversary.py: LAW -> TRANSFER HYPOTHESIS -> ADVERSARIAL TARGET -> EXPERIMENT SPEC. STATIC_ONLY specs, not measurements.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/ODYSSEY3_ADVERSARY.json",
+    "receipts/future/ODYSSEY2_LAW_STORE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ODYSSEY_ADVERSARY",
+   "hypothesis_family": "odyssey3_attack_generation",
+   "id": "FT.ODYSSEY_ADVERSARY.attacks",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ODYSSEY_ADVERSARY|odyssey3_attack_generation|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ODYSSEY"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "odyssey_iii_adversarial_experiment",
+   "status": "pending",
+   "title": "Generate Odyssey III attack specs against every current law; a law with no attack is refused",
+   "verification": null,
+   "verifier": "future.odyssey_iii.adversary",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.09302325581395349
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "fea60bd3466d8d06b742628fd198342d07d4ace9c12b988a7b0076ae2d3d219d",
+   "dependencies": [],
+   "description": "odyssey2_law_store.py holds  the seeded laws. GENERIC_VERIFIED is empty. Transfer is a PROPOSAL, not Law.promote().",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/ODYSSEY2_LAW_STORE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ODYSSEY_TRANSFER",
+   "hypothesis_family": "odyssey2_reearn_model_local",
+   "id": "FT.ODYSSEY_TRANSFER.re-earn",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ODYSSEY_TRANSFER|odyssey2_reearn_model_local|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ODYSSEY"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F010",
+   "species": "odyssey_ii_transfer_experiment",
+   "status": "pending",
+   "title": "Propose re-earn of MODEL_LOCAL Odyssey II laws on named targets without widening scope",
+   "verification": null,
+   "verifier": "future.odyssey_ii.law_scope",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.08333333333333333
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "e861ae96609c8b6dced5b09e9a6f4eb1b865320611e3c3ea8a7535054c647f5a",
+   "dependencies": [],
+   "description": "F020: fourteen P6/P7 candidates encode reusable concepts and have no primitive, HWIR hypothesis, FPGA realization, transfer scope or Odyssey III counterexample. All BLOCKED and unmeasured \u2014 project, do not claim.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/P6_PRIMITIVE_PROJECTION.json",
+    "receipts/future/PHYSICAL_PRIMITIVES.json",
+    "receipts/future/HWIR_V1.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "PHYSICAL_GRAPH",
+   "hypothesis_family": "p6_p7_projection",
+   "id": "FT.PHYSICAL_GRAPH.p6-projection",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "PHYSICAL_GRAPH|p6_p7_projection|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F020",
+   "species": "hardware_doctor_experiment",
+   "status": "pending",
+   "title": "Project Codex P6/P7 physical concepts onto Hawking primitives / HWIR / FPGA / transfer",
+   "verification": null,
+   "verifier": "future.p6_projection.project",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.11904761904761904
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "5e79de0fd2308d71b5475ee69f807ab0babc0c7bc711b1e7653c8dba55472fdd",
+   "dependencies": [],
+   "description": "Flash critical-path blockers: attention and recurrent state organs are not in the candidate graph. CPU coverage audit against stateful receipts.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+    "receipts/future/PHYSICAL_PRIMITIVES.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "STATE",
+   "hypothesis_family": "state_organ_coverage",
+   "id": "FT.STATE.coverage-audit",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "STATE|state_organ_coverage|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F001",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Audit which state organs are actually in the candidate graph vs merely named",
+   "verification": null,
+   "verifier": "future.state.organ_coverage",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.05128205128205128
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "589740a4a9ac1b4013a7e0241a91216801ad195f893436ac76649b46c97c4ee8",
+   "dependencies": [],
+   "description": "F017: Codex rewrote the queue 37\u219241\u219244\u219247\u219249. freshness.py distinguishes STALE_FINGERPRINT_ONLY vs STALE_SEMANTIC. Run it.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/DERIVED_FRESHNESS.json",
+    "receipts/future/CANDIDATE_STAGED_PLAN.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "TOOLS",
+   "hypothesis_family": "derived_freshness_resync",
+   "id": "FT.TOOLS.freshness",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "TOOLS|derived_freshness_resync|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F017",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Resync derived artifacts with semantic fingerprints, not sha-only",
+   "verification": null,
+   "verifier": "future.freshness.resync",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.045454545454545456
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "f84621c571b2e5ef5db6779b13f7a7094b0b51a67ca8159a7b9725dea947a75a",
+   "dependencies": [],
+   "description": "F016 closed the routing loop; PROPAGATION_STATE shows applied=0 and skipped_as_duplicate in the hundreds. That is not compounding. CPU work: name the real novel deltas, if any.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/PROPAGATION_STATE.json",
+    "receipts/future/CODEX_INGEST_STATE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "TOOLS",
+   "hypothesis_family": "propagate_novel_deltas",
+   "id": "FT.TOOLS.propagate-skips",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "TOOLS|propagate_novel_deltas|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F016",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Inspect why propagate applied 0 records and skipped every delta as duplicate",
+   "verification": null,
+   "verifier": "future.propagate.novel_deltas",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.2727272727272727
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "389cd90b6739fd46e0be91406e65e08ef802f3a073a78f8939c01d6a8a57cf10",
+   "dependencies": [],
+   "description": "decode_civilization.py models accepted-token cost with rollback in the numerator. Relative units only; accepted_tps stays UNKNOWN.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/DECODE_CIVILIZATION.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "TPS",
+   "hypothesis_family": "accepted_complete_token_cost",
+   "id": "FT.TPS.accepted-token-cost",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "TPS|accepted_complete_token_cost|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Refresh accepted_complete_token_cost in relative units (not a TPS number)",
+   "verification": null,
+   "verifier": "future.decode_civilization.accepted_token_cost",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.06349206349206349
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "6fdae6ab76612ed618524b152fc9ad9ec3b038cd498acdc20dccbac21e0e17eb",
+   "dependencies": [],
+   "description": "F009: rediscovery was free. admit() must keep refusing scar-eligible families. CPU: keep the index current via ingest, do not restatement.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "VERIFICATION",
+   "hypothesis_family": "negative_index_admission_gate",
+   "id": "FT.VERIFICATION.negative-index",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "VERIFICATION|negative_index_admission_gate|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F009",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Query the negative-science index before every new experiment proposal (this module's admit() is that gate)",
+   "verification": null,
+   "verifier": "future.negative_index.refuse_if_dead",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.06382978723404255
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "683def7947d5586ed6cee824a13add630a9a931b3f22ba866e29381762b0f602",
+   "dependencies": [],
+   "description": "F008: autonomy can launder weak evidence. repro_science.py exists. Replica does not become the source.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/REPRO_SCIENCE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "VERIFICATION",
+   "hypothesis_family": "replication_bundle",
+   "id": "FT.VERIFICATION.repro",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "VERIFICATION|replication_bundle|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "TEST",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F008",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Build an independent reproduction bundle with fault injection for one sealed Codex receipt",
+   "verification": null,
+   "verifier": "future.repro.bundle",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.08163265306122448
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "fac6749f87e944680bdbfab5372112c13a9dbf284d98d030cfc1809c9032ef44",
+   "dependencies": [],
+   "description": "ane_preboard.py is STATIC_ONLY. estimate_ane_latency / measure_prediction must raise. CPU work is corpus + placement schema, not an ANE number.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/ANE_PREBOARD.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ANE",
+   "hypothesis_family": "ane_preboard_corpus",
+   "id": "FT.ANE.preboard",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ANE|ane_preboard_corpus|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Keep the ANE preboard graph corpus current; execution entry points must keep raising while the toolchain is missing",
+   "verification": null,
+   "verifier": "future.ane_preboard.corpus",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.14285714285714285
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "46767269687563e6f9e68560d110c817e1c51b901e9044e1fb76f009b7117aea",
+   "dependencies": [],
+   "description": "architecture_transfer species copies live work_unit fields. CPU compile of specs from the repatriation queue / atlas.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/CANDIDATE_STAGED_PLAN.json",
+    "receipts/future/PHYSICAL_PRIMITIVES.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ARCHITECTURE_REPATRIATION",
+   "hypothesis_family": "repatriation_spec_compile",
+   "id": "FT.ARCHITECTURE_REPATRIATION.compile-specs",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ARCHITECTURE_REPATRIATION|repatriation_spec_compile|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F012",
+   "species": "architecture_transfer",
+   "status": "pending",
+   "title": "Compile repatriation experiment specs as STATIC_ONLY; do not run them",
+   "verification": null,
+   "verifier": "future.architecture_transfer.compile_spec",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.13157894736842105
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "a6d9e58f17bbfc5bb34edceec9b63bed0c78f6e0d1732994a293a4d6bb39b550",
+   "dependencies": [],
+   "description": "resident_optimizer.py is BUILT_NOT_PROMOTED. Next: generate() against current LPC / law-store / hardware-doctor receipts.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/RESIDENT_OPTIMIZER.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "CHILD_RESIDENT",
+   "hypothesis_family": "resident_optimizer_hypotheses",
+   "id": "FT.CHILD_RESIDENT.optimizer",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "CHILD_RESIDENT|resident_optimizer_hypotheses|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "title": "Emit bounded resident-optimizer hypotheses; promote() must keep not existing",
+   "verification": null,
+   "verifier": "future.resident_optimizer.generate",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.09090909090909091
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "4f5f0a642a05718e7e2dcfeda6ae26fdeb21bef27ef5138832ad1ff076c32cf0",
+   "dependencies": [],
+   "description": "Same shape as token latency, currently all-null on the Accelerator scoreboard for GPU phases. CPU phases are the honest work.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/EXPERIMENT_TURNAROUND.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "EXPERIMENT_TURNAROUND",
+   "hypothesis_family": "experiment_turnaround_cpu",
+   "id": "FT.EXPERIMENT_TURNAROUND.refresh",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "EXPERIMENT_TURNAROUND|experiment_turnaround_cpu|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Refresh CPU experiment-turnaround receipt; cargo/GPU phases remain UNKNOWN",
+   "verification": null,
+   "verifier": "future.turnaround.refresh",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.16666666666666666
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "f232509d4e382b8a6c5a72ea6740da2c664ae0d8b3f406b360d8f4a629533377",
+   "dependencies": [],
+   "description": "F004 closed by sidecar. Next: keep the ranked queue current as Codex adds P6/P7 concepts.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HARDWARE_DOCTOR.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "FPGA",
+   "hypothesis_family": "hardware_doctor_rank",
+   "id": "FT.FPGA.hardware-doctor",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "FPGA|hardware_doctor_rank|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F004",
+   "species": "hardware_doctor_experiment",
+   "status": "pending",
+   "title": "Rank Hardware Doctor experiments against atlas hypotheses; ranking is not execution",
+   "verification": null,
+   "verifier": "future.hardware_doctor.rank",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.28125
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "485643e3fc1094daeae23fb1981a48d10e60faa6064e13825c30f14a97cf5f7d",
+   "dependencies": [],
+   "description": "turnaround.py already times source_discovery/transform/verify/receipt/ledger/next_decision. Refresh. cargo/GPU phases stay UNKNOWN.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/EXPERIMENT_TURNAROUND.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "LATENCY",
+   "hypothesis_family": "cpu_turnaround_phases",
+   "id": "FT.LATENCY.cpu-turnaround",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "LATENCY|cpu_turnaround_phases|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Remeasure CPU-side experiment-turnaround phases; leave GPU phases UNKNOWN",
+   "verification": null,
+   "verifier": "future.turnaround.cpu_phases",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.16666666666666666
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "a3f949e1c0d2c7f2306ec93dab2b092e0328d8a9bb9dd05c0c3a789a62be8ecb",
+   "dependencies": [],
+   "description": "Distinct from ACTIVE_BYTES ranking: this is the memory-tier identity question (MoveOrRecompute vs PersistentPhysicalRegion).",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HBM_DOCTOR.json",
+    "receipts/future/PHYSICAL_PRIMITIVES.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MEMORY",
+   "hypothesis_family": "memory_tier_identity",
+   "id": "FT.MEMORY.hbm",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MEMORY|memory_tier_identity|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F005",
+   "species": "hardware_doctor_experiment",
+   "status": "pending",
+   "title": "Keep the HBM residency ranking current as organ census fields arrive",
+   "verification": null,
+   "verifier": "future.hbm_doctor.memory_tiers",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.10810810810810811
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "3aa6315f5a5b97db3ccc3fc8e62d80548dd94644d1ad3b9ce43964ccc629b065",
+   "dependencies": [],
+   "description": "HMF_MANAGED_OBJECTS.json is executable. Next: walk object_legal_transitions against current organ maps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HMF_MANAGED_OBJECTS.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MEMORY",
+   "hypothesis_family": "hmf_legal_transitions",
+   "id": "FT.MEMORY.hmf",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MEMORY|hmf_legal_transitions|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Audit HMF managed-object legal transitions; tri-state coherence must not collapse to a boolean",
+   "verification": null,
+   "verifier": "future.hmf.transitions",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.15789473684210525
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "81d3d01ae983906eab45aaf9e90bb09dad906569699709b020181aaff8aeceb8",
+   "dependencies": [],
+   "description": "F013: FLASH_SINGULARITY.NX vs QWEN27_SINGULARITY.NX. The harness must refuse, not invent a winner. CPU work: re-seal readiness against current NX seals.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/TOURNAMENT_READINESS.json",
+    "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_CAPABILITY",
+   "hypothesis_family": "tournament_refuse_to_run",
+   "id": "FT.MODEL_CAPABILITY.tournament-refuse",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_CAPABILITY|tournament_refuse_to_run|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F013",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Keep the NX-vs-NX tournament harness in refuse-to-run until both contenders are complete",
+   "verification": null,
+   "verifier": "future.tournament.refuse_until_complete",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.14705882352941177
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "0a498dab4c9a34903b10203de737b2d4a04ba86392e6b58df03be5f799841fc1",
+   "dependencies": [],
+   "description": "fusion_simulation.py is executable. Run the simulation receipt refresh; do not claim token_ns.",
+   "effect_class": "REVERSIBLE",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/FUSION_SIMULATION.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "fusion_isa_graph",
+   "id": "FT.MODEL_EXECUTION.fusion-sim",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|fusion_isa_graph|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "SIMULATION"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "COMPILE",
+   "role": "science",
+   "running_at": null,
+   "species": "fusion_simulation",
+   "status": "pending",
+   "title": "CPU-simulate fusion_planner / fusion_isa graphs; graph shape is not a timing result",
+   "verification": null,
+   "verifier": "future.fusion.simulate",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.14634146341463414
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "a5aad91702029735926874f48a8a89a5f29279d0da7f9d67472fa27c8a3a618f",
+   "dependencies": [],
+   "description": "STATIC_SKELETON.json already names backend usability. Next: re-run the validator against current organ maps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/STATIC_SKELETON.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "static_skeleton_slots",
+   "id": "FT.MODEL_EXECUTION.static-skeleton",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|static_skeleton_slots|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Validate static decode skeletons so slot-as-topology remains refused",
+   "verification": null,
+   "verifier": "future.static_skeleton.validate",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.075
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "c72268e7f0ffc5cc07edddeedc1d144af964014e643bd59136fcb68e8286f159",
+   "dependencies": [],
+   "description": "ngram_school.py is executable; the next unit is a fresh candidate set scored against the negative index, not a GPU fit.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/NGRAM_SCHOOL.json",
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_REPRESENTATION",
+   "hypothesis_family": "ngram_school_candidates",
+   "id": "FT.MODEL_REPRESENTATION.ngram-school",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_REPRESENTATION|ngram_school_candidates|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "REPRESENTATION"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "learned_compiler_experiment",
+   "status": "pending",
+   "title": "Generate n-gram-school representation candidates below Q4 without fitting weights",
+   "verification": null,
+   "verifier": "future.ngram_school.candidates",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.08333333333333333
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "53ad9198621cd82942fc0587185d728f776f59c1c7e8bea9ea5b1ab743f32fc9",
+   "dependencies": [],
+   "description": "hwir.py exists (F003 closed by sidecar). Remaining work is consumption, not a second IR.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HWIR_V1.json",
+    "receipts/future/PHYSICAL_PRIMITIVES.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "PHYSICAL_GRAPH",
+   "hypothesis_family": "hwir_lowering",
+   "id": "FT.PHYSICAL_GRAPH.hwir-lower",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "PHYSICAL_GRAPH|hwir_lowering|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F003",
+   "species": "hardware_doctor_experiment",
+   "status": "pending",
+   "title": "Lower current PhysicalGraph-shaped receipts into HWIR node/edge records",
+   "verification": null,
+   "verifier": "future.hwir.lower",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 2,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.17647058823529413
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "afc8d407080ae2c005ec23d39957373773b449b5f8fa30df273fcd05744dc5d4",
+   "dependencies": [],
+   "description": "The idle state is the failure. Refill is the loop: discover, invoke, schedule, verify, persist, refill.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "TOOLS",
+   "hypothesis_family": "frontier_refill",
+   "id": "FT.TOOLS.frontiers-refill",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "TOOLS|frontier_refill|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "TOOLING"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "title": "Rebuild this frontier book from disk after every sealed sidecar receipt",
+   "verification": null,
+   "verifier": "future.frontiers.refill",
+   "workspace": "repo-root"
+  }
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "produces_diagnostic_relative": false,
+ "produces_protected_absolute": false,
+ "purpose": "Twenty-two persistent operating frontiers. next_work yields safe CPU/simulation/representation/tooling/Odyssey work while GPU_PROTECTED and ANE sleep. is_idle is false until every frontier is exhausted or blocked. Busywork is refused at admission. Movement stays UNKNOWN until a verified non-dominated move exists.",
+ "queue_identity": {
+  "blocked_ids": [
+   "flash-attention-gate-fusion",
+   "flash-compact-moe-bf16-vec4",
+   "flash-compact-moe-epilogue",
+   "flash-device-mhc-state",
+   "flash-encoder-label-elision",
+   "flash-fullseq-catalog-cache",
+   "flash-fullseq-ordered-encoder",
+   "flash-hc-staged-threadgroup",
+   "flash-meta-sub1-coherent",
+   "flash-p6-act-quant-simdgroup",
+   "flash-p6-batched-down-qat",
+   "flash-p6-fused-down-shared-combine",
+   "flash-p6-fused-epilogue-stack",
+   "flash-p6-hash-single-command-buffer",
+   "flash-p6-learned-expert-cache-reuse",
+   "flash-p6-learned-reader-reuse",
+   "flash-p6-prefix-concurrent-wave",
+   "flash-p6-routed-fp4-down-bf16-fused",
+   "flash-p6-routed-fp4-down-bf16-simd",
+   "flash-p6-routed-fp4-gate-up-swiglu-fused",
+   "flash-p6-routed-fp4-gate-up-swiglu-simd",
+   "flash-p6-routed-fp4-simdgroup",
+   "flash-p6-shared-fp8-simdgroup",
+   "flash-p7-mhc-pre-simdgroup",
+   "flash-pipeline-cache-reuse",
+   "flash-pipeline-id-resolution",
+   "flash-qkv-gqa-rope-fusion",
+   "flash-routed-fp4-gate-up-swiglu-fused",
+   "flash-router-topk-fusion",
+   "flash-shared-fp8-down-combine-fused",
+   "flash-shared-fp8-gate-up-swiglu-fused",
+   "flash-source-bf16-simd"
+  ],
+  "n_blocked": 32,
+  "n_ready_protected": 13,
+  "n_static_only": 4,
+  "n_work_units_in_queue": 13,
+  "note": "counts derived from recovered identities; not a pinned integer",
+  "origin": "queue",
+  "ready_protected_ids": [
+   "qwen27-affine2-splitk4",
+   "qwen27-attention-gate-fusion",
+   "qwen27-ba-delta-fusion",
+   "qwen27-commit-timing-elision",
+   "qwen27-deltanet-inproj-fusion",
+   "qwen27-encoder-label-elision",
+   "qwen27-fast-profile",
+   "qwen27-gqa-qkv-fusion",
+   "qwen27-pipeline-cache-reuse",
+   "qwen27-pipeline-id-resolution",
+   "qwen27-pipeline-state-elision",
+   "qwen27-q2f-splitk4",
+   "qwen27-q4-vecgroup-x64"
+  ],
+  "static_only_ids": [
+   "flash-hc-router-topk-fusion",
+   "qwen27-affine2-splitk4-vec",
+   "qwen27-q2f-splitk4-vec",
+   "qwen27-resident-untimed-decode"
+  ]
+ },
+ "recovered_implementation": {
+  "already_existed": {
+   "tools/future/candidate_planner.py": "queue recovery across worktrees; consumed if importable",
+   "tools/future/global_frontier.py": "adequate as the campaign gap tracker (F001\u2013F020, probe-backed, RESOLVED/holding). Not adequate as the 22 named operating frontiers, next_work(available_lanes), is_idle, busywork admission, or movement metric.",
+   "tools/future/negative_index.py": "scar refusal path; consumed at admission",
+   "tools/future/workunit_species.py": "HCLI WorkUnit field set and species catalog; consumed, not forked"
+  },
+  "gap_this_module_closes": "the operating layer: 22 persistent frontiers the resident can discover, invoke, schedule, verify; result changes a frontier; persists; next work refills. A blocked hardware lane does not idle the daemon.",
+  "odyssey2_n_laws": 24,
+  "odyssey3_n_attacks": 36,
+  "paths_taken": {
+   "CODEX_ACCELERATOR_HANDOFF.json": "disk:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+   "receipts/future/CLAUDE_GLOBAL_FRONTIER.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+   "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "disk:/Users/scammermike/.claude-grok/worktrees/l36-torture-wiring-20260830-182109/receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "receipts/future/ODYSSEY2_LAW_STORE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY2_LAW_STORE.json",
+   "receipts/future/ODYSSEY3_ADVERSARY.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY3_ADVERSARY.json",
+   "receipts/future/PROPAGATION_STATE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/PROPAGATION_STATE.json",
+   "receipts/future/QUALIFICATION_PIPELINE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/QUALIFICATION_PIPELINE.json",
+   "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  },
+  "propagate_applied_any": true,
+  "this_worktree_is_sparse": true,
+  "unseen_is_not_absent": "a path_taken of unseen_in_this_checkout means this sparse tree did not materialize the file; git ls-tree / the parent checkout may still hold it"
+ },
+ "resident_callable": {
+  "can_hcli_invoke": true,
+  "entry_point": "tools.future.frontiers:next_work / is_idle / admit / build / refill",
+  "fail_closed": [
+   "HardwareClaimError on numeric hardware fields (write_receipt)",
+   "GPU_PROTECTED / ANE / FPGA work stays SLEEPING until disk evidence qualifies the lane; listing the lane name is not qualification",
+   "busywork REFUSED at admission (zero gain, redundancy, scar-dead)",
+   "movement stays UNKNOWN until record_move(verified=True, non-dominated, evidence)",
+   "is_idle is false while any frontier is ACTIVE",
+   "unseen files are recorded as a recovery path, never as 'does not exist in the project'",
+   "does not start a resident model process and does not take a GPU lease"
+  ],
+  "frontier_fed": "all twenty-two named frontiers; CLAUDE_GLOBAL_FRONTIER is consumed as input and is not overwritten",
+  "integration_swaps": {
+   "evidence_dag.py": "we cite source receipts",
+   "odyssey_launch.py": "Odyssey I start under resident orchestration",
+   "protected_window.py": "never taken from this sidecar",
+   "resident_api.py": "callable RPC surface over next_work/is_idle/admit",
+   "sandbox.py": "orchestrator sandbox this would run inside",
+   "scar_scheduling.py": "we query negative_index instead",
+   "succession.py / resident_identity.py": "child resident identity",
+   "super_resident.py": "the daemon that must not idle",
+   "wakeup.py": "evaluate wake_condition against hardware qualification",
+   "workgraph.py": "schedule the emitted WorkUnits"
+  },
+  "invoke_path_today": "CLI: python3 tools/future/frontiers.py --next-work --lanes CPU,SIMULATION,REPRESENTATION,TOOLING,ODYSSEY,ANALYSIS",
+  "receipt_written": "receipts/future/FRONTIER_STATE.json",
+  "workunit_emitted": "HCLI WorkUnit via tools.future.workunit_species.emit_hcli_workunit; extras: frontier, required_lanes, wake_condition, redundancy_key, expected_information_gain, hypothesis_family"
+ },
+ "schema": "hawking.future.frontiers.v1",
+ "seal_sha256": "3962023f43fbf7912f62c468c4e922c1e7de794d65db1fbcd61c6050e37a871c",
+ "sleeping": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "cd60d0d1b160cefbb02674f6e0fab48cee2a9c6a0b7cba3f66fdf014edb794b4",
+   "dependencies": [],
+   "description": "Sidecar has no GPU authority. Active-byte measurement sleeps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HBM_DOCTOR.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ACTIVE_BYTES",
+   "hypothesis_family": "measured_active_bytes",
+   "id": "FT.ACTIVE_BYTES.measured",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ACTIVE_BYTES|measured_active_bytes|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "accelerator_candidate_qualification",
+   "status": "blocked",
+   "title": "Measured active-byte / bandwidth figures require a protected window",
+   "verification": null,
+   "verifier": "accelerator.physical.active_bytes",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Core ML / ANE compiler environment available; Flash-shaped ANE execution is authorized on this host",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "25b49219c34d7292e01426a48bcb498ddadcd6e5b370369271abfd784d3b2c5c",
+   "dependencies": [],
+   "description": "APPLE_ANE_ATLAS is ATLAS_SCAFFOLD_COMPILE_BOUNDARY; device profile PLAN_READY. No Flash-shaped ANE result. Sleeps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "CODEX_ACCELERATOR_HANDOFF.json",
+    "receipts/headless/APPLE_ANE_ATLAS.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ANE",
+   "hypothesis_family": "ane_flash_execution",
+   "id": "FT.ANE.execution",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ANE|ane_flash_execution|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "ANE"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "architecture_transfer",
+   "status": "blocked",
+   "title": "Flash-shaped ANE execution / latency / energy / residency is not authorized",
+   "verification": null,
+   "verifier": "accelerator.ane.flash_shaped",
+   "wake_condition": {
+    "all_of": [
+     "Core ML / ANE compiler environment available",
+     "Flash-shaped ANE execution is authorized on this host"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "250ada083a3402c42013641ee62117a3a2b11710f611ed54c02c6fbdef003be3",
+   "dependencies": [],
+   "description": "CUDA is a source school on this Apple host, not an execution backend. Metal window is blocked. ANE execution is blocked. Sleeps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/CUDA_LOWBIT_HYPOTHESES.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "ARCHITECTURE_REPATRIATION",
+   "hypothesis_family": "repatriation_device_run",
+   "id": "FT.ARCHITECTURE_REPATRIATION.device-run",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "ARCHITECTURE_REPATRIATION|repatriation_device_run|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "architecture_transfer",
+   "status": "blocked",
+   "title": "Metal/CUDA/ANE repatriation runs wait on their devices",
+   "verification": null,
+   "verifier": "accelerator.repatriation.device_run",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "authorized HCLI resident-install lane; existing HCLI lease with proven holder",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "da248c696295a7a02cddfbb02c5ef3742a50d867c5f92a4768fc4bac25e94916",
+   "dependencies": [],
+   "description": "Sleeps on an authorized HCLI resident lane. Never a synthetic 'installed' result.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/RESIDENT_INSTALL_CONTRACT.json"
+   ],
+   "expected_information_gain": 1,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "CHILD_RESIDENT",
+   "hypothesis_family": "child_resident_launch",
+   "id": "FT.CHILD_RESIDENT.launch",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "CHILD_RESIDENT|child_resident_launch|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "blocked",
+   "title": "Launching a child resident / taking a GPU lease is forbidden in this sidecar",
+   "verification": null,
+   "verifier": "future.resident_install.launch",
+   "wake_condition": {
+    "all_of": [
+     "authorized HCLI resident-install lane",
+     "existing HCLI lease with proven holder"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced); cargo build authorized without contending for the shared target-dir",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "0fefde3a2e0536729a7cc0954ce0a0f0beff9dcb3a0cf7192b5a1020de6ec8fe",
+   "dependencies": [],
+   "description": "This campaign must not run cargo build or touch the GPU. Those phases sleep.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/EXPERIMENT_TURNAROUND.json"
+   ],
+   "expected_information_gain": 1,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "EXPERIMENT_TURNAROUND",
+   "hypothesis_family": "turnaround_gpu_phases",
+   "id": "FT.EXPERIMENT_TURNAROUND.cargo",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "EXPERIMENT_TURNAROUND|turnaround_gpu_phases|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "blocked",
+   "title": "compile/link/shader_compile/launch/execution phases require cargo and/or GPU",
+   "verification": null,
+   "verifier": "future.turnaround.gpu_phases",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+     "cargo build authorized without contending for the shared target-dir"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "U50 / FPGA board present and the physical-compiler/fusion lane owns it",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "7d0b95d5899c1d253ad5fbb1118ed1e84f539874093f23179ca71b9e95229d78",
+   "dependencies": [],
+   "description": "No U50. device_ascension_pipeline.py is the arrival floor; it does not impersonate a board.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/DEVICE_ASCENSION_PIPELINE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "FPGA",
+   "hypothesis_family": "u50_arrival",
+   "id": "FT.FPGA.u50",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "FPGA|u50_arrival|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "FPGA"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "COMPILE",
+   "role": "science",
+   "running_at": null,
+   "species": "fpga_simulation",
+   "status": "blocked",
+   "title": "U50 board arrival work sleeps until the board is here",
+   "verification": null,
+   "verifier": "future.device_ascension.u50",
+   "wake_condition": {
+    "all_of": [
+     "U50 / FPGA board present and the physical-compiler/fusion lane owns it"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced); Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "ebeb71124fcef9e22abf7e9675166113d7801b94c3403ca7afb8ef4b76b2c6c9",
+   "dependencies": [],
+   "description": "Dominant blocker: 12+ Flash candidates collapse to this missing dependency. Audit is CPU; qualification is GPU. This item is the qualification half and sleeps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "GPU_KERNELS",
+   "hypothesis_family": "flash_source_independent_nx",
+   "id": "FT.GPU_KERNELS.flash-nx",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "GPU_KERNELS|flash_source_independent_nx|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F001",
+   "species": "accelerator_candidate_qualification",
+   "status": "blocked",
+   "title": "Flash source-independent NX remains SCAFFOLD_ONLY / sealed-metadata",
+   "verification": null,
+   "verifier": "accelerator.physical.flash_nx",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+     "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "a2122374804af4d830a690e5d4dd5f476cf9ae1718112c8b5bb840c4178f7b24",
+   "dependencies": [],
+   "description": "13 READY_PROTECTED identities derived from queue: qwen27-affine2-splitk4, qwen27-attention-gate-fusion, qwen27-ba-delta-fusion, qwen27-commit-timing-elision, qwen27-deltanet-inproj-fusion, qwen27-encoder-label-elision, qwen27-fast-profile, qwen27-gqa-qkv-fusion, qwen27-pipeline-cache-reuse, qwen27-pipeline-id-resolution, qwen27-pipeline-state-elision, qwen27-q2f-splitk4, qwen27-q4-vecgroup-x64. One SLEEPING unit; HCLI wakes it when GPU_PROTECTED qualifies. Never a synthetic result.",
+   "detail_overlay": "13 READY_PROTECTED identities derived from the recovered queue; one SLEEPING unit, not a flood",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "receipts/future/CANDIDATE_STAGED_PLAN.json",
+    "receipts/future/QUALIFICATION_PIPELINE.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "GPU_KERNELS",
+   "hypothesis_family": "ready_protected_qualification",
+   "id": "FT.GPU_KERNELS.ready-protected",
+   "kind": "BLOCKED",
+   "n_ready_protected": 13,
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "ready_protected_ids": [
+    "qwen27-affine2-splitk4",
+    "qwen27-attention-gate-fusion",
+    "qwen27-ba-delta-fusion",
+    "qwen27-commit-timing-elision",
+    "qwen27-deltanet-inproj-fusion",
+    "qwen27-encoder-label-elision",
+    "qwen27-fast-profile",
+    "qwen27-gqa-qkv-fusion",
+    "qwen27-pipeline-cache-reuse",
+    "qwen27-pipeline-id-resolution",
+    "qwen27-pipeline-state-elision",
+    "qwen27-q2f-splitk4",
+    "qwen27-q4-vecgroup-x64"
+   ],
+   "redundancy_key": "GPU_KERNELS|ready_protected_qualification|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F002",
+   "species": "accelerator_candidate_qualification",
+   "status": "blocked",
+   "title": "READY_PROTECTED Qwen27 candidates wait on a GPU window this sidecar must not seize",
+   "verification": null,
+   "verifier": "accelerator.physical.ready_protected_batch",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "an authorized HCLI resident-install lane distinct from this sidecar",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "42852941d15832851070616831ee98f054696d8157f01522530e7bde18c00241",
+   "dependencies": [],
+   "description": "Contract forbids starting a resident model process or taking a GPU lease. The launch half sleeps on an authorized HCLI resident lane, which this campaign is not.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/RESIDENT_INSTALL_CONTRACT.json"
+   ],
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "HCLI_SELF",
+   "hypothesis_family": "resident_process_launch",
+   "id": "FT.HCLI_SELF.no-launch",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "HCLI_SELF|resident_process_launch|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "blocked",
+   "title": "A live resident model process must not be started from this sidecar",
+   "verification": null,
+   "verifier": "future.resident_install.no_launch",
+   "wake_condition": {
+    "all_of": [
+     "an authorized HCLI resident-install lane distinct from this sidecar"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "4ab3b9e9a69fbd544b4cee2755eaa877428482534a06ab0d13b70920576fc021",
+   "dependencies": [],
+   "description": "No Metal-capable GPU; xcrun has no Metal compiler under CommandLineTools. Sleeps. UNKNOWN is the correct latency answer.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "CODEX_ACCELERATOR_HANDOFF.json",
+    "receipts/future/HARDWARE_DOCTOR.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "LATENCY",
+   "hypothesis_family": "protected_latency",
+   "id": "FT.LATENCY.gpu-ns",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "LATENCY|protected_latency|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F002",
+   "species": "accelerator_candidate_qualification",
+   "status": "blocked",
+   "title": "Protected kernel/token latency is blocked on GPU_PROTECTED",
+   "verification": null,
+   "verifier": "accelerator.physical.latency",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced); Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "c18f61d84532d4206f0cde5965b82f59a628a5816f40facc4c742c8df577976c",
+   "dependencies": [],
+   "description": "Flash critical path WAITING_FOR_COMPLETE_TOKEN; source-independent NX is SCAFFOLD_ONLY. Sleeps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "complete_token_protected",
+   "id": "FT.MODEL_EXECUTION.complete-token",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|complete_token_protected|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F001",
+   "species": "accelerator_candidate_qualification",
+   "status": "blocked",
+   "title": "Protected complete-token execution is blocked on Metal + NX",
+   "verification": null,
+   "verifier": "accelerator.physical.complete_token",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+     "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU for dense source-BF16 prefix initialization; teacher capture rows meet the minimum (disk count, never a synthetic corpus)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "adbe863e226ddaf3e53e3a18b41a98f8b43225c030164983152f78cf765b66e0",
+   "dependencies": [],
+   "description": "FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY status BLOCKED_NO_METAL_GPU at dense_source_bf16_prefix_initialization. Sleeps. No synthetic rows. The STATUS is not the CAUSE: METAL_REACHABILITY.json shows this host's GPU is reachable from the same metal crate, so the wake condition is identifying that process's context, not acquiring hardware.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+    "receipts/future/TEACHER_CORPUS_CONTRACT.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_REPRESENTATION",
+   "hypothesis_family": "teacher_capture",
+   "id": "FT.MODEL_REPRESENTATION.teacher-capture",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_REPRESENTATION|teacher_capture|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F019",
+   "species": "learned_compiler_experiment",
+   "status": "blocked",
+   "title": "Flash teacher capture is 0/256 and blocked on Metal",
+   "verification": null,
+   "verifier": "future.teacher_corpus.capture",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU for dense source-BF16 prefix initialization",
+     "teacher capture rows meet the minimum (disk count, never a synthetic corpus)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "424b5ca40432830bde755af9fa2d0982923a62c27bc16f20041e3d14f6b69af8",
+   "dependencies": [],
+   "description": "Newest stateful attention receipt proves two-position persistent KV slots; full 48-layer executor integration remains open. Sleeps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "STATE",
+   "hypothesis_family": "full_layer_kv",
+   "id": "FT.STATE.full-kv",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "STATE|full_layer_kv|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "accelerator_candidate_qualification",
+   "status": "blocked",
+   "title": "Complete 48-layer per-layer KV integration is absent",
+   "verification": null,
+   "verifier": "accelerator.physical.full_kv",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced); Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "aa3e713c03fc141f0181741eb8aecc9add901f9b9a847dd2111d80225e013db3",
+   "dependencies": [],
+   "description": "FLASH_STATEFUL_TPS_GATE_V14 is BLOCKED_FIRST_PHYSICAL_BOUNDARY. Continuation state, repeated decode, protected TPS remain open. Sleeps.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "TPS",
+   "hypothesis_family": "protected_accepted_tps",
+   "id": "FT.TPS.protected-tps",
+   "kind": "BLOCKED",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "TPS|protected_accepted_tps|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "source_f": "F002",
+   "species": "accelerator_candidate_qualification",
+   "status": "blocked",
+   "title": "Protected accepted-token TPS is blocked; Flash has one accepted stateful token",
+   "verification": null,
+   "verifier": "accelerator.physical.accepted_tps",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+     "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  }
+ ],
+ "version": 1,
+ "wake_evidence": {
+  "ane_claim": "generic Core ML/ANE planning only; no Flash-shaped ANE execution, latency, energy, or residency result",
+  "ane_qualified": false,
+  "exact_physical_blockers": [
+   "MetalContext reports no Metal-capable GPU for the current execution host",
+   "xcrun cannot locate the Metal compiler under /Library/Developer/CommandLineTools",
+   "the protected-accelerator-bench and qwen-protected-bench lock files exist; holder pids are unproven and flock would be a seizure",
+   "qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
+   "Flash source-independent NX remains SCAFFOLD_ONLY and is not qualified",
+   "Flash has one accepted stateful token, not repeated accepted-token decode/TPS/EBPW/residency",
+   "teacher capture is 0/256, so the real teacher corpus needed for meta fitting is absent",
+   "Flash critical-path source router/top-k parity, source BF16 Q4/G64 parity, attention/recurrent state coverage, complete-token accounting, TPS, and EBPW remain open"
+  ],
+  "flash_nx_qualified": false,
+  "flash_nx_status": "SCAFFOLD_ONLY",
+  "fpga_board_present": false,
+  "gpu_protected_qualified": false,
+  "machine_classified_heavy": true,
+  "rule": "listing a lane name is not qualification; disk evidence is",
+  "teacher_capture_complete": false,
+  "teacher_minimum_rows": 256,
+  "teacher_rows_written": 0
+ }
+}

@@ -1,0 +1,898 @@
+{
+ "adaptation_clocks": [
+  {
+   "compatibility_predicate": "same_module_bitstream",
+   "id": 0,
+   "identity": "runtime_scheduler",
+   "live_switch_legal": true,
+   "load_switch_cost_class": "CHEAP",
+   "module_cache_key_rule": "not a bitstream; keyed by schedule_id under a frozen module",
+   "name": "CLOCK_0_RUNTIME_SCHEDULING",
+   "resource_footprint_rule": "zero extra fabric; uses the already-loaded module"
+  },
+  {
+   "compatibility_predicate": "same_overlay_fabric",
+   "id": 1,
+   "identity": "overlay_microcode",
+   "live_switch_legal": true,
+   "load_switch_cost_class": "MODERATE",
+   "module_cache_key_rule": "overlay_id plus fabric geometry (kind/tile/banking/resource_class)",
+   "name": "CLOCK_1_OVERLAY_MICROCODE",
+   "resource_footprint_rule": "instruction/overlay memory only; fabric geometry frozen"
+  },
+  {
+   "compatibility_predicate": "same_static_shell",
+   "id": 2,
+   "identity": "cached_module_dfx",
+   "live_switch_legal": true,
+   "load_switch_cost_class": "EXPENSIVE",
+   "module_cache_key_rule": "sha256 of canonical module structure (kind/width/tile/banking/edges)",
+   "name": "CLOCK_2_CACHED_MODULE_DFX",
+   "resource_footprint_rule": "DFX region equals the module's analytical resource counts"
+  },
+  {
+   "compatibility_predicate": "never_a_live_switch",
+   "id": 3,
+   "identity": "deep_architecture_evolution",
+   "live_switch_legal": false,
+   "load_switch_cost_class": "PROHIBITIVE",
+   "module_cache_key_rule": "architecture_id; a new generation, not a loadable module",
+   "name": "CLOCK_3_DEEP_ARCHITECTURE",
+   "resource_footprint_rule": "whole-device; UNKNOWN without a selected target"
+  }
+ ],
+ "analytical": {
+  "available": true,
+  "bytes_in_flight": 4096,
+  "bytes_in_flight_rule": "sum(edge.frame) * issue_count; frame is structural bytes/issue",
+  "coefficient_honesty": "Counts are shapes times an assumed coefficient table. They are not a synthesis report, not a place-and-route result, and not a board measurement. Match tools/accelerator/perf_model.py: unknowns stay unknown; the model is graded on ranking, not on invented wall time.",
+  "coefficient_table": "v1-assumed-not-measured",
+  "envelope_overflow": [],
+  "evidence_class": "STATIC_ONLY",
+  "feasibility": "UNKNOWN",
+  "feasibility_reason": "no target device selected; FPGADeviceGenome is TARGET_UNSELECTED and no caller-declared resource_envelope was supplied",
+  "hbm_channel_demand": 9,
+  "ii_by_node": {
+   "gather0": 32,
+   "gemv0": 1
+  },
+  "level": "ANALYTICAL",
+  "measurement_state": "STATIC_ONLY",
+  "node_ranking": [
+   "gemv0",
+   "gather0"
+  ],
+  "per_node": [
+   {
+    "banking": 8,
+    "bram": 16,
+    "dsp": 0,
+    "hbm_channel_demand": 8,
+    "id": "gather0",
+    "ii": 32,
+    "kind": "GATHER",
+    "lut": 5120,
+    "pipeline_depth": 16,
+    "pressure": 5504,
+    "resource_class": "LUT",
+    "tile": 1,
+    "uram": 0,
+    "width": 16
+   },
+   {
+    "banking": 1,
+    "bram": 4,
+    "dsp": 256,
+    "hbm_channel_demand": 1,
+    "id": "gemv0",
+    "ii": 1,
+    "kind": "GEMV",
+    "lut": 1792,
+    "pipeline_depth": 14,
+    "pressure": 27456,
+    "resource_class": "DSP",
+    "tile": 4,
+    "uram": 0,
+    "width": 64
+   }
+  ],
+  "pipeline_depth_by_node": {
+   "gather0": 16,
+   "gemv0": 14
+  },
+  "resources": {
+   "bram": 20,
+   "dsp": 256,
+   "hbm_channels": 9,
+   "lut": 6912,
+   "uram": 0
+  },
+  "score": 32960,
+  "score_meaning": "weighted resource pressure; lower is cheaper",
+  "seconds": null,
+  "status": "AVAILABLE",
+  "tag": "STRUCTURAL_COUNTS"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:44:39Z",
+  "recorded_by": "tools/future/fpga_fidelity.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_boundary_note": "Everything in this receipt is STATIC_ONLY. modelled_cycles is not gpu_ns, not wall_ns, not token_ns, and not a hardware measurement. hbm_channel_demand is a structural count, not bandwidth_gbps.",
+ "clock_state_on_mixed": {
+  "compatibility_predicate": "same_static_shell",
+  "compatible_with_self": true,
+  "declared_on_graph": 2,
+  "evidence_class": "STATIC_ONLY",
+  "graph_id": "mixed_gemv_gather",
+  "id": 2,
+  "identity": "cached_module_dfx",
+  "live_switch_legal": true,
+  "load_switch_cost_class": "EXPENSIVE",
+  "module_cache_key": "88100159ee7fd17deab1dc797d6b159378ca59c59c380f00b633ab5b7068d692",
+  "module_cache_key_rule": "sha256 of canonical module structure (kind/width/tile/banking/edges)",
+  "name": "CLOCK_2_CACHED_MODULE_DFX",
+  "resource_footprint": {
+   "bram": 20,
+   "dsp": 256,
+   "hbm_channels": 9,
+   "lut": 6912,
+   "note": "DFX region footprint = module analytical counts; STRUCTURAL_COUNTS",
+   "tag": "STRUCTURAL_COUNTS",
+   "uram": 0
+  },
+  "resource_footprint_rule": "DFX region equals the module's analytical resource counts"
+ },
+ "coefficient_table": {
+  "honesty": "Assumed, not synthesized, not measured. Used to rank and to produce structural counts. Never converted to seconds or tps.",
+  "id": "v1-assumed-not-measured",
+  "kinds": {
+   "CONTROL": {
+    "bram": 1,
+    "depth": 2,
+    "dsp": 0,
+    "hbm": 0,
+    "ii": 1,
+    "lut": 96,
+    "uram": 0
+   },
+   "EPILOGUE": {
+    "bram": 0,
+    "depth": 3,
+    "dsp": 0,
+    "hbm": 0,
+    "ii": 1,
+    "lut": 40,
+    "uram": 0
+   },
+   "GATHER": {
+    "bram": 2,
+    "depth": 12,
+    "dsp": 0,
+    "hbm": 1,
+    "ii": 4,
+    "lut": 128,
+    "uram": 0
+   },
+   "GEMV": {
+    "bram": 1,
+    "depth": 8,
+    "dsp": 1,
+    "hbm": 1,
+    "ii": 1,
+    "lut": 64,
+    "uram": 0
+   },
+   "LOOKUP": {
+    "bram": 0,
+    "depth": 6,
+    "dsp": 0,
+    "hbm": 1,
+    "ii": 1,
+    "lut": 16,
+    "uram": 2
+   },
+   "MAC": {
+    "bram": 0,
+    "depth": 4,
+    "dsp": 1,
+    "hbm": 0,
+    "ii": 1,
+    "lut": 32,
+    "uram": 0
+   },
+   "REDUCE": {
+    "bram": 0,
+    "depth": 6,
+    "dsp": 1,
+    "hbm": 0,
+    "ii": 1,
+    "lut": 24,
+    "uram": 0
+   },
+   "ROUTER": {
+    "bram": 2,
+    "depth": 10,
+    "dsp": 0,
+    "hbm": 0,
+    "ii": 8,
+    "lut": 160,
+    "uram": 0
+   },
+   "SCATTER": {
+    "bram": 2,
+    "depth": 12,
+    "dsp": 0,
+    "hbm": 1,
+    "ii": 4,
+    "lut": 128,
+    "uram": 0
+   },
+   "STATE": {
+    "bram": 0,
+    "depth": 10,
+    "dsp": 1,
+    "hbm": 0,
+    "ii": 2,
+    "lut": 80,
+    "uram": 1
+   },
+   "TRANSPORT": {
+    "bram": 0,
+    "depth": 4,
+    "dsp": 0,
+    "hbm": 1,
+    "ii": 1,
+    "lut": 20,
+    "uram": 0
+   }
+  },
+  "pressure_weights": {
+   "bram": 8,
+   "dsp": 100,
+   "hbm_channels": 32,
+   "lut": 1,
+   "uram": 16
+  }
+ },
+ "cycle_model": {
+  "available": true,
+  "clock_hz": "UNKNOWN",
+  "conversion_reason": "a cycle count is not a duration without a real clock; this host has no FPGA and no emulation seat",
+  "conversion_to_seconds": "REFUSED",
+  "evidence_class": "STATIC_ONLY",
+  "issue_count": 16,
+  "level": "CYCLE_MODEL",
+  "measurement_state": "STATIC_ONLY",
+  "model_bytes_per_cycle": 64,
+  "model_bytes_per_cycle_meaning": "assumed fabric beat for frame->cycle conversion; not a measured clock, not HBM bandwidth, never reported as seconds",
+  "modelled_cycles": 529,
+  "node_ranking": [
+   "gather0",
+   "gemv0"
+  ],
+  "per_node": [
+   {
+    "finish_cycle": 29,
+    "id": "gemv0",
+    "ii": 1,
+    "kind": "GEMV",
+    "own_cost_cycles": 29,
+    "pipeline_depth": 14,
+    "start_cycle": 0,
+    "tag": "MODELLED_NOT_MEASURED"
+   },
+   {
+    "finish_cycle": 529,
+    "id": "gather0",
+    "ii": 32,
+    "kind": "GATHER",
+    "own_cost_cycles": 496,
+    "pipeline_depth": 16,
+    "start_cycle": 33,
+    "tag": "MODELLED_NOT_MEASURED"
+   }
+  ],
+  "score": 529,
+  "score_meaning": "modelled critical-path cycles; lower is cheaper; MODELLED_NOT_MEASURED",
+  "seconds": null,
+  "status": "AVAILABLE",
+  "tag": "MODELLED_NOT_MEASURED"
+ },
+ "disagreement": {
+  "analytical_vs_cycle_on_mixed": {
+   "agree": false,
+   "evidence_class": "STATIC_ONLY",
+   "evidence_weight": "FINDING",
+   "graph_id": "mixed_gemv_gather",
+   "hypothesis": "ANALYTICAL ranks gemv0 ({'id': 'gemv0', 'kind': 'GEMV', 'resource_class': 'DSP'}) as bottleneck; CYCLE_MODEL ranks gather0 ({'id': 'gather0', 'kind': 'GATHER', 'resource_class': 'LUT'}). analytical scores static occupancy (DSP/LUT/BRAM/URAM/HBM demand); the cycle model scores initiation interval and critical-path issue. A DSP-cheap irregular node can be a cycle-expensive bottleneck. A cheap-level ranking that an expensive level would reverse must not promote.",
+   "kind": "DISAGREEMENT",
+   "level_a": "ANALYTICAL",
+   "level_b": "CYCLE_MODEL",
+   "node_ranking_a": [
+    "gemv0",
+    "gather0"
+   ],
+   "node_ranking_b": [
+    "gather0",
+    "gemv0"
+   ],
+   "promotion_rule": "Agreement does not license promotion. Disagreement is first-class evidence and blocks treating the cheaper level as decisive.",
+   "score_a": 32960,
+   "score_b": 529,
+   "tag_a": "STRUCTURAL_COUNTS",
+   "tag_b": "MODELLED_NOT_MEASURED",
+   "top_a": "gemv0",
+   "top_b": "gather0"
+  },
+  "analytical_vs_cycle_on_single_gemv": {
+   "agree": true,
+   "evidence_class": "STATIC_ONLY",
+   "evidence_weight": "WEAK",
+   "graph_id": "gemv_heavy",
+   "hypothesis": "ANALYTICAL and CYCLE_MODEL agree on node ranking ['gemv0']. Agreement is weak evidence: both models can share the same blind spot.",
+   "kind": "AGREEMENT",
+   "level_a": "ANALYTICAL",
+   "level_b": "CYCLE_MODEL",
+   "node_ranking_a": [
+    "gemv0"
+   ],
+   "node_ranking_b": [
+    "gemv0"
+   ],
+   "promotion_rule": "Agreement does not license promotion. Disagreement is first-class evidence and blocks treating the cheaper level as decisive.",
+   "score_a": 27456,
+   "score_b": 29,
+   "tag_a": "STRUCTURAL_COUNTS",
+   "tag_b": "MODELLED_NOT_MEASURED",
+   "top_a": "gemv0",
+   "top_b": "gemv0"
+  },
+  "analytical_vs_functional_on_dead_node": {
+   "agree": false,
+   "evidence_class": "STATIC_ONLY",
+   "evidence_weight": "FINDING",
+   "graph_id": "live_plus_dead",
+   "hypothesis": "ANALYTICAL ranks dead0 ({'id': 'dead0', 'kind': 'GEMV', 'resource_class': 'DSP'}) as bottleneck; FUNCTIONAL_SIM ranks live0 ({'id': 'live0', 'kind': 'MAC', 'resource_class': 'DSP'}). functional_sim costs only live dataflow (unreachable nodes contribute zero); the other level still costs static occupancy or issue. Dead nodes are a finding, not noise. A cheap-level ranking that an expensive level would reverse must not promote.",
+   "kind": "DISAGREEMENT",
+   "level_a": "ANALYTICAL",
+   "level_b": "FUNCTIONAL_SIM",
+   "node_ranking_a": [
+    "dead0",
+    "live0"
+   ],
+   "node_ranking_b": [
+    "live0",
+    "dead0"
+   ],
+   "promotion_rule": "Agreement does not license promotion. Disagreement is first-class evidence and blocks treating the cheaper level as decisive.",
+   "score_a": 55808,
+   "score_b": 8,
+   "tag_a": "STRUCTURAL_COUNTS",
+   "tag_b": "FUNCTIONAL_INTERPRETER",
+   "top_a": "dead0",
+   "top_b": "live0"
+  },
+  "graph_ranking_reversal": {
+   "analytical": [
+    "gather_heavy",
+    "gemv_heavy"
+   ],
+   "cycle_model": [
+    "gemv_heavy",
+    "gather_heavy"
+   ],
+   "meaning": "gather_heavy is cheaper analytically (almost no DSP) and more expensive in the cycle model (II scales with banking). Killing gemv_heavy at the analytical level would discard the cycle-model winner."
+  }
+ },
+ "fidelity_ladder": [
+  {
+   "available": true,
+   "cheaper_than": "FUNCTIONAL_SIM",
+   "level": "ANALYTICAL",
+   "missing_dependency": null,
+   "order": 0,
+   "status": "AVAILABLE"
+  },
+  {
+   "available": true,
+   "cheaper_than": "CYCLE_MODEL",
+   "level": "FUNCTIONAL_SIM",
+   "missing_dependency": null,
+   "order": 1,
+   "status": "AVAILABLE"
+  },
+  {
+   "available": true,
+   "cheaper_than": "HW_EMULATION",
+   "level": "CYCLE_MODEL",
+   "missing_dependency": null,
+   "order": 2,
+   "status": "AVAILABLE"
+  },
+  {
+   "available": false,
+   "cheaper_than": "REAL_HARDWARE",
+   "level": "HW_EMULATION",
+   "missing_dependency": "no emulation seat",
+   "order": 3,
+   "status": "UNIMPLEMENTED"
+  },
+  {
+   "available": false,
+   "cheaper_than": null,
+   "level": "REAL_HARDWARE",
+   "missing_dependency": "no U50 board",
+   "order": 4,
+   "status": "UNIMPLEMENTED"
+  }
+ ],
+ "functional_sim": {
+  "available": true,
+  "dead_nodes": [],
+  "errors": [],
+  "evidence_class": "STATIC_ONLY",
+  "functional_digest": "e69bbe870414daee5ba159963116bb7f25da671eab7a675e238ec2060a72b07f",
+  "functional_ok": true,
+  "level": "FUNCTIONAL_SIM",
+  "live_nodes": [
+   "gather0",
+   "gemv0"
+  ],
+  "measurement_state": "STATIC_ONLY",
+  "node_ranking": [
+   "gemv0",
+   "gather0"
+  ],
+  "op_volume": 272,
+  "score": 272,
+  "score_meaning": "live width*tile volume; ill-formed graphs score as losers",
+  "seconds": null,
+  "status": "AVAILABLE",
+  "tag": "FUNCTIONAL_INTERPRETER",
+  "topo_order": [
+   "gemv0",
+   "gather0"
+  ]
+ },
+ "gaps_closed": [
+  "Five-level fidelity ladder with available flags; last two UNIMPLEMENTED.",
+  "Analytical estimator: DSP/LUT/BRAM/URAM, II, pipeline depth, HBM channel demand, bytes in flight.",
+  "Deterministic cycle model tagged MODELLED_NOT_MEASURED; conversion to seconds refused.",
+  "compare(level_a, level_b, graph) records ranking disagreement as a FINDING.",
+  "search_ladder hard-kills only envelope overflow and ill-formed graphs.",
+  "Four adaptation clocks with identity, compatibility predicate, cost class, cache key, footprint.",
+  "Local StructuralGraph stand-in so this lane does not import in-flight hwir.py."
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "negative_findings": [
+  "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json is not in git HEAD and is not on disk here; the 15 hwir_hypotheses were not readable. Node kinds are a local catalog, not atlas-derived.",
+  "hcli/agentos/test_fpga_preboard.py does not exist in git HEAD.",
+  "No U50 board and no emulation seat; HW_EMULATION and REAL_HARDWARE cannot run.",
+  "No existing tools/future/fpga_fidelity.py (or any multi-fidelity FPGA estimator) to extend; fpga_preboard.py is Codex-owned scaffolding and was not forked.",
+  "Organ-map HWIR nodes lack width/tile/banking/resource_class, so organ maps cannot be estimated without a lowering step that hwir.py should own.",
+  "Feasibility against a real device envelope is UNKNOWN: FPGADeviceGenome is TARGET_UNSELECTED.",
+  "This worktree is a sparse checkout; recovered files were read with git show, not imported."
+ ],
+ "purpose": "Multi-fidelity FPGA search ladder so cheap levels can kill losers before an expensive level runs, and disagreement between levels is first-class evidence. FPGA remains part of Accelerator / Physical Compiler / Fusion; this is not an FPGA backend.",
+ "recovered_implementation": [
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "<unreadable>"
+   ],
+   "on_disk": true,
+   "path": "hcli/agentos/fpga_preboard.py",
+   "role": "FPGA pre-board contracts, MockFPGAProvider, organ-map HWIR, link/partition [S] sim",
+   "what_found": "FPGAProvider.execute raises; MockFPGAProvider is SIMULATOR_ONLY; device genome TARGET_UNSELECTED; physical_board_present False; HWIR dataclass (nodes/buffers/dependencies/sync/placements); module_cache schema-only. This is scaffolding, not a fidelity ladder. Not imported: hcli is Codex-owned."
+  },
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "bench",
+    "claim_boundary",
+    "device_genome",
+    "driverkit_bridge_design",
+    "experiment_dag",
+    "hbm_genome",
+    "hwir",
+    "label",
+    "model",
+    "model_identity",
+    "module_cache",
+    "organs"
+   ],
+   "on_disk": true,
+   "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "role": "Flash organ map + derived HWIR",
+   "what_found": "7 organs (expert_bank, router_topk_and_gather, routed_plus_shared_expert, deltanet_persistent_state, ngram_lookup_or_generator, sparse_attention, mtp_draft_verify_rollback); nodes are organ_operator without width/tile/banking/resource_class; no DSP/LUT/BRAM/URAM counts."
+  },
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "bench",
+    "claim_boundary",
+    "device_genome",
+    "driverkit_bridge_design",
+    "experiment_dag",
+    "hbm_genome",
+    "hwir",
+    "label",
+    "model",
+    "model_identity",
+    "module_cache",
+    "organs"
+   ],
+   "on_disk": true,
+   "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+   "role": "Qwen27 organ map + derived HWIR",
+   "what_found": "6 organs (mlp_gate_up_down, gqa_qkv_and_output, deltanet_state_and_input_projection, norm_add_epilogues, lm_head_and_sampling, command_buffer_graph); same structural gap."
+  },
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "bench",
+    "checks",
+    "claim_boundary",
+    "fingerprint",
+    "fpga_backend",
+    "generated_at",
+    "maps",
+    "model_specific",
+    "physical_board",
+    "repo_root",
+    "schema",
+    "shared_primitives"
+   ],
+   "on_disk": true,
+   "path": "receipts/headless/HCLI_FPGA_PREBOARD.json",
+   "role": "Preboard receipt",
+   "what_found": "physical_board ABSENT; fpga_backend NOT_BUILT; mock provider simulation-only."
+  },
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "<unreadable>"
+   ],
+   "on_disk": true,
+   "path": "tools/accelerator/perf_model.py",
+   "role": "Existing cost model (honesty template)",
+   "what_found": "Ridge on 4 features; grades the occupancy cliff separately from the flat region; refuses to let easy points hide the hard one; unknowns stay unknown. It is a GPU occupancy model, not an FPGA fidelity ladder."
+  },
+  {
+   "in_git_head": false,
+   "loaded_keys": [
+    "asic_candidate_ledger",
+    "backend_neutral_primitives",
+    "behavior_taxonomy",
+    "bench",
+    "canonicalization_policy",
+    "claim_boundary",
+    "entries",
+    "evidence_inputs",
+    "experiment_queue",
+    "fingerprint",
+    "hwir_hypotheses",
+    "schema"
+   ],
+   "on_disk": true,
+   "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "role": "Claimed home of 15 hwir_hypotheses (frontier F003/F012)",
+   "what_found": "NOT in git HEAD and not on disk in this sparse worktree. Node kinds for the estimator could not be read from the atlas."
+  },
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "<unreadable>"
+   ],
+   "on_disk": true,
+   "path": "hcli/physical_graph.py",
+   "role": "Provider-neutral PhysicalGraph (F003 prerequisite)",
+   "what_found": "PLAN_ONLY placement/dataflow; computation nodes kind=computation; no FPGA resource fields. Not imported."
+  },
+  {
+   "in_git_head": false,
+   "loaded_keys": [
+    "<unreadable>"
+   ],
+   "on_disk": true,
+   "path": "hcli/agentos/test_fpga_preboard.py",
+   "role": "Listed in the lane contract as a recovery target",
+   "what_found": "Path does not exist in git HEAD."
+  },
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "<unreadable>"
+   ],
+   "on_disk": true,
+   "path": "tools/future/fpga_fidelity.py",
+   "role": "This module",
+   "what_found": "Did not exist before this lane; no prior multi-fidelity FPGA estimator."
+  },
+  {
+   "in_git_head": true,
+   "loaded_keys": [
+    "<unreadable>"
+   ],
+   "on_disk": true,
+   "path": "tools/future/hwir.py",
+   "role": "Sibling-lane HWIR (do not import, do not write)",
+   "what_found": "Frontier F003 still MISSING at recovery time; local StructuralGraph is the stand-in."
+  }
+ ],
+ "schema": "hawking.future.fpga_fidelity.v1",
+ "seal_sha256": "c1ab8776386d262504d936eadad46d9b676593f220da97a27deedc17649a7458",
+ "search_ladder": {
+  "evidence_class": "STATIC_ONLY",
+  "highest_available_level": "CYCLE_MODEL",
+  "kill_rule": "Hard-kill only envelope overflow (analytical) and ill-formed functional graphs. Worse-score is a ranking, not a kill, because a cheap level can rank a later winner as a loser.",
+  "killed": [
+   {
+    "graph_id": "envelope_overflow",
+    "killed_at_level": "ANALYTICAL",
+    "reason": "INFEASIBLE_ENVELOPE"
+   },
+   {
+    "graph_id": "cyclic",
+    "killed_at_level": "FUNCTIONAL_SIM",
+    "reason": "FUNCTIONAL_ILL_FORMED"
+   }
+  ],
+  "ranking_by_level": {
+   "ANALYTICAL": [
+    "cyclic",
+    "gather_heavy",
+    "gemv_heavy",
+    "live_plus_dead"
+   ],
+   "CYCLE_MODEL": [
+    "live_plus_dead",
+    "gemv_heavy",
+    "gather_heavy"
+   ],
+   "FUNCTIONAL_SIM": [
+    "live_plus_dead",
+    "gather_heavy",
+    "gemv_heavy"
+   ]
+  },
+  "reports": {
+   "ANALYTICAL": {
+    "cyclic": {
+     "feasibility": "UNKNOWN",
+     "functional_ok": null,
+     "node_ranking": [
+      "a",
+      "b"
+     ],
+     "score": 992,
+     "tag": "STRUCTURAL_COUNTS"
+    },
+    "envelope_overflow": {
+     "feasibility": "INFEASIBLE",
+     "functional_ok": null,
+     "node_ranking": [
+      "fat"
+     ],
+     "score": 16000,
+     "tag": "STRUCTURAL_COUNTS"
+    },
+    "gather_heavy": {
+     "feasibility": "UNKNOWN",
+     "functional_ok": null,
+     "node_ranking": [
+      "gather0"
+     ],
+     "score": 5504,
+     "tag": "STRUCTURAL_COUNTS"
+    },
+    "gemv_heavy": {
+     "feasibility": "UNKNOWN",
+     "functional_ok": null,
+     "node_ranking": [
+      "gemv0"
+     ],
+     "score": 27456,
+     "tag": "STRUCTURAL_COUNTS"
+    },
+    "live_plus_dead": {
+     "feasibility": "UNKNOWN",
+     "functional_ok": null,
+     "node_ranking": [
+      "dead0",
+      "live0"
+     ],
+     "score": 55808,
+     "tag": "STRUCTURAL_COUNTS"
+    }
+   },
+   "CYCLE_MODEL": {
+    "gather_heavy": {
+     "feasibility": null,
+     "functional_ok": null,
+     "node_ranking": [
+      "gather0"
+     ],
+     "score": 496,
+     "tag": "MODELLED_NOT_MEASURED"
+    },
+    "gemv_heavy": {
+     "feasibility": null,
+     "functional_ok": null,
+     "node_ranking": [
+      "gemv0"
+     ],
+     "score": 29,
+     "tag": "MODELLED_NOT_MEASURED"
+    },
+    "live_plus_dead": {
+     "feasibility": null,
+     "functional_ok": null,
+     "node_ranking": [
+      "dead0",
+      "live0"
+     ],
+     "score": 17,
+     "tag": "MODELLED_NOT_MEASURED"
+    }
+   },
+   "FUNCTIONAL_SIM": {
+    "cyclic": {
+     "feasibility": null,
+     "functional_ok": false,
+     "node_ranking": [],
+     "score": 1000000000000,
+     "tag": "FUNCTIONAL_INTERPRETER"
+    },
+    "gather_heavy": {
+     "feasibility": null,
+     "functional_ok": true,
+     "node_ranking": [
+      "gather0"
+     ],
+     "score": 16,
+     "tag": "FUNCTIONAL_INTERPRETER"
+    },
+    "gemv_heavy": {
+     "feasibility": null,
+     "functional_ok": true,
+     "node_ranking": [
+      "gemv0"
+     ],
+     "score": 256,
+     "tag": "FUNCTIONAL_INTERPRETER"
+    },
+    "live_plus_dead": {
+     "feasibility": null,
+     "functional_ok": true,
+     "node_ranking": [
+      "live0",
+      "dead0"
+     ],
+     "score": 8,
+     "tag": "FUNCTIONAL_INTERPRETER"
+    }
+   }
+  },
+  "skipped_unimplemented": [
+   {
+    "available": false,
+    "level": "HW_EMULATION",
+    "missing_dependency": "no emulation seat",
+    "status": "UNIMPLEMENTED"
+   },
+   {
+    "available": false,
+    "level": "REAL_HARDWARE",
+    "missing_dependency": "no U50 board",
+    "status": "UNIMPLEMENTED"
+   }
+  ],
+  "survivors": [
+   "gemv_heavy",
+   "gather_heavy",
+   "live_plus_dead"
+  ]
+ },
+ "structural_graph": {
+  "example": {
+   "adaptation_clock": 2,
+   "architecture_id": "unselected-shell",
+   "edges": [
+    {
+     "dst": "gather0",
+     "frame": 256,
+     "src": "gemv0"
+    }
+   ],
+   "graph_id": "mixed_gemv_gather",
+   "issue_count": 16,
+   "nodes": [
+    {
+     "banking": 8,
+     "id": "gather0",
+     "kind": "GATHER",
+     "resource_class": "LUT",
+     "tile": 1,
+     "width": 16
+    },
+    {
+     "banking": 1,
+     "id": "gemv0",
+     "kind": "GEMV",
+     "resource_class": "DSP",
+     "tile": 4,
+     "width": 64
+    }
+   ],
+   "note": "Local structural stand-in. Swap for tools/future/hwir.py (nodes: kind, width, tile, banking, resource_class; edges: frame).",
+   "overlay_id": "default",
+   "resource_envelope": null,
+   "schedule_id": "default",
+   "token_sources": null
+  },
+  "fields": {
+   "adaptation_clock": "required, 0..3",
+   "edges": [
+    "src",
+    "dst",
+    "frame"
+   ],
+   "nodes": [
+    "id",
+    "kind",
+    "width",
+    "tile",
+    "banking",
+    "resource_class"
+   ]
+  },
+  "integration_point": "Swap StructuralGraph for tools/future/hwir.py when F003 lands. Do not import HWIR from this module; a sibling lane owns it.",
+  "kinds": [
+   "CONTROL",
+   "EPILOGUE",
+   "GATHER",
+   "GEMV",
+   "LOOKUP",
+   "MAC",
+   "REDUCE",
+   "ROUTER",
+   "SCATTER",
+   "STATE",
+   "TRANSPORT"
+  ],
+  "resource_classes": [
+   "BRAM",
+   "CONTROL",
+   "DSP",
+   "HBM",
+   "LUT",
+   "URAM"
+  ],
+  "type": "tools.future.fpga_fidelity.StructuralGraph"
+ },
+ "unimplemented_levels": [
+  {
+   "available": false,
+   "level": "HW_EMULATION",
+   "missing_dependency": "no emulation seat",
+   "rule": "calling this provider raises; it never returns a guess",
+   "status": "UNIMPLEMENTED"
+  },
+  {
+   "available": false,
+   "level": "REAL_HARDWARE",
+   "missing_dependency": "no U50 board",
+   "rule": "calling this provider raises; it never returns a guess",
+   "status": "UNIMPLEMENTED"
+  }
+ ],
+ "version": 1
+}

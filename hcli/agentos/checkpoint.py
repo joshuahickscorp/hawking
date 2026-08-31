@@ -27,6 +27,10 @@ from hcli.providers import (
     ROLE_SCHEMA,
 )
 from hcli.nomenclature import NOMENCLATURE_VERSION
+from hcli.agentos.modellake_receipts import (
+    CENSUS_RECEIPT_NAMES,
+    SUPERVISION_RECEIPT_NAMES,
+)
 from hcli.tool_registry import default_tool_registry
 
 
@@ -139,8 +143,9 @@ def _gate_summary(workspace: Path, repo_root: Path) -> Dict[str, Any]:
     ]
     modellake_candidates = [
         workspace / ".hcli" / "receipts" / "modellake-census.json",
+        repo_root / "receipts" / "headless" / CENSUS_RECEIPT_NAMES[0],
         repo_root / "receipts" / "headless" / "modellake-census.json",
-        repo_root / "receipts" / "headless" / "HCLI_MODELLAKE_FLASH_CENSUS.json",
+        repo_root / "receipts" / "headless" / CENSUS_RECEIPT_NAMES[1],
     ]
     flash_science_candidates = [
         workspace / ".hcli" / "receipts" / "flash-science.json",
@@ -161,7 +166,10 @@ def _gate_summary(workspace: Path, repo_root: Path) -> Dict[str, Any]:
     precedent_map_candidates = [repo_root / "receipts" / "headless" / "FLASH_NEXT_PRECEDENT_MAP.json"]
     ab_candidates = [repo_root / "receipts" / "headless" / "HCLI_DENSE_VS_NF_AB_SCAFFOLD.json"]
     fpga_candidates = [repo_root / "receipts" / "headless" / "HCLI_FPGA_PREBOARD.json"]
-    lake_supervision_candidates = [repo_root / "receipts" / "headless" / "HCLI_MODELLAKE_FLASH_ACQUISITION_SUPERVISION.json"]
+    lake_supervision_candidates = [
+        repo_root / "receipts" / "headless" / SUPERVISION_RECEIPT_NAMES[0],
+        repo_root / "receipts" / "headless" / SUPERVISION_RECEIPT_NAMES[1],
+    ]
     qwen27_identity_candidates = [repo_root / "receipts" / "headless" / "QWEN27_HISTORICAL_RUNTIME_IDENTITY.json"]
     qwen27_diff_candidates = [repo_root / "receipts" / "headless" / "QWEN27_RUNTIME_DIFF.json"]
     qwen27_mlp_candidates = [repo_root / "receipts" / "headless" / "QWEN27_MLP_DIAGNOSTIC_AB.json"]
@@ -183,6 +191,16 @@ def _gate_summary(workspace: Path, repo_root: Path) -> Dict[str, Any]:
     flash_router_body_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTER_COMPONENT_BODY.json"]
     flash_router_graph_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTER_GRAPH.json"]
     flash_router_selection_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTER_SELECTION.json"]
+    flash_router_selection_native_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json"]
+    flash_routed_expert_dispatch_native_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json"]
+    flash_gate_up_swiglu_native_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json"]
+    flash_expert_composition_native_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json"]
+    flash_shared_expert_composition_native_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json"]
+    flash_shared_residual_hyperconnection_native_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json"]
+    flash_exact_hyperconnection_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json"]
+    flash_gpu_work_ledger_candidates = [repo_root / "receipts" / "headless" / "FLASH_GPU_WORK_LEDGER.json"]
+    flash_token_critical_path_candidates = [repo_root / "receipts" / "headless" / "FLASH_TOKEN_CRITICAL_PATH.json"]
+    cuda_capability_graph_candidates = [repo_root / "receipts" / "headless" / "CUDA_CAPABILITY_GRAPH.json"]
     flash_router_representation_candidates = [repo_root / "receipts" / "headless" / "FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json"]
     recovery = None
     for path in recovery_candidates:
@@ -456,7 +474,7 @@ def _gate_summary(workspace: Path, repo_root: Path) -> Dict[str, Any]:
     qwen27_diff = _science_receipt(qwen27_diff_candidates, fields=("summary", "classification_policy"))
     qwen27_mlp = _science_receipt(qwen27_mlp_candidates, fields=("benchmark_class", "qualification", "NOT_FOR_PROMOTION", "experiment_verdict", "selector_verdict", "checks"))
     protected_watch = _science_receipt(protected_watch_candidates, fields=("qualification", "NOT_FOR_PROMOTION", "runs", "last_poll"))
-    flash_executable = _science_receipt(flash_executable_candidates, fields=("status", "qualification", "NOT_FOR_PROMOTION", "promotion_allowed", "native_loader", "native_kernels", "complete_token_timing", "runtime_genome", "source_representation_experiment", "source_router_graph", "source_router_selection", "source_router_representation_ab"))
+    flash_executable = _science_receipt(flash_executable_candidates, fields=("status", "qualification", "NOT_FOR_PROMOTION", "promotion_allowed", "native_loader", "native_kernels", "complete_token_timing", "runtime_genome", "source_representation_experiment", "source_router_graph", "source_router_selection", "source_router_selection_native", "source_routed_expert_composition_native", "source_router_representation_ab"))
     flash_ebpw = _science_receipt(flash_ebpw_candidates, fields=("status", "measured", "target_contract", "promotion_allowed"))
     flash_token_ns = _science_receipt(flash_token_ns_candidates, fields=("status", "system_ledger", "target_contract", "promotion_allowed"))
     flash_tensor_probe = _science_receipt(flash_tensor_probe_candidates, fields=("source_label", "candidate_label", "source_tensor", "organ", "dense_vs_packed_low_bit", "next_experiment", "body_mutated", "model_loaded"))
@@ -470,6 +488,16 @@ def _gate_summary(workspace: Path, repo_root: Path) -> Dict[str, Any]:
     flash_router_body = _science_receipt(flash_router_body_candidates, fields=("component_kind", "source_identity", "source_block", "representation_descriptor", "body", "native_loader", "source_guard", "source_independent", "candidate_body_persisted", "whole_model_capability", "whole_model_runtime", "promotion_allowed", "claim_boundary", "next_action"))
     flash_router_graph = _science_receipt(flash_router_graph_candidates, fields=("component_status", "semantic_type", "compiler_stage", "candidate_id", "source_identity", "component_window", "source_independent_execution", "candidate_body_persisted", "whole_model_capability", "complete_token_runtime", "physical_graph", "noetic_ir", "promotion_allowed", "claim_boundary", "next_action"))
     flash_router_selection = _science_receipt(flash_router_selection_candidates, fields=("semantic_type", "compiler_stage", "source_identity", "config", "selection", "source_selection", "source_selection_parity", "source_reference_execution", "execution", "physical_graph", "noetic_ir", "native_selection_execution_observed", "whole_model_capability", "complete_token_runtime", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_router_selection_native = _science_receipt(flash_router_selection_native_candidates, fields=("semantic_type", "compiler_stage", "qualification", "repo", "pinned_revision", "root", "body_receipt", "kernel_receipt", "source_block", "candidate_body", "noetic_representation", "native_loader", "native_kernel", "native_source_authority_kernel", "execution", "input", "selection_config", "selection", "source_native_selection", "reference", "source_selection_parity", "source_reference_parity", "parity", "source_native_parity", "gpu_timing", "source_gpu_timing", "noetic_ir", "physical_graph", "native_selection_execution_observed", "native_source_authority_execution_observed", "source_payload_exact", "source_guard_unchanged", "whole_model_capability", "complete_token_runtime", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_routed_expert_dispatch_native = _science_receipt(flash_routed_expert_dispatch_native_candidates, fields=("semantic_type", "compiler_stage", "qualification", "repo", "pinned_revision", "root", "router_receipt", "campaign_receipt", "selection", "source_selection_parity", "components", "execution", "input", "gpu_timing", "gather", "noetic_ir", "physical_graph", "native_routed_body_dispatch_observed", "whole_model_capability", "complete_expert_runtime", "complete_token_runtime", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_gate_up_swiglu_native = _science_receipt(flash_gate_up_swiglu_native_candidates, fields=("semantic_type", "compiler_stage", "qualification", "repo", "pinned_revision", "root", "router_receipt", "component_receipt_policy", "selection", "source_selection_parity", "components", "execution", "input", "gpu_timing", "gather", "noetic_ir", "physical_graph", "native_gate_up_swiglu_observed", "native_expert_gate_up_activation_observed", "whole_model_capability", "complete_expert_runtime", "complete_token_runtime", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_expert_composition_native = _science_receipt(flash_expert_composition_native_candidates, fields=("semantic_type", "compiler_stage", "qualification", "repo", "pinned_revision", "root", "router_receipt", "component_receipt_policy", "selection", "source_selection_parity", "components", "execution", "input", "intermediate", "gpu_timing", "gather", "noetic_ir", "physical_graph", "native_gate_up_swiglu_observed", "native_down_projection_observed", "native_expert_composition_observed", "bounded_selected_expert_output_observed", "whole_model_capability", "complete_expert_runtime", "complete_token_runtime", "complete_system_ebpw", "flash_tps", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_shared_expert_composition_native = _science_receipt(flash_shared_expert_composition_native_candidates, fields=("semantic_type", "compiler_stage", "qualification", "repo", "pinned_revision", "root", "layer", "component_receipt_policy", "components", "execution", "input", "intermediates", "parity", "gpu_timing", "noetic_ir", "physical_graph", "native_shared_expert_gate_up_swiglu_observed", "native_shared_expert_down_projection_observed", "native_shared_expert_scalar_gate_observed", "native_shared_expert_sigmoid_gate_observed", "native_shared_expert_composition_observed", "whole_model_capability", "complete_expert_runtime", "complete_token_runtime", "complete_system_ebpw", "flash_tps", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_shared_residual_hyperconnection_native = _science_receipt(flash_shared_residual_hyperconnection_native_candidates, fields=("semantic_type", "compiler_stage", "qualification", "repo", "pinned_revision", "root", "layer", "dependencies", "component_receipt_policy", "components", "execution", "input", "intermediates", "candidate_semantics", "parity", "gpu_timing", "noetic_ir", "physical_graph", "native_shared_expert_gate_up_swiglu_observed", "native_shared_expert_down_projection_observed", "native_shared_expert_sigmoid_gate_observed", "native_hyperconnection_stream_injection_observed", "native_hyperconnection_low_rank_down_observed", "native_hyperconnection_low_rank_up_observed", "native_hyperconnection_block_inject_observed", "native_hyperconnection_residual_mix_observed", "native_shared_residual_composition_observed", "device_intermediate_no_host_roundtrip", "source_independent_execution", "whole_model_capability", "complete_expert_runtime", "complete_token_runtime", "complete_system_ebpw", "flash_tps", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_exact_hyperconnection = _science_receipt(flash_exact_hyperconnection_candidates, fields=("semantic_type", "compiler_stage", "qualification", "repo", "pinned_revision", "root", "layer", "dependencies", "source_reference", "semantics", "parity", "gpu_timing", "noetic_ir", "physical_graph", "source_selection_parity", "routed_expert_count", "routed_expert_ids", "selected_weight_sum", "native_hyperconnection_read_observed", "native_hyperconnection_write_observed", "exact_hyperconnection_semantics_observed", "native_routed_expert_gate_up_swiglu_observed", "native_routed_expert_down_projection_observed", "native_moe_weighted_sum_observed", "native_moe_shared_add_observed", "device_intermediate_no_host_roundtrip", "source_independent_execution", "source_hc_norm_payload_exact", "complete_layer0_moe_candidate", "complete_moe_combine", "whole_model_capability", "complete_expert_runtime", "complete_token_runtime", "complete_system_ebpw", "flash_tps", "promotion_allowed", "claim_boundary", "next_action"))
+    flash_gpu_work_ledger = _science_receipt(flash_gpu_work_ledger_candidates, fields=("qualification", "source_receipt", "device", "scope", "physical_graph_fingerprint", "measured_runs", "dispatches_per_graph", "graph_gpu_ns_median", "graph_host_wall_ns_median", "graph_wall_minus_gpu_ns_median", "stages", "device_intermediate_no_host_roundtrip", "complete_token_runtime", "flash_tps", "complete_system_ebpw", "promotion_allowed", "claim_boundary"))
+    flash_token_critical_path = _science_receipt(flash_token_critical_path_candidates, fields=("source_receipt", "candidate_graph", "complete_token_runtime", "accepted_tokens", "complete_wall_ns_per_accepted_token", "flash_tps", "complete_system_ebpw", "promotion_allowed", "blockers", "claim_boundary"))
+    cuda_capability_graph = _science_receipt(cuda_capability_graph_candidates, fields=("execution_device", "native_backend_observed", "cuda_execution_observed", "qualification", "nodes", "edges", "promotion_allowed", "claim_boundary"))
     flash_router_representation = _science_receipt(flash_router_representation_candidates, fields=("semantic_type", "compiler_stage", "source_identity", "config", "source_block", "source_selection", "candidates", "recommendation", "physical_graph", "noetic_ir", "validation", "candidate_bodies_persisted", "whole_model_capability", "complete_token_runtime", "promotion_allowed", "claim_boundary", "next_action"))
     return {
         "recovery_gate": {
@@ -599,6 +627,16 @@ def _gate_summary(workspace: Path, repo_root: Path) -> Dict[str, Any]:
         "flash_router_component_body": flash_router_body or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "component_kind": None, "source_identity": None, "source_block": None, "representation_descriptor": None, "body": None, "native_loader": None, "source_guard": None, "source_independent": None, "candidate_body_persisted": None, "whole_model_capability": None, "whole_model_runtime": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
         "flash_router_graph": flash_router_graph or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "component_status": "NOT_COMPILED", "semantic_type": None, "compiler_stage": None, "candidate_id": None, "source_identity": None, "component_window": None, "source_independent_execution": None, "candidate_body_persisted": None, "whole_model_capability": None, "complete_token_runtime": None, "physical_graph": None, "noetic_ir": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
         "flash_router_selection": flash_router_selection or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "compiler_stage": None, "source_identity": None, "config": None, "selection": None, "execution": None, "physical_graph": None, "noetic_ir": None, "native_selection_execution_observed": None, "whole_model_capability": None, "complete_token_runtime": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_router_selection_native": flash_router_selection_native or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "compiler_stage": None, "qualification": None, "native_loader": None, "native_kernel": None, "native_source_authority_kernel": None, "execution": None, "selection": None, "source_native_selection": None, "reference": None, "source_selection_parity": None, "source_reference_parity": None, "parity": None, "source_native_parity": None, "gpu_timing": None, "source_gpu_timing": None, "physical_graph": None, "native_selection_execution_observed": None, "native_source_authority_execution_observed": None, "source_payload_exact": None, "source_guard_unchanged": None, "whole_model_capability": None, "complete_token_runtime": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_routed_expert_dispatch_native": flash_routed_expert_dispatch_native or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "qualification": None, "router_receipt": None, "campaign_receipt": None, "selection": None, "source_selection_parity": None, "components": [], "execution": None, "input": None, "gpu_timing": None, "gather": None, "noetic_ir": None, "physical_graph": None, "native_routed_body_dispatch_observed": None, "source_independent_execution": None, "whole_model_capability": None, "complete_expert_runtime": None, "complete_token_runtime": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_gate_up_swiglu_native": flash_gate_up_swiglu_native or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "qualification": None, "router_receipt": None, "component_receipt_policy": None, "selection": None, "source_selection_parity": None, "components": [], "execution": None, "input": None, "gpu_timing": None, "gather": None, "noetic_ir": None, "physical_graph": None, "native_gate_up_swiglu_observed": None, "native_expert_gate_up_activation_observed": None, "source_independent_execution": None, "whole_model_capability": None, "complete_expert_runtime": None, "complete_token_runtime": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_expert_composition_native": flash_expert_composition_native or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "qualification": None, "router_receipt": None, "component_receipt_policy": None, "selection": None, "source_selection_parity": None, "components": [], "execution": None, "input": None, "intermediate": None, "gpu_timing": None, "gather": None, "noetic_ir": None, "physical_graph": None, "native_gate_up_swiglu_observed": None, "native_down_projection_observed": None, "native_expert_composition_observed": None, "bounded_selected_expert_output_observed": None, "source_independent_execution": None, "whole_model_capability": None, "complete_expert_runtime": None, "complete_token_runtime": None, "complete_system_ebpw": None, "flash_tps": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_shared_expert_composition_native": flash_shared_expert_composition_native or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "qualification": None, "layer": None, "component_receipt_policy": None, "components": [], "execution": None, "input": None, "intermediates": None, "parity": None, "gpu_timing": None, "noetic_ir": None, "physical_graph": None, "native_shared_expert_gate_up_swiglu_observed": None, "native_shared_expert_down_projection_observed": None, "native_shared_expert_scalar_gate_observed": None, "native_shared_expert_sigmoid_gate_observed": None, "native_shared_expert_composition_observed": None, "source_independent_execution": None, "whole_model_capability": None, "complete_expert_runtime": None, "complete_token_runtime": None, "complete_system_ebpw": None, "flash_tps": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_shared_residual_hyperconnection_native": flash_shared_residual_hyperconnection_native or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "qualification": None, "layer": None, "dependencies": None, "component_receipt_policy": None, "components": [], "execution": None, "input": None, "intermediates": None, "candidate_semantics": None, "parity": None, "gpu_timing": None, "noetic_ir": None, "physical_graph": None, "native_shared_expert_gate_up_swiglu_observed": None, "native_shared_expert_down_projection_observed": None, "native_shared_expert_sigmoid_gate_observed": None, "native_hyperconnection_stream_injection_observed": None, "native_hyperconnection_low_rank_down_observed": None, "native_hyperconnection_low_rank_up_observed": None, "native_hyperconnection_block_inject_observed": None, "native_hyperconnection_residual_mix_observed": None, "native_shared_residual_composition_observed": None, "device_intermediate_no_host_roundtrip": None, "source_independent_execution": None, "whole_model_capability": None, "complete_expert_runtime": None, "complete_token_runtime": None, "complete_system_ebpw": None, "flash_tps": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_exact_hyperconnection": flash_exact_hyperconnection or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "qualification": None, "layer": None, "dependencies": None, "source_reference": None, "semantics": None, "parity": None, "gpu_timing": None, "noetic_ir": None, "physical_graph": None, "source_selection_parity": None, "routed_expert_count": None, "routed_expert_ids": None, "selected_weight_sum": None, "native_hyperconnection_read_observed": None, "native_hyperconnection_write_observed": None, "exact_hyperconnection_semantics_observed": None, "native_routed_expert_gate_up_swiglu_observed": None, "native_routed_expert_down_projection_observed": None, "native_moe_weighted_sum_observed": None, "native_moe_shared_add_observed": None, "device_intermediate_no_host_roundtrip": None, "source_independent_execution": None, "source_hc_norm_payload_exact": None, "complete_layer0_moe_candidate": None, "complete_moe_combine": None, "whole_model_capability": None, "complete_expert_runtime": None, "complete_token_runtime": None, "complete_system_ebpw": None, "flash_tps": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
+        "flash_gpu_work_ledger": flash_gpu_work_ledger or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "qualification": None, "source_receipt": None, "device": None, "scope": None, "physical_graph_fingerprint": None, "measured_runs": None, "dispatches_per_graph": None, "graph_gpu_ns_median": None, "graph_host_wall_ns_median": None, "graph_wall_minus_gpu_ns_median": None, "stages": [], "device_intermediate_no_host_roundtrip": None, "complete_token_runtime": None, "flash_tps": None, "complete_system_ebpw": None, "promotion_allowed": False, "claim_boundary": None},
+        "flash_token_critical_path": flash_token_critical_path or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "source_receipt": None, "candidate_graph": None, "complete_token_runtime": None, "accepted_tokens": None, "complete_wall_ns_per_accepted_token": None, "flash_tps": None, "complete_system_ebpw": None, "promotion_allowed": False, "blockers": [], "claim_boundary": None},
+        "cuda_capability_graph": cuda_capability_graph or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "execution_device": None, "native_backend_observed": None, "cuda_execution_observed": None, "qualification": None, "nodes": [], "edges": [], "promotion_allowed": False, "claim_boundary": None},
         "flash_router_representation_ab": flash_router_representation or {"status": "NOT_RUN", "receipt_path": None, "schema": None, "semantic_type": None, "compiler_stage": None, "source_identity": None, "config": None, "source_block": None, "source_selection": None, "candidates": [], "recommendation": None, "physical_graph": None, "noetic_ir": None, "validation": None, "candidate_bodies_persisted": None, "whole_model_capability": None, "complete_token_runtime": None, "promotion_allowed": False, "claim_boundary": None, "next_action": None},
         "production_provider_gate": "NOT_RUN",
     }
@@ -686,6 +724,72 @@ def build_program_checkpoint(
         blockers.append("bounded Flash-Next Noetic router graph has not been compiled")
     if gates["flash_router_selection"].get("status") != "PASSED" or gates["flash_router_selection"].get("promotion_allowed") is not False:
         blockers.append("bounded Flash-Next Noetic router selection edge has not been executed")
+    if gates["flash_router_selection_native"].get("status") not in {"NOT_RUN", "PASSED"}:
+        blockers.append("bounded Flash-Next native Noetic router selection receipt is invalid or incomplete")
+    if gates["flash_router_selection_native"].get("status") == "PASSED" and gates["flash_router_selection_native"].get("promotion_allowed") is not False:
+        blockers.append("bounded Flash-Next native Noetic router selection has not explicitly refused promotion")
+    if gates["flash_routed_expert_dispatch_native"].get("status") not in {"NOT_RUN", "PASSED"}:
+        blockers.append("bounded Flash-Next native routed-expert dispatch receipt is invalid or incomplete")
+    if gates["flash_routed_expert_dispatch_native"].get("status") == "PASSED" and (
+        gates["flash_routed_expert_dispatch_native"].get("native_routed_body_dispatch_observed") is not True
+        or gates["flash_routed_expert_dispatch_native"].get("promotion_allowed") is not False
+    ):
+        blockers.append("bounded Flash-Next native routed-expert dispatch has not proven physical scoped execution with promotion refused")
+    if gates["flash_gate_up_swiglu_native"].get("status") not in {"NOT_RUN", "PASSED"}:
+        blockers.append("bounded Flash-Next native gate/up SwiGLU receipt is invalid or incomplete")
+    if gates["flash_gate_up_swiglu_native"].get("status") == "PASSED" and (
+        gates["flash_gate_up_swiglu_native"].get("native_gate_up_swiglu_observed") is not True
+        or gates["flash_gate_up_swiglu_native"].get("native_expert_gate_up_activation_observed") is not True
+        or gates["flash_gate_up_swiglu_native"].get("promotion_allowed") is not False
+    ):
+        blockers.append("bounded Flash-Next native gate/up SwiGLU has not proven physical scoped activation with promotion refused")
+    if gates["flash_expert_composition_native"].get("status") not in {"NOT_RUN", "PASSED"}:
+        blockers.append("bounded Flash-Next native gate/up-to-down expert composition receipt is invalid or incomplete")
+    if gates["flash_expert_composition_native"].get("status") == "PASSED" and (
+        gates["flash_expert_composition_native"].get("native_gate_up_swiglu_observed") is not True
+        or gates["flash_expert_composition_native"].get("native_down_projection_observed") is not True
+        or gates["flash_expert_composition_native"].get("native_expert_composition_observed") is not True
+        or gates["flash_expert_composition_native"].get("promotion_allowed") is not False
+    ):
+        blockers.append("bounded Flash-Next native gate/up-to-down composition has not proven device-resident scoped execution with promotion refused")
+    if gates["flash_shared_expert_composition_native"].get("status") not in {"NOT_RUN", "PASSED"}:
+        blockers.append("bounded Flash-Next native shared-expert composition receipt is invalid or incomplete")
+    if gates["flash_shared_expert_composition_native"].get("status") == "PASSED" and (
+        gates["flash_shared_expert_composition_native"].get("native_shared_expert_gate_up_swiglu_observed") is not True
+        or gates["flash_shared_expert_composition_native"].get("native_shared_expert_down_projection_observed") is not True
+        or gates["flash_shared_expert_composition_native"].get("native_shared_expert_scalar_gate_observed") is not True
+        or gates["flash_shared_expert_composition_native"].get("native_shared_expert_sigmoid_gate_observed") is not True
+        or gates["flash_shared_expert_composition_native"].get("native_shared_expert_composition_observed") is not True
+        or gates["flash_shared_expert_composition_native"].get("promotion_allowed") is not False
+    ):
+        blockers.append("bounded Flash-Next native shared-expert composition has not proven device-resident scoped execution with promotion refused")
+    if gates["flash_shared_residual_hyperconnection_native"].get("status") not in {"NOT_RUN", "PASSED"}:
+        blockers.append("bounded Flash-Next native shared-expert residual/hyperconnection receipt is invalid or incomplete")
+    if gates["flash_shared_residual_hyperconnection_native"].get("status") == "PASSED" and (
+        gates["flash_shared_residual_hyperconnection_native"].get("native_hyperconnection_stream_injection_observed") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("native_hyperconnection_low_rank_down_observed") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("native_hyperconnection_low_rank_up_observed") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("native_hyperconnection_block_inject_observed") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("native_hyperconnection_residual_mix_observed") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("native_shared_residual_composition_observed") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("device_intermediate_no_host_roundtrip") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("source_independent_execution") is not True
+        or gates["flash_shared_residual_hyperconnection_native"].get("promotion_allowed") is not False
+    ):
+        blockers.append("bounded Flash-Next native shared-expert residual/hyperconnection composition has not proven the device-resident candidate graph with promotion refused")
+    if gates["flash_exact_hyperconnection"].get("status") not in {"NOT_RUN", "PASSED"}:
+        blockers.append("bounded Flash-Next exact HyperConnection routed-plus-shared MoE receipt is invalid or incomplete")
+    if gates["flash_exact_hyperconnection"].get("status") == "PASSED" and (
+        gates["flash_exact_hyperconnection"].get("complete_layer0_moe_candidate") is not True
+        or gates["flash_exact_hyperconnection"].get("complete_moe_combine") is not True
+        or gates["flash_exact_hyperconnection"].get("native_hyperconnection_read_observed") is not True
+        or gates["flash_exact_hyperconnection"].get("native_hyperconnection_write_observed") is not True
+        or gates["flash_exact_hyperconnection"].get("native_moe_weighted_sum_observed") is not True
+        or gates["flash_exact_hyperconnection"].get("native_moe_shared_add_observed") is not True
+        or gates["flash_exact_hyperconnection"].get("device_intermediate_no_host_roundtrip") is not True
+        or gates["flash_exact_hyperconnection"].get("promotion_allowed") is not False
+    ):
+        blockers.append("bounded Flash-Next exact HyperConnection routed-plus-shared MoE receipt has not proven its protected scoped graph with promotion refused")
     if gates["qwen27_runtime_identity"].get("status") != "PASSED":
         blockers.append("Qwen27 current-versus-historical runtime identity archaeology has not been persisted")
     if gates["qwen27_mlp_diagnostic"].get("status") != "PASSED":
@@ -777,6 +881,16 @@ def build_program_checkpoint(
             "flash_router_component_body": gates["flash_router_component_body"]["status"],
             "flash_router_graph": gates["flash_router_graph"]["status"],
             "flash_router_selection": gates["flash_router_selection"]["status"],
+            "flash_router_selection_native": gates["flash_router_selection_native"]["status"],
+            "flash_routed_expert_dispatch_native": gates["flash_routed_expert_dispatch_native"]["status"],
+            "flash_gate_up_swiglu_native": gates["flash_gate_up_swiglu_native"]["status"],
+            "flash_expert_composition_native": gates["flash_expert_composition_native"]["status"],
+            "flash_shared_expert_composition_native": gates["flash_shared_expert_composition_native"]["status"],
+            "flash_shared_residual_hyperconnection_native": gates["flash_shared_residual_hyperconnection_native"]["status"],
+            "flash_exact_hyperconnection": gates["flash_exact_hyperconnection"]["status"],
+            "flash_gpu_work_ledger": gates["flash_gpu_work_ledger"]["status"],
+            "flash_token_critical_path": gates["flash_token_critical_path"]["status"],
+            "cuda_capability_graph": gates["cuda_capability_graph"]["status"],
             "flash_router_representation_ab": gates["flash_router_representation_ab"]["status"],
         },
         "blockers": blockers,
@@ -786,7 +900,7 @@ def build_program_checkpoint(
             "persist research provenance and protected benchmark receipts",
             "qualify additional providers only after their own deterministic verification closes",
             "continue the bounded protected Qwen watcher; do not treat contaminated A/B telemetry as promotion evidence",
-            "extend the source-independent Flash Noetic campaign across additional blocks and compose remaining organs; fill actual EBPW/token-ns fields only from native protected receipts",
+            "use the bounded native routed-expert, layer-0 shared-expert, and exact routed-plus-shared HyperConnection candidate graphs as Flash anchors; close source router/top-k and source BF16 activation parity next, and fill actual EBPW/token-ns fields only from native protected complete-token receipts",
         ],
         "claim_boundary": "This checkpoint is an evidence census; it does not certify a model, runtime, hardware accelerator, or unattended sovereignty.",
     }

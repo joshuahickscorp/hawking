@@ -1,0 +1,97 @@
+{
+ "binary": {
+  "bytes": 6481704,
+  "mtime": "2026-08-26T17:31:14.601767",
+  "path": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+  "present": true
+ },
+ "claim_boundary": "Static comparison of a binary's string table against its source, plus one contended live probe. The timing figures are DIAGNOSTIC_RELATIVE and must not be quoted as a protected measurement. Absence of a string in a stripped or optimized binary is strong but not absolute evidence; the live probe returning none of these fields is the confirming observation.",
+ "consequence": "The running resident cannot answer 'measure the CURRENT exact production dispatch count'. That question needs a rebuild first, and any dispatch count already in a receipt did not come from this binary.",
+ "drift": true,
+ "evidence_class": "STATIC_ONLY",
+ "fields": {
+  "active_bytes_per_token": {
+   "in_binary": false,
+   "in_source": true
+  },
+  "active_weight_bytes_per_generated_token": {
+   "in_binary": false,
+   "in_source": true
+  },
+  "actual_read_bytes_per_token": {
+   "in_binary": false,
+   "in_source": true
+  },
+  "actual_read_bytes_status": {
+   "in_binary": false,
+   "in_source": true
+  },
+  "dispatches": {
+   "in_binary": false,
+   "in_source": true
+  },
+  "dispatches_per_generated_token": {
+   "in_binary": false,
+   "in_source": true
+  },
+  "gpu_ns_per_generated_token": {
+   "in_binary": false,
+   "in_source": true
+  },
+  "resident_weight_bytes": {
+   "in_binary": false,
+   "in_source": true
+  }
+ },
+ "gpu_authority": false,
+ "law": "A capability present in source is not a capability present in the running system. Probe the artifact that serves, not the file that describes it.",
+ "missing_from_binary": [
+  "dispatches",
+  "dispatches_per_generated_token",
+  "active_bytes_per_token",
+  "active_weight_bytes_per_generated_token",
+  "actual_read_bytes_per_token",
+  "actual_read_bytes_status",
+  "gpu_ns_per_generated_token",
+  "resident_weight_bytes"
+ ],
+ "observed_live": {
+  "complete_tps": 30.172,
+  "confirms_l42": "complete 30.17 vs decode 32.77 is 7.9% at N=128, and the whole difference is the 361.6 ms prefill. The gap shrinks as N grows, exactly as P/(P+N-1) predicts. It is accounting, not ceremony.",
+  "decode_steps": 127,
+  "decode_tps": 32.774,
+  "decode_wall_ns": 3874984167,
+  "fallbacks": 0,
+  "generated_tokens": 128,
+  "note": "one probe request, N=128, taken while 4 Grok lanes ran at maximum, so timing is DIAGNOSTIC and not protected",
+  "prefill_wall_ns": 361615875,
+  "prompt_tokens": 12,
+  "ready_s": 5.79
+ },
+ "recorded_by": "tools/future/resident_binary_drift.py",
+ "schema": "hawking.future.resident_binary_drift.v1",
+ "second_defect_the_probe_exposed": {
+  "cargo_toml_says": "Correctness-testing profile ONLY. NEVER benchmark with this: TPS numbers must come from `release` (lto=fat, codegen-units=1), which is what the runtime artifacts ship with.",
+  "claim": "the serving resident has only ever been built with a profile the codebase forbids benchmarking",
+  "consequence": "Every absolute TPS number attributed to this resident was taken on a non-benchmark build. The relative science is unaffected -- the three falsifications are relative or static -- but the absolute floor is unknown and the real one is likely better than measured. The 35.5 TPS anchor inherits this.",
+  "profile_served": "release-fast",
+  "release_build_of_this_example_exists": false,
+  "release_fast_settings": {
+   "codegen_units": 16,
+   "incremental": true,
+   "lto": false
+  },
+  "resolves_when": "the same probe runs against a `--profile release` build of ascension_qwen38_resident on an uncontended box",
+  "searched": "workspace/ops/build/rust/*/examples/ascension_qwen38_resident"
+ },
+ "source": {
+  "dirty": true,
+  "instrumentation_landed_in": [
+   "8b6f50270 2026-08-27 Harden HCLI model-neutral science and protected benchmarks"
+  ],
+  "last_commit": "8b6f50270 2026-08-27 Harden HCLI model-neutral science and protected benchmarks",
+  "mtime": "2026-08-29T01:34:02.250009",
+  "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs"
+ },
+ "version": 1
+}

@@ -1,0 +1,511 @@
+{
+ "authority_rule": "A PROTECTED_ABSOLUTE measurement always outranks a model prediction, including a confident one that disagrees. The sidecar cannot produce PROTECTED_ABSOLUTE evidence.",
+ "baselines": {
+  "abstention": "First-class outcome. Fired when there is no measured neighbour, compared axes < min, distance > support radius, or a rule input is null.",
+  "authority_rule": "resolve_authority(model, protected) always returns the PROTECTED_ABSOLUTE measurement. A confident disagreeing model loses. A null protected value does not license the model to fill it. DIAGNOSTIC_RELATIVE is refused.",
+  "contamination_classes": [
+   "PROTECTED_ABSOLUTE",
+   "DIAGNOSTIC_RELATIVE",
+   "STATIC_ONLY",
+   "UNKNOWN"
+  ],
+  "held_out_splits": {
+   "architecture": "model",
+   "device": "machine_genome",
+   "organ": "organ_fingerprint"
+  },
+  "nearest_measured_neighbour": {
+   "identity_axes": [
+    "model",
+    "organ_fingerprint",
+    "representation",
+    "machine_genome",
+    "physical_graph_identity",
+    "backend",
+    "layout",
+    "tile",
+    "grouping",
+    "fusion",
+    "persistent_resources",
+    "complete_token_effect",
+    "contamination_class",
+    "capability"
+   ],
+   "metric": "d = Hamming(bound identity axes) + 0.5 * mean relative L1(shared numeric axes) + 0.25 * (1 - coverage). Null is skipped, never treated as 0.",
+   "min_compared_axes": 4,
+   "numeric_axes": [
+    "active_bytes",
+    "resident_bytes",
+    "dispatches",
+    "synchronization",
+    "latency"
+   ],
+   "outside_support": "ABSTAIN",
+   "support_radius": 0.6
+  },
+  "rule_cost_model": {
+   "formula": "cost_units = w_active_bytes * active_bytes + w_dispatches * dispatches + w_synchronization * synchronization",
+   "null_input": "ABSTAIN",
+   "units": "declared cost units, not nanoseconds, not a measurement",
+   "weights": {
+    "active_bytes": 1.0,
+    "dispatches": 1000.0,
+    "synchronization": 100.0
+   }
+  },
+  "uncertainty": {
+   "nearest": "max(floor, |value| * (distance + 0.05)); never 0 for k=1",
+   "rule": "100% relative; coefficients are uncalibrated"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:17Z",
+  "recorded_by": "tools/future/lpc_dataset.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Inventory counts are field-presence census, not timings. Fixture baselines used by selftest are not physical predictions and are not sealed as rows.",
+ "finding": "0 LPC-complete row(s) in this worktree. The learned compiler is data-starved; that is the condition this contract exists to make visible.",
+ "gaps_closed": [
+  "LPC row schema with required-key rejection and a closed null-reason set",
+  "null policy that refuses to impute 0, with a helper that raises instead",
+  "ingest adapters for scoreboard, qualification queue, and Qwen27 organ budget",
+  "honest completeness census (complete rows currently expected to be 0)",
+  "nearest measured neighbour with an explicit distance metric",
+  "transparent rule cost model that abstains on null inputs",
+  "uncertainty + ABSTENTION as a first-class outcome",
+  "held-out splits by architecture, organ, and device",
+  "authority helper: PROTECTED_ABSOLUTE always outranks a model"
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "ingest": {
+  "inventory": {
+   "by_contamination": {
+    "DIAGNOSTIC_RELATIVE": 1,
+    "PROTECTED_ABSOLUTE": 1,
+    "STATIC_ONLY": 58,
+    "UNKNOWN": 11
+   },
+   "by_source": {
+    "qualification_queue": 49,
+    "qwen27_token_ns_budget": 9,
+    "scoreboard": 13
+   },
+   "complete": 0,
+   "field_presence": {
+    "active_bytes": {
+     "n": 71,
+     "non_null": 0
+    },
+    "backend": {
+     "n": 71,
+     "non_null": 19
+    },
+    "capability": {
+     "n": 71,
+     "non_null": 0
+    },
+    "complete_token_effect": {
+     "n": 71,
+     "non_null": 0
+    },
+    "contamination_class": {
+     "n": 71,
+     "non_null": 71
+    },
+    "dispatches": {
+     "n": 71,
+     "non_null": 7
+    },
+    "fusion": {
+     "n": 71,
+     "non_null": 49
+    },
+    "grouping": {
+     "n": 71,
+     "non_null": 0
+    },
+    "latency": {
+     "n": 71,
+     "non_null": 2
+    },
+    "layout": {
+     "n": 71,
+     "non_null": 0
+    },
+    "machine_genome": {
+     "n": 71,
+     "non_null": 10
+    },
+    "model": {
+     "n": 71,
+     "non_null": 61
+    },
+    "organ_fingerprint": {
+     "n": 71,
+     "non_null": 58
+    },
+    "persistent_resources": {
+     "n": 71,
+     "non_null": 0
+    },
+    "physical_graph_identity": {
+     "n": 71,
+     "non_null": 2
+    },
+    "representation": {
+     "n": 71,
+     "non_null": 12
+    },
+    "resident_bytes": {
+     "n": 71,
+     "non_null": 0
+    },
+    "synchronization": {
+     "n": 71,
+     "non_null": 0
+    },
+    "tile": {
+     "n": 71,
+     "non_null": 0
+    }
+   },
+   "invalid_null": 0,
+   "n": 71,
+   "rejected": 0,
+   "valid": 71
+  },
+  "machine_genome_attach_reason": "Scoreboard rows do not carry a genome fingerprint. Attaching this identity to every row would fabricate a binding.",
+  "machine_genome_attached_to_rows": false,
+  "machine_genome_identity": {
+   "arch": "arm64",
+   "cpu_cores": 28,
+   "efficiency_cores": 8,
+   "gpu_cores": 60,
+   "knowledge_level": "INSTANCE",
+   "measured_bandwidth": null,
+   "measured_bandwidth_reason": "HARDWARE_AUTHORITY_REQUIRED",
+   "memory_bytes": 103079215104,
+   "os": "Darwin 27.0.0",
+   "perf_cores": 20,
+   "schema": "hawking.accelerator.machine_genome.v1",
+   "soc": "Apple M3 Ultra"
+  },
+  "machine_genome_source": {
+   "in_git_HEAD": true,
+   "loaded_from": "disk",
+   "on_disk": true,
+   "path": "receipts/headless/MACHINE_GENOME.json"
+  },
+  "rows": null,
+  "sources": [
+   {
+    "complete": 0,
+    "in_git_HEAD": false,
+    "invalid_null": 0,
+    "loaded_from": "disk",
+    "on_disk": true,
+    "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+    "projected": 13,
+    "rejected": 0,
+    "valid": 13
+   },
+   {
+    "complete": 0,
+    "in_git_HEAD": false,
+    "invalid_null": 0,
+    "loaded_from": "disk",
+    "on_disk": true,
+    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "projected": 49,
+    "rejected": 0,
+    "valid": 49
+   },
+   {
+    "complete": 0,
+    "in_git_HEAD": false,
+    "invalid_null": 0,
+    "loaded_from": "disk",
+    "on_disk": true,
+    "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+    "projected": 9,
+    "rejected": 0,
+    "valid": 9
+   }
+  ]
+ },
+ "inventory": {
+  "by_contamination": {
+   "DIAGNOSTIC_RELATIVE": 1,
+   "PROTECTED_ABSOLUTE": 1,
+   "STATIC_ONLY": 58,
+   "UNKNOWN": 11
+  },
+  "by_source": {
+   "qualification_queue": 49,
+   "qwen27_token_ns_budget": 9,
+   "scoreboard": 13
+  },
+  "complete": 0,
+  "field_presence": {
+   "active_bytes": {
+    "n": 71,
+    "non_null": 0
+   },
+   "backend": {
+    "n": 71,
+    "non_null": 19
+   },
+   "capability": {
+    "n": 71,
+    "non_null": 0
+   },
+   "complete_token_effect": {
+    "n": 71,
+    "non_null": 0
+   },
+   "contamination_class": {
+    "n": 71,
+    "non_null": 71
+   },
+   "dispatches": {
+    "n": 71,
+    "non_null": 7
+   },
+   "fusion": {
+    "n": 71,
+    "non_null": 49
+   },
+   "grouping": {
+    "n": 71,
+    "non_null": 0
+   },
+   "latency": {
+    "n": 71,
+    "non_null": 2
+   },
+   "layout": {
+    "n": 71,
+    "non_null": 0
+   },
+   "machine_genome": {
+    "n": 71,
+    "non_null": 10
+   },
+   "model": {
+    "n": 71,
+    "non_null": 61
+   },
+   "organ_fingerprint": {
+    "n": 71,
+    "non_null": 58
+   },
+   "persistent_resources": {
+    "n": 71,
+    "non_null": 0
+   },
+   "physical_graph_identity": {
+    "n": 71,
+    "non_null": 2
+   },
+   "representation": {
+    "n": 71,
+    "non_null": 12
+   },
+   "resident_bytes": {
+    "n": 71,
+    "non_null": 0
+   },
+   "synchronization": {
+    "n": 71,
+    "non_null": 0
+   },
+   "tile": {
+    "n": 71,
+    "non_null": 0
+   }
+  },
+  "invalid_null": 0,
+  "n": 71,
+  "rejected": 0,
+  "valid": 71
+ },
+ "measurement_contract_reused": {
+  "fields": [
+   "total_nx_bytes",
+   "resident_bytes",
+   "active_representation_bytes_per_token",
+   "actual_read_bytes_per_token",
+   "transient_bytes_per_token",
+   "gpu_ns_per_token",
+   "complete_wall_ns_per_accepted_token",
+   "dispatches_per_token",
+   "sync_ns_per_token",
+   "accepted_tps",
+   "fallback_count"
+  ],
+  "metric_scope": "accepted complete generated token; not isolated kernel time",
+  "null_policy_verbatim": "missing physical metrics remain null until a native protected complete-token receipt records them",
+  "protected_pass_requires_all_fields": true,
+  "source": "tools/accelerator/physical_qualification.py MEASUREMENT_FIELDS / receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json measurement_contract.required_fields"
+ },
+ "negative_findings": [
+  "ACCELERATOR_SCOREBOARD.json is not in git HEAD and is not materialized here",
+  "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json is not in git HEAD and is not materialized here",
+  "QWEN27_TOKEN_NS_BUDGET.json is not in git HEAD and is not materialized here",
+  "scoreboard rows do not bind organ_fingerprint, layout, tile, grouping, fusion, or persistent_resources",
+  "no LPC-complete row existed on recover against parent disk (13 scoreboard rows, 0 complete)",
+  "queue candidates are 0/30 measured",
+  "perf_model.py exists but is not a dataset contract",
+  "this sidecar cannot emit PROTECTED_ABSOLUTE or DIAGNOSTIC_RELATIVE measurements",
+  "no organ_fingerprint module exists; organ identity is recovered from queue/budget names only"
+ ],
+ "purpose": "Experiment data contract binding every physical experiment to the identity and measurement fields required to learn from it, plus honest baselines with calibrated uncertainty and ABSTENTION.",
+ "recovered_implementation": {
+  "frontier_entry": {
+   "id": "F007",
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "title": "No Learned Physical Compiler dataset contract"
+  },
+  "machine_genome": {
+   "path": "tools/accelerator/machine_genome.py",
+   "receipt": "receipts/headless/MACHINE_GENOME.json",
+   "role": "Device identity of this machine. Bandwidth is measured under a protected window and is not copied into this sidecar receipt.",
+   "schema": "hawking.accelerator.machine_genome.v1"
+  },
+  "parent_disk_census": {
+   "budget_module": "tools/accelerator/qwen27_token_budget.py",
+   "budget_organs": 9,
+   "budget_organs_measured": 0,
+   "budget_schema": "hawking.accelerator.qwen27_token_ns_budget.v1",
+   "finding": "0 LPC-complete rows on recover. The learned compiler is data-starved; that is the condition this contract exists to make visible.",
+   "note": "Mandatory recover, 2026-08-29. Scoreboard/queue/budget are untracked campaign evidence: not in git HEAD, not in this sparse worktree. Live ingest uses only REPO-relative paths. These counts are a recover snapshot, not a sealed hardware claim.",
+   "queue_by_status": {
+    "BLOCKED": 14,
+    "READY_PROTECTED": 12,
+    "STATIC_ONLY": 4
+   },
+   "queue_candidates": 30,
+   "queue_measured": 0,
+   "queue_module": "tools/accelerator/physical_qualification.py",
+   "queue_schema": "hawking.accelerator.physical_qualification_queue.v1",
+   "scoreboard_lpc_complete_rows": 0,
+   "scoreboard_module": "tools/accelerator/scoreboard.py",
+   "scoreboard_rows": 13,
+   "scoreboard_rows_with_accepted_tps": 0,
+   "scoreboard_rows_with_backend": 6,
+   "scoreboard_rows_with_capability_verified": 0,
+   "scoreboard_rows_with_complete_token_ns": 1,
+   "scoreboard_rows_with_model": 3,
+   "scoreboard_rows_with_organ_fingerprint": 0,
+   "scoreboard_rows_with_representation": 3,
+   "scoreboard_rows_with_resident_bytes": 0,
+   "scoreboard_schema": "hawking.accelerator.scoreboard.v1"
+  },
+  "perf_model": {
+   "path": "tools/accelerator/perf_model.py",
+   "receipt": "receipts/headless/ACCELERATOR_PERF_MODEL.json",
+   "role": "Four-feature ridge on threadgroup/ept milliseconds. Smallest thing that asks whether a cliff is predictable. Not a dataset contract and not an abstaining compiler."
+  },
+  "physical_graph": {
+   "path": "hcli/physical_graph.py",
+   "role": "Defines PROTECTED_ABSOLUTE / DIAGNOSTIC_RELATIVE vocabulary and a layout algebra; not a per-experiment LPC row."
+  },
+  "qualification_queue": {
+   "module": "tools/accelerator/physical_qualification.py",
+   "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "role": "Names measurement_contract.required_fields and the null policy this module reuses. Candidates currently carry NOT_MEASURED metrics with absence_reasons.",
+   "schema": "hawking.accelerator.physical_qualification_queue.v1"
+  },
+  "qwen27_token_ns_budget": {
+   "module": "tools/accelerator/qwen27_token_budget.py",
+   "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+   "role": "Organ list and the same measurement_contract field names, all null until a native protected complete-token receipt exists.",
+   "schema": "hawking.accelerator.qwen27_token_ns_budget.v1"
+  },
+  "scoreboard": {
+   "module": "tools/accelerator/scoreboard.py",
+   "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+   "role": "Derived view of sealed receipts. Row shape is the closest existing LPC row. Nulls stay None (never zero). Not a dataset contract: no organ/layout/tile/grouping/fusion/genome binding, no abstention, no held-out splits.",
+   "schema": "hawking.accelerator.scoreboard.v1"
+  }
+ },
+ "row_schema": {
+  "complete_row": "VALID, every required field non-null, contamination_class PROTECTED_ABSOLUTE. DIAGNOSTIC_RELATIVE never completes.",
+  "contamination_classes": [
+   "PROTECTED_ABSOLUTE",
+   "DIAGNOSTIC_RELATIVE",
+   "STATIC_ONLY",
+   "UNKNOWN"
+  ],
+  "field_origins": {
+   "active_bytes": "scoreboard.active_bytes_per_token / measurement_contract.active_representation_bytes_per_token",
+   "backend": "scoreboard.backend / queue.work_units[].preferred_backend",
+   "capability": "scoreboard.capability_verified",
+   "complete_token_effect": "scoreboard.capability_verified combined with fallback_count",
+   "contamination_class": "scoreboard.benchmark_class mapped onto PROTECTED_ABSOLUTE | DIAGNOSTIC_RELATIVE | STATIC_ONLY | UNKNOWN",
+   "dispatches": "scoreboard.dispatches / measurement_contract.dispatches_per_token",
+   "fusion": "queue.exact_mutation.child_fusion_env",
+   "grouping": "absent from scoreboard; qualification mutation notes are the intended source",
+   "latency": "scoreboard.complete_token_ns or wall_ns_per_token / measurement_contract.complete_wall_ns_per_accepted_token; stored under 'latency' so a sidecar receipt cannot claim token_ns/gpu_ns/wall_ns",
+   "layout": "absent from scoreboard; physical_graph layout algebra is the intended source",
+   "machine_genome": "scoreboard.machine is a partial identity; MACHINE_GENOME.json is dataset context and is not auto-attached (that would fabricate a binding)",
+   "model": "scoreboard.model / queue.candidates[].model / QWEN27_TOKEN_NS_BUDGET.model",
+   "organ_fingerprint": "queue.affected_physical_region / QWEN27_TOKEN_NS_BUDGET.organs[].organ; scoreboard does not bind an organ",
+   "persistent_resources": "absent from scoreboard and queue",
+   "physical_graph_identity": "scoreboard.executable_id / hcli.physical_graph fingerprint",
+   "representation": "scoreboard.representation / budget.baseline.representation",
+   "resident_bytes": "scoreboard.resident_bytes / measurement_contract.resident_bytes",
+   "synchronization": "scoreboard.synchronization_ns / measurement_contract.sync_ns_per_token",
+   "tile": "absent from scoreboard; qualification mutation notes are the intended source"
+  },
+  "null_policy": "A field that is genuinely unmeasured is null with a reason code. A row may be VALID with nulls. A null field is never imputed to 0. Measured zero is kept.",
+  "null_reasons": [
+   "UNMEASURED",
+   "NOT_IN_SOURCE",
+   "AWAITING_PROTECTED_RECEIPT",
+   "HARDWARE_AUTHORITY_REQUIRED",
+   "SPARSE_OR_UNTRACKED_SOURCE",
+   "PARTIAL_IDENTITY",
+   "NOT_APPLICABLE",
+   "STATIC_PLAN_ONLY",
+   "DIAGNOSTIC_NOT_PROMOTABLE",
+   "UNKNOWN_FIELD"
+  ],
+  "numeric_fields": [
+   "active_bytes",
+   "resident_bytes",
+   "dispatches",
+   "synchronization",
+   "latency"
+  ],
+  "rejection_rule": "a row missing a REQUIRED key is REJECTED",
+  "required_fields": [
+   "model",
+   "organ_fingerprint",
+   "representation",
+   "machine_genome",
+   "physical_graph_identity",
+   "backend",
+   "layout",
+   "tile",
+   "grouping",
+   "fusion",
+   "persistent_resources",
+   "active_bytes",
+   "resident_bytes",
+   "dispatches",
+   "synchronization",
+   "latency",
+   "complete_token_effect",
+   "contamination_class",
+   "capability"
+  ]
+ },
+ "schema": "hawking.future.lpc_dataset.v1",
+ "seal_sha256": "b8af19860d3d2b6dc742b1e064fc2b59c7fe56e5ff552b5e3072242723bfcbf7",
+ "version": 1
+}

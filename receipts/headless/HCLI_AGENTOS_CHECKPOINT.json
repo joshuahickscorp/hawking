@@ -20,7 +20,7 @@
     ],
     "download_performed": false,
     "external_write_performed": false,
-    "generated_at": 1787823097.4322848,
+    "generated_at": 1787825201.902464,
     "network_probed": false,
     "repo_root": "/Users/scammermike/Downloads/hawking",
     "schema": "hcli.agentos.connectivity.v1",
@@ -34,7 +34,7 @@
       "filesystem": {
         "repo_root": "/Users/scammermike/Downloads/hawking",
         "status": "AVAILABLE",
-        "workspace": "/Users/scammermike/Downloads/hawking",
+        "workspace": "/Users/scammermike/Downloads/hawking/.hcli/unattended-qwen-long",
         "writable_workspace": true
       },
       "git": {
@@ -105,7 +105,7 @@
         "status": "NOT_PROBED"
       }
     },
-    "workspace": "/Users/scammermike/Downloads/hawking"
+    "workspace": "/Users/scammermike/Downloads/hawking/.hcli/unattended-qwen-long"
   },
   "gates": {
     "ab_scaffold": {
@@ -6036,7 +6036,7 @@
         "web_search": true
       },
       "qualification": "RESEARCH_OPERATIONAL",
-      "receipt_path": "/Users/scammermike/Downloads/hawking/.hcli/receipts/research-gate.json",
+      "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_RESEARCH_GATE.json",
       "status": "PASSED"
     },
     "resident_gate": {
@@ -6102,8 +6102,8 @@
       "status": "PASSED"
     }
   },
-  "generated_at": 1787823097.441799,
-  "git_revision": "16dc5863bcde86014bc0b7ffe8d2658b13bc6e29",
+  "generated_at": 1787825201.926142,
+  "git_revision": "31f34173aee3e9b1735eb6492f9a8bc6ac02ed9f",
   "host": {
     "machine": "arm64",
     "platform": "macOS-27.0-arm64-arm-64bit-Mach-O",
@@ -8585,5 +8585,5 @@
       }
     ]
   },
-  "workspace": "/Users/scammermike/Downloads/hawking"
+  "workspace": "/Users/scammermike/Downloads/hawking/.hcli/unattended-qwen-long"
 }

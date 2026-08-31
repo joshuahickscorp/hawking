@@ -127,6 +127,8 @@ __all__ = [
     "run_fpga_preboard",
     "PROTECTED_BENCHMARK_WATCHER_SCHEMA",
     "run_protected_benchmark_watcher",
+    "PROTECTED_ACCELERATOR_BENCHMARK_SCHEMA",
+    "run_protected_accelerator_benchmark",
     "MODELLAKE_SUPERVISION_SCHEMA",
     "run_model_lake_supervision",
     "OVERNIGHT_HANDOFF_SCHEMA",
@@ -302,6 +304,10 @@ def __getattr__(name: str):
         from hcli.agentos import protected_benchmark_watcher
 
         return protected_benchmark_watcher.SCHEMA if name == "PROTECTED_BENCHMARK_WATCHER_SCHEMA" else protected_benchmark_watcher.run_protected_benchmark_watcher
+    if name in {"PROTECTED_ACCELERATOR_BENCHMARK_SCHEMA", "run_protected_accelerator_benchmark"}:
+        from hcli.agentos import protected_accelerator_benchmark
+
+        return protected_accelerator_benchmark.SCHEMA if name == "PROTECTED_ACCELERATOR_BENCHMARK_SCHEMA" else protected_accelerator_benchmark.run_protected_accelerator_benchmark
     if name in {"MODELLAKE_SUPERVISION_SCHEMA", "run_model_lake_supervision"}:
         from hcli.agentos import modellake_supervisor
 

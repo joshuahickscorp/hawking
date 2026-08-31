@@ -1,0 +1,680 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:44:37Z",
+  "recorded_by": "tools/future/expert_bank_school.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "compute_candidates": [
+  {
+   "axis": "COMPUTE",
+   "capability_risk": "Prefill / multi-token (different x per row) does not collapse and needs a different kernel. Occupancy vs bytes is the live wall, not gather-vs-sequential (NS-032).",
+   "cheapest_falsifier": "Do not rerun the B-sweep of ACCELERATOR_EXPERT_BATCH as if it were new. Falsify the FUSED remainder: a kernel that keeps x resident and reads packed rows vs the existing per-expert qwen80_routed_expert_wave_gate_up dispatches, on the same packed payload, under a protected lease (later lane). Kill if the fused wave matches the independent-dispatch complete-token within noise.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "None by itself (payloads unchanged). Byte effect is UNKNOWN/none unless packed layout also changes.",
+   "expected_compute_effect": "Removes k independent loads of x and k separate gate/up launches. Magnitude UNKNOWN; stacked-dense cousin was marginal at decode top-k in ACCELERATOR_EXPERT_BATCH.",
+   "forbids_dense_rematerialization": true,
+   "id": "COMPUTE-ONE-X-MANY-EXPERTS",
+   "kind": "one_hidden_vector_many_experts",
+   "mechanism": "one hidden vector entering many experts: keep x register/SRAM resident and stream selected expert rows against it in one wave, fused with SiLU(gate)*up. Not a stacked dense table of independent W_e.",
+   "native_execution_concept": "Load x once into threadgroup memory. Each threadgroup owns an intermediate row of a selected expert's packed gate/up and dots against resident x. Packed values are consumed in-register. No dense W_e, no stacked dense table.",
+   "repeated_computation": "k independent (gate_proj x) and (up_proj x) against the same x, plus k independent loads of x.",
+   "scar_distance": "Not naive expert-table batching (already measured). Not a trivial shared basis (no shared W).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_currently_repeated": "Source stores one matrix per expert and the runtime honors that independence with one dispatch family per expert, even though the activation is identical.",
+   "why_it_might_work": "Decode routes one token to k experts and every one multiplies THE SAME activation. ACCELERATOR_EXPERT_BATCH already showed that stacking independent W_e against shared x IS a taller matvec (exact 0.0 residual) and that at realistic decode top-k the representation-native stacked path is at best marginal. The untested remainder is fused register-resident x with packed payloads and organ fusion, without forming a stacked dense table."
+  },
+  {
+   "axis": "COMPUTE",
+   "capability_risk": "If B does not capture XX^T, quality dies before compute pays. Skinny maps that are not actually skinny (r ~ d_in) are a compute loss (extra round trip).",
+   "cheapest_falsifier": "Same cheapest falsifier as shared input transforms (uncoded V, real X). Kill on function before claiming a compute win. A protected complete-token comparison is a later lane.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Follows the paired storage candidate; may be ~0 if B is stored in addition to W. UNKNOWN.",
+   "expected_compute_effect": "Replaces k full matvecs with 1 wide + k skinny. Algebraic reduction only; ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "COMPUTE-SHARED-XB-THEN-SKINNY",
+   "kind": "shared_xb_then_skinny",
+   "mechanism": "shared xB transform with small expert-specific transforms: z = x @ B once; y_e = z @ C_e. Compute dual of shared input / common right.",
+   "native_execution_concept": "One GEMV z = B @ x in SRAM. Selected C_e stream against z. No W_e = C_e B. Gate and up may share the same z.",
+   "repeated_computation": "Each selected expert applies its own full input projection to x.",
+   "scar_distance": "Not trivial shared basis (B is a transform of x, not a shared W). Not ACCELERATOR_EXPERT_BATCH stacking of independent W_e.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_currently_repeated": "Source matrices B_e are independent, so the compiler has no license to hoist a common transform of x.",
+   "why_it_might_work": "If a shared B exists (activation-PCA or joint right factor), the repeated full matvec is almost entirely duplicated work on x. This is the execution of STORE-SHARED-INPUT-TRANSFORM / STORE-COMMON-RIGHT-SUBSPACE, listed on the compute axis because the win can be FLOPs even when stored bytes barely move."
+  },
+  {
+   "axis": "COMPUTE",
+   "capability_risk": "Forcing a shared U so this identity applies can be a capability regression. Do not apply the identity when U is not shared.",
+   "cheapest_falsifier": "Identity check: shared-U expand-then-sum vs reduce-then-expand must match at 0.0 residual (planted). Kill the candidate if a real organ requires per-expert U to meet the function screen (then the identity does not apply).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "None extra; depends on storing shared U. UNKNOWN.",
+   "expected_compute_effect": "Cuts k-1 expansions of size d_model. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "COMPUTE-LATENT-WEIGHTED-REDUCTION",
+   "kind": "latent_weighted_reduction",
+   "mechanism": "latent weighted reduction: apply router weights in a small latent and reduce there, instead of weighting full d_model outputs.",
+   "native_execution_concept": "Each selected expert writes an r-vector. Weighted sum in r. One U @ u. Exact when U is shared. No dense down_proj.",
+   "repeated_computation": "k independent down_proj expansions to d_model, then a weighted sum in d_model.",
+   "scar_distance": "Not expert merging (all selected experts still run). Not mean subtraction.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_currently_repeated": "Source down_proj is per-expert to full hidden, so the combiner is written after expansion.",
+   "why_it_might_work": "The combiner is linear. If experts emit aligned latents, sum_e \u03c0_e (U u_e) = U (sum_e \u03c0_e u_e). The reduction moves before the expansion. This is free algebra when U is shared; it is the compute reason to want STORE-SHARED-OUTPUT-LATENT."
+  },
+  {
+   "axis": "COMPUTE",
+   "capability_risk": "down_proj is tolerant relative to gate, not invulnerable. A single U can smear expert-specific output directions.",
+   "cheapest_falsifier": "Planted shared-U identity (must be exact). Then one-layer down function screen vs per-expert U. Kill if per-expert U is required.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "k down payloads collapse to one U plus skinny latents if storage follows. UNKNOWN.",
+   "expected_compute_effect": "One expansion GEMV. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "COMPUTE-ONE-OUTPUT-EXPANSION",
+   "kind": "one_output_expansion",
+   "mechanism": "one output expansion: a single shared expansion of a reduced intermediate, rather than k independent down_proj GEMVs.",
+   "native_execution_concept": "Bind one U. Consume the reduced latent. One GEMV to d_model. Never k packed down_proj payloads applied independently unless the function screen forbids sharing U.",
+   "repeated_computation": "k independent (down_proj @ intermediate_e) expansions.",
+   "scar_distance": "Not a trivial shared basis of whole W. Not same-index tying.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_currently_repeated": "Source has one down_proj per expert; the runtime launches them as independent organs.",
+   "why_it_might_work": "Same algebra as latent weighted reduction, named separately because the repeated work is the expansion itself even when weights are applied after. Shared U is the storage partner."
+  },
+  {
+   "axis": "COMPUTE",
+   "capability_risk": "Large codebook gathers are dead. A shared decode that is the raw-PQ family at one bit will collapse on a real forward. Organ split still applies.",
+   "cheapest_falsifier": "Kill if K is large enough to become a gather LUT (dead lever: learned codebook LUT). Kill if the kernel writes or caches a dense W (NS-018: caching decoded W restores the footprint the representation exists to remove). Kill if the codebook is raw-weight PQ at ~1 BPW (dead family). A planted tiny shared CB plus fused FMA must beat per-expert unpack on a synthetic packed payload before any specimen is touched.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Codebook amortized; payloads are indices. Magnitude UNKNOWN. Raw-weight 1-bit PQ is dead; this does not reopen it.",
+   "expected_compute_effect": "Removes per-expert unpack prologues. ns UNKNOWN. Reconstruction penalty is vehicle-specific (NNS-011); do not cite a measured factor here.",
+   "forbids_dense_rematerialization": true,
+   "id": "COMPUTE-SHARED-REPRESENTATION-DECODE",
+   "kind": "shared_representation_decode",
+   "mechanism": "shared representation decode: a tiny shared codebook / scale family lives in registers; per-expert payloads are indices consumed fused with the matvec. Decode is not a per-expert prologue that writes dense W.",
+   "native_execution_concept": "Codebook in registers (K tiny). Fused FMA of codebook entries with x. No densify-then-GEMM. Organ-specific codebooks allowed.",
+   "repeated_computation": "Per-expert dequant / unpack / scale application before or during each expert matvec.",
+   "scar_distance": "Not NS-010 unconditioned shared codebook on raw routed-expert weights. Not entropy-coded Lloyd indices. Not NS-018 cache-decoded-W. Not NNS-018 single-family-across-organs (organ-specific tiny CBs are allowed).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_currently_repeated": "Source payloads were packed independently, so decode is written as an expert-local prologue rather than a bank-level codebook in registers.",
+   "why_it_might_work": "Independent per-expert unpack + scale is repeated work on the same code family. Atlas large-LUT and entropy-coded Lloyd indices are dead; tiny lookup-free shared CB is the remaining decode-sharing object. NS-012 / NNS-018 forbid assuming one family across organs, so codebooks stay organ-tagged."
+  },
+  {
+   "axis": "COMPUTE",
+   "capability_risk": "NNS-018 / uniform-subbit: organs do not fail together. Sharing V across gate and up can kill gate to save a projection that down never needed. Islands may have to keep gate independent.",
+   "cheapest_falsifier": "Kill if a shared V for gate+up fails the function screen on gate (dominant_failure_organ historically). The fused-but-unshared kernel is the control, not a missing fusion.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "May cut stored input factors if V is shared; UNKNOWN.",
+   "expected_compute_effect": "One shared input GEMV for two organs instead of two. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "COMPUTE-SHARED-PROJECTIONS-ACROSS-ORGANS",
+   "kind": "shared_projections_across_organs",
+   "mechanism": "shared projections across organs: hoist a common transform of x that both gate and up (and possibly the shared expert) can reuse, instead of two independent input projections per expert.",
+   "native_execution_concept": "One V @ x. Skinny gate core and skinny up core against z, fused SiLU product. Independent per-organ paths remain legal for the sensitive organ (gate). No densified W_gate or W_up.",
+   "repeated_computation": "gate_proj @ x and up_proj @ x as two full projections, even when fused in one kernel.",
+   "scar_distance": "Not already-built fused gate-up (that still uses two matrices). Not a trivial shared basis of the whole expert.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_currently_repeated": "Source has two independent matrices per expert; fusion multiplies both by x but does not hoist a shared factor.",
+   "why_it_might_work": "Per-expert fused gate-up already exists (qwen80_routed_expert_wave_gate_up dots gate and up against x in one kernel). That is fusion, not sharing: the two matrices are still independent. The untested share is a common right factor across gate and up, so z = V @ x serves both organs."
+  },
+  {
+   "axis": "COMPUTE",
+   "capability_risk": "A large residual update (attention + MLP) can make \u0394 as expensive as x, so reuse does not pay. Do not reopen weight tying to make the adapter look good.",
+   "cheapest_falsifier": "Kill if ||V @ x_{L+1} - adapter(z_L)|| is not smaller than ||V @ x_{L+1}|| on a real residual stream (then reuse is a no-op). Do not score by W cosine across layers (dead tying metric).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "May let V be stored per-block instead of per-layer. UNKNOWN.",
+   "expected_compute_effect": "Avoids a full V @ x at L+1 when \u0394 is cheap. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "COMPUTE-CROSS-LAYER-REUSED-TRANSFORM",
+   "kind": "cross_layer_reused_transforms",
+   "mechanism": "cross-layer reused transforms: reuse a transform of the residual stream (V_L @ x_L) as an initialization for layer L+1, with a small adapter, instead of independently projecting at every layer.",
+   "native_execution_concept": "Keep z_L = V @ x_L. At L+1 compute z_{L+1} = z_L + V @ \u0394 (or a small adapter on z_L). Token path uses z, never W. V may be per-block (storage SB9) or per-layer with reuse of the product.",
+   "repeated_computation": "Independent V_L @ x_L at every layer, including when x_L is a small residual update of x_{L-1}.",
+   "scar_distance": "Not same-index cross-layer weight tying. Not an unchanged archetype copied across layers.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_currently_repeated": "Source layers are separate tensors with no residual-product identity expressed in the graph, so each layer projects x from scratch.",
+   "why_it_might_work": "Layers are independent modules in source, but x_{L+1} is a residual update of x_L, so V @ x_{L+1} \u2248 V @ x_L + V @ \u0394. Same-index WEIGHT tying is dead; reusing the TRANSFORM of x is a compute hoist, not a W template. SB9 in the shared-basis packet was table-trim of V across a block, not this compute reuse."
+  }
+ ],
+ "counts": {
+  "compute": 7,
+  "extra_scars_from_index": 1,
+  "killed_families": 3,
+  "refusal_controls_fired": 3,
+  "storage": 13
+ },
+ "era_vocabulary": {
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is_not_its_own_civilization": true,
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ },
+ "extra_scars_from_index": [
+  "INDEX-0"
+ ],
+ "fit_policy": "NOT_FIT",
+ "gaps_closed": [
+  "queryable generator of structured (not naive) expert-bank STORAGE hypotheses, each with a native consume path that forbids densifying W",
+  "first-class COMPUTE-sharing axis: repeated work that exists only because source matrices were treated as independent",
+  "scar refusal for raw global similarity, trivial shared basis, and unchanged archetypes that actually fires (watched-fail probes in the receipt)",
+  "sealed STATIC_ONLY receipt with recovered implementation, gaps, and negative findings",
+  "explicit scar_distance on every candidate so structured cousins are not mistaken for the dead families"
+ ],
+ "killed_hypotheses": [
+  {
+   "family": "RAW_GLOBAL_SIMILARITY",
+   "id": "SCAR-RAW-GLOBAL-SIMILARITY",
+   "reopen_condition": "Never on Q80 / F0 / F1. On a NEW parent, measure pairwise cosine (raw AND row-normalized) on THAT parent's weights and reopen only if mean >= 0.10.",
+   "scope": "MODEL_SPECIFIC on Q80/F0/F1; DSV4F pairwise cosine is still unmeasured",
+   "settled_by": [
+    "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+    "receipts/headless/EXPERT_FAMILY_GENOME.json",
+    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#inter_expert_redundancy",
+    "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-004"
+   ],
+   "title": "raw global expert similarity",
+   "why_dead": "Q80 L10 n=96: gate pairwise cosine mean 0.00414, up ~0; top-32 right-subspace overlap 0.025/0.020; k90=84/96. Qwen3-30B-A3B L2 n=32: mean cosine 0.0024/5.6e-5/-1e-6; subtracting the mean expert leaves residual norm 0.984. Foundry atlas inter_expert_redundancy: mean pairwise cosine 1e-4. NS-010 / NNS-004: shared cross-expert basis/codebook/template is REFUTED on Q80/F0/F1."
+  },
+  {
+   "family": "TRIVIAL_SHARED_BASIS",
+   "id": "SCAR-TRIVIAL-SHARED-BASIS",
+   "reopen_condition": "Never as an unconditioned weight-space shared basis on Q80/Qwen3.8. A one-sided, clustered, route-conditioned, or activation-PCA object is a different hypothesis and is not this scar.",
+   "scope": "unconditioned weight-space shared basis / shared codebook",
+   "settled_by": [
+    "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+    "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-004"
+   ],
+   "title": "trivial shared basis",
+   "why_dead": "C1SHAREDBASIS_DESIGN: sharing lost on FIDELITY, not because a kernel rematerialized dense W (associativity identity holds). Verdict NOT_WORTH_BUILDING. SHARED_BASIS_COHERENT: no coherent shared-basis point beats q2f on both density and ns (died_at=held_out_activation). Flash bounded slice: shared bf16 basis + nf4 residual was 256000 bytes vs independent q4 174080 bytes (not smaller). NNS-004 / NS-010 kill the unconditioned shared-basis/codebook family on Q80."
+  },
+  {
+   "family": "UNCHANGED_ARCHETYPE",
+   "id": "SCAR-UNCHANGED-ARCHETYPE",
+   "reopen_condition": "Never as an unchanged template / same-index weight tie on the measured parents. A route-conditioned or residual-adapted archetype is a different hypothesis.",
+   "scope": "unchanged templates and same-index weight tying",
+   "settled_by": [
+    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#cross_expert_and_cross_layer_tying",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-024"
+   ],
+   "title": "unchanged archetype",
+   "why_dead": "Foundry atlas cross_expert_and_cross_layer_tying: best single shared template explains 0.2513 of 4 experts' energy against an orthogonal null of exactly 0.2500; same-index cross-layer tying is indistinguishable from a different-index control at 1e-7. NNS-024: procedural / generated parameters (shared templates, same-index tying, generated expert bases) do not buy bits on mutually orthogonal experts. No file named flash_route_archetype_sparse_screen.py exists in this tree; the scar is the atlas/NNS template family."
+  }
+ ],
+ "native_execution_law": "A kernel must consume factors / packed payloads / latents without rematerializing dense expert weights. Densify-then-GEMM is a fake share (C1SHAREDBASIS_DESIGN separated that failure from fidelity; fidelity still killed the trivial basis).",
+ "negative_findings": [
+  "Did not fit any candidate to real weights (specimens are out of scope for this lane).",
+  "Did not take a hardware measurement; every expected effect is qualitative or algebraic. Complete-token ns, tps, and joules remain UNKNOWN.",
+  "receipts/future/NEGATIVE_SCIENCE_INDEX.json is not present; builtin scars plus on-disk atlas probes were used. A sibling index will be consulted if it appears.",
+  "DSV4F pairwise cosine is still unmeasured (NNS-004 live check). Q80 orthogonality is not transferred.",
+  "tools/accelerator/, tools/headless/, and hcli/agentos/ are not materialized in this sparse checkout; they were recovered via git show during authoring."
+ ],
+ "purpose": "Generate structured expert STORAGE-sharing and COMPUTE-sharing candidates that have not been tested, and refuse recorded-dead naive sharing (raw global similarity, trivial shared basis, unchanged archetypes). Candidates only; no specimen fit; no hardware claim.",
+ "recovered_implementation": {
+  "measurement_tools": [
+   {
+    "path": "lab/operators/q80_cross_expert_structure.py",
+    "role": "produced the Q80 pairwise cosine / subspace-overlap negative"
+   },
+   {
+    "path": "tools/odyssey/expert_family_genome.py",
+    "receipt": "receipts/headless/EXPERT_FAMILY_GENOME.json",
+    "role": "noetic hypothesis Expert_i ~= shared mean + delta; REFUTED (residual 0.984)"
+   },
+   {
+    "path": "tools/headless/negative_science.py",
+    "receipt": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "role": "failure store; no keyed retrieval (frontier F009)"
+   },
+   {
+    "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+    "role": "inter_expert_redundancy, cross_expert_and_cross_layer_tying, expert_merging DEAD; layer_zero LIVE; kronecker DEAD at depth LIVE at L0"
+   },
+   {
+    "path": "tools/headless/c1sharedbasis_design.py",
+    "receipt": "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+    "role": "sharing lost on FIDELITY; NOT_WORTH_BUILDING as trivial shared basis"
+   },
+   {
+    "path": "tools/headless/shared_basis_coherent.py",
+    "receipt": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "role": "no coherent shared-basis point beats q2f on density and ns"
+   },
+   {
+    "path": "tools/headless/shared_basis_kernel.py",
+    "receipt": "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "role": "competent native kernel for shared-binary-basis MLP (dense, not MoE bank)"
+   },
+   {
+    "path": "hcli/agentos/flash_router_representation_ab.py",
+    "receipt": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+    "role": "bounded Flash shared-basis vs independent q4 slice; shared was larger"
+   },
+   {
+    "path": "workspace/campaign/odyssey/evidence/sub1/shared-basis.md",
+    "role": "SB1-SB9 proposals that do not assume expert redundancy; not a generator"
+   },
+   {
+    "path": "receipts/headless/ACCELERATOR_EXPERT_BATCH.json",
+    "role": "shared-x stacked independent W_e is a taller matvec; decode top-k marginal"
+   },
+   {
+    "path": "crates/hawking-core/shaders/qwen80_routed_expert_wave.metal",
+    "role": "current native path: per-expert packed GEMV, independent matrices"
+   }
+  ],
+  "named_paths_absent_from_this_worktree": [],
+  "not_duplicating": "expert_family_genome.py and q80_cross_expert_structure.py MEASURE a specimen. shared-basis.md PROPOSES mechanisms in prose. Neither emits a sealed candidate catalog with compute-sharing as a first-class axis and a watched-fail scar guard. This module extends that science; it does not fork a second genome.",
+  "note": "Naive expert sharing is already dead science. This module does not rerun it. Existing measurement tools fit specimens; this module generates unfitted structured candidates plus a scar guard. The named Flash doctor / route-conditioned / archetype screens are not in this tree.",
+  "qwen80_cross_expert_negative": {
+   "gate_k90": 84,
+   "gate_pairwise_cosine_mean": 0.004142791032791138,
+   "gate_subspace_overlap_top32": 0.02506876550614834,
+   "layer": 10,
+   "n_experts": 96,
+   "on_disk": true,
+   "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+   "reading": "Experts in this slice are mutually near-orthogonal as flattened W; a rank-32 shared weight subspace is not present. This kills raw global similarity, not one-sided / clustered / activation-space cousins.",
+   "up_pairwise_cosine_mean": -5.968913319520652e-05,
+   "up_subspace_overlap_top32": 0.020372524857521057
+  },
+  "scar_sources": {
+   "atlas": [
+    {
+     "on_disk": true,
+     "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "receipts/headless/EXPERT_FAMILY_GENOME.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "receipts/headless/SHARED_BASIS_COHERENT.json",
+     "role": "scar_source"
+    },
+    {
+     "on_disk": true,
+     "path": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+     "role": "scar_source"
+    }
+   ],
+   "consult_rule": "If NEGATIVE_SCIENCE_INDEX.json is present, extra DEAD/REFUTED phrases from it are unioned into the matcher. Else atlas files are read when on disk. Builtin scars always apply so a sparse checkout still refuses the three named dead families.",
+   "index_path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "index_present": true,
+   "named_flash_tools": [
+    {
+     "on_disk": true,
+     "path": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json"
+    },
+    {
+     "on_disk": true,
+     "path": "tools/flash_route_conditioned_shared_basis.py"
+    },
+    {
+     "on_disk": true,
+     "path": "tools/flash_route_archetype_sparse_screen.py"
+    },
+    {
+     "on_disk": true,
+     "path": "tools/flash_expert_bank_profile.py"
+    },
+    {
+     "on_disk": true,
+     "path": "tools/flash_doctor_bank_screen.py"
+    }
+   ]
+  }
+ },
+ "refusal_controls": [
+  {
+   "probe_id": "PROBE-RAW-GLOBAL-SIMILARITY",
+   "reason": "REFUSED PROBE-RAW-GLOBAL-SIMILARITY: dead hypothesis SCAR-RAW-GLOBAL-SIMILARITY (raw global expert similarity)",
+   "refused": true,
+   "scar_family": "RAW_GLOBAL_SIMILARITY",
+   "scar_id": "SCAR-RAW-GLOBAL-SIMILARITY"
+  },
+  {
+   "probe_id": "PROBE-TRIVIAL-SHARED-BASIS",
+   "reason": "REFUSED PROBE-TRIVIAL-SHARED-BASIS: dead hypothesis SCAR-TRIVIAL-SHARED-BASIS (trivial shared basis)",
+   "refused": true,
+   "scar_family": "TRIVIAL_SHARED_BASIS",
+   "scar_id": "SCAR-TRIVIAL-SHARED-BASIS"
+  },
+  {
+   "probe_id": "PROBE-UNCHANGED-ARCHETYPE",
+   "reason": "REFUSED PROBE-UNCHANGED-ARCHETYPE: dead hypothesis SCAR-UNCHANGED-ARCHETYPE (unchanged archetype)",
+   "refused": true,
+   "scar_family": "UNCHANGED_ARCHETYPE",
+   "scar_id": "SCAR-UNCHANGED-ARCHETYPE"
+  }
+ ],
+ "scar_sources_consulted": {
+  "atlas": [
+   {
+    "on_disk": true,
+    "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "receipts/headless/EXPERT_FAMILY_GENOME.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "receipts/headless/C1SHAREDBASIS_DESIGN.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "receipts/headless/SHARED_BASIS_COHERENT.json",
+    "role": "scar_source"
+   },
+   {
+    "on_disk": true,
+    "path": "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+    "role": "scar_source"
+   }
+  ],
+  "consult_rule": "If NEGATIVE_SCIENCE_INDEX.json is present, extra DEAD/REFUTED phrases from it are unioned into the matcher. Else atlas files are read when on disk. Builtin scars always apply so a sparse checkout still refuses the three named dead families.",
+  "index_path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+  "index_present": true,
+  "named_flash_tools": [
+   {
+    "on_disk": true,
+    "path": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json"
+   },
+   {
+    "on_disk": true,
+    "path": "tools/flash_route_conditioned_shared_basis.py"
+   },
+   {
+    "on_disk": true,
+    "path": "tools/flash_route_archetype_sparse_screen.py"
+   },
+   {
+    "on_disk": true,
+    "path": "tools/flash_expert_bank_profile.py"
+   },
+   {
+    "on_disk": true,
+    "path": "tools/flash_doctor_bank_screen.py"
+   }
+  ]
+ },
+ "schema": "hawking.future.expert_bank_school.v1",
+ "seal_sha256": "6aa4f337516dccc03de5a228585a5d346361ed9dbcd78339cc3eb86df12e85ed",
+ "storage_candidates": [
+  {
+   "axis": "STORAGE",
+   "capability_risk": "If left spaces are as disjoint as Q80 right spaces, U captures noise and every expert loses the same complement. Gate is the historical first-break organ.",
+   "cheapest_falsifier": "Instrument first on a planted U_shared @ C_e stack (must recover shared energy) and an orthogonal control (must not). Then, at a later funnel stage that owns a specimen, one layer / one organ / 8 experts: joint SVD of stacked W_e W_e^T energy in top-r. Kill if top-r energy is indistinguishable from the orthogonal null. Do not flatten-and-cosine. Do not fit the full bank in this lane.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Amortizes the wide output factor across E experts; per-expert payload shrinks to skinny C_e. Magnitude UNKNOWN pending specimen.",
+   "expected_compute_effect": "One shared expansion GEMV per token plus selected skinny maps. ns UNKNOWN (no GPU lease).",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-COMMON-LEFT-SUBSPACE",
+   "kind": "common_left_subspaces",
+   "mechanism": "common left subspaces: share an output-side factor U across experts; keep expert-specific right factors C_e. Algebra y = U @ (C_e @ x) without forming W_e = U @ C_e.",
+   "native_execution_concept": "Bind one U[d_model, r] per layer-organ and gathered C_e[r, d_in] for the selected experts. Compute z_e = C_e @ x (skinny), then y = U @ sum_e w_e z_e (or U @ z_e per expert if U is only partly shared). Never write W_e into DRAM.",
+   "scar_distance": "Not raw global similarity (does not flatten W or use pairwise cosine). Not a trivial shared basis (one-sided, not U_shared @ V_shared for all experts).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "Q80's pairwise cosine kill is on flattened W, not on a joint SVD of the stacked left spaces. Left (output) subspaces were never the measured object in QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE (that receipt reports right-subspace overlap of two experts). Geometry of down_proj is tall-output: sharing U amortizes the wide side."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "Q80 L10 pairwise right-overlap is already near null; a joint V may still exist and still be useless at the r that saves bytes. Do not treat a pairwise kill as this test, and do not treat a joint-V miss as a license to rerun flatten-and-cosine.",
+   "cheapest_falsifier": "Planted shared-V stack vs orthogonal control (instrument). Then one-layer joint SVD of stacked W_e^T W_e. Kill if top-r energy matches the orthogonal null at the r the byte plan needs. Pairwise overlap of two experts is not this test.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Amortizes the wide input factor; payload is skinny C_e. Magnitude UNKNOWN. Q80 pairwise overlap 0.025 is a prior that this may die.",
+   "expected_compute_effect": "One shared V @ x plus selected skinny maps. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-COMMON-RIGHT-SUBSPACE",
+   "kind": "common_right_subspaces",
+   "mechanism": "common right subspaces: share an input-side factor V across experts in WEIGHT space of the stacked bank; expert-specific left cores C_e. Algebra y_e = C_e @ (V @ x).",
+   "native_execution_concept": "Bind one V[r, d_in] and gathered C_e[d_out, r]. Compute z = V @ x once per organ (or once per layer if gate/up share V), then y_e = C_e @ z. Never form W_e = C_e @ V.",
+   "scar_distance": "Not trivial shared basis (one-sided joint factor of the stack, not one unconditioned basis plus nf4 residual on raw W). Not activation-PCA (that is shared_input_transforms).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "A joint right factor of the expert STACK is a different object from pairwise top-32 overlap of expert 0 vs 1 (Q80 overlap 0.025 is a risk, not a joint-SVD kill). If a low-rank joint V exists, every selected expert reuses one V @ x."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "If C_e must be nearly square at full rank, this is a byte loss (U,V plus cores exceed independent W). Capability follows the core rank: too-small C_e is a systematic, all-expert failure.",
+   "cheapest_falsifier": "Planted sandwich recovers C_e energy; orthogonal W_e must force r \u2248 min(d_out, d_in) to fit. Kill if the r that beats independent coding is not small enough to cut bytes after storing U and V once.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Payload per expert is C_e; U,V amortized over E. Win only if r is small. Magnitude UNKNOWN.",
+   "expected_compute_effect": "Two shared GEMVs per token plus a tiny core GEMV per selected expert. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-EXPERT-SMALL-CORE",
+   "kind": "expert_specific_small_cores",
+   "mechanism": "expert-specific small cores: W_e \u2248 U @ C_e @ V with C_e a small r x r (or r x s) core unique to the expert; U, V shared.",
+   "native_execution_concept": "Bind U, V once and C_e for selected experts. Path: z = V @ x, u_e = C_e @ z, y_e = U @ u_e (or fused). Three GEMVs, none of which materializes W_e. C_e stays in registers if r is small.",
+   "scar_distance": "Not an unchanged archetype (the core changes per expert). Not a trivial shared basis (sandwich with a mixing core, not residual on a frozen shared W).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "Orthogonality of flattened W does not forbid a shared sandwich with a mixing core. The core is the expert's identity; U and V are the bank's geometry. This is a parameterization, not a claim that experts look alike."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "Depth layers may have a flat expert-mode spectrum the way they have a flat Van Loan spectrum. Do not transfer the L0 Kronecker win to the bank, and do not transfer the depth Kronecker kill to the bank without measuring the expert mode.",
+   "cheapest_falsifier": "Do not rerun single-tensor Kronecker at depth. Falsify the BANK decomposition: CP rank needed for a planted 3-way vs for real stack energy (later funnel). Kill if CP rank scales like E * min(d_out, d_in) (then there is no expert-mode structure).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "If the expert mode has low CP/Tucker rank, bytes scale as R*(E + d_out + d_in) not E*d_out*d_in. Magnitude UNKNOWN. L0 single-tensor Kronecker remaining live is a different object.",
+   "expected_compute_effect": "R shared rank-1 (or Tucker) contractions instead of E independent matvecs. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-TENSOR-DECOMPOSITION",
+   "kind": "tensor_decomposition",
+   "mechanism": "tensor decomposition of the expert BANK as a 3-way tensor (expert \u00d7 out \u00d7 in): CP / Tucker / tensor-train on the stack, consumed factor-wise.",
+   "native_execution_concept": "Store CP atoms (a_r, u_r, v_r) or Tucker (G, A, U, V). Native: y = sum_r a_e,r * (u_r @ (v_r @ x)) or the Tucker contraction along in, then mix by expert row of A. Never reconstruct a dense slice W_e.",
+   "scar_distance": "Not NNS-016 (that is one expert tensor, Kronecker/TT/low-rank, layers >= 1). The expert index is an additional mode.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "Single-tensor Kronecker of one expert at layers >= 1 is dead (flat Van Loan spectrum; NNS-016) with a named L0 exception. A 3-way decomposition of the bank can exist even when each slice is full-rank and pairwise cosine is ~0, because the expert mode is a new axis."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "Atlas expert-merging is DEAD (best survivor rel-err ~0.89-1.0). A cluster that silently becomes a merge will inherit that wall. Capability islands may not match cosine clusters.",
+   "cheapest_falsifier": "Kill if the K that beats the orthogonal null is ~E (then clustering is a rename of independent experts). Kill if the method reconstructs a held-out expert from cluster mates (that is dead expert-merging, atlas expert_merging_omitted_from_survivors / NNS-023).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "K shared wide factors plus skinny members. Win vs one-space only if K is small. Magnitude UNKNOWN.",
+   "expected_compute_effect": "Up to min(K_selected, top-k) shared transforms per token. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-CLUSTERED-SUBSPACES",
+   "kind": "clustered_subspaces",
+   "mechanism": "clustered subspaces: partition experts into K << E clusters; each cluster shares a left or right factor; members keep a skinny residual. All experts remain present.",
+   "native_execution_concept": "Bind K shared factors and a cluster-id table (log2 K bits/expert). Selected expert e in cluster k uses V_k @ x then C_e. Gather V_k by cluster id, not by reconstructing W_e.",
+   "scar_distance": "Not raw global similarity (K spaces, not one). Not expert merging (every expert is stored; no omitted-expert reconstruction). Not an unchanged archetype (cluster factor plus member residual).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "Global one-space sharing can fail while K cluster spaces succeed. Q80 k90=84/96 in expert-space energy says a SINGLE shared space needs almost E components; that does not bound K-way clustered spaces. This is not merging: omitted experts are not reconstructed."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "Raw-weight PQ/VQ at one bit collapsed on real forwards. Dictionary atoms that are just a PQ codebook on frozen W inherit that kill. Apple GPU large-LUT gather is also a dead lever.",
+   "cheapest_falsifier": "Kill if the K needed to hit a planted reconstruction is so large the dictionary plus codes exceed independent coding. Kill if atoms are applied by densifying W_e. Do not entropy-code Lloyd indices as the byte win (atlas entropy_coded_pq_indices).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Atoms amortized; per-expert payload is sparse codes. Win only at tiny K and lookup-free consume. Magnitude UNKNOWN.",
+   "expected_compute_effect": "nnz(e) atom applications per selected expert. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-DICTIONARY-FAMILIES",
+   "kind": "dictionary_families",
+   "mechanism": "dictionary families: a shared dictionary of linear atoms; each expert is a sparse combination of those atoms, executed as a sum of gathered low-rank factors.",
+   "native_execution_concept": "Keep dictionary atoms as GEMM factors in registers/SRAM (tiny K). Expert e holds sparse indices and scales. y_e = sum_{k in supp(e)} s_{e,k} * (atom_k @ x). Lookup-free FMA. Never densify W_e from the atom sum. Large LUT gathers are a recorded dead lever.",
+   "scar_distance": "Not NS-010 unconditioned shared codebook on raw routed-expert weights. Not a single unchanged template. Not SB6-large-LUT.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "A single shared template is null (0.2513 vs 0.2500). A dictionary of many atoms with sparse codes can still span orthogonal experts the way a codebook spans orthogonal residuals, without claiming experts are similar. Source must not be raw-weight PQ (NS-raw-PQ dead at ~1 and ~0.49 BPW)."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "If the router score does not predict the needed adaptation, this becomes the dead template with extra math. Over-mixing can smear capability across experts the router meant to keep distinct.",
+   "cheapest_falsifier": "Kill if g(\u03c0)=constant on held-out routes (then this collapses to the unchanged-archetype scar). Kill if mixing K archetypes cannot beat a single archetype by more than the orthogonal-null margin that already killed templates (0.0013 energy).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "K archetypes plus a conditioner instead of E full experts. Magnitude UNKNOWN.",
+   "expected_compute_effect": "One conditioned mix plus the shared transform. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-ROUTE-CONDITIONED-ARCHETYPES",
+   "kind": "route_conditioned_archetypes",
+   "mechanism": "route-conditioned archetypes: a small set of archetypal operators specialized by the live router score (or top-k identity), producing an adapted expert without storing a full W_e.",
+   "native_execution_concept": "Bind K archetypal factors. Given router scores \u03c0, form a mixed core C(\u03c0) = sum_k g_k(\u03c0) C_k (or a sparse top-k mix) and apply C(\u03c0) @ (V @ x) natively. The kernel reads \u03c0 and the archetypal factors; it does not write a dense adapted W.",
+   "scar_distance": "Not an unchanged archetype: the operator depends on the live route. The named Flash route-conditioned / archetype-sparse tools are absent from this tree; this candidate is the untested structured form, not a rerun of a missing screen.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "Unchanged templates failed because they ignore the route. The router already computed a cheap score per expert; using that score as a conditioner is information the dead template threw away. Adaptation can be a scale, a mixing of K archetypes, or a low-rank delta gated by the score."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "An underfit G is a systematic capability failure across the bank. NNS-024 remains in force if the generator is just a shared template in disguise.",
+   "cheapest_falsifier": "Kill if ||G(h_e) - target_factors|| requires h_e or G large enough that embeddings+G exceed independent skinny factors. Kill if G emits dense W. Do not score this by pairwise cosine of W.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "G stored once; payload is h_e. Win only if dim(h_e)+|G| << E*|W|. Magnitude UNKNOWN.",
+   "expected_compute_effect": "Token path identical to the emitted-factor kernel; G is bind-time. ns UNKNOWN on the token path by construction.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-EXPERT-EMBEDDING-GENERATOR",
+   "kind": "expert_embeddings_generators",
+   "mechanism": "expert embeddings / generators: each expert is a small embedding h_e; a shared generator G maps h_e to the factors a kernel consumes (cores, codes, or skinny maps), not to a dense W_e.",
+   "native_execution_concept": "At bind time, G(h_e) emits C_e (or sparse codes) into the same buffers the small-core / dictionary kernel already consumes. The token path never calls G if cores are materialized as skinny factors; G is a storage generator, not a per-token network. Never emit dense W_e from G.",
+   "scar_distance": "Not NNS-024 procedural generated expert bases on orthogonal experts: this does not assume similarity and does not emit W. Not an unchanged archetype (h_e differs; G is shared).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "NNS-024 killed generated bases that buy bits BECAUSE experts are similar. A generator as a compressed parameterization can represent orthogonal experts if G is expressive; the embedding is identity, not a similarity exploit. Bytes live in G once plus E embeddings."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "If XX^T energy at r is low, every expert loses the same complement (systematic). Gate/up historically break first. Gaussian X is a recorded artifact (NS-009 / NNS-001) and is forbidden as the falsifier's input.",
+   "cheapest_falsifier": "One layer, one organ, real X (never Gaussian). Uncoded V from activation PCA; reconstruct C_e (V x) vs W_e x. Kill if output cosine is no better than an orthogonal-V control at the r the byte plan needs. If uncoded already dies, quantizing C_e cannot save it. Do not run on a specimen in this lane.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Skinny payload scales as r/d_in of the expert mass plus amortized V. Algebraic identity only; magnitude UNKNOWN pending specimen.",
+   "expected_compute_effect": "One shared V @ x plus top-k skinny maps, vs top-k full matvecs. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-SHARED-INPUT-TRANSFORM",
+   "kind": "shared_input_transforms",
+   "mechanism": "shared input transforms: one activation-space transform z = V @ x from the real residual stream (PCA / Hessian-weighted), then expert-specific skinny maps on z. Experts may be orthogonal as W and still share input covariance.",
+   "native_execution_concept": "Compute z = V @ x once per layer (serves gate+up if they share V). Selected experts apply skinny C_e to z. Down: skinny then shared U. Lookup-free GEMM. Forbidden: materialize W_e = C_e V then qmm.",
+   "scar_distance": "Not trivial shared basis (activation-space V, not a shared weight basis plus residual on W). Not raw global similarity (does not use W cosine).",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "The surviving premise of the shared-basis packet: the residual stream is one vector. Weight-space tying is dead; sharing the transform of x does not require W cosine. This is SB1 in that packet, never fitted here, still untested on a Doctor path."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "If experts need distinct output directions, a shared U smears them. Combining in latent is algebraically exact only when U is shared; a hybrid (clustered U) must not pretend otherwise.",
+   "cheapest_falsifier": "Kill if a shared U at the r that saves bytes cannot match per-expert expansions on a planted sandwich; then on one layer down_proj at a later stage. Kill if combine-in-latent disagrees with expand-then-sum by more than the combiner's linearity allows (it must be identical when U is fully shared).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Amortizes tall down expansion. Magnitude UNKNOWN.",
+   "expected_compute_effect": "One expansion GEMV instead of top-k expansions. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-SHARED-OUTPUT-LATENT",
+   "kind": "shared_output_latent_spaces",
+   "mechanism": "shared output latent spaces: each expert emits a small latent u_e; a shared U expands to d_model. Combine can happen in the latent. Dual of shared input transforms, on the output side.",
+   "native_execution_concept": "Selected experts write u_e into an r-vector. Kernel does u = sum_e \u03c0_e u_e then y = U @ u, or y_e = U @ u_e if U is only partly shared. U is bound once. Never store or form W_down,e.",
+   "scar_distance": "Not a trivial shared basis (output-side only, combine-in-latent is part of the object). Not mean-expert subtraction.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "down_proj is the historically tolerant organ (hgravs01 live on Q80 down as a per-expert low-rank screen). Sharing the expansion U is the storage form of 'one output expansion' on the compute axis. Combine-in-latent is cheaper than expand-then-sum."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "A bad predictor adds a residual as large as the original factor (byte loss). Do not confuse a small W-cosine with a small factor residual; they are different measurements.",
+   "cheapest_falsifier": "Kill if residual energy of predicted factors is ~1 (then prediction is a no-op, matching the tying control). The test is on factors, not on flattened W. Do not reopen same-index W tying.",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Stores residual of predicted factors, not a second full bank. Win only if the residual is small. Magnitude UNKNOWN.",
+   "expected_compute_effect": "Token path unchanged if residuals are fused at bind. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-CROSS-LAYER-EXPERT-PREDICTION",
+   "kind": "cross_layer_expert_prediction",
+   "mechanism": "cross-layer expert prediction: predict layer L+1's expert factors from layer L's (same index or learned map); store only the residual of that prediction. Weights are not tied.",
+   "native_execution_concept": "Bind predictors P that map C_e,L -> C_e,L+1_hat as a small linear map on factors. Token path uses the residual-corrected factors already in the same skinny buffers. No dense W_L or W_{L+1}.",
+   "scar_distance": "Not same-index cross-layer weight tying (atlas / NNS-024). The stored object is a factor residual, not tied W.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "Same-index WEIGHT tying is dead (control at 1e-7). Predicting a skinny core or code, and storing the residual, is a delta-code of factors, not a tie of W. Adjacent layers see related residual streams even when W cosine is ~0."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "If shared_op is the mean, this IS the dead noetic hypothesis. If residual is dense, bytes do not move. Capability dies when the residual cannot carry the expert's distinct function.",
+   "cheapest_falsifier": "Kill if ||residual_e|| / ||expert_e|| is ~1 on the named shared_op (mean-expert already showed this). The falsifier must name the shared_op; 'the mean' is not an allowed shared_op. Do not merge omitted experts from residuals (NNS-023).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Shared op stored once; per-expert payload is the residual. Win iff residual is small. Magnitude UNKNOWN.",
+   "expected_compute_effect": "One shared_op plus top-k skinny residuals. ns UNKNOWN.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-CONDITIONAL-RESIDUAL",
+   "kind": "conditional_residuals",
+   "mechanism": "conditional residuals: y = shared_op(x) + residual_e(x), where shared_op is a learned or architecture-native shared operator (not the mean expert) and residual_e is skinny / sparse / gated.",
+   "native_execution_concept": "Compute y_shared = shared_op(x) once. Selected experts add R_e @ z (skinny) or a sparse residual. Sum. Never form W_e = W_shared + R_e as a dense matrix.",
+   "scar_distance": "Not shared-mean subtraction (explicitly forbidden as shared_op). Not expert merging. Not an unchanged archetype.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "Subtracting the mean expert leaves residual norm 0.984 (EXPERT_FAMILY_GENOME noetic REFUTED). A learned or native shared op (Flash/Qwen shared expert, or a fitted shared SwiGLU) can still leave a small residual even when the mean is useless. SB4 in the shared-basis packet is this idea for models that already have a shared expert; it was not fitted here."
+  },
+  {
+   "axis": "STORAGE",
+   "capability_risk": "Wrong island labels mix a sensitive expert into a tolerant codec and fail capability first. Uniform sub-bit across islands is the dead lever this exists to avoid.",
+   "cheapest_falsifier": "Kill if island labels derived from a capability screen do not reduce per-island joint-SVD null-gap vs the global null (then the partition is cosmetic). Kill if the partition is used to justify a single codec family across organs (NNS-018).",
+   "evidence_class": "STATIC_ONLY",
+   "expected_byte_effect": "Sharing confined to tolerant islands; sensitive islands may store independent. Net byte effect UNKNOWN and possibly small.",
+   "expected_compute_effect": "Per-island native paths; extra dispatch topology. ns UNKNOWN and possibly worse if islands fragment the wave.",
+   "forbids_dense_rematerialization": true,
+   "id": "STORE-CAPABILITY-ISLANDS",
+   "kind": "capability_sensitive_expert_islands",
+   "mechanism": "capability-sensitive expert islands: partition the bank by capability / organ sensitivity (gate vs down, layer-band, tool vs language), and share structure only inside an island. Islands may use different mechanisms.",
+   "native_execution_concept": "Tag experts/organs with an island id. Each island binds its own shared factors and native path (e.g. down island uses shared U, gate island stays independent or uses a milder skinny). The kernel dispatches per island; it does not densify a mixed W.",
+   "scar_distance": "Not raw global similarity (partitioned on purpose). Not a single unconditioned shared basis across the bank.",
+   "status": "HYPOTHESIS_UNFITTED",
+   "why_it_might_work": "NS-uniform-subbit / NNS-018: organs do not fail together; a single family across gate/up/down is INSUFFICIENT. Sharing that ignores the split will re-kill on the sensitive organ. Islands make that split the partition, so sharing is only attempted where the organ is tolerant."
+  }
+ ],
+ "version": 1
+}

@@ -1,0 +1,789 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:18:06Z",
+  "recorded_by": "tools/future/orchestration.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bound": [
+  {
+   "frontier_item": "FT.GPU_KERNELS.static-warnings",
+   "module": "abi_verdicts.py",
+   "receipt": "ABI_VERDICT_HARNESS.json",
+   "species": "HOST_SHADER_ABI_VERIFY"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.tournament-refuse",
+   "module": "abliteration.py",
+   "receipt": "ABLITERATION.json",
+   "species": "ABLITERATION"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.ready-protected",
+   "module": "accelerator_workunits.py",
+   "receipt": "ACCELERATOR_WORKUNITS.json",
+   "species": "ACCELERATOR_SPECIES"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "adaptive_verification.py",
+   "receipt": "ADAPTIVE_VERIFICATION.json",
+   "species": "MULTI_FIDELITY_SCREEN"
+  },
+  {
+   "frontier_item": "FT.ANE.preboard",
+   "module": "ane_preboard.py",
+   "receipt": "ANE_PREBOARD.json",
+   "species": "ANE_PREBOARD"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "autonomy_scars.py",
+   "receipt": "AUTONOMY_SCARS.json",
+   "species": "AUTONOMY_DEFECT"
+  },
+  {
+   "frontier_item": "FT.CHILD_RESIDENT.launch",
+   "module": "autonomy_trial.py",
+   "receipt": "AUTONOMY_TRIALS.json",
+   "species": "AUTONOMY_TRIAL"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.ready-protected",
+   "module": "candidate_planner.py",
+   "receipt": "CANDIDATE_STAGED_PLAN.json",
+   "species": "FACTORIAL_COMBINATION"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.static-warnings",
+   "module": "claude_abi_adjudication.py",
+   "receipt": "CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+   "species": "HOST_SHADER_ABI_VERIFY"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "codex_behaviors.py",
+   "receipt": "CODEX_WORKUNIT_SPECIES.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.TOOLS.propagate-skips",
+   "module": "codex_ingest.py",
+   "receipt": "CODEX_INGEST_STATE.json",
+   "species": "INGEST_PROPAGATE"
+  },
+  {
+   "frontier_item": "FT.LATENCY.cpu-turnaround",
+   "module": "concurrency_doctor.py",
+   "receipt": "RESIDENT_CONCURRENCY_DOCTOR.json",
+   "species": "CONCURRENCY_DOCTOR"
+  },
+  {
+   "frontier_item": "FT.ODYSSEY_TRANSFER.re-earn",
+   "module": "consolidated_run.py",
+   "receipt": "ODYSSEY_CONSOLIDATED_RUN.json",
+   "species": "ODYSSEY_RUN_DESCRIPTOR"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.contamination",
+   "module": "contamination.py",
+   "receipt": "CONTAMINATION_SCIENCE.json",
+   "species": "DIAGNOSTIC_AB"
+  },
+  {
+   "frontier_item": "FT.ARCHITECTURE_REPATRIATION.compile-specs",
+   "module": "cuda_lowbit_hypotheses.py",
+   "receipt": "CUDA_LOWBIT_HYPOTHESES.json",
+   "species": "SEARCH_ARCHITECTURE_LAWS"
+  },
+  {
+   "frontier_item": "FT.TOOLS.freshness",
+   "module": "debugger.py",
+   "receipt": "DEBUGGER_LAB.json",
+   "species": "TOOL_PROBE"
+  },
+  {
+   "frontier_item": "FT.DECODING.cost-model",
+   "module": "decode_civilization.py",
+   "receipt": "DECODE_CIVILIZATION.json",
+   "species": "PROFILE_COMPLETE_TOKEN"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.no-launch",
+   "module": "detached.py",
+   "receipt": "DETACHED_EXECUTION.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.ARCHITECTURE_REPATRIATION.device-run",
+   "module": "device_ascension_pipeline.py",
+   "receipt": "DEVICE_ASCENSION_PIPELINE.json",
+   "species": "DEVICE_ASCENSION"
+  },
+  {
+   "frontier_item": "FT.TOOLS.freshness",
+   "module": "devplatform.py",
+   "receipt": "DEVELOPER_PLATFORM.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.contamination",
+   "module": "dirty_measure.py",
+   "receipt": "DIRTY_MEASUREMENT.json",
+   "species": "DIAGNOSTIC_AB"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "ebpw_categories.py",
+   "receipt": "EBPW_CATEGORY_VALIDATOR.json",
+   "species": "NOETIC_COMPILE"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "evidence_dag.py",
+   "receipt": "EVIDENCE_DAG.json",
+   "species": "ADAPTIVE_VERIFY"
+  },
+  {
+   "frontier_item": "FT.CONTEXT.disk-authority",
+   "module": "evidence_snapshot.py",
+   "receipt": "EVIDENCE_SNAPSHOT.json",
+   "species": "EVIDENCE_PIN"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.ngram-school",
+   "module": "expert_bank_school.py",
+   "receipt": "EXPERT_BANK_SCHOOL.json",
+   "species": "GRAVITY_SEARCH"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.hard-gates",
+   "module": "external_specimen_seal.py",
+   "receipt": "EXTERNAL_SPECIMEN_SEAL.json",
+   "species": "EXTERNAL_SPECIMEN"
+  },
+  {
+   "frontier_item": "FT.CHILD_RESIDENT.install-dry-run",
+   "module": "fallback_resident.py",
+   "receipt": "FALLBACK_RESIDENT.json",
+   "species": "RESIDENT_FALLBACK"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "flash_bpw_ladder.py",
+   "receipt": "FLASH_BPW_LADDER.json",
+   "species": "EBPW_LADDER"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "flash_meta_replan.py",
+   "receipt": "FLASH_META_REPLAN.json",
+   "species": "META_REPLAN"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "flash_nr_complete.py",
+   "receipt": "FLASH_NR_COMPLETE.json",
+   "species": "NOETIC_COMPILE"
+  },
+  {
+   "frontier_item": "FT.MODEL_EXECUTION.complete-token",
+   "module": "flash_nx_audit.py",
+   "receipt": "FLASH_NX_COMPLETENESS_AUDIT.json",
+   "species": "NX_COMPLETENESS_AUDIT"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "flash_organ_pivot.py",
+   "receipt": "FLASH_ORGAN_PIVOT.json",
+   "species": "ORGAN_PIVOT"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "flash_organ_workgraphs.py",
+   "receipt": "FLASH_ORGAN_WORKGRAPHS.json",
+   "species": "ORGAN_WORKGRAPH"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "flash_schools.py",
+   "receipt": "FLASH_ORGAN_SCHOOLS.json",
+   "species": "GRAVITY_SEARCH"
+  },
+  {
+   "frontier_item": "FT.FPGA.engine-sim",
+   "module": "fpga_engines.py",
+   "receipt": "FPGA_ENGINE_SCHOOL.json",
+   "species": "FPGA_SIMULATION"
+  },
+  {
+   "frontier_item": "FT.FPGA.engine-sim",
+   "module": "fpga_fidelity.py",
+   "receipt": "FPGA_MULTIFIDELITY.json",
+   "species": "FPGA_SIMULATION"
+  },
+  {
+   "frontier_item": "FT.EXPERIMENT_TURNAROUND.refresh",
+   "module": "freshness.py",
+   "receipt": "DERIVED_FRESHNESS.json",
+   "species": "DERIVED_REFRESH"
+  },
+  {
+   "frontier_item": "FT.TOOLS.frontiers-refill",
+   "module": "frontiers.py",
+   "receipt": "FRONTIER_STATE.json",
+   "species": "FRONTIER_REFILL"
+  },
+  {
+   "frontier_item": "FT.MODEL_EXECUTION.fusion-sim",
+   "module": "fusion_sim.py",
+   "receipt": "FUSION_SIMULATION.json",
+   "species": "FUSION_SIMULATION"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.no-launch",
+   "module": "git_lock_doctor.py",
+   "receipt": "GIT_LOCK_DURABILITY_REPORT.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.CONTEXT.open-question",
+   "module": "global_frontier.py",
+   "receipt": "CLAUDE_GLOBAL_FRONTIER.json",
+   "species": "FRONTIER_REFILL"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.contamination",
+   "module": "green_machine.py",
+   "receipt": "GREEN_MACHINE.json",
+   "species": "GREEN_MEASURE"
+  },
+  {
+   "frontier_item": "FT.FPGA.hardware-doctor",
+   "module": "hardware_doctor.py",
+   "receipt": "HARDWARE_DOCTOR.json",
+   "species": "HARDWARE_DOCTOR"
+  },
+  {
+   "frontier_item": "FT.ACTIVE_BYTES.hbm-rank",
+   "module": "hbm_doctor.py",
+   "receipt": "HBM_DOCTOR.json",
+   "species": "HBM_RESIDENCY"
+  },
+  {
+   "frontier_item": "FT.LATENCY.cpu-turnaround",
+   "module": "hcli_self_profile.py",
+   "receipt": "HCLI_SELF_PROFILE.json",
+   "species": "HCLI_SELF_OPTIMIZATION"
+  },
+  {
+   "frontier_item": "FT.MEMORY.hmf",
+   "module": "hmf_objects.py",
+   "receipt": "HMF_MANAGED_OBJECTS.json",
+   "species": "HMF_COHERENCE"
+  },
+  {
+   "frontier_item": "FT.PHYSICAL_GRAPH.hwir-lower",
+   "module": "hwir.py",
+   "receipt": "HWIR_V1.json",
+   "species": "HWIR_LOWER"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "lpc_baselines.py",
+   "receipt": "LPC_BASELINES.json",
+   "species": "LEARNED_COMPILER_ROW"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "lpc_dataset.py",
+   "receipt": "LPC_DATASET.json",
+   "species": "LEARNED_COMPILER_ROW"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "meta_funnel.py",
+   "receipt": "META_EXPERIMENT_FUNNEL.json",
+   "species": "GRAVITY_SEARCH"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "meta_ready.py",
+   "receipt": "META_DOWNSTREAM_READY.json",
+   "species": "GRAVITY_SEARCH"
+  },
+  {
+   "frontier_item": "FT.MODEL_EXECUTION.complete-token",
+   "module": "metal_reachability.py",
+   "receipt": "METAL_REACHABILITY.json",
+   "species": "HOST_CAPABILITY"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "model_bearing.py",
+   "receipt": "MODEL_BEARING.json",
+   "species": "MODEL_BEARING"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.flash-nx",
+   "module": "moe_physical_school.py",
+   "receipt": "MOE_PHYSICAL_SCHOOL.json",
+   "species": "GENERATE_KERNEL_CANDIDATE"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "mutation_engine.py",
+   "receipt": "MUTATION_ENGINE.json",
+   "species": "MUTATION_ENGINE"
+  },
+  {
+   "frontier_item": "FT.CONTEXT.disk-authority",
+   "module": "mutation_surface.py",
+   "receipt": "CODEX_MUTATION_SURFACE.json",
+   "species": "EVIDENCE_PIN"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.negative-index",
+   "module": "negative_index.py",
+   "receipt": "NEGATIVE_SCIENCE_INDEX.json",
+   "species": "UPDATE_SCAR"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.ngram-school",
+   "module": "ngram_school.py",
+   "receipt": "NGRAM_SCHOOL.json",
+   "species": "GRAVITY_SEARCH"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "no_wait_scheduler.py",
+   "receipt": "NO_WAIT_SCHEDULER.json",
+   "species": "NO_WAIT_SCHEDULING"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.flash-nx",
+   "module": "nr_nx_generic.py",
+   "receipt": "NR_NX_GENERIC.json",
+   "species": "NR_NX_GENERIC"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.flash-nx",
+   "module": "nr_nx_path.py",
+   "receipt": "NR_NX_PATH.json",
+   "species": "NR_NX_PATH_MAP"
+  },
+  {
+   "frontier_item": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+   "module": "odyssey2_law_store.py",
+   "receipt": "ODYSSEY2_LAW_STORE.json",
+   "species": "TRANSFER_LAW"
+  },
+  {
+   "frontier_item": "FT.ODYSSEY_ADVERSARY.attacks",
+   "module": "odyssey3_adversary.py",
+   "receipt": "ODYSSEY3_ADVERSARY.json",
+   "species": "ATTACK_LAW"
+  },
+  {
+   "frontier_item": "FT.ODYSSEY_TRANSFER.re-earn",
+   "module": "odyssey_launch.py",
+   "receipt": "ODYSSEY_LAUNCH_GATE.json",
+   "species": "ODYSSEY_LAUNCH_GATE"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+   "module": "odyssey_tool_driver.py",
+   "receipt": "ODYSSEY_TOOL_DRIVER.json",
+   "species": "ODYSSEY_TOOL_DRIVER"
+  },
+  {
+   "frontier_item": "FT.PHYSICAL_GRAPH.p6-projection",
+   "module": "p6_projection.py",
+   "receipt": "P6_PRIMITIVE_PROJECTION.json",
+   "species": "SEARCH_ARCHITECTURE_LAWS"
+  },
+  {
+   "frontier_item": "FT.ODYSSEY_TRANSFER.re-earn",
+   "module": "phase_listeners.py",
+   "receipt": "PHASE_LISTENERS.json",
+   "species": "PHASE_LISTENER"
+  },
+  {
+   "frontier_item": "FT.MODEL_EXECUTION.static-skeleton",
+   "module": "physical_primitives.py",
+   "receipt": "PHYSICAL_PRIMITIVES.json",
+   "species": "PHYSICAL_GRAPH_SEARCH"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "power_torture.py",
+   "receipt": "POWER_TORTURE.json",
+   "species": "POWER_TORTURE"
+  },
+  {
+   "frontier_item": "FT.TOOLS.propagate-skips",
+   "module": "propagate.py",
+   "receipt": "PROPAGATION_STATE.json",
+   "species": "INGEST_PROPAGATE"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.ready-protected",
+   "module": "protected_scheduler.py",
+   "receipt": "PROTECTED_SCHEDULER.json",
+   "species": "PROTECTED_SCHEDULER"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.ready-protected",
+   "module": "protected_window.py",
+   "receipt": "PROTECTED_WINDOW_PLAN.json",
+   "species": "PROTECTED_AB"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.ready-protected",
+   "module": "qualification_pipeline.py",
+   "receipt": "QUALIFICATION_PIPELINE.json",
+   "species": "PROTECTED_AB"
+  },
+  {
+   "frontier_item": "FT.LATENCY.gpu-ns",
+   "module": "qwen27_profile_schema.py",
+   "receipt": "QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+   "species": "PROFILE_COMPLETE_TOKEN"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "repro_science.py",
+   "receipt": "REPRO_SCIENCE.json",
+   "species": "INDEPENDENT_REPRODUCTION"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "resident_api.py",
+   "receipt": "RESIDENT_API_AUDIT.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.no-launch",
+   "module": "resident_health.py",
+   "receipt": "RESIDENT_HEALTH.json",
+   "species": "RESIDENT_TELEMETRY"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "resident_identity.py",
+   "receipt": "RESIDENT_IDENTITY.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.hard-gates",
+   "module": "resident_install.py",
+   "receipt": "RESIDENT_INSTALL_CONTRACT.json",
+   "species": "CAPABILITY_GATE"
+  },
+  {
+   "frontier_item": "FT.CHILD_RESIDENT.optimizer",
+   "module": "resident_optimizer.py",
+   "receipt": "RESIDENT_OPTIMIZER.json",
+   "species": "CHILD_PROPOSAL"
+  },
+  {
+   "frontier_item": "FT.CHILD_RESIDENT.install-dry-run",
+   "module": "resident_provider.py",
+   "receipt": "RESIDENT_PROVIDER.json",
+   "species": "RESIDENT_PROVIDER"
+  },
+  {
+   "frontier_item": "FT.CHILD_RESIDENT.install-dry-run",
+   "module": "restart_supervisor.py",
+   "receipt": "RESTART_SUPERVISOR.json",
+   "species": "RESIDENT_RESTART"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "rival_codec_screen.py",
+   "receipt": "RIVAL_CODEC_SCREEN.json",
+   "species": "RIVAL_CODEC_SCREEN"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "module": "router_science.py",
+   "receipt": "ROUTER_SENSITIVE_ALLOCATION.json",
+   "species": "GRAVITY_SEARCH"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.no-launch",
+   "module": "sandbox.py",
+   "receipt": "RESIDENT_SANDBOX.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.negative-index",
+   "module": "scar_scheduling.py",
+   "receipt": "SCAR_SCHEDULING.json",
+   "species": "UPDATE_SCAR"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.hard-gates",
+   "module": "specimen_verify.py",
+   "receipt": "SPECIMEN_VERIFICATION.json",
+   "species": "SPECIMEN_VERIFY"
+  },
+  {
+   "frontier_item": "FT.EXPERIMENT_TURNAROUND.refresh",
+   "module": "sprint_profile.py",
+   "receipt": "ODYSSEY_LAUNCH_SPRINT_PROFILE.json",
+   "species": "WALL_ATTRIBUTION"
+  },
+  {
+   "frontier_item": "FT.GPU_KERNELS.static-warnings",
+   "module": "static_kernel_verify.py",
+   "receipt": "STATIC_KERNEL_PREFLIGHT.json",
+   "species": "STATIC_KERNEL_VERIFY"
+  },
+  {
+   "frontier_item": "FT.MODEL_EXECUTION.static-skeleton",
+   "module": "static_skeleton.py",
+   "receipt": "STATIC_SKELETON.json",
+   "species": "PHYSICAL_GRAPH_SEARCH"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.negative-index",
+   "module": "status_causality.py",
+   "receipt": "STATUS_CAUSALITY_CHALLENGE.json",
+   "species": "STATUS_CHALLENGE"
+  },
+  {
+   "frontier_item": "FT.CHILD_RESIDENT.install-dry-run",
+   "module": "succession.py",
+   "receipt": "SUCCESSION.json",
+   "species": "CHILD_PROPOSAL"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.hard-gates",
+   "module": "super_resident.py",
+   "receipt": "SUPER_RESIDENT_FLOOR.json",
+   "species": "CAPABILITY_GATE"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.hard-gates",
+   "module": "tabula.py",
+   "receipt": "TABULA_FLOOR.json",
+   "species": "CAPABILITY_GATE"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.teacher-capture",
+   "module": "teacher_corpus.py",
+   "receipt": "TEACHER_CORPUS_CONTRACT.json",
+   "species": "TEACHER_CAPTURE"
+  },
+  {
+   "frontier_item": "FT.MODEL_REPRESENTATION.teacher-capture",
+   "module": "teacher_corpus_expansion.py",
+   "receipt": "TEACHER_CORPUS_EXPANSION.json",
+   "species": "TEACHER_PLAN"
+  },
+  {
+   "frontier_item": "FT.MODEL_CAPABILITY.tournament-refuse",
+   "module": "tournament.py",
+   "receipt": "TOURNAMENT_READINESS.json",
+   "species": "CAPABILITY_GATE"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "trial_freeze.py",
+   "receipt": "HCLI_AUTONOMY_BUILD.json",
+   "species": "TRIAL_BUILD_SEAL"
+  },
+  {
+   "frontier_item": "FT.VERIFICATION.repro",
+   "module": "trial_workload.py",
+   "receipt": "TRIAL_WORKLOAD.json",
+   "species": "TRIAL_WORKLOAD"
+  },
+  {
+   "frontier_item": "FT.LATENCY.cpu-turnaround",
+   "module": "turnaround.py",
+   "receipt": "EXPERIMENT_TURNAROUND.json",
+   "species": "PROFILE_HOST_CEREMONY"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.no-launch",
+   "module": "wakeup.py",
+   "receipt": "RECEIPT_WAKEUP.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "work_events.py",
+   "receipt": "WORK_EVENT_CONTRACT.json",
+   "species": "EVENT_CONTRACT"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.no-launch",
+   "module": "workgraph.py",
+   "receipt": "WORKGRAPH_STATE.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  },
+  {
+   "frontier_item": "FT.HCLI_SELF.emit-workunits",
+   "module": "workunit_species.py",
+   "receipt": "HCLI_FUTURE_WORKUNITS.json",
+   "species": "HCLI_SELF_OPTIMIZE"
+  }
+ ],
+ "broken": [],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "bound": 104,
+  "broken": 0,
+  "distinct_frontier_items": 41,
+  "distinct_species": 73,
+  "infrastructure_excluded": 5,
+  "unbound_production": 1
+ },
+ "frontier_view_keys": [
+  "ABI_VERDICT_HARNESS.json",
+  "ABLITERATION.json",
+  "ACCELERATOR_WORKUNITS.json",
+  "ADAPTIVE_VERIFICATION.json",
+  "ANE_PREBOARD.json",
+  "AUTONOMY_SCARS.json",
+  "AUTONOMY_TRIALS.json",
+  "CANDIDATE_STAGED_PLAN.json",
+  "CLAUDE_GLOBAL_FRONTIER.json",
+  "CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+  "CODEX_INGEST_STATE.json",
+  "CODEX_MUTATION_SURFACE.json",
+  "CODEX_WORKUNIT_SPECIES.json",
+  "CONTAMINATION_SCIENCE.json",
+  "CUDA_LOWBIT_HYPOTHESES.json",
+  "DEBUGGER_LAB.json",
+  "DECODE_CIVILIZATION.json",
+  "DERIVED_FRESHNESS.json",
+  "DETACHED_EXECUTION.json",
+  "DEVELOPER_PLATFORM.json",
+  "DEVICE_ASCENSION_PIPELINE.json",
+  "DIRTY_MEASUREMENT.json",
+  "EBPW_CATEGORY_VALIDATOR.json",
+  "EVIDENCE_DAG.json",
+  "EVIDENCE_SNAPSHOT.json",
+  "EXPERIMENT_TURNAROUND.json",
+  "EXPERT_BANK_SCHOOL.json",
+  "EXTERNAL_SPECIMEN_SEAL.json",
+  "FALLBACK_RESIDENT.json",
+  "FLASH_BPW_LADDER.json",
+  "FLASH_META_REPLAN.json",
+  "FLASH_NR_COMPLETE.json",
+  "FLASH_NX_COMPLETENESS_AUDIT.json",
+  "FLASH_ORGAN_PIVOT.json",
+  "FLASH_ORGAN_SCHOOLS.json",
+  "FLASH_ORGAN_WORKGRAPHS.json",
+  "FPGA_ENGINE_SCHOOL.json",
+  "FPGA_MULTIFIDELITY.json",
+  "FRONTIER_STATE.json",
+  "FUSION_SIMULATION.json",
+  "GIT_LOCK_DURABILITY_REPORT.json",
+  "GREEN_MACHINE.json",
+  "HARDWARE_DOCTOR.json",
+  "HBM_DOCTOR.json",
+  "HCLI_AUTONOMY_BUILD.json",
+  "HCLI_FUTURE_WORKUNITS.json",
+  "HCLI_SELF_PROFILE.json",
+  "HMF_MANAGED_OBJECTS.json",
+  "HWIR_V1.json",
+  "LPC_BASELINES.json",
+  "LPC_DATASET.json",
+  "METAL_REACHABILITY.json",
+  "META_DOWNSTREAM_READY.json",
+  "META_EXPERIMENT_FUNNEL.json",
+  "MODEL_BEARING.json",
+  "MOE_PHYSICAL_SCHOOL.json",
+  "MUTATION_ENGINE.json",
+  "NEGATIVE_SCIENCE_INDEX.json",
+  "NGRAM_SCHOOL.json",
+  "NO_WAIT_SCHEDULER.json",
+  "NR_NX_GENERIC.json",
+  "NR_NX_PATH.json",
+  "ODYSSEY2_LAW_STORE.json",
+  "ODYSSEY3_ADVERSARY.json",
+  "ODYSSEY_CONSOLIDATED_RUN.json",
+  "ODYSSEY_LAUNCH_GATE.json",
+  "ODYSSEY_LAUNCH_SPRINT_PROFILE.json",
+  "ODYSSEY_TOOL_DRIVER.json",
+  "P6_PRIMITIVE_PROJECTION.json",
+  "PHASE_LISTENERS.json",
+  "PHYSICAL_PRIMITIVES.json",
+  "POWER_TORTURE.json",
+  "PROPAGATION_STATE.json",
+  "PROTECTED_SCHEDULER.json",
+  "PROTECTED_WINDOW_PLAN.json",
+  "QUALIFICATION_PIPELINE.json",
+  "QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+  "RECEIPT_WAKEUP.json",
+  "REPRO_SCIENCE.json",
+  "RESIDENT_API_AUDIT.json",
+  "RESIDENT_CONCURRENCY_DOCTOR.json",
+  "RESIDENT_HEALTH.json",
+  "RESIDENT_IDENTITY.json",
+  "RESIDENT_INSTALL_CONTRACT.json",
+  "RESIDENT_OPTIMIZER.json",
+  "RESIDENT_PROVIDER.json",
+  "RESIDENT_SANDBOX.json",
+  "RESTART_SUPERVISOR.json",
+  "RIVAL_CODEC_SCREEN.json",
+  "ROUTER_SENSITIVE_ALLOCATION.json",
+  "SCAR_SCHEDULING.json",
+  "SPECIMEN_VERIFICATION.json",
+  "STATIC_KERNEL_PREFLIGHT.json",
+  "STATIC_SKELETON.json",
+  "STATUS_CAUSALITY_CHALLENGE.json",
+  "SUCCESSION.json",
+  "SUPER_RESIDENT_FLOOR.json",
+  "TABULA_FLOOR.json",
+  "TEACHER_CORPUS_CONTRACT.json",
+  "TEACHER_CORPUS_EXPANSION.json",
+  "TOURNAMENT_READINESS.json",
+  "TRIAL_WORKLOAD.json",
+  "WORKGRAPH_STATE.json",
+  "WORK_EVENT_CONTRACT.json"
+ ],
+ "gaps_closed": [
+  "result_does_not_feed_a_named_frontier (70 modules)",
+  "does_not_emit_workunit (52 modules)"
+ ],
+ "infrastructure_excluded": [
+  "__init__.py",
+  "_common.py",
+  "handoff.py",
+  "integration_attack.py",
+  "orchestration.py"
+ ],
+ "negative_findings": [
+  "1 production modules remain unbound and are NOT credited",
+  "0 bindings are broken and credit nothing",
+  "binding a module does not make its science correct; it makes the module reachable and its result routable"
+ ],
+ "not_goodhart": "A binding is validated against the audit: the module must exist and must write the receipt the binding is built on, or the binding is BROKEN and credits nothing. invoke() actually runs the module and actually routes its receipt. Infrastructure that informs no frontier is EXCLUDED, not fake-bound.",
+ "purpose": "Bind every production sidecar module to the frontier item its receipt informs, and supply WorkUnit emission on its behalf, so the substrate becomes resident-callable without editing seventy modules.",
+ "recovered_implementation": [
+  "tools/future/resident_api.py evaluate_five_questions already accepts a frontier mapping; this supplies it rather than re-implementing scoring",
+  "tools/future/frontiers.py FrontierBook provides the 63 frontier items",
+  "tools/future/workunit_species.py provides the WorkUnit shape"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.orchestration.invoke(module)",
+  "fails_closed": "UnknownBinding / BindingError raise; no success shape is invented",
+  "frontier": "each binding names the frontier item it feeds",
+  "receipt": "receipts/future/ORCHESTRATION_BINDINGS.json",
+  "workunit": "tools.future.orchestration.emit_workunit(module)"
+ },
+ "schema": "hawking.future.orchestration.v1",
+ "seal_sha256": "eb2be1638ebf1a7c45ce0b7051ddf33189a6bacb42ee7cbc0c6855f7587744e2",
+ "unbound_production": [
+  "autonomy_run.py"
+ ],
+ "version": 1
+}

@@ -1,0 +1,718 @@
+{
+ "analytical_only": true,
+ "axes": [
+  "executable_bytes",
+  "active_lookup_bytes_per_token",
+  "lookup_operations_per_token",
+  "decode_cost_class",
+  "capability_sensitivity_class"
+ ],
+ "axis_direction": {
+  "active_lookup_bytes_per_token": "minimize",
+  "capability_sensitivity_class": "minimize",
+  "decode_cost_class": "minimize",
+  "executable_bytes": "minimize",
+  "lookup_operations_per_token": "minimize"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:32Z",
+  "recorded_by": "tools/future/ngram_school.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "candidates": [
+  {
+   "active_lookup_bytes_per_token": 17446666,
+   "assumptions": [
+    "group-64 4-bit codes + fp16 scale (34 bytes / 64 values = 4.25 bpw)",
+    "same gather count as the sealed lookup_rows_nominal=3",
+    "PLE aux packed the same way as the table (full-organ control)",
+    "cited from Flash independent_q4_g64 effective 4.25 bits/value and C4 UNIFORM_Q4_GROUP=64; not a hardware measurement"
+   ],
+   "capability_sensitivity_class": "CONTROL_Q4",
+   "decode_cost_class": "GATHER_DEQUANT_Q4",
+   "executable_bytes": 27217576920,
+   "family": "packed_q4_control",
+   "formula": {
+    "aux_bytes": 17446360,
+    "bytes_per_group": 34,
+    "code_bits": 4,
+    "group": 64,
+    "row_bytes": 102,
+    "table_bytes": 27200130560
+   },
+   "id": "packed_q4_control",
+   "is_control": true,
+   "lookup_operations_per_token": 3
+  },
+  {
+   "active_lookup_bytes_per_token": 13341634,
+   "assumptions": [
+    "group-64 3-bit codes + fp16 scale (26 bytes / 64 values = 3.25 bpw)",
+    "same gather count as packed Q4; unpack is a strictly higher decode class",
+    "capability class CONTROL_Q3 is analytical: no n-gram null-organ test exists"
+   ],
+   "capability_sensitivity_class": "CONTROL_Q3",
+   "decode_cost_class": "GATHER_DEQUANT_Q3",
+   "executable_bytes": 20813441240,
+   "family": "packed_q3_control",
+   "formula": {
+    "aux_bytes": 13341400,
+    "bytes_per_group": 26,
+    "code_bits": 3,
+    "group": 64,
+    "row_bytes": 78,
+    "table_bytes": 20800099840
+   },
+   "id": "packed_q3_control",
+   "is_control": true,
+   "lookup_operations_per_token": 3
+  },
+  {
+   "active_lookup_bytes_per_token": 17447368,
+   "assumptions": [
+    "M=16 subspaces x 10 dims, 256-entry BF16 codebooks, 8-bit codes",
+    "PLE aux remains packed Q4 (this family does not reinvent the projection)",
+    "centroid fetches counted as active DRAM; cache residency is UNKNOWN",
+    "lookup_ops = ngram_size * M (one gather per subspace per n-gram row)"
+   ],
+   "capability_sensitivity_class": "CODEBOOK",
+   "decode_cost_class": "MULTI_GATHER_ADD",
+   "executable_bytes": 5137552856,
+   "family": "product_codebooks",
+   "formula": {
+    "M": 16,
+    "aux_bytes": 17446360,
+    "code_bytes": 5120024576,
+    "codebook_bytes": 81920,
+    "d_sub": 10,
+    "n_codes": 256,
+    "per_row_active_bytes": 336
+   },
+   "id": "product_codebooks",
+   "is_control": false,
+   "lookup_operations_per_token": 48
+  },
+  {
+   "active_lookup_bytes_per_token": 17448328,
+   "assumptions": [
+    "coarse PQ M=8 plus residual PQ M=8, 8-bit codes, BF16 centroids",
+    "residual is hypothesized to reconstruct better than one-shot PQ at equal code bytes; that is a class, not a measured error",
+    "PLE aux remains packed Q4",
+    "lookup_ops = ngram_size * 8 * 2"
+   ],
+   "capability_sensitivity_class": "CODEBOOK_RESIDUAL",
+   "decode_cost_class": "RESIDUAL_COMBINE",
+   "executable_bytes": 5137634776,
+   "family": "residual_product_quantization",
+   "formula": {
+    "M_per_stage": 8,
+    "aux_bytes": 17446360,
+    "code_bytes": 5120024576,
+    "codebook_bytes": 163840,
+    "d_sub": 20,
+    "stages": 2
+   },
+   "id": "residual_product_quantization",
+   "is_control": false,
+   "lookup_operations_per_token": 48
+  },
+  {
+   "active_lookup_bytes_per_token": 17448310,
+   "assumptions": [
+    "1024 coarse 160-d centroids, then residual PQ M=8",
+    "walk is one coarse gather plus M residual gathers per n-gram row",
+    "PLE aux remains packed Q4"
+   ],
+   "capability_sensitivity_class": "CODEBOOK",
+   "decode_cost_class": "HIERARCHICAL_WALK",
+   "executable_bytes": 3217871320,
+   "family": "hierarchical_codebooks",
+   "formula": {
+    "M_residual": 8,
+    "aux_bytes": 17446360,
+    "coarse_codebook_bytes": 327680,
+    "code_bytes": 3200015360,
+    "n_coarse": 1024,
+    "residual_codebook_bytes": 81920
+   },
+   "id": "hierarchical_codebooks",
+   "is_control": false,
+   "lookup_operations_per_token": 27
+  },
+  {
+   "active_lookup_bytes_per_token": 17447329,
+   "assumptions": [
+    "4096 clusters, 256-entry 160-d dictionary per cluster, BF16 centroids",
+    "row stored as (cluster_id, local_code); two gathers per n-gram row",
+    "PLE aux remains packed Q4"
+   ],
+   "capability_sensitivity_class": "CODEBOOK",
+   "decode_cost_class": "HIERARCHICAL_WALK",
+   "executable_bytes": 1312995288,
+   "family": "clustered_dictionaries",
+   "formula": {
+    "assign_bytes": 960004608,
+    "aux_bytes": 17446360,
+    "codebook_bytes": 335544320,
+    "dict_size": 256,
+    "n_clusters": 4096
+   },
+   "id": "clustered_dictionaries",
+   "is_control": false,
+   "lookup_operations_per_token": 6
+  },
+  {
+   "active_lookup_bytes_per_token": 17477080,
+   "assumptions": [
+    "each of 16 heads is a product of two sqrt(20e6)-sided 160-d tables",
+    "head count is the I64 ngram_heads_vocab_sizes length; per-head vocab bodies were not loaded, so 20e6 is the config base not a measured size",
+    "composition is A[i] + B[j] (additive); multiplicative is untested",
+    "lookup_ops = ngram_size * 16 heads * 2 factors",
+    "PLE aux remains packed Q4"
+   ],
+   "capability_sensitivity_class": "STRUCTURE_PRESERVING",
+   "decode_cost_class": "MULTI_GATHER_ADD",
+   "executable_bytes": 63249880,
+   "family": "factorized_lookup",
+   "formula": {
+    "aux_bytes": 17446360,
+    "heads": 16,
+    "per_head_bytes": 2862720,
+    "side": 4473,
+    "side_squared": 20007729,
+    "table_bytes": 45803520
+   },
+   "id": "factorized_lookup",
+   "is_control": false,
+   "lookup_operations_per_token": 96
+  },
+  {
+   "active_lookup_bytes_per_token": 17775000,
+   "assumptions": [
+    "64 context bins, each a 2^16 x 160 BF16 table; selector is a 64 x 2560 map",
+    "the 3-gram already conditions on local tokens; this adds a longer-window bin",
+    "wrong bin is a capability miss, not a recoverable residual",
+    "selector counted fully active (tiny); PLE aux remains packed Q4"
+   ],
+   "capability_sensitivity_class": "CONTEXT_MISMATCH",
+   "decode_cost_class": "CONTEXT_SELECT_THEN_GATHER",
+   "executable_bytes": 1359951320,
+   "family": "context_conditioned_lookup",
+   "formula": {
+    "aux_bytes": 17446360,
+    "n_context": 64,
+    "rows_per_context": 65536,
+    "selector_bytes": 327680,
+    "table_bytes": 1342177280
+   },
+   "id": "context_conditioned_lookup",
+   "is_control": false,
+   "lookup_operations_per_token": 4
+  },
+  {
+   "active_lookup_bytes_per_token": 17775000,
+   "assumptions": [
+    "no 20M-gram table: generate the 160-d row from 3 token embeds + MLP",
+    "MLP 480->256->160 BF16, fully active every token (it is small)",
+    "lookup_ops stays at 3 (vocab gathers); decode class is GENERATE",
+    "capability is UNMEASURED: no Flash n-gram null-organ survival exists",
+    "PLE aux remains packed Q4"
+   ],
+   "capability_sensitivity_class": "GENERATIVE_UNMEASURED",
+   "decode_cost_class": "GENERATE",
+   "executable_bytes": 97236440,
+   "family": "generated_lookup",
+   "formula": {
+    "aux_bytes": 17446360,
+    "mlp_bytes": 327680,
+    "token_table_bytes": 79462400
+   },
+   "id": "generated_lookup",
+   "is_control": false,
+   "lookup_operations_per_token": 3
+  },
+  {
+   "active_lookup_bytes_per_token": 17454040,
+   "assumptions": [
+    "8 independent 2^16-bucket 160-d tables; row is the sum of 8 hash gathers",
+    "320M source rows into 64k buckets is an extreme collision regime",
+    "lookup_ops = ngram_size * 8",
+    "PLE aux remains packed Q4"
+   ],
+   "capability_sensitivity_class": "COLLISION_PRONE",
+   "decode_cost_class": "HASH_THEN_GATHER",
+   "executable_bytes": 185218520,
+   "family": "semantic_hashing",
+   "formula": {
+    "aux_bytes": 17446360,
+    "n_buckets": 65536,
+    "n_hash": 8,
+    "table_bytes": 167772160
+   },
+   "id": "semantic_hashing",
+   "is_control": false,
+   "lookup_operations_per_token": 24
+  },
+  {
+   "active_lookup_bytes_per_token": 17446594,
+   "assumptions": [
+    "1 % of rows kept as BF16 literals (Zipf heavy-hitters, not fitted)",
+    "remaining 99 % packed Q3 group-64; island membership is a bitset",
+    "active path uses the Q3 row (miss); a hit would be a BF16 gather",
+    "islands are a capability bandage, not a proof that Q3 is safe",
+    "PLE aux remains packed Q4"
+   ],
+   "capability_sensitivity_class": "ISLAND_REPAIRABLE",
+   "decode_cost_class": "ISLAND_BYPASS_THEN_DEQUANT",
+   "executable_bytes": 21673550230,
+   "family": "literal_exception_islands",
+   "formula": {
+    "aux_bytes": 17446360,
+    "bitmap_bytes": 40000192,
+    "island_table_bytes": 1024004800,
+    "n_islands": 3200015,
+    "n_q3": 316801521,
+    "q3_table_bytes": 20592098878
+   },
+   "id": "literal_exception_islands",
+   "is_control": false,
+   "lookup_operations_per_token": 3
+  }
+ ],
+ "capability_sensitivity_classes": [
+  {
+   "name": "CONTROL_Q4",
+   "order": 0
+  },
+  {
+   "name": "ISLAND_REPAIRABLE",
+   "order": 1
+  },
+  {
+   "name": "CONTROL_Q3",
+   "order": 2
+  },
+  {
+   "name": "STRUCTURE_PRESERVING",
+   "order": 3
+  },
+  {
+   "name": "CODEBOOK_RESIDUAL",
+   "order": 4
+  },
+  {
+   "name": "CODEBOOK",
+   "order": 5
+  },
+  {
+   "name": "COLLISION_PRONE",
+   "order": 6
+  },
+  {
+   "name": "CONTEXT_MISMATCH",
+   "order": 7
+  },
+  {
+   "name": "GENERATIVE_UNMEASURED",
+   "order": 8
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "controls": [
+  "packed_q4_control",
+  "packed_q3_control"
+ ],
+ "decode_cost_classes": [
+  {
+   "name": "IDENTITY_GATHER",
+   "order": 0
+  },
+  {
+   "name": "GATHER_DEQUANT_Q4",
+   "order": 1
+  },
+  {
+   "name": "GATHER_DEQUANT_Q3",
+   "order": 2
+  },
+  {
+   "name": "ISLAND_BYPASS_THEN_DEQUANT",
+   "order": 3
+  },
+  {
+   "name": "MULTI_GATHER_ADD",
+   "order": 4
+  },
+  {
+   "name": "RESIDUAL_COMBINE",
+   "order": 5
+  },
+  {
+   "name": "HIERARCHICAL_WALK",
+   "order": 6
+  },
+  {
+   "name": "HASH_THEN_GATHER",
+   "order": 7
+  },
+  {
+   "name": "CONTEXT_SELECT_THEN_GATHER",
+   "order": 8
+  },
+  {
+   "name": "GENERATE",
+   "order": 9
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "families_smaller_than_q4": [
+  "product_codebooks",
+  "residual_product_quantization",
+  "hierarchical_codebooks",
+  "clustered_dictionaries",
+  "factorized_lookup",
+  "context_conditioned_lookup",
+  "generated_lookup",
+  "semantic_hashing",
+  "literal_exception_islands"
+ ],
+ "families_that_do_not_dominate_q4": [
+  "product_codebooks",
+  "residual_product_quantization",
+  "hierarchical_codebooks",
+  "clustered_dictionaries",
+  "factorized_lookup",
+  "context_conditioned_lookup",
+  "generated_lookup",
+  "semantic_hashing",
+  "literal_exception_islands"
+ ],
+ "family_budget": {
+  "complete_system_ebpw_max": 1.0,
+  "ebpw_unit": "effective bytes per parameter: target_ceiling_bytes equals source_parameter_count in FLASH_EBPW_BUDGET.json",
+  "named_receipt": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+  "named_receipt_present": true,
+  "ngram_fair_share_bytes": 51233085580,
+  "ngram_representation_actual_bytes": null,
+  "ngram_representation_status": "WAITING_FOR_REPRESENTATION_AND_LOADER",
+  "ngram_source_allocation_fraction": 0.2846282823744834,
+  "note": "family_budget is a proxy reconstructed from FLASH_EBPW_BUDGET because FLASH_META_REPRESENTATION_SUB1.json is not in HEAD",
+  "proxy_receipt": "receipts/headless/FLASH_EBPW_BUDGET.json",
+  "source_parameter_count": 179999981564,
+  "target_ceiling_bytes_complete_system": 179999981564
+ },
+ "gaps_closed": [
+  "candidate generator covering packed Q4/Q3 controls plus nine n-gram-school families",
+  "five-axis analytical measure over the sealed ngram_engine shape, assumptions recorded",
+  "rank() refuses storage-only ordering and reports a Pareto front with no scalar winner",
+  "controls are first-class: rank() raises if packed Q4 or Q3 is missing",
+  "negative control that actually fires: half-bytes/triple-lookups does not dominate Q4",
+  "active-byte observation: PLE aux dominates per-token DRAM, so table-storage ranking is a trap"
+ ],
+ "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "integration": {
+  "build": "build() -> Path",
+  "candidates": "candidates() -> list[dict]",
+  "dominates": "dominates(a, b) -> bool",
+  "module": "tools.future.ngram_school",
+  "rank": "rank(cands, *, by=None, axes=None, require_controls=True) -> dict",
+  "storage_trap": "storage_trap(packed_q4_control()) -> dict"
+ },
+ "negative_control": {
+  "naive_storage_order": [
+   "storage_trap_half_bytes_triple_lookups",
+   "packed_q4_control"
+  ],
+  "naive_storage_winner": "storage_trap_half_bytes_triple_lookups",
+  "pareto_ids_with_trap": [
+   "packed_q3_control",
+   "packed_q4_control",
+   "storage_trap_half_bytes_triple_lookups"
+  ],
+  "q4_dominates_trap": false,
+  "q4_executable_bytes": 27217576920,
+  "q4_lookup_operations_per_token": 3,
+  "scalar_winner": null,
+  "storage_only_axes_raises": true,
+  "storage_only_by_keyword_raises": true,
+  "trap_dominates_q4": false,
+  "trap_executable_bytes": 13608788460,
+  "trap_lookup_operations_per_token": 9
+ },
+ "negative_findings": [
+  {
+   "found": "absent from HEAD (git show fatal)",
+   "wanted": "tools/flash_ngram_lookup_oracle.py"
+  },
+  {
+   "found": "absent from HEAD (git show fatal)",
+   "wanted": "tools/flash_doctor_ngram_screen.py"
+  },
+  {
+   "found": "absent; used HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json organ_graph.ngram_engine",
+   "wanted": "receipts/headless/FLASH_ORGAN_CENSUS.json"
+  },
+  {
+   "found": "absent; proxied FLASH_EBPW_BUDGET.json complete_system_ebpw_max=1.0",
+   "wanted": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json family_budget"
+  },
+  {
+   "found": "absent; FLASH_NEXT_NOETIC_EXECUTABLE.json is SCAFFOLD_ONLY with ngram kernel NOT_IMPLEMENTED",
+   "wanted": "receipts/headless/FLASH_COMPLETE_V2.nr.json representation"
+  },
+  {
+   "found": "I64[16] header only; per-head vocab sizes unknown without loading weights",
+   "wanted": "ngram_heads_vocab_sizes tensor body"
+  },
+  {
+   "found": "NOETIC_ORGAN_CENSUS is the 27B hybrid, not Flash ngram_engine; sensitivity classes are analytical",
+   "wanted": "Flash n-gram null-organ capability survival"
+  },
+  {
+   "found": "none; representation_library has no n-gram family; gravity plans say FACTORIZE/GENERATE only",
+   "wanted": "existing five-axis n-gram candidate school"
+  }
+ ],
+ "no_specimen_fit": true,
+ "no_timing": true,
+ "organ_shape": {
+  "active_is_ple_aux_dominated": true,
+  "aux_bf16_bytes": 65679360,
+  "aux_bytes": 65679640,
+  "aux_bytes_per_token_source": 65679640,
+  "aux_i64_bytes": 280,
+  "bottleneck_cited": "lookup latency, dictionary locality, and representation expansion",
+  "citations": [
+   "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json organ_graph.ngram_engine",
+   "receipts/headless/FLASH_EBPW_BUDGET.json organs[ngram_engine]",
+   "hcli/flash_next.py architecture ngram_vocab_size/ngram_size/split_ngram_parts"
+  ],
+  "cross_check": {
+   "materialized": true,
+   "mismatches": [],
+   "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
+   "used": "hardcoded_cited_constants_cross_checked"
+  },
+  "dtype": "BF16",
+  "execution_regularity_cited": "irregular bounded lookup plus small projection path",
+  "hidden_size": 2560,
+  "lookup_row_bytes": 320,
+  "lookup_rows_nominal": 3,
+  "n_rows": 320001536,
+  "ngram_heads_from_tensor_shape": 16,
+  "ngram_size": 3,
+  "ngram_vocab_size_base": 20000000,
+  "organ": "ngram_engine",
+  "row_values": 160,
+  "shard_count": 128,
+  "shard_shape": [
+   2500012,
+   160
+  ],
+  "source_active_bytes_per_token": 65680600,
+  "source_allocation_fraction": 0.2846282823744834,
+  "source_flops_are_not_a_measurement": true,
+  "source_flops_per_token_structural": 65617920,
+  "source_payload_bytes": 102466171160,
+  "source_tensor_count": 137,
+  "specimen_payload_bytes": 359999963128,
+  "split_ngram_parts": 128,
+  "table_bytes": 102400491520,
+  "table_bytes_per_token_source": 960,
+  "vocab_size": 248320
+ },
+ "packing": {
+  "group": 64,
+  "q3_bpw": "3.25",
+  "q3_bytes_per_group": 26,
+  "q3_code_bits": 3,
+  "q4_bpw": "4.25",
+  "q4_bytes_per_group": 34,
+  "q4_code_bits": 4,
+  "scale_bytes_per_group": 2
+ },
+ "purpose": "Five-axis n-gram representation/execution school. Storage-only ranking is refused. Analytical models over the sealed Flash ngram_engine organ; STATIC_ONLY, no hardware measurement.",
+ "q3_executable_bytes": 20813441240,
+ "q4_executable_bytes": 27217576920,
+ "rank": {
+  "axes": [
+   "executable_bytes",
+   "active_lookup_bytes_per_token",
+   "lookup_operations_per_token",
+   "decode_cost_class",
+   "capability_sensitivity_class"
+  ],
+  "controls_on_front": [
+   "packed_q4_control",
+   "packed_q3_control"
+  ],
+  "controls_present": [
+   "packed_q4_control",
+   "packed_q3_control"
+  ],
+  "dominated_ids": [
+   "hierarchical_codebooks"
+  ],
+  "n_candidates": 11,
+  "n_front": 10,
+  "note": "A candidate that halves executable_bytes and triples lookup_operations_per_token is incomparable to packed Q4 and cannot be a scalar winner.",
+  "pareto_front_ids": [
+   "clustered_dictionaries",
+   "context_conditioned_lookup",
+   "factorized_lookup",
+   "generated_lookup",
+   "literal_exception_islands",
+   "packed_q3_control",
+   "packed_q4_control",
+   "product_codebooks",
+   "residual_product_quantization",
+   "semantic_hashing"
+  ],
+  "ranking_rule": "pareto_five_axis",
+  "scalar_winner": null,
+  "storage_only": "REFUSED"
+ },
+ "recovered_implementation": [
+  {
+   "adequate_as_ngram_school": false,
+   "path": "tools/flash_ngram_lookup_oracle.py",
+   "present_in_HEAD_worktree": true,
+   "role": "named by the work unit; not in this commit"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "tools/flash_doctor_ngram_screen.py",
+   "present_in_HEAD_worktree": true,
+   "role": "named by the work unit; not in this commit"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+   "present_in_HEAD_worktree": true,
+   "role": "named by the work unit; not in this commit"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "present_in_HEAD_worktree": true,
+   "role": "named by the work unit; not in this commit"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+   "present_in_HEAD_worktree": true,
+   "role": "named by the work unit; not in this commit"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "hcli/agentos/flash_science.py",
+   "present_in_HEAD_worktree": true,
+   "role": "organ graph, ngram_engine tensor layouts, PLE-aux vs shard split, lookup_rows_nominal=ngram_size=3, gravity GENERATE/FACTORIZE/SHARE stages"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "hcli/flash_next.py",
+   "present_in_HEAD_worktree": true,
+   "role": "20M n-gram vocabulary, 3-gram, 128-way split identity; ngram_representation is a required complete-system byte field"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "hcli/agentos/flash_executable.py",
+   "present_in_HEAD_worktree": true,
+   "role": "chosen_representation.ngram = lookup/compositional, not generic dense quant; native kernel lookup_or_compositional_generator NOT_IMPLEMENTED"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "hcli/agentos/fpga_preboard.py",
+   "present_in_HEAD_worktree": true,
+   "role": "ngram_lookup_or_generator P1 mapping: HBM lookup/compositional generator rather than matrix GEMV; compact_ngram_lookup scenario uses source payload bytes"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
+   "present_in_HEAD_worktree": true,
+   "role": "ngram_engine source_bytes=102466171160, active/tok=65680600, allocation 0.2846, representation CANDIDATE_NOT_BUILT; ngram_representation accounting WAITING_FOR_REPRESENTATION_AND_LOADER"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+   "present_in_HEAD_worktree": true,
+   "role": "architecture ngram_size=3, ngram_vocab_size_base=20e6, split_ngram_parts=128; organ_graph.ngram_engine tensor_layout 128 x [2500012,160] BF16 + 9 PLE tensors; lookup_row_bytes=320, auxiliary_projection_bytes=65679640"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+   "present_in_HEAD_worktree": true,
+   "role": "ngram_engine source_active/flops cited; all actual_* timing fields null"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "present_in_HEAD_worktree": true,
+   "role": "organ ngram_lookup_or_generator priority P1"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/REPRESENTATION_LIBRARY.json",
+   "present_in_HEAD_worktree": true,
+   "role": "seven families (q2_affine, q4_control, binary, ternary, shared_basis, binary_sparse_residual, low_rank_sparse); law 'fewer stored bits != fewer nanoseconds'; no n-gram family"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "tools/spec/ngram_analysis.py",
+   "present_in_HEAD_worktree": true,
+   "role": "spec-decode draft-acceptance oracle over token sequences; different school (user-ngram draft, not Flash PLE table representation)"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "tools/spec/ngram_baseline.sh",
+   "present_in_HEAD_worktree": true,
+   "role": "Track 6.1 spec-decode n-gram oracle driver"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "crates/hawking-speculate/src/user_ngram.rs",
+   "present_in_HEAD_worktree": true,
+   "role": "per-user 2-gram/1-gram draft index for spec-decode; lossless by construction; KB\u2013MB CPU automaton, not the 102 GB Flash ngram_engine"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "tools/headless/c4codebook_design.py",
+   "present_in_HEAD_worktree": true,
+   "role": "C4 additive codebook / fused ADC design for Qwen3.8 GEMV organs; group-64 4.25 bpw packing arithmetic reused as the Q4 control formula"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "tools/llama_residual_pq_pack.py",
+   "present_in_HEAD_worktree": true,
+   "role": "Llama residual-PQ packer for FFN/attn weights; different organ, cited as PQ prior art"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "tools/gravity_exception_selection.py",
+   "present_in_HEAD_worktree": true,
+   "role": "functional vs magnitude vs residual exception ranking; cited as island prior art"
+  },
+  {
+   "adequate_as_ngram_school": false,
+   "path": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "present_in_HEAD_worktree": true,
+   "role": "Qwen3.8-27B hybrid organs (embed/gqa/deltanet/mlp/output); no ngram_engine"
+  },
+  {
+   "adequate_as_ngram_school": true,
+   "path": "tools/future/_common.py",
+   "present_in_HEAD_worktree": true,
+   "role": "write_receipt / bench_block / HardwareClaimError; used, not reimplemented"
+  }
+ ],
+ "schema": "hawking.future.ngram_school.v1",
+ "seal_sha256": "cd1fce8ca747dd3d9143462fc9ddf54107d4f329564455fda35d98109621da23",
+ "storage_only_policy": "REFUSED",
+ "version": 1
+}

@@ -1,0 +1,511 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T00:11:44Z",
+  "recorded_by": "tools/future/resident_provider.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "chat_template": {
+  "filename": "chat_template.jinja",
+  "gpu_authority": false,
+  "missing_anchors": [],
+  "n_bytes": 8952,
+  "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
+  "present": true,
+  "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041",
+  "source": "sealed:ON_DISK",
+  "tokenizer_config_chat_template_match": true,
+  "tokenizer_config_path": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer_config.json",
+  "tokenizer_config_reason": null,
+  "tried": [
+   {
+    "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
+    "source": "sealed:ON_DISK"
+   }
+  ]
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. A provider-side elapsed_s is SELF_MEASURED_DIRTY process telemetry on a contaminated machine with no lease; it ranks nothing.",
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "flock": false,
+ "gaps_closed": [
+  "ask() applies the artifact chat_template.jinja; session history is real turns not a User:/Assistant: blob",
+  "generation is cut at <|im_end|>, <|endoftext|>, <|im_start|>, and fabricated Assistant:/User: markers",
+  "quality(reply) computes CLEAN | TRUNCATED | DEGENERATE; a repeating fragment is never CLEAN",
+  "a budget-hit mid-sentence is TRUNCATED, not CLEAN",
+  "thinking arm is recorded as declared/applied/observed; sealed enable_thinking=false is applied as closed-think",
+  "a decision-style reply is extractable as text when CLEAN; hbm_doctor.py is not regex-fished from loop garbage",
+  "a future-partition driver that spawns the JSONL resident, waits for ready, and correlates ask/reply",
+  "logical sessions multiplexed over one process (no second 9.9GB body)",
+  "inference slot held only while a request is in flight",
+  "reuse proven: several asks through one start, same pid, model_open_count stays 1",
+  "stop/restart that return to ready and serve",
+  "stdin=PIPE (the live probe's first death was DEVNULL EOF)"
+ ],
+ "gpu_authority": false,
+ "launch": {
+  "argv_flags": [
+   "--artifact-root",
+   "--tokenizer",
+   "--max-seq-len",
+   "--resident-identity"
+  ],
+  "artifact_digest_kind": "resident_binary_sha256",
+  "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+  "identity": "sealed-3.14",
+  "missing": [],
+  "present": true,
+  "protocol": "hawking.qwen38.resident.v1",
+  "reason": null,
+  "source": "sealed:ON_DISK+probe:receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
+  "started_model_process": false,
+  "stdin": "PIPE",
+  "stdin_why": "the first live probe died because nohup gave it /dev/null on stdin; a request-driven resident reaching EOF is not a resident that failed to start"
+ },
+ "live_probe": {
+  "reached_ready": true,
+  "source": "receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
+  "verdict": "RESIDENT_STARTS_AND_GENERATES"
+ },
+ "negative_findings": [
+  "build() did not spawn the sealed 9.9GB resident: a live campaign is running and this sidecar has no GPU lease",
+  "the three quality probes were not re-run on the sealed body; CLEAN on those prompts is proven on the harness and a protocol double, not on this resident",
+  "observed thinking-arm obedience on the sealed body is UNPROBED; a raw prompt producing <think> is consistent with the jinja default (thinking on) when the template is unused",
+  "the rust resident still decodes with skip_special_tokens and does not accept stop strings on the wire; stop handling here is post-decode plus the kernel's existing EOS break",
+  "timings are SELF_MEASURED_DIRTY and rank nothing",
+  "orchestration.py BINDINGS was not edited (not in this lane's WRITE list)",
+  "hcli/hawking_native.ResidentProcess remains the HCLI driver; this module does not replace it",
+  "the rust resident resets KV per request; logical sessions are prompt-side history over shared weights",
+  "restart_supervisor.restart cannot drive this protocol (stdin=DEVNULL)",
+  "jinja2 is not a sidecar dependency; the renderer is the artifact template's text-only path, gold-checked, and refuses tools/vision"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "proofs": {
+  "all_passed": true,
+  "gpu_authority": false,
+  "n": 30,
+  "proofs": {
+   "ask_before_ready": {
+    "detail": "ask before ready is refused, not queued",
+    "fires": true
+   },
+   "ask_degenerate_labelled": {
+    "detail": {
+     "quality": "DEGENERATE",
+     "text": ""
+    },
+    "fires": true
+   },
+   "ask_sends_templated_prompt": {
+    "detail": {
+     "applied_thinking": false,
+     "head": "<|im_start|>user\nIn one sentence: why is a status label not the same as the world state?<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    },
+    "fires": true
+   },
+   "ask_session_history_templated": {
+    "detail": {
+     "head": "<|im_start|>user\none<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\nok<|im_end|>\n<|im_start|>user\ntwo<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    },
+    "fires": true
+   },
+   "ask_truncated_labelled": {
+    "detail": {
+     "stopped_at": "max_new_tokens",
+     "text": "A status label is a claim about"
+    },
+    "fires": true
+   },
+   "clean_paris": {
+    "detail": {
+     "degenerate": false,
+     "eos_token_seen": true,
+     "extractable": true,
+     "generated_tokens": 3,
+     "max_new_tokens": 32,
+     "observed_thinking": "no_think_tag",
+     "quality": "CLEAN",
+     "raw_text": "\n\nParis",
+     "stopped_at": "eos_token_id",
+     "text": "Paris"
+    },
+    "fires": true
+   },
+   "dead_is_absent_rss_null": {
+    "detail": {
+     "alive": false,
+     "authorizes": "liveness_only",
+     "dead": true,
+     "evidence_class": "SELF_MEASURED_DIRTY",
+     "failures": 0,
+     "generation": 1,
+     "gpu_authority": false,
+     "identity": "sealed-3.14",
+     "in_flight": null,
+     "model_open_count": 1,
+     "pid": 97905,
+     "presence": "ABSENT",
+     "queue_depth": 0,
+     "ready": false,
+     "reason": "resident pid is not alive",
+     "requests_served": 0,
+     "rss_bytes": null,
+     "sessions": 0,
+     "start_token": "1788135104.547231",
+     "waiters": 0,
+     "weight_upload_count": 1
+    },
+    "fires": true
+   },
+   "degenerate_never_clean": {
+    "detail": {
+     "quality": "DEGENERATE",
+     "text": ""
+    },
+    "fires": true
+   },
+   "dirty_metrics_stripped": {
+    "detail": {
+     "keys": [
+      "cost",
+      "extractable",
+      "fallbacks",
+      "generated_tokens",
+      "generation",
+      "id",
+      "max_new_tokens",
+      "model_open_count",
+      "new_token_ids",
+      "pid",
+      "quality",
+      "raw_text",
+      "session",
+      "status",
+      "stopped_at",
+      "template_path",
+      "template_sha256",
+      "templated",
+      "text",
+      "thinking_arm",
+      "weight_upload_count"
+     ],
+     "leaked": []
+    },
+    "fires": true
+   },
+   "error_status_not_answer": {
+    "detail": "forced",
+    "fires": true
+   },
+   "malformed_raises": {
+    "detail": "stdout is not JSONL: 'this is not json' (Expecting value: line 1 column 1 (char 0))",
+    "fires": true
+   },
+   "missing_binary_spec_not_present": {
+    "detail": "explicit argv[0] or binary is not on disk",
+    "fires": true
+   },
+   "missing_binary_start_refuses": {
+    "detail": "explicit argv[0] or binary is not on disk",
+    "fires": true
+   },
+   "never_ready_refuses": {
+    "detail": "resident did not emit status ready before timeout; stderr_tail=''",
+    "fires": true
+   },
+   "one_body_across_asks": {
+    "detail": {
+     "r1": 1,
+     "r2": 1
+    },
+    "fires": true
+   },
+   "reload_is_defect": {
+    "detail": "ask model_open_count=2 weight_upload_count=2; the provider reloaded weights and that is a defect",
+    "fires": true
+   },
+   "resolve_launch_names_probe_argv": {
+    "detail": {
+     "flags": [
+      "--artifact-root",
+      "--tokenizer",
+      "--max-seq-len",
+      "--resident-identity"
+     ],
+     "present": true
+    },
+    "fires": true
+   },
+   "restart_reaches_ready_and_serves": {
+    "detail": {
+     "new": 97886,
+     "old": 97885,
+     "text": "ok"
+    },
+    "fires": true
+   },
+   "reuse_same_pid": {
+    "detail": {
+     "pid": 97885,
+     "served": 2
+    },
+    "fires": true
+   },
+   "scripted_three_prompts_clean": {
+    "detail": {
+     "arm": {
+      "applied": false,
+      "applied_arm": "thinking_off",
+      "applied_prefix": "<think>\n\n</think>\n\n",
+      "campaign_note": "same body scored 0/43 with thinking on and 14/43 with it off; the closed-think generation prefix is load-bearing",
+      "config_obeyed": "UNPROBED_ON_SEALED_BODY",
+      "declared": false,
+      "declared_present": true,
+      "declared_source": "hcli/hawking-native.sealed-3.14.json#generation.enable_thinking",
+      "jinja_default_if_undefined": "thinking_on_with_xhigh_reasoning_system",
+      "observed": "no_think_tag",
+      "observed_on": "protocol_double"
+     },
+     "choice": "hbm_doctor.py",
+     "france": "Paris",
+     "status": "A status label is a claim; the world state is independently true."
+    },
+    "fires": true
+   },
+   "session_turns_templated_not_concatenated": {
+    "detail": {
+     "head": "<|im_start|>user\none<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\ntwo<|im_end|>\n<|im_start|>user\nthree<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n"
+    },
+    "fires": true
+   },
+   "slot_idle_when_nothing_in_flight": {
+    "detail": {
+     "in_flight": null,
+     "queue_depth": 0
+    },
+    "fires": true
+   },
+   "start_reaches_ready": {
+    "detail": {
+     "open": 1,
+     "pid": 97885
+    },
+    "fires": true
+   },
+   "stop_kills": {
+    "detail": {
+     "pid": 97886
+    },
+    "fires": true
+   },
+   "template_from_artifact_jinja": {
+    "detail": {
+     "match": true,
+     "path": "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja",
+     "reason": null,
+     "sha256": "c3cf9e34abf4f9e36c2d72165aa9c132d3e2a725b6c2586aaa3a8af9d7a81041"
+    },
+    "fires": true
+   },
+   "template_matches_artifact_gold": {
+    "detail": {
+     "head": "<|im_start|>user\nWhat is the capital of France? Answer in one word.<|im_end|>\n<|im_start|>assistant\n<think>\n\n</think>\n\n",
+     "n": 119
+    },
+    "fires": true
+   },
+   "thinking_arm_declared_false": {
+    "detail": {
+     "enable_thinking": false,
+     "jinja_default_if_undefined": "thinking_on_with_xhigh_reasoning_system",
+     "present": true,
+     "reason": null,
+     "source": "hcli/hawking-native.sealed-3.14.json#generation.enable_thinking"
+    },
+    "fires": true
+   },
+   "truncated_not_clean": {
+    "detail": {
+     "stopped_at": "max_new_tokens",
+     "text": "A status label is a claim about"
+    },
+    "fires": true
+   },
+   "two_sessions_one_pid": {
+    "detail": {
+     "concatenated": false,
+     "generation": 1,
+     "n": 2,
+     "pid": 97885,
+     "same_process": true,
+     "second_model_body": false,
+     "sessions": [
+      {
+       "id": "s1",
+       "last_request_id": "ba294d619c4a4b6396d1f8605f5f60b1",
+       "n_turns": 2,
+       "process_generation": 1,
+       "templated": true
+      },
+      {
+       "id": "s2",
+       "last_request_id": "0768c93288fd4044ae1b6993a6e1e97f",
+       "n_turns": 1,
+       "process_generation": 1,
+       "templated": true
+      }
+     ],
+     "templated": true
+    },
+    "fires": true
+   },
+   "undeclared_not_healthy_zero": {
+    "detail": {
+     "alive": false,
+     "authorizes": "liveness_only",
+     "dead": false,
+     "evidence_class": "SELF_MEASURED_DIRTY",
+     "failures": 0,
+     "generation": 0,
+     "gpu_authority": false,
+     "identity": null,
+     "in_flight": null,
+     "model_open_count": null,
+     "pid": null,
+     "presence": "UNDECLARED",
+     "queue_depth": 0,
+     "ready": false,
+     "reason": "no resident pid; will not invent one from the largest RSS neighbour",
+     "requests_served": 0,
+     "rss_bytes": null,
+     "sessions": 0,
+     "start_token": null,
+     "waiters": 0,
+     "weight_upload_count": null
+    },
+    "fires": true
+   }
+  },
+  "started_protocol_double": true,
+  "started_sealed_resident": false
+ },
+ "protocol": "hawking.qwen38.resident.v1",
+ "purpose": "Durable provider that owns one hawking.qwen38.resident.v1 process and returns the model's ANSWER: artifact chat template applied, stopped at the turn boundary, quality labelled CLEAN|TRUNCATED|DEGENERATE.",
+ "quality_probes": {
+  "choice": "Choose ONE and reply with only its name: freshness.py, negative_index.py, hbm_doctor.py. Which most likely reveals a stale artifact?",
+  "france": "What is the capital of France? Answer in one word.",
+  "measured_defect_replayed": {
+   "choice": "\nAssistant:\n\nAssistant:\n\nhbm_doctor.py\n\nAssistant:\n\nhbm_do\n\nAssistant:\n\nh",
+   "classification": "DEGENERATE",
+   "did_not_extract": "hbm_doctor.py"
+  },
+  "proved_on": "protocol_double_plus_artifact_template",
+  "proved_on_sealed_body": false,
+  "status": "In one sentence: why is a status label not the same as the world state?"
+ },
+ "recovered_implementation": [
+  "tools/future/resident_provider.py (start/ask/sessions/health/stop/restart; model_open_count=1; protocol double)",
+  "receipts/future/evidence/RESIDENT_LIVE_PROBE.json (resident starts and generates; r1='\\n\\nParis' 3 tokens; r2 truncated at 40)",
+  "hcli/hawking-native.sealed-3.14.json (generation.enable_thinking=false; prompt_contract.fallback_template=qwen_closed_think)",
+  "/Users/scammermike/noetic/NOETIC_PARENT_A/chat_template.jinja (artifact template; thinking-off arm emits closed <think>)",
+  "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer_config.json (chat_template byte-identical to the jinja; eos=<|im_end|>)",
+  "/Users/scammermike/noetic/NOETIC_PARENT_A/generation_config.json (eos_token_id 248046/248044)",
+  "hcli/hawking_native.py _TokenizerRenderer._qwen_fallback_render (cited, not imported: closed-think generation prefix)",
+  "crates/hawking-core/examples/ascension_qwen38_resident.rs (JSONL; raw prompt; generate_greedy)",
+  "crates/hawking-core/src/model/qwen38_hybrid_decode.rs generate_greedy (stops on IM_END/EOT unless HAWKING_QWEN38_IGNORE_EOS)",
+  "crates/hawking-serve/src/glm_chat.rs (pattern: validate artifact jinja anchors, render the no-tools path, refuse tools)",
+  "tools/future/resident_identity.py (load_authority for the sealed profile)",
+  "tools/future/resident_health.py (rss_bytes_of; ABSENT rss_bytes null)"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.resident_provider.ResidentProvider.start()",
+  "fails_closed": "ask before ready \u2192 NotReady; dead pid \u2192 health presence=ABSENT rss_bytes=null; climbing model_open_count \u2192 WeightReload; malformed JSONL \u2192 MalformedReply; missing binary \u2192 launch_absent; missing/foreign chat_template.jinja \u2192 TemplateRefuse; repeating fragment \u2192 DEGENERATE not CLEAN; budget-hit mid-sentence \u2192 TRUNCATED not CLEAN; hardware-named fields stripped and refused in receipts",
+  "frontier": "FT.CHILD_RESIDENT.launch",
+  "python_api": {
+   "ask": "ResidentProvider.ask(session, text, max_new_tokens) -> reply+quality+cost",
+   "health": "ResidentProvider.health() -> presence/rss/queue_depth",
+   "quality": "quality(reply) -> CLEAN|TRUNCATED|DEGENERATE, recomputed",
+   "render_chat": "render_chat(messages, enable_thinking, template_text) -> templated prompt",
+   "resolve_launch": "resolve_launch() -> sealed argv, does not spawn",
+   "restart": "ResidentProvider.restart() -> ready handle",
+   "sessions": "ResidentProvider.sessions() -> logical states, one pid",
+   "start": "ResidentProvider.start(spec=None) -> handle",
+   "stop": "ResidentProvider.stop()"
+  },
+  "receipt": "receipts/future/RESIDENT_PROVIDER.json",
+  "workunit": "one CPU_ANALYSIS unit; protocol-double start/templated-ask/stop+quality/sessions/health/stop/restart; does not take a GPU lease"
+ },
+ "schema": "hawking.future.resident_provider.v1",
+ "seal_sha256": "317cb93aeb0c64f47ac76c418a18ce358e45f424dc9e7d8de2f62d0cc2a5f2c6",
+ "started_model_process": false,
+ "started_protocol_double": true,
+ "started_sealed_resident": false,
+ "thinking_arm": {
+  "applied_arm": "thinking_off",
+  "applied_by_ask": true,
+  "applied_on_sealed_body": false,
+  "applied_prefix": "<think>\n\n</think>\n\n",
+  "applied_why": "sealed generation.enable_thinking is false; the jinja arm emits <think>\\n\\n</think>\\n\\n so the model continues the answer instead of opening a think block",
+  "campaign_note": "same body scored 0/43 with thinking on and 14/43 with it off",
+  "declared": false,
+  "declared_present": true,
+  "declared_reason": null,
+  "declared_source": "hcli/hawking-native.sealed-3.14.json#generation.enable_thinking",
+  "jinja_default_if_undefined": "thinking_on_with_xhigh_reasoning_system",
+  "observed_on_sealed_body": "UNPROBED",
+  "observed_on_sealed_body_reason": "build() did not spawn the 9.9GB body; config obedience is not assumed"
+ },
+ "took_gpu_lease": false,
+ "version": 1,
+ "work_units": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt remains authoritative; this unit cannot take a GPU lease or rank a kernel.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/resident_provider.py --build",
+   "content_hash": "ec325b58a2a639aafe8a12d6d6ce52e102fe66b66f105cf4e4b050b685c0f83f",
+   "dependencies": [],
+   "description": "Own one hawking.qwen38.resident.v1 process: start, templated ask with stop+quality, logical sessions over shared weights, health, stop, restart. CPU/protocol-double proven; sealed 9.9GB spawn is a later MODEL_SESSION.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.resident_provider.drive",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "receipts/future/RESIDENT_PROVIDER.json",
+   "preferred_backend": null,
+   "provider": "future.resident_provider",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "CPU_ANALYSIS",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.resident_provider.run_proofs",
+   "workspace": "repo-root"
+  }
+ ]
+}

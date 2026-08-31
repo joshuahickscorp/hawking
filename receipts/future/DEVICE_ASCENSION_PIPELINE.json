@@ -1,0 +1,626 @@
+{
+ "around_not_instead_of": {
+  "codex_adp_module": "tools/accelerator/device_ascension.py",
+  "codex_adp_stages": [
+   "fingerprint",
+   "benchmark",
+   "roof_measurement",
+   "workload_census",
+   "kernel_selection",
+   "autotune",
+   "memory_plan",
+   "dispatch_plan",
+   "concurrency_sweep",
+   "sustained_qualification",
+   "adp_seal"
+  ],
+  "relation": "ADP campaign qualifies a profile on a machine that already has laws. Arrival pipeline is what runs when the machine is new: it feeds hypotheses into later ADP stages, and it never promotes those hypotheses itself.",
+  "this_module_stages": [
+   "discover_hardware",
+   "build_machine_genome",
+   "derive_capabilities",
+   "import_laws_as_hypotheses",
+   "calibration_experiments",
+   "recompile_physical_graph",
+   "protected_measurement",
+   "emit_machine_laws"
+  ]
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:44:36Z",
+  "recorded_by": "tools/future/device_ascension_pipeline.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_classes": [
+  "STATIC_ONLY",
+  "DIAGNOSTIC_RELATIVE",
+  "PROTECTED_ABSOLUTE"
+ ],
+ "evidence_strengths": [
+  "HYPOTHESIS",
+  "DISCOVERED",
+  "VERIFIED"
+ ],
+ "gaps_closed": [
+  "eight-stage arrival pipeline (discover..emit) as real functions, not a narrative",
+  "law-downgrade rule: foreign VERIFIED/PROTECTED_ABSOLUTE cannot survive any public import path",
+  "scope clamp: GENERIC_VERIFIED/SOC_FAMILY -> MACHINE_LOCAL across a machine boundary",
+  "calibration experiments generated one-cheapest-per imported hypothesis",
+  "--dry-run executes the pipeline against THIS machine with stage 7 UNAVAILABLE",
+  "stage 8 refuses to emit VERIFIED performance laws when stage 7 is UNAVAILABLE",
+  "Odyssey II field names (law_id, scope, evidence_strength) without importing a sibling law store"
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "negative_findings": [
+  "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json is not in HEAD; ANE is present-unprofiled at best",
+  "no Odyssey II scoped law store on disk (frontier F010); field names used locally",
+  "tools/accelerator/* and hcli/* are not materialized in this sparse checkout; recovered via git show HEAD:<path>",
+  "protected measurement cannot be taken here; stage 7 is UNAVAILABLE",
+  "FPGA board is not present; FPGA backend is not built (and must not be)",
+  "existing tools/accelerator/device_ascension.py is an ADP campaign, not an arrival pipeline \u2014 extended around, not forked",
+  "cannot load Codex MACHINE_GENOME.json from disk in this worktree (sparse); cited from git, not copied as a measurement"
+ ],
+ "odyssey_ii_law_fields": [
+  "law_id",
+  "statement",
+  "scope",
+  "evidence_strength",
+  "evidence_class",
+  "origin_machine_id",
+  "status"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "pipeline": {
+  "dest_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+  "dest_machine_id_sha256": "26b5070fb1609db887ad6994473d2ff4d37d78f82eb2c6c86a9a07c279a22b12",
+  "downgrade_rule": {
+   "id": "hawking.future.device_ascension.downgrade.v1",
+   "import_surfaces": [
+    "apply_downgrade_rule",
+    "import_law",
+    "import_law_catalog",
+    "import_laws"
+   ],
+   "preserve_verified": "raises VerifiedImportRefused on every import surface",
+   "statement": "Any law imported from another machine arrives with evidence_strength HYPOTHESIS and evidence_class STATIC_ONLY. Scope is clamped: GENERIC_VERIFIED and SOC_FAMILY become MACHINE_LOCAL; MODEL_LOCAL may keep model scope but never VERIFIED status. A MACHINE_LOCAL law from machine A is a HYPOTHESIS on machine B, never a verified law."
+  },
+  "dry_run": true,
+  "invariants_checked": [
+   "no foreign VERIFIED survived import",
+   "no PROTECTED_ABSOLUTE or DIAGNOSTIC_RELATIVE in sidecar-emitted laws",
+   "stage 7 is UNAVAILABLE",
+   "stage 8 emitted zero VERIFIED performance laws"
+  ],
+  "stages": [
+   {
+    "index": 1,
+    "measurement_state": "STATIC_ONLY",
+    "name": "discover_hardware",
+    "payload": {
+     "arch": "arm64",
+     "cpu_cores": 28,
+     "discovery_class": "STATIC_ONLY",
+     "discovery_means": [
+      "sysctl",
+      "ioreg AGXAccelerator",
+      "platform"
+     ],
+     "efficiency_cores": 8,
+     "gpu_cores": 60,
+     "machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+     "machine_id_sha256": "26b5070fb1609db887ad6994473d2ff4d37d78f82eb2c6c86a9a07c279a22b12",
+     "memory_bytes": 103079215104,
+     "not_measured": "bandwidth, tps, token_ns, gpu_ns, joules, sustained thermal envelope",
+     "os": "Darwin 27.0.0",
+     "os_product": "27.0",
+     "perf_cores": 20,
+     "soc": "Apple M3 Ultra"
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "index": 2,
+    "measurement_state": "STATIC_ONLY",
+    "name": "build_machine_genome",
+    "payload": {
+     "identity": {
+      "arch": "arm64",
+      "cpu_cores": 28,
+      "efficiency_cores": 8,
+      "gpu_cores": 60,
+      "memory_bytes": 103079215104,
+      "os": "Darwin 27.0.0",
+      "os_product": "27.0",
+      "perf_cores": 20,
+      "soc": "Apple M3 Ultra"
+     },
+     "knowledge_level": "INSTANCE",
+     "machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+     "machine_id_sha256": "26b5070fb1609db887ad6994473d2ff4d37d78f82eb2c6c86a9a07c279a22b12",
+     "measured_bandwidth": {
+      "reason": "sidecar has no GPU authority; a bandwidth number would be an invented measurement. Codex's sealed genome is receipts/headless/MACHINE_GENOME.json and is not re-asserted here",
+      "status": "UNKNOWN"
+     },
+     "measurement_state": "STATIC_ONLY",
+     "not_the_admission_bag": "hcli.machine.MachineGenome",
+     "not_the_codex_producer": "tools/accelerator/machine_genome.py",
+     "producer": "tools/future/device_ascension_pipeline.py",
+     "schema": "hawking.future.machine_genome.static.v1",
+     "sustained_behaviour": {
+      "reason": "sidecar does not run a microbenchmark or a sustained campaign",
+      "status": "ABSENT"
+     },
+     "thermal_envelope": {
+      "reason": "no sustained thermal campaign in this sidecar",
+      "status": "ABSENT"
+     }
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "index": 3,
+    "measurement_state": "STATIC_ONLY",
+    "name": "derive_capabilities",
+    "payload": {
+     "ane": {
+      "performance": "UNKNOWN",
+      "present": true,
+      "profile": "ABSENT",
+      "profile_path": "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+      "reason": "H11ANEIn is visible in ioreg; APPLE_ANE_DEVICE_PROFILE.json is not in HEAD, so ANE capability is present-unprofiled, not measured"
+     },
+     "apple_silicon": true,
+     "cuda": {
+      "performance": "UNKNOWN",
+      "present": false,
+      "reason": "this arrival pipeline is the Apple host sidecar; CUDA is a future backend, not claimed here"
+     },
+     "fpga": {
+      "backend_status": "FUTURE",
+      "civilization": false,
+      "note": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
+      "performance": "UNKNOWN",
+      "present": false,
+      "role": "Accelerator / Physical Compiler / Fusion"
+     },
+     "machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+     "measurement_state": "STATIC_ONLY",
+     "metal": {
+      "api": "Metal",
+      "compiler": {
+       "present": false,
+       "reason": "xcrun metal is not installed; AOT metallib compilation is unavailable",
+       "status": "ABSENT"
+      },
+      "eligible": true,
+      "performance": "UNKNOWN"
+     },
+     "protected_gpu_lease": {
+      "available": false,
+      "reason": "sidecar has no GPU authority; Codex owns the protected lane"
+     },
+     "unified_memory": {
+      "evidence": "STATIC_ONLY identity (arch+soc); not a protected A/B",
+      "note": "On unified memory the CUDA-era host<->device copies are structurally avoidable. That is a topology fact, not a speedup number, and it does not transfer to a discrete-GPU machine.",
+      "present": true
+     }
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "index": 4,
+    "measurement_state": "STATIC_ONLY",
+    "name": "import_laws_as_hypotheses",
+    "payload": {
+     "downgrade_rule": "hawking.future.device_ascension.downgrade.v1",
+     "laws": [
+      {
+       "calibration_axis": "identity",
+       "crosses_machine_boundary": true,
+       "dest_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+       "downgrade_reason": "origin_machine_id != dest_machine_id: a law imported from another machine arrives as a hypothesis with scope clamped; VERIFIED and PROTECTED_ABSOLUTE cannot survive the boundary",
+       "downgrade_rule": "hawking.future.device_ascension.downgrade.v1",
+       "evidence_class": "STATIC_ONLY",
+       "evidence_strength": "HYPOTHESIS",
+       "imported": true,
+       "law_id": "LAW-FOREIGN-ALREADY-HYPOTHESIS",
+       "origin_evidence_class": "STATIC_ONLY",
+       "origin_evidence_strength": "HYPOTHESIS",
+       "origin_machine_id": "foreign|lab-C|cpu=UNKNOWN|gpu=UNKNOWN|mem=UNKNOWN",
+       "origin_scope": "MACHINE_LOCAL",
+       "scope": "MACHINE_LOCAL",
+       "source": "fixture:foreign-lab-c",
+       "statement": "Origin fixture: already a hypothesis on a foreign machine.",
+       "status": "HYPOTHESIS",
+       "verified_on_dest": false
+      },
+      {
+       "calibration_axis": "fusion",
+       "crosses_machine_boundary": true,
+       "dest_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+       "downgrade_reason": "origin_machine_id != dest_machine_id: a law imported from another machine arrives as a hypothesis with scope clamped; VERIFIED and PROTECTED_ABSOLUTE cannot survive the boundary",
+       "downgrade_rule": "hawking.future.device_ascension.downgrade.v1",
+       "evidence_class": "STATIC_ONLY",
+       "evidence_strength": "HYPOTHESIS",
+       "imported": true,
+       "law_id": "LAW-FOREIGN-GENERIC-FUSION",
+       "origin_evidence_class": "PROTECTED_ABSOLUTE",
+       "origin_evidence_strength": "VERIFIED",
+       "origin_machine_id": "foreign|Apple-M2-Ultra|cpu=24|gpu=76|mem=UNKNOWN",
+       "origin_scope": "GENERIC_VERIFIED",
+       "scope": "MACHINE_LOCAL",
+       "source": "fixture:foreign-m2-ultra",
+       "statement": "Origin fixture: a GENERIC_VERIFIED fusion-beats-materialising claim from another machine. Generic-verified cannot survive a machine boundary; it clamps to MACHINE_LOCAL hypothesis.",
+       "status": "HYPOTHESIS",
+       "verified_on_dest": false
+      },
+      {
+       "calibration_axis": "bandwidth",
+       "crosses_machine_boundary": true,
+       "dest_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+       "downgrade_reason": "origin_machine_id != dest_machine_id: a law imported from another machine arrives as a hypothesis with scope clamped; VERIFIED and PROTECTED_ABSOLUTE cannot survive the boundary",
+       "downgrade_rule": "hawking.future.device_ascension.downgrade.v1",
+       "evidence_class": "STATIC_ONLY",
+       "evidence_strength": "HYPOTHESIS",
+       "imported": true,
+       "law_id": "LAW-FOREIGN-H100-BANDWIDTH",
+       "origin_evidence_class": "PROTECTED_ABSOLUTE",
+       "origin_evidence_strength": "VERIFIED",
+       "origin_machine_id": "foreign|NVIDIA-H100|cpu=UNKNOWN|gpu=H100|mem=UNKNOWN",
+       "origin_scope": "MACHINE_LOCAL",
+       "scope": "MACHINE_LOCAL",
+       "source": "fixture:foreign-h100",
+       "statement": "Origin fixture: a discrete NVIDIA H100 reported a machine-local bandwidth law. The number is not repeated here. A MACHINE_LOCAL bandwidth law is a property of that box and must not be inherited.",
+       "status": "HYPOTHESIS",
+       "verified_on_dest": false
+      },
+      {
+       "calibration_axis": "unified_memory",
+       "crosses_machine_boundary": true,
+       "dest_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+       "downgrade_reason": "origin_machine_id != dest_machine_id: a law imported from another machine arrives as a hypothesis with scope clamped; VERIFIED and PROTECTED_ABSOLUTE cannot survive the boundary",
+       "downgrade_rule": "hawking.future.device_ascension.downgrade.v1",
+       "evidence_class": "STATIC_ONLY",
+       "evidence_strength": "HYPOTHESIS",
+       "imported": true,
+       "law_id": "LAW-FOREIGN-M1MAX-UNIFIED-MEMORY",
+       "origin_evidence_class": "PROTECTED_ABSOLUTE",
+       "origin_evidence_strength": "VERIFIED",
+       "origin_machine_id": "foreign|Apple-M1-Max|cpu=10|gpu=32|mem=68719476736",
+       "origin_scope": "MACHINE_LOCAL",
+       "scope": "MACHINE_LOCAL",
+       "source": "fixture:foreign-m1-max",
+       "statement": "Origin fixture: on an Apple M1 Max, eliminating per-call host<->device copies was a structural unified-memory fact. That MACHINE_LOCAL topology law is a hypothesis on any other box.",
+       "status": "HYPOTHESIS",
+       "verified_on_dest": false
+      },
+      {
+       "calibration_axis": "representation",
+       "crosses_machine_boundary": true,
+       "dest_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+       "downgrade_reason": "origin_machine_id != dest_machine_id: a law imported from another machine arrives as a hypothesis with scope clamped; VERIFIED and PROTECTED_ABSOLUTE cannot survive the boundary",
+       "downgrade_rule": "hawking.future.device_ascension.downgrade.v1",
+       "evidence_class": "STATIC_ONLY",
+       "evidence_strength": "HYPOTHESIS",
+       "imported": true,
+       "law_id": "LAW-FOREIGN-MODEL-MLP-FLOOR",
+       "origin_evidence_class": "DIAGNOSTIC_RELATIVE",
+       "origin_evidence_strength": "VERIFIED",
+       "origin_machine_id": "foreign|lab-B|cpu=UNKNOWN|gpu=UNKNOWN|mem=UNKNOWN",
+       "origin_scope": "MODEL_LOCAL",
+       "scope": "MODEL_LOCAL",
+       "source": "fixture:foreign-lab-b",
+       "statement": "Origin fixture: a MODEL_LOCAL MLP information-floor law measured under DIAGNOSTIC_RELATIVE conditions on another machine. Model scope may survive; VERIFIED/DIAGNOSTIC_RELATIVE may not.",
+       "status": "HYPOTHESIS",
+       "verified_on_dest": false
+      }
+     ],
+     "n_imported": 5
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "index": 5,
+    "measurement_state": "STATIC_ONLY",
+    "name": "calibration_experiments",
+    "payload": {
+     "experiments": [
+      {
+       "calibration_axis": "identity",
+       "cost_rank": 0,
+       "hypothesis_law_id": "LAW-FOREIGN-ALREADY-HYPOTHESIS",
+       "kind": "STATIC_SYSCTL_IDENTITY",
+       "needs_gpu": false,
+       "reason": null,
+       "status": "RUNNABLE",
+       "would_confirm": "dest sysctl/ioreg identity matches the hypothesis predicate",
+       "would_refute": "dest identity disagrees with the hypothesis predicate"
+      },
+      {
+       "calibration_axis": "fusion",
+       "cost_rank": 12,
+       "hypothesis_law_id": "LAW-FOREIGN-GENERIC-FUSION",
+       "kind": "PROTECTED_FUSION_AB",
+       "needs_gpu": true,
+       "reason": "sidecar has no protected GPU lease; this experiment is declared, not run",
+       "status": "UNAVAILABLE",
+       "would_confirm": "protected fusion A/B on dest agrees in sign with the origin",
+       "would_refute": "protected fusion A/B on dest disagrees in sign with the origin"
+      },
+      {
+       "calibration_axis": "bandwidth",
+       "cost_rank": 10,
+       "hypothesis_law_id": "LAW-FOREIGN-H100-BANDWIDTH",
+       "kind": "PROTECTED_BANDWIDTH_TRIAD",
+       "needs_gpu": true,
+       "reason": "sidecar has no protected GPU lease; this experiment is declared, not run",
+       "status": "UNAVAILABLE",
+       "would_confirm": "protected triad on dest reproduces the origin claim",
+       "would_refute": "protected triad on dest disagrees with the origin claim"
+      },
+      {
+       "calibration_axis": "unified_memory",
+       "cost_rank": 11,
+       "hypothesis_law_id": "LAW-FOREIGN-M1MAX-UNIFIED-MEMORY",
+       "kind": "PROTECTED_UNIFIED_MEMORY_AB",
+       "needs_gpu": true,
+       "reason": "sidecar has no protected GPU lease; this experiment is declared, not run",
+       "status": "UNAVAILABLE",
+       "would_confirm": "protected A/B on dest shows copy-elimination is structural",
+       "would_refute": "protected A/B on dest shows the copies are not optional"
+      },
+      {
+       "calibration_axis": "representation",
+       "cost_rank": 13,
+       "hypothesis_law_id": "LAW-FOREIGN-MODEL-MLP-FLOOR",
+       "kind": "PROTECTED_REPRESENTATION_HOLD",
+       "needs_gpu": true,
+       "reason": "sidecar has no protected GPU lease; this experiment is declared, not run",
+       "status": "UNAVAILABLE",
+       "would_confirm": "protected hold-out on dest keeps the representation floor",
+       "would_refute": "protected hold-out on dest breaks the representation floor"
+      }
+     ],
+     "n": 5,
+     "n_runnable": 1,
+     "n_unavailable": 4
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "index": 6,
+    "measurement_state": "STATIC_ONLY",
+    "name": "recompile_physical_graph",
+    "payload": {
+     "compiler_stage": "arrival_recompile_static",
+     "device_placement": {
+      "candidates": [
+       "cpu",
+       "gpu",
+       "fpga",
+       "ane"
+      ],
+      "fpga_note": "FPGA is a candidate backend of Accelerator / Physical Compiler / Fusion, not a civilization; selected is never fpga here",
+      "selected": "metal"
+     },
+     "fingerprint": "f4f39db187b7d282d04b726daa01aa5b710ae381eb14d3ded75b2c232817acbd",
+     "hypotheses_in_scope": [
+      "LAW-FOREIGN-ALREADY-HYPOTHESIS",
+      "LAW-FOREIGN-GENERIC-FUSION",
+      "LAW-FOREIGN-H100-BANDWIDTH",
+      "LAW-FOREIGN-M1MAX-UNIFIED-MEMORY",
+      "LAW-FOREIGN-MODEL-MLP-FLOOR"
+     ],
+     "machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+     "measurement_state": "STATIC_ONLY",
+     "not_executed": true,
+     "not_the_hcli_compiler": "hcli.physical_graph.compile_physical_graph",
+     "precision": {
+      "accumulator": "unresolved",
+      "activation": "unresolved",
+      "weight": "unresolved"
+     },
+     "qualification": "PLAN_ONLY",
+     "residency": {
+      "page_cache": "unresolved",
+      "state": "unresolved",
+      "weights": "unified_memory_candidate"
+     },
+     "schema": "hawking.future.physical_graph.plan_only.v1"
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "index": 7,
+    "measurement_state": "STATIC_ONLY",
+    "name": "protected_measurement",
+    "payload": {
+     "bench_state": "UNKNOWN",
+     "dry_run": true,
+     "gpu_authority": false,
+     "measurement_state": "STATIC_ONLY",
+     "reason": "sidecar has no protected GPU lease; stage 7 is a declared stub. Codex owns tools/accelerator and the physical qualification queue. A number here would be an invented measurement.",
+     "refuses_to_emit": [
+      "DIAGNOSTIC_RELATIVE",
+      "PROTECTED_ABSOLUTE"
+     ],
+     "status": "UNAVAILABLE",
+     "would_produce": "PROTECTED_ABSOLUTE"
+    },
+    "reason": "sidecar has no protected GPU lease; stage 7 is a declared stub. Codex owns tools/accelerator and the physical qualification queue. A number here would be an invented measurement.",
+    "status": "UNAVAILABLE"
+   },
+   {
+    "index": 8,
+    "measurement_state": "STATIC_ONLY",
+    "name": "emit_machine_laws",
+    "payload": {
+     "imported_hypotheses_pending_calibration": [
+      {
+       "evidence_strength": "HYPOTHESIS",
+       "law_id": "LAW-FOREIGN-ALREADY-HYPOTHESIS",
+       "origin_machine_id": "foreign|lab-C|cpu=UNKNOWN|gpu=UNKNOWN|mem=UNKNOWN",
+       "scope": "MACHINE_LOCAL",
+       "waiting_on": "protected_measurement"
+      },
+      {
+       "evidence_strength": "HYPOTHESIS",
+       "law_id": "LAW-FOREIGN-GENERIC-FUSION",
+       "origin_machine_id": "foreign|Apple-M2-Ultra|cpu=24|gpu=76|mem=UNKNOWN",
+       "scope": "MACHINE_LOCAL",
+       "waiting_on": "protected_measurement"
+      },
+      {
+       "evidence_strength": "HYPOTHESIS",
+       "law_id": "LAW-FOREIGN-H100-BANDWIDTH",
+       "origin_machine_id": "foreign|NVIDIA-H100|cpu=UNKNOWN|gpu=H100|mem=UNKNOWN",
+       "scope": "MACHINE_LOCAL",
+       "waiting_on": "protected_measurement"
+      },
+      {
+       "evidence_strength": "HYPOTHESIS",
+       "law_id": "LAW-FOREIGN-M1MAX-UNIFIED-MEMORY",
+       "origin_machine_id": "foreign|Apple-M1-Max|cpu=10|gpu=32|mem=68719476736",
+       "scope": "MACHINE_LOCAL",
+       "waiting_on": "protected_measurement"
+      },
+      {
+       "evidence_strength": "HYPOTHESIS",
+       "law_id": "LAW-FOREIGN-MODEL-MLP-FLOOR",
+       "origin_machine_id": "foreign|lab-B|cpu=UNKNOWN|gpu=UNKNOWN|mem=UNKNOWN",
+       "scope": "MODEL_LOCAL",
+       "waiting_on": "protected_measurement"
+      }
+     ],
+     "n_discovered_identity_laws": 2,
+     "n_verified_performance_laws": 0,
+     "own_laws": [
+      {
+       "evidence_class": "STATIC_ONLY",
+       "evidence_strength": "DISCOVERED",
+       "imported": false,
+       "law_id": "LAW-DEST-IDENTITY-SOC",
+       "note": "identity, not a performance law; DISCOVERED is not VERIFIED",
+       "origin_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+       "scope": "MACHINE_LOCAL",
+       "statement": "THIS machine's SoC identity WAS 'Apple M3 Ultra' under STATIC sysctl discovery.",
+       "status": "ACTIVE",
+       "verified_on_dest": false
+      },
+      {
+       "evidence_class": "STATIC_ONLY",
+       "evidence_strength": "DISCOVERED",
+       "imported": false,
+       "law_id": "LAW-DEST-UNIFIED-MEMORY-TOPOLOGY",
+       "note": "topology from arch+soc; copy-elimination MAGNITUDE is unmeasured",
+       "origin_machine_id": "Apple M3 Ultra|arm64|cpu=28|gpu=60|mem=103079215104",
+       "scope": "MACHINE_LOCAL",
+       "statement": "THIS machine has unified memory",
+       "status": "ACTIVE",
+       "verified_on_dest": false
+      }
+     ],
+     "rule": "this machine's own VERIFIED performance laws are produced only after protected measurement; stage 7 is UNAVAILABLE so none are produced"
+    },
+    "status": "COMPLETED"
+   }
+  ]
+ },
+ "purpose": "Arrival pipeline for a new machine: discover, genome, capabilities, import laws AS HYPOTHESES, calibrate, recompile, (stub) measure, emit this machine's own laws. Disk state is authority. Models propose; protected deterministic evidence decides. This sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+ "recovered_implementation": [
+  {
+   "adequate_for_this_lane": false,
+   "gap": "no import-laws-as-hypotheses, no machine-boundary downgrade, no arrival dry-run",
+   "in_git": true,
+   "on_disk_in_this_worktree": true,
+   "path": "tools/accelerator/device_ascension.py",
+   "role": "Codex ADP campaign: eleven stages fingerprint..adp_seal. Real functions; NOT_RUN rather than silent skip. Refuses production seal without sustained_qualification. Used by receipts/headless/ACCELERATOR_FRONT_G_P6.json. Not an arrival pipeline and has no law-downgrade rule. This sidecar extends AROUND it."
+  },
+  {
+   "in_git": true,
+   "path": "tools/accelerator/test_device_ascension.py",
+   "role": "pins ADP seal refusals (unnamed profile, missing stages, INSTANCE vs EXACT_MACHINE vocabularies)"
+  },
+  {
+   "in_git": true,
+   "path": "tools/accelerator/machine_genome.py",
+   "role": "Codex producer of hawking.accelerator.machine_genome.v1 with a measured f32 triad. Sidecar must not re-measure and must not copy that sealed median as its own."
+  },
+  {
+   "in_git": true,
+   "path": "receipts/headless/MACHINE_GENOME.json",
+   "role": "sealed INSTANCE genome for Apple M3 Ultra; Codex evidence, not sidecar evidence"
+  },
+  {
+   "in_git": true,
+   "path": "receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
+   "role": "ACCEL-DEVICE receipt wrapping the genome; AKB-MACHINE-BANDWIDTH cites it and says it must never be inherited by another machine"
+  },
+  {
+   "in_git": true,
+   "path": "hcli/machine.py",
+   "role": "MachineGenome compatibility bag over a JSON file; not a producer; admission is resolve_runtime_limits; producer of admission numbers is tools/headless/machine_probe.py"
+  },
+  {
+   "in_git": true,
+   "path": "hcli/genomes/runtime_genome.py",
+   "role": "RuntimeGenome from CONVENTIONAL_CONTROL_SET; per-backend science, not arrival"
+  },
+  {
+   "in_git": true,
+   "path": "hcli/physical_graph.py",
+   "role": "PLAN_ONLY PhysicalGraph compiler. Sidecar recompile stage is a static plan that does not import hcli."
+  },
+  {
+   "in_git": true,
+   "path": "tools/headless/cross_model_laws.py",
+   "role": "promotion refusal on QWEN_SPECIFIC/FAMILY_TRANSFERRED/ARCHITECTURE_GENERAL/MACHINE_GENERAL. Different vocabulary from Odyssey II law_id/scope/evidence_strength. Not imported."
+  },
+  {
+   "in_git": true,
+   "path": "tools/accelerator/akb.py",
+   "role": "typed Accelerator laws with law_id + evidence_class Measured/Derived + 11 applicability axes. Closest existing law store; not Odyssey II scope/evidence_strength. Not imported (Codex surface, and sibling odyssey2_law_store is a different lane)."
+  },
+  {
+   "in_git": true,
+   "path": "tools/odyssey/device_profiles.py",
+   "role": "INTERACTIVE/MAXX workload profiles, not hardware capability derivation"
+  },
+  {
+   "in_git": false,
+   "path": "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+   "role": "named in the lane brief; not present in HEAD"
+  },
+  {
+   "in_git": false,
+   "path": "tools/future/odyssey2_law_store.py",
+   "role": "frontier F010; sibling lane. This module uses Odyssey II field names and does not import it."
+  }
+ ],
+ "schema": "hawking.future.device_ascension.v1",
+ "scopes": [
+  "MACHINE_LOCAL",
+  "MODEL_LOCAL",
+  "SOC_FAMILY",
+  "GENERIC_VERIFIED"
+ ],
+ "seal_sha256": "a520fdd30acb3a10c60445b4d43c8f945b065423d5a2d4954966407cc046f837",
+ "version": 1
+}

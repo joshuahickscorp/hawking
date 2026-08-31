@@ -1,0 +1,108 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:46:08Z",
+  "recorded_by": "tools/future/metal_reachability.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "blocked_downstream_if_true": [
+  "Flash teacher capture (meta funnel gate 2: real_teacher_fit)",
+  "every representation result that funnel gates",
+  "physical NX qualification",
+  "protected absolute measurement"
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_sites": [
+  {
+   "carries_claim": true,
+   "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+   "present": true
+  },
+  {
+   "carries_claim": true,
+   "path": "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
+   "present": true
+  },
+  {
+   "carries_claim": true,
+   "path": "crates/hawking-core/src/metal/mod.rs",
+   "present": true
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "nothing had tested the blocker; it was carried as a settled host fact"
+ ],
+ "gpu_authority": false,
+ "is_a_measurement": false,
+ "negative_findings": [
+  "the boundary receipt hardcodes status BLOCKED_NO_METAL_GPU for ANY prefix-initialization error, so that status is not by itself evidence that the GPU was the problem -- here the error string did name Metal",
+  "this module cannot say why the Rust process saw no device"
+ ],
+ "observed": {
+  "devices": [
+   "Apple M3 Ultra"
+  ],
+  "n_devices": 1,
+  "recommended_max_working_set_bytes": 83494174720,
+  "system_default": "Apple M3 Ultra",
+  "unified_memory": true
+ },
+ "observed_runtime_binding": {
+  "function_lookup": "OK",
+  "metal_crate_version": "0.29.0",
+  "n_devices": 1,
+  "runtime_source_compile": "OK",
+  "system_default": "Apple M3 Ultra"
+ },
+ "purpose": "Test the campaign-wide claim that this host has no Metal-capable GPU, because a host property and a process property have different remedies.",
+ "recovered_implementation": [
+  "crates/hawking-core/src/metal/mod.rs raises Error::Metal on Device::system_default() returning None",
+  "crates/hawking-core/examples/flash_meta_teacher_trace.rs writes the boundary receipt on any prefix-initialization error"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.metal_reachability.probe()",
+  "fails_closed": "an unavailable probe records UNTESTED, never CONFIRMED",
+  "frontier": "FT.MODEL_EXECUTION.complete-token",
+  "receipt": "receipts/future/METAL_REACHABILITY.json",
+  "workunit": "one CPU_ANALYSIS unit; cheap; no GPU authority"
+ },
+ "schema": "hawking.future.metal_reachability.v1",
+ "seal_sha256": "0c12510bdef007e13465069d38128daa55e510e775739f563afd10198832b73d",
+ "verdict": {
+  "claim": "this host has no Metal-capable GPU",
+  "different_remedies": {
+   "a process that cannot see a present GPU": "change how the process is launched, then re-run the capture",
+   "if the host had no GPU": "acquire hardware; nothing else helps"
+  },
+  "runtime_binding": {
+   "claim": "this host has no Metal-capable GPU",
+   "different_remedies": {
+    "a process that cannot see a present GPU": "change how the process is launched, then re-run the capture",
+    "if the host had no GPU": "acquire hardware; nothing else helps"
+   },
+   "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
+   "what_this_does_not_establish": [
+    "that the blocked capture will now succeed; that binary was not run here",
+    "the cause of the process-side failure; sandbox, launch context and build target are all consistent with what was observed and nothing here distinguishes them"
+   ],
+   "why": "metal crate 0.29.0 -- the same crate and the same Device::system_default() call the runtime uses -- returned 'Apple M3 Ultra' here. The language binding is not the suspect; it is the binding that failed in the blocked run."
+  },
+  "shader_compilation": {
+   "runtime_source_compile": "OK",
+   "still_not_a_measurement": "the compiler service was exercised, not the GPU: no command queue was created and nothing was dispatched",
+   "why_it_matters": "load_or_compile_shader_library falls back to device.new_library_with_source when no metallib cache is warm, and the xcrun precompile path is optional and gated behind HAWKING_METALLIB_BUILD. So the absent offline compiler does not block execution here -- it forces source compilation on a cold start, which is a cost, not a wall."
+  },
+  "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
+  "what_this_does_not_establish": [
+   "that the blocked capture will now succeed; that binary was not run here",
+   "the cause of the process-side failure; sandbox, launch context and build target are all consistent with what was observed and nothing here distinguishes them"
+  ],
+  "why": "MTLCreateSystemDefaultDevice() returned 'Apple M3 Ultra' from an ordinary command-line process on this host, and MTLCopyAllDevices() reports 1 device(s). A Rust Device::system_default() returning None is therefore a property of that process, not of the machine."
+ },
+ "version": 1,
+ "why_not_a_measurement": "device enumeration only. No command queue is created, no work is submitted, no lease is taken, and no timing is recorded."
+}

@@ -1,0 +1,676 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:57:12Z",
+  "recorded_by": "tools/future/concurrency_doctor.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. Partial GPU occupancy is not available compute. A utilisation percentage is not a complete-token. SLEEPING physical work is never filled with a synthetic TPS.",
+ "decision": {
+  "experiment_state": "SLEEPING",
+  "reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+  "resident_presence": "UNDECLARED",
+  "verdict": null,
+  "wake_condition": {
+   "all_of": [
+    "a declared resident pid is PRESENT (tools.future.resident_health.sample); the largest RSS neighbour is not identity",
+    "a protected GPU lease is held; this sidecar never takes one",
+    "contamination class is QUIESCENT",
+    "machine, NX, runtime, and context_regime are named so a law can be scoped"
+   ],
+   "never": [
+    "synthetic useful-work numbers treated as PROTECTED_ABSOLUTE",
+    "utilisation treated as available compute",
+    "universalising the law to Flash, M5, FPGA, or CUDA",
+    "a default of CONCURRENCY_HELPS when the ladder has not run"
+   ]
+  }
+ },
+ "evidence_class": "STATIC_ONLY",
+ "experiment_state": "SLEEPING",
+ "gaps_closed": [
+  "plan() for resident-session concurrency 1,2,3,4 continuing only while useful work is informative",
+  "observe() per level with refused UNKNOWN slots when no resident / no lease",
+  "verdict() on verified useful work per wall second; occupancy is not the ranking key",
+  "CONCURRENCY_HELPS, NO_USEFUL_CONCURRENCY_HEADROOM, HEADROOM_IS_HOST_CEREMONY all reachable from synthetic observations",
+  "SLEEPING WorkUnit with wake condition when the ladder cannot run",
+  "seal_law requires machine, NX, runtime, context_regime and refuses Flash/M5/FPGA/CUDA transfer",
+  "hardware-named numeric fields raise rather than seal"
+ ],
+ "gpu_authority": false,
+ "host_capability": {
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "gpu_occupancy_class": "LOW",
+  "gpu_occupancy_probe_status": "OK",
+  "is_a_measurement": false,
+  "memory_pressure": "warn",
+  "metal": {
+   "chip": "Apple M3 Ultra",
+   "gpu_present": true,
+   "is_a_measurement": false,
+   "offline_metal_compiler": false,
+   "runtime_source_compilation": "AVAILABLE",
+   "why": "Apple M3 Ultra reports as this host's chip; Apple silicon carries an integrated Metal GPU"
+  },
+  "not_runnable_reasons": [
+   "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour",
+   "sidecar has no GPU authority and will not take a lease",
+   "no protected GPU lease is held",
+   "quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment",
+   "this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware"
+  ],
+  "occupancy_is_hypothesis_about_headroom": true,
+  "occupancy_is_not_available_compute": true,
+  "protected_lease": false,
+  "quiescence": "UNKNOWN",
+  "quiescence_reason": "this sidecar did not run contamination.snapshot as a promotion gate; UNKNOWN is not QUIESCENT",
+  "resident_bytes": null,
+  "resident_pid": null,
+  "resident_presence": "UNDECLARED",
+  "resident_reason": "no resident pid declared (argument or HAWKING_RESIDENT_PID); will not invent one from the largest RSS neighbour (dirty_measure.identify_resident_loaded is a contamination envelope, not identity)",
+  "runnable_today": false,
+  "suggested_scope": {
+   "context_regime": null,
+   "machine": "Apple M3 Ultra",
+   "note": "hints only; seal_law refuses UNKNOWN/missing and will not auto-fill",
+   "nx": null,
+   "runtime": null
+  },
+  "swap": {
+   "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
+   "status": "OK",
+   "swap_ins": 50136891
+  }
+ },
+ "is_a_measurement": false,
+ "law": {
+  "authoritative": false,
+  "reason": "no protected observations; a law without evidence would be fiction",
+  "refuses_to_universalise": [
+   "Flash",
+   "M5",
+   "FPGA",
+   "CUDA"
+  ],
+  "required_scope": [
+   "machine",
+   "nx",
+   "runtime",
+   "context_regime"
+  ],
+  "status": "NOT_SEALED"
+ },
+ "live_observations": [
+  {
+   "capability_envelope": {
+    "gpu_occupancy_class": "LOW",
+    "memory_pressure": "warn",
+    "occupancy_is_not_available_compute": true,
+    "resident_bytes": null,
+    "swap": {
+     "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
+     "status": "OK",
+     "swap_ins": 50136891
+    }
+   },
+   "concurrency": 1,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "hardware_named_slots": {
+    "accepted_tps": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "dispatch_ns": null,
+    "gpu_ns": null,
+    "joules_per_token": null,
+    "token_ns": null,
+    "tps": null,
+    "wall_ns": null
+   },
+   "is_a_measurement": false,
+   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "slots": {
+    "accepted_tps": null,
+    "aggregate_token_cost_class": null,
+    "aggregate_useful_work": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "cpu_occupancy_class": null,
+    "dispatch_ns": null,
+    "dispatch_rate_class": null,
+    "gpu_ns": null,
+    "gpu_occupancy_class": null,
+    "host_ceremony_class": null,
+    "joules_per_token": null,
+    "memory_pressure": null,
+    "per_session_token_cost_class": null,
+    "per_session_useful_work": null,
+    "resident_bytes": null,
+    "session_state_bytes": null,
+    "swap": null,
+    "synchronisation_class": null,
+    "token_ns": null,
+    "tps": null,
+    "ttft_class": null,
+    "wall_ns": null
+   },
+   "source": "LIVE_REFUSED",
+   "status": "REFUSED",
+   "useful_work_recorded_as_magnitude": false,
+   "verdict": null
+  },
+  {
+   "capability_envelope": {
+    "gpu_occupancy_class": "LOW",
+    "memory_pressure": "warn",
+    "occupancy_is_not_available_compute": true,
+    "resident_bytes": null,
+    "swap": {
+     "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
+     "status": "OK",
+     "swap_ins": 50136891
+    }
+   },
+   "concurrency": 2,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "hardware_named_slots": {
+    "accepted_tps": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "dispatch_ns": null,
+    "gpu_ns": null,
+    "joules_per_token": null,
+    "token_ns": null,
+    "tps": null,
+    "wall_ns": null
+   },
+   "is_a_measurement": false,
+   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "slots": {
+    "accepted_tps": null,
+    "aggregate_token_cost_class": null,
+    "aggregate_useful_work": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "cpu_occupancy_class": null,
+    "dispatch_ns": null,
+    "dispatch_rate_class": null,
+    "gpu_ns": null,
+    "gpu_occupancy_class": null,
+    "host_ceremony_class": null,
+    "joules_per_token": null,
+    "memory_pressure": null,
+    "per_session_token_cost_class": null,
+    "per_session_useful_work": null,
+    "resident_bytes": null,
+    "session_state_bytes": null,
+    "swap": null,
+    "synchronisation_class": null,
+    "token_ns": null,
+    "tps": null,
+    "ttft_class": null,
+    "wall_ns": null
+   },
+   "source": "LIVE_REFUSED",
+   "status": "REFUSED",
+   "useful_work_recorded_as_magnitude": false,
+   "verdict": null
+  },
+  {
+   "capability_envelope": {
+    "gpu_occupancy_class": "LOW",
+    "memory_pressure": "warn",
+    "occupancy_is_not_available_compute": true,
+    "resident_bytes": null,
+    "swap": {
+     "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
+     "status": "OK",
+     "swap_ins": 50136891
+    }
+   },
+   "concurrency": 3,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "hardware_named_slots": {
+    "accepted_tps": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "dispatch_ns": null,
+    "gpu_ns": null,
+    "joules_per_token": null,
+    "token_ns": null,
+    "tps": null,
+    "wall_ns": null
+   },
+   "is_a_measurement": false,
+   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "slots": {
+    "accepted_tps": null,
+    "aggregate_token_cost_class": null,
+    "aggregate_useful_work": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "cpu_occupancy_class": null,
+    "dispatch_ns": null,
+    "dispatch_rate_class": null,
+    "gpu_ns": null,
+    "gpu_occupancy_class": null,
+    "host_ceremony_class": null,
+    "joules_per_token": null,
+    "memory_pressure": null,
+    "per_session_token_cost_class": null,
+    "per_session_useful_work": null,
+    "resident_bytes": null,
+    "session_state_bytes": null,
+    "swap": null,
+    "synchronisation_class": null,
+    "token_ns": null,
+    "tps": null,
+    "ttft_class": null,
+    "wall_ns": null
+   },
+   "source": "LIVE_REFUSED",
+   "status": "REFUSED",
+   "useful_work_recorded_as_magnitude": false,
+   "verdict": null
+  },
+  {
+   "capability_envelope": {
+    "gpu_occupancy_class": "LOW",
+    "memory_pressure": "warn",
+    "occupancy_is_not_available_compute": true,
+    "resident_bytes": null,
+    "swap": {
+     "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
+     "status": "OK",
+     "swap_ins": 50136891
+    }
+   },
+   "concurrency": 4,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "hardware_named_slots": {
+    "accepted_tps": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "dispatch_ns": null,
+    "gpu_ns": null,
+    "joules_per_token": null,
+    "token_ns": null,
+    "tps": null,
+    "wall_ns": null
+   },
+   "is_a_measurement": false,
+   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "slots": {
+    "accepted_tps": null,
+    "aggregate_token_cost_class": null,
+    "aggregate_useful_work": null,
+    "bandwidth_gbps": null,
+    "complete_token_ns": null,
+    "cpu_occupancy_class": null,
+    "dispatch_ns": null,
+    "dispatch_rate_class": null,
+    "gpu_ns": null,
+    "gpu_occupancy_class": null,
+    "host_ceremony_class": null,
+    "joules_per_token": null,
+    "memory_pressure": null,
+    "per_session_token_cost_class": null,
+    "per_session_useful_work": null,
+    "resident_bytes": null,
+    "session_state_bytes": null,
+    "swap": null,
+    "synchronisation_class": null,
+    "token_ns": null,
+    "tps": null,
+    "ttft_class": null,
+    "wall_ns": null
+   },
+   "source": "LIVE_REFUSED",
+   "status": "REFUSED",
+   "useful_work_recorded_as_magnitude": false,
+   "verdict": null
+  }
+ ],
+ "negative_findings": [
+  "this sidecar did not start a resident, did not take a GPU lease, and did not run the concurrency ladder",
+  "useful-work, token_ns, TTFT, dispatch rate and synchronisation stay UNKNOWN; they are not defaulted",
+  "partial GPU occupancy, if probed, is machine state and a hypothesis about headroom, not available compute",
+  "the recovered ACCELERATOR_CONCURRENCY_SWEEP is a 4 MiB kernel in SMALL_KERNEL_LAUNCH_BOUND; citing it as a whole-body law is the exact mixing this scoping refuses",
+  "orchestration BINDINGS / frontiers catalog were outside this lane's WRITE list, so this module is not glued into invoke() by this receipt",
+  "host_ceremony_class cannot be observed live without token_ns / dispatch_ns this sidecar will not record",
+  "a doctor that cannot run today is still worth building; a doctor that fabricates a TPS is worse than none",
+  "resident presence at build is 'UNDECLARED'; the experiment is SLEEPING"
+ ],
+ "objective": "verified useful work per wall second, never utilisation",
+ "plan": {
+  "context_regimes": [
+   "WHOLE_MODEL_BODY",
+   "SMALL_KERNEL_LAUNCH_BOUND",
+   "HOST_CEREMONY",
+   "BANDWIDTH_BOUND"
+  ],
+  "does_not_universalise_to": [
+   "Flash",
+   "M5",
+   "FPGA",
+   "CUDA"
+  ],
+  "evidence_class_here": "STATIC_ONLY",
+  "evidence_class_when_run": "PROTECTED_ABSOLUTE on a lease this sidecar does not hold",
+  "frontier": "FT.TPS.protected-tps",
+  "hardware_named_slots_must_be_null": [
+   "accepted_tps",
+   "bandwidth_gbps",
+   "complete_token_ns",
+   "dispatch_ns",
+   "gpu_ns",
+   "joules_per_token",
+   "token_ns",
+   "tps",
+   "wall_ns"
+  ],
+  "informative_if": "useful_work_per_wall_second(n+1) * 10 > useful_work_per_wall_second(n) * 11 (more than one tenth). Exact-tenth is FLAT.",
+  "ladder": [
+   1,
+   2,
+   3,
+   4
+  ],
+  "legal_verdicts": [
+   "CONCURRENCY_HELPS",
+   "NO_USEFUL_CONCURRENCY_HEADROOM",
+   "HEADROOM_IS_HOST_CEREMONY"
+  ],
+  "levels": [
+   {
+    "concurrency": 1,
+    "continue_if": "always; this is the control",
+    "tells_us": "control: one stream's useful work per wall second, and the split between GPU occupancy and host ceremony (CPU prep / readback / sync). Always run."
+   },
+   {
+    "concurrency": 2,
+    "continue_if": "useful work at 2 is UP vs 1; occupancy rising is not informative",
+    "tells_us": "whether a second stream increases useful work per wall second or only occupancy and contention. First falsifier of 'partial occupancy is free headroom'."
+   },
+   {
+    "concurrency": 3,
+    "continue_if": "useful work at 3 is UP vs 2",
+    "tells_us": "whether the gain continues or the knee is at 2. Only run if 2 was informative."
+   },
+   {
+    "concurrency": 4,
+    "continue_if": "useful work at 4 is UP vs 3; ladder ends here either way",
+    "tells_us": "last probe this doctor will ask for. Diminishing returns vs 3. Stop after 4 regardless."
+   }
+  ],
+  "objective": "verified useful work per wall second, never utilisation",
+  "related_frontiers": [
+   "FT.TPS.accepted-token-cost",
+   "FT.LATENCY.gpu-ns",
+   "FT.LATENCY.cpu-turnaround"
+  ],
+  "required_observation_slots": [
+   "per_session_useful_work",
+   "aggregate_useful_work",
+   "per_session_token_cost_class",
+   "aggregate_token_cost_class",
+   "ttft_class",
+   "gpu_occupancy_class",
+   "cpu_occupancy_class",
+   "resident_bytes",
+   "session_state_bytes",
+   "memory_pressure",
+   "swap",
+   "dispatch_rate_class",
+   "synchronisation_class",
+   "host_ceremony_class"
+  ],
+  "required_scope_to_persist": [
+   "machine",
+   "nx",
+   "runtime",
+   "context_regime"
+  ],
+  "resource_class_when_awake": "GPU_EXCLUSIVE",
+  "resource_class_while_planning": "CPU_ANALYSIS",
+  "stop_rule": "continue only while useful work is UP vs the previous level; an uninformative step ends the ladder. Occupancy change is never a reason to continue.",
+  "wake_all_of": [
+   "a declared resident pid is PRESENT (tools.future.resident_health.sample); the largest RSS neighbour is not identity",
+   "a protected GPU lease is held; this sidecar never takes one",
+   "contamination class is QUIESCENT",
+   "machine, NX, runtime, and context_regime are named so a law can be scoped"
+  ],
+  "wake_never": [
+   "synthetic useful-work numbers treated as PROTECTED_ABSOLUTE",
+   "utilisation treated as available compute",
+   "universalising the law to Flash, M5, FPGA, or CUDA",
+   "a default of CONCURRENCY_HELPS when the ladder has not run"
+  ],
+  "what_it_refuses": [
+   "a default of CONCURRENCY_HELPS",
+   "utilisation as the ranking key",
+   "taking a GPU lease",
+   "recording tps / token_ns / gpu_ns / bandwidth_gbps",
+   "a law without machine, NX, runtime, and context_regime",
+   "transfer to Flash, M5, FPGA, or CUDA"
+  ]
+ },
+ "proofs": {
+  "synthetic": {
+   "all_passed": true,
+   "controls": {
+    "CONCURRENCY_HELPS": {
+     "passed": true,
+     "verdict": "CONCURRENCY_HELPS",
+     "winner_concurrency": 2
+    },
+    "HEADROOM_IS_HOST_CEREMONY": {
+     "passed": true,
+     "verdict": "HEADROOM_IS_HOST_CEREMONY"
+    },
+    "NO_USEFUL_CONCURRENCY_HEADROOM": {
+     "passed": true,
+     "verdict": "NO_USEFUL_CONCURRENCY_HEADROOM"
+    },
+    "empty_observations_refuse": {
+     "passed": true
+    },
+    "flat_stops_the_ladder": {
+     "action": "STOP",
+     "passed": true
+    },
+    "hardware_named_field_raises": {
+     "passed": true
+    },
+    "high_occupancy_with_less_useful_work_loses": {
+     "passed": true,
+     "setup": "concurrency 2 HIGH occupancy, lower useful work than control",
+     "verdict": "NO_USEFUL_CONCURRENCY_HEADROOM"
+    },
+    "law_flash_transfer_refused": {
+     "passed": true
+    },
+    "law_without_nx_refused": {
+     "passed": true
+    },
+    "refused_observation_has_no_verdict": {
+     "observe_status": "REFUSED",
+     "observe_verdict": null,
+     "passed": true
+    },
+    "scoped_law_shape": {
+     "authoritative": false,
+     "passed": true,
+     "status": "SEALED_SCOPED"
+    },
+    "undeclared_resident_is_sleeping": {
+     "experiment_state": "SLEEPING",
+     "passed": true,
+     "verdict": null
+    }
+   },
+   "verdicts_reached": [
+    "CONCURRENCY_HELPS",
+    "HEADROOM_IS_HOST_CEREMONY",
+    "NO_USEFUL_CONCURRENCY_HEADROOM"
+   ]
+  }
+ },
+ "purpose": "Plan and (when a resident and a protected lease exist) settle whether resident-session concurrency increases verified useful work per wall second. This receipt is the plan and the host's capability to run it, not a measurement.",
+ "recovered_implementation": [
+  "tools/future/hardware_doctor.py metal_state \u2014 capability probe that is not a measurement (is_a_measurement false)",
+  "tools/future/metal_reachability.py \u2014 device enumeration, not a kernel timing",
+  "tools/future/contamination.py probe_memory / probe_gpu_occupancy \u2014 machine state; occupancy is not available compute; HEAVY_GPU_UTIL_PCT reused as the LOW/not-LOW boundary",
+  "tools/future/resident_health.py sample \u2014 UNDECLARED/ABSENT with rss_bytes null, never a pid invented from the largest RSS neighbour",
+  "tools/future/resident_identity.py \u2014 machine_genome / nx_id / current_backend slots a scoped law must name",
+  "tools/future/hcli_self_profile.py assert_timing_field_legal \u2014 hardware-named fields raise even for a Python timing",
+  "tools/future/_common.py HARDWARE_FIELDS / write_receipt \u2014 numeric tps/token_ns/gpu_ns raise",
+  "tools/future/workunit_species.py emit_hcli_workunit \u2014 SLEEPING is blocked, not a synthetic COMPLETED",
+  "tools/future/frontiers.py THIS_HOST_LANES / HARDWARE_LANES / _emit_unit(sleeping=True) \u2014 GPU_PROTECTED stays SLEEPING until disk evidence qualifies",
+  "tools/future/wakeup.py SLEEPING WorkUnit wake_condition shape",
+  "tools/future/odyssey2_law_store.py \u2014 sequential scope lattice; this module does not fork it, it refuses an unscoped concurrency law",
+  "tools/future/qwen27_profile_schema.py host_ceremony organ \u2014 the ceremony bucket the HEADROOM_IS_HOST_CEREMONY verdict names",
+  "tools/future/decode_civilization.py accepted_complete_token_cost \u2014 useful work, not raw draft throughput",
+  "receipts/headless/ACCELERATOR_CONCURRENCY_SWEEP.json \u2014 4 MiB kernel vs whole-body regimes; cited as a qualitative warning, numbers not copied",
+  "hawking-experiments/superwave/g1/g1-worker-concurrency.md \u2014 four sessions, decode_concurrency=1; cited as a qualitative warning, numbers not copied"
+ ],
+ "recovered_prior_science": [
+  {
+   "numbers_copied": false,
+   "path": "receipts/headless/ACCELERATOR_CONCURRENCY_SWEEP.json",
+   "this_lane_remeasured": false,
+   "what": "4 MiB kernel launch-bound sweep vs whole-body bandwidth-bound law; different context_regime; this lane did not re-measure and will not cite it as a resident-session law"
+  },
+  {
+   "numbers_copied": false,
+   "path": "hawking-experiments/superwave/g1/g1-worker-concurrency.md",
+   "this_lane_remeasured": false,
+   "what": "one body, four sessions, decode_concurrency=1; concurrent decode recorded as a negative for aggregate useful work; this lane did not re-measure"
+  }
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.concurrency_doctor.plan() / observe() / verdict()",
+  "fails_closed": "absent resident or absent lease emits SLEEPING and refuses a verdict; never defaults to CONCURRENCY_HELPS; hardware-named numbers raise; an unscoped law raises",
+  "frontier": "FT.TPS.protected-tps",
+  "orchestration_bound": false,
+  "receipt": "receipts/future/RESIDENT_CONCURRENCY_DOCTOR.json",
+  "workunit": "one CPU_ANALYSIS unit for the plan; the live experiment is GPU_EXCLUSIVE and SLEEPING until resident+lease+quiescence"
+ },
+ "schema": "hawking.future.concurrency_doctor.v1",
+ "seal_sha256": "9813472fd221034764c139685dc083a903e6412e47ba6e403bd12a736d12dddc",
+ "sleeping_workunit": {
+  "assigned_backend": null,
+  "assigned_runtime": null,
+  "attempts": 0,
+  "backend_task_id": null,
+  "bench_state": "UNKNOWN",
+  "blocked_reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+  "candidate_status": "SLEEPING",
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. Partial GPU occupancy is not available compute. A utilisation percentage is not a complete-token. SLEEPING physical work is never filled with a synthetic TPS.",
+  "classification": "SLEEPING",
+  "content_hash": "a932db7d36f41aac24077b25c5df49031332f4e1005de93c097b2d5d479eae4c",
+  "dependencies": [],
+  "description": "SLEEPING resident-session concurrency ladder (1, 2, 3, 4 while informative). Wakes when a declared resident is PRESENT, a protected GPU lease is held, and quiescence is QUIESCENT. Never a synthetic TPS. Objective is useful work per wall second, never utilisation.",
+  "effect_class": "READ_ONLY",
+  "evidence_class": "STATIC_ONLY",
+  "failure_context": null,
+  "finished_at": null,
+  "frontier": "FT.TPS.protected-tps",
+  "gpu_authority": false,
+  "id": "WU.CONCURRENCY_DOCTOR.concurrency_doctor",
+  "output_receipt_path": "receipts/future/RESIDENT_CONCURRENCY_DOCTOR.json",
+  "preferred_backend": null,
+  "provider": "future.concurrency_doctor",
+  "ready_at": null,
+  "repair_depth": 0,
+  "repair_exhausted": false,
+  "repair_reason": null,
+  "repair_root": null,
+  "repairs": null,
+  "required_lanes": [
+   "GPU_PROTECTED"
+  ],
+  "requires_quiescence": true,
+  "resource_class": "GPU_EXCLUSIVE",
+  "role": "science",
+  "running_at": null,
+  "sleeping": true,
+  "species": "CONCURRENCY_DOCTOR",
+  "status": "blocked",
+  "verification": null,
+  "verifier": "future.concurrency_doctor.verdict",
+  "wake_condition": {
+   "all_of": [
+    "a declared resident pid is PRESENT (tools.future.resident_health.sample); the largest RSS neighbour is not identity",
+    "a protected GPU lease is held; this sidecar never takes one",
+    "contamination class is QUIESCENT",
+    "machine, NX, runtime, and context_regime are named so a law can be scoped"
+   ],
+   "never": [
+    "synthetic useful-work numbers treated as PROTECTED_ABSOLUTE",
+    "utilisation treated as available compute",
+    "universalising the law to Flash, M5, FPGA, or CUDA",
+    "a default of CONCURRENCY_HELPS when the ladder has not run"
+   ]
+  },
+  "wakeup_state": "SLEEPING",
+  "workspace": "repo-root"
+ },
+ "verdict": null,
+ "version": 1,
+ "vocabulary": {
+  "ceremony_classes": [
+   "LOW",
+   "MEDIUM",
+   "HIGH",
+   "UNKNOWN"
+  ],
+  "context_regimes": [
+   "WHOLE_MODEL_BODY",
+   "SMALL_KERNEL_LAUNCH_BOUND",
+   "HOST_CEREMONY",
+   "BANDWIDTH_BOUND"
+  ],
+  "delta_classes": [
+   "UP",
+   "DOWN",
+   "FLAT"
+  ],
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "occupancy_classes": [
+   "LOW",
+   "MEDIUM",
+   "HIGH",
+   "UNKNOWN"
+  ],
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "scope_fields": [
+   "machine",
+   "nx",
+   "runtime",
+   "context_regime"
+  ],
+  "verdicts": [
+   "CONCURRENCY_HELPS",
+   "NO_USEFUL_CONCURRENCY_HEADROOM",
+   "HEADROOM_IS_HOST_CEREMONY"
+  ]
+ }
+}

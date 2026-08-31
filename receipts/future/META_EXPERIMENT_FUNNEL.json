@@ -1,0 +1,650 @@
+{
+ "advance_rule": "advance(candidate, gate) REFUSES when (1) any earlier gate is not PASSED, (2) the candidate was already killed, or (3) the gate's required input is NOT_BUILT / NOT_MEASURED / absent / PLAN_ONLY / SCAFFOLD_ONLY / equivalent. A refusal is not a death. A kill writes a scar. Passing is not promotion.",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:46:03Z",
+  "recorded_by": "tools/future/meta_funnel.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_class": "STATIC_ONLY",
+ "correct_answer": "9 of 9 recovered Flash families stall at gate 2 (real teacher fit) because the Flash teacher corpus is NOT_BUILT; 0 stall at gate 3. That is the correct answer. Bounded weight reconstruction and router AB MISMATCH were not used to skip teacher fit. No family was advanced onto NR/NX/EBPW.",
+ "counts": {
+  "by_stall": {
+   "gate_2_REFUSED": 9
+  },
+  "families": 9,
+  "gates": 9,
+  "killed": 0,
+  "passed_all": 0,
+  "refused": 9,
+  "scars": 0,
+  "stalled_at_gate_2": 9,
+  "stalled_at_gate_3": 0
+ },
+ "families_run": [
+  {
+   "allocation_region_kinds": [
+    "format_overhead",
+    "generated_bulk",
+    "routing_sensitive",
+    "shared_generator"
+   ],
+   "family": "routed_experts",
+   "heterogeneous": true,
+   "id": "flash.meta.routed_experts",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "routed_experts"
+  },
+  {
+   "allocation_region_kinds": [
+    "format_overhead",
+    "predictable_bulk",
+    "shared_generator",
+    "sparse_residual"
+   ],
+   "family": "ngram_embedding",
+   "heterogeneous": true,
+   "id": "flash.meta.ngram_embedding",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "ngram_embedding"
+  },
+  {
+   "allocation_region_kinds": [
+    "predictable_bulk"
+   ],
+   "family": "linear_attention_hyperconnection",
+   "heterogeneous": false,
+   "id": "flash.meta.linear_attention_hyperconnection",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "linear_attention_hyperconnection"
+  },
+  {
+   "allocation_region_kinds": [
+    "predictable_bulk"
+   ],
+   "family": "embedding_lm_head",
+   "heterogeneous": false,
+   "id": "flash.meta.embedding_lm_head",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "embedding_lm_head"
+  },
+  {
+   "allocation_region_kinds": [
+    "predictable_bulk"
+   ],
+   "family": "full_attention",
+   "heterogeneous": false,
+   "id": "flash.meta.full_attention",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "full_attention"
+  },
+  {
+   "allocation_region_kinds": [
+    "predictable_bulk"
+   ],
+   "family": "mlp_hyperconnection",
+   "heterogeneous": false,
+   "id": "flash.meta.mlp_hyperconnection",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "mlp_hyperconnection"
+  },
+  {
+   "allocation_region_kinds": [
+    "predictable_bulk"
+   ],
+   "family": "shared_expert",
+   "heterogeneous": false,
+   "id": "flash.meta.shared_expert",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "shared_expert"
+  },
+  {
+   "allocation_region_kinds": [
+    "predictable_bulk"
+   ],
+   "family": "other",
+   "heterogeneous": false,
+   "id": "flash.meta.other",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "other"
+  },
+  {
+   "allocation_region_kinds": [
+    "predictable_bulk"
+   ],
+   "family": "norm",
+   "heterogeneous": false,
+   "id": "flash.meta.norm",
+   "log": [
+    {
+     "gate_id": 1,
+     "gate_name": "analytical_structure_screen",
+     "input_state": "PRESENT",
+     "reason": "allocation plan is well-formed; does not prove fit, tokens, capability, or physical lowering",
+     "required_input": "allocation_plan",
+     "scar": null,
+     "verdict": "PASSED"
+    },
+    {
+     "gate_id": 2,
+     "gate_name": "real_teacher_fit",
+     "input_state": "NOT_BUILT",
+     "reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+     "required_input": "teacher_corpus",
+     "scar": null,
+     "verdict": "REFUSED"
+    }
+   ],
+   "model": "qwen3.8-flash-next",
+   "organ": "routed_experts",
+   "passed_gates": [
+    1
+   ],
+   "scar_id": null,
+   "source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gate": 2,
+   "stall_gate_name": "real_teacher_fit",
+   "stall_reason": "required input 'teacher_corpus' is NOT_BUILT; advance refuses to invent a measurement",
+   "stall_verdict": "REFUSED",
+   "technique": "norm"
+  }
+ ],
+ "gaps_closed": [
+  "Nine ordered gates, each with input requirement, kill criterion, cost class, and prove / not-prove.",
+  "advance(candidate, gate) REFUSES when the required input is NOT_BUILT / NOT_MEASURED / absent, and when earlier gates are not PASSED.",
+  "Killed candidates write an append-only scar retrievable by hypothesis shape, not just by id.",
+  "Allocation is TOTAL EXECUTABLE INFORMATION: bulk / routing / islands / residual / shared generators are first-class. Uniform bpw is allowed, not assumed.",
+  "Recovered Flash families were run through the funnel; stalls are reported rather than manufactured into passes."
+ ],
+ "gates": [
+  {
+   "cost_class": "CHEAP_ANALYTICAL",
+   "id": 1,
+   "kill_criterion": "The allocation plan is malformed: no regions, a region without a kind, a claim of complete-system executable information that omits required fields (bases/residuals/dictionaries/generators/\u2026), or a numeric total without complete accounting. Synthetic-activation cosine is NOT a kill here (NOETIC_NEGATIVE_SCIENCE NNS-001: Gaussian-proxy method is dead; the idea is not).",
+   "name": "analytical_structure_screen",
+   "passing_does_not_prove": "Teacher fit, held-out fidelity, route identity, tokens, capability, physical NR, a complete NX, or an EBPW number.",
+   "passing_proves": "The hypothesis is a well-formed allocation of TOTAL EXECUTABLE INFORMATION (heterogeneous bits are expressible; uniform bits are allowed).",
+   "required_input": "allocation_plan"
+  },
+  {
+   "cost_class": "REAL_TEACHER_CPU",
+   "id": 2,
+   "kill_criterion": "A measured fit on real teacher-forced / captured activations from the named source fails the stated null. Weight reconstruction on a bounded slice is not teacher fit.",
+   "name": "real_teacher_fit",
+   "passing_does_not_prove": "Held-out numerical validity, route stability, logit/token identity, capability, or anything physical.",
+   "passing_proves": "The candidate reconstructs or predicts on the teacher corpus it was fit to.",
+   "required_input": "teacher_corpus"
+  },
+  {
+   "cost_class": "HELDOUT_NUMERICAL_CPU",
+   "id": 3,
+   "kill_criterion": "Held-out activations (disjoint from the teacher corpus) fail the stated null. Organ-local survival is not whole-model survival (composition_ladder: ternary CANON then argmax-flip).",
+   "name": "held_out_numerical",
+   "passing_does_not_prove": "Route identity, complete-token argmax, coherent generation, capability, NR, NX, or EBPW.",
+   "passing_proves": "Local numerical fidelity on unseen X for the stated organ.",
+   "required_input": "held_out_numerical"
+  },
+  {
+   "cost_class": "ROUTE_TRACE_CPU",
+   "id": 4,
+   "kill_criterion": "Student top-k expert identity diverges from the teacher (status MISMATCH, or expert_ids_exact_match is false).",
+   "name": "route_stability",
+   "passing_does_not_prove": "Logit/token identity beyond routing, capability, physical lowering, or EBPW.",
+   "passing_proves": "On the measured traces, the student selects the same experts as the teacher.",
+   "required_input": "route_traces"
+  },
+  {
+   "cost_class": "LOGIT_TOKEN_CPU",
+   "id": 5,
+   "kill_criterion": "Complete-token / argmax disagreement, or decode degeneration on the stated probe. A cheaper kernel that flips the argmax is dead.",
+   "name": "logit_token_validation",
+   "passing_does_not_prove": "Bounded capability, a physical NR, a complete NX, or EBPW. 16 greedy tokens are not capability.",
+   "passing_proves": "Token-level identity on the stated probe (argmax / short decode).",
+   "required_input": "logit_token"
+  },
+  {
+   "cost_class": "BOUNDED_CAPABILITY_CPU",
+   "id": 6,
+   "kill_criterion": "The capability suite fails an incumbent axis. Silence that scores on vacuous axes is not a pass.",
+   "name": "bounded_capability",
+   "passing_does_not_prove": "Physical NR lowering, a complete NX, protected token_ns, or EBPW.",
+   "passing_proves": "The candidate matched the incumbent on every substantive capability axis of the stated suite.",
+   "required_input": "bounded_capability"
+  },
+  {
+   "cost_class": "PHYSICAL_NR_STATIC",
+   "id": 7,
+   "kill_criterion": "Lowering was attempted and failed (irreducible NR, missing organ, hidden dense rematerialization disclosed as a failure).",
+   "name": "physical_nr_lowering",
+   "passing_does_not_prove": "A complete NX, protected complete-token timing, or EBPW. PLAN_ONLY / NOT_IMPLEMENTED is not a pass; it is a refusal.",
+   "passing_proves": "A Physical NR artifact exists and lowered without a disclosed failure. STATIC_ONLY: this sidecar did not run a kernel.",
+   "required_input": "physical_nr"
+  },
+  {
+   "cost_class": "COMPLETE_NX_STATIC",
+   "id": 8,
+   "kill_criterion": "An NX was presented and is incomplete in a tested way (failed validation, missing native consumer).",
+   "name": "complete_nx",
+   "passing_does_not_prove": "EBPW, protected TPS, or promotion. SCAFFOLD_ONLY / SEALED_METADATA_ONLY_NOT_FOR_PROMOTION is a refusal, not a pass.",
+   "passing_proves": "A source-independent complete NX artifact exists as more than sealed metadata.",
+   "required_input": "complete_nx"
+  },
+  {
+   "cost_class": "EBPW_ACCOUNTING_STATIC",
+   "id": 9,
+   "kill_criterion": "Complete-system executable bytes were counted and either omit a required field or exceed the stated ceiling. A target ceiling is not a measurement.",
+   "name": "ebpw",
+   "passing_does_not_prove": "Protected token_ns, joules, or promotion. null complete_system_bytes is a refusal, not a number.",
+   "passing_proves": "A complete-system EBPW ledger exists with every required field counted.",
+   "required_input": "ebpw_ledger"
+  }
+ ],
+ "gpu_authority": false,
+ "heterogeneity": {
+  "bits_classes": [
+   "near_zero",
+   "premium",
+   "literal",
+   "sparse",
+   "shared",
+   "uniform"
+  ],
+  "complete_system_fields": [
+   "weight_codes",
+   "scales",
+   "zero_points",
+   "bases",
+   "residuals",
+   "dictionaries",
+   "expert_indices",
+   "routing_metadata",
+   "generators",
+   "lookup_structures",
+   "ngram_representation",
+   "mtp_representation",
+   "required_executable_metadata"
+  ],
+  "forces_uniform_bpw": false,
+  "law": "A candidate may allocate near-zero to predictable bulk, premium to routing-sensitive structure, literal precision to capability-critical islands, sparse residual correction, and shared generators/dictionaries. The funnel will not refuse a well-formed uniform plan for being uniform; it will refuse a complete-system EBPW claim that omits those fields.",
+  "region_kinds": [
+   "predictable_bulk",
+   "routing_sensitive",
+   "capability_island",
+   "sparse_residual",
+   "shared_generator"
+  ],
+  "unit": "TOTAL_EXECUTABLE_INFORMATION"
+ },
+ "integration": {
+  "advance": "Funnel.advance(candidate, gate) -> AdvanceResult",
+  "match_scars": "Funnel.match_scars(hypothesis) -> list[scar] keyed by shape_fingerprint",
+  "recover_families": "recover_families() -> (candidates, provenance)",
+  "run": "Funnel.run(candidate) -> stall report",
+  "shape_fingerprint": "shape_fingerprint(hypothesis) -> sha256 hex"
+ },
+ "negative_findings": [
+  "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json is not in HEAD and not on disk \u2014 family_budget / budget_search / meta_program / coherence_contract / next_gate could not be read from the named primary receipt.",
+  "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json is not in HEAD and not on disk.",
+  "tools/flash_meta_representation.py and tools/flash_meta_coherence_screen.py are not in HEAD.",
+  "receipts/headless is not materialized in this sparse checkout; receipts were read via git show HEAD:<path> when present.",
+  "No Flash teacher-forced / captured-activation corpus was found (GLM teacher-forced captures and Qwen teacher operators exist; they are not a Flash corpus).",
+  "receipts/headless/FLASH_COMPLETE_V0.nx.json is not in this HEAD (frontier F001 cites it; NX status here is FLASH_NEXT_NOETIC_EXECUTABLE = SCAFFOLD_ONLY).",
+  "This sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. Every number that would need a GPU, FPGA, or power meter is UNKNOWN / null.",
+  "Qwen C1/C2/C5 NOT_WORTH_BUILDING and Qwen binary/ternary deaths are MODEL_SPECIFIC; they were not imported as Flash kills."
+ ],
+ "negative_science_recovered": {
+  "composition_ladder": {
+   "n_candidates": 6,
+   "note": "8-rung Qwen ladder. Unreached \u2260 failed. Not the Flash 9-gate funnel; consumed as law, not copied.",
+   "path": "receipts/headless/COMPOSITION_LADDER.json",
+   "present": true,
+   "rule": "A candidate that fails a rung is KILLED THERE and may not be described above the rung its evidence supports. Reaching a rung is not the same as passing it; UNREACHED and FAILED are different states.",
+   "rungs": [
+    "local_functional_probe",
+    "held_out_activation",
+    "adjacent_layers",
+    "short_chain",
+    "complete_organ",
+    "complete_token",
+    "coherent_generation",
+    "capability"
+   ],
+   "schema": "hawking.headless.composition_ladder.v1"
+  },
+  "noetic_negative_science": {
+   "death_fields_observed": [
+    "all_evidence_resolves",
+    "all_numbers_confirmed",
+    "claim_refuted",
+    "evidence",
+    "id",
+    "kind",
+    "kind_reasoning",
+    "reopen_condition",
+    "reopen_satisfied_today",
+    "reopen_today",
+    "scope",
+    "seed",
+    "seed_correction",
+    "seed_status"
+   ],
+   "how_to_use": [
+    "Before proposing a representation, match it by id or by the claim string.",
+    "If kind=PROPERTY_OF_IDEA and reopen_satisfied_today=false, do not re-derive it on that parent/organ/regime.",
+    "If kind=ARTIFACT_OF_METHOD, the IDEA is not dead \u2014 retry only under the reopen condition.",
+    "If reopen_satisfied_today=true, that is a live opportunity being sat on; it is at the top of this receipt.",
+    "Cite the settling receipt path, not a later summary that still carries a superseded number.",
+    "DSV4F orthogonality is not settled. Measuring it is a cheap check, not a retry of Q80."
+   ],
+   "n_entries": 32,
+   "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "present": true,
+   "schema": "hawking.headless.noetic_negative_science.v1"
+  },
+  "tools_flash_meta_coherence_screen": true,
+  "tools_flash_meta_representation": true
+ },
+ "purpose": "Kill representation candidates as early and as cheaply as possible while preserving why each one died, so the same dead idea is never re-run. Odyssey I (WHAT IS TRUE?). Disk state is authority. There is no Era VI and no Odyssey IV. FPGA stays inside Accelerator / Physical Compiler / Fusion.",
+ "recovered_implementation": {
+  "composition_ladder": {
+   "path": "tools/headless/composition_ladder.py",
+   "receipt": "receipts/headless/COMPOSITION_LADDER.json",
+   "what_it_is": "8-rung Qwen qualification ladder with unreached \u2260 failed",
+   "why_not_forked": "It classifies already-run Qwen receipts. It has no advance() refusal, no Flash families, no shape-keyed scars, no gates 7\u20139 (NR/NX/EBPW)."
+  },
+  "flash_meta_primary": {
+   "FLASH_META_COHERENCE_SCREEN_L4.json": "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+   "FLASH_META_REPRESENTATION_SUB1.json": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "tools/flash_meta_coherence_screen.py": true,
+   "tools/flash_meta_representation.py": true
+  },
+  "flash_receipts_consumed": [
+   "receipts/headless/FLASH_EBPW_BUDGET.json",
+   "receipts/headless/FLASH_ROUTED_EXPERT_REPRESENTATION_EXPERIMENT.json",
+   "receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+   "receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
+   "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+   "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json"
+  ],
+  "negative_science": {
+   "gap": "F009: nothing queries scars before a new experiment is proposed; no shape fingerprint",
+   "receipt": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tools": [
+    "tools/headless/negative_science.py",
+    "tools/headless/noetic_negative_science.py"
+   ],
+   "what_it_is": "append-only death corpus with reopen conditions; match by id or claim string"
+  },
+  "primary_source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+  "representation_library": {
+   "gap": "seeds a search; does not funnel a candidate through ordered gates",
+   "path": "tools/headless/representation_library.py",
+   "receipt": "receipts/headless/REPRESENTATION_LIBRARY.json",
+   "what_it_is": "ranked family seeds + ALLOCATION_SCHEMA that permits zero-bit regions and high-precision islands"
+  },
+  "sidecar_plumbing": "tools/future/_common.py (write_receipt, bench_block, load_json, git)"
+ },
+ "recovery_provenance": {
+  "meta_l4": "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+  "meta_sub1": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+  "primary_source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json"
+ },
+ "scar_schema": {
+  "accumulation": "append-only; never overwritten",
+  "evidence": "paths / notes, not hardware numbers",
+  "gate_id": "int",
+  "identity": "enough to match a future proposal of the same shape",
+  "mechanism": "why it died",
+  "reopen_condition": "required",
+  "scar_id": "MF-NNNN",
+  "shape_sha256": "sha256(family, organ, technique, model, canonical allocation)"
+ },
+ "scars": [],
+ "schema": "hawking.future.meta_funnel.v1",
+ "seal_sha256": "c91e4530dcf4a99e43d8b53901de6dfcc7356ed9c532011c8d29f467933e7983",
+ "version": 1
+}

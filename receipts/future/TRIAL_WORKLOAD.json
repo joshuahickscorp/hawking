@@ -1,0 +1,842 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T16:41:20Z",
+  "recorded_by": "tools/future/trial_workload.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "compose_refusals": {},
+ "composed": {
+  "15m": {
+   "admitted": true,
+   "n_replan_pairs": 0,
+   "n_sleeping": 0,
+   "n_units": 3,
+   "replan_pairs": [],
+   "replan_required": false,
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "NEGATIVE_SCIENCE",
+    "HCLI_SELF_OPTIMIZE"
+   ],
+   "units": [
+    {
+     "description": "recompute every published digest for specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb and decide whole-tree verification offline",
+     "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+     "mix_role": "FAST_SPECIMEN_SCIENCE",
+     "module": "specimen_verify.py",
+     "resource_class": "IO_HEAVY",
+     "species": "SPECIMEN_VERIFY",
+     "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "status": "pending",
+     "worth_doing_anyway": "a completed Falcon whole-tree receipt is Odyssey I curriculum integrity and stands if the trial dies"
+    },
+    {
+     "description": "rebuild the scar index that prunes work before it is scheduled",
+     "frontier_id": "FT.VERIFICATION.negative-index",
+     "id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+     "mix_role": "NEGATIVE_SCIENCE",
+     "module": "negative_index.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "UPDATE_SCAR",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a current scar index is the campaign's own next work; rediscovery is not free"
+    },
+    {
+     "description": "rank HCLI process-wall as a search space and prune; SELF_MEASURED_DIRTY decides nothing",
+     "frontier_id": "FT.LATENCY.cpu-turnaround",
+     "id": "WU.TRIAL.HCLI_SELF_OPTIMIZE.hcli_self_profile",
+     "mix_role": "HCLI_SELF_OPTIMIZE",
+     "module": "hcli_self_profile.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "HCLI_SELF_OPTIMIZATION",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "the git-status lock incident is already the worked example; a ranked cost list stands without a GPU"
+    }
+   ]
+  },
+  "1h": {
+   "admitted": true,
+   "n_replan_pairs": 1,
+   "n_sleeping": 0,
+   "n_units": 6,
+   "replan_pairs": [
+    {
+     "cause_frontier_id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+     "cause_id": "WU.TRIAL.ODYSSEY_II_TRANSFER.odyssey2_law_store",
+     "cause_module": "odyssey2_law_store.py",
+     "derived_from": "frontier_catalog_evidence",
+     "effect_frontier_id": "FT.ODYSSEY_ADVERSARY.attacks",
+     "effect_id": "WU.TRIAL.ODYSSEY_III_ATTACK.odyssey3_adversary",
+     "effect_module": "odyssey3_adversary.py",
+     "how": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+    }
+   ],
+   "replan_required": false,
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "NEGATIVE_SCIENCE",
+    "MULTI_FIDELITY_SCREEN",
+    "HCLI_SELF_OPTIMIZE",
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ATTACK"
+   ],
+   "units": [
+    {
+     "description": "recompute every published digest for specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb and decide whole-tree verification offline",
+     "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+     "mix_role": "FAST_SPECIMEN_SCIENCE",
+     "module": "specimen_verify.py",
+     "resource_class": "IO_HEAVY",
+     "species": "SPECIMEN_VERIFY",
+     "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "status": "pending",
+     "worth_doing_anyway": "a completed Falcon whole-tree receipt is Odyssey I curriculum integrity and stands if the trial dies"
+    },
+    {
+     "description": "rebuild the scar index that prunes work before it is scheduled",
+     "frontier_id": "FT.VERIFICATION.negative-index",
+     "id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+     "mix_role": "NEGATIVE_SCIENCE",
+     "module": "negative_index.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "UPDATE_SCAR",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a current scar index is the campaign's own next work; rediscovery is not free"
+    },
+    {
+     "description": "rank HCLI process-wall as a search space and prune; SELF_MEASURED_DIRTY decides nothing",
+     "frontier_id": "FT.LATENCY.cpu-turnaround",
+     "id": "WU.TRIAL.HCLI_SELF_OPTIMIZE.hcli_self_profile",
+     "mix_role": "HCLI_SELF_OPTIMIZE",
+     "module": "hcli_self_profile.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "HCLI_SELF_OPTIMIZATION",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "the git-status lock incident is already the worked example; a ranked cost list stands without a GPU"
+    },
+    {
+     "description": "run the cheapest-first multi-fidelity screen so a cheap falsifier can refuse later meta-funnel gates",
+     "frontier_id": "FT.VERIFICATION.repro",
+     "id": "WU.TRIAL.MULTI_FIDELITY_SCREEN.adaptive_verification",
+     "mix_role": "MULTI_FIDELITY_SCREEN",
+     "module": "adaptive_verification.py",
+     "resource_class": "TEST",
+     "species": "MULTI_FIDELITY_SCREEN",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a kill receipt names the funnel work that was therefore not done; that decision stands"
+    },
+    {
+     "description": "list Flash\u2194Qwen27 transfer hypotheses still unevidenced at ARCHITECTURE_FAMILY; transfer is a PROPOSAL not Law.promote()",
+     "frontier_id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+     "id": "WU.TRIAL.ODYSSEY_II_TRANSFER.odyssey2_law_store",
+     "mix_role": "ODYSSEY_II_TRANSFER",
+     "module": "odyssey2_law_store.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "TRANSFER_LAW",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "scoped laws are Odyssey II's product; a sealed store is usable even if Phase III never starts"
+    },
+    {
+     "description": "generate Odyssey III attack specs against every current law; a law with no attack is refused",
+     "frontier_id": "FT.ODYSSEY_ADVERSARY.attacks",
+     "id": "WU.TRIAL.ODYSSEY_III_ATTACK.odyssey3_adversary",
+     "mix_role": "ODYSSEY_III_ATTACK",
+     "module": "odyssey3_adversary.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "ATTACK_LAW",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "attack specs are STATIC_ONLY and worth having before any measurement; a law that emits none is a bug"
+    }
+   ]
+  },
+  "3h": {
+   "admitted": true,
+   "n_replan_pairs": 5,
+   "n_sleeping": 0,
+   "n_units": 10,
+   "replan_pairs": [
+    {
+     "cause_frontier_id": "FT.VERIFICATION.negative-index",
+     "cause_id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+     "cause_module": "negative_index.py",
+     "derived_from": "frontier_catalog_evidence",
+     "effect_frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.ngram_school",
+     "effect_module": "ngram_school.py",
+     "how": "refuse_if_dead can kill the effect unit at admission; a live family is scheduled, a scar-dead one is not"
+    },
+    {
+     "cause_frontier_id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+     "cause_id": "WU.TRIAL.ODYSSEY_II_TRANSFER.odyssey2_law_store",
+     "cause_module": "odyssey2_law_store.py",
+     "derived_from": "frontier_catalog_evidence",
+     "effect_frontier_id": "FT.ODYSSEY_ADVERSARY.attacks",
+     "effect_id": "WU.TRIAL.ODYSSEY_III_ATTACK.odyssey3_adversary",
+     "effect_module": "odyssey3_adversary.py",
+     "how": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+    },
+    {
+     "cause_frontier_id": "FT.VERIFICATION.repro",
+     "cause_id": "WU.TRIAL.MULTI_FIDELITY_SCREEN.adaptive_verification",
+     "cause_module": "adaptive_verification.py",
+     "derived_from": "recovered_mechanism:adaptive_verification.funnel_child_workunits",
+     "effect_frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.meta_ready",
+     "effect_module": "meta_ready.py",
+     "how": "adaptive_verification.saved() names the meta-funnel gates that are not launched after a cheap kill; those gates are the remaining work of FT.MODEL_REPRESENTATION.meta-gates-3-9"
+    },
+    {
+     "cause_frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "cause_id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+     "cause_module": "specimen_verify.py",
+     "derived_from": "recovered_mechanism:odyssey_launch.CRITERION_IDS",
+     "effect_frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.odyssey_launch",
+     "effect_module": "odyssey_launch.py",
+     "how": "odyssey_launch refuses on specimen_curriculum_ready; a WHOLE_TREE_VERIFIED specimen can raise that criterion, PARTIAL keeps launch refused"
+    },
+    {
+     "cause_frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "cause_id": "WU.TRIAL.LONG_SPECIMEN_VERIFY.specimen_verify.Kimi-K3",
+     "cause_module": "specimen_verify.py",
+     "derived_from": "recovered_mechanism:odyssey_launch.CRITERION_IDS",
+     "effect_frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.odyssey_launch",
+     "effect_module": "odyssey_launch.py",
+     "how": "odyssey_launch refuses on specimen_curriculum_ready; a WHOLE_TREE_VERIFIED specimen can raise that criterion, PARTIAL keeps launch refused"
+    }
+   ],
+   "replan_required": true,
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "LONG_SPECIMEN_VERIFY",
+    "NEGATIVE_SCIENCE",
+    "MULTI_FIDELITY_SCREEN",
+    "HCLI_SELF_OPTIMIZE",
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ATTACK"
+   ],
+   "units": [
+    {
+     "description": "recompute every published digest for specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb and decide whole-tree verification offline",
+     "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+     "mix_role": "FAST_SPECIMEN_SCIENCE",
+     "module": "specimen_verify.py",
+     "resource_class": "IO_HEAVY",
+     "species": "SPECIMEN_VERIFY",
+     "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "status": "pending",
+     "worth_doing_anyway": "a completed Falcon whole-tree receipt is Odyssey I curriculum integrity and stands if the trial dies"
+    },
+    {
+     "description": "rebuild the scar index that prunes work before it is scheduled",
+     "frontier_id": "FT.VERIFICATION.negative-index",
+     "id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+     "mix_role": "NEGATIVE_SCIENCE",
+     "module": "negative_index.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "UPDATE_SCAR",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a current scar index is the campaign's own next work; rediscovery is not free"
+    },
+    {
+     "description": "rank HCLI process-wall as a search space and prune; SELF_MEASURED_DIRTY decides nothing",
+     "frontier_id": "FT.LATENCY.cpu-turnaround",
+     "id": "WU.TRIAL.HCLI_SELF_OPTIMIZE.hcli_self_profile",
+     "mix_role": "HCLI_SELF_OPTIMIZE",
+     "module": "hcli_self_profile.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "HCLI_SELF_OPTIMIZATION",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "the git-status lock incident is already the worked example; a ranked cost list stands without a GPU"
+    },
+    {
+     "description": "run the cheapest-first multi-fidelity screen so a cheap falsifier can refuse later meta-funnel gates",
+     "frontier_id": "FT.VERIFICATION.repro",
+     "id": "WU.TRIAL.MULTI_FIDELITY_SCREEN.adaptive_verification",
+     "mix_role": "MULTI_FIDELITY_SCREEN",
+     "module": "adaptive_verification.py",
+     "resource_class": "TEST",
+     "species": "MULTI_FIDELITY_SCREEN",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a kill receipt names the funnel work that was therefore not done; that decision stands"
+    },
+    {
+     "description": "list Flash\u2194Qwen27 transfer hypotheses still unevidenced at ARCHITECTURE_FAMILY; transfer is a PROPOSAL not Law.promote()",
+     "frontier_id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+     "id": "WU.TRIAL.ODYSSEY_II_TRANSFER.odyssey2_law_store",
+     "mix_role": "ODYSSEY_II_TRANSFER",
+     "module": "odyssey2_law_store.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "TRANSFER_LAW",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "scoped laws are Odyssey II's product; a sealed store is usable even if Phase III never starts"
+    },
+    {
+     "description": "generate Odyssey III attack specs against every current law; a law with no attack is refused",
+     "frontier_id": "FT.ODYSSEY_ADVERSARY.attacks",
+     "id": "WU.TRIAL.ODYSSEY_III_ATTACK.odyssey3_adversary",
+     "mix_role": "ODYSSEY_III_ATTACK",
+     "module": "odyssey3_adversary.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "ATTACK_LAW",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "attack specs are STATIC_ONLY and worth having before any measurement; a law that emits none is a bug"
+    },
+    {
+     "description": "recompute every published digest for specimen moonshotai--Kimi-K3@9f62e4e9fffb and decide whole-tree verification offline",
+     "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "id": "WU.TRIAL.LONG_SPECIMEN_VERIFY.specimen_verify.Kimi-K3",
+     "mix_role": "LONG_SPECIMEN_VERIFY",
+     "module": "specimen_verify.py",
+     "resource_class": "IO_HEAVY",
+     "species": "SPECIMEN_VERIFY",
+     "specimen": "moonshotai--Kimi-K3@9f62e4e9fffb",
+     "status": "pending",
+     "worth_doing_anyway": "a completed large-specimen receipt is the work Odyssey I still needs; it stands if the clock runs out"
+    },
+    {
+     "description": "generate n-gram-school representation candidates below Q4 without fitting weights, scored against the negative index",
+     "frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+     "id": "WU.TRIAL.SUPPORTING_REPLAN.ngram_school",
+     "mix_role": "SUPPORTING_REPLAN",
+     "module": "ngram_school.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "GRAVITY_SEARCH",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a fresh candidate set scored against the scar index is representation work the campaign already queued"
+    },
+    {
+     "description": "prepare meta funnel gates 3-9 so they can start the moment teacher rows arrive, without fabricating teacher rows",
+     "frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "id": "WU.TRIAL.SUPPORTING_REPLAN.meta_ready",
+     "mix_role": "SUPPORTING_REPLAN",
+     "module": "meta_ready.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "GRAVITY_SEARCH",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "wiring gates 3-9 to the corpus-arrival contract is F019 CPU work; a cheap screen kill is what must be able to stop it"
+    },
+    {
+     "description": "re-evaluate every Odyssey I launch criterion",
+     "frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+     "id": "WU.TRIAL.SUPPORTING_REPLAN.odyssey_launch",
+     "mix_role": "SUPPORTING_REPLAN",
+     "module": "odyssey_launch.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "ODYSSEY_LAUNCH_GATE",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "the launch gate currently refuses; keeping the refusal current is the work, and specimen results change it"
+    }
+   ]
+  },
+  "6h": {
+   "admitted": true,
+   "n_replan_pairs": 5,
+   "n_sleeping": 0,
+   "n_units": 10,
+   "replan_pairs": [
+    {
+     "cause_frontier_id": "FT.VERIFICATION.negative-index",
+     "cause_id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+     "cause_module": "negative_index.py",
+     "derived_from": "frontier_catalog_evidence",
+     "effect_frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.ngram_school",
+     "effect_module": "ngram_school.py",
+     "how": "refuse_if_dead can kill the effect unit at admission; a live family is scheduled, a scar-dead one is not"
+    },
+    {
+     "cause_frontier_id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+     "cause_id": "WU.TRIAL.ODYSSEY_II_TRANSFER.odyssey2_law_store",
+     "cause_module": "odyssey2_law_store.py",
+     "derived_from": "frontier_catalog_evidence",
+     "effect_frontier_id": "FT.ODYSSEY_ADVERSARY.attacks",
+     "effect_id": "WU.TRIAL.ODYSSEY_III_ATTACK.odyssey3_adversary",
+     "effect_module": "odyssey3_adversary.py",
+     "how": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+    },
+    {
+     "cause_frontier_id": "FT.VERIFICATION.repro",
+     "cause_id": "WU.TRIAL.MULTI_FIDELITY_SCREEN.adaptive_verification",
+     "cause_module": "adaptive_verification.py",
+     "derived_from": "recovered_mechanism:adaptive_verification.funnel_child_workunits",
+     "effect_frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.meta_ready",
+     "effect_module": "meta_ready.py",
+     "how": "adaptive_verification.saved() names the meta-funnel gates that are not launched after a cheap kill; those gates are the remaining work of FT.MODEL_REPRESENTATION.meta-gates-3-9"
+    },
+    {
+     "cause_frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "cause_id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+     "cause_module": "specimen_verify.py",
+     "derived_from": "recovered_mechanism:odyssey_launch.CRITERION_IDS",
+     "effect_frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.odyssey_launch",
+     "effect_module": "odyssey_launch.py",
+     "how": "odyssey_launch refuses on specimen_curriculum_ready; a WHOLE_TREE_VERIFIED specimen can raise that criterion, PARTIAL keeps launch refused"
+    },
+    {
+     "cause_frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "cause_id": "WU.TRIAL.LONG_SPECIMEN_VERIFY.specimen_verify.Kimi-K3",
+     "cause_module": "specimen_verify.py",
+     "derived_from": "recovered_mechanism:odyssey_launch.CRITERION_IDS",
+     "effect_frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+     "effect_id": "WU.TRIAL.SUPPORTING_REPLAN.odyssey_launch",
+     "effect_module": "odyssey_launch.py",
+     "how": "odyssey_launch refuses on specimen_curriculum_ready; a WHOLE_TREE_VERIFIED specimen can raise that criterion, PARTIAL keeps launch refused"
+    }
+   ],
+   "replan_required": true,
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "LONG_SPECIMEN_VERIFY",
+    "NEGATIVE_SCIENCE",
+    "MULTI_FIDELITY_SCREEN",
+    "HCLI_SELF_OPTIMIZE",
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ATTACK"
+   ],
+   "units": [
+    {
+     "description": "recompute every published digest for specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb and decide whole-tree verification offline",
+     "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+     "mix_role": "FAST_SPECIMEN_SCIENCE",
+     "module": "specimen_verify.py",
+     "resource_class": "IO_HEAVY",
+     "species": "SPECIMEN_VERIFY",
+     "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "status": "pending",
+     "worth_doing_anyway": "a completed Falcon whole-tree receipt is Odyssey I curriculum integrity and stands if the trial dies"
+    },
+    {
+     "description": "rebuild the scar index that prunes work before it is scheduled",
+     "frontier_id": "FT.VERIFICATION.negative-index",
+     "id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+     "mix_role": "NEGATIVE_SCIENCE",
+     "module": "negative_index.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "UPDATE_SCAR",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a current scar index is the campaign's own next work; rediscovery is not free"
+    },
+    {
+     "description": "rank HCLI process-wall as a search space and prune; SELF_MEASURED_DIRTY decides nothing",
+     "frontier_id": "FT.LATENCY.cpu-turnaround",
+     "id": "WU.TRIAL.HCLI_SELF_OPTIMIZE.hcli_self_profile",
+     "mix_role": "HCLI_SELF_OPTIMIZE",
+     "module": "hcli_self_profile.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "HCLI_SELF_OPTIMIZATION",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "the git-status lock incident is already the worked example; a ranked cost list stands without a GPU"
+    },
+    {
+     "description": "run the cheapest-first multi-fidelity screen so a cheap falsifier can refuse later meta-funnel gates",
+     "frontier_id": "FT.VERIFICATION.repro",
+     "id": "WU.TRIAL.MULTI_FIDELITY_SCREEN.adaptive_verification",
+     "mix_role": "MULTI_FIDELITY_SCREEN",
+     "module": "adaptive_verification.py",
+     "resource_class": "TEST",
+     "species": "MULTI_FIDELITY_SCREEN",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a kill receipt names the funnel work that was therefore not done; that decision stands"
+    },
+    {
+     "description": "list Flash\u2194Qwen27 transfer hypotheses still unevidenced at ARCHITECTURE_FAMILY; transfer is a PROPOSAL not Law.promote()",
+     "frontier_id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+     "id": "WU.TRIAL.ODYSSEY_II_TRANSFER.odyssey2_law_store",
+     "mix_role": "ODYSSEY_II_TRANSFER",
+     "module": "odyssey2_law_store.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "TRANSFER_LAW",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "scoped laws are Odyssey II's product; a sealed store is usable even if Phase III never starts"
+    },
+    {
+     "description": "generate Odyssey III attack specs against every current law; a law with no attack is refused",
+     "frontier_id": "FT.ODYSSEY_ADVERSARY.attacks",
+     "id": "WU.TRIAL.ODYSSEY_III_ATTACK.odyssey3_adversary",
+     "mix_role": "ODYSSEY_III_ATTACK",
+     "module": "odyssey3_adversary.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "ATTACK_LAW",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "attack specs are STATIC_ONLY and worth having before any measurement; a law that emits none is a bug"
+    },
+    {
+     "description": "recompute every published digest for specimen moonshotai--Kimi-K3@9f62e4e9fffb and decide whole-tree verification offline",
+     "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+     "id": "WU.TRIAL.LONG_SPECIMEN_VERIFY.specimen_verify.Kimi-K3",
+     "mix_role": "LONG_SPECIMEN_VERIFY",
+     "module": "specimen_verify.py",
+     "resource_class": "IO_HEAVY",
+     "species": "SPECIMEN_VERIFY",
+     "specimen": "moonshotai--Kimi-K3@9f62e4e9fffb",
+     "status": "pending",
+     "worth_doing_anyway": "a completed large-specimen receipt is the work Odyssey I still needs; it stands if the clock runs out"
+    },
+    {
+     "description": "generate n-gram-school representation candidates below Q4 without fitting weights, scored against the negative index",
+     "frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+     "id": "WU.TRIAL.SUPPORTING_REPLAN.ngram_school",
+     "mix_role": "SUPPORTING_REPLAN",
+     "module": "ngram_school.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "GRAVITY_SEARCH",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "a fresh candidate set scored against the scar index is representation work the campaign already queued"
+    },
+    {
+     "description": "prepare meta funnel gates 3-9 so they can start the moment teacher rows arrive, without fabricating teacher rows",
+     "frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+     "id": "WU.TRIAL.SUPPORTING_REPLAN.meta_ready",
+     "mix_role": "SUPPORTING_REPLAN",
+     "module": "meta_ready.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "GRAVITY_SEARCH",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "wiring gates 3-9 to the corpus-arrival contract is F019 CPU work; a cheap screen kill is what must be able to stop it"
+    },
+    {
+     "description": "re-evaluate every Odyssey I launch criterion",
+     "frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+     "id": "WU.TRIAL.SUPPORTING_REPLAN.odyssey_launch",
+     "mix_role": "SUPPORTING_REPLAN",
+     "module": "odyssey_launch.py",
+     "resource_class": "STATIC_ANALYSIS",
+     "species": "ODYSSEY_LAUNCH_GATE",
+     "specimen": null,
+     "status": "pending",
+     "worth_doing_anyway": "the launch gate currently refuses; keeping the refusal current is the work, and specimen results change it"
+    }
+   ]
+  }
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "no composer produced a mixed real-frontier unit set for 15m/1h/3h/6h",
+  "3h/6h without a frontier-derived replan pair is now a named refusal",
+  "duplicate work identity is refused even when ids differ",
+  "unbound / mismatched bindings are refused rather than defaulted",
+  "GPU-bound units park SLEEPING instead of leaking as pending"
+ ],
+ "gpu_authority": false,
+ "longer_trials": [
+  "3h",
+  "6h"
+ ],
+ "mix_by_trial": {
+  "15m": {
+   "duration_s": 900,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "gpu_rule": "no unit may require GPU authority; units that would are emitted SLEEPING",
+   "padding_rule": "if the trial were cancelled halfway, already-done work must have been worth doing; a unit that fails that test is padding",
+   "proportions": {
+    "FAST_SPECIMEN_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Falcon-H1-7B is the cheap Odyssey I procedural school and is already whole-tree verified; CPU science against it is real and finishes in the short window"
+    },
+    "HCLI_SELF_OPTIMIZE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Hawking that cannot treat its own machinery as a candidate will keep paying the same costs; hcli_self_profile ranks and prunes"
+    },
+    "NEGATIVE_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "refuse_if_dead must actually be able to kill a proposal; a trial that never refuses is not using the scar index"
+    }
+   },
+   "replan_required": false,
+   "replan_why": "shorter trials may carry a replan pair but are not refused without one",
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "NEGATIVE_SCIENCE",
+    "HCLI_SELF_OPTIMIZE"
+   ],
+   "trial_id": "15m"
+  },
+  "1h": {
+   "duration_s": 3600,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "gpu_rule": "no unit may require GPU authority; units that would are emitted SLEEPING",
+   "padding_rule": "if the trial were cancelled halfway, already-done work must have been worth doing; a unit that fails that test is padding",
+   "proportions": {
+    "FAST_SPECIMEN_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Falcon-H1-7B is the cheap Odyssey I procedural school and is already whole-tree verified; CPU science against it is real and finishes in the short window"
+    },
+    "HCLI_SELF_OPTIMIZE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Hawking that cannot treat its own machinery as a candidate will keep paying the same costs; hcli_self_profile ranks and prunes"
+    },
+    "MULTI_FIDELITY_SCREEN": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "a cheap falsifier that kills must refuse later meta-funnel gates so expensive children never launch"
+    },
+    "NEGATIVE_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "refuse_if_dead must actually be able to kill a proposal; a trial that never refuses is not using the scar index"
+    },
+    "ODYSSEY_III_ATTACK": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "a law with no attack is refused; Odyssey III must ride along with II, not wait for II to finish"
+    },
+    "ODYSSEY_II_TRANSFER": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Odyssey II asks what Hawking already learned; a trial that never proposes a transfer hypothesis cannot compound"
+    }
+   },
+   "replan_required": false,
+   "replan_why": "shorter trials may carry a replan pair but are not refused without one",
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "NEGATIVE_SCIENCE",
+    "MULTI_FIDELITY_SCREEN",
+    "HCLI_SELF_OPTIMIZE",
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ATTACK"
+   ],
+   "trial_id": "1h"
+  },
+  "3h": {
+   "duration_s": 10800,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "gpu_rule": "no unit may require GPU authority; units that would are emitted SLEEPING",
+   "padding_rule": "if the trial were cancelled halfway, already-done work must have been worth doing; a unit that fails that test is padding",
+   "proportions": {
+    "FAST_SPECIMEN_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Falcon-H1-7B is the cheap Odyssey I procedural school and is already whole-tree verified; CPU science against it is real and finishes in the short window"
+    },
+    "HCLI_SELF_OPTIMIZE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Hawking that cannot treat its own machinery as a candidate will keep paying the same costs; hcli_self_profile ranks and prunes"
+    },
+    "LONG_SPECIMEN_VERIFY": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "whole-tree specimen verification is real disk work that takes real minutes; a completed specimen stands if the trial is cancelled"
+    },
+    "MULTI_FIDELITY_SCREEN": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "a cheap falsifier that kills must refuse later meta-funnel gates so expensive children never launch"
+    },
+    "NEGATIVE_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "refuse_if_dead must actually be able to kill a proposal; a trial that never refuses is not using the scar index"
+    },
+    "ODYSSEY_III_ATTACK": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "a law with no attack is refused; Odyssey III must ride along with II, not wait for II to finish"
+    },
+    "ODYSSEY_II_TRANSFER": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Odyssey II asks what Hawking already learned; a trial that never proposes a transfer hypothesis cannot compound"
+    }
+   },
+   "replan_required": true,
+   "replan_why": "a trial that cannot demonstrate replanning cannot pass the 3h bar; the pair must be derived from the live frontier, not staged",
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "LONG_SPECIMEN_VERIFY",
+    "NEGATIVE_SCIENCE",
+    "MULTI_FIDELITY_SCREEN",
+    "HCLI_SELF_OPTIMIZE",
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ATTACK"
+   ],
+   "trial_id": "3h"
+  },
+  "6h": {
+   "duration_s": 21600,
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "gpu_rule": "no unit may require GPU authority; units that would are emitted SLEEPING",
+   "padding_rule": "if the trial were cancelled halfway, already-done work must have been worth doing; a unit that fails that test is padding",
+   "proportions": {
+    "FAST_SPECIMEN_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Falcon-H1-7B is the cheap Odyssey I procedural school and is already whole-tree verified; CPU science against it is real and finishes in the short window"
+    },
+    "HCLI_SELF_OPTIMIZE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Hawking that cannot treat its own machinery as a candidate will keep paying the same costs; hcli_self_profile ranks and prunes"
+    },
+    "LONG_SPECIMEN_VERIFY": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "whole-tree specimen verification is real disk work that takes real minutes; a completed specimen stands if the trial is cancelled"
+    },
+    "MULTI_FIDELITY_SCREEN": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "a cheap falsifier that kills must refuse later meta-funnel gates so expensive children never launch"
+    },
+    "NEGATIVE_SCIENCE": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "refuse_if_dead must actually be able to kill a proposal; a trial that never refuses is not using the scar index"
+    },
+    "ODYSSEY_III_ATTACK": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "a law with no attack is refused; Odyssey III must ride along with II, not wait for II to finish"
+    },
+    "ODYSSEY_II_TRANSFER": {
+     "max_fraction": 0.5,
+     "min_units": 1,
+     "why": "Odyssey II asks what Hawking already learned; a trial that never proposes a transfer hypothesis cannot compound"
+    }
+   },
+   "replan_required": true,
+   "replan_why": "a trial that cannot demonstrate replanning cannot pass the 3h bar; the pair must be derived from the live frontier, not staged",
+   "required_roles": [
+    "FAST_SPECIMEN_SCIENCE",
+    "LONG_SPECIMEN_VERIFY",
+    "NEGATIVE_SCIENCE",
+    "MULTI_FIDELITY_SCREEN",
+    "HCLI_SELF_OPTIMIZE",
+    "ODYSSEY_II_TRANSFER",
+    "ODYSSEY_III_ATTACK"
+   ],
+   "trial_id": "6h"
+  }
+ },
+ "n_catalog_replan_edges": 2,
+ "n_mechanism_replan_edges": 3,
+ "n_replan_edges": 4,
+ "negative_findings": [
+  "this module is not in orchestration.BINDINGS (that table is outside this lane's WRITE list)",
+  "compose does not invoke; a unit listed here is declared, not executed",
+  "resident_model_cognition is not exercised",
+  "a catalog evidence edge that cannot change priority is not a replan pair"
+ ],
+ "purpose": "Compose mixed real frontier work for the frozen autonomy trials so a resident cannot pass by surviving a clock while doing nothing useful.",
+ "recovered_implementation": [
+  "tools/future/autonomy_run.py queue construction (SAFE_CAPABILITIES, specimen_verify subprocess, identity = species+frontier+resource+description)",
+  "tools/future/autonomy_trial.py TRIAL_IDS, work_identity, cpu_workunit, sleeping_hardware_unit, is_low_information, GPU_RESOURCE",
+  "tools/future/orchestration.py BINDINGS / emit_workunit / invoke",
+  "tools/future/frontiers.py catalog items, THIS_HOST_LANES, HARDWARE_LANES, load_book",
+  "tools/future/specimen_verify.py list_specimens / verify_specimen / Falcon identity",
+  "tools/future/adaptive_verification.py screen / saved / funnel_child_workunits",
+  "tools/future/phase_listeners.py LISTEN_RULE (II law spawns III; empty store emits zero)",
+  "tools/future/odyssey_launch.py CRITERION_IDS.specimen_curriculum_ready",
+  "tools/future/hcli_self_profile.py rank_attributed_costs / as_actionable",
+  "tools/future/negative_index.py refuse_if_dead",
+  "tools/future/trial_freeze.py freeze(trial_id) known-id refusal shape"
+ ],
+ "replan_edges": [
+  {
+   "cause_frontier_id": "FT.VERIFICATION.negative-index",
+   "cause_module": "negative_index.py",
+   "derived_from": "frontier_catalog_evidence",
+   "effect_frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+   "effect_species": "UPDATE_SCAR",
+   "evidence_receipt": "NEGATIVE_SCIENCE_INDEX.json",
+   "how": "refuse_if_dead can kill the effect unit at admission; a live family is scheduled, a scar-dead one is not"
+  },
+  {
+   "cause_frontier_id": "FT.ODYSSEY_TRANSFER.flash-qwen27",
+   "cause_module": "odyssey2_law_store.py",
+   "derived_from": "frontier_catalog_evidence",
+   "effect_frontier_id": "FT.ODYSSEY_ADVERSARY.attacks",
+   "effect_species": "TRANSFER_LAW",
+   "evidence_receipt": "ODYSSEY2_LAW_STORE.json",
+   "how": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+  },
+  {
+   "cause_frontier_id": "FT.VERIFICATION.repro",
+   "cause_module": "adaptive_verification.py",
+   "derived_from": "recovered_mechanism:adaptive_verification.funnel_child_workunits",
+   "effect_frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "effect_module": "meta_ready.py",
+   "how": "adaptive_verification.saved() names the meta-funnel gates that are not launched after a cheap kill; those gates are the remaining work of FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "named_children": [
+    "future.meta_funnel.gate.1.analytical_structure_screen",
+    "future.meta_funnel.gate.2.real_teacher_fit",
+    "future.meta_funnel.gate.3.held_out_numerical",
+    "future.meta_funnel.gate.4.route_stability",
+    "future.meta_funnel.gate.5.logit_token_validation",
+    "future.meta_funnel.gate.6.bounded_capability",
+    "future.meta_funnel.gate.7.physical_nr_lowering",
+    "future.meta_funnel.gate.8.complete_nx",
+    "future.meta_funnel.gate.9.ebpw"
+   ]
+  },
+  {
+   "cause_frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+   "cause_module": "specimen_verify.py",
+   "derived_from": "recovered_mechanism:odyssey_launch.CRITERION_IDS",
+   "effect_frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+   "effect_module": "odyssey_launch.py",
+   "how": "odyssey_launch refuses on specimen_curriculum_ready; a WHOLE_TREE_VERIFIED specimen can raise that criterion, PARTIAL keeps launch refused"
+  }
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.trial_workload.compose(trial_id)",
+  "fails_closed": "unknown trial_id raises WorkloadRefused; unbound / mismatched / duplicate / padding units are refused; 3h/6h without a replan pair names the missing pair; Falcon cannot be substituted; a GPU unit is SLEEPING not pending",
+  "frontier": "FT.CHILD_RESIDENT.launch",
+  "receipt": "receipts/future/TRIAL_WORKLOAD.json",
+  "workunit": "one CPU_ANALYSIS unit; compose the mixed real-frontier workload for a named autonomy trial and refuse a 3h/6h set with no replan pair"
+ },
+ "schema": "hawking.future.trial_workload.v1",
+ "seal_sha256": "ecec4995f2705b729eb9248561e34321919f2aad1765263188a22aca1878d782",
+ "trial_ids": [
+  "15m",
+  "1h",
+  "3h",
+  "6h"
+ ],
+ "version": 1
+}

@@ -1,0 +1,356 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:44:35Z",
+  "recorded_by": "tools/future/detached.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. A supervision record is identity and lifecycle, not a bench.",
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "fpga_note": "FPGA belongs to Accelerator / Physical Compiler / Fusion. This module does not launch an FPGA or GPU job.",
+ "gaps_closed": [
+  "launch() returns while the child is still alive; proven with /bin/sleep, not a mock",
+  "supervision record persists pid, start_token, argv, cwd, logs, timeout, retry, cancel flag, resource_lease=refused, expected receipt, crash reason",
+  "re-adopt uses pid+start_token; a live pid with a mismatched token is reused, not ours",
+  "six terminal classes including unknown; unknown is never coerced to crashed/completed",
+  "cancel and timeout actually signal the session and reap; cancelled child is not left running",
+  "cargo build, GPU resource class, flock/lease, Metal/CUDA argv are refused; unit SLEEPS",
+  "killed mid-flight classifies crashed (exit observed) and does not hang the caller"
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "identity_states": [
+  "dead",
+  "match",
+  "reused",
+  "unknown"
+ ],
+ "integration_points": [
+  "hcli.agentos.runtime.AgentOS.start_background / cancel_background \u2014 live HCLI surface; do not fork",
+  "workgraph.py / wakeup.py / sandbox.py / super_resident.py / resident_api.py / frontiers.py \u2014 concurrent wave; local launch()+WorkUnit is the swap",
+  "qualification_pipeline.py SLEEPING until an existing HCLI lease AND quiescence"
+ ],
+ "launch": {
+  "records": [
+   "pid",
+   "start_token",
+   "argv",
+   "cwd",
+   "started_at",
+   "log_paths",
+   "timeout_s",
+   "retry_policy",
+   "expected_receipt_path"
+  ],
+  "returns_immediately": true,
+  "spawns_real_os_process": true,
+  "start_new_session": true
+ },
+ "module_sha256": "17d70d2181bb2634a7a2618e58de5eedd0c3c37cf27cffd494aa6b878dee62a3",
+ "negative_findings": [
+  "hcli/agentos/background.py still trusts pid alone; this lane did not patch hcli (forbidden)",
+  "this process has no Metal GPU and no protected lease; GPU work is SLEEPING, not measured",
+  "pid wraparound was not waited out; the reuse guard is proven by a live second process plus a forged record, which is the actual comparison the supervisor performs",
+  "concurrent-wave modules (workgraph, wakeup, sandbox, super_resident, resident_api, frontiers) are not imported; local WorkUnit+launch is the swap point",
+  "a missing start_token with a live pid is unknown identity: we will not kill it, and we will not claim it is our child"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "proofs": {
+  "cancel_reaps": {
+   "passed": true,
+   "reaped": true,
+   "terminal": "cancelled"
+  },
+  "killed_child_classified_crashed": {
+   "crash_reason": "signal:SIGKILL",
+   "hung": false,
+   "passed": true,
+   "reaped": true,
+   "terminal": "crashed"
+  },
+  "launch_returns_while_child_running": {
+   "passed": true,
+   "returned_immediately": true,
+   "state_at_return": "RUNNING",
+   "supervisor_alive": true,
+   "terminal_at_return": null,
+   "work_alive": true
+  },
+  "receipt_classes": {
+   "passed": true,
+   "receipt_present": true,
+   "with_receipt": "completed-with-receipt",
+   "without_receipt": "completed-without-receipt"
+  },
+  "stale_pid_not_mistaken_for_child": {
+   "cancel_reason": "cancel refused: pid reused by another process; original child was not signalled",
+   "cancel_terminal": "unknown",
+   "forged_identity_status": "reused",
+   "original_token_recorded": true,
+   "other_still_alive": true,
+   "other_token_recorded": true,
+   "passed": true
+  },
+  "timeout_reaps": {
+   "crash_reason": "timeout",
+   "passed": true,
+   "reaped": true,
+   "terminal": "timed_out"
+  },
+  "unknown_not_guessed": {
+   "crash_reason": "child pid is dead and no exit code was persisted; unknown, not guessed as crashed or completed",
+   "identity_status": "dead",
+   "passed": true,
+   "terminal": "unknown"
+  },
+  "unsafe_refused": {
+   "n_trials": 5,
+   "passed": true
+  }
+ },
+ "proofs_all_passed": true,
+ "purpose": "Detached execution so the resident generation loop never sits waiting on cargo, a compiler, a download, a capability suite or a benchmark. HCLI owns PID, logs, timeout, retry, cancellation and crash reason.",
+ "recovered_implementation": [
+  {
+   "gap": "_pid_alive is pid-only (os.kill(pid, 0)). Pid reuse would look live. No receipt-presence classification, no GPU/cargo refuse, no WorkUnit seal.",
+   "path": "hcli/agentos/background.py",
+   "use": "session detach, persist, terminate sequence, INTERRUPTED/unknown honesty",
+   "what": "BackgroundJobStore.start uses subprocess.Popen(..., start_new_session=True, close_fds=True) and returns immediately; a --supervise child records the exit code. cancel SIGTERM then SIGKILL. After owner closure, a dead pid is INTERRUPTED, not invented COMPLETED/FAILED."
+  },
+  {
+   "path": "hcli/resources.py",
+   "use": "pid+start_token is the child identity; pid alone is never trusted",
+   "what": "process_start_token (libproc / procfs / ps) plus MutationLock.holder_is_live: a live pid with a mismatched start token is not the holder."
+  },
+  {
+   "path": "hcli/agentos/recovery.py",
+   "use": "kill + wait + re-adopt; do not claim the child completed",
+   "what": "kill resident+host, wait, recover_mission; fixture proof, not a success stamp"
+  },
+  {
+   "path": "hcli/workunit.py",
+   "use": "retry_policy.policy=rerun; never resume a process mid-token",
+   "what": "RESUME_POLICY=rerun; a killed running unit is re-run from the start"
+  },
+  {
+   "path": "hcli/persist.py",
+   "use": "supervision records and sealed workunits",
+   "what": "atomic_write_json via temp + fsync + os.replace"
+  },
+  {
+   "path": "tools/future/repro_science.py",
+   "use": "killed child => crashed (when exit observed) or unknown (when not); partial receipt file + nonzero exit is crashed",
+   "what": "killed_subprocess + partial_result: SIGKILL a child, refuse partial stdout, resume from checkpoint. unknown/partial is not PASS."
+  },
+  {
+   "path": "tools/future/qualification_pipeline.py",
+   "use": "unsafe-command gate; GPU units SLEEP rather than synthesising a result",
+   "what": "refuse_start_benchmark / refuse_create_lease; flock would be a seizure"
+  },
+  {
+   "path": "hcli/executors.py",
+   "use": "timeout is a first-class terminal class (timed_out), not completed",
+   "what": "CPU path subprocess.run with timeout; TimeoutExpired is a failure, not success"
+  },
+  {
+   "path": "hcli/agentos/runtime.py",
+   "use": "cited as the resident call surface; this module is the sidecar equivalent",
+   "what": "AgentOS.start_background / cancel_background / recover_mission facade"
+  }
+ ],
+ "resident_callable": {
+  "callable": true,
+  "entry_point": "python3 tools/future/detached.py --selftest | --build | --launch WORKUNIT.json --workspace DIR | --inspect JOB_ID --workspace DIR | --cancel JOB_ID --workspace DIR",
+  "fail_closed": [
+   "unsafe command (GPU resource class, GPU argv, flock/lease, cargo build) raises UnsafeCommandError, persists SLEEPING, spawns nothing",
+   "pid alive + mismatched start_token => reused, never signalled, terminal=unknown",
+   "pid dead + no persisted exit code => unknown, never guessed crashed/completed",
+   "cancel/timeout refuse to signal a pid whose identity is unproven",
+   "write_receipt raises HardwareClaimError on a numeric hardware field",
+   "partial child output is not completed-with-receipt unless the process exited 0"
+  ],
+  "frontier_fed": "A terminal supervision record (and the expected child receipt path) is disk authority. The next refill inspects terminals: completed feeds the next unit; crashed may rerun from argv (RESUME_POLICY); SLEEPING waits for hardware qualification. frontiers.py / wakeup.py are the integration points and are not imported this wave.",
+  "how_it_fails_closed": "launch() never starts cargo, Metal, CUDA, flock, or GPU_EXCLUSIVE work; those units SLEEP. A restarted supervisor re-adopts only on pid+start_token match. unknown is a first-class terminal class.",
+  "python_api": "tools.future.detached.launch(workunit, workspace=...)",
+  "receipt": "receipts/future/DETACHED_EXECUTION.json",
+  "receipt_schema": "hawking.future.detached.v1",
+  "workunit": {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. A supervision record is identity and lifecycle, not a bench.",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/tools/future/detached.py",
+    "--selftest"
+   ],
+   "content_hash": "1dd307b06749008ffe303e80972339bf12267838c30b8b9c5ec16fdca1f681c8",
+   "dependencies": [],
+   "description": "Seal a WorkUnit, launch a real detached OS process, persist pid+start_token identity plus expected receipt path, and return scheduler control immediately. HCLI owns timeout, retry, cancellation and crash reason. GPU/lease/cargo commands SLEEP.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "id": "future.detached.supervise-safe-work",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/DETACHED_EXECUTION.json",
+   "preferred_backend": null,
+   "provider": "future.detached",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "LIGHT_CONTROL",
+   "retry_policy": {
+    "max_attempts": 3,
+    "never_resume_mid_execution": true,
+    "never_retry_on": [
+     "cancelled",
+     "completed-with-receipt",
+     "completed-without-receipt",
+     "timed_out",
+     "unknown"
+    ],
+    "policy": "rerun",
+    "retry_on": [
+     "crashed"
+    ],
+    "source": "hcli/workunit.py RESUME_POLICY + DEFAULT_RETRY_BUDGET"
+   },
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "timeout_s": 60.0,
+   "verification": null,
+   "verifier": "future.detached.child_terminal_classified",
+   "workspace": "repo-root"
+  },
+  "workunit_id": "future.detached.supervise-safe-work"
+ },
+ "retry_policy": {
+  "max_attempts": 3,
+  "never_resume_mid_execution": true,
+  "never_retry_on": [
+   "cancelled",
+   "completed-with-receipt",
+   "completed-without-receipt",
+   "timed_out",
+   "unknown"
+  ],
+  "policy": "rerun",
+  "retry_on": [
+   "crashed"
+  ],
+  "source": "hcli/workunit.py RESUME_POLICY + DEFAULT_RETRY_BUDGET"
+ },
+ "safe_commands": {
+  "allowed_in_tests": [
+   "/bin/sleep",
+   "python3 -c (no GPU)"
+  ],
+  "on_refuse": "UnsafeCommandError; persist SLEEPING; spawn nothing; never a synthetic result",
+  "refused": [
+   "cargo build/test/run",
+   "GPU_EXCLUSIVE / GPU_DECODE / GPU_DIRTY_OK resource_class",
+   "flock / protected-accelerator-bench.lock / SingletonLease",
+   "xcrun metal / CUDA / protected-accelerator-bench"
+  ]
+ },
+ "schema": "hawking.future.detached.v1",
+ "seal_sha256": "bc1a30ee6c220db349315e8572e0aa7bfe9fd2a881560bd5714c380fd829e537",
+ "supervision_record": {
+  "fields": [
+   "pid",
+   "start_token",
+   "argv",
+   "cwd",
+   "started_at",
+   "log_paths",
+   "timeout_s",
+   "retry_policy",
+   "cancel_requested",
+   "resource_lease",
+   "expected_receipt_path",
+   "result_location",
+   "crash_reason",
+   "terminal"
+  ],
+  "owned_by": "HCLI (this sidecar persists it; hcli/agentos/background.py is the recovered owner pattern)",
+  "re_adopt": "pid AND start_token; pid alone is reusable and is not trusted",
+  "resource_lease": {
+   "held": false,
+   "kind": null,
+   "reason": "this lane never takes a GPU or bench lease; flock of the protected lock would be a seizure",
+   "refused": true
+  },
+  "schema": "hawking.future.detached.supervision.v1"
+ },
+ "terminal_classes": [
+  "cancelled",
+  "completed-with-receipt",
+  "completed-without-receipt",
+  "crashed",
+  "timed_out",
+  "unknown"
+ ],
+ "unsafe_trials": [
+  {
+   "argv0": "cargo",
+   "reason": "cargo build/test/run is forbidden in this lane; refuse launch",
+   "refused": true,
+   "resource_class": "LIGHT_CONTROL",
+   "spawned": false
+  },
+  {
+   "argv0": "/bin/sleep",
+   "reason": "resource_class GPU_EXCLUSIVE requires a GPU lease this sidecar does not hold; unit SLEEPS until hardware qualifies. A synthetic result is forbidden.",
+   "refused": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "spawned": false
+  },
+  {
+   "argv0": "flock",
+   "reason": "flock is a lease seizure; refuse launch",
+   "refused": true,
+   "resource_class": "LIGHT_CONTROL",
+   "spawned": false
+  },
+  {
+   "argv0": "xcrun",
+   "reason": "Metal compiler invocation is forbidden in this lane; refuse launch",
+   "refused": true,
+   "resource_class": "LIGHT_CONTROL",
+   "spawned": false
+  },
+  {
+   "argv0": "/opt/homebrew/opt/python@3.14/bin/python3.14",
+   "reason": "command touches GPU/accelerator (protected-accelerator-bench); refuse launch",
+   "refused": true,
+   "resource_class": "LIGHT_CONTROL",
+   "spawned": false
+  }
+ ],
+ "version": 1
+}

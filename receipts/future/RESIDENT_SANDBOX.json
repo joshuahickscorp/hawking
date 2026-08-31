@@ -1,0 +1,684 @@
+{
+ "authority": {
+  "all_higher_refused": true,
+  "model_start_refused": true,
+  "optimizer_bound": {
+   "gpu_windows_held": 0,
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "may_widen_authority": false,
+   "optimizer": {
+    "allowed_authority": [
+     "compile_experiment_spec",
+     "emit_static_plan",
+     "propose_workunit",
+     "rank_falsifiable_experiments",
+     "read_receipts",
+     "record_unknown_metrics",
+     "run_static_analysis",
+     "transfer_law_within_declared_scope",
+     "write_sidecar_receipt"
+    ],
+    "allowed_kinds": [
+     "compiler-pass",
+     "transfer",
+     "hardware-profile"
+    ],
+    "era": "III",
+    "era_name": "III Autonomous Science Civilization",
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_hypotheses": 9,
+    "max_total_cost_units": 24,
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "may_widen_authority": false,
+    "odyssey": null
+   },
+   "optimizer_allowed_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "optimizer_forbidden_authority": [
+    "acquire_gpu_lease",
+    "choose_singularity",
+    "claim_hardware_measurement",
+    "claim_protected_absolute",
+    "destructive_mutation",
+    "destructive_write",
+    "disable_verifier",
+    "install_singularity",
+    "mark_verified",
+    "modify_verifier",
+    "mutate_codex_surface",
+    "override_bench_state",
+    "promote_candidate",
+    "promote_diagnostic_relative",
+    "promote_self",
+    "promote_to_protected_absolute",
+    "replace_verifier",
+    "select_singularity",
+    "self_promotion",
+    "weaken_verifier",
+    "widen_authority"
+   ],
+   "permitted": [
+    "detached_workunit",
+    "isolated_build",
+    "local_reversible_experiment",
+    "local_test",
+    "model_candidate_creation",
+    "profiling",
+    "read_only_inspection",
+    "receipt_creation",
+    "simulation",
+    "temporary_child_process"
+   ],
+   "refused": [
+    "authority_widening",
+    "bounty_submission",
+    "canonical_merge",
+    "destructive_action",
+    "external_message",
+    "external_publication",
+    "hardware_risk_action",
+    "paid_action",
+    "verifier_modification"
+   ]
+  },
+  "permitted": [
+   "detached_workunit",
+   "isolated_build",
+   "local_reversible_experiment",
+   "local_test",
+   "model_candidate_creation",
+   "profiling",
+   "read_only_inspection",
+   "receipt_creation",
+   "simulation",
+   "temporary_child_process"
+  ],
+  "refusals_proven": [
+   {
+    "authority": "authority_widening",
+    "error": "authority_widening: authority widening is refused; the bound is frozen at construction",
+    "refused": true
+   },
+   {
+    "authority": "bounty_submission",
+    "error": "bounty_submission: bounty submission is refused; this lane cannot submit a bounty",
+    "refused": true
+   },
+   {
+    "authority": "canonical_merge",
+    "error": "canonical_merge: canonical merge is refused; the sandbox cannot write the canonical worktree or the Codex surface",
+    "refused": true
+   },
+   {
+    "authority": "destructive_action",
+    "error": "destructive_action: destructive action is refused; teardown preserves artifacts and there is no destroy path",
+    "refused": true
+   },
+   {
+    "authority": "external_message",
+    "error": "external_message: external message is refused; no network, no outbound message",
+    "refused": true
+   },
+   {
+    "authority": "external_publication",
+    "error": "external_publication: external publication is refused; no network, no publish",
+    "refused": true
+   },
+   {
+    "authority": "hardware_risk_action",
+    "error": "hardware_risk_action: hardware-risk action is refused; no GPU lease, no model start, no protected measurement",
+    "refused": true
+   },
+   {
+    "authority": "paid_action",
+    "error": "paid_action: paid action is refused; this lane cannot spend",
+    "refused": true
+   },
+   {
+    "authority": "verifier_modification",
+    "error": "verifier_modification: verifier modification is refused; the proposer is never the admitter",
+    "refused": true
+   }
+  ],
+  "refused": [
+   "authority_widening",
+   "bounty_submission",
+   "canonical_merge",
+   "destructive_action",
+   "external_message",
+   "external_publication",
+   "hardware_risk_action",
+   "paid_action",
+   "verifier_modification"
+  ]
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:42Z",
+  "recorded_by": "tools/future/sandbox.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bounded_filesystem": {
+  "all_refused": true,
+  "kinds_proven": [
+   "absolute",
+   "dotdot",
+   "symlink"
+  ],
+  "mechanism": "BoundedFS.resolve_writable walks components and refuses escape by kind",
+  "proofs": [
+   {
+    "error": "absolute escape refused for '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/outside.txt': absolute path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/outside.txt is outside /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/canonical/.worktrees/resident/writable",
+    "kind": "absolute",
+    "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/outside.txt",
+    "refused": true
+   },
+   {
+    "error": "dotdot escape refused for '../ESCAPE_DOTDOT.txt': path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/canonical/.worktrees/resident/ESCAPE_DOTDOT.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/canonical/.worktrees/resident/writable via .. traversal",
+    "kind": "dotdot",
+    "path": "../ESCAPE_DOTDOT.txt",
+    "refused": true
+   },
+   {
+    "error": "symlink escape refused for 'escape_link': /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/canonical/.worktrees/resident/writable/escape_link -> /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/outside.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/canonical/.worktrees/resident/writable",
+    "kind": "symlink",
+    "path": "escape_link",
+    "refused": true
+   }
+  ],
+  "refuses": [
+   "absolute",
+   "dotdot",
+   "symlink"
+  ],
+  "write_root": "writable"
+ },
+ "branch": "odyssey-i",
+ "built": true,
+ "canonical_mutation": {
+  "composed": "tools.future.mutation_surface.check_disjoint / intersects_codex",
+  "disjoint": {
+   "disjoint": true,
+   "exit_code": 0,
+   "paths": [
+    "tools/future/sandbox.py",
+    "tools/future/test_sandbox.py"
+   ]
+  },
+  "writes_canonical_worktree": false,
+  "writes_codex_surface": false
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "filesystem_kinds_proven": 3,
+  "hermetic_source_index_files": 0,
+  "higher_refusals_proven": 9,
+  "layout_dirs": 5,
+  "permitted_autonomous": 10,
+  "refused_higher": 9,
+  "source_index_files": 487
+ },
+ "gaps_closed": [
+  "isolated git worktree under the canonical repo's own .worktrees/",
+  "idempotent provision; re-entry recovers the same sandbox identity",
+  "teardown preserves artifacts and refuses destroy",
+  "BoundedFS refuses absolute, .. traversal, and symlink escape by kind",
+  "ten autonomous actions permitted; nine higher-authority actions refused by name",
+  "OptimizerBound / BoundViolation / FORBIDDEN_AUTHORITY reused, not forked",
+  "mutation_surface.check_disjoint composed; Codex paths cannot be written",
+  "SANDBOX.json + .worktrees/INDEX.json survive process restart",
+  "provisioning does not start a model",
+  "HCLI WorkUnit emitted for provision; verifier is not the proposer"
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "hermetic_source_index": {
+  "copes_with_sparse_checkout": true,
+  "entries": [
+   {
+    "file_count": 0,
+    "files_head": [],
+    "present": false,
+    "root": "tools/future"
+   },
+   {
+    "file_count": 0,
+    "files_head": [],
+    "present": false,
+    "root": "hcli"
+   },
+   {
+    "file_count": 0,
+    "files_head": [],
+    "present": false,
+    "root": "receipts/future"
+   }
+  ],
+  "file_count_total": 0,
+  "missing_roots": [
+   "tools/future",
+   "hcli",
+   "receipts/future"
+  ],
+  "present_roots": [],
+  "roots": [
+   "tools/future",
+   "hcli",
+   "receipts/future"
+  ],
+  "schema": "hawking.future.sandbox.source_index.v1"
+ },
+ "integration_points": [
+  {
+   "local": "DetachedWorkUnitSpec",
+   "module": "tools/future/detached.py",
+   "swap": "import the landed detached WorkUnit scheduler when that lane commits"
+  },
+  {
+   "local": "frontier_fed on the sidecar receipt",
+   "module": "tools/future/frontiers.py",
+   "swap": "register the laboratory frontier entry when frontiers.py lands"
+  },
+  {
+   "local": "sleeping physical blockers recorded, never synthesised",
+   "module": "tools/future/wakeup.py",
+   "swap": "HCLI wakeup of SLEEPING WorkUnits when hardware qualifies"
+  },
+  {
+   "local": "this sandbox is the laboratory the super-resident occupies",
+   "module": "tools/future/super_resident.py",
+   "swap": "super_resident provisions via tools.future.sandbox.provision"
+  },
+  {
+   "local": "hardware_risk_action refusal",
+   "module": "tools/future/protected_window.py",
+   "swap": "protected window remains Codex-owned; this lane never takes it"
+  },
+  {
+   "local": "provision / authorize / attempt as the callable surface",
+   "module": "tools/future/resident_api.py",
+   "swap": "resident_api may wrap provision() once committed"
+  }
+ ],
+ "longevity": {
+  "identity_sha256": "01d52b60766cb97f00b0e43e4c90e4cf4ec1171525973780d03cff46265cc134",
+  "reentry_same_identity": true,
+  "second_provision_creates_second_sandbox": false,
+  "state_survives_process_restart": true
+ },
+ "measurement_state": "STATIC_ONLY",
+ "negative_findings": [
+  "lab/execution_sandbox.py is bible \u00a721 policy, not a worktree provisioner; not imported (different action vocabulary); present-or-missing is recorded in recovered_implementation",
+  "OS-level Seatbelt confinement (hide-kernel security_sandbox) is orthogonal; BoundedFS is the in-process gate",
+  "temporary_child_process is a permitted token; provisioning does not spawn, and a raw child could write outside unless OS-confined",
+  "this-wave siblings (detached, frontiers, wakeup, super_resident, resident_api, protected_window) are not imported",
+  "live Hawking .worktrees/ is not mutated by --selftest/--build; those use a hermetic fixture repo",
+  "MetalContext reports no Metal-capable GPU on this host; that remains a SLEEPING physical blocker, not a synthetic result",
+  "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
+  "hcli/agentos/resident.py is recorded present/missing in recovered_implementation; resident_gate.py is the live sequential-proof boundary",
+  "no GPU lease, no paid action, no bounty, no external message"
+ ],
+ "no_model_start": {
+  "error": "hardware_risk_action: sandbox does not start a model; provisioning only",
+  "refused_as": "hardware_risk_action",
+  "starts_model": false
+ },
+ "promoted": false,
+ "provision": {
+  "default_sandbox_id": "resident",
+  "git_worktree": "git worktree add --detach --no-checkout --lock (reason: resident-sandbox preserve-artifacts)",
+  "hermetic_proof_worktree": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-3q6gfa5k/canonical/.worktrees/resident",
+  "idempotent": true,
+  "layout_dirs": [
+   "build",
+   "experiment",
+   "receipts",
+   "model_candidates",
+   "source_index"
+  ],
+  "path_taken": true,
+  "production_worktrees_root": "/Users/scammermike/Downloads/hawking/.worktrees",
+  "registry_name": "INDEX.json",
+  "state_name": "SANDBOX.json",
+  "teardown_preserves_artifacts": true,
+  "teardown_runs_worktree_remove": false,
+  "worktrees_dirname": ".worktrees"
+ },
+ "purpose": "Isolated laboratory a future super-resident occupies for hours: git worktree under .worktrees/, bounded writable filesystem, authority lattice, durable re-entry. Provisioning only; no model.",
+ "recovered_implementation": [
+  {
+   "path": "hcli/workspace.py",
+   "present": true,
+   "what": "Workspace.realpath root + git-toplevel detect; too thin to bound writes, reused as the writable Workspace"
+  },
+  {
+   "path": "hcli/mutation.py",
+   "present": true,
+   "what": "bounded reversible mutations, snapshots, rollback_mutation; recovered as the model for local_reversible_experiment"
+  },
+  {
+   "path": "hcli/agentos/autonomy_gate.py",
+   "present": true,
+   "what": "A1-A5 autonomy qualification; not invoked (would start a resident)"
+  },
+  {
+   "path": "hcli/agentos/resident_gate.py",
+   "present": true,
+   "what": "LIVE_RESIDENT_SEQUENTIAL_PROOF; lifecycle owner; this sandbox does not start it"
+  },
+  {
+   "path": "hcli/agentos/resident.py",
+   "present": true,
+   "what": "does not exist in HEAD; resident_gate.py is the live boundary"
+  },
+  {
+   "path": "hcli/persist.py",
+   "present": true,
+   "what": "atomic_write_text / atomic_write_json; used for SANDBOX.json, INDEX.json, bounded writes"
+  },
+  {
+   "path": "hcli/workunit.py",
+   "present": true,
+   "what": "WorkUnit constructor + repair budgets; provision emits through it"
+  },
+  {
+   "path": "tools/future/resident_optimizer.py",
+   "present": true,
+   "what": "OptimizerBound + BoundViolation + ALLOWED/FORBIDDEN_AUTHORITY; reused as the inner lattice"
+  },
+  {
+   "path": "tools/future/mutation_surface.py",
+   "present": true,
+   "what": "check_disjoint / intersects_codex; composed so Codex paths cannot be written"
+  },
+  {
+   "path": "lab/execution_sandbox.py",
+   "present": true,
+   "what": "bible \u00a721 ExecutionSandboxPolicy; recovered via git show; not imported (sparse, different vocabulary)"
+  },
+  {
+   "path": "lab/operators/ascension_sandbox.py",
+   "present": true,
+   "what": "detached research-sandbox controller; never loads a model; recovered via git show"
+  },
+  {
+   "path": "crates/hide-kernel/src/security_sandbox.rs",
+   "present": true,
+   "what": "OS Seatbelt profile; fail-closed spawn; orthogonal to in-process BoundedFS"
+  },
+  {
+   "path": "tools/grok_worktree_reaper.py",
+   "present": true,
+   "what": "git worktree remove only, never filesystem force-delete; teardown here does not remove"
+  },
+  {
+   "path": "workspace/campaign/governance/odyssey/program/sandbox/POLICY.json",
+   "present": true,
+   "what": "Odyssey sandbox POLICY (deny-by-default fs/network); recovered via git show"
+  }
+ ],
+ "resident_callable": {
+  "callable": "tools.future.sandbox.provision",
+  "can_hcli_invoke": true,
+  "entry_point": "python3 tools/future/sandbox.py --provision|--selftest|--build",
+  "fail_closed": {
+   "codex_surface": "CanonicalMutationError + mutation_surface.check_disjoint",
+   "destroy": "AuthorityRefused destructive_action (teardown preserves)",
+   "filesystem_escape": "SandboxEscapeError (absolute | dotdot | symlink)",
+   "hardware": "HardwareClaimError via write_receipt",
+   "higher_authority": "AuthorityRefused naming the authority",
+   "model_start": "AuthorityRefused hardware_risk_action",
+   "optimizer_lattice": "BoundViolation at OptimizerBound / SandboxBound construction"
+  },
+  "frontier_fed": {
+   "effect": "a provisioned sandbox the resident can discover, invoke, schedule and verify; disk state persists; next work refills",
+   "integration_point": "tools/future/frontiers.py (this wave; not imported)",
+   "name": "laboratory / Odyssey I WHAT IS TRUE?"
+  },
+  "receipt": "receipts/future/RESIDENT_SANDBOX.json",
+  "workunit": {
+   "classification": "STATIC_ONLY",
+   "effect_class": "REVERSIBLE",
+   "emitted_by": "tools.future.sandbox.emit_provision_workunit",
+   "id": "future.resident-sandbox.provision.resident",
+   "species_local": "resident_sandbox_provision",
+   "starts_model": false,
+   "verifier": "future.sandbox.provision_contract"
+  }
+ },
+ "schema": "hawking.future.sandbox.v1",
+ "seal_sha256": "3e93a81d1619c72cb9178bfde5b30efd1f378297e52218573fc893a0c09705c0",
+ "sleeping_physical_blockers": [
+  "MetalContext reports no Metal-capable GPU on this host",
+  "xcrun cannot locate the Metal compiler under CommandLineTools",
+  "protected bench lock files exist; holder pids unproven; flock would be a seizure",
+  "qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
+  "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
+  "teacher capture is 0/256"
+ ],
+ "source_index": {
+  "copes_with_sparse_checkout": true,
+  "entries": [
+   {
+    "file_count": 214,
+    "files_head": [
+     "tools/future/__init__.py",
+     "tools/future/_common.py",
+     "tools/future/abi_verdicts.py",
+     "tools/future/abliteration.py",
+     "tools/future/accelerator_workunits.py",
+     "tools/future/adaptive_verification.py",
+     "tools/future/ane_preboard.py",
+     "tools/future/autonomy_run.py",
+     "tools/future/autonomy_scars.py",
+     "tools/future/autonomy_trial.py",
+     "tools/future/candidate_planner.py",
+     "tools/future/claude_abi_adjudication.py",
+     "tools/future/codex_behaviors.py",
+     "tools/future/codex_ingest.py",
+     "tools/future/concurrency_doctor.py",
+     "tools/future/consolidated_run.py",
+     "tools/future/contamination.py",
+     "tools/future/cuda_lowbit_hypotheses.py",
+     "tools/future/debugger.py",
+     "tools/future/decode_civilization.py",
+     "tools/future/detached.py",
+     "tools/future/device_ascension_pipeline.py",
+     "tools/future/devplatform.py",
+     "tools/future/dirty_measure.py",
+     "tools/future/ebpw_categories.py",
+     "tools/future/evidence_dag.py",
+     "tools/future/evidence_snapshot.py",
+     "tools/future/expert_bank_school.py",
+     "tools/future/external_specimen_seal.py",
+     "tools/future/fallback_resident.py",
+     "tools/future/flash_bpw_ladder.py",
+     "tools/future/flash_meta_replan.py"
+    ],
+    "present": true,
+    "root": "tools/future"
+   },
+   {
+    "file_count": 107,
+    "files_head": [
+     "hcli/__init__.py",
+     "hcli/__main__.py",
+     "hcli/agentos_cli.py",
+     "hcli/ane_provider.py",
+     "hcli/app.py",
+     "hcli/architecture.py",
+     "hcli/backends.py",
+     "hcli/cli.py",
+     "hcli/commands.py",
+     "hcli/config.py",
+     "hcli/connectivity.py",
+     "hcli/context.py",
+     "hcli/context_budget.py",
+     "hcli/controller.py",
+     "hcli/dag_store.py",
+     "hcli/delegate.py",
+     "hcli/engine.py",
+     "hcli/events.py",
+     "hcli/executors.py",
+     "hcli/flash_next.py",
+     "hcli/goal.py",
+     "hcli/grok_bridge.py",
+     "hcli/hawking-native.sealed-3.14.json",
+     "hcli/hawking_native.py",
+     "hcli/ledger.py",
+     "hcli/machine.py",
+     "hcli/max_policy.py",
+     "hcli/mission.py",
+     "hcli/models.py",
+     "hcli/mutation.py",
+     "hcli/nomenclature.py",
+     "hcli/paths.py"
+    ],
+    "present": true,
+    "root": "hcli"
+   },
+   {
+    "file_count": 166,
+    "files_head": [
+     "receipts/future/ABI_VERDICT_HARNESS.json",
+     "receipts/future/ABLITERATION.json",
+     "receipts/future/ACCELERATOR_WORKUNITS.json",
+     "receipts/future/ADAPTIVE_VERIFICATION.json",
+     "receipts/future/ANE_PREBOARD.json",
+     "receipts/future/AUTONOMY_MISSION_STATE.json",
+     "receipts/future/AUTONOMY_RUN.json",
+     "receipts/future/AUTONOMY_SCARS.json",
+     "receipts/future/AUTONOMY_TIMELINE_15m.json",
+     "receipts/future/AUTONOMY_TIMELINE_1h.json",
+     "receipts/future/AUTONOMY_TIMELINE_30m.json",
+     "receipts/future/AUTONOMY_TRIALS.json",
+     "receipts/future/CANDIDATE_STAGED_PLAN.json",
+     "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+     "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+     "receipts/future/CODEX_INGEST_STATE.json",
+     "receipts/future/CODEX_MUTATION_SURFACE.json",
+     "receipts/future/CODEX_WORKUNIT_SPECIES.json",
+     "receipts/future/CONTAMINATION_SCIENCE.json",
+     "receipts/future/CUDA_LOWBIT_HYPOTHESES.json",
+     "receipts/future/DEBUGGER_LAB.json",
+     "receipts/future/DECODE_CIVILIZATION.json",
+     "receipts/future/DERIVED_FRESHNESS.json",
+     "receipts/future/DETACHED_EXECUTION.json",
+     "receipts/future/DEVELOPER_PLATFORM.json",
+     "receipts/future/DEVICE_ASCENSION_PIPELINE.json",
+     "receipts/future/DIRTY_MEASUREMENT.json",
+     "receipts/future/DOCTOR_SEAL_DRIVEN.json",
+     "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
+     "receipts/future/EVIDENCE_DAG.json",
+     "receipts/future/EVIDENCE_SNAPSHOT.json",
+     "receipts/future/EXPERIMENT_TURNAROUND.json"
+    ],
+    "present": true,
+    "root": "receipts/future"
+   }
+  ],
+  "file_count_total": 487,
+  "missing_roots": [],
+  "present_roots": [
+   "tools/future",
+   "hcli",
+   "receipts/future"
+  ],
+  "roots": [
+   "tools/future",
+   "hcli",
+   "receipts/future"
+  ],
+  "schema": "hawking.future.sandbox.source_index.v1"
+ },
+ "status": "BUILT_NOT_PROMOTED",
+ "version": 1,
+ "vocabulary": {
+  "diagnostic_relative_never_promotes": true,
+  "disk_state_is_authority": true,
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is": "Accelerator / Physical Compiler / Fusion; not a civilization and this module does not build an FPGA backend",
+  "models_think_tools_know_context_is_a_cache": true,
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "protected_absolute_not_emitted": true
+ },
+ "work_unit": {
+  "assigned_backend": null,
+  "assigned_runtime": null,
+  "attempts": 0,
+  "backend_task_id": null,
+  "budget": {
+   "attempts": 3,
+   "gpu_windows_held": 0,
+   "gpu_windows_requested": 0,
+   "max_repair_depth": 3,
+   "max_repairs_per_root": 6
+  },
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. The sandbox permits reversible local science and refuses canonical merge, destruction, external action, hardware-risk action, verifier modification, and authority widening. Provisioning does not start a model.",
+  "classification": "STATIC_ONLY",
+  "content_hash": "14150c2d03a7e4134379cb06712983b41ca49a17445e35a7c3926c6963597db6",
+  "dependencies": [],
+  "description": "Provision isolated resident sandbox 'resident' under .worktrees/ (no model start; bounded writes; authority lattice).",
+  "effect_class": "REVERSIBLE",
+  "failure_context": null,
+  "finished_at": null,
+  "gpu_windows_held": 0,
+  "id": "future.resident-sandbox.provision.resident",
+  "integration_point_detached": "tools/future/detached.py (not imported)",
+  "may_modify_verifier": false,
+  "may_promote": false,
+  "may_widen_authority": false,
+  "preferred_backend": null,
+  "provider": "future.sandbox",
+  "ready_at": null,
+  "repair_depth": 0,
+  "repair_exhausted": false,
+  "repair_reason": null,
+  "repair_root": null,
+  "repairs": null,
+  "requires_quiescence": false,
+  "resource_class": "LIGHT_CONTROL",
+  "role": "science",
+  "running_at": null,
+  "sandbox_id": "resident",
+  "species_local": "resident_sandbox_provision",
+  "starts_model": false,
+  "status": "pending",
+  "stop_conditions": [
+   "stop when the sandbox is provisioned and SANDBOX.json is on disk",
+   "stop when a higher-authority action is requested; refuse by name",
+   "never start a model; never take a GPU lease",
+   "never git worktree remove; teardown preserves artifacts"
+  ],
+  "verification": null,
+  "verifier": "future.sandbox.provision_contract",
+  "workspace": ".worktrees/resident"
+ }
+}

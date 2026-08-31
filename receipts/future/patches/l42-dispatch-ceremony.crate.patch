@@ -1,0 +1,293 @@
+diff --git a/crates/hawking-core/src/metal/mod.rs b/crates/hawking-core/src/metal/mod.rs
+index f96d17fa7..30386199d 100644
+--- a/crates/hawking-core/src/metal/mod.rs
++++ b/crates/hawking-core/src/metal/mod.rs
+@@ -4708,8 +4708,6 @@ mod imp {
+                     "compute_encoder",
+                     "concurrent_group",
+                 ));
+-            } else {
+-                enc.set_label("concurrent_group");
+             }
+             self.concurrent_encoder = Some(enc.to_owned());
+             self.encoder_count = self.encoder_count.saturating_add(1);
+@@ -4754,8 +4752,6 @@ mod imp {
+                     "compute_encoder",
+                     "serial_group",
+                 ));
+-            } else {
+-                enc.set_label("serial_group");
+             }
+             self.concurrent_encoder = Some(enc.to_owned());
+             self.encoder_count = self.encoder_count.saturating_add(1);
+@@ -5095,10 +5091,11 @@ mod imp {
+             let pipe = self.ctx.pipeline(fn_name)?;
+             let enc = cmd.new_compute_command_encoder();
+             self.encoder_count = self.encoder_count.saturating_add(1);
++            // Production: skip 580 NSString labels per token. Labels are
++            // load-bearing only for the physical-trace probe
++            // (GPU_IDLE_GAP_LEDGER command construction).
+             if let Some(command) = self.physical_trace.as_ref() {
+                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
+-            } else {
+-                enc.set_label(fn_name);
+             }
+             enc.set_compute_pipeline_state(&pipe);
+             encode(enc);
+diff --git a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+index db814f9df..0dde2883e 100644
+--- a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
++++ b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+@@ -122,6 +122,51 @@ pub fn qwen38_concurrent_independent_enabled() -> bool {
+     crate::env_on("HAWKING_QWEN38_CONCURRENT")
+ }
+ 
++/// One serial compute encoder covering the token graph. Default Off: the
++/// idle-gap ledger already ran encoder_count 580→1 and it did not separate
++/// complete-wall from the per-dispatch encoder (GPU_IDLE_GAP_LEDGER).
++///
++/// `HAWKING_QWEN38_SERIAL_TOKEN_ENCODER=1` (or true/on/yes) — opt in
++/// `=0` / unset                                          — production
++/// anything else                                          — PANICS
++pub fn qwen38_serial_token_encoder_from_env() -> bool {
++    match std::env::var("HAWKING_QWEN38_SERIAL_TOKEN_ENCODER") {
++        Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
++            "" | "0" | "off" | "false" | "no" => false,
++            "1" | "true" | "on" | "yes" => true,
++            other => panic!(
++                "HAWKING_QWEN38_SERIAL_TOKEN_ENCODER={other:?} is not a recognised value; \
++                 use 1 | 0. Falling back to Off here would silently measure the \
++                 multi-encoder graph."
++            ),
++        },
++        Err(_) => false,
++    }
++}
++
++/// Skip lm_head + argmax on teacher-forced prefill steps that do not emit a
++/// generated token. Default On: those steps discard `sampled` today, and the
++/// next token is the next prompt id, not the argmax. KV / DeltaNet state is
++/// still written by embed+layers.
++///
++/// `HAWKING_QWEN38_PREFILL_SKIP_TERMINAL=0` — full graph every prompt step
++/// unset / `=1`                             — skip terminal on non-last prefill
++/// anything else                            — PANICS
++pub fn qwen38_prefill_skip_terminal_from_env() -> bool {
++    match std::env::var("HAWKING_QWEN38_PREFILL_SKIP_TERMINAL") {
++        Ok(v) => match v.trim().to_ascii_lowercase().as_str() {
++            "0" | "off" | "false" | "no" => false,
++            "" | "1" | "true" | "on" | "yes" => true,
++            other => panic!(
++                "HAWKING_QWEN38_PREFILL_SKIP_TERMINAL={other:?} is not a recognised value; \
++                 use 1 | 0. Falling back to Off here would silently keep lm_head \
++                 on teacher-forced prefill."
++            ),
++        },
++        Err(_) => true,
++    }
++}
++
+ pub fn qwen38_fuse_gqa_qkv_enabled() -> bool {
+     crate::env_on("HAWKING_QWEN38_FUSE_GQA_QKV")
+ }
+@@ -2145,6 +2190,10 @@ mod device {
+         /// (one encoder per dispatch). Opt-in attack on encoder-boundary idle
+         /// and host command construction. Independent of `concurrent_independent`.
+         pub serial_token_encoder: bool,
++        /// Skip lm_head + argmax on teacher-forced prefill steps that do not
++        /// emit a generated token. Default on (see
++        /// [`qwen38_prefill_skip_terminal_from_env`]).
++        pub prefill_skip_terminal: bool,
+     }
+ 
+     impl Qwen38HybridDecodeSession {
+@@ -2199,7 +2248,8 @@ mod device {
+                 affine2_geo: Affine2Geo::from_env(),
+                 dense_w_materialized,
+                 q2f_force_serial: false,
+-                serial_token_encoder: false,
++                serial_token_encoder: qwen38_serial_token_encoder_from_env(),
++                prefill_skip_terminal: qwen38_prefill_skip_terminal_from_env(),
+             };
+             // `MetalContext` clones share `Arc<DispatchTrace>`. If that ever
+             // becomes a fresh buffer, `drain_trace` on the session would miss
+@@ -3651,6 +3701,19 @@ mod device {
+             }
+         }
+ 
++        pub fn set_prefill_skip_terminal(&mut self, on: bool) {
++            self.prefill_skip_terminal = on;
++        }
++
++        fn encode_token_body(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            token: u32,
++        ) -> Result<()> {
++            self.encode_embed(tcb, token)?;
++            self.encode_layers(tcb)
++        }
++
+         fn encode_full_token(
+             &self,
+             tcb: &mut TokenCommandBuffer<'_>,
+@@ -3659,8 +3722,7 @@ mod device {
+             if self.serial_token_encoder {
+                 tcb.begin_serial_group()?;
+             }
+-            self.encode_embed(tcb, token)?;
+-            self.encode_layers(tcb)?;
++            self.encode_token_body(tcb, token)?;
+             self.encode_terminal(tcb)?;
+             if self.serial_token_encoder {
+                 tcb.end_serial_group()?;
+@@ -3668,6 +3730,24 @@ mod device {
+             Ok(())
+         }
+ 
++        /// Teacher-forced prefill that still writes KV / DeltaNet state, but
++        /// does not run lm_head or argmax. The next input token is the next
++        /// prompt id; `sampled` would be discarded.
++        fn encode_prefill_body(
++            &self,
++            tcb: &mut TokenCommandBuffer<'_>,
++            token: u32,
++        ) -> Result<()> {
++            if self.serial_token_encoder {
++                tcb.begin_serial_group()?;
++            }
++            self.encode_token_body(tcb, token)?;
++            if self.serial_token_encoder {
++                tcb.end_serial_group()?;
++            }
++            Ok(())
++        }
++
+         pub fn theoretical_dispatches(&self) -> u64 {
+             qwen38_fused_dispatches_per_token_full(
+                 self.mlp_fusion,
+@@ -6314,6 +6394,31 @@ mod device {
+             Ok((sampled, timing))
+         }
+ 
++        /// Embed + layers only. Writes KV / DeltaNet the same way as
++        /// [`Self::step`], does not run lm_head or argmax, does not read
++        /// `sampled`. Position still advances. Used for teacher-forced
++        /// prefill steps whose argmax would be discarded.
++        pub fn step_prefill_body(&mut self, token: u32) -> Result<CommandBufferTiming> {
++            if self.fallbacks != 0 {
++                return Err(Error::Model(
++                    "qwen38 decode refuses a run after a fallback".into(),
++                ));
++            }
++            let encode_t0 = Instant::now();
++            let mut tcb = TokenCommandBuffer::new(&self.context);
++            Self::enable_dispatch_name_trace(&mut tcb);
++            self.encode_prefill_body(&mut tcb, token)?;
++            let harvested = tcb.structural_kernel_names().map(|names| names.to_vec());
++            let encode_ns = encode_t0.elapsed().as_nanos() as u64;
++            let mut timing = tcb.commit_and_wait_timed()?;
++            self.harvest_dispatch_names(harvested);
++            if timing.encode_ns == 0 {
++                timing.encode_ns = encode_ns;
++            }
++            self.position = self.position.saturating_add(1);
++            Ok(timing)
++        }
++
+         /// Same GPU work as [`Self::step`], with host-side Instants around
+         /// encode / commit-return / sample readback / position update so
+         /// wall − gpu can be named. Timers do not change the command buffer.
+@@ -6394,9 +6499,15 @@ mod device {
+         let mut next = 0u32;
+         let prefill = Instant::now();
+         let mut first_step_wall_ns = 0u64;
++        let skip_terminal = session.prefill_skip_terminal;
+         for (i, &token) in prompt.iter().enumerate() {
++            let last_prompt = i + 1 == prompt.len();
+             let step_wall = Instant::now();
+-            let (sampled, timing) = session.step(token)?;
++            let (sampled, timing) = if last_prompt || !skip_terminal {
++                session.step(token)?
++            } else {
++                (0u32, session.step_prefill_body(token)?)
++            };
+             let step_ns = step_wall.elapsed().as_nanos() as u64;
+             if i == 0 {
+                 first_step_wall_ns = step_ns;
+@@ -6804,6 +6915,15 @@ impl Qwen38GenerateResult {
+         }
+         Some(self.decode_wall_ns / self.decode_steps as u64)
+     }
++
++    /// `wall_ns − prefill_wall_ns − decode_wall_ns`. The Instant gap between
++    /// the two named loops (eos-env lookup, `tokens.push` of the first new
++    /// token). Not GPU work.
++    pub fn interphase_ns(&self) -> u64 {
++        self.wall_ns
++            .saturating_sub(self.prefill_wall_ns)
++            .saturating_sub(self.decode_wall_ns)
++    }
+ }
+ 
+ #[cfg(target_os = "macos")]
+@@ -6882,6 +7002,59 @@ mod mlp_fusion_env_tests {
+     }
+ }
+ 
++#[cfg(test)]
++mod dispatch_ceremony_env_tests {
++    use super::*;
++
++    #[test]
++    fn prefill_skip_terminal_and_serial_encoder_parse_without_silent_fallthrough() {
++        const SKIP: &str = "HAWKING_QWEN38_PREFILL_SKIP_TERMINAL";
++        const SERIAL: &str = "HAWKING_QWEN38_SERIAL_TOKEN_ENCODER";
++        let restore_skip = std::env::var(SKIP).ok();
++        let restore_serial = std::env::var(SERIAL).ok();
++
++        std::env::remove_var(SKIP);
++        assert!(
++            qwen38_prefill_skip_terminal_from_env(),
++            "unset must skip discarded lm_head on teacher-forced prefill"
++        );
++        std::env::set_var(SKIP, "1");
++        assert!(qwen38_prefill_skip_terminal_from_env());
++        std::env::set_var(SKIP, "0");
++        assert!(
++            !qwen38_prefill_skip_terminal_from_env(),
++            "Off must stay reachable so the full-terminal prefill baseline can be measured"
++        );
++        std::env::set_var(SKIP, "skippy");
++        let skip_typo = std::panic::catch_unwind(qwen38_prefill_skip_terminal_from_env);
++        std::env::remove_var(SKIP);
++        assert!(skip_typo.is_err(), "an unrecognised skip-terminal value must panic");
++
++        std::env::remove_var(SERIAL);
++        assert!(
++            !qwen38_serial_token_encoder_from_env(),
++            "serial encoder stays Off: GPU_IDLE_GAP_LEDGER did not separate 580→1"
++        );
++        std::env::set_var(SERIAL, "1");
++        assert!(qwen38_serial_token_encoder_from_env());
++        std::env::set_var(SERIAL, "0");
++        assert!(!qwen38_serial_token_encoder_from_env());
++        std::env::set_var(SERIAL, "seriall");
++        let serial_typo = std::panic::catch_unwind(qwen38_serial_token_encoder_from_env);
++        std::env::remove_var(SERIAL);
++        assert!(serial_typo.is_err(), "an unrecognised serial-encoder value must panic");
++
++        match restore_skip {
++            Some(v) => std::env::set_var(SKIP, v),
++            None => std::env::remove_var(SKIP),
++        }
++        match restore_serial {
++            Some(v) => std::env::set_var(SERIAL, v),
++            None => std::env::remove_var(SERIAL),
++        }
++    }
++}
++
+ #[cfg(test)]
+ mod mixed_catalog_contract_tests {
+     use super::*;

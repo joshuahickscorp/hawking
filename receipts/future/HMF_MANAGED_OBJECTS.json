@@ -1,0 +1,230 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:56Z",
+  "recorded_by": "tools/future/hmf_objects.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_class": "STATIC_ONLY",
+ "coherence_rules": {
+  "COHERENT": "state CLEAN AND trust TRUSTED AND visibility known AND location known AND (if on_device set, device in visibility)",
+  "NOT_COHERENT": "state DIRTY or STALE, or a known visibility set that does not include the calling device",
+  "UNKNOWN": "state UNKNOWN, or trust UNKNOWN/ASSERTED, or visibility UNKNOWN, or location UNKNOWN. ASSERTED is not knowledge.",
+  "boolean_collapse": "refused (CoherenceBooleanError)",
+  "consume_paths": [
+   "require_coherent",
+   "consume_for_kernel",
+   "read_payload"
+  ]
+ },
+ "coherence_values": [
+  "COHERENT",
+  "NOT_COHERENT",
+  "UNKNOWN"
+ ],
+ "gaps_closed": [
+  "tri-state is_coherent; boolean collapse refused",
+  "require_coherent / consume_for_kernel / read_payload refuse UNKNOWN",
+  "CLEAN + trust UNKNOWN projects to UNKNOWN coherence (HUMF valid_copies still names it)",
+  "ASSERTED trust is UNKNOWN coherence, not COHERENT",
+  "kernel boundary without sync: CLEAN -> UNKNOWN",
+  "apply_kernel_boundary_to_humf drives the existing HUMF CLEAN->UNKNOWN edge",
+  "move_vs_recompute UNDECIDABLE when either cost is UNKNOWN",
+  "move_vs_recompute_from_humf treats a recipe with no cost as UNKNOWN, not as 'skip recompute'",
+  "migrate without confirming digest is UNKNOWN, never CLEAN",
+  "device_digest with no provider is UNKNOWN, never a fabricated hash",
+  "HGVAS HgvasRef refuses native pointers",
+  "location is memory_tier + device; visibility is a set or UNKNOWN",
+  "version increments on write / kernel WRITE, not on invalidate"
+ ],
+ "gpu_authority": false,
+ "hgvas": {
+  "fusion_ptr": "{object_id, byte_offset}",
+  "native_pointers": "refused",
+  "not_built": [
+   "page directory",
+   "bit-level dirty maps",
+   "Fusion ISA",
+   "logical command timeline",
+   "wire format / golden vectors",
+   "MockSparkProvider"
+  ],
+  "note": "G054 names those. Building them here would be a competing Fusion implementation; this overlay only pins the identity and coherence contract HGVAS will have to honour.",
+  "status": "semantic identity only"
+ },
+ "humf_state_projection": {
+  "ABSENT": "STALE",
+  "CLEAN": "CLEAN",
+  "CORRUPT": "STALE",
+  "DIRTY": "DIRTY",
+  "EVICTED": "STALE",
+  "INVALID": "STALE",
+  "LOST": "STALE",
+  "MATERIALIZING": "UNKNOWN",
+  "STALE": "STALE",
+  "TRANSFERRING": "UNKNOWN",
+  "UNKNOWN": "UNKNOWN"
+ },
+ "integration": {
+  "apply_kernel_boundary_to_humf": "apply_kernel_boundary_to_humf(humf_obj, domain: str, *, synchronized: bool) -> None",
+  "consume_for_kernel": "consume_for_kernel(obj, *, kernel: str, device: str) -> KernelBinding",
+  "cross_kernel_boundary": "cross_kernel_boundary(obj, *, synchronized: bool, access: KernelAccess = UNKNOWN) -> ManagedObject",
+  "from_humf_object": "from_humf_object(humf_obj, *, prefer_domain: str | None = None) -> ManagedObject",
+  "is_coherent": "is_coherent(obj: ManagedObject, *, on_device: str | None = None) -> Coherence",
+  "move_vs_recompute": "move_vs_recompute(transfer_cost, recompute_cost) -> MoveRecomputeDecision",
+  "require_coherent": "require_coherent(obj, *, reader: str, on_device: str | None = None) -> None"
+ },
+ "invariant": "is_coherent returns COHERENT | NOT_COHERENT | UNKNOWN. UNKNOWN is never readable as coherent. Boolean collapse is refused. A kernel boundary without synchronisation moves CLEAN to UNKNOWN.",
+ "memory_tiers": [
+  "UMA",
+  "HBM",
+  "ACCELERATOR_SRAM",
+  "HOST_DRAM",
+  "REMOTE_MACHINE",
+  "UNKNOWN"
+ ],
+ "move_vs_recompute": {
+  "decisions": [
+   "MOVE",
+   "RECOMPUTE",
+   "TIE",
+   "UNDECIDABLE",
+   "NEITHER"
+  ],
+  "humf_gap": "Humf.plan_acquire omits RECOMPUTE when recompute_cost_s is None even if a recompute callable exists, so TRANSFER wins. move_vs_recompute_from_humf treats that as UNKNOWN and returns UNDECIDABLE.",
+  "returns": [
+   "transfer_cost",
+   "recompute_cost",
+   "decision",
+   "reason"
+  ],
+  "rule": "If either existing option has cost UNKNOWN, decision is UNDECIDABLE. UNAVAILABLE (no path / no recipe) is not UNKNOWN. Recompute beating transfer is a first-class outcome."
+ },
+ "negative_findings": [
+  "CLAUDE_GLOBAL_FRONTIER.json has no dedicated HMF-objects lane entry (F001-F015)",
+  "no HGVAS page directory, Fusion ISA, or FusionPtr type exists on disk (G054 still open)",
+  "AIR represents THREADGROUP/SIMDGROUP/DEVICE barriers but DEVICE cannot lower; this overlay does not lower either",
+  "HUMF Ownership axis is not wired into plan_acquire/execute (named in hmf.py, left as future work there and here)",
+  "no hardware digest, no GPU, no second machine, no HBM device -- every physical cost is UNKNOWN",
+  "hcli/physical_graph.py and hcli/machine.py are in git but not always materialised in this sparse checkout",
+  "sidecar must not call Humf.execute on a real provider; overlay never moves bytes"
+ ],
+ "object_identity_fields": [
+  "identity (HgvasRef object_id + byte_offset)",
+  "owner",
+  "semantic_representation",
+  "physical_materialization (representation, layout, nbytes, digest)",
+  "location (memory_tier + device)",
+  "device_visibility",
+  "version",
+  "trust (TRUSTED | ASSERTED | UNKNOWN)",
+  "state (CLEAN | DIRTY | STALE | UNKNOWN)"
+ ],
+ "object_legal_transitions": {
+  "CLEAN": [
+   "DIRTY",
+   "STALE",
+   "UNKNOWN"
+  ],
+  "DIRTY": [
+   "STALE",
+   "UNKNOWN"
+  ],
+  "STALE": [
+   "DIRTY",
+   "UNKNOWN"
+  ],
+  "UNKNOWN": [
+   "DIRTY",
+   "STALE"
+  ]
+ },
+ "object_states": [
+  "CLEAN",
+  "DIRTY",
+  "STALE",
+  "UNKNOWN"
+ ],
+ "operations": {
+  "apply_kernel_boundary_to_humf": "drives HUMF Materialization.transition(UNKNOWN) on the existing CLEAN->UNKNOWN edge; does not fork the fabric",
+  "cross_kernel_boundary": "synchronized=False => UNKNOWN from any state including CLEAN. synchronized READ preserves prior state. synchronized WRITE commits CLEAN with trust ASSERTED (fence is not a digest). synchronized UNKNOWN access => UNKNOWN.",
+  "device_digest": "VERIFIED / UNKNOWN / MISMATCH. No provider => UNKNOWN. Mismatch => STALE. Provider error => UNKNOWN.",
+  "establish_clean": "only path that earns CLEAN; requires evidence and digest",
+  "invalidate": "explicit STALE -- knowledge of NOT_COHERENT",
+  "mark_written": "DIRTY, version++, digest unsealed",
+  "migrate": "updates claimed location; without a matching digest the object becomes UNKNOWN, never CLEAN"
+ },
+ "purpose": "Object-level HMF/HGVAS managed-object semantics that never report COHERENT when the layer does not know that it is.",
+ "recovered_implementation": {
+  "air_memory_domains": [
+   "APPLE_UM",
+   "MOCK_EXTERNAL_VRAM",
+   "NVIDIA_VRAM_SIDECAR",
+   "NVIDIA_VRAM_DIRECT",
+   "SSD_COLD",
+   "HOST_LOGICAL",
+   "ANY"
+  ],
+  "air_sync_scopes": [
+   "THREADGROUP",
+   "SIMDGROUP",
+   "DEVICE"
+  ],
+  "hcli_machine": {
+   "materialised": false,
+   "path": "hcli/machine.py",
+   "role": "Host memory admission (vm_stat, Metal working-set). Not an object fabric."
+  },
+  "hcli_physical_graph": {
+   "materialised": false,
+   "path": "hcli/physical_graph.py",
+   "role": "PLAN_ONLY placement/dataflow graph; synchronization is runtime_boundary/unresolved. No managed-object coherence."
+  },
+  "hmf_humf": {
+   "hmf_path": "tools/accelerator/hmf.py",
+   "hmf_present": false,
+   "humf_path": "tools/accelerator/humf.py",
+   "humf_present": false,
+   "import_error": "tools/accelerator/humf.py not importable in this worktree",
+   "imported": false
+  },
+  "machine_genome": {
+   "materialised": false,
+   "path": "tools/accelerator/machine_genome.py",
+   "role": "SoC identity and contended-bandwidth measurement. No object-level coherence API."
+  },
+  "note": "HUMF/HMF already implement the copy fabric (twelve recorded fields, fail-closed transitions, trust decay, resident digest, HAWKGPU-0). They do not implement tri-state is_coherent, kernel-boundary UNKNOWN, UNDECIDABLE costs, device visibility, or HGVAS identity-without-native-pointers. This module closes those gaps as an overlay rather than a rival fabric."
+ },
+ "schema": "hawking.future.hmf_objects.v1",
+ "seal_sha256": "ed0e289c52d0a3d109e2cf10d64135656426337381c47d8969a3f8c99907d614",
+ "selftest": {
+  "boolean_collapse_refused_on_coherent": "PASS",
+  "consume_for_kernel_accepts_coherent": "PASS",
+  "device_digest_without_provider_is_unknown": "PASS",
+  "establish_clean_is_coherent": "PASS",
+  "hgvas_refuses_native_pointer": "PASS",
+  "kernel_boundary_with_sync_read_stays_clean": "PASS",
+  "kernel_boundary_without_sync_is_unknown_coherence": "PASS",
+  "kernel_boundary_without_sync_moves_clean_to_unknown": "PASS (state=UNKNOWN)",
+  "kernel_consume_refuses_unknown_after_unsynced_boundary": "PASS",
+  "move_wins_when_both_known_and_cheaper": "PASS",
+  "neither_when_both_unavailable": "PASS",
+  "new_object_defaults_unknown": "PASS",
+  "new_object_is_not_coherent_claim": "PASS",
+  "recompute_can_beat_transfer": "PASS",
+  "require_coherent_refuses_unknown_default": "PASS",
+  "unconfirmed_migrate_is_unknown_not_clean": "PASS",
+  "unknown_recompute_is_undecidable": "PASS",
+  "unknown_transfer_is_undecidable": "PASS"
+ },
+ "trust_values": [
+  "TRUSTED",
+  "ASSERTED",
+  "UNKNOWN"
+ ],
+ "version": 1
+}

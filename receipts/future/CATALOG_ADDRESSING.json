@@ -1,0 +1,322 @@
+{
+ "angle": "production catalog addressing vs single GEMV (703\u2192530)",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T00:07:21Z",
+  "recorded_by": "tools/future/catalog_addressing.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "catalog_census": {
+  "ba_dispatches": 48,
+  "ba_grid_threads": 6144,
+  "ba_payload_bytes": 12533760,
+  "ba_share_of_bytes": 0.0009208103130755065,
+  "dispatches": 401,
+  "matches_defended_gemv_payload": true,
+  "organs": [
+   {
+    "class": "mlp_gate",
+    "cols": 5120,
+    "count": 64,
+    "payload_bytes_each": 47349760,
+    "payload_bytes_total": 3030384640,
+    "rows": 17408,
+    "threads_grid": 1114112
+   },
+   {
+    "class": "mlp_up",
+    "cols": 5120,
+    "count": 64,
+    "payload_bytes_each": 47349760,
+    "payload_bytes_total": 3030384640,
+    "rows": 17408,
+    "threads_grid": 1114112
+   },
+   {
+    "class": "mlp_down",
+    "cols": 17408,
+    "count": 64,
+    "payload_bytes_each": 47349760,
+    "payload_bytes_total": 3030384640,
+    "rows": 5120,
+    "threads_grid": 327680
+   },
+   {
+    "class": "dn_qkvz",
+    "cols": 5120,
+    "count": 48,
+    "payload_bytes_each": 44564480,
+    "payload_bytes_total": 2139095040,
+    "rows": 16384,
+    "threads_grid": 1048576
+   },
+   {
+    "class": "dn_ba",
+    "cols": 5120,
+    "count": 48,
+    "payload_bytes_each": 261120,
+    "payload_bytes_total": 12533760,
+    "rows": 96,
+    "threads_grid": 6144
+   },
+   {
+    "class": "dn_out",
+    "cols": 6144,
+    "count": 48,
+    "payload_bytes_each": 16711680,
+    "payload_bytes_total": 802160640,
+    "rows": 5120,
+    "threads_grid": 327680
+   },
+   {
+    "class": "gqa_q",
+    "cols": 5120,
+    "count": 16,
+    "payload_bytes_each": 33423360,
+    "payload_bytes_total": 534773760,
+    "rows": 12288,
+    "threads_grid": 786432
+   },
+   {
+    "class": "gqa_k",
+    "cols": 5120,
+    "count": 16,
+    "payload_bytes_each": 2785280,
+    "payload_bytes_total": 44564480,
+    "rows": 1024,
+    "threads_grid": 65536
+   },
+   {
+    "class": "gqa_v",
+    "cols": 5120,
+    "count": 16,
+    "payload_bytes_each": 2785280,
+    "payload_bytes_total": 44564480,
+    "rows": 1024,
+    "threads_grid": 65536
+   },
+   {
+    "class": "gqa_o",
+    "cols": 6144,
+    "count": 16,
+    "payload_bytes_each": 16711680,
+    "payload_bytes_total": 267386880,
+    "rows": 5120,
+    "threads_grid": 327680
+   },
+   {
+    "class": "lm_head",
+    "cols": 5120,
+    "count": 1,
+    "payload_bytes_each": 675430400,
+    "payload_bytes_total": 675430400,
+    "rows": 248320,
+    "threads_grid": 15892480
+   }
+  ],
+  "payload_bytes": 13611663360
+ },
+ "cited": {
+  "active_weight_bytes_per_token": 9878901136,
+  "honest_roof": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+  "idle_gap": "receipts/headless/GPU_IDLE_GAP_LEDGER.json",
+  "production_catalog_addr": {
+   "dispatches": 401,
+   "label": "production_catalog_401_gemvs",
+   "max_gb_s": 539.0312878731118,
+   "max_ns": 26727750,
+   "median_gb_s": 530.6544688491846,
+   "median_ns": 25650709,
+   "min_gb_s": 509.2708275107332,
+   "min_ns": 25252084,
+   "payload_bytes": 13611663360
+  },
+  "production_effective_gb_s": 337.26568478304,
+  "published_peak_gb_s_datasheet": 819.0,
+  "receipt_present": {
+   "honest_roof": true,
+   "idle_gap": true,
+   "token_bytes": true
+  },
+  "single_gemv_addr": {
+   "dispatches": 1,
+   "label": "gemv_payload_13p612gb",
+   "max_gb_s": 703.6072736347875,
+   "max_ns": 19637375,
+   "median_gb_s": 699.5736545106142,
+   "median_ns": 19457084,
+   "min_gb_s": 693.1508595217028,
+   "min_ns": 19345541,
+   "payload_bytes": 13611663360
+  },
+  "tiled_large_gate_addr": {
+   "dispatches": 287,
+   "label": "13p612gb_tiled_gate_addr",
+   "max_gb_s": 597.7426871055004,
+   "median_gb_s": 591.1317979446468,
+   "median_ns": 22988750,
+   "min_gb_s": 581.702965685881,
+   "organ_cols": 5120,
+   "organ_rows": 17408,
+   "organs": 287
+  },
+  "token_bytes_atlas": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+ },
+ "claim_boundary": "Static sidecar artifact. Cited GB/s figures are from committed receipts, not a measurement this lane took. Process-wall of this Python is SELF_MEASURED_DIRTY under self_timing. No hardware-named field.",
+ "crate_change": {
+  "does_not_change_gemv_math": true,
+  "metal_mod_rs": "thread-local last-hit pipeline cache keyed by context pointer",
+  "qwen38_hybrid_decode_rs": "Q4Weight.groups_per_row at load; getenv for RMS/rope/DN tg, DN vi-simd, argmax two-pass snapshotted at attach; serial encoder wired from HAWKING_QWEN38_SERIAL_TOKEN_ENCODER (default off)",
+  "shaders": "inspected, arithmetic unchanged (g0 source pin still holds)"
+ },
+ "encoder_collapse": {
+  "available": true,
+  "cited_ids": [
+   248068,
+   198,
+   760,
+   1156,
+   6587,
+   264,
+   11346,
+   11,
+   18541,
+   9546,
+   323,
+   15673,
+   314,
+   1204,
+   264,
+   18826
+  ],
+  "noop_encoder_count": 580,
+  "noop_gpu_ns_median": 27472708,
+  "reading": "Serial encoder is token-identical and does not separate GPU_NS. Collapsing catalog encoder boundaries is not the 24% tax.",
+  "separated": false,
+  "serial_encoder_count": 1,
+  "serial_gpu_ns_median": 27488416,
+  "serial_ids": [
+   248068,
+   198,
+   760,
+   1156,
+   6587,
+   264,
+   11346,
+   11,
+   18541,
+   9546,
+   323,
+   15673,
+   314,
+   1204,
+   264,
+   18826
+  ],
+  "source": "receipts/headless/GPU_IDLE_GAP_LEDGER.json",
+  "token_ids_unchanged": true
+ },
+ "falsified": true,
+ "falsified_as": "host catalog indirection on the GPU addr-probe timestamp",
+ "lane": "L40",
+ "parity": {
+  "gate": "assert_token_id_parity",
+  "historical_idle_gap_ids": [
+   248068,
+   198,
+   760,
+   1156,
+   6587,
+   264,
+   11346,
+   11,
+   18541,
+   9546,
+   323,
+   15673,
+   314,
+   1204,
+   264,
+   18826
+  ],
+  "historical_serial_vs_noop_identical": true,
+  "live": {
+   "exit_code": 2,
+   "needs_profile": "gate",
+   "note": "This sandbox cannot open MTLCreateSystemDefaultDevice. Live token-id before/after requires the unsandboxed gate profile.",
+   "ran_generate": false,
+   "status": "METAL_UNAVAILABLE",
+   "stderr_tail": "qwen38-decode opening mixed HQ38M20 + 755 catalog tensors (no reconstruct-to-Q4)\nascension_qwen38_resident: load artifact: metal: no Metal-capable GPU\n"
+  },
+  "live_before_after": "not taken: this process cannot open Metal (METAL_UNAVAILABLE)",
+  "negative_control": "perturb_one_id must raise ParityBroken"
+ },
+ "schema": "hawking.future.catalog_addressing.v1",
+ "seal_sha256": "3ac16fbbf76ea73ed60d64823e91ac5d829952307271a2fab3e7e142238c8bf2",
+ "self_timing": {
+  "class": "SELF_MEASURED_DIRTY",
+  "max_ms": 79.56141699105501,
+  "median_ms": 4.180124960839748,
+  "min_ms": 1.0024160146713257,
+  "n": 3,
+  "qualifies": "nothing",
+  "samples_ms": [
+   1.0024160146713257,
+   79.56141699105501,
+   4.180124960839748
+  ],
+  "what": "python wall of static attribution in this process"
+ },
+ "selftest": {
+  "census_dispatches": 401,
+  "census_payload_bytes": 13611663360,
+  "failed": [],
+  "ok": true,
+  "parity_identity_passed": true,
+  "parity_negative_control_fired": true
+ },
+ "source": {
+  "decode_rs": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+  "device_addressing": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe loads scales[rgb] and codes[rgb * 32 + local/2] with rgb = row * groups_per_row + col/64. No catalog table, no pointer chase.",
+  "hoist": {
+   "all_markers_present": true,
+   "does_not_close_703_to_530": true,
+   "markers": {
+    "attach_snapshots_rmsnorm_tg": true,
+    "encode_uses_hoisted_gpr": true,
+    "encode_uses_hoisted_rmsnorm": true,
+    "metal_last_pipeline": true,
+    "q4_groups_per_row": true,
+    "serial_env_wire": true,
+    "threadgroup_env_parse": true
+   },
+   "threadgroup_env_still_parsed_at_module_level": [],
+   "token_loop_must_not_parse": "HAWKING_RMSNORM_TG/DN_RMSNORM_TG/ROPE_TG are parsed at attach via qwen38_parse_threadgroup_env; encode uses self.*_tg.",
+   "why_not": "The 703\u2192530 gap is GPU timestamp of 401 launches vs 1. Host getenv and pipeline HashMap live in encode_ns, which the catalog probe's GPUStart/GPUEnd does not include. The hoist is the DSV4F-shaped remainder (identity work inside the token loop), not the named GPU step."
+  },
+  "metal_rs": "crates/hawking-core/src/metal/mod.rs",
+  "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+  "shader_arithmetic": {
+   "catalog_pointer_chase": false,
+   "device_address": "row * groups_per_row + col/64, then two direct loads",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "lines_present": true,
+   "missing_lines": []
+  }
+ },
+ "status": "BUILT",
+ "topology_tax": {
+  "mixed_minus_tiled_large_gate_ns": 2661959,
+  "ns_per_extra_dispatch_catalog_vs_single": 15484.0625,
+  "ns_per_extra_dispatch_tiled_vs_single": 12348.482517482518,
+  "reading": "One extra dispatch costs ~12-16 microseconds of GPU time on this genome, whether the extra work is 287 identical large gates or 401 mixed organs. Tiny ba (96x5120, 48 dispatches, ~12.5 MiB) is 0.09% of bytes and still pays a full launch. Encoder collapse (GPU_IDLE_GAP serial vs noop) left GPU_NS overlapping, so the tax is kernel launch / occupancy / stream restart, not encoder begin/end and not host catalog walk.",
+  "single_to_catalog_fraction": 0.24146018731879887,
+  "single_to_catalog_ns": 6193625
+ },
+ "verdict": "FALSIFIED as catalog-indirection / unhoisted host addressing on the GPU timestamp. 401 production-shaped GEMVs cost ~15 us/dispatch against one 13.6 GB GEMV; tiled identical large gates sit in between (591 GB/s). Device addressing is already a direct load. The crate change hoists getenv / groups_per_row / last-hit pipeline lookup off the token loop (DSV4F scar). That does not close 703\u2192530.",
+ "version": 1,
+ "what_the_24_percent_is": "dispatch topology + mixed organ sizes"
+}

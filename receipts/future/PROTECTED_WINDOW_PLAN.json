@@ -1,0 +1,845 @@
+{
+ "authority_boundary": {
+  "even_then": "sidecar has no GPU authority and still raises",
+  "execute_requires": [
+   "explicit --execute",
+   "existing HCLI lease (read, never created, never flocked)",
+   "machine QUIESCENT (assessed, never coerced)"
+  ],
+  "no_self_interest": "decide_eviction.evict == window_justified; resident_convenience_may_veto is always false",
+  "refuse_functions": [
+   "refuse_start_benchmark",
+   "refuse_create_lease",
+   "refuse_signal_process",
+   "refuse_quiesce_worker",
+   "refuse_flock",
+   "acquire_lease"
+  ]
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:39Z",
+  "recorded_by": "tools.future.protected_window.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "composed_qualification_stages": [
+  "identify_lease_availability",
+  "assess_machine_quiescence",
+  "identify_contaminating_worker",
+  "select_ready_candidates",
+  "static_preflight_drop",
+  "emit_ab_execution_plan",
+  "parity_verification_spec",
+  "failure_classification",
+  "survivor_promotion_prerequisites",
+  "protected_lease_request",
+  "protected_measurement_spec",
+  "scoreboard_update_spec",
+  "derive_next_workunits"
+ ],
+ "dry_run_stop": {
+  "honest_on_this_machine": "stops at the lease request: no proven existing HCLI lease. later stages are still walked as STATIC_ONLY specs so restore is planned even when the lease is refused. flock is never taken.",
+  "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+  "stage_id": "establish_protected_lease",
+  "stage_index": 6
+ },
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "fpga": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
+ "frontier_entry": {
+  "classification": "BLOCKED",
+  "id": "F002",
+  "integration_target": "tools/future/candidate_planner.py + static_kernel_verify.py",
+  "path_taken": "/Users/scammermike/Downloads/hawking/receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+  "prerequisite": "an existing HCLI protected lease plus machine quiescence",
+  "title": "12 Qwen27 candidates are READY_PROTECTED and idle on a GPU window"
+ },
+ "gaps_closed": [
+  "resident-eviction envelope around the landed 13-stage qualification sequencer: checkpoint, freeze, unload-plan, lease REQUEST, compose qp, receipts SPEC, restore, resume",
+  "qualification value estimate is expected decisions changed; continuing dirty work is defined to change 0 decisions because DIAGNOSTIC_RELATIVE never promotes",
+  "no self-interest: decide_eviction is the identity evict == window_justified; resident_convenience_may_veto is always false; convenience is recorded and discarded",
+  "no seizure: acquire_lease/refuse_flock/execute raise rather than flock; lock probe is lsof on existing paths only",
+  "interrupted window rolls back occupancy to RESUMED; restore_resident always runs after unload in a completed walk; rollback is idempotent and refuses to leave the resident unloaded",
+  "batch order copied from Codex current_staged_protected_batch or CANDIDATE_STAGED_PLAN.protected_batch, never invented",
+  "blocked physical work is emitted as SLEEPING WorkUnits that HCLI can wake; never a synthetic PROTECTED_ABSOLUTE result",
+  "--dry-run walks all envelope stages against the real batch and real lock probe and reports the execution stop (lease on this host)"
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "integration": {
+  "execute": "execute(*, explicit_execute=False, lease=None, contamination_class=None) -> None  # always raises WindowRefused",
+  "load_staged_batch": "load_staged_batch(injected=None) -> dict  # Codex order, not a guess",
+  "rollback": "rollback(checkpoint) -> dict  # occupancy never remains UNLOADED",
+  "run_window": "run_window(*, dry_run=True, live=False, dirty_wins=None, batch=None, lease=None, interrupt_after=None, resume_from=None, mutate_occupancy=False) -> dict"
+ },
+ "integration_points": {
+  "dirty_measure.py": "DirtyWin schema (DIRTY_WIN_FIELDS); swap without changing the estimator",
+  "frontiers.py": "F002 refill after a real protected receipt exists",
+  "qualification_pipeline.py": "composed, not forked; 13 stages stay there",
+  "resident_identity.py / resident_api.py": "actual checkpoint/unload of a live resident",
+  "sandbox.py": "orchestrator sandbox that would freeze dirty work for real",
+  "succession.py": "restore/resume of resident identity after the window",
+  "super_resident.py": "HCLI super-resident that invokes this entry point",
+  "wakeup.py": "HCLI wake of SLEEPING WorkUnits when hardware qualifies",
+  "workgraph.py": "graph of GPU_DIRTY_OK units the freeze stage names"
+ },
+ "n_stages": 10,
+ "negative_findings": [
+  "this sidecar has no GPU authority and cannot produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE",
+  "exclusive flock is never used to inspect a lock; lsof is the only holder probe; unproven holders are present=false",
+  "MetalContext / xcrun Metal compiler / HEAVY machine / Flash SCAFFOLD_ONLY / teacher 0/256 remain physical blockers and become SLEEPING units, not synthetic results",
+  "qualification_pipeline.py is not modified (prohibited write); the eviction sequence wraps it",
+  "concurrent wave modules (dirty_measure, resident_api, sandbox, wakeup, frontiers, succession, super_resident, workgraph) are not imported; local interfaces stand in and are named as integration points",
+  "this sidecar never signals, pauses, or unloads a live resident process; occupancy mutation is a ledger for resume/rollback proofs",
+  "Flash return batch stays closed while FLASH_NX_COMPLETENESS_AUDIT.seven_all_met is not true",
+  "cannot update receipts/headless or take .hcli locks (Codex surface)"
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "purpose": "Protected evidence outranks resident convenience. Plan the sequence that checkpoints the resident, frees the GPU, runs Codex's staged qualification, and restores the mission \u2014 and keep that sequence incapable of seizing a lease it does not hold. FIVE ERAS, THREE ODYSSEYS. FPGA stays inside Accelerator / Physical Compiler / Fusion. DISK STATE IS AUTHORITY.",
+ "queue_policy_binding": {
+  "diagnostic_results_do_not_promote": true,
+  "protected_start_requires_existing_hcli_lease": true,
+  "protected_start_requires_machine_quiescence": true,
+  "source": "qualification_pipeline queue_policy + Codex handoff preconditions"
+ },
+ "recovered_implementation": [
+  {
+   "adequate_for": "candidate selection, preflight DROP, A/B spec, lease request, resumable qualification walk",
+   "composed_as": "run_window stage run_staged_qualification + execute() conditions + refuse_* + read_hcli_lease_state / _lsof_holders",
+   "extended_not_forked": true,
+   "not_adequate_for": "resident eviction, restore-on-interrupt, dirty-win value estimate, no-self-interest planner",
+   "path": "tools/future/qualification_pipeline.py",
+   "role": "13-stage qualification sequencer; three ExecuteRefused conditions; no flock"
+  },
+  {
+   "composed_as": "continue-dirty = 0 because assert_promotable refuses non-PROTECTED_ABSOLUTE; assess_quiescence via qp",
+   "path": "tools/future/contamination.py",
+   "role": "QUIESCENT/LIGHT/HEAVY/UNKNOWN; assert_promotable refuses STATIC_ONLY"
+  },
+  {
+   "composed_as": "load_staged_batch prefers Codex handoff, then CANDIDATE_STAGED_PLAN.protected_batch, then protected_batch_plan",
+   "path": "tools/future/candidate_planner.py",
+   "role": "protected_batch_plan \u2014 Codex Qwen-first order and Flash return batch"
+  },
+  {
+   "composed_as": "emit_window_workunits \u2014 SLEEPING until a real lease exists",
+   "path": "tools/future/workunit_species.py",
+   "role": "HCLI WorkUnit constructor with bounded authority"
+  },
+  {
+   "composed_as": "WindowRefused/WindowInterrupted; admit_checkpoint; rollback reseal",
+   "path": "tools/future/repro_science.py",
+   "role": "FailClosed, checkpoint seal, interrupt/resume"
+  },
+  {
+   "composed_as": "checkpoint_resident stage names those slots; this sidecar does not launch a resident",
+   "path": "tools/future/resident_install.py",
+   "role": "generic resident lifecycle slots including protected_benchmark_evacuation"
+  },
+  {
+   "composed_as": "cited read-only; runner NOT imported and NOT called",
+   "on_disk_in_this_worktree": true,
+   "path": "hcli/agentos/protected_accelerator_benchmark.py",
+   "role": "the real protected lease (LOCK_NAME, _try_lock)"
+  },
+  {
+   "composed_as": "composed inside qualification_pipeline; this envelope does not re-classify a window",
+   "path": "hcli/agentos/benchmark_boundary.py",
+   "role": "QUALIFIED_PROTECTED vs DIAGNOSTIC_CONTAMINATED"
+  },
+  {
+   "composed_as": "load_staged_batch primary source when visible via checkout roots",
+   "path": "CODEX_ACCELERATOR_HANDOFF.json",
+   "role": "exact_next_protected_qualification_sequence, current_staged_protected_batch, processes_leases_must_not_be_disturbed"
+  },
+  {
+   "composed_as": "fallback disk authority when the Codex handoff is not in this sparse tree",
+   "path": "receipts/future/CANDIDATE_STAGED_PLAN.json",
+   "role": "sealed protected_batch with Qwen-first run_order"
+  },
+  {
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "role": "F002 READY_PROTECTED candidates idle on a GPU window the sidecar must not seize"
+  }
+ ],
+ "resident_callable": {
+  "can_hcli_invoke": true,
+  "entry_point": "python3 tools/future/protected_window.py --dry-run",
+  "evict_on_this_plan": true,
+  "execution_stop": {
+   "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+   "stage_id": "establish_protected_lease",
+   "stage_index": 6,
+   "status": "REQUEST_EMITTED"
+  },
+  "frontier_fed": "F002 \u2014 READY_PROTECTED candidates idle on a GPU window; window result is a SLEEPING refill until a real lease exists",
+  "functions": {
+   "acquire_lease": "acquire_lease() -> None  # always raises lease_seizure",
+   "decide_eviction": "decide_eviction(value, resident=None) -> dict  # evict iff protected evidence requires",
+   "estimate_qualification_value": "estimate_qualification_value(dirty_wins, batch) -> dict",
+   "execute": "execute(*, explicit_execute=False, lease=None, contamination_class=None) -> None  # always raises WindowRefused",
+   "rollback": "rollback(checkpoint) -> dict  # never leaves resident unloaded",
+   "run_window": "run_window(*, dry_run=True, live=False, ...) -> dict"
+  },
+  "how_it_fails_closed": "execute() raises without --execute, without a proven existing lease, when the machine is not QUIESCENT, and still raises gpu_authority when all three pass. acquire_lease/refuse_flock raise rather than flock. An interrupted unload rolls back occupancy. Dirty continuation cannot promote. Flash stays closed until NX is qualified.",
+  "module": "tools.future.protected_window",
+  "receipt_written": "receipts/future/PROTECTED_WINDOW_PLAN.json",
+  "sleeping_until": [
+   "existing_hcli_lease",
+   "machine_quiescence",
+   "metal_capable_gpu",
+   "metal_compiler"
+  ],
+  "workunit_emitted": [
+   "future.protected-window.plan",
+   "future.protected-window.evict-resident",
+   "future.protected-window.staged-qualification",
+   "future.protected-window.restore-resident"
+  ]
+ },
+ "schema": "hawking.future.protected_window.v1",
+ "seal_sha256": "243bb85c1c038053f60133da26cf640ae77679c80c56b738eb43be2b68c9f10b",
+ "stages_declared": [
+  "estimate_qualification_value",
+  "decide_eviction",
+  "checkpoint_resident",
+  "freeze_safe_work",
+  "pause_unload_resident",
+  "establish_protected_lease",
+  "run_staged_qualification",
+  "record_protected_receipts",
+  "restore_resident",
+  "resume_mission"
+ ],
+ "version": 1,
+ "vocabulary": {
+  "DIAGNOSTIC_RELATIVE": "contaminated A/B on a busy machine. Guides. Never promotes.",
+  "PROTECTED_ABSOLUTE": "measurement taken under a real protected GPU lease. Decides.",
+  "STATIC_ONLY": "this sidecar. No GPU. Bench state UNKNOWN. Cannot promote."
+ },
+ "window": {
+  "batch_source": "codex_handoff:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json#current_staged_protected_batch",
+  "bench_state": "UNKNOWN",
+  "dry_run": true,
+  "evict": true,
+  "execution_stop": {
+   "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+   "stage_id": "establish_protected_lease",
+   "stage_index": 6,
+   "status": "REQUEST_EMITTED"
+  },
+  "expected_decisions_changed_if_continue_dirty": 0,
+  "expected_decisions_changed_if_protected": 13,
+  "gpu_authority": false,
+  "lease_present": false,
+  "measurement_class": "STATIC_ONLY",
+  "n_stages": 10,
+  "note": "planning walk emits the eviction envelope as STATIC_ONLY specs. execute() is a separate entry point and always raises on this sidecar: no GPU authority, no flock.",
+  "occupancy": {
+   "frozen_work_ids": [],
+   "intended_state": "RESUMED",
+   "mutate": false,
+   "observed_not_mutated": true,
+   "resident_unloaded": false,
+   "sidecar_signalled_process": false,
+   "state": "LOADED"
+  },
+  "planning_walk_complete": true,
+  "qwen_singleton_order": [
+   "qwen27-fast-profile",
+   "qwen27-pipeline-state-elision",
+   "qwen27-pipeline-cache-reuse",
+   "qwen27-pipeline-id-resolution",
+   "qwen27-commit-timing-elision",
+   "qwen27-encoder-label-elision",
+   "qwen27-affine2-splitk4",
+   "qwen27-q2f-splitk4",
+   "qwen27-q4-vecgroup-x64",
+   "qwen27-gqa-qkv-fusion",
+   "qwen27-attention-gate-fusion",
+   "qwen27-deltanet-inproj-fusion",
+   "qwen27-ba-delta-fusion"
+  ],
+  "resident_left_unloaded": false,
+  "resumed_from_stage_count": 0,
+  "schema": "hawking.future.protected_window.v1",
+  "self_preference_path": false,
+  "stages": [
+   {
+    "execution_ok": true,
+    "index": 1,
+    "name": "estimate_qualification_value",
+    "payload": {
+     "acquires_lease": false,
+     "batch_source": "codex_handoff:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json#current_staged_protected_batch",
+     "decision_targets_from_dirty_wins": [],
+     "deferred": [],
+     "executes_benchmark": false,
+     "expected_decisions_changed_if_continue_dirty": 0,
+     "expected_decisions_changed_if_protected": 13,
+     "from_dirty_wins": 0,
+     "from_undecided_batch": 13,
+     "gpu_authority": false,
+     "kind": "ESTIMATE",
+     "measurement_class": "STATIC_ONLY",
+     "n_already_protected": 0,
+     "n_deferred": 0,
+     "n_dirty_wins": 0,
+     "n_pending_dirty_in_batch": 0,
+     "n_runnable_batch_candidates": 13,
+     "not_a_fabricated_speedup": true,
+     "pending": [],
+     "promotion_gate": "tools.future.contamination.assert_promotable refuses STATIC_ONLY and DIAGNOSTIC_RELATIVE; that is why continue-dirty is zero",
+     "quiesces_worker": false,
+     "resident_convenience_ignored": true,
+     "rule": "value is expected decisions changed. DIAGNOSTIC_RELATIVE never promotes, so continuing dirty work changes 0 decisions. A protected window decides staged-batch candidates and any dirty win that maps onto that batch. No speedup number is emitted.",
+     "signals_process": false,
+     "speedup_claimed": null,
+     "undecided_batch_candidate_ids": [
+      "qwen27-fast-profile",
+      "qwen27-pipeline-state-elision",
+      "qwen27-pipeline-cache-reuse",
+      "qwen27-pipeline-id-resolution",
+      "qwen27-commit-timing-elision",
+      "qwen27-encoder-label-elision",
+      "qwen27-affine2-splitk4",
+      "qwen27-q2f-splitk4",
+      "qwen27-q4-vecgroup-x64",
+      "qwen27-gqa-qkv-fusion",
+      "qwen27-attention-gate-fusion",
+      "qwen27-deltanet-inproj-fusion",
+      "qwen27-ba-delta-fusion"
+     ],
+     "window_justified": true,
+     "window_justified_by_batch": true,
+     "window_justified_by_dirty_wins": false
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "execution_ok": true,
+    "index": 2,
+    "name": "decide_eviction",
+    "payload": {
+     "acquires_lease": false,
+     "evict": true,
+     "executes_benchmark": false,
+     "gpu_authority": false,
+     "kind": "DECISION",
+     "protected_evidence_requires": true,
+     "quiesces_worker": false,
+     "reason": "protected evidence requires a window (dirty_decisions=0 batch_undecided=13); resident convenience cannot veto",
+     "resident_convenience_read": {
+      "busy": null,
+      "convenience_weight": null,
+      "cost_to_unload": null,
+      "dirty_wins_per_hour": null,
+      "hot": null,
+      "prefer_stay_loaded": null,
+      "resident_producing_dirty_wins": null
+     },
+     "resident_convenience_vetoed": false,
+     "rule": "protected evidence outranks resident convenience. evict == window_justified. convenience is recorded and discarded.",
+     "self_preference_path": false,
+     "signals_process": false
+    },
+    "reason": "protected evidence requires a window (dirty_decisions=0 batch_undecided=13); resident convenience cannot veto",
+    "status": "COMPLETED"
+   },
+   {
+    "execution_ok": true,
+    "index": 3,
+    "name": "checkpoint_resident",
+    "payload": {
+     "acquires_lease": false,
+     "executes_benchmark": false,
+     "gpu_authority": false,
+     "intended_state": "CHECKPOINTED",
+     "kind": "PLAN",
+     "note": "SPEC of a resident checkpoint. This sidecar does not launch, stop, or snapshot a live model process. Integration point: resident_identity.py / resident_api.py (concurrent, not imported).",
+     "occupancy_state": "LOADED",
+     "quiesces_worker": false,
+     "recovered_from": "tools/future/resident_install.py PHASES",
+     "signals_process": false,
+     "slots": [
+      "nx_identity",
+      "executable_identity",
+      "tokenizer_session",
+      "launch_args",
+      "shutdown",
+      "unload",
+      "crash_recovery"
+     ],
+     "wrote_process_checkpoint": false
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "execution_ok": true,
+    "index": 4,
+    "name": "freeze_safe_work",
+    "payload": {
+     "acquires_lease": false,
+     "executes_benchmark": false,
+     "frozen_work_ids": [],
+     "gpu_authority": false,
+     "kind": "PLAN",
+     "n_frozen": 0,
+     "note": "GPU_DIRTY_OK / GPU_DECODE work is marked frozen in the ledger so GPU_EXCLUSIVE qualification can run. Integration point: workgraph.py / sandbox.py (concurrent, not imported).",
+     "occupancy_state": "LOADED",
+     "quiesces_worker": false,
+     "resource_classes_frozen": [
+      "GPU_DECODE",
+      "GPU_DIRTY_OK"
+     ],
+     "signalled": false,
+     "signals_process": false
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "execution_ok": true,
+    "index": 5,
+    "name": "pause_unload_resident",
+    "payload": {
+     "acquires_lease": false,
+     "evict": true,
+     "executes_benchmark": false,
+     "gpu_authority": false,
+     "intended_state": "UNLOADED",
+     "kind": "PLAN",
+     "occupancy_state": "LOADED",
+     "quiesces_worker": false,
+     "reason": "PLAN to pause/unload the resident so the GPU is free for a protected window. This sidecar never SIGSTOP/SIGKILL; refuse_signal_process is the watched guard.",
+     "resident_unloaded": false,
+     "sidecar_will_signal": false,
+     "sidecar_will_unload": false,
+     "signals_process": false
+    },
+    "reason": "PLAN to pause/unload the resident so the GPU is free for a protected window. This sidecar never SIGSTOP/SIGKILL; refuse_signal_process is the watched guard.",
+    "status": "COMPLETED"
+   },
+   {
+    "execution_ok": false,
+    "index": 6,
+    "name": "establish_protected_lease",
+    "payload": {
+     "acquired": false,
+     "acquires_lease": false,
+     "executes_benchmark": false,
+     "execution_ok": false,
+     "gpu_authority": false,
+     "kind": "REQUEST",
+     "lock_rels": [
+      ".hcli/locks/protected-accelerator-bench.lock",
+      ".hcli/locks/qwen-protected-bench.lock"
+     ],
+     "never_seizure": true,
+     "not_called": [
+      "hcli.agentos.protected_accelerator_benchmark._try_lock",
+      "hcli.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
+      "fcntl.flock",
+      "fcntl.LOCK_EX"
+     ],
+     "observed_present": false,
+     "occupancy_state": "LOADED",
+     "quiesces_worker": false,
+     "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+     "signals_process": false,
+     "would_call_try_lock": false,
+     "would_flock": false
+    },
+    "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+    "status": "REQUEST_EMITTED"
+   },
+   {
+    "execution_ok": true,
+    "index": 7,
+    "name": "run_staged_qualification",
+    "payload": {
+     "acquires_lease": false,
+     "batch_order": [
+      "qwen27-fast-profile",
+      "qwen27-pipeline-state-elision",
+      "qwen27-pipeline-cache-reuse",
+      "qwen27-pipeline-id-resolution",
+      "qwen27-commit-timing-elision",
+      "qwen27-encoder-label-elision",
+      "qwen27-affine2-splitk4",
+      "qwen27-q2f-splitk4",
+      "qwen27-q4-vecgroup-x64",
+      "qwen27-gqa-qkv-fusion",
+      "qwen27-attention-gate-fusion",
+      "qwen27-deltanet-inproj-fusion",
+      "qwen27-ba-delta-fusion"
+     ],
+     "batch_source": "codex_handoff:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json#current_staged_protected_batch",
+     "executes_benchmark": false,
+     "flash_runnable_now": false,
+     "gpu_authority": false,
+     "kind": "COMPOSE",
+     "n_batch": 13,
+     "note": "batch order is Codex's staged protected batch. this sidecar composes qualification_pipeline and does not spawn protected_command",
+     "occupancy_state": "LOADED",
+     "qualification": {
+      "composed": "tools.future.qualification_pipeline.run_pipeline",
+      "contamination_class": "HEAVY",
+      "dropped_ids": [],
+      "executes_benchmark": false,
+      "execution_stop": {
+       "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+       "stage_id": "identify_lease_availability",
+       "stage_index": 1,
+       "status": "COMPLETED"
+      },
+      "gpu_authority": false,
+      "lease_present": false,
+      "measurement_class": "STATIC_ONLY",
+      "n_stages": 13,
+      "path_taken": "qp.run_pipeline(dry_run=True, live=True)",
+      "planning_walk_complete": true,
+      "schema": "hawking.future.qualification_pipeline.v1",
+      "survivor_ids": [
+       "qwen27-affine2-splitk4",
+       "qwen27-attention-gate-fusion",
+       "qwen27-ba-delta-fusion",
+       "qwen27-commit-timing-elision",
+       "qwen27-deltanet-inproj-fusion",
+       "qwen27-encoder-label-elision",
+       "qwen27-fast-profile",
+       "qwen27-gqa-qkv-fusion",
+       "qwen27-pipeline-cache-reuse",
+       "qwen27-pipeline-id-resolution",
+       "qwen27-pipeline-state-elision",
+       "qwen27-q2f-splitk4",
+       "qwen27-q4-vecgroup-x64"
+      ]
+     },
+     "quiesces_worker": false,
+     "signals_process": false
+    },
+    "status": "COMPOSED"
+   },
+   {
+    "execution_ok": true,
+    "index": 8,
+    "name": "record_protected_receipts",
+    "payload": {
+     "acquires_lease": false,
+     "executes_benchmark": false,
+     "gpu_authority": false,
+     "kind": "SPEC",
+     "n": 13,
+     "occupancy_state": "LOADED",
+     "proposed_rows": [
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-fast-profile",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-pipeline-state-elision",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-pipeline-cache-reuse",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-pipeline-id-resolution",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-commit-timing-elision",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-encoder-label-elision",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-affine2-splitk4",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-q2f-splitk4",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-q4-vecgroup-x64",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-gqa-qkv-fusion",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-attention-gate-fusion",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-deltanet-inproj-fusion",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      },
+      {
+       "bench_state": "UNKNOWN",
+       "candidate_id": "qwen27-ba-delta-fusion",
+       "gpu_authority": false,
+       "measurement_class": "STATIC_ONLY",
+       "would_write": false
+      }
+     ],
+     "quiesces_worker": false,
+     "reason": "protected receipts are Codex/HCLI's to write under a real lease. this sidecar records a SPEC and does not invent a measurement",
+     "signals_process": false,
+     "this_sidecar_emits": "STATIC_ONLY",
+     "would_write_protected_absolute": false
+    },
+    "reason": "protected receipts are Codex/HCLI's to write under a real lease. this sidecar records a SPEC and does not invent a measurement",
+    "status": "SPEC_EMITTED"
+   },
+   {
+    "execution_ok": true,
+    "index": 9,
+    "name": "restore_resident",
+    "payload": {
+     "acquires_lease": false,
+     "executes_benchmark": false,
+     "gpu_authority": false,
+     "kind": "PLAN",
+     "note": "restore is mandatory after pause_unload so an interrupted or refused window cannot leave the resident unloaded. Integration point: succession.py / resident_api.py (concurrent, not imported).",
+     "occupancy_state": "LOADED",
+     "quiesces_worker": false,
+     "resident_unloaded": false,
+     "restored": true,
+     "sidecar_will_signal": false,
+     "signals_process": false
+    },
+    "status": "COMPLETED"
+   },
+   {
+    "execution_ok": true,
+    "index": 10,
+    "name": "resume_mission",
+    "payload": {
+     "acquires_lease": false,
+     "executes_benchmark": false,
+     "frozen_work_ids": [],
+     "gpu_authority": false,
+     "kind": "PLAN",
+     "note": "unfreeze GPU_DIRTY_OK work and refill the frontier from the window result. Integration point: frontiers.py / wakeup.py (concurrent, not imported).",
+     "occupancy_state": "LOADED",
+     "quiesces_worker": false,
+     "resident_unloaded": false,
+     "resumed": true,
+     "signals_process": false,
+     "workunits": {
+      "acquires_lease": false,
+      "does_not_dispatch": true,
+      "does_not_schedule": true,
+      "executes_benchmark": false,
+      "gpu_authority": false,
+      "kind": "PROPOSAL",
+      "n": 4,
+      "never_a_synthetic_result": true,
+      "quiesces_worker": false,
+      "signals_process": false,
+      "sleeping": true,
+      "units": [
+       {
+        "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+        "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+        "classification": "SLEEPING",
+        "id": "future.protected-window.evict-resident",
+        "requires_quiescence": false,
+        "resource_class": "STATIC_ANALYSIS",
+        "sleeping": true,
+        "status": "blocked",
+        "verifier": "future.protected_window.evict",
+        "wake_when": [
+         "existing_hcli_lease",
+         "machine_quiescence",
+         "metal_capable_gpu",
+         "metal_compiler"
+        ]
+       },
+       {
+        "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+        "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+        "classification": "SLEEPING",
+        "id": "future.protected-window.plan",
+        "requires_quiescence": false,
+        "resource_class": "STATIC_ANALYSIS",
+        "sleeping": true,
+        "status": "blocked",
+        "verifier": "future.protected_window.plan",
+        "wake_when": [
+         "existing_hcli_lease",
+         "machine_quiescence",
+         "metal_capable_gpu",
+         "metal_compiler"
+        ]
+       },
+       {
+        "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+        "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+        "classification": "SLEEPING",
+        "id": "future.protected-window.restore-resident",
+        "requires_quiescence": false,
+        "resource_class": "STATIC_ANALYSIS",
+        "sleeping": true,
+        "status": "blocked",
+        "verifier": "future.protected_window.restore",
+        "wake_when": [
+         "existing_hcli_lease",
+         "machine_quiescence",
+         "metal_capable_gpu",
+         "metal_compiler"
+        ]
+       },
+       {
+        "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+        "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+        "classification": "SLEEPING",
+        "id": "future.protected-window.staged-qualification",
+        "requires_quiescence": true,
+        "resource_class": "GPU_EXCLUSIVE",
+        "sleeping": true,
+        "status": "blocked",
+        "verifier": "future.protected_window.qualify",
+        "wake_when": [
+         "existing_hcli_lease",
+         "machine_quiescence",
+         "metal_capable_gpu",
+         "metal_compiler"
+        ]
+       }
+      ]
+     }
+    },
+    "status": "PROPOSED"
+   }
+  ],
+  "window_justified": true,
+  "workunits": [
+   {
+    "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+    "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+    "classification": "SLEEPING",
+    "id": "future.protected-window.evict-resident",
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "sleeping": true,
+    "status": "blocked",
+    "verifier": "future.protected_window.evict",
+    "wake_when": [
+     "existing_hcli_lease",
+     "machine_quiescence",
+     "metal_capable_gpu",
+     "metal_compiler"
+    ]
+   },
+   {
+    "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+    "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+    "classification": "SLEEPING",
+    "id": "future.protected-window.plan",
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "sleeping": true,
+    "status": "blocked",
+    "verifier": "future.protected_window.plan",
+    "wake_when": [
+     "existing_hcli_lease",
+     "machine_quiescence",
+     "metal_capable_gpu",
+     "metal_compiler"
+    ]
+   },
+   {
+    "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+    "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+    "classification": "SLEEPING",
+    "id": "future.protected-window.restore-resident",
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "sleeping": true,
+    "status": "blocked",
+    "verifier": "future.protected_window.restore",
+    "wake_when": [
+     "existing_hcli_lease",
+     "machine_quiescence",
+     "metal_capable_gpu",
+     "metal_compiler"
+    ]
+   },
+   {
+    "blocked_reason": "SLEEPING: protected start requires an existing HCLI lease this sidecar does not hold; HCLI wakes this unit when the hardware qualifies. Not a synthetic result.",
+    "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+    "classification": "SLEEPING",
+    "id": "future.protected-window.staged-qualification",
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "sleeping": true,
+    "status": "blocked",
+    "verifier": "future.protected_window.qualify",
+    "wake_when": [
+     "existing_hcli_lease",
+     "machine_quiescence",
+     "metal_capable_gpu",
+     "metal_compiler"
+    ]
+   }
+  ]
+ }
+}

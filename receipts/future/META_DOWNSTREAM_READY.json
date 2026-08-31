@@ -1,0 +1,1138 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:17Z",
+  "recorded_by": "tools/future/meta_ready.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "blocking_chain": {
+  "analytical_screens_that_can_run_now": [
+   {
+    "command": "python3 tools/future/meta_funnel.py --build",
+    "what": "allocation / gate 1 re-run"
+   },
+   {
+    "command": "python3 tools/future/ebpw_categories.py --validate receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+    "what": "EBPW category type-check of the prospective budget"
+   },
+   {
+    "command": "python3 tools/future/flash_nx_audit.py --audit",
+    "what": "NX/NR completeness audit of sealed artifacts"
+   },
+   {
+    "command": "python3 tools/future/router_science.py --build",
+    "what": "router-sensitive allocation (diagnostic map; not a gate pass)"
+   },
+   {
+    "command": "python3 tools/future/ngram_school.py --build",
+    "what": "n-gram school analytical candidates"
+   },
+   {
+    "command": "python3 tools/future/expert_bank_school.py --build",
+    "what": "expert-bank school candidates + cheapest falsifiers"
+   },
+   {
+    "command": "python3 tools/future/meta_ready.py --simulate-arrival",
+    "what": "this readiness dossier / wiring check"
+   }
+  ],
+  "capture": {
+   "blocker": "Metal-capable GPU. This sidecar does not have one and must not seize Codex's protected GPU lease.",
+   "evidence_source": "live_headless",
+   "failure_error": "metal: no Metal-capable GPU",
+   "failure_stage": "dense_source_bf16_prefix_initialization",
+   "lookup_copes": true,
+   "minimum_rows": 256,
+   "present": true,
+   "promotion_allowed": false,
+   "requested_rows": 256,
+   "source_authority_capture": false,
+   "status": "BLOCKED_NO_METAL_GPU",
+   "teacher_rows_written": 0
+  },
+  "downstream_funnel_passes": [
+   {
+    "analytical_screen_without_corpus": "Contract thresholds can be read now. The measurement cannot.",
+    "can_pass_funnel_without_corpus": false,
+    "gate_id": 3,
+    "gate_name": "held_out_numerical"
+   },
+   {
+    "analytical_screen_without_corpus": "router_science allocation and the L3/L4 sensitivity map can be read now. They do not pass gate 4 and must not be used to skip teacher fit.",
+    "can_pass_funnel_without_corpus": false,
+    "gate_id": 4,
+    "gate_name": "route_stability"
+   },
+   {
+    "analytical_screen_without_corpus": "Null is declared. The measurement cannot run.",
+    "can_pass_funnel_without_corpus": false,
+    "gate_id": 5,
+    "gate_name": "logit_token_validation"
+   },
+   {
+    "analytical_screen_without_corpus": "ngram_school and expert_bank_school can emit candidates now. They do not pass gate 6.",
+    "can_pass_funnel_without_corpus": false,
+    "gate_id": 6,
+    "gate_name": "bounded_capability"
+   },
+   {
+    "analytical_screen_without_corpus": "flash_nx_audit of the existing exact-control NR can run now. Funnel gate 7 cannot PASS without the predecessor chain.",
+    "can_pass_funnel_without_corpus": false,
+    "gate_id": 7,
+    "gate_name": "physical_nr_lowering"
+   },
+   {
+    "analytical_screen_without_corpus": "Completeness audit of the sealed NX can run now and currently reports NOT_MET. That is not a funnel pass.",
+    "can_pass_funnel_without_corpus": false,
+    "gate_id": 8,
+    "gate_name": "complete_nx"
+   },
+   {
+    "analytical_screen_without_corpus": "Category validation of the prospective budget can run now and must stay GREEN on honest SUB1. It cannot pass gate 9.",
+    "can_pass_funnel_without_corpus": false,
+    "gate_id": 9,
+    "gate_name": "ebpw"
+   }
+  ],
+  "gate_1_analytical": {
+   "already_passed": true,
+   "can_proceed_without_corpus": true,
+   "note": "meta_funnel recovered Flash families already PASS gate 1 from family_budget[].ledger allocations and stall at gate 2 REFUSED."
+  },
+  "gate_2_teacher_fit": {
+   "can_proceed_without_corpus": false,
+   "needs": "admitted real teacher corpus (256 unique bound rows)"
+  },
+  "genuinely_cannot_without_corpus": [
+   "gate 2 real_teacher_fit",
+   "gate 3 held-out numerical of a fitted candidate",
+   "gate 4 route stability on teacher traces",
+   "gate 5 logit/token identity",
+   "gate 6 bounded capability of a student",
+   "gate 7 NR lowering of a fitted meta representation",
+   "gate 8 complete NX of that lowering",
+   "gate 9 complete-system EBPW of that NX",
+   "any promotion"
+  ],
+  "measurement_class_produced": "STATIC_ONLY",
+  "sidecar_gpu_authority": false
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_class": "STATIC_ONLY",
+ "coherence_screen_cited": {
+  "evidence_source": "pinned_snapshot",
+  "min_rows_required": 256,
+  "status": "UNSAFE_SMALL_PROBE_NOT_PROMOTABLE",
+  "teacher_trace_rows": 4,
+  "unsafe_small_probe": true
+ },
+ "corpus_arrival_contract": {
+  "anti_fabrication": {
+   "loud_exception": "CorpusRefused",
+   "rule": "A corpus that only meets min_rows by copying/resampling/synthesis is REFUSED. This module does not catch CorpusRefused to convert a FAIL into a PASS. A structural fixture that would pass the guard is a bug in the fixture.",
+   "sacred_guard": "THRESHOLD_MET_ONLY_BY_DUPLICATION"
+  },
+  "diversity_constants": {
+   "capability_domains": [
+    "math",
+    "code",
+    "prose",
+    "tool",
+    "shell"
+   ],
+   "min_domains": 3,
+   "min_positions": 2,
+   "min_prompts": 4,
+   "min_routes_routed": 2,
+   "natural_dup_rate": 0.05,
+   "position_max_share": 0.9,
+   "unique_ratio_floor": 0.85,
+   "unique_ratio_min": 0.95
+  },
+  "diversity_thresholds": {
+   "capability_domain_diversity": {
+    "formula": "n_unique_domains; H_norm(domain); n_unique_domains / |declared|",
+    "inadequate_below": 3,
+    "threshold": 3
+   },
+   "prompt_diversity": {
+    "formula": "n_unique_prompts; H_norm(prompt_id)",
+    "inadequate_below": 4,
+    "threshold": 4
+   },
+   "route_diversity": {
+    "formula": "n_unique_routes; H_norm(route); CV(route counts)",
+    "inadequate_below": "routed surface with < 2 unique routes",
+    "threshold": {
+     "min_routes_on_routed_surface": 2,
+     "uniform_cv_max": 0.05
+    }
+   },
+   "row_diversity": {
+    "formula": "|unique content_sha256| / n_rows",
+    "inadequate_below": 0.95,
+    "threshold": 0.95
+   },
+   "token_position_diversity": {
+    "formula": "H_norm(token_position); max_share; n_unique_positions",
+    "inadequate_below": "unique_positions < 2 or max_share > 0.90 (n_rows >= 8)",
+    "threshold": {
+     "max_share": 0.9,
+     "min_unique_positions": 2
+    }
+   }
+  },
+  "does_not_satisfy": [
+   "Weight reconstruction on a bounded slice",
+   "4-row L4 coherence screen",
+   "STATIC_ONLY teacher_corpus.make_diverse_corpus fixtures",
+   "Anything this module's --simulate-arrival can produce"
+  ],
+  "held_out_split": {
+   "required": true,
+   "rule": "The 256 rows must be partitionable into fit vs held-out. The pinned L4 screen used 3/1 on 4 rows and is UNSAFE_SMALL_PROBE. That split is not this contract."
+  },
+  "layer_surface_binding": {
+   "note": "This capture attempt is FLASH_META_TEACHER_L4 (route layer 4, layer_input 3 on the pinned coherence screen). A future multi-layer capture is admissible if every row still binds layer+surface and validate_corpus accepts. Layer 4 is the current attempt, not a cap.",
+   "required_per_row": [
+    "layer",
+    "surface"
+   ],
+   "routed_surfaces": [
+    "attention",
+    "routed_expert",
+    "router"
+   ],
+   "surfaces": [
+    "hidden_pre_mlp",
+    "router",
+    "routed_expert",
+    "shared_expert",
+    "attention",
+    "combine"
+   ]
+  },
+  "min_rows": 256,
+  "min_rows_source": "capture_boundary.minimum_rows",
+  "one_call": "tools.future.meta_ready.admit_capture(rows, envelope=...)",
+  "per_row_route_ids": {
+   "min_routes_on_routed_surface": 2,
+   "required": true,
+   "rule": "route_ids is a list of int; routed surfaces need >= min_routes unique ids"
+  },
+  "provenance": {
+   "authority_must_be_one_of": [
+    "PROTECTED_ABSOLUTE",
+    "DIAGNOSTIC_RELATIVE",
+    "STATIC_ONLY"
+   ],
+   "kind_must_be": "captured",
+   "kind_must_not_be": [
+    "duplicated",
+    "resampled",
+    "structural_fixture",
+    "synthesised"
+   ],
+   "structural_fixture_authority_is_not_one_of_those": "STRUCTURAL_FIXTURE"
+  },
+  "source_authority_capture": {
+   "current": false,
+   "required": true,
+   "rule": "Envelope source_authority_capture must be true. The current boundary records false because capture did not start."
+  },
+  "specimen_binding": {
+   "model": "Qwen/Qwen3.8-Flash-Next",
+   "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+   "rule": "Every row.specimen must match this Flash identity exactly.",
+   "seal_kind": "model_lake_manifest_sha256",
+   "seal_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+   "source": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json#source_identity"
+  },
+  "validator": "tools.future.teacher_corpus.validate_corpus"
+ },
+ "current_funnel_stall": {
+  "all_recovered_stall_at_gate_2": true,
+  "correct_answer": "9 of 9 recovered Flash families stall at gate 2 because the teacher corpus is NOT_BUILT. That is the correct answer. This module does not advance them.",
+  "n_families_from_pinned_budget": 9,
+  "n_recovered_families": 9,
+  "n_stall_at_gate_2": 9,
+  "primary_source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json"
+ },
+ "era_vocabulary": {
+  "bench_state": "UNKNOWN",
+  "eras": 5,
+  "evidence_class": "STATIC_ONLY",
+  "fpga_is": "FPGA is part of Accelerator / Physical Compiler / Fusion, not its own civilization",
+  "odysseys": 3
+ },
+ "evidence_source": {
+  "receipts/headless/FLASH_COMPLETE_V0.nx.json": "pinned_snapshot",
+  "receipts/headless/FLASH_COMPLETE_V2.nr.json": "pinned_snapshot",
+  "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json": "pinned_snapshot",
+  "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json": "pinned_snapshot",
+  "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json": "live_headless",
+  "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json": "pinned_snapshot",
+  "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json": "pinned_snapshot"
+ },
+ "family_budgets_derived": {
+  "evidence_source": "pinned_snapshot",
+  "families": [
+   {
+    "family": "routed_experts",
+    "source_fraction": 0.6850697234996967
+   },
+   {
+    "family": "ngram_embedding",
+    "source_fraction": 0.2844458389113527
+   },
+   {
+    "family": "linear_attention_hyperconnection",
+    "source_fraction": 0.013389699504736112
+   },
+   {
+    "family": "embedding_lm_head",
+    "source_fraction": 0.007124331463023194
+   },
+   {
+    "family": "full_attention",
+    "source_fraction": 0.0037155829583360414
+   },
+   {
+    "family": "mlp_hyperconnection",
+    "source_fraction": 0.003643061617574911
+   },
+   {
+    "family": "shared_expert",
+    "source_fraction": 0.0013387236926706112
+   },
+   {
+    "family": "other",
+    "source_fraction": 0.0012719930191692405
+   },
+   {
+    "family": "norm",
+    "source_fraction": 1.0453334403987072e-06
+   }
+  ],
+  "n_families": 9
+ },
+ "gaps_closed": [
+  "Per-stage readiness dossier for funnel gates 3\u20139: exact inputs, stated null, kill criterion, command, already-built vs still-missing, and that each gate needs nothing but its predecessor's output.",
+  "Corpus arrival contract: 256-row floor derived from the capture boundary, Flash specimen binding, layer/surface binding, per-row route ids, five diversity thresholds, source_authority_capture, one admit_capture call with a clear reason.",
+  "--simulate-arrival checks wiring only. It does not fabricate training rows. The structural fixture is labelled STRUCTURAL_NOT_REAL_CAPTURE and is REFUSED by teacher_corpus.validate_corpus.",
+  "Blocking chain: capture is blocked on a Metal GPU this sidecar does not have; analytical screens that can run now are named separately from funnel passes that cannot.",
+  "Ranked first experiments when 256 rows land, ordered by expected information per unit cost, with family order derived from family_budget source_fraction rather than a hard-coded count.",
+  "bind_corpus_to_families injects PRESENT/unmeasured only for an admitted capture and never for a structural fixture; simulate-arrival never reports gate 2 PASSED."
+ ],
+ "gpu_authority": false,
+ "integration": {
+  "admit_capture": "admit_capture(rows, envelope=...) -> {accepted, reason, codes}",
+  "bind_corpus_to_families": "PRESENT/unmeasured only if admit_capture accepted",
+  "make_structural_fixture": "labelled STRUCTURAL_NOT_REAL_CAPTURE; validate_corpus REFUSES it",
+  "ranked_first_experiments": "ranked_first_experiments() -> ordered by information/cost",
+  "simulate_arrival": "simulate_arrival(corpus_path=...) -> wiring report; never PASSES gate 2",
+  "stage_dossiers": "stage_dossiers() -> gates 3\u20139"
+ },
+ "model": "qwen3.8-flash-next",
+ "negative_findings": [
+  "This sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. Every hardware quantity remains UNKNOWN / null.",
+  "No CPU teacher-fit operator lives in tools/future. tools/flash_meta_coherence_screen.py is Codex-owned; the pinned L4 screen is UNSAFE_SMALL_PROBE_NOT_PROMOTABLE (4 rows vs 256 required).",
+  "No held-out / logit-token / bounded-capability runner for Flash meta families lives in tools/future. The funnel evaluators exist; the producers of their inputs do not.",
+  "FLASH_COMPLETE_V2.nr.json is COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION (exact-control), not a lowering of a fitted meta program.",
+  "FLASH_COMPLETE_V0.nx.json is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION. flash_nx_audit reports the seven requirements NOT_MET.",
+  "prospective_meta_bpw < 1 on SUB1 is a description budget and never a gate-9 pass.",
+  "FLASH_ROUTE_STABILITY.json is in the snapshot WANTED list but was not among the pinned evidence files visible here; route-stability null is taken from the funnel + SUB1.router contract instead.",
+  "meta_funnel.recover_families() reads receipts/headless/FLASH_META_REPRESENTATION_SUB1.json (live/HEAD), not the pinned snapshot. In this sparse worktree that live path is not visible, so the funnel recovered library/receipt families rather than the pinned family_budget entries. Ranked experiments derive from the pinned family_budget. All recovered families still stall at gate 2.",
+  "No Metal-capable GPU is available to this lane. Capture cannot be unblocked here.",
+  "Capture boundary present via live_headless: status='BLOCKED_NO_METAL_GPU' teacher_rows_written=0 source_authority_capture=False failure.stage='dense_source_bf16_prefix_initialization'."
+ ],
+ "pipeline_wiring": {
+  "edges": [
+   {
+    "command": "python3 tools/future/meta_funnel.py --build",
+    "from_gate": 2,
+    "from_output": "teacher_corpus",
+    "to_gate": 3,
+    "to_input": "held_out_numerical",
+    "wired": true
+   },
+   {
+    "command": "python3 tools/future/meta_funnel.py --build",
+    "from_gate": 3,
+    "from_output": "held_out_numerical",
+    "to_gate": 4,
+    "to_input": "route_traces",
+    "wired": true
+   },
+   {
+    "command": "python3 tools/future/meta_funnel.py --build",
+    "from_gate": 4,
+    "from_output": "route_traces",
+    "to_gate": 5,
+    "to_input": "logit_token",
+    "wired": true
+   },
+   {
+    "command": "python3 tools/future/meta_funnel.py --build",
+    "from_gate": 5,
+    "from_output": "logit_token",
+    "to_gate": 6,
+    "to_input": "bounded_capability",
+    "wired": true
+   },
+   {
+    "command": "python3 tools/future/flash_nx_audit.py --audit",
+    "from_gate": 6,
+    "from_output": "bounded_capability",
+    "to_gate": 7,
+    "to_input": "physical_nr",
+    "wired": true
+   },
+   {
+    "command": "python3 tools/future/flash_nx_audit.py --check-nx receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+    "from_gate": 7,
+    "from_output": "physical_nr",
+    "to_gate": 8,
+    "to_input": "complete_nx",
+    "wired": true
+   },
+   {
+    "command": "python3 tools/future/ebpw_categories.py --validate receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+    "from_gate": 8,
+    "from_output": "complete_nx",
+    "to_gate": 9,
+    "to_input": "ebpw_ledger",
+    "wired": true
+   }
+  ],
+  "funnel_enforces_no_skip": true,
+  "gate_2_needs_only_corpus": true,
+  "gate_2_required_input": "teacher_corpus",
+  "gates_3_to_9_need_nothing_but_predecessor": true,
+  "n_downstream_gates": 7,
+  "unwired": [],
+  "wired": true
+ },
+ "purpose": "Prepare Flash meta downstream stages (funnel gates 3\u20139) so that the moment a real teacher corpus exists the work starts with no design left to do. Anti-fabrication is preserved. Training rows are not simulated. Odyssey I (WHAT IS TRUE?). Disk state is authority. There is no Era VI and no Odyssey IV. FPGA stays inside Accelerator / Physical Compiler / Fusion.",
+ "ranked_first_experiments": [
+  {
+   "command": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <capture.json>",
+   "cost_class": "CHEAP_ANALYTICAL",
+   "experiment": "admit_capture",
+   "kill_if": "any admit_capture code fires (fabrication, inadequacy, mismatch)",
+   "rank": 1,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "One CPU call against the 256-row contract. If the rows fail validate_corpus or specimen/source-authority binding, every later gate is moot. Highest information per unit cost."
+  },
+  {
+   "cited_source_fraction": 0.6850697234996967,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.routed_experts",
+   "family": "routed_experts",
+   "program": "expert-local latent code + shared tile decoder + route-margin repair",
+   "rank": 2,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'routed_experts' is next by cited source_fraction 0.6850697234996967 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 0.2844458389113527,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.ngram_embedding",
+   "family": "ngram_embedding",
+   "program": "frequency-tiered n-gram generator + hot exact islands + residual symbols",
+   "rank": 3,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'ngram_embedding' is next by cited source_fraction 0.2844458389113527 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 0.013389699504736112,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.linear_attention_hyperconnection",
+   "family": "linear_attention_hyperconnection",
+   "program": "protected mixed-precision executable island",
+   "rank": 4,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'linear_attention_hyperconnection' is next by cited source_fraction 0.013389699504736112 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 0.007124331463023194,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.embedding_lm_head",
+   "family": "embedding_lm_head",
+   "program": "higher-precision vocabulary and terminal-logit island",
+   "rank": 5,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'embedding_lm_head' is next by cited source_fraction 0.007124331463023194 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 0.0037155829583360414,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.full_attention",
+   "family": "full_attention",
+   "program": "KV-sensitive protected attention island",
+   "rank": 6,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'full_attention' is next by cited source_fraction 0.0037155829583360414 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 0.003643061617574911,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.mlp_hyperconnection",
+   "family": "mlp_hyperconnection",
+   "program": "protected HyperConnection coefficient island",
+   "rank": 7,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'mlp_hyperconnection' is next by cited source_fraction 0.003643061617574911 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 0.0013387236926706112,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.shared_expert",
+   "family": "shared_expert",
+   "program": "protected shared-expert island until direct generator parity",
+   "rank": 8,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'shared_expert' is next by cited source_fraction 0.0013387236926706112 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 0.0012719930191692405,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.other",
+   "family": "other",
+   "program": "protected miscellaneous island",
+   "rank": 9,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'other' is next by cited source_fraction 0.0012719930191692405 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "cited_source_fraction": 1.0453334403987072e-06,
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "REAL_TEACHER_CPU",
+   "experiment": "gate_2_teacher_fit.norm",
+   "family": "norm",
+   "program": "exact norm island",
+   "rank": 10,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Teacher fit is the cheapest remaining kill of the meta program. Family 'norm' is next by cited source_fraction 1.0453334403987072e-06 from the pinned family_budget (largest remaining organ first). A fail writes a funnel scar and stops that shape."
+  },
+  {
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "HELDOUT_NUMERICAL_CPU",
+   "experiment": "gate_3_held_out_numerical",
+   "gpu_note": null,
+   "rank": 11,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Held-out split of the same corpus; kills organ-local overfit the fit itself cannot see."
+  },
+  {
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "ROUTE_TRACE_CPU",
+   "experiment": "gate_4_route_stability",
+   "gpu_note": null,
+   "rank": 12,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Top-k identity on the same rows. A bounded MISMATCH already exists on the router study; real traces are the cheap confirmation or scar."
+  },
+  {
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "LOGIT_TOKEN_CPU",
+   "experiment": "gate_5_logit_token_validation",
+   "gpu_note": null,
+   "rank": 13,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Argmax/short decode. A cheaper kernel that flips the token is dead before capability spend."
+  },
+  {
+   "command": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "BOUNDED_CAPABILITY_CPU",
+   "experiment": "gate_6_bounded_capability",
+   "gpu_note": null,
+   "rank": 14,
+   "requires_corpus": true,
+   "requires_gpu": false,
+   "why": "Incumbent axes. Silence on vacuous tasks is not a pass. Costlier than numerical gates."
+  },
+  {
+   "command": "python3 tools/future/flash_nx_audit.py --audit",
+   "cost_class": "PHYSICAL_NR_STATIC",
+   "experiment": "gate_7_physical_nr_lowering",
+   "gpu_note": "Sidecar still does not take the measurement; Codex does, after the CPU chain.",
+   "rank": 15,
+   "requires_corpus": true,
+   "requires_gpu": true,
+   "why": "Only after a CPU survivor exists. Existing exact-control NR is not this experiment."
+  },
+  {
+   "command": "python3 tools/future/flash_nx_audit.py --audit",
+   "cost_class": "COMPLETE_NX_STATIC",
+   "experiment": "gate_8_complete_nx",
+   "gpu_note": "Sidecar still does not take the measurement; Codex does, after the CPU chain.",
+   "rank": 16,
+   "requires_corpus": true,
+   "requires_gpu": true,
+   "why": "Source-independent NX of the survivor. Sealed metadata is a refusal."
+  },
+  {
+   "command": "python3 tools/future/ebpw_categories.py --validate receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "cost_class": "EBPW_ACCOUNTING_STATIC",
+   "experiment": "gate_9_ebpw",
+   "gpu_note": "Sidecar still does not take the measurement; Codex does, after the CPU chain.",
+   "rank": 17,
+   "requires_corpus": true,
+   "requires_gpu": true,
+   "why": "Complete-system bytes of that NX. A prospective meta-BPW < 1 is not this experiment."
+  }
+ ],
+ "recovered_implementation": {
+  "capture_boundary": {
+   "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+   "what": "Codex physical capture attempt: BLOCKED_NO_METAL_GPU, 0 of 256 rows"
+  },
+  "ebpw_categories": {
+   "module": "tools/future/ebpw_categories.py",
+   "receipt": "receipts/future/EBPW_CATEGORY_VALIDATOR.json",
+   "what": "five non-interchangeable EBPW quantities; prospective_meta_bpw < 1 never promotes"
+  },
+  "expert_bank_school": {
+   "module": "tools/future/expert_bank_school.py",
+   "receipt": "receipts/future/EXPERT_BANK_SCHOOL.json",
+   "what": "structured expert storage/compute candidates + cheapest falsifiers; no weight fit"
+  },
+  "flash_nx_audit": {
+   "module": "tools/future/flash_nx_audit.py",
+   "receipt": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+   "what": "seven-requirement NX completeness; disk counts win over stale 12-of-14 wording"
+  },
+  "meta_funnel": {
+   "adequate_for": "gate contracts, stall at gate 2, no-skip rule",
+   "gap_this_lane_closes": "does not name per-stage exact inputs / commands / already-built vs missing, nor the arrival contract",
+   "module": "tools/future/meta_funnel.py",
+   "receipt": "receipts/future/META_EXPERIMENT_FUNNEL.json",
+   "what": "Nine ordered gates, advance() refusal, shape-keyed scars, family recovery from family_budget[].ledger"
+  },
+  "ngram_school": {
+   "module": "tools/future/ngram_school.py",
+   "receipt": "receipts/future/NGRAM_SCHOOL.json",
+   "what": "five-axis n-gram candidate generator; analytical, no specimen fit"
+  },
+  "pinned_coherence_l4": {
+   "path": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4.json",
+   "what": "UNSAFE_SMALL_PROBE_NOT_PROMOTABLE 4-row screen; min_rows_required 256"
+  },
+  "pinned_meta_sub1": {
+   "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "what": "nine family_budget entries, coherence_contract, next_gate"
+  },
+  "router_science": {
+   "module": "tools/future/router_science.py",
+   "receipt": "receipts/future/ROUTER_SENSITIVE_ALLOCATION.json",
+   "what": "per-surface precision allocation from the L3/L4 sensitivity map; not a gate-4 pass"
+  },
+  "teacher_corpus": {
+   "adequate_for": "anti-fabrication; this guard is sacred and is not forked",
+   "gap_this_lane_closes": "Flash specimen + source_authority_capture envelope around validate_corpus as one admit_capture call",
+   "module": "tools/future/teacher_corpus.py",
+   "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
+   "what": "manifest, five diversity measures, validate_corpus, THRESHOLD_MET_ONLY_BY_DUPLICATION"
+  }
+ },
+ "schema": "hawking.future.meta_ready.v1",
+ "seal_sha256": "576622cf7716dccc5ceab49109212573309bb64847986ce2d4784c45b4abda9a",
+ "simulate_arrival": {
+  "admission": {
+   "accepted": false,
+   "codes": [
+    "STRUCTURAL_FIXTURE_NOT_REAL_CAPTURE",
+    "SOURCE_AUTHORITY_CAPTURE_FALSE",
+    "SPECIMEN_BINDING_MISMATCH",
+    "MISSING_SPECIMEN_OR_PROVENANCE_BINDING",
+    "UNIQUE_ROWS_BELOW_MIN"
+   ],
+   "reason": "STRUCTURAL_FIXTURE_NOT_REAL_CAPTURE",
+   "validate_corpus": {
+    "accepted": false,
+    "inadequacy": [
+     "UNIQUE_ROWS_BELOW_MIN"
+    ],
+    "min_rows": 256,
+    "n_rows": 4,
+    "n_unique_content": 4,
+    "refusals": [
+     "MISSING_SPECIMEN_OR_PROVENANCE_BINDING"
+    ]
+   }
+  },
+  "bind": {
+   "bound": false,
+   "gate2_advanced": false,
+   "reason": "STRUCTURAL_FIXTURE_NOT_REAL_CAPTURE"
+  },
+  "bound_family_stall_gates": null,
+  "bound_gate2_passed": false,
+  "fabricated_training_rows": false,
+  "gate2_advanced": false,
+  "invariant": "simulate-arrival never writes training rows, never sets fit_passed, and never reports gate 2 PASSED. A structural fixture is REFUSED by validate_corpus and by admit_capture. An admitted caller corpus becomes PRESENT/unmeasured at most.",
+  "mode": "SIMULATE_ARRIVAL_WIRING_ONLY",
+  "n_rows_inspected": 4,
+  "n_unique_content": 4,
+  "recovered_families": {
+   "all_stall_at_gate_2": true,
+   "n": 9,
+   "primary_source": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+   "stall_gates": [
+    2
+   ]
+  },
+  "row_source": "structural_fixture",
+  "structural_fixture": true,
+  "validate_corpus_accepted": false,
+  "validate_corpus_codes": [
+   "MISSING_SPECIMEN_OR_PROVENANCE_BINDING"
+  ],
+  "validate_corpus_refused_fixture": true,
+  "wiring": {
+   "gate_2_needs_only_corpus": true,
+   "gates_3_to_9_need_nothing_but_predecessor": true,
+   "n_edges": 7,
+   "unwired": [],
+   "wired": true
+  }
+ },
+ "stage_dossiers": [
+  {
+   "admit_then_funnel": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <admitted.json>",
+   "already_built": [
+    "tools/future/meta_funnel.py gate 3 evaluator (_eval_heldout)",
+    "FLASH_META_COHERENCE_SCREEN_L4.coherence_contract thresholds (pinned)",
+    "SUB1.coherence_contract.teacher_distillation.fit_and_holdout_split"
+   ],
+   "analytical_screen_without_corpus": "Contract thresholds can be read now. The measurement cannot.",
+   "can_proceed_without_corpus": false,
+   "command_that_would_run_it": "python3 tools/future/meta_funnel.py --build",
+   "command_when_predecessor_present": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "HELDOUT_NUMERICAL_CPU",
+   "exact_inputs": [
+    "predecessor: gate 2 teacher_fit artifact (fit_passed on the admitted corpus)",
+    "held-out partition of the SAME admitted corpus (disjoint rows; not a new capture)"
+   ],
+   "funnel_input_shape": {
+    "accepted_forms": [
+     {
+      "passed": true,
+      "status": "PASSED"
+     }
+    ],
+    "kill_forms": [
+     {
+      "mechanism": "<null>",
+      "passed": false,
+      "status": "FAILED"
+     }
+    ],
+    "required_input": "held_out_numerical"
+   },
+   "gate_id": 3,
+   "gate_name": "held_out_numerical",
+   "kill_criterion": "Held-out activations (disjoint from the teacher corpus) fail the stated null. Organ-local survival is not whole-model survival (composition_ladder: ternary CANON then argmax-flip).",
+   "needs_nothing_but_predecessor_output": true,
+   "null_it_tests": {
+    "fit_and_holdout_split": true,
+    "max_heldout_relative_fro_error": 0.05,
+    "min_heldout_cosine": 0.999,
+    "must_beat_per_expert_q4": true,
+    "source": "FLASH_META_COHERENCE_SCREEN_L4.coherence_contract + SUB1.teacher_distillation"
+   },
+   "passing_does_not_prove": "Route identity, complete-token argmax, coherent generation, capability, NR, NX, or EBPW.",
+   "passing_proves": "Local numerical fidelity on unseen X for the stated organ.",
+   "predecessor_gate_id": 2,
+   "predecessor_gate_name": "real_teacher_fit",
+   "predecessor_output": "teacher_corpus",
+   "required_input": "held_out_numerical",
+   "still_missing": [
+    "A CPU held-out operator that writes inputs.held_out_numerical from the admitted split",
+    "The 4-row L4 screen is UNSAFE_SMALL_PROBE_NOT_PROMOTABLE and is not this gate"
+   ],
+   "wired_in_funnel": true
+  },
+  {
+   "admit_then_funnel": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <admitted.json>",
+   "already_built": [
+    "tools/future/meta_funnel.py gate 4 evaluator (_eval_routes); kills on expert_ids_exact_match is false",
+    "tools/future/router_science.py precision allocation (STATIC_ONLY; not a gate pass)",
+    "FLASH_NOETIC_ROUTER_SELECTION.source_selection_parity (bounded in-memory study)",
+    "FLASH_ROUTER_SENSITIVITY_MAP_L3_L4 (DIAGNOSTIC seam map; does not skip gate 2)"
+   ],
+   "analytical_screen_without_corpus": "router_science allocation and the L3/L4 sensitivity map can be read now. They do not pass gate 4 and must not be used to skip teacher fit.",
+   "can_proceed_without_corpus": false,
+   "cited_existing_mismatch": {
+    "evidence_source": "pinned_snapshot",
+    "expert_ids_exact_match": false,
+    "note": "Cited MISMATCH cannot be reached as a funnel kill until gates 2 and 3 pass. Funnel.advance refuses to skip.",
+    "path": "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json",
+    "status": "MISMATCH"
+   },
+   "command_that_would_run_it": "python3 tools/future/meta_funnel.py --build",
+   "command_when_predecessor_present": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "ROUTE_TRACE_CPU",
+   "exact_inputs": [
+    "predecessor: gate 3 held_out_numerical PASSED",
+    "per-row route_ids already required on the admitted corpus",
+    "student top-k on those same rows"
+   ],
+   "funnel_input_shape": {
+    "accepted_forms": [
+     {
+      "expert_ids_exact_match": true,
+      "status": "PASSED"
+     }
+    ],
+    "kill_forms": [
+     {
+      "expert_ids_exact_match": false,
+      "status": "MISMATCH"
+     }
+    ],
+    "required_input": "route_traces"
+   },
+   "gate_id": 4,
+   "gate_name": "route_stability",
+   "kill_criterion": "Student top-k expert identity diverges from the teacher (status MISMATCH, or expert_ids_exact_match is false).",
+   "needs_nothing_but_predecessor_output": true,
+   "null_it_tests": {
+    "kill_on": "status MISMATCH or expert_ids_exact_match is false",
+    "source": "FLASH_META_REPRESENTATION_SUB1.coherence_contract.router + funnel gate 4",
+    "topk_membership_match": 1.0,
+    "topk_order_match": 1.0
+   },
+   "passing_does_not_prove": "Logit/token identity beyond routing, capability, physical lowering, or EBPW.",
+   "passing_proves": "On the measured traces, the student selects the same experts as the teacher.",
+   "predecessor_gate_id": 3,
+   "predecessor_gate_name": "held_out_numerical",
+   "predecessor_output": "held_out_numerical",
+   "required_input": "route_traces",
+   "router_map_cited": {
+    "evidence_source": "pinned_snapshot",
+    "path": "receipts/future/evidence/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+    "present": true
+   },
+   "still_missing": [
+    "Teacher-corpus-bound route traces at >= contract_min_rows; the bounded router AB is not that"
+   ],
+   "supporting_commands": [
+    "python3 tools/future/router_science.py --build"
+   ],
+   "wired_in_funnel": true
+  },
+  {
+   "admit_then_funnel": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <admitted.json>",
+   "already_built": [
+    "tools/future/meta_funnel.py gate 5 evaluator (_eval_logits); kills on argmax_agree is false",
+    "SUB1.coherence_contract.generation.short_horizon_token_agreement"
+   ],
+   "analytical_screen_without_corpus": "Null is declared. The measurement cannot run.",
+   "can_proceed_without_corpus": false,
+   "command_that_would_run_it": "python3 tools/future/meta_funnel.py --build",
+   "command_when_predecessor_present": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "LOGIT_TOKEN_CPU",
+   "exact_inputs": [
+    "predecessor: gate 4 route_traces PASSED",
+    "student complete-token / argmax on the admitted probe rows"
+   ],
+   "funnel_input_shape": {
+    "accepted_forms": [
+     {
+      "argmax_agree": true,
+      "status": "PASSED"
+     }
+    ],
+    "kill_forms": [
+     {
+      "argmax_agree": false,
+      "status": "FAILED"
+     }
+    ],
+    "required_input": "logit_token"
+   },
+   "gate_id": 5,
+   "gate_name": "logit_token_validation",
+   "kill_criterion": "Complete-token / argmax disagreement, or decode degeneration on the stated probe. A cheaper kernel that flips the argmax is dead.",
+   "needs_nothing_but_predecessor_output": true,
+   "null_it_tests": {
+    "kill_on": "argmax disagreement or decode degeneration",
+    "long_horizon_no_collapse": true,
+    "short_horizon_token_agreement": 1.0,
+    "source": "SUB1.coherence_contract.generation + funnel gate 5"
+   },
+   "passing_does_not_prove": "Bounded capability, a physical NR, a complete NX, or EBPW. 16 greedy tokens are not capability.",
+   "passing_proves": "Token-level identity on the stated probe (argmax / short decode).",
+   "predecessor_gate_id": 4,
+   "predecessor_gate_name": "route_stability",
+   "predecessor_output": "route_traces",
+   "required_input": "logit_token",
+   "still_missing": [
+    "A CPU logit/token operator that writes inputs.logit_token from the admitted corpus"
+   ],
+   "wired_in_funnel": true
+  },
+  {
+   "admit_then_funnel": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <admitted.json>",
+   "already_built": [
+    "tools/future/meta_funnel.py gate 6 evaluator (_eval_capability)",
+    "tools/future/ngram_school.py five-axis analytical candidates",
+    "tools/future/expert_bank_school.py generator candidates + cheapest falsifiers",
+    "teacher_corpus capability_domain diversity (math/code/prose/tool/shell)"
+   ],
+   "analytical_screen_without_corpus": "ngram_school and expert_bank_school can emit candidates now. They do not pass gate 6.",
+   "can_proceed_without_corpus": false,
+   "command_that_would_run_it": "python3 tools/future/meta_funnel.py --build",
+   "command_when_predecessor_present": "python3 tools/future/meta_funnel.py --build",
+   "cost_class": "BOUNDED_CAPABILITY_CPU",
+   "exact_inputs": [
+    "predecessor: gate 5 logit_token PASSED",
+    "bounded capability suite axes against the incumbent (domains already on the corpus)"
+   ],
+   "funnel_input_shape": {
+    "accepted_forms": [
+     {
+      "passed": true,
+      "status": "PASSED"
+     }
+    ],
+    "kill_forms": [
+     {
+      "passed": false,
+      "status": "FAILED"
+     }
+    ],
+    "required_input": "bounded_capability"
+   },
+   "gate_id": 6,
+   "gate_name": "bounded_capability",
+   "kill_criterion": "The capability suite fails an incumbent axis. Silence that scores on vacuous axes is not a pass.",
+   "needs_nothing_but_predecessor_output": true,
+   "null_it_tests": {
+    "capability_suite": "must match the protected teacher contract",
+    "kill_on": "failure on any incumbent substantive axis; vacuous silence is not a pass",
+    "source": "SUB1.coherence_contract.generation + funnel gate 6"
+   },
+   "passing_does_not_prove": "Physical NR lowering, a complete NX, protected token_ns, or EBPW.",
+   "passing_proves": "The candidate matched the incumbent on every substantive capability axis of the stated suite.",
+   "predecessor_gate_id": 5,
+   "predecessor_gate_name": "logit_token_validation",
+   "predecessor_output": "logit_token",
+   "required_input": "bounded_capability",
+   "still_missing": [
+    "A Flash-meta bounded capability suite runner that writes inputs.bounded_capability",
+    "Incumbent-axis list as an executable suite (SUB1 names the requirement, not the items)"
+   ],
+   "supporting_commands": [
+    "python3 tools/future/ngram_school.py --build",
+    "python3 tools/future/expert_bank_school.py --build"
+   ],
+   "wired_in_funnel": true
+  },
+  {
+   "admit_then_funnel": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <admitted.json>",
+   "already_built": [
+    "tools/future/flash_nx_audit.py (STATIC completeness audit)",
+    "receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+    "tools/future/meta_funnel.py gate 7 evaluator (_eval_nr)"
+   ],
+   "analytical_screen_without_corpus": "flash_nx_audit of the existing exact-control NR can run now. Funnel gate 7 cannot PASS without the predecessor chain.",
+   "can_proceed_without_corpus": false,
+   "command_that_would_run_it": "python3 tools/future/flash_nx_audit.py --audit",
+   "command_when_predecessor_present": "python3 tools/future/flash_nx_audit.py --audit",
+   "cost_class": "PHYSICAL_NR_STATIC",
+   "exact_inputs": [
+    "predecessor: gate 6 bounded_capability PASSED",
+    "a Physical NR lowering of THAT fitted representation (not the exact-control NR)"
+   ],
+   "funnel_input_shape": {
+    "accepted_forms": [
+     {
+      "status": "PASSED"
+     }
+    ],
+    "kill_forms": [
+     {
+      "status": "FAILED"
+     }
+    ],
+    "refusal_tokens": [
+     "NOT_BUILT",
+     "PLAN_ONLY",
+     "NOT_IMPLEMENTED"
+    ],
+    "required_input": "physical_nr"
+   },
+   "gate_id": 7,
+   "gate_name": "physical_nr_lowering",
+   "kill_criterion": "Lowering was attempted and failed (irreducible NR, missing organ, hidden dense rematerialization disclosed as a failure).",
+   "needs_nothing_but_predecessor_output": true,
+   "nr_status_cited": {
+    "evidence_source": "pinned_snapshot",
+    "path": "receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+    "promotion_allowed": false,
+    "status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION"
+   },
+   "null_it_tests": {
+    "existing_nr_is_not_this_gate": "FLASH_COMPLETE_V2.nr.json status='COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION' is an exact-control heterogeneous candidate NOT_FOR_PROMOTION. Auditing it is not lowering a fitted meta program.",
+    "kill_on": "Lowering was attempted and failed (irreducible NR, missing organ, hidden dense rematerialization disclosed as a failure)."
+   },
+   "passing_does_not_prove": "A complete NX, protected complete-token timing, or EBPW. PLAN_ONLY / NOT_IMPLEMENTED is not a pass; it is a refusal.",
+   "passing_proves": "A Physical NR artifact exists and lowered without a disclosed failure. STATIC_ONLY: this sidecar did not run a kernel.",
+   "predecessor_gate_id": 6,
+   "predecessor_gate_name": "bounded_capability",
+   "predecessor_output": "bounded_capability",
+   "required_input": "physical_nr",
+   "still_missing": [
+    "NR lowering of a gate-2..6 survivor; the existing V2 NR is a different artifact",
+    "This sidecar will not run a kernel (STATIC_ONLY)"
+   ],
+   "wired_in_funnel": true
+  },
+  {
+   "admit_then_funnel": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <admitted.json>",
+   "already_built": [
+    "tools/future/flash_nx_audit.py seven-requirement checker",
+    "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+    "tools/future/meta_funnel.py gate 8 evaluator (_eval_nx)"
+   ],
+   "analytical_screen_without_corpus": "Completeness audit of the sealed NX can run now and currently reports NOT_MET. That is not a funnel pass.",
+   "can_proceed_without_corpus": false,
+   "command_that_would_run_it": "python3 tools/future/flash_nx_audit.py --check-nx receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+   "command_when_predecessor_present": "python3 tools/future/flash_nx_audit.py --check-nx receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+   "cost_class": "COMPLETE_NX_STATIC",
+   "exact_inputs": [
+    "predecessor: gate 7 physical_nr PASSED",
+    "a source-independent complete NX that is more than sealed metadata"
+   ],
+   "funnel_input_shape": {
+    "accepted_forms": [
+     {
+      "status": "PASSED"
+     }
+    ],
+    "kill_forms": [
+     {
+      "status": "FAILED"
+     }
+    ],
+    "refusal_tokens": [
+     "NOT_BUILT",
+     "SCAFFOLD_ONLY",
+     "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+    ],
+    "required_input": "complete_nx"
+   },
+   "gate_id": 8,
+   "gate_name": "complete_nx",
+   "kill_criterion": "An NX was presented and is incomplete in a tested way (failed validation, missing native consumer).",
+   "needs_nothing_but_predecessor_output": true,
+   "null_it_tests": {
+    "kill_on": "An NX was presented and is incomplete in a tested way (failed validation, missing native consumer).",
+    "refusal_if": "SCAFFOLD_ONLY / SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+   },
+   "nx_status_cited": {
+    "evidence_source": "pinned_snapshot",
+    "path": "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+    "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+   },
+   "passing_does_not_prove": "EBPW, protected TPS, or promotion. SCAFFOLD_ONLY / SEALED_METADATA_ONLY_NOT_FOR_PROMOTION is a refusal, not a pass.",
+   "passing_proves": "A source-independent complete NX artifact exists as more than sealed metadata.",
+   "predecessor_gate_id": 7,
+   "predecessor_gate_name": "physical_nr_lowering",
+   "predecessor_output": "physical_nr",
+   "required_input": "complete_nx",
+   "still_missing": [
+    "A source-independent complete NX (current V0 is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION)",
+    "native loader + native kernel catalog + protected complete-token measurement"
+   ],
+   "supporting_commands": [
+    "python3 tools/future/flash_nx_audit.py --audit"
+   ],
+   "wired_in_funnel": true
+  },
+  {
+   "admit_then_funnel": "python3 tools/future/meta_ready.py --simulate-arrival --corpus <admitted.json>",
+   "already_built": [
+    "tools/future/ebpw_categories.py five-quantity type system + can_promote refusal",
+    "tools/future/meta_funnel.py gate 9 evaluator (_eval_ebpw)",
+    "FLASH_META_REPRESENTATION_SUB1 prospective meta budget (description, not physical EBPW)"
+   ],
+   "analytical_screen_without_corpus": "Category validation of the prospective budget can run now and must stay GREEN on honest SUB1. It cannot pass gate 9.",
+   "can_proceed_without_corpus": false,
+   "command_that_would_run_it": "python3 tools/future/ebpw_categories.py --validate receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "command_when_predecessor_present": "python3 tools/future/ebpw_categories.py --validate receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "cost_class": "EBPW_ACCOUNTING_STATIC",
+   "exact_inputs": [
+    "predecessor: gate 8 complete_nx PASSED",
+    "complete-system EBPW ledger with every required executable-information field counted"
+   ],
+   "funnel_input_shape": {
+    "accepted_forms": [
+     {
+      "all_required_bytes_included": true,
+      "complete_system_ebpw": "<counted, not a target>",
+      "status": "PASSED"
+     }
+    ],
+    "kill_forms": [
+     {
+      "all_required_bytes_included": false,
+      "status": "FAILED"
+     }
+    ],
+    "refusal_tokens": [
+     "NOT_MEASURED",
+     "null complete_system_bytes"
+    ],
+    "required_input": "ebpw_ledger"
+   },
+   "gate_id": 9,
+   "gate_name": "ebpw",
+   "kill_criterion": "Complete-system executable bytes were counted and either omit a required field or exceed the stated ceiling. A target ceiling is not a measurement.",
+   "needs_nothing_but_predecessor_output": true,
+   "null_it_tests": {
+    "kill_on": "Complete-system executable bytes were counted and either omit a required field or exceed the stated ceiling. A target ceiling is not a measurement.",
+    "law": "A target ceiling is not a measurement. prospective_meta_bpw < 1 never promotes."
+   },
+   "passing_does_not_prove": "Protected token_ns, joules, or promotion. null complete_system_bytes is a refusal, not a number.",
+   "passing_proves": "A complete-system EBPW ledger exists with every required field counted.",
+   "predecessor_gate_id": 8,
+   "predecessor_gate_name": "complete_nx",
+   "predecessor_output": "complete_nx",
+   "required_input": "ebpw_ledger",
+   "still_missing": [
+    "complete_system_bytes of a fitted, capability-preserving executable (currently null / NOT_MEASURED)",
+    "PROTECTED_ABSOLUTE complete_physical_ebpw \u2014 this sidecar cannot take it"
+   ],
+   "wired_in_funnel": true
+  }
+ ],
+ "version": 1
+}

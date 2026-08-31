@@ -1,0 +1,179 @@
+{
+ "api": {
+  "cancel": "signal and prove the process is gone",
+  "expected_receipt": "landing contract; absence is process_failed",
+  "ingest_ready": "landed rows in finished_at order; missing receipt is process_failed",
+  "launch_detached": "start, persist contract, return handle, do not wait",
+  "poll": "supervisor-side, one inspect per handle, never a busy loop",
+  "rediscover": "adopt outlived handles; never relaunch",
+  "runnable_now": "independent work from graph/frontier while handles are open"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T20:38:18Z",
+  "recorded_by": "tools/future/no_wait_scheduler.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "blocks_whole_resident_only_when": "no independent runnable work AND the exact named dependency requires the in-flight result; computed, then recorded",
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. A supervision interval is process identity and disk landing, not a bench. poll is a supervisor operation; the reasoning context is already released.",
+ "does_not_call_subprocess_run_for_work": true,
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "launch_detached returns a handle without waiting; the expected receipt contract is on disk before the caller resumes",
+  "runnable_now computes independent work from the graph/frontier while handles are open",
+  "an overlap interval was observed: one detached unit still open while another independent unit started, progressed and completed (timestamps, not intent)",
+  "the whole resident reports BLOCKED with the dependency named when nothing independent remains; it does not spin",
+  "ingest_ready classifies a missing/never-written receipt as process_failed and does not drop the handle",
+  "cancel proves the process is gone; a live pid after cancel is a refusal",
+  "rediscover adopts handles that outlived a resident restart and never relaunches"
+ ],
+ "gpu_authority": false,
+ "head": "90898c763efc31a881112982070874c68de317f1",
+ "module_sha256": "da2bcc7c691cca293749338f2a1886cfa98c110792ecf6e67710de2592621296",
+ "negative_findings": [
+  "autonomy_run.py still calls subprocess.run; this lane is not allowed to edit it, so the live loop is not yet wired to the scheduler",
+  "wakeup.Watcher.poll remains a refused model-facing alias; supervisor poll lives here and is a single inspect pass",
+  "workgraph.py still does not execute; this scheduler launches via detached.py and does not grow a second executor",
+  "GPU/lease/cargo units still SLEEP in detached.py; this scheduler does not seize a lease to keep the resident busy",
+  "a frontier that cannot be loaded is REFUSED, not replaced with a guessed candidate list"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "overlap_is_an_interval": true,
+ "proofs": {
+  "blocked_names_dependency": {
+   "n_block_events": 1,
+   "named_dependency": "WU.PRE",
+   "passed": true,
+   "source": "workgraph.compute_ready",
+   "spin": false,
+   "status": "BLOCKED",
+   "why": "no independent work available; the exact dependency 'WU.PRE' requires the detached result"
+  },
+  "cancel_stops": {
+   "passed": true,
+   "pid": 12396,
+   "pid_still_alive": false,
+   "process_gone": true,
+   "terminal": "cancelled"
+  },
+  "missing_receipt_is_process_failed": {
+   "forgotten": [],
+   "ingest": "process_failed",
+   "n_landed": 1,
+   "passed": true,
+   "reason": "signal:SIGTERM",
+   "receipt_present": false,
+   "still_known_after_rediscover": true,
+   "terminal": "crashed"
+  },
+  "overlap_interval": {
+   "clock": "time.time() unix seconds; overlap is an interval, not an intent",
+   "fast_finished_at": 1788122297.065022,
+   "fast_ingest": "ingested",
+   "fast_launched_at": 1788122296.714507,
+   "fast_progress_at": 1788122296.842262,
+   "fast_receipt_present": true,
+   "fast_terminal": "unknown",
+   "independent_named": [
+    "independent-cpu"
+   ],
+   "passed": true,
+   "runnable_status_while_slow_open": "RUNNABLE",
+   "slow_launched_at": 1788122296.63438,
+   "slow_open_at_fast_finish": true,
+   "slow_open_at_fast_progress": true,
+   "slow_terminal_during_window": null,
+   "started_marker_present": true
+  },
+  "rediscover_adopts": {
+   "adopted_open": true,
+   "child_still_alive": true,
+   "fate": "ADOPTED",
+   "n_handles": 1,
+   "passed": true,
+   "relaunched": false
+  }
+ },
+ "proofs_all_passed": true,
+ "purpose": "Keep the resident moving while a detached unit is unfinished: launch, persist the landing contract, release, ask what else can run, execute independent work, ingest in landing order.",
+ "recovered_implementation": [
+  "tools/future/detached.py DetachedSupervisor.launch/inspect/cancel/adopt/list \u2014 spawn, identity (pid+start_token), timeout, cancel; this scheduler does not reimplement them",
+  "tools/future/detached.py _expected_receipt_of / _as_mapping \u2014 landing path contract, not a second one",
+  "tools/future/wakeup.py Watcher.register_expectation \u2014 receipt appearance is the completion event; Watcher refuses model-facing poll/wait aliases and that refusal is kept",
+  "tools/future/workgraph.py WorkGraph.compute_ready \u2014 independence from dependency edges, not a hand order",
+  "tools/future/frontiers.py next_work / THIS_HOST_LANES \u2014 runnable set when no graph is supplied",
+  "tools/future/restart_supervisor.py rediscover_detached \u2014 ingest finished, adopt live, UNKNOWN otherwise; never relaunch",
+  "tools/future/autonomy_run.py _invoke_bounded \u2014 the defect: subprocess.run blocks the loop; cited, not copied",
+  "hcli/agentos/background.py start_new_session + persist + SIGTERM then SIGKILL",
+  "hcli/resources.py pid_is_alive / process_start_token \u2014 pid alone is never identity",
+  "hcli/persist.py atomic_write_json \u2014 handle and contract durability"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.no_wait_scheduler.launch_detached(unit, workspace=...)",
+  "fails_closed": "absent unit/workspace/handle refuses; unsafe commands raise UnsafeCommandError; missing receipt is process_failed; cancel of a still-live pid raises; rediscover never relaunches; BLOCKED names the dependency and does not spin",
+  "frontier": "FT.HCLI_SELF.no-launch",
+  "receipt": "receipts/future/NO_WAIT_SCHEDULER.json",
+  "workunit": "future.no_wait_scheduler.overlap",
+  "workunit_row": {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. A supervision interval is process identity and disk landing, not a bench. poll is a supervisor operation; the reasoning context is already released.",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/tools/future/no_wait_scheduler.py",
+    "--build"
+   ],
+   "content_hash": "5edbc1d9de6f6ec0be2ae4b0174073b0113a268b2c2205abb164ef8c1617ae87",
+   "dependencies": [],
+   "description": "Launch detached work, persist the expected receipt contract, release the reasoning context, ask what else can run now, execute an independent WorkUnit, ingest when it lands.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "id": "future.no_wait_scheduler.overlap",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/NO_WAIT_SCHEDULER.json",
+   "preferred_backend": null,
+   "provider": "future.no_wait_scheduler",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "LIGHT_CONTROL",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "timeout_s": 60.0,
+   "verification": null,
+   "verifier": "future.no_wait_scheduler.overlap_interval",
+   "workspace": "repo-root"
+  }
+ },
+ "schema": "hawking.future.no_wait_scheduler.v1",
+ "seal_sha256": "d0522449edd3e95c21c40cc3b69168ab812915ed0bfaad97cb69afe05f2480ab",
+ "supervisor_poll_rule": "poll is a supervisor operation; the reasoning context is released before this runs. Do not call it from a model-reasoning loop.",
+ "version": 1
+}

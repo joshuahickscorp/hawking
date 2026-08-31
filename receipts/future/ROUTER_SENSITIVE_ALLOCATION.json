@@ -1,0 +1,964 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:42Z",
+  "recorded_by": "tools/future/router_science.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "captured_routes": {
+  "compact_top10": [
+   [
+    309,
+    290,
+    106,
+    410,
+    108,
+    287,
+    252,
+    306,
+    496,
+    367
+   ],
+   [
+    367,
+    131,
+    106,
+    381,
+    439,
+    506,
+    35,
+    252,
+    476,
+    144
+   ],
+   [
+    165,
+    106,
+    139,
+    131,
+    353,
+    476,
+    509,
+    59,
+    369,
+    162
+   ],
+   [
+    309,
+    106,
+    252,
+    488,
+    496,
+    59,
+    453,
+    68,
+    410,
+    306
+   ]
+  ],
+  "dense_top10": [
+   [
+    309,
+    290,
+    106,
+    410,
+    108,
+    287,
+    252,
+    306,
+    496,
+    367
+   ],
+   [
+    367,
+    131,
+    106,
+    381,
+    439,
+    506,
+    35,
+    252,
+    476,
+    301
+   ],
+   [
+    165,
+    106,
+    139,
+    131,
+    353,
+    476,
+    509,
+    59,
+    369,
+    162
+   ],
+   [
+    309,
+    252,
+    106,
+    488,
+    496,
+    59,
+    453,
+    68,
+    410,
+    306
+   ]
+  ],
+  "rows_with_membership_change": 1,
+  "top10_membership_symmetric_difference": [
+   0,
+   2,
+   0,
+   0
+  ]
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "compact_margin_distribution": {
+  "definition": "z_{(K)} - z_{(K+1)} on the captured dense routes; K=10",
+  "max": 0.007277142256498337,
+  "mean": 0.002011357806622982,
+  "median": 0.0003693774342536926,
+  "min": 2.9534101486206055e-05,
+  "n": 4,
+  "sample_is_tiny": true,
+  "sorted": [
+   2.9534101486206055e-05,
+   7.46995210647583e-05,
+   0.000664055347442627,
+   0.007277142256498337
+  ]
+ },
+ "consumed_margin_residual_candidate": {
+  "candidate_rows": [
+   {
+    "dimensions": 3,
+    "fraction": 0.001,
+    "route_stable_on_observed_seam": false,
+    "rows_with_top10_membership_change": 1
+   },
+   {
+    "dimensions": 6,
+    "fraction": 0.0025,
+    "route_stable_on_observed_seam": false,
+    "rows_with_top10_membership_change": 1
+   },
+   {
+    "dimensions": 13,
+    "fraction": 0.005,
+    "route_stable_on_observed_seam": false,
+    "rows_with_top10_membership_change": 1
+   },
+   {
+    "dimensions": 26,
+    "fraction": 0.01,
+    "route_stable_on_observed_seam": false,
+    "rows_with_top10_membership_change": 2
+   },
+   {
+    "dimensions": 51,
+    "fraction": 0.02,
+    "route_stable_on_observed_seam": false,
+    "rows_with_top10_membership_change": 1
+   }
+  ],
+  "conditional_policy": {
+   "mean_membership_symmetric_difference": 0.5,
+   "policy": "0.5% salience residual normally; 2% when dense top10/top11 margin < 1e-5",
+   "residual_bytes_fp16_upper_bound": 408,
+   "rows_with_membership_change": 1,
+   "state_artifact": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+   "state_sha256": "14155cfb6e373b850cc1df19b74ac3dda5951d46fe156849c9449add1aeb148b"
+  },
+  "note": "Oracle coordinate residual never reached route_stable_on_observed_seam at any tested fraction. Consumed as negative evidence against coordinate-salience allocation, not re-run.",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.margin_residual_candidate.v1",
+  "status": "ORACLE_NR_CANDIDATE_UNPROMOTED"
+ },
+ "consumed_representation_ab": {
+  "best_low_bit_overlap_candidate": "independent_nf4_g64",
+  "best_low_bit_overlap_count": 9,
+  "candidates": [
+   {
+    "effective_bits_per_value": 4.25,
+    "expert_ids_exact_match": false,
+    "family": "uniform_q4",
+    "group_size": 64,
+    "id": "independent_q4_g64",
+    "top_k_overlap_count": 8
+   },
+   {
+    "effective_bits_per_value": 4.5,
+    "expert_ids_exact_match": false,
+    "family": "uniform_q4",
+    "group_size": 32,
+    "id": "independent_q4_g32",
+    "top_k_overlap_count": 8
+   },
+   {
+    "effective_bits_per_value": 5.0,
+    "expert_ids_exact_match": false,
+    "family": "uniform_q4",
+    "group_size": 16,
+    "id": "independent_q4_g16",
+    "top_k_overlap_count": 9
+   },
+   {
+    "effective_bits_per_value": 4.25,
+    "expert_ids_exact_match": false,
+    "family": "nf4",
+    "group_size": 64,
+    "id": "independent_nf4_g64",
+    "top_k_overlap_count": 9
+   }
+  ],
+  "decision": "retain independent_q4_g64 for the current native kernel; evaluate independent_nf4_g64 only with a native NF4 kernel, or accept the extra scale bytes of a tighter Q4 group if exact routing quality justifies it",
+  "schema": "hcli.agentos.flash_noetic_router_representation_ab.v1",
+  "source_top_k_exact_for_any_low_bit_candidate": false
+ },
+ "consumed_router_selection": {
+  "expert_ids_exact_match": false,
+  "logits_cosine": 0.9802085757255554,
+  "logits_max_abs_error": 0.2657890319824219,
+  "logits_rmse": 0.05903181433677673,
+  "num_experts": 512,
+  "num_experts_per_tok": 10,
+  "parity_status": "MISMATCH",
+  "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+  "router_logits": "F.linear(hidden_states, gate.weight)",
+  "schema": "hcli.agentos.flash_noetic_router_selection.v1",
+  "selection_rule": "topk(router_probs, num_experts_per_tok)",
+  "shared_expert_sigmoid_is_not_router_selection": true,
+  "tensor": "model.language_model.layers.0.mlp.gate.weight",
+  "top_k_overlap_count": 8,
+  "top_k_overlap_fraction": 0.8
+ },
+ "critical_hidden_directions": {
+  "coordinate_salience": [
+   {
+    "dimensions": 3,
+    "fraction": 0.001,
+    "logit_delta_l2_fraction": 0.3462471067905426,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 48,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 13,
+    "fraction": 0.005,
+    "logit_delta_l2_fraction": 0.4253232479095459,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 208,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 26,
+    "fraction": 0.01,
+    "logit_delta_l2_fraction": 0.4671165347099304,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 416,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 51,
+    "fraction": 0.02,
+    "logit_delta_l2_fraction": 0.5412788987159729,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 816,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 128,
+    "fraction": 0.05,
+    "logit_delta_l2_fraction": 0.657504677772522,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 2048,
+    "rows_with_membership_change": 1
+   }
+  ],
+  "coordinate_salience_did_not_repair_at_any_tested_fraction": true,
+  "denominator_warning": "coordinate_salience fractions are of LOGIT-delta L2; SVD energy fractions are of STATE-delta energy. They are not the same pie.",
+  "implication": "Control-flow-critical hidden directions are the row-space of gate.weight (right singular vectors). They are not the largest-|delta| coordinates of the compact error: a 5% coordinate slice carried ~66% of logit-delta L2 and still left a membership flip, while a rank-512 SVD projection of the same error repaired all rows.",
+  "observed_delta_energy_by_visible_rank": [
+   {
+    "delta_energy_fraction": 0.004872831050306559,
+    "oracle_projected_repair_bytes_fp16": 64,
+    "oracle_repaired_mean_topk_symmetric_difference": 0.5,
+    "oracle_repaired_rows_with_membership_change": 1,
+    "projected_rel_norm": 0.06980566680431366,
+    "rank": 8
+   },
+   {
+    "delta_energy_fraction": 0.013232707045972347,
+    "oracle_projected_repair_bytes_fp16": 128,
+    "oracle_repaired_mean_topk_symmetric_difference": 0.5,
+    "oracle_repaired_rows_with_membership_change": 1,
+    "projected_rel_norm": 0.11503349989652634,
+    "rank": 16
+   },
+   {
+    "delta_energy_fraction": 0.022886082530021667,
+    "oracle_projected_repair_bytes_fp16": 256,
+    "oracle_repaired_mean_topk_symmetric_difference": 0.5,
+    "oracle_repaired_rows_with_membership_change": 1,
+    "projected_rel_norm": 0.151281476020813,
+    "rank": 32
+   },
+   {
+    "delta_energy_fraction": 0.0407201424241066,
+    "oracle_projected_repair_bytes_fp16": 512,
+    "oracle_repaired_mean_topk_symmetric_difference": 0.5,
+    "oracle_repaired_rows_with_membership_change": 1,
+    "projected_rel_norm": 0.20179231464862823,
+    "rank": 64
+   },
+   {
+    "delta_energy_fraction": 0.06615317612886429,
+    "oracle_projected_repair_bytes_fp16": 1024,
+    "oracle_repaired_mean_topk_symmetric_difference": 0.5,
+    "oracle_repaired_rows_with_membership_change": 1,
+    "projected_rel_norm": 0.2572026252746582,
+    "rank": 128
+   },
+   {
+    "delta_energy_fraction": 0.1200057864189148,
+    "oracle_projected_repair_bytes_fp16": 2048,
+    "oracle_repaired_mean_topk_symmetric_difference": 0.5,
+    "oracle_repaired_rows_with_membership_change": 1,
+    "projected_rel_norm": 0.34641849994659424,
+    "rank": 256
+   },
+   {
+    "delta_energy_fraction": 0.22175653278827667,
+    "oracle_projected_repair_bytes_fp16": 4096,
+    "oracle_repaired_mean_topk_symmetric_difference": 0.0,
+    "oracle_repaired_rows_with_membership_change": 0,
+    "projected_rel_norm": 0.47091034054756165,
+    "rank": 512
+   }
+  ],
+  "repair_evidence": {
+   "delta_energy_fraction": 0.22175653278827667,
+   "oracle_projected_repair_bytes_fp16": 4096,
+   "oracle_repaired_mean_topk_symmetric_difference": 0.0,
+   "oracle_repaired_rows_with_membership_change": 0,
+   "projected_rel_norm": 0.47091034054756165,
+   "rank": 512
+  },
+  "router_visible_rank_upper_bound": 512,
+  "routing_inert_dim_lower_bound": 2048,
+  "smallest_visible_rank_that_repaired_membership": 512,
+  "spectrum_head": [
+   10.784625053405762,
+   4.076363563537598,
+   3.6030805110931396,
+   3.209606170654297,
+   3.1556811332702637,
+   2.95176362991333,
+   2.6126515865325928,
+   2.4526307582855225,
+   2.3108327388763428,
+   2.115838050842285,
+   2.0432045459747314,
+   1.974076747894287,
+   1.846590280532837,
+   1.8167051076889038,
+   1.7383095026016235,
+   1.6708019971847534,
+   1.6559929847717285,
+   1.6140708923339844,
+   1.551377534866333,
+   1.5336954593658447,
+   1.4949688911437988,
+   1.4628504514694214,
+   1.4188809394836426,
+   1.3933573961257935,
+   1.367780089378357,
+   1.3475364446640015,
+   1.334094762802124,
+   1.2979071140289307,
+   1.2922284603118896,
+   1.2689149379730225,
+   1.2339482307434082,
+   1.2085922956466675
+  ],
+  "why_inert": "W is (n_experts \u00d7 hidden); its row-space in R^{hidden} has dimension at most n_experts. The orthogonal complement does not move logits."
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "Named the logit Jacobian J=W and stated its validity range over the map's shapes.",
+  "Turned the four captured margins into a distribution and an epsilon-boundary table.",
+  "Split hidden space into router-visible (rank \u2264 512) vs routing-inert (\u2265 2048) directions.",
+  "Emitted a per-surface precision allocation instead of a scalar sensitivity score.",
+  "Redirected residual budget from coordinate salience to the SVD-visible subspace, because only the latter repaired membership.",
+  "Added a crush-refusal guard so control-flow bits cannot be silently assigned CRUSHED."
+ ],
+ "headline_answer": {
+  "answer": "On the evidence actually in hand: (1) the router gate.weight bits themselves (shape 512\u00d72560 at the L3-L4 seam; the same contract applies to every MoE gate but is only Q4-tested at layer 0); (2) the component of the incoming hidden state that lies in that gate's row-space (\u2264512 of 2560 dimensions) \u2014 rank 512 is the smallest SVD repair that restored top-10 membership; (3) extra residual at tokens whose K vs K+1 logit margin is below 1e-5 \u2014 on this 4-token seam that is exactly the unique membership flip. The remaining \u22652048 hidden directions are routing-inert for this linear router (exact). Expert body bits are payload after the route is chosen; they do not preserve control flow. Shared-expert sigmoid is not router selection.",
+  "bits": [
+   {
+    "class": "CONTROL_FLOW_PREMIUM",
+    "what": "router gate.weight",
+    "why": "These bits are the routing function. The L3-L4 map's next_gate is 'retain dense router at high fidelity'. Layer-0 Q4/G64 selection overlap was 8/10; no low-bit candidate was exact."
+   },
+   {
+    "class": "PREMIUM",
+    "what": "hidden state in the router-visible right-singular subspace",
+    "why": "smallest repairing rank = 512; rank 256 still left 1 membership change"
+   },
+   {
+    "class": "PREMIUM",
+    "what": "sparse residual at low-margin token positions",
+    "why": "flipped positions [1] equal min-margin position 1 (margin 7.858499884605408e-06)"
+   },
+   {
+    "class": "CRUSHED",
+    "what": "routing-inert hidden complement",
+    "why": "J v = 0 for v in the right nullspace of gate.weight"
+   }
+  ],
+  "could_not_answer": [
+   "Named indices of the 2560 hidden dimensions (order not stored).",
+   "Softmax-space Jacobian numbers on this seam (no 512-vector of p).",
+   "Pairwise first-order flip predictor (no full \u0394z stored).",
+   "Any layer other than the L3-L4 seam and the layer-0 Q4 study.",
+   "Any sample larger than 4 captured positions.",
+   "Whether 16-bit is the right premium (no protected measurement).",
+   "Q4 of the layer-4 gate specifically (Q4 evidence is layer 0).",
+   "Expert-body bits as control-flow bits \u2014 they are not; they are payload."
+  ],
+  "flip_is_the_tightest_margin": {
+   "caveat": "n=4; coincidence is still the only seam evidence we have",
+   "flipped_positions": [
+    1
+   ],
+   "holds": true,
+   "min_margin": 7.858499884605408e-06,
+   "min_margin_position": 1
+  },
+  "layer0_q4_selection_parity": {
+   "layer_tensor": "model.language_model.layers.0.mlp.gate.weight",
+   "logits_rmse": 0.05903181433677673,
+   "note": "This is a layer-0 synthetic-vector Q4/G64 vs BF16 comparison, not the L3-L4 captured seam. Homology is a hypothesis.",
+   "status": "MISMATCH",
+   "top_k_overlap_count": 8,
+   "top_k_overlap_fraction": 0.8
+  },
+  "layer0_representation_ab_recommendation": {
+   "best_low_bit_overlap_candidate": "independent_nf4_g64",
+   "best_low_bit_overlap_count": 9,
+   "decision": "retain independent_q4_g64 for the current native kernel; evaluate independent_nf4_g64 only with a native NF4 kernel, or accept the extra scale bytes of a tighter Q4 group if exact routing quality justifies it",
+   "label": "[D]",
+   "native_compatible_baseline": "independent_q4_g64",
+   "native_compatible_baseline_overlap_count": 8,
+   "source_top_k": [
+    29,
+    309,
+    455,
+    151,
+    500,
+    374,
+    15,
+    220,
+    37,
+    0
+   ],
+   "source_top_k_exact_for_any_low_bit_candidate": false
+  },
+  "question": "WHICH BITS EXIST PRIMARILY TO PRESERVE FUTURE CONTROL FLOW?"
+ },
+ "headline_question": "WHICH BITS EXIST PRIMARILY TO PRESERVE FUTURE CONTROL FLOW?",
+ "model": "Qwen3.8-Flash-Next",
+ "negative_findings": [
+  "tools/flash_router_sensitivity_map.py and the L3-L4 map are untracked on the parent disk; they are not in git HEAD.",
+  "This sparse worktree does not materialize receipts/headless; selection/AB were read via git show.",
+  "The 2560-length coordinate-salience order is not in the map, so per-index allocation cannot be emitted.",
+  "Full 512-vectors of logits/probabilities are not in the map, so the softmax Jacobian cannot be evaluated on the seam.",
+  "Global ||\u0394z||_\u221e over-predicts flips; pairwise (W_i-W_j)\u00b7\u03b4x is not recoverable from the receipt.",
+  "n=4 tokens, one seam (L3\u2192L4). Not a corpus distribution.",
+  "Q4 evidence is layer-0 synthetic input, not the layer-4 captured seam.",
+  "Oracle coordinate residual never restored membership; this module did not re-fit it.",
+  "gate.weight itself was not loaded from modellake.",
+  "FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32 was noted (40 KiB = 4\u00d72560 f32) and not interpreted.",
+  "tools/headless/sensitivity_allocation.py is Qwen27 organ VoI; it does not answer this Flash control-flow question.",
+  "No PROTECTED_ABSOLUTE or DIAGNOSTIC_RELATIVE bench was taken; every number here is STATIC_ONLY."
+ ],
+ "noted_conditional_state_f32": {
+  "loaded": false,
+  "note": "noted, not loaded",
+  "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+  "present": true,
+  "rel": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+  "sha256": "14155cfb6e373b850cc1df19b74ac3dda5951d46fe156849c9449add1aeb148b",
+  "size_bytes": 40960
+ },
+ "per_dimension_sensitivity": {
+  "aggregates": [
+   {
+    "dimensions": 3,
+    "fraction": 0.001,
+    "logit_delta_l2_fraction": 0.3462471067905426,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 48,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 13,
+    "fraction": 0.005,
+    "logit_delta_l2_fraction": 0.4253232479095459,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 208,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 26,
+    "fraction": 0.01,
+    "logit_delta_l2_fraction": 0.4671165347099304,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 416,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 51,
+    "fraction": 0.02,
+    "logit_delta_l2_fraction": 0.5412788987159729,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 816,
+    "rows_with_membership_change": 1
+   },
+   {
+    "dimensions": 128,
+    "fraction": 0.05,
+    "logit_delta_l2_fraction": 0.657504677772522,
+    "mean_topk_symmetric_difference": 0.5,
+    "residual_bytes_f32": 2048,
+    "rows_with_membership_change": 1
+   }
+  ],
+  "per_index_vector": null,
+  "per_index_vector_reason": "FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json stores aggregate coordinate_salience fractions, not the 2560-length order",
+  "recommendation": "Do not treat the top coordinate-salience slice as the premium set. Allocate residual in the rank-512 router-visible subspace instead."
+ },
+ "precision_allocation": [
+  {
+   "allocation_not_measurement": true,
+   "bit_class": "ORDINARY",
+   "hidden": 2560,
+   "k": 10,
+   "kind": "position_residual",
+   "margin_min": 3.536790609359741e-05,
+   "membership_flip": false,
+   "n_params": 2560,
+   "name": "flash.l3_l4.position.0",
+   "natural_bit_class": "ORDINARY",
+   "position_index": 0,
+   "positions": 1,
+   "reason": "K vs K+1 margin=3.536790609359741e-05; tight cut is 1e-05 (cited oracle). membership_flip=False",
+   "recommended_storage_bpw": 4.25,
+   "residual_budget_fraction": 0.005
+  },
+  {
+   "allocation_not_measurement": true,
+   "bit_class": "PREMIUM",
+   "hidden": 2560,
+   "k": 10,
+   "kind": "position_residual",
+   "margin_min": 7.858499884605408e-06,
+   "membership_flip": true,
+   "n_params": 2560,
+   "name": "flash.l3_l4.position.1",
+   "natural_bit_class": "PREMIUM",
+   "position_index": 1,
+   "positions": 1,
+   "reason": "K vs K+1 margin=7.858499884605408e-06; tight cut is 1e-05 (cited oracle). membership_flip=True",
+   "recommended_storage_bpw": 8.0,
+   "residual_budget_fraction": 0.02
+  },
+  {
+   "allocation_not_measurement": true,
+   "bit_class": "ORDINARY",
+   "hidden": 2560,
+   "k": 10,
+   "kind": "position_residual",
+   "margin_min": 0.0007034391164779663,
+   "membership_flip": false,
+   "n_params": 2560,
+   "name": "flash.l3_l4.position.2",
+   "natural_bit_class": "ORDINARY",
+   "position_index": 2,
+   "positions": 1,
+   "reason": "K vs K+1 margin=0.0007034391164779663; tight cut is 1e-05 (cited oracle). membership_flip=False",
+   "recommended_storage_bpw": 4.25,
+   "residual_budget_fraction": 0.005
+  },
+  {
+   "allocation_not_measurement": true,
+   "bit_class": "CRUSHED",
+   "hidden": 2560,
+   "k": 10,
+   "kind": "position_residual",
+   "margin_min": 0.004267316311597824,
+   "membership_flip": false,
+   "n_params": 2560,
+   "name": "flash.l3_l4.position.3",
+   "natural_bit_class": "CRUSHED",
+   "position_index": 3,
+   "positions": 1,
+   "reason": "K vs K+1 margin=0.004267316311597824; tight cut is 1e-05 (cited oracle). membership_flip=False",
+   "recommended_storage_bpw": 2.0,
+   "residual_budget_fraction": 0.005
+  },
+  {
+   "allocation_not_measurement": true,
+   "bit_class": "CRUSHED",
+   "hidden": 2560,
+   "k": 10,
+   "kind": "hidden_inert",
+   "margin_min": null,
+   "membership_flip": null,
+   "n_params": 8192,
+   "name": "flash.l3_state.router_inert_complement",
+   "natural_bit_class": "CRUSHED",
+   "position_index": null,
+   "positions": 4,
+   "reason": "orthogonal complement of the router row-space; logits are invariant to perturbations here (exact, not approximate).",
+   "recommended_storage_bpw": 2.0,
+   "residual_budget_fraction": null
+  },
+  {
+   "allocation_not_measurement": true,
+   "bit_class": "PREMIUM",
+   "hidden": 2560,
+   "k": 10,
+   "kind": "hidden_visible",
+   "margin_min": 7.858499884605408e-06,
+   "membership_flip": null,
+   "n_params": 2048,
+   "name": "flash.l3_state.router_visible_subspace",
+   "natural_bit_class": "PREMIUM",
+   "position_index": null,
+   "positions": 4,
+   "reason": "row-space of gate.weight (rank \u2264 n_experts). Rank-512 projection of the observed compact error restored top-10 membership; smaller ranks did not.",
+   "recommended_storage_bpw": 8.0,
+   "residual_budget_fraction": null
+  },
+  {
+   "allocation_not_measurement": true,
+   "bit_class": "CONTROL_FLOW_PREMIUM",
+   "hidden": 2560,
+   "k": 10,
+   "kind": "router_weight",
+   "margin_min": null,
+   "membership_flip": null,
+   "n_params": 1310720,
+   "name": "flash.moe.gate.weight.family",
+   "natural_bit_class": "CONTROL_FLOW_PREMIUM",
+   "position_index": null,
+   "positions": 0,
+   "reason": "gate.weight IS the control-flow function; Q4/G64 of the layer-0 router missed 2/10 experts and no low-bit candidate was exact. The L3-L4 map's next_gate is 'retain dense router at high fidelity'.",
+   "recommended_storage_bpw": 16.0,
+   "residual_budget_fraction": null
+  }
+ ],
+ "promotion_allowed": false,
+ "purpose": "Precision allocation for bits that exist primarily to preserve future MoE control flow. Consumes the Flash L3-L4 sensitivity map; does not recompute it; does not claim a hardware number.",
+ "recovered_implementation": {
+  "adequate_existing": [
+   {
+    "in_git_HEAD": false,
+    "on_parent_disk": true,
+    "path": "tools/flash_router_sensitivity_map.py",
+    "role": "Produced the L3-L4 membership / margin / SVD / coordinate map. READ-ONLY. This sidecar does not recompute it."
+   },
+   {
+    "path": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+    "provenance": {
+     "in_git_HEAD": false,
+     "on_parent_disk": false,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+     "rel": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+     "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28",
+     "source": "worktree"
+    },
+    "role": "the measurement this module allocates from"
+   },
+   {
+    "in_git_HEAD": false,
+    "on_parent_disk": true,
+    "path": "tools/flash_margin_residual_candidate.py",
+    "role": "Existing residual budget by route risk (0.5% / 2% at margin 1e-5). Policy cited; coordinate basis rejected."
+   },
+   {
+    "path": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4.json",
+    "provenance": {
+     "in_git_HEAD": false,
+     "on_parent_disk": false,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4.json",
+     "rel": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4.json",
+     "sha256": "5fc4422723a3fd83c5a84ab2821815431f7f1d503045c5977215931e74801ee7",
+     "source": "worktree"
+    },
+    "role": "oracle residual candidate; still not route-stable"
+   },
+   {
+    "path": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+    "provenance": {
+     "loaded": false,
+     "note": "noted, not loaded",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+     "present": true,
+     "rel": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+     "sha256": "14155cfb6e373b850cc1df19b74ac3dda5951d46fe156849c9449add1aeb148b",
+     "size_bytes": 40960
+    },
+    "role": "conditional-repair state; noted, not loaded"
+   },
+   {
+    "in_git_HEAD": false,
+    "path": "tools/flash_route_stability.py",
+    "role": "compact-bank reuse safety across tokens; different question"
+   },
+   {
+    "in_git_HEAD": false,
+    "path": "tools/flash_route_union_compare.py",
+    "role": "dense vs route-union fingerprint parity; different question"
+   },
+   {
+    "path": "hcli/agentos/flash_router_selection.py",
+    "role": "executes FP32 softmax/top-k over a persisted body; does not allocate bits"
+   },
+   {
+    "path": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+    "provenance": {
+     "in_git_HEAD": false,
+     "on_parent_disk": false,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+     "rel": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+     "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa",
+     "source": "worktree"
+    },
+    "role": "layer-0 Q4/G64 vs source top-k mismatch (8/10)"
+   },
+   {
+    "path": "receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
+    "provenance": {
+     "in_git_HEAD": false,
+     "on_parent_disk": false,
+     "on_worktree_disk": true,
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
+     "rel": "receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
+     "sha256": "da43ea715aa04e84b7da3d243aa28d5631e62f0a79fe75bc49c184dd28a68443",
+     "source": "worktree"
+    },
+    "role": "no low-bit router candidate is exact; NF4/G64 best at 9/10"
+   },
+   {
+    "path": "tools/headless/sensitivity_allocation.py",
+    "role": "Qwen27 organ VoI / EBPW assignment. Different species, different question. Not forked."
+   }
+  ],
+  "in_git_HEAD_named_flash_tools": false,
+  "named_flash_tools_untracked_on_parent_disk": true,
+  "not_adequate_alone": "The Flash map is a diagnostic of one seam. It is not a precision allocation. The Qwen27 sensitivity_allocation receipt is a scalar-per-organ VoI ranking of a dense model, not a router-control-flow allocation. Nothing on disk named the logit Jacobian, stated its validity range, or refused to crush control-flow bits."
+ },
+ "residual_budget_by_route_risk": {
+  "basis_change": "Spend the cited fractions on the SVD-visible subspace, which is the only repair that restored membership in the same map. The oracle coordinate residual (FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4) still left 1 row changed at every tested fraction, including 2%.",
+  "policy": "0.5% residual normally; 2% when dense top10/top11 margin < 1e-5 (tools/flash_margin_residual_candidate.py conditional_policy)",
+  "positions": [
+   {
+    "basis": "router_visible_right_singular_subspace",
+    "cited_oracle_used_coordinate_salience": true,
+    "margin": 3.536790609359741e-05,
+    "membership_flip_on_compact_error": false,
+    "position": 0,
+    "residual_hidden_fraction": 0.005,
+    "route_risk": 28274.221192332,
+    "this_module_redirects_to_svd_subspace": true
+   },
+   {
+    "basis": "router_visible_right_singular_subspace",
+    "cited_oracle_used_coordinate_salience": true,
+    "margin": 7.858499884605408e-06,
+    "membership_flip_on_compact_error": true,
+    "position": 1,
+    "residual_hidden_fraction": 0.02,
+    "route_risk": 127250.74946669827,
+    "this_module_redirects_to_svd_subspace": true
+   },
+   {
+    "basis": "router_visible_right_singular_subspace",
+    "cited_oracle_used_coordinate_salience": true,
+    "margin": 0.0007034391164779663,
+    "membership_flip_on_compact_error": false,
+    "position": 2,
+    "residual_hidden_fraction": 0.005,
+    "route_risk": 1421.5871375007944,
+    "this_module_redirects_to_svd_subspace": true
+   },
+   {
+    "basis": "router_visible_right_singular_subspace",
+    "cited_oracle_used_coordinate_salience": true,
+    "margin": 0.004267316311597824,
+    "membership_flip_on_compact_error": false,
+    "position": 3,
+    "residual_hidden_fraction": 0.005,
+    "route_risk": 234.33931937085933,
+    "this_module_redirects_to_svd_subspace": true
+   }
+  ]
+ },
+ "route_margin_distribution": {
+  "definition": "z_{(K)} - z_{(K+1)} on the captured dense routes; K=10",
+  "max": 0.004267316311597824,
+  "mean": 0.0012534954585134983,
+  "median": 0.00036940351128578186,
+  "min": 7.858499884605408e-06,
+  "n": 4,
+  "sample_is_tiny": true,
+  "sorted": [
+   7.858499884605408e-06,
+   3.536790609359741e-05,
+   0.0007034391164779663,
+   0.004267316311597824
+  ]
+ },
+ "router_jacobian_approximation": {
+  "analytical_form": "J_logit[e, h] = W[e, h]  because z = x @ W.T",
+  "from_sensitivity_map": {
+   "analytical_form": "J_logit = W = gate.weight, because z = x @ W.T",
+   "below_operator_norm_bound": true,
+   "hidden": 2560,
+   "jacobian_matrix": null,
+   "jacobian_matrix_reason": "W is not stored in the sensitivity map; this sidecar does not load the modellake shard. Shape and spectrum are known; entries are not.",
+   "k": 10,
+   "n_experts": 512,
+   "observed_hidden_l2": 0.07877291738986969,
+   "observed_logit_l2": 0.03345860168337822,
+   "observed_logit_linf": 0.005146630574017763,
+   "observed_operator_norm_proxy": 0.42474752480959965,
+   "shape": [
+    512,
+    2560
+   ],
+   "sigma_max": 10.784625053405762,
+   "validity_range": {
+    "logit_jacobian": {
+     "finite_difference": "the compact-minus-dense step on this seam is an exact FD of the logit map, not an infinitesimal eps",
+     "range": "exact for every perturbation in R^{hidden}; the map is affine"
+    },
+    "softmax_jacobian": {
+     "form": "J_p = (diag(p) - p p^T) @ W",
+     "numerical_p_available": false,
+     "observed_logit_linf": 0.005146630574017763,
+     "range": "local; remainder O(||\u0394z||^2)",
+     "reason": "the map does not store the 512-vector of probabilities"
+    },
+    "topk_membership": {
+     "evidence": "observed ||\u0394z||_\u221e=0.005146630574017763 exceeds every stored margin, but only 1/4 rows flipped",
+     "first_order_flip_distance": "K vs K+1 logit margin",
+     "form": "no Jacobian (piecewise constant)",
+     "full_delta_z_available": false,
+     "global_linf_overpredicts_flips": true,
+     "range": "a pair (i in top-K, j outside) flips when (W_i - W_j) \u00b7 \u03b4x exceeds that pair's gap"
+    }
+   }
+  },
+  "softmax_form": "J_p = (diag(p) - p p^T) @ W  (local)",
+  "synthetic": {
+   "finite_difference_eps": 1e-06,
+   "finite_difference_max_abs_error": 1.1043886916084489e-09,
+   "inert_action_max_abs": 1.05365936742229e-15,
+   "matches_analytical": true,
+   "routing_inert_dim": 8,
+   "shape": [
+    8,
+    16
+   ],
+   "top_singular": 5.50432232788356,
+   "top_singular_action": 5.504322327883559,
+   "validity_range": "Logit Jacobian is exact on all of R^H (affine). FD error is rounding only. Directions in the right nullspace of W are routing-inert: J v = 0."
+  },
+  "topk_form": "no derivative; use route_margins"
+ },
+ "schema": "hawking.future.router_science.v1",
+ "seal_sha256": "f0a88e856a3e6c965e16a864c33426119fe4606351b2f1111ac1e81feb15f237",
+ "seam": {
+  "hidden": 2560,
+  "k": 10,
+  "n_experts": 512,
+  "positions": 4,
+  "preceding_layer": 3,
+  "router_layer": 4,
+  "tensor": "model.language_model.layers.4.mlp.gate.weight"
+ },
+ "softmax_jacobian_synthetic": {
+  "analytical_form": "diag(p) - p p^T",
+  "finite_difference_eps": 1e-06,
+  "finite_difference_max_abs_error": 4.7727653496032474e-08,
+  "matches_analytical": true,
+  "validity_range": "Local linearization of softmax. Remainder is O(||\u0394z||^2). This is not a top-k Jacobian \u2014 top-k membership is piecewise constant."
+ },
+ "source_map": {
+  "provenance": {
+   "in_git_HEAD": false,
+   "on_parent_disk": false,
+   "on_worktree_disk": true,
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+   "rel": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+   "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28",
+   "source": "worktree"
+  },
+  "rel": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+  "schema": "hawking.flash.router_sensitivity_map.v1",
+  "snapshot_agrees_on_dense_margin_min": true,
+  "status": "MEASURED_SEAM_DIAGNOSTIC"
+ },
+ "topk_boundary_sensitivity": {
+  "by_epsilon": [
+   {
+    "epsilon": 1e-06,
+    "fraction": 0.0,
+    "meaning": "fraction of tokens whose K vs K+1 logit gap is < 1e-06",
+    "n_within": 0
+   },
+   {
+    "epsilon": 1e-05,
+    "fraction": 0.25,
+    "meaning": "fraction of tokens whose K vs K+1 logit gap is < 1e-05",
+    "n_within": 1
+   },
+   {
+    "epsilon": 0.0001,
+    "fraction": 0.5,
+    "meaning": "fraction of tokens whose K vs K+1 logit gap is < 0.0001",
+    "n_within": 2
+   },
+   {
+    "epsilon": 0.001,
+    "fraction": 0.75,
+    "meaning": "fraction of tokens whose K vs K+1 logit gap is < 0.001",
+    "n_within": 3
+   },
+   {
+    "epsilon": 0.01,
+    "fraction": 1.0,
+    "meaning": "fraction of tokens whose K vs K+1 logit gap is < 0.01",
+    "n_within": 4
+   }
+  ],
+  "k": 10,
+  "n": 4
+ },
+ "version": 1,
+ "what_would_need_hardware": [
+  "Whether premium router bits change complete-token ns, tps, joules, or bandwidth.",
+  "Native organ parity of a compiled margin-aware residual on Metal."
+ ]
+}

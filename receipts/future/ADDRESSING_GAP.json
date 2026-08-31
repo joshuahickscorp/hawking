@@ -1,0 +1,1384 @@
+{
+ "active_bytes_adjudication": {
+  "census_is_a_different_artifact": true,
+  "claimed": 9878901136,
+  "g044_silent": true,
+  "honest_roof_defended_gemv_payload_bytes": {
+   "json_path": "byte_count_adjudication.defended_bytes",
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "gemv_payload",
+   "status": "LOADED",
+   "unit": "bytes",
+   "value": 13611663360.0
+  },
+  "not_three_of_the_named_recover_set": true,
+  "recover_receipts_that_carry_the_claimed_count": [
+   "ACCELERATOR_TOKEN_BYTES_ATLAS",
+   "BANDWIDTH_ASCENT"
+  ],
+  "status": "TWO_OF_NAMED_RECOVER_SET",
+  "why_honest_disagrees": "HONEST_ROOF defends 13_611_663_360 geometry GEMV codes+scales on the uniform-Q4 genome, not sealed-3.14 active-weight-per-token"
+ },
+ "atlas_ceiling_check": {
+  "atlas_recorded_ceiling": 59.69591069708626,
+  "matches_recompute": true,
+  "recomputed_against_589p73": 59.69591069708626,
+  "roof_the_atlas_did_not_state_in_THE_CEILING_name": "THE_CEILING.measured_roof_gb_s = 589.73 is a number; identities.machine.receipt names MACHINE_GENOME. Census 595.9 and honest 699.57 were not used.",
+  "roof_the_atlas_used": "receipts/headless/MACHINE_GENOME.json measured_bandwidth.median_gb_s"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T00:11:38Z",
+  "recorded_by": "tools/future/addressing_gap.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bind_path": {
+  "argument_buffers": "ReplayResourceDeclaration captures resources referenced indirectly. This sidecar did not watch argument-buffer setup on a decode token.",
+  "batched": "CommandBatch can fold dispatches into one sequential encoder (enable_ordered_encoder) or one serial/concurrent group. BANDWIDTH_ASCENT production decode recorded 756 dispatches, 1 CB.",
+  "catalog": "crates/hawking-core/src/metal/mod.rs static_kernel_name is the kernel name catalog (string \u2192 &'static str). Tensor catalog addressing is the production launch of one GEMV per weight tensor.",
+  "default_dispatch": "MetalContext::dispatch_threads creates a command buffer, a compute encoder, set_compute_pipeline_state, caller buffer binds, dispatch_threads, end_encoding, commit, wait_until_completed \u2014 per call.",
+  "icb": "ReplayableComputeGraph encodes an IndirectCommandBuffer once and replays against stable addresses. Comment in metal/mod.rs: 'intentionally not wired into decode selection yet' \u2014 CPU encoding share remains below the ICB ship gate. Declared, not executed, here."
+ },
+ "ceilings": [
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 82.90395750752657,
+   "reason": null,
+   "roof_json_path": "hardware.published_peak_gb_s",
+   "roof_kind": "DEVICE_THEORETICAL",
+   "roof_name": "published_peak",
+   "roof_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "roof_statistic": "datasheet",
+   "roof_value_gb_s": 819.0,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 70.81492616231141,
+   "reason": null,
+   "roof_json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.median",
+   "roof_kind": "ACCESS_PATTERN_MEASURED",
+   "roof_name": "q4_single_gemv_addr_13p6gb_median",
+   "roof_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "roof_statistic": "median",
+   "roof_value_gb_s": 699.5736545106142,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 71.22323261954217,
+   "reason": null,
+   "roof_json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.max",
+   "roof_kind": "ACCESS_PATTERN_MAX_OF_FIVE",
+   "roof_name": "q4_single_gemv_addr_13p6gb_max",
+   "roof_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "roof_statistic": "max",
+   "roof_value_gb_s": 703.6072736347875,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 78.83467900715713,
+   "reason": null,
+   "roof_json_path": "three_roofs.DEVICE_MEASURED_SUSTAINED.value",
+   "roof_kind": "DEVICE_MEASURED_SUSTAINED",
+   "roof_name": "n017_unique_once_sustained",
+   "roof_source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "roof_statistic": "n017_unique_once",
+   "roof_value_gb_s": 778.8,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 38.02566342369384,
+   "reason": null,
+   "roof_json_path": "unique_once_sweep[label=gemv_payload_13p612gb].spread.median",
+   "roof_kind": "UNIQUE_ONCE_CONTROL",
+   "roof_name": "honest_unique_once_13p6gb",
+   "roof_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "roof_statistic": "median",
+   "roof_value_gb_s": 375.6517695934827,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 73.86427430870357,
+   "reason": null,
+   "roof_json_path": "three_roofs.MODEL_REACHABLE.value",
+   "roof_kind": "MODEL_REACHABLE",
+   "roof_name": "model_reachable_organ_ledger",
+   "roof_source": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "roof_statistic": "derived_ai_occupancy_1cb",
+   "roof_value_gb_s": 729.6978633780673,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 60.16349692520302,
+   "reason": null,
+   "roof_json_path": "bandwidth_ceiling_gb_s",
+   "roof_kind": "KERNEL_FAMILY_SWEEP",
+   "roof_name": "g044_roofline_sweep_f4",
+   "roof_source": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
+   "roof_statistic": "roofline_sweep_f4_plateau",
+   "roof_value_gb_s": 594.3492381201206,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 60.320474088809625,
+   "reason": null,
+   "roof_json_path": "measured_roof_gb_s",
+   "roof_kind": "FAMILY_SCORING_REFERENCE",
+   "roof_name": "g072_multi_plane_scoring_reference",
+   "roof_source": "receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json",
+   "roof_statistic": "same_run_roofline_peak",
+   "roof_value_gb_s": 595.9,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 60.320474088809625,
+   "reason": null,
+   "roof_json_path": "artifact.anchors_not_rederived.measured_roof_GB_s",
+   "roof_kind": "PROMOTED_MACHINE_PROPERTY",
+   "roof_name": "census_anchor_595p9",
+   "roof_source": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "roof_statistic": "anchor_not_rederived",
+   "roof_value_gb_s": 595.9,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 59.69591069708626,
+   "reason": null,
+   "roof_json_path": "measured_bandwidth.median_gb_s",
+   "roof_kind": "ONE_ACCESS_PATTERN",
+   "roof_name": "machine_genome_f32_triad",
+   "roof_source": "receipts/headless/MACHINE_GENOME.json",
+   "roof_statistic": "f32_triad_median",
+   "roof_value_gb_s": 589.73,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 53.71594082619277,
+   "reason": null,
+   "roof_json_path": "q4_production_catalog_addr_probe.spread.median",
+   "roof_kind": "PRODUCTION_SHAPED_Q4_ADDR",
+   "roof_name": "q4_catalog_addr_401",
+   "roof_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "roof_statistic": "median",
+   "roof_value_gb_s": 530.6544688491846,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 36.10434154707103,
+   "reason": null,
+   "roof_json_path": "production_decode.before.achieved_gb_s",
+   "roof_kind": "PRODUCTION_DECODE_GPU",
+   "roof_name": "production_decode_tpr64_gpu",
+   "roof_source": "receipts/headless/BANDWIDTH_ASCENT.json",
+   "roof_statistic": "median_tpr64",
+   "roof_value_gb_s": 356.671220723892,
+   "status": "LOADED",
+   "would_improve_tps": null
+  },
+  {
+   "active_bytes": 9878901136,
+   "claim": "arithmetic upper bound IF this roof were 100% utilised; not a reachable TPS",
+   "formula": "roof_gb_s * 1e9 / active_weight_bytes_per_token",
+   "raw_tps_ceiling": 34.14,
+   "reason": null,
+   "roof_json_path": "THE_CEILING.effective_weight_bandwidth_gb_s",
+   "roof_kind": "DERIVED_EFFECTIVE",
+   "roof_name": "atlas_effective_337",
+   "roof_source": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "roof_statistic": "derived_raw_tps_times_bytes",
+   "roof_value_gb_s": 337.26568478304,
+   "status": "LOADED",
+   "would_improve_tps": null
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Every GB/s and every byte count is copied from a named prior receipt or refused. Arithmetic over those copies is DERIVED_FROM_CITED_RECEIPTS, not a new experiment. self_timing is process CPU of this reread and is not GPU, TPS, or a roof. A TPS change is a hypothesis with a falsifier, never a prediction of gain.",
+ "contamination_of_cited_honest_roof": "GPU lane lock was held and timings are completed-command-buffer GPU timestamps, but concurrent CPU builds and a repeatedly respawned sealed-model supervisor were present. Unified-memory contention was not excluded; absolute roof values require a clean paired rerun.",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "no sidecar module adjudicated 703.5 against the honest-roof median",
+  "no sidecar module kept T2 (same-receipt catalog topology) separate from T4 (cross-genome 530\u2192337)",
+  "atlas 59.70 raw-TPS ceiling was computed against 589.73 without a table of the other roofs",
+  "lane-named headless honest-roof / G044 paths are absent in HEAD; ascent copies recovered",
+  "unattributed remainder of 699\u2192337 is labelled UNATTRIBUTED rather than spread across mechanisms"
+ ],
+ "gpu_authority": false,
+ "honest_clean_box": false,
+ "honest_timing_label": "GPU_PROTECTED_CPU_CONTENDED",
+ "kernel_geometry": {
+  "addr_probe": "same launch geometry; loads scales + packed codes and sinks them; no nibble unpack, no input-vector load, no FMA",
+  "cannot_establish": "shader text does not establish occupancy, coalescing efficiency, or achieved GB/s",
+  "code_bytes_per_group_of_64": 32,
+  "decode_probe": "address + dequant; still no input-vector load / FMA",
+  "family": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+  "full": "address + dequant + input load + FMA",
+  "inner_stride_cols": 512,
+  "rows_per_threadgroup": 2,
+  "scale_bytes_per_group_of_64": 2,
+  "source": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+  "threadgroup": 128,
+  "threads_per_row": 64
+ },
+ "lane_claim_adjudication": {
+  "atlas_effective_337p3": {
+   "actual_statistic": "derived_raw_tps_times_bytes",
+   "actual_value": 337.26568478304,
+   "claimed": 337.3,
+   "claimed_statistic": "derived_raw_tps_times_bytes",
+   "json_path": "THE_CEILING.effective_weight_bandwidth_gb_s",
+   "matches_claimed_statistic": true,
+   "reason": null,
+   "source_receipt": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "status": "LOADED"
+  },
+  "catalog_addr_530p7": {
+   "actual_statistic": "median",
+   "actual_value": 530.6544688491846,
+   "claimed": 530.7,
+   "claimed_statistic": "median",
+   "json_path": "q4_production_catalog_addr_probe.spread.median",
+   "matches_claimed_statistic": true,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "LOADED"
+  },
+  "catalog_decode_513_as_max": {
+   "actual_statistic": "max",
+   "actual_value": 513.0233342441745,
+   "claimed": 513.0,
+   "claimed_statistic": "max",
+   "json_path": "q4_production_catalog_decode_probe.spread.max",
+   "matches_claimed_statistic": true,
+   "median_of_same_probe": {
+    "dispatches": 401,
+    "json_path": "q4_production_catalog_decode_probe.spread.median",
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+    "label": "production_catalog_401_gemvs",
+    "payload_bytes": 13611663360,
+    "reason": null,
+    "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "statistic": "median",
+    "status": "LOADED",
+    "topology": "production_shape_catalog",
+    "unit": "GB/s",
+    "value": 454.9232458460072
+   },
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "LOADED",
+   "warning": "the lane cited MAX. The same probe's median is lower and the spread is 294\u2013513 GB/s on five reps (contamination_note: CPU builds + sealed supervisor). MAX is the optimistic decode rung, not a stable tax."
+  },
+  "published_819": {
+   "actual_statistic": "datasheet",
+   "actual_value": 819.0,
+   "claimed": 819.0,
+   "claimed_statistic": "datasheet",
+   "json_path": "hardware.published_peak_gb_s",
+   "matches_claimed_statistic": true,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "LOADED"
+  },
+  "single_gemv_703p5_as_median": {
+   "actual_statistic": "median",
+   "actual_value": 699.5736545106142,
+   "claimed": 703.5,
+   "claimed_statistic": "median",
+   "closest_sourced_max": {
+    "dispatches": 1,
+    "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.max",
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+    "label": "gemv_payload_13p612gb",
+    "payload_bytes": 13611663360,
+    "reason": null,
+    "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "statistic": "max",
+    "status": "LOADED",
+    "topology": "single_gemv",
+    "unit": "GB/s",
+    "value": 703.6072736347875
+   },
+   "closest_sourced_min": {
+    "dispatches": 1,
+    "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.min",
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+    "label": "gemv_payload_13p612gb",
+    "payload_bytes": 13611663360,
+    "reason": null,
+    "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "statistic": "min",
+    "status": "LOADED",
+    "topology": "single_gemv",
+    "unit": "GB/s",
+    "value": 693.1508595217028
+   },
+   "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.median",
+   "lane_claimed_max": 749.7,
+   "lane_claimed_min": 681.0,
+   "matches_claimed_statistic": false,
+   "max_adjudication": {
+    "actual_statistic": "max",
+    "actual_value": 703.6072736347875,
+    "claimed": 749.7,
+    "claimed_statistic": "max",
+    "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.max",
+    "matches_claimed_statistic": false,
+    "reason": "claimed_does_not_match_sourced_statistic",
+    "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "status": "REFUSED"
+   },
+   "min_adjudication": {
+    "actual_statistic": "min",
+    "actual_value": 693.1508595217028,
+    "claimed": 681.0,
+    "claimed_statistic": "min",
+    "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.min",
+    "matches_claimed_statistic": false,
+    "reason": "claimed_does_not_match_sourced_statistic",
+    "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "status": "REFUSED"
+   },
+   "reading": "q4_single_gemv_addr_probe at the 13.612 GB payload (the fair comparison against the 401-GEMV catalog) has median 699.57, min 693.15, max 703.61. 703.5 is not the median. It is not the max rounded to one decimal (703.6). The 64 MiB point is 817 median and is cache-sized; it is not this roof.",
+   "reason": "claimed_does_not_match_sourced_statistic",
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "REFUSED"
+  }
+ },
+ "loads": {
+  "ascent": {
+   "reason": null,
+   "rel": "receipts/headless/BANDWIDTH_ASCENT.json",
+   "status": "LOADED",
+   "via": "disk:receipts/headless/BANDWIDTH_ASCENT.json"
+  },
+  "atlas": {
+   "reason": null,
+   "rel": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "status": "LOADED",
+   "via": "disk:receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+  },
+  "census": {
+   "reason": null,
+   "rel": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "status": "LOADED",
+   "via": "disk:receipts/headless/NOETIC_ORGAN_CENSUS.json"
+  },
+  "g044": {
+   "reason": null,
+   "rel": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
+   "status": "LOADED",
+   "via": "disk:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
+  },
+  "g072": {
+   "reason": null,
+   "rel": "receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json",
+   "status": "LOADED",
+   "via": "disk:receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json"
+  },
+  "genome": {
+   "reason": null,
+   "rel": "receipts/headless/MACHINE_GENOME.json",
+   "status": "LOADED",
+   "via": "disk:receipts/headless/MACHINE_GENOME.json"
+  },
+  "honest": {
+   "reason": null,
+   "rel": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "LOADED",
+   "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+  },
+  "honest_reduced": {
+   "reason": null,
+   "rel": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json",
+   "status": "LOADED",
+   "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json"
+  },
+  "lane_g044": {
+   "reason": "unseen_in_this_checkout_and_HEAD",
+   "rel": "receipts/headless/G044_ROOFLINE_KNEE.json",
+   "status": "REFUSED",
+   "via": null
+  },
+  "lane_honest": {
+   "reason": "unseen_in_this_checkout_and_HEAD",
+   "rel": "receipts/headless/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "REFUSED",
+   "via": null
+  },
+  "lane_honest_reduced": {
+   "reason": "unseen_in_this_checkout_and_HEAD",
+   "rel": "receipts/headless/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json",
+   "status": "REFUSED",
+   "via": null
+  },
+  "ledger": {
+   "reason": null,
+   "rel": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "status": "LOADED",
+   "via": "disk:receipts/headless/ORGAN_ROOF_LEDGER.json"
+  },
+  "organ_bw": {
+   "reason": null,
+   "rel": "receipts/headless/ORGAN_BANDWIDTH.json",
+   "status": "LOADED",
+   "via": "disk:receipts/headless/ORGAN_BANDWIDTH.json"
+  },
+  "unpack": {
+   "reason": null,
+   "rel": "receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json",
+   "status": "LOADED",
+   "via": "disk:receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json"
+  }
+ },
+ "loss_chain_closure": {
+  "attributed_gb_s": 168.91918566142965,
+  "pieces": [
+   {
+    "delta_gb_s": 168.91918566142965,
+    "id": "T2_single_gemv_addr_to_catalog_addr",
+    "mechanism": "catalog_indirection_per_tensor + mixed-organ occupancy"
+   }
+  ],
+  "refused_policy": "do_not_distribute_unattributed_remainder",
+  "status": "LOADED",
+  "total_delta_gb_s": 362.30796972757423,
+  "unattributed_gb_s": 193.38878406614458,
+  "unattributed_label": "UNATTRIBUTED"
+ },
+ "moe_gather": {
+  "genome": "qwen38-27b-hybrid-deltanet-gqa",
+  "mechanism": "gather_for_route_selection",
+  "reason": "this catalog mix is 192 MLP + 144 DeltaNet + 64 GQA + 1 lm_head; Qwen3.8-27B hybrid is not an MoE. Attributing 703\u2192337 to expert gather is a genome error.",
+  "status": "REFUSED"
+ },
+ "negative_findings": [
+  "receipts/headless/HONEST_ROOF_WEIGHT_ADDRESSING.json is unseen in HEAD; the measurements live under receipts/ascent-2026-08-16/",
+  "receipts/headless/G044_ROOFLINE_KNEE.json is unseen in HEAD; G044 lives under receipts/ascent-2026-08-16/",
+  "703.5 is not the median of q4_single_gemv_addr_probe at the 13.612 GB payload (median 699.57, max 703.61)",
+  "lane min 681.0 / max 749.7 do not match that probe's min 693.15 / max 703.61",
+  "reduced honest-roof catalog probes are null; 530 cannot be cited from the reduced receipt",
+  "only two of the named recover receipts carry 9_878_901_136 (atlas, bandwidth_ascent); honest roof defends 13_611_663_360",
+  "530\u2192337 crosses genomes and is UNATTRIBUTED as a single addressing mechanism",
+  "catalog decode MAX 513 is not a stable rung (median 454.9, spread 294\u2013513)",
+  "q2 organ-sized addr_probe ~968 GB/s exceeds published 819 and is refused as a DRAM roof",
+  "HONEST unique_once 13.6 GB ~376 and ORGAN_ROOF_LEDGER 778.8 are both called unique-once and disagree",
+  "this host is contaminated and holds no lease; absolute roofs in the cited receipts are contended (clean_box false)",
+  "ICB is declared in metal/mod.rs and was not executed here; naming it is not evidence it ran",
+  "no change is claimed to improve TPS; the tallest removable is a hypothesis with a falsifier"
+ ],
+ "next_workunits": [
+  {
+   "lane": "ANALYSIS",
+   "species": "STRUCTURAL_COST_COMPARE",
+   "state": "RUNNABLE_HERE",
+   "work": "this receipt. CPU reread. No GPU. Already the cheapest falsifier of 703.5-as-median and of 595.9-as-machine-roof."
+  },
+  {
+   "lane": "GPU_PROTECTED",
+   "species": "PROTECTED_AB",
+   "state": "SLEEPING",
+   "wake": "a distinct HCLI GPU_PROTECTED lane holds a proven lease; this sidecar never flocks",
+   "work": "GPU_PROTECTED A/B, same unique 13_611_663_360-byte Q4 slab, same addr_probe kernel: (A) 401 production-shaped GEMVs as q4_production_catalog_addr_probe, (B) ReplayableComputeGraph of the same 401 with binds hoisted, (C) fused gate_up / qkv reducing dispatch count at unchanged bytes. Hypothesis dies if B and C GPU timestamp GB/s ranges overlap A. This sidecar will not run it."
+  },
+  {
+   "lane": "GPU_PROTECTED",
+   "species": "PROFILE_ACTIVE_BYTES",
+   "state": "SLEEPING",
+   "work": "same-genome probe: catalog addr_probe, catalog full, and production decode GPU timestamps on ONE artifact so T4 can leave UNATTRIBUTED"
+  }
+ ],
+ "path_adjudication": {
+  "lane_named_g044_headless": {
+   "reason": "unseen_in_this_checkout_and_HEAD",
+   "rel": "receipts/headless/G044_ROOFLINE_KNEE.json",
+   "status": "REFUSED",
+   "via": null
+  },
+  "lane_named_honest_headless": {
+   "reason": "unseen_in_this_checkout_and_HEAD",
+   "rel": "receipts/headless/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "REFUSED",
+   "via": null
+  },
+  "recovered_g044_ascent": {
+   "reason": null,
+   "rel": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
+   "status": "LOADED",
+   "via": "disk:receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json"
+  },
+  "recovered_honest_ascent": {
+   "reason": null,
+   "rel": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "status": "LOADED",
+   "via": "disk:receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+  },
+  "rule": "the lane named receipts/headless/HONEST_ROOF_WEIGHT_ADDRESSING.json; HEAD has it under receipts/ascent-2026-08-16/. Substituting without recording the miss would repeat the 595.9 hop."
+ },
+ "purpose": "Attribute the measured drop from a clean Q4 GEMV addressing probe to production-decode effective weight bandwidth, recompute the atlas TPS ceiling against every candidate roof with the roof named, and rank what is removable. No hardware measurement.",
+ "q2_organ_addr_probe_as_dram_roof": {
+  "as_dram_roof": false,
+  "published_peak": 819.0,
+  "reason": "exceeds_published_peak_not_a_dram_roof",
+  "source_receipt": "receipts/headless/BANDWIDTH_ASCENT.json",
+  "status": "REFUSED",
+  "value": 968.7930434782609
+ },
+ "recorded_raw_tps": {
+  "json_path": "THE_CEILING.sealed_raw_tps_recorded",
+  "reason": null,
+  "source_receipt": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+  "statistic": "recorded_not_remeasured",
+  "status": "LOADED",
+  "unit": "raw_tps_recorded",
+  "value": 34.14
+ },
+ "recovered_implementation": [
+  "tools/future/_common.py write_receipt / HARDWARE_FIELDS / git()",
+  "tools/future/frontiers.py load_optional (sparse-absent is not absence)",
+  "tools/future/hbm_doctor.py load_repo_json pattern and ATLAS/CENSUS paths",
+  "tools/future/qwen27_profile_schema.py ATLAS_REL",
+  "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json (the measurements)",
+  "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json (337 derived, 589.73 roof, 9.879e9 bytes)",
+  "receipts/headless/BANDWIDTH_ASCENT.json (356.7 production decode GPU, q2 organ probes)",
+  "receipts/headless/NOETIC_ORGAN_CENSUS.json (595.9 anchor)",
+  "receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json (595.9 family scoring)",
+  "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json (594.35 f4 sweep)",
+  "receipts/headless/MACHINE_GENOME.json (589.73 f32 triad, not a SoC roof)",
+  "receipts/headless/ORGAN_ROOF_LEDGER.json (819 / 778.8 / 729.7 never collapsed)",
+  "receipts/headless/ORGAN_BANDWIDTH.json (mlp_gate_up holds the 356\u2192778 gap share)",
+  "receipts/headless/ACCELERATOR_UNPACK_IS_THE_WALL.json (q2 unpack vs Q4 addressing)",
+  "crates/hawking-core/shaders/qwen_uniform_q4.metal (addr/decode/full geo_tpr64_tg128)",
+  "crates/hawking-core/src/metal/mod.rs (kernel catalog, per-dispatch bind, ICB not wired)"
+ ],
+ "removable_ranking": [
+  {
+   "applies_to": "T2_single_gemv_addr_to_catalog_addr",
+   "class": "REMOVABLE",
+   "class_is": "HYPOTHESIS_UNTESTED",
+   "declared_not_executed": true,
+   "evidence": "ReplayableComputeGraph encodes an IndirectCommandBuffer once and replays against stable addresses. Comment in metal/mod.rs: 'intentionally not wired into decode selection yet' \u2014 CPU encoding share remains below the ICB ship gate. Declared, not executed, here.",
+   "falsifier": "GPU_PROTECTED A/B, same unique 13_611_663_360-byte Q4 slab, same addr_probe kernel: (A) 401 production-shaped GEMVs as q4_production_catalog_addr_probe, (B) ReplayableComputeGraph of the same 401 with binds hoisted, (C) fused gate_up / qkv reducing dispatch count at unchanged bytes. Hypothesis dies if B and C GPU timestamp GB/s ranges overlap A. This sidecar will not run it.",
+   "id": "per_dispatch_rebinding_and_catalog_indirection",
+   "rank": 1
+  },
+  {
+   "applies_to": "T2_single_gemv_addr_to_catalog_addr",
+   "class": "PARTLY_REMOVABLE",
+   "evidence": "honest roof names tiny ba 96x5120. ORGAN_ROOF_LEDGER: occupancy-starved organs cannot reach DRAM roofs. Packing/batching is a layout change; the 96-row shape is the genome.",
+   "falsifier": "same catalog addr_probe with ba rows padded/packed to the MLP tile vs current 96x5120; overlap \u21d2 occupancy is not the loss",
+   "id": "mixed_organ_occupancy_tiny_ba",
+   "rank": 2
+  },
+  {
+   "applies_to": "T2_single_gemv_addr_to_catalog_addr",
+   "class": "STRUCTURAL",
+   "evidence": "production GEMVs have distinct x vectors. The 13.6 GB single GEMV is diagnostic concatenation. Fusion of same-x pairs is rank 1, not this row.",
+   "id": "many_tensors_vs_one_gemv",
+   "rank": 3
+  },
+  {
+   "applies_to": "T4_catalog_addr_to_atlas_effective",
+   "class": "STRUCTURAL",
+   "evidence": "ACCELERATOR_UNPACK_IS_THE_WALL + atlas pareto. Codec change is GRAVITY, not addressing. Direction cited, not re-measured.",
+   "id": "q2_unpack_on_majority_bytes",
+   "rank": 4,
+   "status_on_this_drop": "UNATTRIBUTED"
+  },
+  {
+   "applies_to": "both, as a constant",
+   "class": "STRUCTURAL",
+   "evidence": {
+    "addr_probe": "same launch geometry; loads scales + packed codes and sinks them; no nibble unpack, no input-vector load, no FMA",
+    "cannot_establish": "shader text does not establish occupancy, coalescing efficiency, or achieved GB/s",
+    "code_bytes_per_group_of_64": 32,
+    "decode_probe": "address + dequant; still no input-vector load / FMA",
+    "family": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "full": "address + dequant + input load + FMA",
+    "inner_stride_cols": 512,
+    "rows_per_threadgroup": 2,
+    "scale_bytes_per_group_of_64": 2,
+    "source": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+    "threadgroup": 128,
+    "threads_per_row": 64
+   },
+   "id": "tile_threadgroup_geometry",
+   "note": "identical on the comparable T2 rungs; cannot explain T2",
+   "rank": 5
+  },
+  {
+   "applies_to": "T2 and T4",
+   "class": "REFUSED",
+   "evidence": {
+    "genome": "qwen38-27b-hybrid-deltanet-gqa",
+    "mechanism": "gather_for_route_selection",
+    "reason": "this catalog mix is 192 MLP + 144 DeltaNet + 64 GQA + 1 lm_head; Qwen3.8-27B hybrid is not an MoE. Attributing 703\u2192337 to expert gather is a genome error.",
+    "status": "REFUSED"
+   },
+   "id": "gather_for_route_selection",
+   "rank": 6
+  },
+  {
+   "applies_to": "T4",
+   "class": "UNATTRIBUTED",
+   "evidence": "no isolating probe on the same genome in the recover set",
+   "id": "synchronization_between_organs",
+   "rank": 7
+  },
+  {
+   "applies_to": "T2",
+   "class": "UNATTRIBUTED",
+   "evidence": "ReplayResourceDeclaration captures resources referenced indirectly. This sidecar did not watch argument-buffer setup on a decode token.",
+   "id": "descriptor_argument_buffer_setup",
+   "rank": 8
+  }
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.addressing_gap.analyze() / build()",
+  "fails_closed": "unsourced number \u2192 REFUSED; missing receipt \u2192 REFUSED rung; ceiling without a named sourced roof \u2192 UnstatedRoof; TPS change without falsifier \u2192 TpsClaimRefused; loss across genomes \u2192 UNATTRIBUTED; GB/s above published peak \u2192 refused as DRAM roof",
+  "frontier": "FT.ACTIVE_BYTES",
+  "receipt": "receipts/future/ADDRESSING_GAP.json",
+  "workunit": "one CPU_ANALYSIS unit; reread sealed receipts; write ADDRESSING_GAP.json; no GPU, no flock, no TPS"
+ },
+ "roofs": [
+  {
+   "as_dram_roof": true,
+   "json_path": "hardware.published_peak_gb_s",
+   "kind": "DEVICE_THEORETICAL",
+   "name": "published_peak",
+   "note": "datasheet. Honest roof: 15% unused is not available to this Q4 grouped-GEMV access pattern without changing the genome.",
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "datasheet",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 819.0
+  },
+  {
+   "as_dram_roof": true,
+   "dispatches": 1,
+   "fraction_of_published_peak": 0.8541802863377463,
+   "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "kind": "ACCESS_PATTERN_MEASURED",
+   "label": "gemv_payload_13p612gb",
+   "name": "q4_single_gemv_addr_13p6gb_median",
+   "note": "HONEST_ROOF kernel roof. Conditioned on geo_tpr64_tg128, unique codes+scales, 13.612 GB, 1 dispatch. Timing_label GPU_PROTECTED_CPU_CONTENDED, clean_box false.",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 699.5736545106142
+  },
+  {
+   "as_dram_roof": false,
+   "dispatches": 1,
+   "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.max",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "kind": "ACCESS_PATTERN_MAX_OF_FIVE",
+   "label": "gemv_payload_13p612gb",
+   "name": "q4_single_gemv_addr_13p6gb_max",
+   "note": "not a roof; the best of five contended reps. Included so 703.5 can be compared and refused.",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "max",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 703.6072736347875
+  },
+  {
+   "as_dram_roof": true,
+   "json_path": "three_roofs.DEVICE_MEASURED_SUSTAINED.value",
+   "kind": "DEVICE_MEASURED_SUSTAINED",
+   "name": "n017_unique_once_sustained",
+   "note": "ORGAN_ROOF_LEDGER copies BANDWIDTH_ROOF 778.8. HONEST_ROOF unique_once at 13.6 GB plateaus near 376. Two unique_once figures; do not collapse them.",
+   "reason": null,
+   "source_receipt": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "statistic": "n017_unique_once",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 778.8
+  },
+  {
+   "as_dram_roof": true,
+   "dispatches": 26,
+   "json_path": "unique_once_sweep[label=gemv_payload_13p612gb].spread.median",
+   "kernel": "q80_decode_shape_unique_once",
+   "kind": "UNIQUE_ONCE_CONTROL",
+   "label": "gemv_payload_13p612gb",
+   "name": "honest_unique_once_13p6gb",
+   "note": "honest roof: unique_once is NOT the Q4 GEMV ceiling; production Q4 GEMV beats it at every size measured.",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "chunked_uint32_nbytes",
+   "unit": "GB/s",
+   "value": 375.6517695934827
+  },
+  {
+   "as_dram_roof": false,
+   "json_path": "three_roofs.MODEL_REACHABLE.value",
+   "kind": "MODEL_REACHABLE",
+   "name": "model_reachable_organ_ledger",
+   "note": "AI + occupancy + 1-CB serial structure on the production token graph. A third number. S022 \u00a71.",
+   "reason": null,
+   "source_receipt": "receipts/headless/ORGAN_ROOF_LEDGER.json",
+   "statistic": "derived_ai_occupancy_1cb",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 729.6978633780673
+  },
+  {
+   "as_dram_roof": true,
+   "json_path": "bandwidth_ceiling_gb_s",
+   "kind": "KERNEL_FAMILY_SWEEP",
+   "name": "g044_roofline_sweep_f4",
+   "note": "hawking_roofline_sweep_f4 1 GiB float4, bandwidth plateau. Not a GEMV genome, not a decode roof.",
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
+   "statistic": "roofline_sweep_f4_plateau",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 594.3492381201206
+  },
+  {
+   "as_dram_roof": false,
+   "json_path": "measured_roof_gb_s",
+   "kind": "FAMILY_SCORING_REFERENCE",
+   "name": "g072_multi_plane_scoring_reference",
+   "note": "the roofline sweep in the SAME run peaks at 595.9 GB/s at low arithmetic intensity, so that is the ceiling these kernels are scored against rather than a figure from another day NOETIC_CANON traces the three hops that promoted it to a machine property.",
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/G072_MULTI_PLANE_GEMV.json",
+   "statistic": "same_run_roofline_peak",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 595.9
+  },
+  {
+   "as_dram_roof": false,
+   "json_path": "artifact.anchors_not_rederived.measured_roof_GB_s",
+   "kind": "PROMOTED_MACHINE_PROPERTY",
+   "name": "census_anchor_595p9",
+   "note": "NOETIC_ORGAN_CENSUS artifact.anchors_not_rederived.measured_roof_GB_s = 595.9. Copied, not measured in that receipt.",
+   "reason": null,
+   "source_receipt": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "statistic": "anchor_not_rederived",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 595.9
+  },
+  {
+   "as_dram_roof": true,
+   "json_path": "measured_bandwidth.median_gb_s",
+   "kind": "ONE_ACCESS_PATTERN",
+   "name": "machine_genome_f32_triad",
+   "note": "MACHINE_GENOME measured_bandwidth.median_gb_s = 589.73; is_theoretical_roof=False. Atlas THE_CEILING used this. The genome itself says it is not the SoC roof and not workload-reachable.",
+   "reason": null,
+   "source_receipt": "receipts/headless/MACHINE_GENOME.json",
+   "statistic": "f32_triad_median",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 589.73
+  },
+  {
+   "as_dram_roof": true,
+   "dispatches": 401,
+   "json_path": "q4_production_catalog_addr_probe.spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "kind": "PRODUCTION_SHAPED_Q4_ADDR",
+   "label": "production_catalog_401_gemvs",
+   "name": "q4_catalog_addr_401",
+   "note": "same kernel as the 13.6 GB single GEMV, 401 mixed organs, unique synthetic Q4. Not sealed-3.14 production decode.",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "production_shape_catalog",
+   "unit": "GB/s",
+   "value": 530.6544688491846
+  },
+  {
+   "as_dram_roof": false,
+   "json_path": "production_decode.before.achieved_gb_s",
+   "kind": "PRODUCTION_DECODE_GPU",
+   "name": "production_decode_tpr64_gpu",
+   "note": "BANDWIDTH_ASCENT tpr64 incumbent on sealed-3.14, 9.879 GB, 756 dispatches, 1 CB. GPU timestamps. Contended.",
+   "reason": null,
+   "source_receipt": "receipts/headless/BANDWIDTH_ASCENT.json",
+   "statistic": "median_tpr64",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 356.671220723892
+  },
+  {
+   "as_dram_roof": false,
+   "json_path": "THE_CEILING.effective_weight_bandwidth_gb_s",
+   "kind": "DERIVED_EFFECTIVE",
+   "name": "atlas_effective_337",
+   "note": "raw_tps_recorded \u00d7 active_bytes. Atlas: NOTHING WAS TIMED. Not a roof; the achieved-on-TPS figure.",
+   "reason": null,
+   "source_receipt": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "statistic": "derived_raw_tps_times_bytes",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 337.26568478304
+  }
+ ],
+ "schema": "hawking.future.addressing_gap.v1",
+ "seal_sha256": "3de6734b63a8f992ef5d88dc97bdceae2352f46ca50d5ae01f32c7c8757c7633",
+ "self_timing": {
+  "class": "SELF_MEASURED_DIRTY",
+  "cpu_parse_s": 0.04497849999461323,
+  "not": "a GPU measurement, a lease, a TPS, a roof, or evidence the cited probes still hold on this contaminated host"
+ },
+ "silicon_vs_datasheet": {
+  "fraction_of_published_peak": 0.8541802863377463,
+  "reading": "the 13.612 GB single-GEMV addr median over published peak. Honest roof wrote 699.6/819 = 85%. The unused 15% is not a catalog bug."
+ },
+ "sourced_rungs": {
+  "atlas_active_bytes": {
+   "json_path": "headline.active_weight_bytes_per_token",
+   "reason": null,
+   "source_receipt": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "statistic": "catalog_sum",
+   "status": "LOADED",
+   "unit": "bytes",
+   "value": 9878901136.0
+  },
+  "atlas_effective": {
+   "json_path": "THE_CEILING.effective_weight_bandwidth_gb_s",
+   "reason": null,
+   "source_receipt": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "statistic": "derived_raw_tps_times_bytes",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 337.26568478304
+  },
+  "catalog_addr_median": {
+   "dispatches": 401,
+   "json_path": "q4_production_catalog_addr_probe.spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "label": "production_catalog_401_gemvs",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "production_shape_catalog",
+   "unit": "GB/s",
+   "value": 530.6544688491846
+  },
+  "catalog_decode_max": {
+   "dispatches": 401,
+   "json_path": "q4_production_catalog_decode_probe.spread.max",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+   "label": "production_catalog_401_gemvs",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "max",
+   "status": "LOADED",
+   "topology": "production_shape_catalog",
+   "unit": "GB/s",
+   "value": 513.0233342441745
+  },
+  "catalog_decode_median": {
+   "dispatches": 401,
+   "json_path": "q4_production_catalog_decode_probe.spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+   "label": "production_catalog_401_gemvs",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "production_shape_catalog",
+   "unit": "GB/s",
+   "value": 454.9232458460072
+  },
+  "catalog_full_median": {
+   "dispatches": 401,
+   "json_path": "q4_production_catalog_full.spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "label": "production_catalog_401_gemvs",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "production_shape_catalog",
+   "unit": "GB/s",
+   "value": 505.8100047843556
+  },
+  "production_decode_gpu_tpr64": {
+   "json_path": "production_decode.before.achieved_gb_s",
+   "reason": null,
+   "source_receipt": "receipts/headless/BANDWIDTH_ASCENT.json",
+   "statistic": "median_tpr64",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 356.671220723892
+  },
+  "published_peak": {
+   "json_path": "hardware.published_peak_gb_s",
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "datasheet",
+   "status": "LOADED",
+   "unit": "GB/s",
+   "value": 819.0
+  },
+  "reduced_catalog_addr": {
+   "json_path": "q4_production_catalog_addr_probe",
+   "reason": "absent_or_non_numeric",
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.reduced.json",
+   "statistic": "median",
+   "status": "REFUSED",
+   "unit": "GB/s",
+   "value": null
+  },
+  "single_gemv_addr_max_13p6gb": {
+   "dispatches": 1,
+   "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.max",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "label": "gemv_payload_13p612gb",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "max",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 703.6072736347875
+  },
+  "single_gemv_addr_median_13p6gb": {
+   "dispatches": 1,
+   "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "label": "gemv_payload_13p612gb",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 699.5736545106142
+  },
+  "single_gemv_addr_min_13p6gb": {
+   "dispatches": 1,
+   "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.min",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "label": "gemv_payload_13p612gb",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "min",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 693.1508595217028
+  },
+  "single_gemv_decode_median_13p6gb": {
+   "dispatches": 1,
+   "json_path": "q4_single_gemv_decode_probe[label=gemv_payload_13p612gb].spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+   "label": "gemv_payload_13p612gb",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 683.7970139656385
+  },
+  "single_gemv_full_median_13p6gb": {
+   "dispatches": 1,
+   "json_path": "q4_single_gemv_full[label=gemv_payload_13p612gb].spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+   "label": "gemv_payload_13p612gb",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 666.6814921907636
+  },
+  "tiled_same_shape_addr_median": {
+   "dispatches": 287,
+   "json_path": "q4_tiled_production_organ[label=13p612gb_tiled_gate_addr].spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "label": "13p612gb_tiled_gate_addr",
+   "payload_bytes": 13589381120,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "tiled_production_organ",
+   "unit": "GB/s",
+   "value": 591.1317979446468
+  },
+  "unique_once_13p6gb": {
+   "dispatches": 26,
+   "json_path": "unique_once_sweep[label=gemv_payload_13p612gb].spread.median",
+   "kernel": "q80_decode_shape_unique_once",
+   "label": "gemv_payload_13p612gb",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "chunked_uint32_nbytes",
+   "unit": "GB/s",
+   "value": 375.6517695934827
+  }
+ },
+ "tallest_removable": {
+  "delta_gb_s": 168.91918566142965,
+  "from": {
+   "dispatches": 1,
+   "json_path": "q4_single_gemv_addr_probe[label=gemv_payload_13p612gb].spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "label": "gemv_payload_13p612gb",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "single_gemv",
+   "unit": "GB/s",
+   "value": 699.5736545106142
+  },
+  "name": "production_catalog_mixed_organ_addressing_vs_single_clean_gemv",
+  "not_a_tps_gain": true,
+  "status": "ATTRIBUTED",
+  "structural_remainder": "one dispatch per distinct input vector is required; concatenating unrelated tensors against a synthetic x is a microbenchmark",
+  "to": {
+   "dispatches": 401,
+   "json_path": "q4_production_catalog_addr_probe.spread.median",
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "label": "production_catalog_401_gemvs",
+   "payload_bytes": 13611663360,
+   "reason": null,
+   "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "statistic": "median",
+   "status": "LOADED",
+   "topology": "production_shape_catalog",
+   "unit": "GB/s",
+   "value": 530.6544688491846
+  },
+  "what_would_remove_it": {
+   "falsifier": "GPU_PROTECTED A/B, same unique 13_611_663_360-byte Q4 slab, same addr_probe kernel: (A) 401 production-shaped GEMVs as q4_production_catalog_addr_probe, (B) ReplayableComputeGraph of the same 401 with binds hoisted, (C) fused gate_up / qkv reducing dispatch count at unchanged bytes. Hypothesis dies if B and C GPU timestamp GB/s ranges overlap A. This sidecar will not run it.",
+   "kind": "HYPOTHESIS_UNTESTED",
+   "status_label": "HYPOTHESIS_UNTESTED",
+   "text": "Hoist per-dispatch catalog binds into the existing ICB substrate and stop mixing occupancy-starved 96x5120 ba with streaming MLP in one encoder; fuse same-input pairs (gate_up / qkv kernels already exist). Cannot be 'one 13.6 GB GEMV' \u2014 that topology is not production.",
+   "would_improve_tps": null
+  },
+  "why_this_one": "It is the only drop whose two rungs share genome, kernel, payload bytes, and receipt. The numerically larger 530\u2192337 step is UNATTRIBUTED because those rungs do not."
+ },
+ "target_raw_tps_for_50_accepted_at_30_of_43": {
+  "json_path": "THE_CEILING.raw_tps_needed_for_50_accepted_at_the_30_of_43_floor",
+  "reason": null,
+  "source_receipt": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+  "statistic": "derived",
+  "status": "LOADED",
+  "unit": "raw_tps_needed",
+  "value": 71.66666666666667
+ },
+ "transitions": [
+  {
+   "catalog_mix": "192 MLP + 144 DN + 64 GQA + 1 lm_head = 401 GEMVs",
+   "delta": {
+    "comparable": true,
+    "comparable_reason": null,
+    "delta_gb_s": 168.91918566142965,
+    "from_gb_s": 699.5736545106142,
+    "from_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "same_bytes": true,
+    "same_genome": true,
+    "same_kernel": true,
+    "same_receipt": true,
+    "status": "LOADED",
+    "to_gb_s": 530.6544688491846,
+    "to_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+   },
+   "delta_gb_s": 168.91918566142965,
+   "from": "q4_single_gemv_addr_probe median at 13.612 GB",
+   "from_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+   "id": "T2_single_gemv_addr_to_catalog_addr",
+   "mechanism": "catalog_indirection_per_tensor + mixed-organ occupancy",
+   "named_by": "adjudication.execution_headroom.dispatch_topology in receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json: '401 mixed organs leave ~24% vs one GEMV. Tiny ba (96x5120) and encoder boundaries are genome, not ALU.'",
+   "not_this_drop": {
+    "coalescing": "same kernel, same packed-code load; not isolated here",
+    "decode_and_fma": "single-GEMV full vs addr tax is 0.04701743999044716; catalog addr_probe does not unpack. ALU is not this drop.",
+    "gather_for_route_selection": {
+     "genome": "qwen38-27b-hybrid-deltanet-gqa",
+     "mechanism": "gather_for_route_selection",
+     "reason": "this catalog mix is 192 MLP + 144 DeltaNet + 64 GQA + 1 lm_head; Qwen3.8-27B hybrid is not an MoE. Attributing 703\u2192337 to expert gather is a genome error.",
+     "status": "REFUSED"
+    },
+    "tile_threadgroup_geometry": "STRUCTURAL to the kernel (64 threads/row, TG 128) and IDENTICAL on both rungs; it cannot be why 699 became 530"
+   },
+   "removable": "PARTLY_REMOVABLE",
+   "removable_piece": "per-dispatch pipeline+buffer rebinding (ICB exists, not wired) and mixing occupancy-starved 96x5120 ba with streaming MLP in one encoder",
+   "same_kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "same_payload_bytes": 13611663360,
+   "status": "ATTRIBUTED",
+   "structural_piece": "many tensors / many inputs; cannot concatenate into one GEMV",
+   "subsplit_same_receipt": {
+    "reading": "chopping one GEMV into 287 same-shape gate tiles already leaves the single-GEMV median; mixing 401 production shapes leaves more. Production cannot be one 13.6 GB GEMV (inputs differ per tensor) \u2014 that piece is STRUCTURAL. Per-dispatch bind and mixing tiny ba with huge MLP in one encoder are the removable hypotheses.",
+    "same_shape_tiles_to_401_mixed": {
+     "comparable": false,
+     "comparable_reason": "different genome, kernel family, or byte denominator; not one mechanism",
+     "delta_gb_s": 60.47732909546221,
+     "from_gb_s": 591.1317979446468,
+     "from_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+     "same_bytes": false,
+     "same_genome": true,
+     "same_kernel": true,
+     "same_receipt": true,
+     "status": "LOADED",
+     "to_gb_s": 530.6544688491846,
+     "to_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    },
+    "single_gemv_to_287_same_shape_tiles": {
+     "comparable": false,
+     "comparable_reason": "different genome, kernel family, or byte denominator; not one mechanism",
+     "delta_gb_s": 108.44185656596744,
+     "from_gb_s": 699.5736545106142,
+     "from_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+     "same_bytes": false,
+     "same_genome": true,
+     "same_kernel": true,
+     "same_receipt": true,
+     "status": "LOADED",
+     "to_gb_s": 591.1317979446468,
+     "to_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    },
+    "tile_payload_bytes_not_identical": "tiled 13p612gb_tiled_gate_addr payload is 13_589_381_120, catalog is 13_611_663_360. Direction holds; do not quote the subsplit as exact conservation."
+   },
+   "to": "q4_production_catalog_addr_probe median at 13.612 GB"
+  },
+  {
+   "candidates_not_distributed": [
+    {
+     "id": "q2_mlp_majority_bytes",
+     "isolated_gate_addr_probe_refused_as_dram_roof": {
+      "as_dram_roof": false,
+      "published_peak": 819.0,
+      "reason": "exceeds_published_peak_not_a_dram_roof",
+      "source_receipt": "receipts/headless/BANDWIDTH_ASCENT.json",
+      "status": "REFUSED",
+      "value": 968.7930434782609
+     },
+     "isolated_gate_tpr64": {
+      "json_path": "isolated_gemv.shapes[0].arms.tpr64.weight_gb_s_median",
+      "reason": null,
+      "source_receipt": "receipts/headless/BANDWIDTH_ASCENT.json",
+      "statistic": "median",
+      "status": "LOADED",
+      "unit": "GB/s",
+      "value": 197.01500983207663
+     },
+     "note": "atlas pareto: 5.348 GB of 9.879 GB is qwen_affine_q2_group32_matvec_geo_tpr64_tg128 (192 dispatches). BANDWIDTH_ASCENT isolated gate_proj tpr64 is organ-sized (~27 MB), not a 13 GB stream.",
+     "status": "UNATTRIBUTED"
+    },
+    {
+     "id": "non_gemv_organs",
+     "note": "atlas: 402 matvec dispatches carry 99.893% of weight bytes; 562 others carry 0.107% and price at ~0.586 ms of a 29.29 ms token. ORGAN_BANDWIDTH ranks mlp_gate_up as the largest share of the 356.7\u2192778.8 gap, then deltanet, mlp_down, GQA. That is a different roof (778.8) on the production genome.",
+     "status": "UNATTRIBUTED"
+    },
+    {
+     "atlas_effective": {
+      "json_path": "THE_CEILING.effective_weight_bandwidth_gb_s",
+      "reason": null,
+      "source_receipt": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+      "statistic": "derived_raw_tps_times_bytes",
+      "status": "LOADED",
+      "unit": "GB/s",
+      "value": 337.26568478304
+     },
+     "atlas_nothing_timed": true,
+     "delta_same_bytes_different_runs": {
+      "comparable": true,
+      "comparable_reason": null,
+      "delta_gb_s": 19.40553594085202,
+      "from_gb_s": 356.671220723892,
+      "from_source": "receipts/headless/BANDWIDTH_ASCENT.json",
+      "same_bytes": true,
+      "same_genome": true,
+      "same_kernel": true,
+      "same_receipt": false,
+      "status": "LOADED",
+      "to_gb_s": 337.26568478304,
+      "to_source": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+     },
+     "id": "tps_denominator_vs_gpu_timestamp",
+     "note": "337 is recorded raw TPS \u00d7 bytes. BANDWIDTH_ASCENT tpr64 production decode is GPU-timestamp GB/s on the same 9.879 GB. They are not the same quantity and were not the same run.",
+     "production_decode_gpu_tpr64": {
+      "json_path": "production_decode.before.achieved_gb_s",
+      "reason": null,
+      "source_receipt": "receipts/headless/BANDWIDTH_ASCENT.json",
+      "statistic": "median_tpr64",
+      "status": "LOADED",
+      "unit": "GB/s",
+      "value": 356.671220723892
+     },
+     "status": "UNATTRIBUTED"
+    },
+    {
+     "id": "synchronization_between_organs",
+     "note": "catalog addr probe is GEMV-only. Production decode has DeltaNet, GQA, RMSNorm, SwiGLU, sampling. Sync is in that graph; it is not isolated as a GB/s term here.",
+     "status": "UNATTRIBUTED"
+    }
+   ],
+   "catalog_decode_probe_is_not_the_rung": {
+    "decode_median": {
+     "dispatches": 401,
+     "json_path": "q4_production_catalog_decode_probe.spread.median",
+     "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe",
+     "label": "production_catalog_401_gemvs",
+     "payload_bytes": 13611663360,
+     "reason": null,
+     "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+     "statistic": "median",
+     "status": "LOADED",
+     "topology": "production_shape_catalog",
+     "unit": "GB/s",
+     "value": 454.9232458460072
+    },
+    "delta_addr_median_to_decode_max": {
+     "comparable": true,
+     "comparable_reason": null,
+     "delta_gb_s": 17.63113460501006,
+     "from_gb_s": 530.6544688491846,
+     "from_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+     "same_bytes": true,
+     "same_genome": true,
+     "same_kernel": false,
+     "same_receipt": true,
+     "status": "LOADED",
+     "to_gb_s": 513.0233342441745,
+     "to_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+    },
+    "full_median": {
+     "dispatches": 401,
+     "json_path": "q4_production_catalog_full.spread.median",
+     "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "label": "production_catalog_401_gemvs",
+     "payload_bytes": 13611663360,
+     "reason": null,
+     "source_receipt": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+     "statistic": "median",
+     "status": "LOADED",
+     "topology": "production_shape_catalog",
+     "unit": "GB/s",
+     "value": 505.8100047843556
+    },
+    "reason": "max vs median, five-rep spread 294\u2013513, and decode-median (454.9) sits below full-median (505.8). Do not treat 513 as a stable decode tax on the catalog topology.",
+    "status": "UNATTRIBUTED"
+   },
+   "delta": {
+    "comparable": false,
+    "comparable_reason": "different genome, kernel family, or byte denominator; not one mechanism",
+    "delta_gb_s": 193.38878406614458,
+    "from_gb_s": 530.6544688491846,
+    "from_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "same_bytes": false,
+    "same_genome": false,
+    "same_kernel": false,
+    "same_receipt": false,
+    "status": "LOADED",
+    "to_gb_s": 337.26568478304,
+    "to_source": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json"
+   },
+   "delta_gb_s": null,
+   "delta_vs_production_decode_gpu": {
+    "comparable": false,
+    "comparable_reason": "different genome, kernel family, or byte denominator; not one mechanism",
+    "delta_gb_s": 173.98324812529256,
+    "from_gb_s": 530.6544688491846,
+    "from_source": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json",
+    "same_bytes": false,
+    "same_genome": false,
+    "same_kernel": false,
+    "same_receipt": false,
+    "status": "LOADED",
+    "to_gb_s": 356.671220723892,
+    "to_source": "receipts/headless/BANDWIDTH_ASCENT.json"
+   },
+   "from": "q4_production_catalog_addr_probe median (uniform-Q4, 13.612 GB, 401 GEMVs)",
+   "gather_for_route_selection": {
+    "genome": "qwen38-27b-hybrid-deltanet-gqa",
+    "mechanism": "gather_for_route_selection",
+    "reason": "this catalog mix is 192 MLP + 144 DeltaNet + 64 GQA + 1 lm_head; Qwen3.8-27B hybrid is not an MoE. Attributing 703\u2192337 to expert gather is a genome error.",
+    "status": "REFUSED"
+   },
+   "id": "T4_catalog_addr_to_atlas_effective",
+   "mechanism": "UNATTRIBUTED",
+   "removable": "UNATTRIBUTED",
+   "status": "UNATTRIBUTED",
+   "to": "ACCELERATOR_TOKEN_BYTES_ATLAS effective_weight_bandwidth (sealed-3.14, 9.879 GB)",
+   "why_not_one_mechanism": "different artifact (uniform-Q4 13.6 GB GEMV payload vs sealed-3.14 HQ30UQ4 mixer + affine_q2 MLP 9.879 GB), different kernel families, different dispatch graph (401 vs 756/964), and 337 is raw_tps \u00d7 bytes with NOTHING TIMED in the atlas. Subtracting 530\u2212337 as if it continued the catalog-addressing experiment is the same class of error as promoting 595.9 from a family scoring reference."
+  }
+ ],
+ "version": 1
+}

@@ -1,0 +1,474 @@
+{
+ "admitted": true,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:40:38Z",
+  "recorded_by": "tools/future/power_torture.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "compose_refusal": null,
+ "credit_rules": {
+  "catalog_refill_of_already_offered_ids_counts": false,
+  "module_build_is_not_behaviour": true,
+  "mutation_without_rollback_counts": false,
+  "untested_status_challenge_counts": false
+ },
+ "detector": {
+  "entry_point": "tools.future.power_torture.detect_no_wait_orchestration",
+  "fail_verdict": "FAIL_NO_WAIT_ORCHESTRATION",
+  "negative_control": "FAIL_NO_WAIT_ORCHESTRATION",
+  "negative_fired": true,
+  "positive_control": "NO_WAIT_OK",
+  "positive_overlap_proven": true
+ },
+ "doctrine": "STRESS TRANSITIONS, NOT CLOCKS",
+ "duration_s": 1800,
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "no 30-minute transition-density composer existed; 15m/1h/3h/6h mixes never exercised post-trial powers",
+  "FAIL_NO_WAIT_ORCHESTRATION is now a detector the torture can fire on itself from timestamps",
+  "a mix missing any required transition class is a named refusal",
+  "a mutation without proven rollback does not count toward MUTATION",
+  "an UNTESTED status challenge does not count toward STATUS_CAUSALITY",
+  "frontiers.refill returning the same ids is recorded as NOT a real refill; replan extras are"
+ ],
+ "gpu_authority": false,
+ "n_replans": 3,
+ "n_units": 11,
+ "negative_findings": [
+  "this module is not in orchestration.BINDINGS (that table is outside this WRITE list)",
+  "autonomy_run.py is not wired to trial_id=30m (outside this WRITE list); compose is the callable the loop would import",
+  "frontiers.refill currently returns the same ids as next_work; that is the 1h replay, not a real refill",
+  "nr_nx_generic.py cannot be imported here: tools.odyssey is not materialized; callable_on records a staged REFUSAL",
+  "compose drives proofs of each class; it does not run a 30-minute clock and does not invoke specimen hashing",
+  "resident_model_cognition is not exercised; the loop under test is HCLI orchestration",
+  "PROTECTED_PARKING parks; this sidecar still has no GPU authority and will not execute the unit",
+  "concurrency_doctor.verdict is refused without a resident process; CONCURRENCY_HELPS is not a default"
+ ],
+ "proofs": {
+  "abliteration": {
+   "contracts_both_sets_required": true,
+   "n_method_stages": 5,
+   "plan_ok": true,
+   "plan_why": "PLAN_ONLY on Qwen--Qwen3-0.6B@c1899de289a0",
+   "specimen": "Qwen--Qwen3-0.6B@c1899de289a0"
+  },
+  "catalog_refill_is_replay": true,
+  "challenge": {
+   "claim_kind": "host_hardware_absence",
+   "probe_kind": "process_error",
+   "source": "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+   "status": "BLOCKED_NO_METAL_GPU",
+   "verdict": "OVERREACHING"
+  },
+  "concurrency": {
+   "decide_verdict": null,
+   "experiment_state": "SLEEPING",
+   "ladder": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "verdict_refused": true
+  },
+  "mutation_id": "MUT.PIPELINE_SELF.FT_HCLI_SELF_emit-workunits.1",
+  "nr_nx": {
+   "callable": false,
+   "first_failing_stage": {
+    "error": "parameterized_on_wrong_parent",
+    "stage": "Doctor",
+    "status": "FAILED",
+    "why": "tools.odyssey.doctor_tournament is parameterized on a hardcoded PARENT (/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16) with Qwen3.8-27B tensor names; 12/12 probe tensors are absent from this specimen. probes() was not run: it imports torch+safetensors and would load the wrong model"
+   },
+   "missing_path": null,
+   "why": "first failing stage Doctor: tools.odyssey.doctor_tournament is parameterized on a hardcoded PARENT (/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16) with Qwen3.8-27B tensor names; 12/12 probe tensors are absent from this specimen. probes() was not run: it imports torch+safetensors and would load the wrong model"
+  },
+  "overlap_verdict": "NO_WAIT_OK",
+  "protected": {
+   "n_continued": 32,
+   "parked": true,
+   "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+   "wake_condition": {
+    "all_of": [
+     "contamination_class == QUIESCENT (CONTAMINATION_SCIENCE receipt, never coerced)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)"
+    ],
+    "never": [
+     "fabricated or simulated lease presented as live",
+     "fcntl.flock / lockf / os.O_EXCL on a bench lock",
+     "quiesce standing workers to forge a quiet machine",
+     "synthetic QUIESCENT",
+     "mark the scheduler incapable because the window is busy"
+    ]
+   }
+  },
+  "ranking": {
+   "n_ranked": 11,
+   "n_restatement_refused": 9,
+   "next_organ": "ngram_embedding",
+   "next_school": "NGRAM",
+   "next_surface": "n-gram table lookup (frequency-tiered generator + hot islands)"
+  },
+  "real_refill": {
+   "fresh": [
+    "WU.TORTURE.replan.ngram_product_codebook",
+    "WU.TORTURE.replan.next_organ.NGRAM"
+   ],
+   "n_fresh": 2,
+   "n_returned": 2,
+   "present": true,
+   "source": "replan_after_scar_and_invalidation",
+   "why": "replan_after_scar_and_invalidation returned 2 id(s) not already offered"
+  },
+  "scar": {
+   "dead_decision": "REFUSED",
+   "live_decision": "ADMITTED",
+   "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+   "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+  },
+  "subagents": {
+   "disjoint": true,
+   "n_states": 2,
+   "present": true
+  },
+  "wait_verdict": "FAIL_NO_WAIT_ORCHESTRATION"
+ },
+ "purpose": "Compose a 30-minute transition-density workload that forces each post-1h power to demonstrate real behaviour, and detect FAIL_NO_WAIT_ORCHESTRATION from timestamps so the torture can fail itself.",
+ "recovered_implementation": [
+  "tools/future/trial_workload.py \u2014 composer shape, WorkloadRefused, make_unit, admit_unit, load_book",
+  "tools/future/no_wait_scheduler.py \u2014 launch_detached / runnable_now / ingest_ready / prove_overlap_interval (detector sits on top)",
+  "tools/future/mutation_engine.py \u2014 propose / apply / evidence / rollback / pipeline_self_cycle",
+  "tools/future/status_causality.py \u2014 challenge / scan / verdict; UNTESTED is not a challenge",
+  "tools/future/protected_scheduler.py \u2014 recognize / decide / park / continue_with / drive",
+  "tools/future/nr_nx_generic.py \u2014 assemble / STAGE_ORDER; callable_on wraps it and refuses closed on ImportError",
+  "tools/future/concurrency_doctor.py \u2014 plan / observe / verdict / decide SLEEPING",
+  "tools/future/abliteration.py \u2014 method / plan / contracts",
+  "tools/future/flash_organ_pivot.py \u2014 rank_all / refuse_if_restatement",
+  "tools/future/autonomy_run.py \u2014 the loop that will execute this (not edited; outside WRITE)",
+  "tools/future/scar_scheduling.py \u2014 admit / refuse_if_dead via negative_index",
+  "tools/future/frontiers.py \u2014 next_work / refill (catalog refill is a replay; recorded as such)",
+  "tools/future/workgraph.py \u2014 two durable independent agent graphs",
+  "tools/future/work_events.py \u2014 RESULT_INGESTED requires cites; WORK_REFILLED requires fresh ids",
+  "tools/future/autonomy_trial.py \u2014 cpu_workunit / work_identity / is_low_information"
+ ],
+ "replans": [
+  {
+   "cause": "scar_pruning",
+   "cause_id": "WU.TORTURE.scar.cross_expert_structure",
+   "effect_id": "WU.TORTURE.replan.ngram_product_codebook",
+   "how": "refuse_if_dead / scar_scheduling.admit killed cross_expert_structure on qwen3-80b; the replacement is the n-gram product codebook, a different organ, not a restatement"
+  },
+  {
+   "cause": "status_causality",
+   "cause_id": "WU.TORTURE.status.blocked_no_metal_gpu",
+   "effect_id": "WU.TORTURE.protected.ready_protected",
+   "how": "BLOCKED_NO_METAL_GPU is OVERREACHING given a process_error probe; teacher-capture's wake condition is not 'acquire a GPU'. Protected work stays parked; CPU work continues"
+  },
+  {
+   "cause": "frontier_invalidation",
+   "cause_id": "WU.TORTURE.invalidate.gate_up.shared_input_latent",
+   "effect_id": "WU.TORTURE.replan.next_organ.NGRAM",
+   "how": "restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj is refused; next ranked school is NGRAM"
+  }
+ ],
+ "required_transitions": [
+  "NO_WAIT",
+  "REAL_REFILL",
+  "REAL_INGESTION",
+  "SCAR_PRUNING",
+  "STATUS_CAUSALITY",
+  "PROTECTED_PARKING",
+  "GENERIC_NR_NX",
+  "MUTATION",
+  "SUBAGENT_STATE",
+  "CONCURRENCY",
+  "FRONTIER_INVALIDATION",
+  "REPLAN"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.power_torture.compose()",
+  "fails_closed": "missing transition class raises TortureRefused naming it; UNTESTED challenges and mutations without rollback do not count; detect_no_wait_orchestration returns FAIL_NO_WAIT_ORCHESTRATION rather than a guessed pass; absent timeline raises",
+  "frontier": "FT.HCLI_SELF.emit-workunits",
+  "receipt": "receipts/future/POWER_TORTURE.json",
+  "workunit": "one CPU_ANALYSIS unit; compose the 30-minute transition-density workload and refuse a mix missing any required transition class"
+ },
+ "schema": "hawking.future.power_torture.v1",
+ "seal_sha256": "f31a28d4e7b5f9dcaca5ef3f93e582605535e64bb39c6b3662943c1278641257",
+ "transitions": {
+  "CONCURRENCY": {
+   "experiment_state": "SLEEPING",
+   "ladder": [
+    1,
+    2,
+    3,
+    4
+   ],
+   "present": true,
+   "verdict_refuse_why": "no observations; refusing a verdict rather than defaulting to CONCURRENCY_HELPS",
+   "verdict_refused": true,
+   "why": "plan() emitted the 1-2-3-4 ladder; verdict() refused without observations; decide() is SLEEPING with no CONCURRENCY_HELPS"
+  },
+  "FRONTIER_INVALIDATION": {
+   "killed_family": "shared_input_latent_plus_expert_local_output_readout",
+   "next_school": "NGRAM",
+   "present": true,
+   "why": "REFUSED WU.TORTURE.invalidate.gate_up.shared_input_latent: restatement of killed family shared_input_latent_plus_expert_local_output_readout (receipts/future/RIVAL_CODEC_SCREEN.json): nearby restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj (split=None); more ranks of a killed family on the exhausted surface are refused. The scar does not generalise, and this candidate did not leave the surface."
+  },
+  "GENERIC_NR_NX": {
+   "callable": false,
+   "first_failing_stage": {
+    "error": "parameterized_on_wrong_parent",
+    "stage": "Doctor",
+    "status": "FAILED",
+    "why": "tools.odyssey.doctor_tournament is parameterized on a hardcoded PARENT (/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16) with Qwen3.8-27B tensor names; 12/12 probe tensors are absent from this specimen. probes() was not run: it imports torch+safetensors and would load the wrong model"
+   },
+   "present": true,
+   "why": "first failing stage Doctor: tools.odyssey.doctor_tournament is parameterized on a hardcoded PARENT (/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16) with Qwen3.8-27B tensor names; 12/12 probe tensors are absent from this specimen. probes() was not run: it imports torch+safetensors and would load the wrong model"
+  },
+  "MUTATION": {
+   "mutation_class": "PIPELINE_SELF",
+   "mutation_id": "MUT.PIPELINE_SELF.FT_HCLI_SELF_emit-workunits.1",
+   "present": true,
+   "why": "proposal applied in reversible scope; rollback digest matched",
+   "without_rollback_does_not_count": true
+  },
+  "NO_WAIT": {
+   "overlap_verdict": "NO_WAIT_OK",
+   "present": true,
+   "wait_verdict": "FAIL_NO_WAIT_ORCHESTRATION",
+   "why": "detector fired on wait-while-runnable and accepted a timestamped detached overlap (start, progress, complete)"
+  },
+  "PROTECTED_PARKING": {
+   "n_continued": 32,
+   "present": true,
+   "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+   "wake_condition": {
+    "all_of": [
+     "contamination_class == QUIESCENT (CONTAMINATION_SCIENCE receipt, never coerced)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)"
+    ],
+    "never": [
+     "fabricated or simulated lease presented as live",
+     "fcntl.flock / lockf / os.O_EXCL on a bench lock",
+     "quiesce standing workers to forge a quiet machine",
+     "synthetic QUIESCENT",
+     "mark the scheduler incapable because the window is busy"
+    ]
+   },
+   "why": "GPU_EXCLUSIVE unit parked BLOCKED_ON_PROTECTED_WINDOW with a wake condition; continue_with returned 32 CPU units"
+  },
+  "REAL_INGESTION": {
+   "cites": [
+    "receipts/future/STATUS_CAUSALITY_CHALLENGE.json"
+   ],
+   "present": true,
+   "why": "RESULT_INGESTED cites a real receipt path; an ingest without citations is not an ingest"
+  },
+  "REAL_REFILL": {
+   "catalog_refill_is_replay": true,
+   "fresh": [
+    "WU.TORTURE.replan.ngram_product_codebook",
+    "WU.TORTURE.replan.next_organ.NGRAM"
+   ],
+   "present": true,
+   "why": "replan_after_scar_and_invalidation returned 2 id(s) not already offered"
+  },
+  "REPLAN": {
+   "n": 3,
+   "pairs": [
+    {
+     "cause": "scar_pruning",
+     "cause_id": "WU.TORTURE.scar.cross_expert_structure",
+     "effect_id": "WU.TORTURE.replan.ngram_product_codebook",
+     "how": "refuse_if_dead / scar_scheduling.admit killed cross_expert_structure on qwen3-80b; the replacement is the n-gram product codebook, a different organ, not a restatement"
+    },
+    {
+     "cause": "status_causality",
+     "cause_id": "WU.TORTURE.status.blocked_no_metal_gpu",
+     "effect_id": "WU.TORTURE.protected.ready_protected",
+     "how": "BLOCKED_NO_METAL_GPU is OVERREACHING given a process_error probe; teacher-capture's wake condition is not 'acquire a GPU'. Protected work stays parked; CPU work continues"
+    },
+    {
+     "cause": "frontier_invalidation",
+     "cause_id": "WU.TORTURE.invalidate.gate_up.shared_input_latent",
+     "effect_id": "WU.TORTURE.replan.next_organ.NGRAM",
+     "how": "restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj is refused; next ranked school is NGRAM"
+    }
+   ],
+   "present": true,
+   "why": "3 results change what runs next"
+  },
+  "SCAR_PRUNING": {
+   "present": true,
+   "replacement_id": "WU.TORTURE.replan.ngram_product_codebook",
+   "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010",
+   "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+   "why": "candidate refused by scar receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010; replacement admitted"
+  },
+  "STATUS_CAUSALITY": {
+   "present": true,
+   "status": "BLOCKED_NO_METAL_GPU",
+   "untested_does_not_count": true,
+   "verdict": "OVERREACHING",
+   "why": "challenged 'BLOCKED_NO_METAL_GPU' with probe_kind='process_error'; verdict=OVERREACHING"
+  },
+  "SUBAGENT_STATE": {
+   "disjoint": true,
+   "n_states": 2,
+   "present": true,
+   "why": "two WorkGraph documents, distinct unit sets, reload preserved identity and did not leak state"
+  }
+ },
+ "trial_id": "30m",
+ "units": [
+  {
+   "classification": "STATIC_ONLY",
+   "description": "recompute published digests for the cheapest listed specimen as a DETACHED long job so independent CPU work can start, progress and complete while it stays open",
+   "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+   "id": "WU.TORTURE.NO_WAIT.specimen_verify",
+   "launch": "detached",
+   "module": "specimen_verify.py",
+   "resource_class": "IO_HEAVY",
+   "species": "SPECIMEN_VERIFY",
+   "status": "pending",
+   "transition": "NO_WAIT",
+   "worth_doing_anyway": "a completed whole-tree receipt is Odyssey I curriculum integrity and stands if the torture dies"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "query the scar index for cross_expert_structure on qwen3-80b routed experts and refuse it before any experiment is scheduled",
+   "frontier_id": "FT.VERIFICATION.negative-index",
+   "id": "WU.TORTURE.SCAR_PRUNING.negative_index",
+   "launch": "independent",
+   "module": "negative_index.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "UPDATE_SCAR",
+   "status": "pending",
+   "transition": "SCAR_PRUNING",
+   "worth_doing_anyway": "a cited scar that actually kills a proposal is the campaign's own next work; rediscovery is not free"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "generate n-gram-school product-codebook candidates below Q4 without fitting weights, scored against the scar that just killed cross_expert_structure; this identity was not in the catalog refill table",
+   "frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+   "id": "WU.TORTURE.REAL_REFILL.ngram_school",
+   "launch": "inline",
+   "module": "ngram_school.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "GRAVITY_SEARCH",
+   "status": "pending",
+   "transition": "REAL_REFILL",
+   "worth_doing_anyway": "a fresh candidate set on a different organ than the scar is representation work the campaign already queued, and it is the replacement the prune chose"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "challenge BLOCKED_NO_METAL_GPU against the probe that actually ran (process_error at dense_source_bf16_prefix_initialization), not against a reconstructed world-state",
+   "frontier_id": "FT.VERIFICATION.negative-index",
+   "id": "WU.TORTURE.STATUS_CAUSALITY.status_causality",
+   "launch": "independent",
+   "module": "status_causality.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "STATUS_CHALLENGE",
+   "status": "pending",
+   "transition": "STATUS_CAUSALITY",
+   "worth_doing_anyway": "the label has already laundered a causal claim once; a challenge receipt that separates probe from interpretation stands"
+  },
+  {
+   "classification": "SLEEPING",
+   "description": "SLEEPING until hardware qualifies (no_gpu_authority). protected_scheduler.py informs FT.GPU_KERNELS.ready-protected but required lanes ['GPU_PROTECTED'] need GPU authority this sidecar does not have CPU/simulation/research work must continue on other fronts.",
+   "frontier_id": "FT.GPU_KERNELS.ready-protected",
+   "id": "WU.TRIAL.PROTECTED_PARKING.protected_scheduler",
+   "launch": "parked",
+   "module": "protected_scheduler.py",
+   "resource_class": "GPU_EXCLUSIVE",
+   "species": "PROTECTED_SCHEDULER",
+   "status": "blocked",
+   "transition": "PROTECTED_PARKING",
+   "worth_doing_anyway": "CAPABLE and AVAILABLE are different fields; recording that split is the work even when the window stays closed"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "propose the PIPELINE_SELF refill-identity mutation, apply it in a reversible scope, and roll it back proving byte-identity; this is the metabolism the 1h trial never had",
+   "frontier_id": "FT.HCLI_SELF.emit-workunits",
+   "id": "WU.TORTURE.MUTATION.mutation_engine",
+   "launch": "inline",
+   "module": "mutation_engine.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "MUTATION_ENGINE",
+   "status": "pending",
+   "transition": "MUTATION",
+   "worth_doing_anyway": "a proven undo on the policy that replayed 25 ids is usable whether or not the resident later KEPT it"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "emit the session-concurrency ladder (1, 2, 3, 4 while informative) and refuse a verdict without a resident process or a protected lease; occupancy is not available compute",
+   "frontier_id": "FT.LATENCY.cpu-turnaround",
+   "id": "WU.TORTURE.CONCURRENCY.concurrency_doctor",
+   "launch": "inline",
+   "module": "concurrency_doctor.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "CONCURRENCY_DOCTOR",
+   "status": "pending",
+   "transition": "CONCURRENCY",
+   "worth_doing_anyway": "the plan is the experiment; a SLEEPING unit with a wake condition is honest and stands without a GPU"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "rank remaining Flash organs by expected information gain per cost and refuse a nearby restatement of a killed family on layer_4.routed_experts.gate_up_proj",
+   "frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+   "id": "WU.TORTURE.FRONTIER_INVALIDATION.flash_organ_pivot",
+   "launch": "inline",
+   "module": "flash_organ_pivot.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "ORGAN_PIVOT",
+   "status": "pending",
+   "transition": "FRONTIER_INVALIDATION",
+   "worth_doing_anyway": "leaving the exhausted gate_up surface is F019 CPU work; a ranked next organ stands even if no teacher row ever arrives"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "drive the generic NR\u2192NX pipeline on the cheapest whole-tree specimen the compiler can see; if the compiler is not importable, record a staged REFUSAL naming the first real blocker rather than skipping a stage",
+   "frontier_id": "FT.GPU_KERNELS.flash-nx",
+   "id": "WU.TORTURE.GENERIC_NR_NX.nr_nx_generic",
+   "launch": "inline",
+   "module": "nr_nx_generic.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "NR_NX_GENERIC",
+   "status": "pending",
+   "transition": "GENERIC_NR_NX",
+   "worth_doing_anyway": "naming the first failing compiler stage is the work Odyssey I still needs; a SKIPPED stage would be a fictional pass"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "recover the candidate-direction generator (completion + harmless + loss gates) and plan it against the smallest whole-tree-verified residual-stream parent; fitting sleeps",
+   "frontier_id": "FT.MODEL_CAPABILITY.tournament-refuse",
+   "id": "WU.TORTURE.SUPPORTING.abliteration",
+   "launch": "inline",
+   "module": "abliteration.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "ABLITERATION",
+   "status": "pending",
+   "transition": "SUPPORTING",
+   "worth_doing_anyway": "a method+plan bound to Tabula is the generator the campaign is missing; a run that would suppress refusals while destroying capability is already a Tabula FAILURE on paper"
+  },
+  {
+   "classification": "STATIC_ONLY",
+   "description": "persist two independent logical agent graphs (organ ranking vs status challenge) so a process death cannot collapse them into one queue",
+   "frontier_id": "FT.HCLI_SELF.no-launch",
+   "id": "WU.TORTURE.SUBAGENT_STATE.workgraph",
+   "launch": "inline",
+   "module": "workgraph.py",
+   "resource_class": "STATIC_ANALYSIS",
+   "species": "HCLI_SELF_OPTIMIZE",
+   "status": "pending",
+   "transition": "SUBAGENT_STATE",
+   "worth_doing_anyway": "durable disjoint agent state is how a restart resumes rather than replays; the documents are the work"
+  }
+ ],
+ "version": 1
+}

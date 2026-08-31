@@ -1,0 +1,542 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:57:11Z",
+  "recorded_by": "tools/future/status_causality.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "does_not_assert_world_state": true,
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "challenging a status was something Claude noticed five times, not a resident call",
+  "no routine produced probe/observation/interpretation/alternatives/falsifier for a blocker",
+  "the five historical overreaches had no regression that would fire on the next similar label"
+ ],
+ "gpu_authority": false,
+ "historical_cases": [
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "this process cannot see a present GPU (sandbox, launch, slice)"
+    },
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the error string names Metal but the failure is elsewhere in prefix init"
+    },
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the host has no Metal-capable GPU"
+    }
+   ],
+   "claim_kind": "host_hardware_absence",
+   "confidence": {
+    "about": "whether the recorded probe entails the causal claim",
+    "level": "LOW",
+    "would_lower": "any additional world-state consistent with the same observation",
+    "would_raise": "MTLCreateSystemDefaultDevice() and metal::Device::system_default() from an ordinary process (tools.future.metal_reachability.probe)"
+   },
+   "direct_observation": "failure.stage=dense_source_bf16_prefix_initialization; failure.error='metal: no Metal-capable GPU'; teacher_rows_written=0; claim_boundary asserts 'this host has no Metal-capable GPU'",
+   "falsifier": "MTLCreateSystemDefaultDevice() and metal::Device::system_default() from an ordinary process (tools.future.metal_reachability.probe)",
+   "id": "HC.BLOCKED_NO_METAL_GPU",
+   "interpretation": "this host has no Metal-capable GPU",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "process_error",
+   "probe_performed": "flash_meta_teacher_trace stamps this status on ANY dense_source_bf16_prefix_initialization error; this run's error string was 'metal: no Metal-capable GPU'",
+   "recovered_from": [
+    "tools/future/autonomy_scars.py::STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+    "tools/future/metal_reachability.py",
+    "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json"
+   ],
+   "source": "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+   "status": "BLOCKED_NO_METAL_GPU",
+   "verdict": "OVERREACHING"
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the directory moved to another volume under the same name"
+    },
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the hardcoded path is stale; the object is present elsewhere"
+    },
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the object was never on this host"
+    }
+   ],
+   "claim_kind": "object_absence",
+   "confidence": {
+    "about": "whether the recorded probe entails the causal claim",
+    "level": "LOW",
+    "would_lower": "any additional world-state consistent with the same observation",
+    "would_raise": "look for the same directory name under known model roots (tools.future.odyssey_launch._resolve_stale_input)"
+   },
+   "direct_observation": "declared path is absent; the same directory name is present at /Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+   "falsifier": "look for the same directory name under known model roots (tools.future.odyssey_launch._resolve_stale_input)",
+   "id": "HC.MODEL_MISSING",
+   "interpretation": "the model is missing",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "path_existence",
+   "probe_performed": "Path.exists() on the hardcoded parent /Users/scammermike/models/qwen3.8-27b-abliterated-bf16",
+   "recovered_from": [
+    "tools/future/autonomy_scars.py::SISTER_SYMPTOMS",
+    "tools/future/odyssey_launch.py::_resolve_stale_input",
+    "tools/future/external_specimen_seal.py"
+   ],
+   "source": "tools/odyssey/doctor_tournament.py declared Path (via tools/future/odyssey_launch.py)",
+   "status": "MODEL_MISSING",
+   "verdict": "OVERREACHING"
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the specimen lives under partial/ (or another lake root), complete"
+    },
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the census is stale and the directory is in the listing on disk"
+    },
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the specimen is not on this host at all"
+    }
+   ],
+   "claim_kind": "object_absence",
+   "confidence": {
+    "about": "whether the recorded probe entails the causal claim",
+    "level": "LOW",
+    "would_lower": "any additional world-state consistent with the same observation",
+    "would_raise": "look under modellake/partial/ and the lake root, not only specimens/"
+   },
+   "direct_observation": "not in specimens/; complete specimen sits at /Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-0.6B@c1899de289a0",
+   "falsifier": "look under modellake/partial/ and the lake root, not only specimens/",
+   "id": "HC.SPECIMEN_NOT_PRESENT",
+   "interpretation": "the specimen is not present",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "listing_membership",
+   "probe_performed": "membership of Qwen/Qwen3-0.6B in the ModelLake specimens/ listing",
+   "recovered_from": [
+    "tools/future/odyssey_launch.py::propose_specimen_curriculum",
+    "tools/future/specimen_verify.py::EXTRA_SPECIMENS",
+    "receipts/future/SPECIMEN_VERIFICATION.json"
+   ],
+   "source": "tools/future/odyssey_launch.py::_ready (specimens listing)",
+   "status": "SPECIMEN_NOT_PRESENT",
+   "verdict": "OVERREACHING"
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the field was true when written and the bytes have since landed"
+    },
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the field is a catalog declaration, never a measurement of the bytes"
+    },
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the weights are in fact absent"
+    }
+   ],
+   "claim_kind": "object_absence",
+   "confidence": {
+    "about": "whether the recorded probe entails the causal claim",
+    "level": "LOW",
+    "would_lower": "any additional world-state consistent with the same observation",
+    "would_raise": "recompute every published digest for Qwen--Qwen3.8-Flash-Next@34567a4712bc (tools.future.specimen_verify)"
+   },
+   "direct_observation": "metadata_only_weights_not_present",
+   "falsifier": "recompute every published digest for Qwen--Qwen3.8-Flash-Next@34567a4712bc (tools.future.specimen_verify)",
+   "id": "HC.WEIGHTS_NOT_PRESENT",
+   "interpretation": "Flash weights are not present",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "metadata_field",
+   "probe_performed": "read schools.Flash.physical_status from the Odyssey II law store",
+   "recovered_from": [
+    "tools/future/odyssey2_law_store.py::SCHOOLS['Flash']['physical_status']",
+    "tools/future/odyssey_launch.py::_ready",
+    "receipts/future/SPECIMEN_VERIFICATION.json"
+   ],
+   "source": "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "status": "WEIGHTS_NOT_PRESENT",
+   "verdict": "OVERREACHING"
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the tool is callable; the constant hid it on every machine"
+    },
+    {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "the tool is not callable for a reason the constant does not name"
+    },
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the tool is not callable"
+    }
+   ],
+   "claim_kind": "capability_absence",
+   "confidence": {
+    "about": "whether the recorded probe entails the causal claim",
+    "level": "LOW",
+    "would_lower": "any additional world-state consistent with the same observation",
+    "would_raise": "measure schedule/frontier/refill against the orchestration connector and the declared parent path, instead of asserting them"
+   },
+   "direct_observation": "schedule=False, frontier=False, refill=False; reason: 'schedule/frontier/refill are false. A CLI a human can run is not enough.'",
+   "falsifier": "measure schedule/frontier/refill against the orchestration connector and the declared parent path, instead of asserting them",
+   "id": "HC.DOCTOR_GRAVITY_LITERAL",
+   "interpretation": "Doctor/Gravity is not resident-callable (a capability absence)",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "literal_constant",
+   "probe_performed": "operational_bar(schedule=False, frontier=False, refill=False) as literals, so doctor_callable and gravity_callable could not pass on any machine",
+   "recovered_from": [
+    "tools/future/odyssey_launch.py::_eval_callable_tool at 9d12ebf12",
+    "tools/future/test_odyssey_launch.py::test_protected_scheduling_is_measured_not_a_constant"
+   ],
+   "source": "tools/future/odyssey_launch.py::_eval_callable_tool (historical)",
+   "status": "doctor_callable",
+   "verdict": "OVERREACHING"
+  }
+ ],
+ "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+ "n_historical_overreaching": 5,
+ "n_supported_fixtures": 3,
+ "negative_findings": [
+  "this routine does not establish why the original Metal process saw no device",
+  "this routine does not establish that Doctor or Gravity can run today; it challenges the historical constant",
+  "this routine does not re-verify 360GB of Flash weights; it challenges the stale physical_status field",
+  "known receipts unreadable in this checkout: 0",
+  "a status whose probe is not recorded is UNTESTED, not OVERREACHING"
+ ],
+ "purpose": "Make challenging a status a resident routine: a status may assert only what its actual probe establishes.",
+ "receipts_consulted": [
+  {
+   "n_keys": 15,
+   "rel": "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+   "schema": "hawking.flash.meta_teacher_trace_boundary.v1"
+  },
+  {
+   "n_keys": 19,
+   "rel": "receipts/future/METAL_REACHABILITY.json",
+   "schema": "hawking.future.metal_reachability.v1"
+  },
+  {
+   "n_keys": 18,
+   "rel": "receipts/future/SPECIMEN_VERIFICATION.json",
+   "schema": "hawking.future.specimen_verify.v1"
+  },
+  {
+   "n_keys": 20,
+   "rel": "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "schema": "hawking.future.odyssey2_law_store.v1"
+  },
+  {
+   "n_keys": 36,
+   "rel": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+   "schema": "hawking.future.odyssey_launch.v1"
+  },
+  {
+   "n_keys": 24,
+   "rel": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+   "schema": "hawking.future.flash_nx_audit.v1"
+  },
+  {
+   "n_keys": 17,
+   "rel": "receipts/future/AUTONOMY_SCARS.json",
+   "schema": "hawking.future.autonomy_scars.v1"
+  },
+  {
+   "n_keys": 22,
+   "rel": "receipts/future/CONTAMINATION_SCIENCE.json",
+   "schema": "hawking.future.contamination.v1"
+  }
+ ],
+ "receipts_unreadable": [],
+ "recovered_implementation": [
+  "tools/future/autonomy_scars.py records the law and four instances, including STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+  "tools/future/metal_reachability.py is the worked falsifier of BLOCKED_NO_METAL_GPU as a host property",
+  "tools/future/odyssey_launch.py::_eval_callable_tool historically hardcoded schedule/frontier/refill False",
+  "tools/future/odyssey_launch.py::_resolve_stale_input distinguishes a moved path from a missing model",
+  "tools/future/odyssey_launch.py::_ready deferred to physical_status=metadata_only_weights_not_present",
+  "tools/future/specimen_verify.py::EXTRA_SPECIMENS names the partial/ Qwen3-0.6B that the listing missed",
+  "tools/future/odyssey2_law_store.py::SCHOOLS['Flash'] still carries physical_status=metadata_only_weights_not_present",
+  "tools/future/global_frontier.py F019 already separates the stall (corroborated) from the stated cause (not)",
+  "tools/future/odyssey3_adversary.py refuses a law that emits no attack; this routine refuses a status with no probe"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.status_causality.challenge()",
+  "fails_closed": "an absent probe is UNTESTED never OVERREACHING; an unreadable receipt is a recorded refusal; the routine never returns 'wrong' and never asserts the true world state",
+  "frontier": "FT.VERIFICATION.negative-index",
+  "receipt": "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
+  "workunit": "one CPU_ANALYSIS unit; challenge a consequential blocker before acting on its label"
+ },
+ "scan": {
+  "n_overreaching": 5,
+  "n_rows": 24,
+  "n_supported": 19,
+  "n_untested": 0,
+  "statuses": [
+   {
+    "source": "receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+    "status": "BLOCKED_NO_METAL_GPU",
+    "verdict": "OVERREACHING"
+   },
+   {
+    "source": "receipts/future/METAL_REACHABILITY.json",
+    "status": "HOST_HAS_METAL_GPU",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/SPECIMEN_VERIFICATION.json",
+    "status": "WHOLE_TREE_VERIFIED",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "status": "WEIGHTS_NOT_PRESENT",
+    "verdict": "OVERREACHING"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "resident_autonomy_trial_pass",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "specimen_curriculum_ready",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "modellake_identity",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "doctor_callable",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "gravity_callable",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "nr_nx_path_callable",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "evidence_hierarchy",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "negative_science",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "workgraphs",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "self_refill",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "dirty_measurement",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "protected_scheduling",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "transfer_substrate",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "adversary_substrate",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "crash_recovery",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/ODYSSEY_LAUNCH_GATE.json",
+    "status": "receipts",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+    "status": "seven_all_met_is_false",
+    "verdict": "SUPPORTED"
+   },
+   {
+    "source": "tools/odyssey/doctor_tournament.py declared Path (via tools/future/odyssey_launch.py)",
+    "status": "MODEL_MISSING",
+    "verdict": "OVERREACHING"
+   },
+   {
+    "source": "tools/future/odyssey_launch.py::_ready (specimens listing)",
+    "status": "SPECIMEN_NOT_PRESENT",
+    "verdict": "OVERREACHING"
+   },
+   {
+    "source": "tools/future/odyssey_launch.py::_eval_callable_tool (historical)",
+    "status": "doctor_callable",
+    "verdict": "OVERREACHING"
+   }
+  ]
+ },
+ "scar": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+ "schema": "hawking.future.status_causality.v1",
+ "seal_sha256": "496d728801e70cd22e6aee9415b3a34210e14ad2a59d09832382beb8cd3e375a",
+ "supported_fixtures": [
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "specimen=Qwen--Qwen3.8-Flash-Next@34567a4712bc; n_files=144; verified=144; mismatched=0; no_remote_digest=0; bytes_hashed=360023286454",
+   "falsifier": "recompute one file and observe a mismatch",
+   "id": "SF.FLASH_WHOLE_TREE",
+   "interpretation": "this specimen's published digests match the hashes recomputed here",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute every published HuggingFace digest for Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "source": "receipts/future/SPECIMEN_VERIFICATION.json",
+   "status": "WHOLE_TREE_VERIFIED",
+   "verdict": "SUPPORTED"
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "this process saw a Metal device, so the host has one"
+    }
+   ],
+   "claim_kind": "device_present",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "system_default='Apple M3 Ultra'; n_devices=1",
+   "falsifier": "the same enumeration returning no device",
+   "id": "SF.METAL_DEVICE_PRESENT",
+   "interpretation": "this process saw a Metal device, so the host has a Metal-capable GPU",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "device_enumeration",
+   "probe_performed": "MTLCreateSystemDefaultDevice() and MTLCopyAllDevices() from an ordinary command-line process; metal crate Device::system_default() with the version Cargo.lock resolves",
+   "source": "receipts/future/METAL_REACHABILITY.json",
+   "status": "HOST_HAS_METAL_GPU",
+   "verdict": "SUPPORTED"
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the receipt field currently has this value"
+    }
+   ],
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "seven_all_met=False",
+   "falsifier": "the same field reading True",
+   "id": "SF.NX_SEVEN_ALL_MET_FIELD",
+   "interpretation": "the completeness audit currently records seven_all_met=False",
+   "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+   "probe_kind": "receipt_field",
+   "probe_performed": "read seven_all_met from receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+   "source": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+   "status": "seven_all_met_is_false",
+   "verdict": "SUPPORTED"
+  }
+ ],
+ "untested_control": {
+  "alternatives": [],
+  "claim_kind": null,
+  "confidence": {
+   "about": "whether the probe entails the claim; no probe was recorded",
+   "level": "NONE",
+   "would_lower": "not applicable; there is no claim-to-probe link to weaken",
+   "would_raise": "record the actual probe that produced the status"
+  },
+  "direct_observation": "",
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
+  "id": null,
+  "interpretation": "the GPU is missing",
+  "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
+  "probe_kind": "",
+  "probe_performed": "",
+  "source": null,
+  "status": "SOME_NOVEL_BLOCKER",
+  "verdict": "UNTESTED"
+ },
+ "verdicts_emitted": [
+  "SUPPORTED",
+  "OVERREACHING",
+  "UNTESTED"
+ ],
+ "verdicts_refused": [
+  "CORRECT",
+  "FALSE",
+  "INVALID",
+  "TRUE",
+  "WRONG"
+ ],
+ "version": 1
+}

@@ -1,0 +1,812 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:53Z",
+  "recorded_by": "tools/future/decode_civilization.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "cost_models": {
+  "kv_compression": {
+   "asymmetric_kv_is_not_a_result": true,
+   "capability_gate": "long-context recall is the gate; byte savings that would lose recall are not a GO (tools/headless/state_gravity.py)",
+   "cost_class": "BYTES_ONLY_CAPABILITY_ABSENT",
+   "ladder": [
+    {
+     "bytes_per_token": 65536,
+     "capability": "ABSENT",
+     "k_bits": 16,
+     "note": "byte class only; long-context recall is the gate and is not claimed here",
+     "reduction_x": 1.0,
+     "scheme": "bf16_bf16",
+     "v_bits": 16
+    },
+    {
+     "bytes_per_token": 32768,
+     "capability": "ABSENT",
+     "k_bits": 8,
+     "note": "byte class only; long-context recall is the gate and is not claimed here",
+     "reduction_x": 2.0,
+     "scheme": "q8_q8",
+     "v_bits": 8
+    },
+    {
+     "bytes_per_token": 24576,
+     "capability": "ABSENT",
+     "k_bits": 8,
+     "note": "byte class only; long-context recall is the gate and is not claimed here",
+     "reduction_x": 2.6666666666666665,
+     "scheme": "q8k_q4v_asymmetric",
+     "v_bits": 4
+    },
+    {
+     "bytes_per_token": 16384,
+     "capability": "ABSENT",
+     "k_bits": 4,
+     "note": "byte class only; long-context recall is the gate and is not claimed here",
+     "reduction_x": 4.0,
+     "scheme": "q4_q4",
+     "v_bits": 4
+    }
+   ],
+   "methods_censused_n048": [
+    "KIVI",
+    "MiniCache",
+    "H2O"
+   ],
+   "organ": "kv_compression"
+  },
+  "lm_head": {
+   "bytes_qwen38_tokenizer_gravity": 496640242,
+   "cost_class": "MATERIAL",
+   "flash_source_active_bytes_per_token": 1271398400,
+   "flash_source_flops_per_token": 1271398400,
+   "law": "LM head is paid on every target verify. MTP shares it (mtp_use_dedicated_embeddings=false on the Qwen3.8 parent). Shrinking V scales this organ and scales tokenizer inflation the other way; the objective multiplies inflation.",
+   "organ": "lm_head",
+   "shape": {
+    "hidden": 5120,
+    "kind": "GEMV_vocab_x_hidden_per_token",
+    "vocab": 248320
+   },
+   "shared_with_mtp": true
+  },
+  "recurrent_state_compression": {
+   "cannot_be_tiled_like_affine2_gemv": true,
+   "cost_class": "SUBORDINATE",
+   "flash_source_active_bytes_per_token": 235339776,
+   "flash_source_flops_per_token": 56623104,
+   "layout_cited": "[head][ki][vi], vi innermost; 128x128 per head",
+   "not_an_mlp": true,
+   "organ": "recurrent_state_compression",
+   "qwen38_recurrent_bytes_f32": 150994944,
+   "qwen38_recurrent_elements": 37748736,
+   "rollback": "provisional rec state rolls back with DualKv; cost scales with draft length and is inside accepted_complete_token_cost",
+   "source": [
+    "tools/headless/deltanet_organ.py",
+    "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs theoretical_state_bytes"
+   ]
+  },
+  "sampling": {
+   "argmax_compares": 248320,
+   "compute_ratio_vs_lm_head": 9.765625e-05,
+   "cost_class_compute": "NEGLIGIBLE",
+   "cost_class_if_host_readback": "MATERIAL",
+   "flash_budget_has_sampling_organ": false,
+   "host_logits_readback_bytes": 993280,
+   "law": "Sampling FLOPs are subordinate to the LM-head GEMV by ~H. Host readback of full logits is ceremony (V f32 per token) and is the lever: keep sampling device-side or fused with the head. Argmax at temp=0 is the ExactTarget predicate.",
+   "lm_head_flops_class": "O(V*H)",
+   "organ": "sampling",
+   "softmax_flops_class": "O(V)"
+  },
+  "state_representation": {
+   "crossover_tokens_bf16": 1152.0,
+   "full_attention_interval": 4,
+   "hybrid": true,
+   "kv": {
+    "bytes_per_token_bf16": 65536,
+    "cost_class": "MATERIAL_AT_LONG_CONTEXT",
+    "elements_per_token": 32768,
+    "grows_with_context": true
+   },
+   "law": "Only 16/64 layers keep KV, so this body already carries 4x less KV than a pure-attention model of the same depth. Recurrent state is a flat ~72 MiB bf16 whatever the context. KV overtakes it at ~1152 tokens. Prefix reuse beats KV precision below that crossover (G037 ranking).",
+   "organ": "state",
+   "recurrent": {
+    "bytes_bf16": 75497472,
+    "bytes_f32": 150994944,
+    "cost_class": "MATERIAL_AT_SHORT_CONTEXT",
+    "elements": 37748736,
+    "grows_with_context": false
+   },
+   "speculative_dual": {
+    "committed": "target-verified positions only",
+    "invariant": "COMMITTED_IS_SOURCE_OF_TRUTH",
+    "provisional": "draft extension; rollback restores committed bit-identically",
+    "source": "crates/hawking-speculate/src/kv_dual.rs"
+   }
+  },
+  "tokenizer": {
+   "byte_alphabet_rows_required": 256,
+   "combined_bytes": 993280484,
+   "cost_class": "MATERIAL_IF_INFLATION",
+   "coupled_organs": [
+    "tokenizer",
+    "vocabulary",
+    "embedding",
+    "lm_head"
+   ],
+   "embedding_bytes": 496640242,
+   "flash_budget_has_tokenizer_organ": false,
+   "genome_cited": {
+    "COLD": 239436,
+    "HOT": 2931,
+    "REQUIRED": 289,
+    "WARM": 5421,
+    "source": "receipts/headless/TOKENIZER_GRAVITY.json"
+   },
+   "heldout_trap": "required+hot+warm saves ~11% payload at 1.56% corpus inflation and 2.2x/3.1x on held-out language. COLD is a fact about the corpus, not about what production must say.",
+   "law": "Removed tokens do not vanish: their text is re-encoded from what survives, so the model emits MORE tokens. Inflation multiplies accepted_complete_token_cost one-for-one. A vocabulary that saves bytes can lose wall time. ASCII-condensing is a CONTROL, never production policy (S011 \u00a710).",
+   "lm_head_bytes": 496640242,
+   "not_sentencepiece": true,
+   "organ": "tokenizer",
+   "payload_share": 0.1138,
+   "topology": "byte_level_bpe_gpt2_style",
+   "vocab_rows_geometry": 248320,
+   "vocab_rows_tokenizer_gravity": 248077
+  }
+ },
+ "gaps_closed": [
+  "accepted_complete_token_cost(plan) in relative units, with rollback in the numerator",
+  "named negative control: high draft throughput + poor \u03b1 scores worse than a slower high-\u03b1 plan",
+  "G057 scar expressed as a DecodePlan that loses to baseline at 87% accept",
+  "verification placement in PhysicalGraph vocabulary with WHAT_NOT_WHERE refusal",
+  "tokenizer inflation wired into the same objective as speculation (vocab shrink can still lose)",
+  "sidecar receipt under receipts/future (existing gravity modules write receipts/headless, Codex-owned)",
+  "cost classes over FLASH_TOKEN_NS_BUDGET organ bytes plus Qwen3.8 hybrid state shapes, no nanoseconds"
+ ],
+ "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "integration": {
+  "call": "accepted_complete_token_cost(plan: DecodePlan) -> float",
+  "diagnostic_not_scoreboard": "raw_draft_throughput_units(plan) -> float",
+  "place": "place_verification(kind: str, *, predicate: str = 'exact_target_argmax_prefix') -> PhysicalGraph dict",
+  "refusal": "VerificationCorrectnessError.CODE == WHAT_NOT_WHERE"
+ },
+ "negative_findings": [
+  {
+   "found": true,
+   "looked_for": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+   "note": "No QWEN27_TOKEN_NS_BUDGET.json in HEAD. Closest structural token budget is FLASH_TOKEN_NS_BUDGET.json (Flash-Next organ bytes/flops). Qwen3.8-27B shapes come from qwen38_geometry.rs plus TOKENIZER_GRAVITY / STATE_GRAVITY receipts.",
+   "used_instead": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+  },
+  {
+   "found": true,
+   "looked_for": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+   "note": "Not in HEAD. Cannot cite a Flash stateful TPS gate."
+  },
+  {
+   "found": false,
+   "hits": [],
+   "looked_for": "FLASH_PREFIX_FED_LAYER*_STATE.f32",
+   "note": "No prefix-fed layer state blobs in HEAD. Recurrent-state shapes cited from geometry and DELTANET_ORGAN constants, not from captured f32 dumps."
+  },
+  {
+   "found": false,
+   "looked_for": "native MTP forward on a packed Qwen3.8 artifact",
+   "note": "decoding_gravity: parent has mtp.* heads; every production runtime drops them. alpha_mtp is ABSENT. Not re-measured."
+  },
+  {
+   "found": false,
+   "looked_for": "GPU-authoritative accepted complete-token ns",
+   "note": "This sidecar has no protected GPU lease. Every hardware timing field is UNKNOWN / omitted. STATIC_ONLY."
+  }
+ ],
+ "objective": {
+  "forbids": [
+   "raw draft throughput as the scoreboard",
+   "acceptance rate alone as a win",
+   "kernel-only timing",
+   "changing the token unit to inflate the metric"
+  ],
+  "formula": "(gamma*draft_cost + verify + p_rollback*rollback_cost*gamma + ceremony + tokenizer_cost + sampling_cost) / expected_accepted_per_pass(alpha, gamma) * token_inflation",
+  "hardware_authority": false,
+  "includes_rollback": true,
+  "name": "accepted_complete_token_cost",
+  "unit": "relative_cost_units",
+  "unit_definition": "1.0 = one baseline target complete token (mixer+head+state+sample), no speculation. Not a nanosecond.",
+  "yield": "Leviathan; G057 scar uses drafted-kept (no bonus)"
+ },
+ "purpose": "Analytical cost models and interfaces for tokenizer, LM head, sampling, KV, recurrent state, and speculative/MTP decoding. Objective is accepted complete-token COST in relative units, never raw draft throughput.",
+ "recovered_implementation": [
+  {
+   "adequate_for": "which Metal symbols the decode graph dispatches",
+   "gap": "name-only switch; not a cost model",
+   "on_disk_or_head": true,
+   "path": "crates/hawking-core/src/decode_family.rs",
+   "role": "G023 shared kernel family names (Q80 / Qwen3.8 / DSV4F)"
+  },
+  {
+   "adequate_for": "state rollback interface",
+   "gap": "CPU mirror of ids; GPU tensor restore is Codex",
+   "on_disk_or_head": true,
+   "path": "crates/hawking-speculate/src/kv_dual.rs",
+   "role": "COMMITTED_IS_SOURCE_OF_TRUTH DualKv rollback/rebase"
+  },
+  {
+   "adequate_for": "the accounting identity this objective analogizes",
+   "gap": "hardware ns; sidecar restates it in relative units",
+   "on_disk_or_head": true,
+   "path": "crates/hawking-speculate/src/metrics_sep.rs",
+   "role": "AccelCostLedger: accepted TPS includes draft+verify+rollback"
+  },
+  {
+   "adequate_for": "WHAT is checked (exact argmax prefix)",
+   "gap": "no placement of WHERE the check runs",
+   "on_disk_or_head": true,
+   "path": "crates/hawking-speculate/src/verifier.rs",
+   "role": "ExactTarget prefix verify; VerifiedTokenId promotion"
+  },
+  {
+   "adequate_for": "where/representation/synchronization names",
+   "gap": "no verification-placement organ",
+   "on_disk_or_head": true,
+   "path": "hcli/physical_graph.py",
+   "role": "PhysicalGraph field vocabulary (PLAN_ONLY)"
+  },
+  {
+   "adequate_for": "the slowdown-at-high-acceptance scar",
+   "gap": "campaign receipt, not a reusable plan object",
+   "on_disk_or_head": true,
+   "path": "receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json",
+   "role": "REFUTED ON COST: 87% accept, 0.91x, draft/verify=0.75"
+  },
+  {
+   "adequate_for": "token unit must not change; breakeven \u03b1 cited",
+   "gap": "hardware TPS numbers; sidecar does not copy them",
+   "on_disk_or_head": true,
+   "path": "receipts/ascent-2026-08-16/G091_MULTI_TOKEN.json",
+   "role": "multi-token microdecoder; acceptance is the binding term"
+  },
+  {
+   "adequate_for": "structural shapes this cost model classifies",
+   "gap": "all actual_* timing fields null; WAITING_FOR_NATIVE_EXECUTION",
+   "on_disk_or_head": true,
+   "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+   "role": "Flash-Next organ bytes/flops budget, including mtp and lm_head"
+  },
+  {
+   "adequate_for": "yield arithmetic and the binary-as-draft refusal",
+   "gap": "pass billed in ns; rollback absent; no PhysicalGraph placement",
+   "on_disk_or_head": true,
+   "path": "tools/headless/decoding_gravity.py",
+   "role": "N049 MTP census + Leviathan spec_cycle (no rollback)"
+  },
+  {
+   "adequate_for": "recurrent state as a first-class organ",
+   "gap": "GPU organ; sidecar must not rerun it",
+   "on_disk_or_head": true,
+   "path": "tools/headless/deltanet_organ.py",
+   "role": "N026 recurrent-state organ autopsy (128x128, not an MLP)"
+  },
+  {
+   "adequate_for": "capability gate on KV compression",
+   "gap": "CPU census; not an accepted-token objective",
+   "on_disk_or_head": true,
+   "path": "tools/headless/state_gravity.py",
+   "role": "N048 KIVI/MiniCache/H2O/DeltaNet redundancy census"
+  },
+  {
+   "adequate_for": "vocab topology and the inflation-vs-bytes law",
+   "gap": "not wired into a speculative complete-token objective",
+   "on_disk_or_head": true,
+   "path": "tools/headless/tokenizer_gravity.py",
+   "role": "G036 tokenizer+embed+LM-head as one organ; inflation trap"
+  },
+  {
+   "adequate_for": "the recorded trap this objective must express",
+   "gap": "k=1 only; writes receipts/headless; not a sidecar interface",
+   "on_disk_or_head": true,
+   "path": "tools/odyssey/decoding_gravity.py",
+   "role": "G038: high acceptance is not a speedup; 87% accept at 0.91x"
+  },
+  {
+   "adequate_for": "hybrid state shapes and crossover_tokens=1152",
+   "gap": "bytes only, no speculative DualKv cost",
+   "on_disk_or_head": true,
+   "path": "tools/odyssey/state_gravity.py",
+   "role": "G037 KV vs recurrent census + KV precision ladder"
+  }
+ ],
+ "schema": "hawking.future.decode_civilization.v1",
+ "seal_sha256": "370bda1a163b186755685e73aec89878b024acfeeccda93c58100f495dce0f44",
+ "selftest": {
+  "checks": [
+   {
+    "detail": 1.0,
+    "name": "baseline_is_one",
+    "ok": true
+   },
+   {
+    "detail": {
+     "fast_raw": 12.5,
+     "slow_raw": 2.2222222222222223
+    },
+    "name": "raw_throughput_would_pick_the_fast_plan",
+    "ok": true
+   },
+   {
+    "detail": {
+     "fast_cost": 1.608000167936086,
+     "slow_cost": 0.7251660516605167
+    },
+    "name": "objective_rejects_high_draft_low_accept",
+    "ok": true
+   },
+   {
+    "detail": 1.243506649869133,
+    "name": "g057_high_accept_still_loses_to_baseline",
+    "ok": true
+   },
+   {
+    "detail": {
+     "with": 1.608000167936086,
+     "without": 1.3520006922243546
+    },
+    "name": "rollback_raises_the_objective",
+    "ok": true
+   },
+   {
+    "detail": null,
+    "name": "fused_where_is_admitted",
+    "ok": true
+   },
+   {
+    "detail": "WHAT_NOT_WHERE: sampled verification checks a subset of draft positions; that changes WHAT is checked, not WHERE",
+    "name": "sampled_what_is_refused",
+    "ok": true
+   },
+   {
+    "detail": null,
+    "name": "sparse_what_is_refused",
+    "ok": true
+   },
+   {
+    "detail": null,
+    "name": "digest_of_weaker_predicate_is_refused",
+    "ok": true
+   },
+   {
+    "detail": null,
+    "name": "digest_of_exact_predicate_is_admitted",
+    "ok": true
+   },
+   {
+    "detail": null,
+    "name": "objective_refuses_sampled_plan",
+    "ok": true
+   },
+   {
+    "detail": null,
+    "name": "leviathan_extremes",
+    "ok": true
+   }
+  ],
+  "ok": true
+ },
+ "shapes": {
+  "flash_token_budget": {
+   "kernel_only_or_raw_draft_timing_is_not_acceptable": true,
+   "mixer_bytes_for_classification": 10126354176.0,
+   "organs": [
+    {
+     "cost_class": "DOMINANT",
+     "organ": "deltanet",
+     "source_active_bytes_per_token": 4173020928,
+     "source_flops_per_token": 4173004800,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "NEGLIGIBLE",
+     "organ": "embeddings",
+     "source_active_bytes_per_token": 5120,
+     "source_flops_per_token": 0,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "MATERIAL",
+     "organ": "lm_head",
+     "source_active_bytes_per_token": 1271398400,
+     "source_flops_per_token": 1271398400,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "DOMINANT",
+     "organ": "mtp",
+     "source_active_bytes_per_token": 5214301696,
+     "source_flops_per_token": 5214213120,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "SUBORDINATE",
+     "organ": "ngram_engine",
+     "source_active_bytes_per_token": 65680600,
+     "source_flops_per_token": 65617920,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "SUBORDINATE",
+     "organ": "recurrent_state",
+     "source_active_bytes_per_token": 235339776,
+     "source_flops_per_token": 56623104,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "MATERIAL",
+     "organ": "residual_hyperconnections",
+     "source_active_bytes_per_token": 1281249280,
+     "source_flops_per_token": 1279262720,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "DOMINANT",
+     "organ": "routed_experts",
+     "source_active_bytes_per_token": 4718592000,
+     "source_flops_per_token": 4718592000,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "SUBORDINATE",
+     "organ": "router",
+     "source_active_bytes_per_token": 125829120,
+     "source_flops_per_token": 125829120,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "SUBORDINATE",
+     "organ": "shared_expert",
+     "source_active_bytes_per_token": 472104960,
+     "source_flops_per_token": 472104960,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "MATERIAL",
+     "organ": "sparse_attention",
+     "source_active_bytes_per_token": 1234741248,
+     "source_flops_per_token": 1234698240,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "NEGLIGIBLE",
+     "organ": "support_misc",
+     "source_active_bytes_per_token": 0,
+     "source_flops_per_token": 0,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    },
+    {
+     "cost_class": "NEGLIGIBLE",
+     "organ": "vision_backbone",
+     "source_active_bytes_per_token": 0,
+     "source_flops_per_token": 0,
+     "status": "WAITING_FOR_NATIVE_EXECUTION"
+    }
+   ],
+   "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+   "present": true,
+   "schema": "hcli.agentos.flash_token_ns_budget.v1",
+   "source": "git HEAD or disk; structural bytes/flops only",
+   "timing_unit_cited": "complete accepted generated token wall time, including all required graph/runtime/host ceremony"
+  },
+  "qwen38_geometry": {
+   "deltanet_layers": 48,
+   "gqa_layers": 16,
+   "hidden": 5120,
+   "layers": 64,
+   "vocab": 248320
+  },
+  "qwen38_state": {
+   "conv_channels": 10240,
+   "crossover_tokens_bf16": 1152.0,
+   "deltanet_layers": 48,
+   "gqa_layers": 16,
+   "kv_bytes_per_token_bf16": 65536,
+   "kv_elements_per_token": 32768,
+   "kv_grows_with_context": true,
+   "mtp_kv_bytes_per_token_fp16": 4096,
+   "recurrent_bytes_bf16": 75497472,
+   "recurrent_bytes_f32": 150994944,
+   "recurrent_elements": 37748736,
+   "recurrent_grows_with_context": false,
+   "source": "crates/hawking-core/src/model/qwen38_geometry.rs + STATE_GRAVITY census"
+  }
+ },
+ "speculative_interfaces": {
+  "acceptance_accounting": {
+   "analog": "crates/hawking-speculate/src/metrics_sep.rs AccelCostLedger (draft+verify+rollback in the denominator)",
+   "objective": "accepted_complete_token_cost",
+   "separated_from": [
+    "BASE_TRUE_TPS",
+    "BLOCK_EXECUTED_TPS",
+    "PREFILL_TPS",
+    "TTFT",
+    "raw draft throughput"
+   ],
+   "this_sidecar_does_not_emit_tps": true
+  },
+  "draft_verify": {
+   "durable_sinks_take": "VerifiedTokenId only",
+   "empty_draft_is_one_greedy_bonus": true,
+   "source": "crates/hawking-speculate/src/verifier.rs",
+   "trait": "ExactTarget",
+   "verify_rule": "exact_target_argmax_prefix"
+  },
+  "mtp": {
+   "flash_organ_present": true,
+   "parent_qwen38": {
+    "alpha_mtp": "ABSENT",
+    "bf16_bytes": 849398784,
+    "extra_layer_is_gqa_not_deltanet": true,
+    "mtp_num_hidden_layers": 1,
+    "mtp_use_dedicated_embeddings": false,
+    "n_tensors": 15,
+    "runtimes_drop_heads": true,
+    "shared_lm_head": true,
+    "source": "tools/headless/decoding_gravity.py"
+   },
+   "role": "draft",
+   "status": "PARENT_HAS_HEADS_RUNTIMES_DROP_THEM"
+  },
+  "multi_token_microdecoder": {
+   "acceptance_is_binding": true,
+   "cited_breakeven_acceptance": 0.6302411121263896,
+   "does_not_change_token_unit": true,
+   "kind": "same_model_K_batch",
+   "note": "G091: only ACCEPTED tokens count; inflating TPS by changing the token unit is forbidden. Hardware TPS ceiling is UNKNOWN in this sidecar.",
+   "source": "receipts/ascent-2026-08-16/G091_MULTI_TOKEN.json"
+  },
+  "speculative_decoding": {
+   "forbids_scoreboard": "raw_draft_throughput_units",
+   "foreign_metal_prior": {
+    "finding": "MTP speculative decoding degraded throughput on Metal at every n_max in that foreign Qwen3.5-9B report",
+    "kind": "CITED",
+    "not_our_27b": true,
+    "url": "https://github.com/ggml-org/llama.cpp/issues/23752"
+   },
+   "objective": "accepted_complete_token_cost",
+   "role": "draft_then_verify",
+   "yield": "Leviathan expected_accepted_per_pass"
+  },
+  "state_rollback": {
+   "in_objective": true,
+   "invariant": "COMMITTED_IS_SOURCE_OF_TRUTH",
+   "on_accept": "rebase committed by the verified prefix only",
+   "on_reject": "restore provisional to committed, bit-identical",
+   "source": "crates/hawking-speculate/src/kv_dual.rs"
+  }
+ },
+ "verification_placement": {
+  "law": "Reducing verification CEREMONY is allowed. Weakening CORRECTNESS is not. A placement that changes WHAT is checked, rather than WHERE, is refused with WHAT_NOT_WHERE.",
+  "placements": [
+   {
+    "admitted": true,
+    "ceremony": "reduced",
+    "correctness_preserving": true,
+    "kind": "device_side",
+    "moves": "where",
+    "refuse_reason": null,
+    "what_is_checked_if_admitted": "exact_target_argmax_prefix"
+   },
+   {
+    "admitted": true,
+    "ceremony": "reduced",
+    "correctness_preserving": true,
+    "kind": "digest",
+    "moves": "where",
+    "refuse_reason": null,
+    "what_is_checked_if_admitted": "exact_target_argmax_prefix"
+   },
+   {
+    "admitted": true,
+    "ceremony": "reduced",
+    "correctness_preserving": true,
+    "kind": "fused",
+    "moves": "where",
+    "refuse_reason": null,
+    "what_is_checked_if_admitted": "exact_target_argmax_prefix"
+   },
+   {
+    "admitted": true,
+    "ceremony": "full",
+    "correctness_preserving": true,
+    "kind": "host_exact",
+    "moves": "where",
+    "refuse_reason": null,
+    "what_is_checked_if_admitted": "exact_target_argmax_prefix"
+   },
+   {
+    "admitted": false,
+    "ceremony": null,
+    "correctness_preserving": false,
+    "kind": "sampled",
+    "moves": "what",
+    "refuse_reason": "sampled verification checks a subset of draft positions; that changes WHAT is checked, not WHERE",
+    "what_is_checked_if_admitted": null
+   },
+   {
+    "admitted": false,
+    "ceremony": null,
+    "correctness_preserving": false,
+    "kind": "sparse",
+    "moves": "what",
+    "refuse_reason": "sparse verification skips positions; that changes WHAT is checked, not WHERE",
+    "what_is_checked_if_admitted": null
+   }
+  ],
+  "predicate": "exact_target_argmax_prefix",
+  "what_refused": [
+   "sampled",
+   "sparse"
+  ],
+  "where_admitted": [
+   "device_side",
+   "digest",
+   "fused",
+   "host_exact"
+  ]
+ },
+ "version": 1,
+ "worked_examples": {
+  "baseline": {
+   "accepted_complete_token_cost": 1.0,
+   "alpha": 0.0,
+   "draft_kind": "none",
+   "gamma": 0,
+   "legs": {
+    "ceremony_leg": 0.0,
+    "cycle": 1.0,
+    "draft_leg": 0.0,
+    "expected_accepted": 1.0,
+    "organ_tax": 0.0,
+    "p_rollback": 0.0,
+    "rollback_leg": 0.0,
+    "verify_leg": 1.0
+   },
+   "objective_beats_baseline": false,
+   "plan": "baseline_no_speculation",
+   "predicate": "exact_target_argmax_prefix",
+   "raw_draft_throughput_units": 0.0,
+   "unit": "relative_cost_units",
+   "unit_definition": "1.0 = one baseline target complete token; not a nanosecond",
+   "verification_placement": "host_exact",
+   "yield_includes_bonus": true
+  },
+  "fused_ceremony_reduction": {
+   "accepted_complete_token_cost": 0.7067158671586717,
+   "alpha": 0.9,
+   "draft_kind": "speculative_decoding",
+   "gamma": 2,
+   "legs": {
+    "ceremony_leg": 0.0,
+    "cycle": 1.9152,
+    "draft_leg": 0.9,
+    "expected_accepted": 2.7099999999999995,
+    "organ_tax": 0.0,
+    "p_rollback": 0.18999999999999995,
+    "rollback_leg": 0.015199999999999997,
+    "verify_leg": 1.0
+   },
+   "objective_beats_baseline": true,
+   "plan": "same_as_slow_but_fused_verify",
+   "predicate": "exact_target_argmax_prefix",
+   "raw_draft_throughput_units": 2.2222222222222223,
+   "unit": "relative_cost_units",
+   "unit_definition": "1.0 = one baseline target complete token; not a nanosecond",
+   "verification_placement": "fused",
+   "yield_includes_bonus": true
+  },
+  "g057_high_accept_slowdown": {
+   "accepted_complete_token_cost": 1.243506649869133,
+   "alpha": 0.87,
+   "draft_kind": "self_speculative",
+   "gamma": 4,
+   "legs": {
+    "ceremony_leg": 0.0,
+    "cycle": 4.085420478,
+    "draft_leg": 3.0,
+    "expected_accepted": 3.2854030000000005,
+    "organ_tax": 0.0,
+    "p_rollback": 0.42710239000000005,
+    "rollback_leg": 0.08542047800000002,
+    "verify_leg": 1.0
+   },
+   "objective_beats_baseline": false,
+   "plan": "g057_87pct_accept_still_slower",
+   "predicate": "exact_target_argmax_prefix",
+   "raw_draft_throughput_units": 1.3333333333333333,
+   "unit": "relative_cost_units",
+   "unit_definition": "1.0 = one baseline target complete token; not a nanosecond",
+   "verification_placement": "host_exact",
+   "yield_includes_bonus": false
+  },
+  "high_draft_low_accept": {
+   "accepted_complete_token_cost": 1.608000167936086,
+   "alpha": 0.2,
+   "draft_kind": "speculative_decoding",
+   "gamma": 8,
+   "legs": {
+    "ceremony_leg": 0.05,
+    "cycle": 2.0099991808,
+    "draft_leg": 0.64,
+    "expected_accepted": 1.24999936,
+    "organ_tax": 0.0,
+    "p_rollback": 0.99999744,
+    "rollback_leg": 0.3199991808,
+    "verify_leg": 1.0
+   },
+   "objective_beats_baseline": false,
+   "plan": "high_draft_throughput_poor_acceptance",
+   "predicate": "exact_target_argmax_prefix",
+   "raw_draft_throughput_units": 12.5,
+   "unit": "relative_cost_units",
+   "unit_definition": "1.0 = one baseline target complete token; not a nanosecond",
+   "verification_placement": "host_exact",
+   "yield_includes_bonus": true
+  },
+  "negative_control": {
+   "fused_better_or_equal_slow": true,
+   "g057_worse_than_baseline": true,
+   "inflation_worse_than_baseline": true,
+   "objective_fast_worse_than_slow": true,
+   "raw_draft_throughput_fast_gt_slow": true
+  },
+  "slow_draft_high_accept": {
+   "accepted_complete_token_cost": 0.7251660516605167,
+   "alpha": 0.9,
+   "draft_kind": "speculative_decoding",
+   "gamma": 2,
+   "legs": {
+    "ceremony_leg": 0.05,
+    "cycle": 1.9652,
+    "draft_leg": 0.9,
+    "expected_accepted": 2.7099999999999995,
+    "organ_tax": 0.0,
+    "p_rollback": 0.18999999999999995,
+    "rollback_leg": 0.015199999999999997,
+    "verify_leg": 1.0
+   },
+   "objective_beats_baseline": true,
+   "plan": "slower_draft_high_acceptance",
+   "predicate": "exact_target_argmax_prefix",
+   "raw_draft_throughput_units": 2.2222222222222223,
+   "unit": "relative_cost_units",
+   "unit_definition": "1.0 = one baseline target complete token; not a nanosecond",
+   "verification_placement": "host_exact",
+   "yield_includes_bonus": true
+  },
+  "tokenizer_inflation_loses": {
+   "accepted_complete_token_cost": 1.05740370128,
+   "alpha": 0.0,
+   "draft_kind": "none",
+   "gamma": 0,
+   "legs": {
+    "ceremony_leg": 0.0,
+    "cycle": 0.8876794,
+    "draft_leg": 0.0,
+    "expected_accepted": 1.0,
+    "organ_tax": 0.0,
+    "p_rollback": 0.0,
+    "rollback_leg": 0.0,
+    "verify_leg": 0.8876794
+   },
+   "objective_beats_baseline": false,
+   "plan": "tokenizer_required_hot_inflation",
+   "predicate": "exact_target_argmax_prefix",
+   "raw_draft_throughput_units": 0.0,
+   "unit": "relative_cost_units",
+   "unit_definition": "1.0 = one baseline target complete token; not a nanosecond",
+   "verification_placement": "host_exact",
+   "yield_includes_bonus": true
+  }
+ }
+}

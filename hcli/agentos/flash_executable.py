@@ -25,6 +25,11 @@ from hcli.flash_next import (
     REPO_ID,
     evaluate_flash_promotion,
 )
+from hcli.agentos.modellake_receipts import (
+    preferred_census_receipt,
+    preferred_supervision_receipt,
+)
+from hcli.agentos.flash_telemetry import emit_flash_telemetry
 from hcli.nomenclature import NOMENCLATURE_VERSION
 from hcli.persist import atomic_write_json
 
@@ -42,10 +47,21 @@ DEFAULT_TRANSFORM_PARITY = "FLASH_FULL_TENSOR_TRANSFORM_PARITY.json"
 DEFAULT_LOADER_ROUNDTRIP = "FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json"
 DEFAULT_KERNEL_PARITY = "FLASH_NOETIC_Q4_KERNEL_PARITY.json"
 DEFAULT_BODY_KERNEL_PARITY = "FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json"
+DEFAULT_SHARED_EXPERT_KERNEL_PARITY = "FLASH_NOETIC_Q4_MATRIX_KERNEL_SHARED_EXPERT_GATE_L0_R0_128_PARITY.json"
+DEFAULT_DELTANET_KERNEL_PARITY = "FLASH_NOETIC_Q4_MATRIX_KERNEL_DELTANET_IN_PROJ_QKV_L0_R0_128_PARITY.json"
+DEFAULT_SPARSE_ATTENTION_KERNEL_PARITY = "FLASH_NOETIC_Q4_MATRIX_KERNEL_SPARSE_INDEXER_QK_PROJ_L11_R0_128_PARITY.json"
+DEFAULT_MTP_GATE_KERNEL_PARITY = "FLASH_NOETIC_Q4_MATRIX_KERNEL_MTP_GATE_L0_R0_128_PARITY.json"
 DEFAULT_GRAPH_COMPONENT = "FLASH_NOETIC_ROUTED_EXPERT_GRAPH.json"
 DEFAULT_COMPONENT_CAMPAIGN = "FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json"
 DEFAULT_ROUTER_GRAPH = "FLASH_NOETIC_ROUTER_GRAPH.json"
 DEFAULT_ROUTER_SELECTION = "FLASH_NOETIC_ROUTER_SELECTION.json"
+DEFAULT_NATIVE_ROUTER_SELECTION = "FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json"
+DEFAULT_NATIVE_ROUTED_EXPERT_DISPATCH = "FLASH_NOETIC_ROUTED_EXPERT_DISPATCH_NATIVE.json"
+DEFAULT_NATIVE_GATE_UP_SWIGLU = "FLASH_NOETIC_ROUTED_EXPERT_GATE_UP_SWIGLU_NATIVE.json"
+DEFAULT_NATIVE_EXPERT_COMPOSITION = "FLASH_NOETIC_ROUTED_EXPERT_COMPOSITION_NATIVE.json"
+DEFAULT_NATIVE_SHARED_EXPERT_COMPOSITION = "FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json"
+DEFAULT_NATIVE_SHARED_RESIDUAL_HYPERCONNECTION = "FLASH_NOETIC_SHARED_RESIDUAL_HYPERCONNECTION_NATIVE.json"
+DEFAULT_NATIVE_EXACT_HYPERCONNECTION = "FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json"
 DEFAULT_ROUTER_REPRESENTATION_AB = "FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json"
 DEFAULT_EXECUTABLE = "FLASH_NEXT_NOETIC_EXECUTABLE.json"
 DEFAULT_EBPW = "FLASH_EBPW_BUDGET.json"
@@ -122,8 +138,8 @@ def _direct_inventory(path: Path) -> Dict[str, Any]:
 
 
 def _modellake_identity(repo: Path) -> Dict[str, Any]:
-    census_path = repo / "receipts" / "headless" / "HCLI_MODELLAKE_FLASH_CENSUS.json"
-    supervision_path = repo / "receipts" / "headless" / "HCLI_MODELLAKE_FLASH_ACQUISITION_SUPERVISION.json"
+    census_path = preferred_census_receipt(repo)
+    supervision_path = preferred_supervision_receipt(repo)
     census = _read_json(census_path) or {}
     supervision = _read_json(supervision_path) or {}
     final = LAKE_ROOT / "specimens" / LAKE_SLUG
@@ -386,6 +402,139 @@ def _kernel_parity_summary(
     }
 
 
+def _matrix_kernel_parity_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+    *,
+    default_receipt: str,
+    organ: str,
+    scope: str,
+) -> Dict[str, Any]:
+    """Read bounded rank-2 matrix parity without widening claims."""
+    path = (
+        Path(receipt).expanduser().resolve()
+        if receipt
+        else repo / "receipts" / "headless" / default_receipt
+    )
+    kernel = _read_json(path)
+    if kernel is None:
+        return {
+            "organ": organ,
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "source_tensor": None,
+            "noetic_descriptor": None,
+            "noetic_representation": None,
+            "native_loader": None,
+            "native_kernel": None,
+            "gpu_timing": None,
+            "parity": None,
+            "candidate_body": None,
+            "source_independent_execution": None,
+            "candidate_body_persisted": None,
+            "whole_model_capability": "NOT_TESTED",
+            "whole_model_runtime": "NOT_TESTED",
+            "promotion_allowed": False,
+        }
+    native_loader = (
+        kernel.get("native_loader")
+        if isinstance(kernel.get("native_loader"), Mapping)
+        else {}
+    )
+    native_kernel = (
+        kernel.get("native_kernel")
+        if isinstance(kernel.get("native_kernel"), Mapping)
+        else {}
+    )
+    return {
+        "status": kernel.get("status"),
+        "organ": organ,
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "repo": kernel.get("repo"),
+        "pinned_revision": kernel.get("pinned_revision"),
+        "root": kernel.get("root"),
+        "model_lake_manifest": kernel.get("model_lake_manifest"),
+        "source_tensor": kernel.get("source_tensor"),
+        "noetic_descriptor": kernel.get("noetic_descriptor"),
+        "noetic_representation": kernel.get("noetic_representation"),
+        "native_loader": native_loader,
+        "native_kernel": native_kernel,
+        "gpu_timing": kernel.get("gpu_timing"),
+        "parity": kernel.get("parity"),
+        "input": kernel.get("input"),
+        "candidate_body": kernel.get("candidate_body"),
+        "body_mutated": kernel.get("body_mutated"),
+        "model_loaded": kernel.get("model_loaded"),
+        "source_independent_execution": native_loader.get("source_independent_execution"),
+        "candidate_body_persisted": native_loader.get("candidate_body_persisted"),
+        "whole_model_capability": native_kernel.get("whole_model_capability", "NOT_TESTED"),
+        "whole_model_runtime": native_kernel.get("whole_model_runtime", "NOT_TESTED"),
+        "complete_system_ebpw": kernel.get("complete_system_ebpw"),
+        "flash_tps": kernel.get("flash_tps"),
+        "promotion_allowed": kernel.get("promotion_allowed", False),
+        "claim_boundary": kernel.get("claim_boundary"),
+        "scope": scope,
+        "next_action": kernel.get("next_action"),
+    }
+
+
+def _shared_expert_kernel_parity_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read bounded shared-expert matrix parity without widening claims."""
+    return _matrix_kernel_parity_summary(
+        repo,
+        receipt,
+        default_receipt=DEFAULT_SHARED_EXPERT_KERNEL_PARITY,
+        organ="shared_expert",
+        scope="one shared-expert rank-2 matrix window only; not complete Flash execution",
+    )
+
+
+def _deltanet_kernel_parity_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read bounded DeltaNet projection parity without claiming state parity."""
+    return _matrix_kernel_parity_summary(
+        repo,
+        receipt,
+        default_receipt=DEFAULT_DELTANET_KERNEL_PARITY,
+        organ="deltanet",
+        scope="one DeltaNet input-projection rank-2 matrix window only; state transition and complete Flash execution remain untested",
+    )
+
+
+def _sparse_attention_kernel_parity_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read bounded sparse-attention indexer parity without claiming QSA parity."""
+    return _matrix_kernel_parity_summary(
+        repo,
+        receipt,
+        default_receipt=DEFAULT_SPARSE_ATTENTION_KERNEL_PARITY,
+        organ="sparse_attention",
+        scope="one sparse-attention indexer projection rank-2 matrix window only; budgeted selection, KV gather, and complete Flash execution remain untested",
+    )
+
+
+def _mtp_gate_kernel_parity_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read bounded MTP gate parity without claiming speculative decoding."""
+    return _matrix_kernel_parity_summary(
+        repo,
+        receipt,
+        default_receipt=DEFAULT_MTP_GATE_KERNEL_PARITY,
+        organ="mtp",
+        scope="one MTP gate rank-2 matrix window only; draft acceptance, rollback, and complete Flash execution remain untested",
+    )
+
+
 def _graph_component_summary(
     repo: Path,
     receipt: Optional[str | os.PathLike[str]] = None,
@@ -563,6 +712,462 @@ def _router_selection_summary(
         "promotion_allowed": selection.get("promotion_allowed"),
         "claim_boundary": selection.get("claim_boundary"),
         "next_action": selection.get("next_action"),
+    }
+
+
+def _native_router_selection_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read the bounded native router executable without promoting it to a model runtime."""
+    path = Path(receipt).expanduser().resolve() if receipt else repo / "receipts" / "headless" / DEFAULT_NATIVE_ROUTER_SELECTION
+    selection = _read_json(path)
+    if selection is None:
+        return {
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "selection_status": "NOT_EXECUTED",
+            "source_independent_execution": None,
+            "native_source_authority_execution_observed": None,
+            "native_selection_execution_observed": None,
+            "whole_model_capability": "NOT_TESTED",
+            "complete_token_runtime": "NOT_TESTED",
+            "promotion_allowed": False,
+        }
+    native_loader = selection.get("native_loader") if isinstance(selection.get("native_loader"), Mapping) else {}
+    return {
+        "status": selection.get("status"),
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "schema": selection.get("schema"),
+        "nomenclature_version": selection.get("nomenclature_version"),
+        "semantic_type": selection.get("semantic_type"),
+        "compiler_stage": selection.get("compiler_stage"),
+        "qualification": selection.get("qualification"),
+        "selection_status": "EXECUTED" if selection.get("selection") else "NOT_EXECUTED",
+        "source_identity": {"repo": selection.get("repo"), "revision": selection.get("pinned_revision"), "root": selection.get("root")},
+        "candidate_body": selection.get("candidate_body"),
+        "native_loader": native_loader,
+        "native_kernel": selection.get("native_kernel"),
+        "native_source_authority_kernel": selection.get("native_source_authority_kernel"),
+        "gpu_timing": selection.get("gpu_timing"),
+        "source_gpu_timing": selection.get("source_gpu_timing"),
+        "selection": selection.get("selection"),
+        "source_native_selection": selection.get("source_native_selection"),
+        "reference": selection.get("reference"),
+        "source_selection_parity": selection.get("source_selection_parity"),
+        "source_reference_parity": selection.get("source_reference_parity"),
+        "parity": selection.get("parity"),
+        "source_native_parity": selection.get("source_native_parity"),
+        "execution": selection.get("execution"),
+        "physical_graph": selection.get("physical_graph"),
+        "noetic_ir": selection.get("noetic_ir"),
+        "native_selection_execution_observed": selection.get("native_selection_execution_observed"),
+        "native_source_authority_execution_observed": selection.get("native_source_authority_execution_observed"),
+        "source_payload_exact": selection.get("source_payload_exact"),
+        "source_guard_unchanged": selection.get("source_guard_unchanged"),
+        "source_independent_execution": native_loader.get("source_independent_execution"),
+        "whole_model_capability": selection.get("whole_model_capability"),
+        "complete_token_runtime": selection.get("complete_token_runtime"),
+        "promotion_allowed": selection.get("promotion_allowed"),
+        "claim_boundary": selection.get("claim_boundary"),
+        "next_action": selection.get("next_action"),
+    }
+
+
+def _native_routed_expert_dispatch_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read bounded native selected-body dispatch without promoting it to full experts."""
+    path = (
+        Path(receipt).expanduser().resolve()
+        if receipt
+        else repo / "receipts" / "headless" / DEFAULT_NATIVE_ROUTED_EXPERT_DISPATCH
+    )
+    dispatch = _read_json(path)
+    if dispatch is None:
+        return {
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "whole_model_capability": "NOT_TESTED",
+            "complete_expert_runtime": "NOT_TESTED",
+            "complete_token_runtime": "NOT_TESTED",
+            "promotion_allowed": False,
+        }
+    execution = dispatch.get("execution") if isinstance(dispatch.get("execution"), Mapping) else {}
+    return {
+        "status": dispatch.get("status"),
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "schema": dispatch.get("schema"),
+        "nomenclature_version": dispatch.get("nomenclature_version"),
+        "semantic_type": dispatch.get("semantic_type"),
+        "compiler_stage": dispatch.get("compiler_stage"),
+        "qualification": dispatch.get("qualification"),
+        "router_receipt": dispatch.get("router_receipt"),
+        "campaign_receipt": dispatch.get("campaign_receipt"),
+        "selection": dispatch.get("selection"),
+        "source_selection_parity": dispatch.get("source_selection_parity"),
+        "components": dispatch.get("components"),
+        "execution": execution,
+        "gpu_timing": dispatch.get("gpu_timing"),
+        "gather": dispatch.get("gather"),
+        "physical_graph": dispatch.get("physical_graph"),
+        "noetic_ir": dispatch.get("noetic_ir"),
+        "native_routed_body_dispatch_observed": dispatch.get("native_routed_body_dispatch_observed"),
+        "source_independent_execution": all(
+            (component.get("candidate_body") or {}).get("source_independent") is True
+            for component in dispatch.get("components") or []
+            if isinstance(component, Mapping)
+        ) if dispatch.get("components") else None,
+        "whole_model_capability": dispatch.get("whole_model_capability"),
+        "complete_expert_runtime": dispatch.get("complete_expert_runtime"),
+        "complete_token_runtime": dispatch.get("complete_token_runtime"),
+        "promotion_allowed": dispatch.get("promotion_allowed"),
+        "claim_boundary": dispatch.get("claim_boundary"),
+        "next_action": dispatch.get("next_action"),
+    }
+
+
+def _native_gate_up_swiglu_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read bounded native gate/up/SwiGLU activation without promoting it to full experts."""
+    path = (
+        Path(receipt).expanduser().resolve()
+        if receipt
+        else repo / "receipts" / "headless" / DEFAULT_NATIVE_GATE_UP_SWIGLU
+    )
+    activation = _read_json(path)
+    if activation is None:
+        return {
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "whole_model_capability": "NOT_TESTED",
+            "complete_expert_runtime": "NOT_TESTED",
+            "complete_token_runtime": "NOT_TESTED",
+            "promotion_allowed": False,
+        }
+    execution = activation.get("execution") if isinstance(activation.get("execution"), Mapping) else {}
+    noetic_ir = activation.get("noetic_ir") if isinstance(activation.get("noetic_ir"), Mapping) else {}
+    return {
+        "status": activation.get("status"),
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "schema": activation.get("schema"),
+        "nomenclature_version": activation.get("nomenclature_version"),
+        "semantic_type": activation.get("semantic_type"),
+        "compiler_stage": activation.get("compiler_stage"),
+        "qualification": activation.get("qualification"),
+        "router_receipt": activation.get("router_receipt"),
+        "component_receipt_policy": activation.get("component_receipt_policy"),
+        "selection": activation.get("selection"),
+        "source_selection_parity": activation.get("source_selection_parity"),
+        "components": activation.get("components"),
+        "execution": execution,
+        "gpu_timing": activation.get("gpu_timing"),
+        "gather": activation.get("gather"),
+        "physical_graph": activation.get("physical_graph"),
+        "noetic_ir": noetic_ir,
+        "native_gate_up_swiglu_observed": activation.get("native_gate_up_swiglu_observed"),
+        "native_expert_gate_up_activation_observed": activation.get("native_expert_gate_up_activation_observed"),
+        "source_independent_execution": noetic_ir.get("source_independent"),
+        "whole_model_capability": activation.get("whole_model_capability"),
+        "complete_expert_runtime": activation.get("complete_expert_runtime"),
+        "complete_token_runtime": activation.get("complete_token_runtime"),
+        "promotion_allowed": activation.get("promotion_allowed"),
+        "claim_boundary": activation.get("claim_boundary"),
+        "next_action": activation.get("next_action"),
+    }
+
+
+def _native_expert_composition_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read bounded native gate/up-to-down composition without promoting it to Flash runtime."""
+    path = (
+        Path(receipt).expanduser().resolve()
+        if receipt
+        else repo / "receipts" / "headless" / DEFAULT_NATIVE_EXPERT_COMPOSITION
+    )
+    composition = _read_json(path)
+    if composition is None:
+        return {
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "whole_model_capability": "NOT_TESTED",
+            "complete_expert_runtime": "NOT_TESTED",
+            "complete_token_runtime": "NOT_TESTED",
+            "promotion_allowed": False,
+        }
+    execution = composition.get("execution") if isinstance(composition.get("execution"), Mapping) else {}
+    noetic_ir = composition.get("noetic_ir") if isinstance(composition.get("noetic_ir"), Mapping) else {}
+    return {
+        "status": composition.get("status"),
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "schema": composition.get("schema"),
+        "nomenclature_version": composition.get("nomenclature_version"),
+        "semantic_type": composition.get("semantic_type"),
+        "compiler_stage": composition.get("compiler_stage"),
+        "qualification": composition.get("qualification"),
+        "router_receipt": composition.get("router_receipt"),
+        "component_receipt_policy": composition.get("component_receipt_policy"),
+        "selection": composition.get("selection"),
+        "source_selection_parity": composition.get("source_selection_parity"),
+        "components": composition.get("components"),
+        "execution": execution,
+        "input": composition.get("input"),
+        "intermediate": composition.get("intermediate"),
+        "gpu_timing": composition.get("gpu_timing"),
+        "gather": composition.get("gather"),
+        "physical_graph": composition.get("physical_graph"),
+        "noetic_ir": noetic_ir,
+        "native_gate_up_swiglu_observed": composition.get("native_gate_up_swiglu_observed"),
+        "native_down_projection_observed": composition.get("native_down_projection_observed"),
+        "native_expert_composition_observed": composition.get("native_expert_composition_observed"),
+        "bounded_selected_expert_output_observed": composition.get("bounded_selected_expert_output_observed"),
+        "device_intermediate_no_host_roundtrip": composition.get("device_intermediate_no_host_roundtrip") or (composition.get("physical_graph") or {}).get("device_intermediate_no_host_roundtrip"),
+        "source_independent_execution": noetic_ir.get("source_independent"),
+        "whole_model_capability": composition.get("whole_model_capability"),
+        "complete_expert_runtime": composition.get("complete_expert_runtime"),
+        "complete_token_runtime": composition.get("complete_token_runtime"),
+        "complete_system_ebpw": composition.get("complete_system_ebpw"),
+        "flash_tps": composition.get("flash_tps"),
+        "promotion_allowed": composition.get("promotion_allowed"),
+        "claim_boundary": composition.get("claim_boundary"),
+        "next_action": composition.get("next_action"),
+    }
+
+
+def _native_shared_expert_composition_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read the bounded native layer-0 shared-expert candidate graph."""
+    path = (
+        Path(receipt).expanduser().resolve()
+        if receipt
+        else repo / "receipts" / "headless" / DEFAULT_NATIVE_SHARED_EXPERT_COMPOSITION
+    )
+    composition = _read_json(path)
+    if composition is None:
+        return {
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "whole_model_capability": "NOT_TESTED",
+            "complete_expert_runtime": "NOT_TESTED",
+            "complete_token_runtime": "NOT_TESTED",
+            "promotion_allowed": False,
+        }
+    execution = composition.get("execution") if isinstance(composition.get("execution"), Mapping) else {}
+    noetic_ir = composition.get("noetic_ir") if isinstance(composition.get("noetic_ir"), Mapping) else {}
+    return {
+        "status": composition.get("status"),
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "schema": composition.get("schema"),
+        "nomenclature_version": composition.get("nomenclature_version"),
+        "semantic_type": composition.get("semantic_type"),
+        "compiler_stage": composition.get("compiler_stage"),
+        "qualification": composition.get("qualification"),
+        "layer": composition.get("layer"),
+        "component_receipt_policy": composition.get("component_receipt_policy"),
+        "components": composition.get("components"),
+        "execution": execution,
+        "input": composition.get("input"),
+        "intermediates": composition.get("intermediates"),
+        "parity": composition.get("parity"),
+        "gpu_timing": composition.get("gpu_timing"),
+        "physical_graph": composition.get("physical_graph"),
+        "noetic_ir": noetic_ir,
+        "native_shared_expert_gate_up_swiglu_observed": composition.get("native_shared_expert_gate_up_swiglu_observed"),
+        "native_shared_expert_down_projection_observed": composition.get("native_shared_expert_down_projection_observed"),
+        "native_shared_expert_scalar_gate_observed": composition.get("native_shared_expert_scalar_gate_observed"),
+        "native_shared_expert_sigmoid_gate_observed": composition.get("native_shared_expert_sigmoid_gate_observed"),
+        "native_shared_expert_composition_observed": composition.get("native_shared_expert_composition_observed"),
+        "device_intermediate_no_host_roundtrip": composition.get("device_intermediate_no_host_roundtrip") or (composition.get("physical_graph") or {}).get("device_intermediate_no_host_roundtrip"),
+        "source_independent_execution": noetic_ir.get("source_independent"),
+        "whole_model_capability": composition.get("whole_model_capability"),
+        "complete_expert_runtime": composition.get("complete_expert_runtime"),
+        "complete_token_runtime": composition.get("complete_token_runtime"),
+        "complete_system_ebpw": composition.get("complete_system_ebpw"),
+        "flash_tps": composition.get("flash_tps"),
+        "promotion_allowed": composition.get("promotion_allowed"),
+        "claim_boundary": composition.get("claim_boundary"),
+        "next_action": composition.get("next_action"),
+    }
+
+
+def _native_shared_residual_hyperconnection_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read the bounded shared-expert-to-hyperconnection candidate graph."""
+    path = (
+        Path(receipt).expanduser().resolve()
+        if receipt
+        else repo / "receipts" / "headless" / DEFAULT_NATIVE_SHARED_RESIDUAL_HYPERCONNECTION
+    )
+    composition = _read_json(path)
+    if composition is None:
+        return {
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "native_shared_residual_composition_observed": None,
+            "native_hyperconnection_stream_injection_observed": None,
+            "native_hyperconnection_low_rank_down_observed": None,
+            "native_hyperconnection_low_rank_up_observed": None,
+            "native_hyperconnection_block_inject_observed": None,
+            "native_hyperconnection_residual_mix_observed": None,
+            "device_intermediate_no_host_roundtrip": None,
+            "source_independent_execution": None,
+            "whole_model_capability": "NOT_TESTED",
+            "complete_expert_runtime": "NOT_TESTED",
+            "complete_token_runtime": "NOT_TESTED",
+            "complete_system_ebpw": None,
+            "flash_tps": None,
+            "promotion_allowed": False,
+        }
+    execution = composition.get("execution") if isinstance(composition.get("execution"), Mapping) else {}
+    physical_graph = composition.get("physical_graph") if isinstance(composition.get("physical_graph"), Mapping) else {}
+    noetic_ir = composition.get("noetic_ir") if isinstance(composition.get("noetic_ir"), Mapping) else {}
+    return {
+        "status": composition.get("status"),
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "schema": composition.get("schema"),
+        "nomenclature_version": composition.get("nomenclature_version"),
+        "semantic_type": composition.get("semantic_type"),
+        "compiler_stage": composition.get("compiler_stage"),
+        "qualification": composition.get("qualification"),
+        "layer": composition.get("layer"),
+        "dependencies": composition.get("dependencies"),
+        "component_receipt_policy": composition.get("component_receipt_policy"),
+        "components": composition.get("components"),
+        "execution": execution,
+        "input": composition.get("input"),
+        "intermediates": composition.get("intermediates"),
+        "candidate_semantics": composition.get("candidate_semantics"),
+        "parity": composition.get("parity"),
+        "gpu_timing": composition.get("gpu_timing"),
+        "physical_graph": physical_graph,
+        "noetic_ir": noetic_ir,
+        "native_shared_expert_gate_up_swiglu_observed": composition.get("native_shared_expert_gate_up_swiglu_observed"),
+        "native_shared_expert_down_projection_observed": composition.get("native_shared_expert_down_projection_observed"),
+        "native_shared_expert_sigmoid_gate_observed": composition.get("native_shared_expert_sigmoid_gate_observed"),
+        "native_hyperconnection_stream_injection_observed": composition.get("native_hyperconnection_stream_injection_observed"),
+        "native_hyperconnection_low_rank_down_observed": composition.get("native_hyperconnection_low_rank_down_observed"),
+        "native_hyperconnection_low_rank_up_observed": composition.get("native_hyperconnection_low_rank_up_observed"),
+        "native_hyperconnection_block_inject_observed": composition.get("native_hyperconnection_block_inject_observed"),
+        "native_hyperconnection_residual_mix_observed": composition.get("native_hyperconnection_residual_mix_observed"),
+        "native_shared_residual_composition_observed": composition.get("native_shared_residual_composition_observed"),
+        "device_intermediate_no_host_roundtrip": composition.get("device_intermediate_no_host_roundtrip") or physical_graph.get("device_intermediate_no_host_roundtrip"),
+        "source_independent_execution": composition.get("source_independent_execution") or noetic_ir.get("source_independent"),
+        "whole_model_capability": composition.get("whole_model_capability"),
+        "complete_expert_runtime": composition.get("complete_expert_runtime"),
+        "complete_token_runtime": composition.get("complete_token_runtime"),
+        "complete_system_ebpw": composition.get("complete_system_ebpw"),
+        "flash_tps": composition.get("flash_tps"),
+        "promotion_allowed": composition.get("promotion_allowed"),
+        "claim_boundary": composition.get("claim_boundary"),
+        "next_action": composition.get("next_action"),
+    }
+
+
+def _native_exact_hyperconnection_summary(
+    repo: Path,
+    receipt: Optional[str | os.PathLike[str]] = None,
+) -> Dict[str, Any]:
+    """Read the physical exact layer-0 routed-plus-shared MoE boundary."""
+    path = (
+        Path(receipt).expanduser().resolve()
+        if receipt
+        else repo / "receipts" / "headless" / DEFAULT_NATIVE_EXACT_HYPERCONNECTION
+    )
+    composition = _read_json(path)
+    if composition is None:
+        return {
+            "status": "NOT_RUN",
+            "receipt_path": str(path),
+            "schema": None,
+            "qualification": None,
+            "layer": None,
+            "dependencies": None,
+            "execution": None,
+            "input": None,
+            "source_reference": None,
+            "semantics": None,
+            "parity": None,
+            "gpu_timing": None,
+            "physical_graph": None,
+            "noetic_ir": None,
+            "source_selection_parity": None,
+            "complete_layer0_moe_candidate": None,
+            "complete_moe_combine": None,
+            "native_routed_expert_gate_up_swiglu_observed": None,
+            "native_routed_expert_down_projection_observed": None,
+            "native_moe_weighted_sum_observed": None,
+            "native_moe_shared_add_observed": None,
+            "whole_model_capability": "NOT_TESTED",
+            "complete_expert_runtime": "NOT_TESTED",
+            "complete_token_runtime": "NOT_TESTED",
+            "complete_system_ebpw": None,
+            "flash_tps": None,
+            "promotion_allowed": False,
+            "claim_boundary": None,
+            "next_action": None,
+        }
+    execution = composition.get("execution") if isinstance(composition.get("execution"), Mapping) else {}
+    physical_graph = composition.get("physical_graph") if isinstance(composition.get("physical_graph"), Mapping) else {}
+    noetic_ir = composition.get("noetic_ir") if isinstance(composition.get("noetic_ir"), Mapping) else {}
+    return {
+        "status": composition.get("status"),
+        "receipt_path": str(path),
+        "receipt_sha256": _sha256(path),
+        "schema": composition.get("schema"),
+        "nomenclature_version": composition.get("nomenclature_version"),
+        "semantic_type": composition.get("semantic_type"),
+        "compiler_stage": composition.get("compiler_stage"),
+        "qualification": composition.get("qualification"),
+        "layer": composition.get("layer"),
+        "dependencies": composition.get("dependencies"),
+        "execution": execution,
+        "input": composition.get("input"),
+        "source_reference": composition.get("source_reference"),
+        "semantics": composition.get("semantics"),
+        "parity": composition.get("parity"),
+        "gpu_timing": composition.get("gpu_timing"),
+        "physical_graph": physical_graph,
+        "noetic_ir": noetic_ir,
+        "source_selection_parity": composition.get("source_selection_parity"),
+        "routed_expert_count": composition.get("routed_expert_count") or execution.get("routed_expert_count"),
+        "routed_expert_ids": composition.get("routed_expert_ids") or execution.get("routed_expert_ids"),
+        "selected_weight_sum": composition.get("selected_weight_sum") or execution.get("selected_weight_sum"),
+        "native_hyperconnection_read_observed": composition.get("native_hyperconnection_read_observed") or execution.get("native_hyperconnection_read_observed"),
+        "native_hyperconnection_write_observed": composition.get("native_hyperconnection_write_observed") or execution.get("native_hyperconnection_write_observed"),
+        "exact_hyperconnection_semantics_observed": composition.get("exact_hyperconnection_semantics_observed") or execution.get("exact_hyperconnection_semantics_observed"),
+        "native_routed_expert_gate_up_swiglu_observed": composition.get("native_routed_expert_gate_up_swiglu_observed") or execution.get("native_routed_expert_gate_up_swiglu_observed"),
+        "native_routed_expert_down_projection_observed": composition.get("native_routed_expert_down_projection_observed") or execution.get("native_routed_expert_down_projection_observed"),
+        "native_moe_weighted_sum_observed": composition.get("native_moe_weighted_sum_observed") or execution.get("native_moe_weighted_sum_observed"),
+        "native_moe_shared_add_observed": composition.get("native_moe_shared_add_observed") or execution.get("native_moe_shared_add_observed"),
+        "device_intermediate_no_host_roundtrip": composition.get("device_intermediate_no_host_roundtrip") or execution.get("device_intermediate_no_host_roundtrip") or physical_graph.get("device_intermediate_no_host_roundtrip"),
+        "source_independent_execution": composition.get("source_independent_execution") or noetic_ir.get("source_independent"),
+        "source_hc_norm_payload_exact": composition.get("source_hc_norm_payload_exact"),
+        "hc_norm_loaded": composition.get("hc_norm_loaded"),
+        "complete_layer0_moe_candidate": composition.get("complete_layer0_moe_candidate") or execution.get("complete_layer0_moe_candidate") or noetic_ir.get("complete_layer0_moe_candidate"),
+        "complete_moe_combine": composition.get("complete_moe_combine") or execution.get("complete_moe_combine") or noetic_ir.get("complete_moe_combine"),
+        "whole_model_capability": composition.get("whole_model_capability"),
+        "complete_expert_runtime": composition.get("complete_expert_runtime"),
+        "complete_token_runtime": composition.get("complete_token_runtime"),
+        "complete_system_ebpw": composition.get("complete_system_ebpw"),
+        "flash_tps": composition.get("flash_tps"),
+        "promotion_allowed": composition.get("promotion_allowed"),
+        "claim_boundary": composition.get("claim_boundary"),
+        "next_action": composition.get("next_action"),
     }
 
 
@@ -963,10 +1568,21 @@ def _executable_manifest(
     transform_parity: Mapping[str, Any],
     loader_roundtrip: Mapping[str, Any],
     kernel_parity: Mapping[str, Any],
+    shared_expert_kernel_parity: Mapping[str, Any],
+    deltanet_kernel_parity: Mapping[str, Any],
+    sparse_attention_kernel_parity: Mapping[str, Any],
+    mtp_gate_kernel_parity: Mapping[str, Any],
     graph_component: Mapping[str, Any],
     component_campaign: Mapping[str, Any],
     router_graph: Mapping[str, Any],
     router_selection: Mapping[str, Any],
+    native_router_selection: Mapping[str, Any],
+    native_routed_expert_dispatch: Mapping[str, Any],
+    native_gate_up_swiglu: Mapping[str, Any],
+    native_expert_composition: Mapping[str, Any],
+    native_shared_expert_composition: Mapping[str, Any],
+    native_shared_residual_hyperconnection: Mapping[str, Any],
+    native_exact_hyperconnection: Mapping[str, Any],
     router_representation_ab: Mapping[str, Any],
 ) -> Dict[str, Any]:
     organs = [str(row.get("organ")) for row in ebpw.get("organs") or [] if isinstance(row, Mapping)]
@@ -999,6 +1615,14 @@ def _executable_manifest(
             "bounded_loader_roundtrip_receipt": loader_roundtrip.get("receipt_path"),
             "bounded_native_kernel_parity_observed": kernel_parity.get("status") == "PASSED",
             "bounded_native_kernel_parity_receipt": kernel_parity.get("receipt_path"),
+            "bounded_shared_expert_kernel_parity_observed": shared_expert_kernel_parity.get("status") == "PASSED",
+            "bounded_shared_expert_kernel_parity_receipt": shared_expert_kernel_parity.get("receipt_path"),
+            "bounded_deltanet_kernel_parity_observed": deltanet_kernel_parity.get("status") == "PASSED",
+            "bounded_deltanet_kernel_parity_receipt": deltanet_kernel_parity.get("receipt_path"),
+            "bounded_sparse_attention_kernel_parity_observed": sparse_attention_kernel_parity.get("status") == "PASSED",
+            "bounded_sparse_attention_kernel_parity_receipt": sparse_attention_kernel_parity.get("receipt_path"),
+            "bounded_mtp_gate_kernel_parity_observed": mtp_gate_kernel_parity.get("status") == "PASSED",
+            "bounded_mtp_gate_kernel_parity_receipt": mtp_gate_kernel_parity.get("receipt_path"),
             "bounded_noetic_graph_component_observed": graph_component.get("status") == "PASSED",
             "bounded_noetic_graph_component_receipt": graph_component.get("receipt_path"),
             "bounded_component_campaign_observed": component_campaign.get("status") == "PASSED",
@@ -1007,6 +1631,20 @@ def _executable_manifest(
             "bounded_router_graph_receipt": router_graph.get("receipt_path"),
             "bounded_router_selection_observed": router_selection.get("status") == "PASSED",
             "bounded_router_selection_receipt": router_selection.get("receipt_path"),
+            "bounded_native_router_selection_observed": native_router_selection.get("status") == "PASSED",
+            "bounded_native_router_selection_receipt": native_router_selection.get("receipt_path"),
+            "bounded_native_routed_expert_dispatch_observed": native_routed_expert_dispatch.get("status") == "PASSED",
+            "bounded_native_routed_expert_dispatch_receipt": native_routed_expert_dispatch.get("receipt_path"),
+            "bounded_native_gate_up_swiglu_observed": native_gate_up_swiglu.get("status") == "PASSED",
+            "bounded_native_gate_up_swiglu_receipt": native_gate_up_swiglu.get("receipt_path"),
+            "bounded_native_expert_composition_observed": native_expert_composition.get("status") == "PASSED",
+            "bounded_native_expert_composition_receipt": native_expert_composition.get("receipt_path"),
+            "bounded_native_shared_expert_composition_observed": native_shared_expert_composition.get("status") == "PASSED",
+            "bounded_native_shared_expert_composition_receipt": native_shared_expert_composition.get("receipt_path"),
+            "bounded_native_shared_residual_hyperconnection_observed": native_shared_residual_hyperconnection.get("status") == "PASSED",
+            "bounded_native_shared_residual_hyperconnection_receipt": native_shared_residual_hyperconnection.get("receipt_path"),
+            "bounded_native_exact_hyperconnection_observed": native_exact_hyperconnection.get("status") == "PASSED",
+            "bounded_native_exact_hyperconnection_receipt": native_exact_hyperconnection.get("receipt_path"),
             "bounded_router_representation_ab_observed": router_representation_ab.get("status") == "PASSED",
             "bounded_router_representation_ab_receipt": router_representation_ab.get("receipt_path"),
             "bounded_component_body_loaded": kernel_parity.get("source_independent_execution") is True,
@@ -1019,10 +1657,21 @@ def _executable_manifest(
         "source_transform_parity": transform_parity,
         "source_loader_roundtrip": loader_roundtrip,
         "source_kernel_parity": kernel_parity,
+        "source_shared_expert_kernel_parity": shared_expert_kernel_parity,
+        "source_deltanet_kernel_parity": deltanet_kernel_parity,
+        "source_sparse_attention_kernel_parity": sparse_attention_kernel_parity,
+        "source_mtp_gate_kernel_parity": mtp_gate_kernel_parity,
         "source_graph_component": graph_component,
         "source_component_campaign": component_campaign,
         "source_router_graph": router_graph,
         "source_router_selection": router_selection,
+        "source_router_selection_native": native_router_selection,
+        "source_routed_expert_dispatch_native": native_routed_expert_dispatch,
+        "source_routed_expert_gate_up_swiglu_native": native_gate_up_swiglu,
+        "source_routed_expert_composition_native": native_expert_composition,
+        "source_shared_expert_composition_native": native_shared_expert_composition,
+        "source_shared_residual_hyperconnection_native": native_shared_residual_hyperconnection,
+        "source_exact_hyperconnection_native": native_exact_hyperconnection,
         "source_router_representation_ab": router_representation_ab,
         "chosen_representation": ebpw.get("chosen_representation"),
         "native_loader": {
@@ -1037,6 +1686,30 @@ def _executable_manifest(
             "bounded_component_body": kernel_parity.get("candidate_body"),
             "bounded_native_kernel_parity_status": kernel_parity.get("status"),
             "bounded_native_kernel_parity_receipt": kernel_parity.get("receipt_path"),
+            "bounded_native_routed_expert_dispatch_status": native_routed_expert_dispatch.get("status"),
+            "bounded_native_routed_expert_dispatch_receipt": native_routed_expert_dispatch.get("receipt_path"),
+            "bounded_native_routed_expert_dispatch_observed": native_routed_expert_dispatch.get("native_routed_body_dispatch_observed"),
+            "bounded_native_routed_expert_dispatch_scope": "selected persisted routed-expert body windows only; full expert activation remains untested",
+            "bounded_native_gate_up_swiglu_status": native_gate_up_swiglu.get("status"),
+            "bounded_native_gate_up_swiglu_receipt": native_gate_up_swiglu.get("receipt_path"),
+            "bounded_native_gate_up_swiglu_observed": native_gate_up_swiglu.get("native_gate_up_swiglu_observed"),
+            "bounded_native_gate_up_swiglu_scope": "selected full persisted fused gate_up bodies split into gate/up halves and activated by native SwiGLU; down projection and full expert remain untested",
+            "bounded_native_expert_composition_status": native_expert_composition.get("status"),
+            "bounded_native_expert_composition_receipt": native_expert_composition.get("receipt_path"),
+            "bounded_native_expert_composition_observed": native_expert_composition.get("native_expert_composition_observed"),
+            "bounded_native_expert_composition_scope": "selected full persisted gate_up bodies through native SwiGLU into a device-resident activation buffer consumed by selected full persisted down bodies; complete model/token runtime remains untested",
+            "bounded_native_shared_expert_composition_status": native_shared_expert_composition.get("status"),
+            "bounded_native_shared_expert_composition_receipt": native_shared_expert_composition.get("receipt_path"),
+            "bounded_native_shared_expert_composition_observed": native_shared_expert_composition.get("native_shared_expert_composition_observed"),
+            "bounded_native_shared_expert_composition_scope": "layer-0 shared-expert gate/up/SwiGLU -> down -> scalar sigmoid gate with device-resident intermediates; routed/MoE and complete model/token runtime remain untested",
+            "bounded_native_shared_residual_hyperconnection_status": native_shared_residual_hyperconnection.get("status"),
+            "bounded_native_shared_residual_hyperconnection_receipt": native_shared_residual_hyperconnection.get("receipt_path"),
+            "bounded_native_shared_residual_hyperconnection_observed": native_shared_residual_hyperconnection.get("native_shared_residual_composition_observed"),
+            "bounded_native_shared_residual_hyperconnection_scope": "layer-0 shared-expert output injected on-device into a four-stream hyperconnection candidate and consumed by low-rank down/up plus block-gated residual mix; hc_norm, exact source semantics, routed/MoE, and complete model/token runtime remain untested",
+            "bounded_native_exact_hyperconnection_status": native_exact_hyperconnection.get("status"),
+            "bounded_native_exact_hyperconnection_receipt": native_exact_hyperconnection.get("receipt_path"),
+            "bounded_native_exact_hyperconnection_observed": native_exact_hyperconnection.get("complete_layer0_moe_candidate"),
+            "bounded_native_exact_hyperconnection_scope": "layer-0 exact HyperConnection read/write equations around selected routed top-10 plus sigmoid-gated shared MoE, with device-resident weighted sum/add; source router parity, source BF16 activation parity, attention/state, complete model/token runtime, TPS, and EBPW remain unqualified",
             "required": ["verified body manifest", "zero-copy/streaming policy", "per-organ ownership", "resident lifetime", "loader hash"],
             "body_read_by_scaffold": False,
         },
@@ -1044,8 +1717,9 @@ def _executable_manifest(
             "status": "PLAN_ONLY",
             "coverage": [
                 {"organ": "embeddings", "kernel": "partitioned_embedding_lookup", "status": "NOT_IMPLEMENTED"},
-                {"organ": "routed_experts", "kernel": "native_nf_expert_gemv", "status": "NOT_IMPLEMENTED"},
-                {"organ": "shared_expert", "kernel": "shared_expert_fused_gemv", "status": "NOT_IMPLEMENTED"},
+                {"organ": "routed_experts", "kernel": "native_nf_expert_gemv", "status": "BOUNDED_LAYER0_SELECTED_TOP10_COMPOSITION_ONLY"},
+                {"organ": "shared_expert", "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu + qwen_uniform_q4_group64_matvec + qwen_next_shared_expert_sigmoid_gate", "status": "BOUNDED_LAYER0_COMPOSITION_ONLY"},
+                {"organ": "moe_join", "kernel": "qwen_next_moe_weighted_sum + qwen_next_moe_add_shared", "status": "BOUNDED_LAYER0_EXACT_MOE_JOIN"},
                 {"organ": "router", "kernel": "router_topk_gather", "status": "NOT_IMPLEMENTED"},
                 {"organ": "deltanet", "kernel": "persistent_state_update", "status": "NOT_IMPLEMENTED"},
                 {"organ": "recurrent_state", "kernel": "resident_state_read_modify_write", "status": "NOT_IMPLEMENTED"},
@@ -1055,7 +1729,7 @@ def _executable_manifest(
                 {"organ": "norms", "kernel": "fused_norm_epilogue", "status": "NOT_IMPLEMENTED"},
                 {"organ": "lm_head", "kernel": "vocabulary_projection_and_reduce", "status": "NOT_IMPLEMENTED"},
                 {"organ": "vision_backbone", "kernel": "conditional_multimodal_vision_path", "status": "NOT_IMPLEMENTED"},
-                {"organ": "residual_hyperconnections", "kernel": "low_rank_residual_mix", "status": "NOT_IMPLEMENTED"},
+                {"organ": "residual_hyperconnections", "kernel": "qwen_next_expand_shared_to_hyper_state + qwen_uniform_q4_group64_matvec + qwen_next_hyperconnection_residual_mix_candidate", "status": "BOUNDED_LAYER0_CANDIDATE_ONLY"},
                 {"organ": "support_misc", "kernel": "ownership_audit_required", "status": "UNRESOLVED"},
             ],
             "bounded_component_evidence": {
@@ -1076,6 +1750,58 @@ def _executable_manifest(
                 "source_independent_execution": component_campaign.get("source_independent_execution"),
                 "candidate_body_persisted": component_campaign.get("candidate_body_persisted"),
                 "scope": "bounded routed-expert body campaign only; not complete Flash execution",
+                "label": DERIVED,
+            },
+            "bounded_shared_expert_matrix_evidence": {
+                "status": shared_expert_kernel_parity.get("status"),
+                "receipt": shared_expert_kernel_parity.get("receipt_path"),
+                "source_tensor": shared_expert_kernel_parity.get("source_tensor"),
+                "native_loader": shared_expert_kernel_parity.get("native_loader"),
+                "native_kernel": shared_expert_kernel_parity.get("native_kernel"),
+                "gpu_timing": shared_expert_kernel_parity.get("gpu_timing"),
+                "parity": shared_expert_kernel_parity.get("parity"),
+                "source_independent_execution": shared_expert_kernel_parity.get("source_independent_execution"),
+                "candidate_body_persisted": shared_expert_kernel_parity.get("candidate_body_persisted"),
+                "scope": "one shared-expert rank-2 matrix window only; not complete Flash execution",
+                "label": DERIVED,
+            },
+            "bounded_deltanet_matrix_evidence": {
+                "status": deltanet_kernel_parity.get("status"),
+                "receipt": deltanet_kernel_parity.get("receipt_path"),
+                "source_tensor": deltanet_kernel_parity.get("source_tensor"),
+                "native_loader": deltanet_kernel_parity.get("native_loader"),
+                "native_kernel": deltanet_kernel_parity.get("native_kernel"),
+                "gpu_timing": deltanet_kernel_parity.get("gpu_timing"),
+                "parity": deltanet_kernel_parity.get("parity"),
+                "source_independent_execution": deltanet_kernel_parity.get("source_independent_execution"),
+                "candidate_body_persisted": deltanet_kernel_parity.get("candidate_body_persisted"),
+                "scope": deltanet_kernel_parity.get("scope"),
+                "label": DERIVED,
+            },
+            "bounded_sparse_attention_matrix_evidence": {
+                "status": sparse_attention_kernel_parity.get("status"),
+                "receipt": sparse_attention_kernel_parity.get("receipt_path"),
+                "source_tensor": sparse_attention_kernel_parity.get("source_tensor"),
+                "native_loader": sparse_attention_kernel_parity.get("native_loader"),
+                "native_kernel": sparse_attention_kernel_parity.get("native_kernel"),
+                "gpu_timing": sparse_attention_kernel_parity.get("gpu_timing"),
+                "parity": sparse_attention_kernel_parity.get("parity"),
+                "source_independent_execution": sparse_attention_kernel_parity.get("source_independent_execution"),
+                "candidate_body_persisted": sparse_attention_kernel_parity.get("candidate_body_persisted"),
+                "scope": sparse_attention_kernel_parity.get("scope"),
+                "label": DERIVED,
+            },
+            "bounded_mtp_gate_matrix_evidence": {
+                "status": mtp_gate_kernel_parity.get("status"),
+                "receipt": mtp_gate_kernel_parity.get("receipt_path"),
+                "source_tensor": mtp_gate_kernel_parity.get("source_tensor"),
+                "native_loader": mtp_gate_kernel_parity.get("native_loader"),
+                "native_kernel": mtp_gate_kernel_parity.get("native_kernel"),
+                "gpu_timing": mtp_gate_kernel_parity.get("gpu_timing"),
+                "parity": mtp_gate_kernel_parity.get("parity"),
+                "source_independent_execution": mtp_gate_kernel_parity.get("source_independent_execution"),
+                "candidate_body_persisted": mtp_gate_kernel_parity.get("candidate_body_persisted"),
+                "scope": mtp_gate_kernel_parity.get("scope"),
                 "label": DERIVED,
             },
             "bounded_router_matrix_evidence": {
@@ -1099,6 +1825,123 @@ def _executable_manifest(
                 "candidate_body_persisted": router_selection.get("candidate_body_persisted"),
                 "native_selection_execution_observed": router_selection.get("native_selection_execution_observed"),
                 "scope": "derived CPU router softmax/top-k over a persisted full body; no native selection kernel or complete Flash execution",
+                "label": DERIVED,
+            },
+            "bounded_native_router_selection_evidence": {
+                "status": native_router_selection.get("status"),
+                "receipt": native_router_selection.get("receipt_path"),
+                "selection_status": native_router_selection.get("selection_status"),
+                "source_selection_parity_status": (native_router_selection.get("source_selection_parity") or {}).get("status"),
+                "source_selection_parity_qualified": (native_router_selection.get("source_selection_parity") or {}).get("expert_ids_exact_match"),
+                "native_selection_execution_observed": native_router_selection.get("native_selection_execution_observed"),
+                "source_independent_execution": native_router_selection.get("source_independent_execution"),
+                "physical_graph_fingerprint": (native_router_selection.get("physical_graph") or {}).get("fingerprint"),
+                "scope": "native Metal router matvec plus FP32 softmax/top-k over a persisted full body; no complete Flash execution",
+                "label": DERIVED,
+            },
+            "bounded_native_routed_expert_dispatch_evidence": {
+                "status": native_routed_expert_dispatch.get("status"),
+                "receipt": native_routed_expert_dispatch.get("receipt_path"),
+                "qualification": native_routed_expert_dispatch.get("qualification"),
+                "native_routed_body_dispatch_observed": native_routed_expert_dispatch.get("native_routed_body_dispatch_observed"),
+                "source_independent_execution": native_routed_expert_dispatch.get("source_independent_execution"),
+                "selected_expert_count": (native_routed_expert_dispatch.get("execution") or {}).get("selected_expert_count"),
+                "dispatches_per_route": (native_routed_expert_dispatch.get("execution") or {}).get("dispatches_per_route"),
+                "physical_graph_fingerprint": (native_routed_expert_dispatch.get("physical_graph") or {}).get("fingerprint"),
+                "scope": "native selected persisted Q4/G64 routed-expert body windows plus host weighted gather; no complete expert or Flash execution",
+                "label": DERIVED,
+            },
+            "bounded_native_gate_up_swiglu_evidence": {
+                "status": native_gate_up_swiglu.get("status"),
+                "receipt": native_gate_up_swiglu.get("receipt_path"),
+                "qualification": native_gate_up_swiglu.get("qualification"),
+                "native_gate_up_swiglu_observed": native_gate_up_swiglu.get("native_gate_up_swiglu_observed"),
+                "native_expert_gate_up_activation_observed": native_gate_up_swiglu.get("native_expert_gate_up_activation_observed"),
+                "source_independent_execution": native_gate_up_swiglu.get("source_independent_execution"),
+                "selected_expert_count": (native_gate_up_swiglu.get("execution") or {}).get("selected_expert_count"),
+                "gate_rows": ((native_gate_up_swiglu.get("physical_graph") or {}).get("gate_rows")),
+                "physical_graph_fingerprint": (native_gate_up_swiglu.get("physical_graph") or {}).get("fingerprint"),
+                "scope": "native Q4/G64 gate+up/SwiGLU activation plus host weighted gather; down projection and complete expert/Flash execution remain untested",
+                "label": DERIVED,
+            },
+            "bounded_native_expert_composition_evidence": {
+                "status": native_expert_composition.get("status"),
+                "receipt": native_expert_composition.get("receipt_path"),
+                "qualification": native_expert_composition.get("qualification"),
+                "native_gate_up_swiglu_observed": native_expert_composition.get("native_gate_up_swiglu_observed"),
+                "native_down_projection_observed": native_expert_composition.get("native_down_projection_observed"),
+                "native_expert_composition_observed": native_expert_composition.get("native_expert_composition_observed"),
+                "device_intermediate_no_host_roundtrip": native_expert_composition.get("device_intermediate_no_host_roundtrip"),
+                "source_independent_execution": native_expert_composition.get("source_independent_execution"),
+                "selected_expert_count": (native_expert_composition.get("execution") or {}).get("selected_expert_count"),
+                "dispatches_per_route": (native_expert_composition.get("execution") or {}).get("dispatches_per_route"),
+                "physical_graph_fingerprint": (native_expert_composition.get("physical_graph") or {}).get("fingerprint"),
+                "scope": "native selected persisted gate/up/down bodies with a device-resident intermediate; complete expert/model/token runtime remains untested",
+                "label": DERIVED,
+            },
+            "bounded_native_shared_expert_composition_evidence": {
+                "status": native_shared_expert_composition.get("status"),
+                "receipt": native_shared_expert_composition.get("receipt_path"),
+                "qualification": native_shared_expert_composition.get("qualification"),
+                "native_shared_expert_gate_up_swiglu_observed": native_shared_expert_composition.get("native_shared_expert_gate_up_swiglu_observed"),
+                "native_shared_expert_down_projection_observed": native_shared_expert_composition.get("native_shared_expert_down_projection_observed"),
+                "native_shared_expert_scalar_gate_observed": native_shared_expert_composition.get("native_shared_expert_scalar_gate_observed"),
+                "native_shared_expert_sigmoid_gate_observed": native_shared_expert_composition.get("native_shared_expert_sigmoid_gate_observed"),
+                "native_shared_expert_composition_observed": native_shared_expert_composition.get("native_shared_expert_composition_observed"),
+                "device_intermediate_no_host_roundtrip": native_shared_expert_composition.get("device_intermediate_no_host_roundtrip"),
+                "source_independent_execution": native_shared_expert_composition.get("source_independent_execution"),
+                "dispatches_per_graph": (native_shared_expert_composition.get("execution") or {}).get("dispatches_per_graph"),
+                "physical_graph_fingerprint": (native_shared_expert_composition.get("physical_graph") or {}).get("fingerprint"),
+                "scope": "complete layer-0 shared-expert candidate graph only; routed/MoE combine, remaining Flash organs, complete model/token runtime, TPS, and EBPW remain untested",
+                "label": DERIVED,
+            },
+            "bounded_native_shared_residual_hyperconnection_evidence": {
+                "status": native_shared_residual_hyperconnection.get("status"),
+                "receipt": native_shared_residual_hyperconnection.get("receipt_path"),
+                "qualification": native_shared_residual_hyperconnection.get("qualification"),
+                "native_shared_expert_gate_up_swiglu_observed": native_shared_residual_hyperconnection.get("native_shared_expert_gate_up_swiglu_observed"),
+                "native_shared_expert_down_projection_observed": native_shared_residual_hyperconnection.get("native_shared_expert_down_projection_observed"),
+                "native_shared_expert_sigmoid_gate_observed": native_shared_residual_hyperconnection.get("native_shared_expert_sigmoid_gate_observed"),
+                "native_hyperconnection_stream_injection_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_stream_injection_observed"),
+                "native_hyperconnection_low_rank_down_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_low_rank_down_observed"),
+                "native_hyperconnection_low_rank_up_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_low_rank_up_observed"),
+                "native_hyperconnection_block_inject_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_block_inject_observed"),
+                "native_hyperconnection_residual_mix_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_residual_mix_observed"),
+                "native_shared_residual_composition_observed": native_shared_residual_hyperconnection.get("native_shared_residual_composition_observed"),
+                "device_intermediate_no_host_roundtrip": native_shared_residual_hyperconnection.get("device_intermediate_no_host_roundtrip"),
+                "source_independent_execution": native_shared_residual_hyperconnection.get("source_independent_execution"),
+                "dispatches_per_graph": (native_shared_residual_hyperconnection.get("execution") or {}).get("dispatches_per_graph"),
+                "physical_graph_fingerprint": (native_shared_residual_hyperconnection.get("physical_graph") or {}).get("fingerprint"),
+                "candidate_semantics": native_shared_residual_hyperconnection.get("candidate_semantics"),
+                "scope": "bounded layer-0 shared-expert-to-hyperconnection candidate graph only; hc_norm and exact source hyperconnection semantics, routed/MoE combine, remaining Flash organs, complete model/token runtime, TPS, and EBPW remain untested",
+                "label": DERIVED,
+            },
+            "bounded_native_exact_hyperconnection_evidence": {
+                "status": native_exact_hyperconnection.get("status"),
+                "receipt": native_exact_hyperconnection.get("receipt_path"),
+                "receipt_sha256": native_exact_hyperconnection.get("receipt_sha256"),
+                "qualification": native_exact_hyperconnection.get("qualification"),
+                "layer": native_exact_hyperconnection.get("layer"),
+                "complete_layer0_moe_candidate": native_exact_hyperconnection.get("complete_layer0_moe_candidate"),
+                "complete_moe_combine": native_exact_hyperconnection.get("complete_moe_combine"),
+                "routed_expert_count": native_exact_hyperconnection.get("routed_expert_count"),
+                "routed_expert_ids": native_exact_hyperconnection.get("routed_expert_ids"),
+                "selected_weight_sum": native_exact_hyperconnection.get("selected_weight_sum"),
+                "source_selection_parity": native_exact_hyperconnection.get("source_selection_parity"),
+                "source_hc_norm_payload_exact": native_exact_hyperconnection.get("source_hc_norm_payload_exact"),
+                "native_hyperconnection_read_observed": native_exact_hyperconnection.get("native_hyperconnection_read_observed"),
+                "native_hyperconnection_write_observed": native_exact_hyperconnection.get("native_hyperconnection_write_observed"),
+                "native_routed_expert_gate_up_swiglu_observed": native_exact_hyperconnection.get("native_routed_expert_gate_up_swiglu_observed"),
+                "native_routed_expert_down_projection_observed": native_exact_hyperconnection.get("native_routed_expert_down_projection_observed"),
+                "native_moe_weighted_sum_observed": native_exact_hyperconnection.get("native_moe_weighted_sum_observed"),
+                "native_moe_shared_add_observed": native_exact_hyperconnection.get("native_moe_shared_add_observed"),
+                "device_intermediate_no_host_roundtrip": native_exact_hyperconnection.get("device_intermediate_no_host_roundtrip"),
+                "source_independent_execution": native_exact_hyperconnection.get("source_independent_execution"),
+                "parity": native_exact_hyperconnection.get("parity"),
+                "gpu_timing": native_exact_hyperconnection.get("gpu_timing"),
+                "physical_graph": native_exact_hyperconnection.get("physical_graph"),
+                "noetic_ir": native_exact_hyperconnection.get("noetic_ir"),
+                "scope": "bounded exact layer-0 candidate only; source route parity and source BF16 numeric parity are unresolved, and complete token/TPS/EBPW remain unmeasured",
                 "label": DERIVED,
             },
             "bounded_router_representation_ab_evidence": {
@@ -1164,6 +2007,101 @@ def _executable_manifest(
                 "whole_model_capability": router_selection.get("whole_model_capability"),
                 "complete_token_runtime": router_selection.get("complete_token_runtime"),
             },
+            "native_router_selection": {
+                "status": native_router_selection.get("selection_status"),
+                "receipt_path": native_router_selection.get("receipt_path"),
+                "fingerprint": (native_router_selection.get("physical_graph") or {}).get("fingerprint"),
+                "source_independent_execution": native_router_selection.get("source_independent_execution"),
+                "native_selection_execution_observed": native_router_selection.get("native_selection_execution_observed"),
+                "native_source_authority_execution_observed": native_router_selection.get("native_source_authority_execution_observed"),
+                "source_payload_exact": native_router_selection.get("source_payload_exact"),
+                "source_guard_unchanged": native_router_selection.get("source_guard_unchanged"),
+                "source_reference_parity": native_router_selection.get("source_reference_parity"),
+                "source_selection_parity_qualified": (native_router_selection.get("source_selection_parity") or {}).get("expert_ids_exact_match"),
+                "whole_model_capability": native_router_selection.get("whole_model_capability"),
+                "complete_token_runtime": native_router_selection.get("complete_token_runtime"),
+            },
+            "native_routed_expert_dispatch": {
+                "status": native_routed_expert_dispatch.get("status"),
+                "receipt_path": native_routed_expert_dispatch.get("receipt_path"),
+                "fingerprint": (native_routed_expert_dispatch.get("physical_graph") or {}).get("fingerprint"),
+                "source_independent_execution": native_routed_expert_dispatch.get("source_independent_execution"),
+                "native_routed_body_dispatch_observed": native_routed_expert_dispatch.get("native_routed_body_dispatch_observed"),
+                "selected_expert_count": (native_routed_expert_dispatch.get("execution") or {}).get("selected_expert_count"),
+                "whole_model_capability": native_routed_expert_dispatch.get("whole_model_capability"),
+                "complete_expert_runtime": native_routed_expert_dispatch.get("complete_expert_runtime"),
+                "complete_token_runtime": native_routed_expert_dispatch.get("complete_token_runtime"),
+            },
+            "native_gate_up_swiglu": {
+                "status": native_gate_up_swiglu.get("status"),
+                "receipt_path": native_gate_up_swiglu.get("receipt_path"),
+                "fingerprint": (native_gate_up_swiglu.get("physical_graph") or {}).get("fingerprint"),
+                "source_independent_execution": native_gate_up_swiglu.get("source_independent_execution"),
+                "native_gate_up_swiglu_observed": native_gate_up_swiglu.get("native_gate_up_swiglu_observed"),
+                "native_expert_gate_up_activation_observed": native_gate_up_swiglu.get("native_expert_gate_up_activation_observed"),
+                "selected_expert_count": (native_gate_up_swiglu.get("execution") or {}).get("selected_expert_count"),
+                "whole_model_capability": native_gate_up_swiglu.get("whole_model_capability"),
+                "complete_expert_runtime": native_gate_up_swiglu.get("complete_expert_runtime"),
+                "complete_token_runtime": native_gate_up_swiglu.get("complete_token_runtime"),
+            },
+            "native_expert_composition": {
+                "status": native_expert_composition.get("status"),
+                "receipt_path": native_expert_composition.get("receipt_path"),
+                "fingerprint": (native_expert_composition.get("physical_graph") or {}).get("fingerprint"),
+                "source_independent_execution": native_expert_composition.get("source_independent_execution"),
+                "native_gate_up_swiglu_observed": native_expert_composition.get("native_gate_up_swiglu_observed"),
+                "native_down_projection_observed": native_expert_composition.get("native_down_projection_observed"),
+                "native_expert_composition_observed": native_expert_composition.get("native_expert_composition_observed"),
+                "device_intermediate_no_host_roundtrip": native_expert_composition.get("device_intermediate_no_host_roundtrip"),
+                "selected_expert_count": (native_expert_composition.get("execution") or {}).get("selected_expert_count"),
+                "whole_model_capability": native_expert_composition.get("whole_model_capability"),
+                "complete_expert_runtime": native_expert_composition.get("complete_expert_runtime"),
+                "complete_token_runtime": native_expert_composition.get("complete_token_runtime"),
+            },
+            "native_shared_expert_composition": {
+                "status": native_shared_expert_composition.get("status"),
+                "receipt_path": native_shared_expert_composition.get("receipt_path"),
+                "fingerprint": (native_shared_expert_composition.get("physical_graph") or {}).get("fingerprint"),
+                "source_independent_execution": native_shared_expert_composition.get("source_independent_execution"),
+                "native_shared_expert_gate_up_swiglu_observed": native_shared_expert_composition.get("native_shared_expert_gate_up_swiglu_observed"),
+                "native_shared_expert_down_projection_observed": native_shared_expert_composition.get("native_shared_expert_down_projection_observed"),
+                "native_shared_expert_scalar_gate_observed": native_shared_expert_composition.get("native_shared_expert_scalar_gate_observed"),
+                "native_shared_expert_sigmoid_gate_observed": native_shared_expert_composition.get("native_shared_expert_sigmoid_gate_observed"),
+                "native_shared_expert_composition_observed": native_shared_expert_composition.get("native_shared_expert_composition_observed"),
+                "device_intermediate_no_host_roundtrip": native_shared_expert_composition.get("device_intermediate_no_host_roundtrip"),
+                "whole_model_capability": native_shared_expert_composition.get("whole_model_capability"),
+                "complete_token_runtime": native_shared_expert_composition.get("complete_token_runtime"),
+            },
+            "native_shared_residual_hyperconnection": {
+                "status": native_shared_residual_hyperconnection.get("status"),
+                "receipt_path": native_shared_residual_hyperconnection.get("receipt_path"),
+                "fingerprint": (native_shared_residual_hyperconnection.get("physical_graph") or {}).get("fingerprint"),
+                "source_independent_execution": native_shared_residual_hyperconnection.get("source_independent_execution"),
+                "native_hyperconnection_stream_injection_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_stream_injection_observed"),
+                "native_hyperconnection_low_rank_down_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_low_rank_down_observed"),
+                "native_hyperconnection_low_rank_up_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_low_rank_up_observed"),
+                "native_hyperconnection_block_inject_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_block_inject_observed"),
+                "native_hyperconnection_residual_mix_observed": native_shared_residual_hyperconnection.get("native_hyperconnection_residual_mix_observed"),
+                "native_shared_residual_composition_observed": native_shared_residual_hyperconnection.get("native_shared_residual_composition_observed"),
+                "device_intermediate_no_host_roundtrip": native_shared_residual_hyperconnection.get("device_intermediate_no_host_roundtrip"),
+                "whole_model_capability": native_shared_residual_hyperconnection.get("whole_model_capability"),
+                "complete_token_runtime": native_shared_residual_hyperconnection.get("complete_token_runtime"),
+            },
+            "native_exact_hyperconnection": {
+                "status": native_exact_hyperconnection.get("status"),
+                "receipt_path": native_exact_hyperconnection.get("receipt_path"),
+                "receipt_sha256": native_exact_hyperconnection.get("receipt_sha256"),
+                "qualification": native_exact_hyperconnection.get("qualification"),
+                "fingerprint": (native_exact_hyperconnection.get("physical_graph") or {}).get("fingerprint"),
+                "source_independent_execution": native_exact_hyperconnection.get("source_independent_execution"),
+                "source_selection_parity": native_exact_hyperconnection.get("source_selection_parity"),
+                "complete_layer0_moe_candidate": native_exact_hyperconnection.get("complete_layer0_moe_candidate"),
+                "complete_moe_combine": native_exact_hyperconnection.get("complete_moe_combine"),
+                "routed_expert_count": native_exact_hyperconnection.get("routed_expert_count"),
+                "device_intermediate_no_host_roundtrip": native_exact_hyperconnection.get("device_intermediate_no_host_roundtrip"),
+                "whole_model_capability": native_exact_hyperconnection.get("whole_model_capability"),
+                "complete_token_runtime": native_exact_hyperconnection.get("complete_token_runtime"),
+            },
             "router_representation_ab": {
                 "status": router_representation_ab.get("status"),
                 "receipt_path": router_representation_ab.get("receipt_path"),
@@ -1207,7 +2145,25 @@ def _executable_manifest(
             "component_campaign_fingerprint": (component_campaign.get("physical_graph") or {}).get("fingerprint"),
             "router_graph_fingerprint": (router_graph.get("physical_graph") or {}).get("fingerprint"),
             "router_selection_fingerprint": (router_selection.get("physical_graph") or {}).get("fingerprint"),
+            "native_router_selection_receipt": native_router_selection.get("receipt_path"),
+            "native_router_selection_fingerprint": (native_router_selection.get("physical_graph") or {}).get("fingerprint"),
+            "native_routed_expert_dispatch_receipt": native_routed_expert_dispatch.get("receipt_path"),
+            "native_routed_expert_dispatch_fingerprint": (native_routed_expert_dispatch.get("physical_graph") or {}).get("fingerprint"),
+            "native_gate_up_swiglu_receipt": native_gate_up_swiglu.get("receipt_path"),
+            "native_gate_up_swiglu_fingerprint": (native_gate_up_swiglu.get("physical_graph") or {}).get("fingerprint"),
+            "native_expert_composition_receipt": native_expert_composition.get("receipt_path"),
+            "native_expert_composition_fingerprint": (native_expert_composition.get("physical_graph") or {}).get("fingerprint"),
+            "native_shared_expert_composition_receipt": native_shared_expert_composition.get("receipt_path"),
+            "native_shared_expert_composition_fingerprint": (native_shared_expert_composition.get("physical_graph") or {}).get("fingerprint"),
+            "native_shared_residual_hyperconnection_receipt": native_shared_residual_hyperconnection.get("receipt_path"),
+            "native_shared_residual_hyperconnection_fingerprint": (native_shared_residual_hyperconnection.get("physical_graph") or {}).get("fingerprint"),
+            "native_exact_hyperconnection_receipt": native_exact_hyperconnection.get("receipt_path"),
+            "native_exact_hyperconnection_fingerprint": (native_exact_hyperconnection.get("physical_graph") or {}).get("fingerprint"),
             "router_representation_ab_fingerprint": (router_representation_ab.get("physical_graph") or {}).get("fingerprint"),
+            "shared_expert_kernel_parity_receipt": shared_expert_kernel_parity.get("receipt_path"),
+            "deltanet_kernel_parity_receipt": deltanet_kernel_parity.get("receipt_path"),
+            "sparse_attention_kernel_parity_receipt": sparse_attention_kernel_parity.get("receipt_path"),
+            "mtp_gate_kernel_parity_receipt": mtp_gate_kernel_parity.get("receipt_path"),
             "device_identity": None,
             "compiler_identity": None,
             "representation_manifest_sha256": None,
@@ -1223,7 +2179,7 @@ def _executable_manifest(
             "hidden_dense_rematerialization": False,
         }),
         "promotion_allowed": False,
-        "claim_boundary": "FLASH_NEXT_NOETIC_EXECUTABLE remains a scaffold. It records full-tensor representation, one bounded source-independent component body, bounded descriptor-loader, and bounded native-kernel evidence, not a whole-model loader, capability, complete-system EBPW, or Flash TPS claim.",
+        "claim_boundary": "FLASH_NEXT_NOETIC_EXECUTABLE remains a scaffold. It now records a physically observed exact layer-0 HyperConnection read/write boundary around a selected routed-plus-shared MoE candidate, while source router parity, source BF16 activation parity, whole-model loading/capability, complete-token timing, complete-system EBPW, Flash TPS, and promotion remain unqualified.",
     }
 
 
@@ -1236,10 +2192,21 @@ def run_flash_executable_scaffold(
     transform_parity_receipt: Optional[str | os.PathLike[str]] = None,
     loader_roundtrip_receipt: Optional[str | os.PathLike[str]] = None,
     kernel_parity_receipt: Optional[str | os.PathLike[str]] = None,
+    shared_expert_kernel_parity_receipt: Optional[str | os.PathLike[str]] = None,
+    deltanet_kernel_parity_receipt: Optional[str | os.PathLike[str]] = None,
+    sparse_attention_kernel_parity_receipt: Optional[str | os.PathLike[str]] = None,
+    mtp_gate_kernel_parity_receipt: Optional[str | os.PathLike[str]] = None,
     graph_component_receipt: Optional[str | os.PathLike[str]] = None,
     component_campaign_receipt: Optional[str | os.PathLike[str]] = None,
     router_graph_receipt: Optional[str | os.PathLike[str]] = None,
     router_selection_receipt: Optional[str | os.PathLike[str]] = None,
+    native_router_selection_receipt: Optional[str | os.PathLike[str]] = None,
+    native_routed_expert_dispatch_receipt: Optional[str | os.PathLike[str]] = None,
+    native_gate_up_swiglu_receipt: Optional[str | os.PathLike[str]] = None,
+    native_expert_composition_receipt: Optional[str | os.PathLike[str]] = None,
+    native_shared_expert_composition_receipt: Optional[str | os.PathLike[str]] = None,
+    native_shared_residual_hyperconnection_receipt: Optional[str | os.PathLike[str]] = None,
+    native_exact_hyperconnection_receipt: Optional[str | os.PathLike[str]] = None,
     router_representation_ab_receipt: Optional[str | os.PathLike[str]] = None,
     emit: Optional[str | os.PathLike[str]] = None,
     ebpw_emit: Optional[str | os.PathLike[str]] = None,
@@ -1275,14 +2242,27 @@ def run_flash_executable_scaffold(
         transform_parity = _transform_parity_summary(repo, transform_parity_receipt)
         loader_roundtrip = _loader_roundtrip_summary(repo, loader_roundtrip_receipt)
         kernel_parity = _kernel_parity_summary(repo, kernel_parity_receipt)
+        shared_expert_kernel_parity = _shared_expert_kernel_parity_summary(repo, shared_expert_kernel_parity_receipt)
+        deltanet_kernel_parity = _deltanet_kernel_parity_summary(repo, deltanet_kernel_parity_receipt)
+        sparse_attention_kernel_parity = _sparse_attention_kernel_parity_summary(repo, sparse_attention_kernel_parity_receipt)
+        mtp_gate_kernel_parity = _mtp_gate_kernel_parity_summary(repo, mtp_gate_kernel_parity_receipt)
         graph_component = _graph_component_summary(repo, graph_component_receipt)
         component_campaign = _component_campaign_summary(repo, component_campaign_receipt)
         router_graph = _router_graph_summary(repo, router_graph_receipt)
         router_selection = _router_selection_summary(repo, router_selection_receipt)
+        native_router_selection = _native_router_selection_summary(repo, native_router_selection_receipt)
+        native_routed_expert_dispatch = _native_routed_expert_dispatch_summary(repo, native_routed_expert_dispatch_receipt)
+        native_gate_up_swiglu = _native_gate_up_swiglu_summary(repo, native_gate_up_swiglu_receipt)
+        native_expert_composition = _native_expert_composition_summary(repo, native_expert_composition_receipt)
+        native_shared_expert_composition = _native_shared_expert_composition_summary(repo, native_shared_expert_composition_receipt)
+        native_shared_residual_hyperconnection = _native_shared_residual_hyperconnection_summary(repo, native_shared_residual_hyperconnection_receipt)
+        native_exact_hyperconnection = _native_exact_hyperconnection_summary(repo, native_exact_hyperconnection_receipt)
         router_representation_ab = _router_representation_ab_summary(repo, router_representation_ab_receipt)
         ebpw = _ebpw_budget(science, source, tensor_probe, representation_experiment, transform_parity, loader_roundtrip, kernel_parity)
         token_ns = _token_ns_budget(science, source)
-        manifest = _executable_manifest(science, source, lake, ebpw, token_ns, tensor_probe, representation_experiment, transform_parity, loader_roundtrip, kernel_parity, graph_component, component_campaign, router_graph, router_selection, router_representation_ab)
+        manifest = _executable_manifest(science, source, lake, ebpw, token_ns, tensor_probe, representation_experiment, transform_parity, loader_roundtrip, kernel_parity, shared_expert_kernel_parity, deltanet_kernel_parity, sparse_attention_kernel_parity, mtp_gate_kernel_parity, graph_component, component_campaign, router_graph, router_selection, native_router_selection, native_routed_expert_dispatch, native_gate_up_swiglu, native_expert_composition, native_shared_expert_composition, native_shared_residual_hyperconnection, native_exact_hyperconnection, router_representation_ab)
+        telemetry = emit_flash_telemetry(repo, exact_receipt=native_exact_hyperconnection.get("receipt_path"))
+        manifest["flash_telemetry"] = telemetry
         atomic_write_json(ebpw_path, ebpw)
         atomic_write_json(token_path, token_ns)
         manifest["ebpw_budget_receipt"] = str(ebpw_path)
@@ -1293,6 +2273,7 @@ def run_flash_executable_scaffold(
             "manifest": manifest,
             "ebpw_budget": ebpw,
             "token_ns_budget": token_ns,
+            "flash_telemetry": telemetry,
             "checks": {
                 "source_receipt_present": True,
                 "source_revision_pinned": (science.get("source_identity") or {}).get("pinned_revision") == PINNED_REVISION if isinstance(science.get("source_identity"), Mapping) else False,
@@ -1313,6 +2294,22 @@ def run_flash_executable_scaffold(
                 "bounded_kernel_parity_does_not_claim_whole_model": kernel_parity.get("whole_model_capability") == "NOT_TESTED" and kernel_parity.get("whole_model_runtime") == "NOT_TESTED",
                 "bounded_kernel_parity_does_not_mutate_source": kernel_parity.get("body_mutated") in {None, False},
                 "bounded_native_descriptor_load_is_explicit": (kernel_parity.get("native_loader") or {}).get("status") in {None, "NOT_RUN", "BOUNDED_NOETIC_DESCRIPTOR_LOAD", "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD"},
+                "bounded_shared_expert_kernel_parity_is_explicit": shared_expert_kernel_parity.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_shared_expert_kernel_parity_does_not_claim_whole_model": shared_expert_kernel_parity.get("whole_model_capability") == "NOT_TESTED" and shared_expert_kernel_parity.get("whole_model_runtime") == "NOT_TESTED",
+                "bounded_shared_expert_kernel_parity_does_not_mutate_source": shared_expert_kernel_parity.get("body_mutated") in {None, False},
+                "bounded_shared_expert_kernel_parity_refuses_promotion": shared_expert_kernel_parity.get("promotion_allowed") is False,
+                "bounded_deltanet_kernel_parity_is_explicit": deltanet_kernel_parity.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_deltanet_kernel_parity_does_not_claim_whole_model": deltanet_kernel_parity.get("whole_model_capability") == "NOT_TESTED" and deltanet_kernel_parity.get("whole_model_runtime") == "NOT_TESTED",
+                "bounded_deltanet_kernel_parity_does_not_mutate_source": deltanet_kernel_parity.get("body_mutated") in {None, False},
+                "bounded_deltanet_kernel_parity_refuses_promotion": deltanet_kernel_parity.get("promotion_allowed") is False,
+                "bounded_sparse_attention_kernel_parity_is_explicit": sparse_attention_kernel_parity.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_sparse_attention_kernel_parity_does_not_claim_whole_model": sparse_attention_kernel_parity.get("whole_model_capability") == "NOT_TESTED" and sparse_attention_kernel_parity.get("whole_model_runtime") == "NOT_TESTED",
+                "bounded_sparse_attention_kernel_parity_does_not_mutate_source": sparse_attention_kernel_parity.get("body_mutated") in {None, False},
+                "bounded_sparse_attention_kernel_parity_refuses_promotion": sparse_attention_kernel_parity.get("promotion_allowed") is False,
+                "bounded_mtp_gate_kernel_parity_is_explicit": mtp_gate_kernel_parity.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_mtp_gate_kernel_parity_does_not_claim_whole_model": mtp_gate_kernel_parity.get("whole_model_capability") == "NOT_TESTED" and mtp_gate_kernel_parity.get("whole_model_runtime") == "NOT_TESTED",
+                "bounded_mtp_gate_kernel_parity_does_not_mutate_source": mtp_gate_kernel_parity.get("body_mutated") in {None, False},
+                "bounded_mtp_gate_kernel_parity_refuses_promotion": mtp_gate_kernel_parity.get("promotion_allowed") is False,
                 "bounded_graph_component_is_explicit": graph_component.get("status") in {"NOT_RUN", "PASSED"},
                 "bounded_graph_component_does_not_claim_whole_model": graph_component.get("whole_model_capability") in {None, "NOT_TESTED"} and graph_component.get("complete_token_runtime") in {None, "NOT_TESTED"},
                 "bounded_graph_component_body_is_scoped": (
@@ -1358,6 +2355,44 @@ def run_flash_executable_scaffold(
                 ),
                 "bounded_router_selection_is_not_mislabeled_native": router_selection.get("native_selection_execution_observed") in {None, False},
                 "bounded_router_selection_refuses_promotion": router_selection.get("promotion_allowed") is False,
+                "bounded_native_router_selection_is_explicit": native_router_selection.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_native_router_selection_does_not_claim_whole_model": native_router_selection.get("whole_model_capability") in {None, "NOT_TESTED"} and native_router_selection.get("complete_token_runtime") in {None, "NOT_TESTED"},
+                "bounded_native_router_selection_is_source_independent": native_router_selection.get("status") == "NOT_RUN" or native_router_selection.get("source_independent_execution") is True,
+                "bounded_native_router_selection_is_physically_observed_only_when_present": native_router_selection.get("status") == "NOT_RUN" or native_router_selection.get("native_selection_execution_observed") is True,
+                "bounded_native_router_selection_refuses_promotion": native_router_selection.get("promotion_allowed") is False,
+                "bounded_native_routed_expert_dispatch_is_explicit": native_routed_expert_dispatch.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_native_routed_expert_dispatch_does_not_claim_whole_model": native_routed_expert_dispatch.get("whole_model_capability") in {None, "NOT_TESTED"} and native_routed_expert_dispatch.get("complete_expert_runtime") in {None, "NOT_TESTED"} and native_routed_expert_dispatch.get("complete_token_runtime") in {None, "NOT_TESTED"},
+                "bounded_native_routed_expert_dispatch_is_source_independent": native_routed_expert_dispatch.get("status") == "NOT_RUN" or native_routed_expert_dispatch.get("source_independent_execution") is True,
+                "bounded_native_routed_expert_dispatch_is_physically_observed_only_when_present": native_routed_expert_dispatch.get("status") == "NOT_RUN" or native_routed_expert_dispatch.get("native_routed_body_dispatch_observed") is True,
+                "bounded_native_routed_expert_dispatch_refuses_promotion": native_routed_expert_dispatch.get("promotion_allowed") is False,
+                "bounded_native_gate_up_swiglu_is_explicit": native_gate_up_swiglu.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_native_gate_up_swiglu_does_not_claim_whole_model": native_gate_up_swiglu.get("whole_model_capability") in {None, "NOT_TESTED"} and native_gate_up_swiglu.get("complete_expert_runtime") in {None, "NOT_TESTED"} and native_gate_up_swiglu.get("complete_token_runtime") in {None, "NOT_TESTED"},
+                "bounded_native_gate_up_swiglu_is_source_independent": native_gate_up_swiglu.get("status") == "NOT_RUN" or native_gate_up_swiglu.get("source_independent_execution") is True,
+                "bounded_native_gate_up_swiglu_is_physically_observed_only_when_present": native_gate_up_swiglu.get("status") == "NOT_RUN" or native_gate_up_swiglu.get("native_gate_up_swiglu_observed") is True,
+                "bounded_native_gate_up_swiglu_refuses_promotion": native_gate_up_swiglu.get("promotion_allowed") is False,
+                "bounded_native_expert_composition_is_explicit": native_expert_composition.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_native_expert_composition_does_not_claim_whole_model": native_expert_composition.get("whole_model_capability") in {None, "NOT_TESTED"} and native_expert_composition.get("complete_expert_runtime") in {None, "NOT_TESTED"} and native_expert_composition.get("complete_token_runtime") in {None, "NOT_TESTED"},
+                "bounded_native_expert_composition_is_source_independent": native_expert_composition.get("status") == "NOT_RUN" or native_expert_composition.get("source_independent_execution") is True,
+                "bounded_native_expert_composition_is_physically_observed_only_when_present": native_expert_composition.get("status") == "NOT_RUN" or (native_expert_composition.get("native_gate_up_swiglu_observed") is True and native_expert_composition.get("native_down_projection_observed") is True and native_expert_composition.get("native_expert_composition_observed") is True),
+                "bounded_native_expert_composition_keeps_intermediate_on_device": native_expert_composition.get("status") == "NOT_RUN" or native_expert_composition.get("device_intermediate_no_host_roundtrip") is True,
+                "bounded_native_expert_composition_refuses_promotion": native_expert_composition.get("promotion_allowed") is False,
+                "bounded_native_shared_expert_composition_is_explicit": native_shared_expert_composition.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_native_shared_expert_composition_does_not_claim_whole_model": native_shared_expert_composition.get("whole_model_capability") in {None, "NOT_TESTED"} and native_shared_expert_composition.get("complete_expert_runtime") in {None, "NOT_TESTED"} and native_shared_expert_composition.get("complete_token_runtime") in {None, "NOT_TESTED"},
+                "bounded_native_shared_expert_composition_is_source_independent": native_shared_expert_composition.get("status") == "NOT_RUN" or native_shared_expert_composition.get("source_independent_execution") is True,
+                "bounded_native_shared_expert_composition_is_physically_observed_only_when_present": native_shared_expert_composition.get("status") == "NOT_RUN" or (native_shared_expert_composition.get("native_shared_expert_gate_up_swiglu_observed") is True and native_shared_expert_composition.get("native_shared_expert_down_projection_observed") is True and native_shared_expert_composition.get("native_shared_expert_scalar_gate_observed") is True and native_shared_expert_composition.get("native_shared_expert_sigmoid_gate_observed") is True and native_shared_expert_composition.get("native_shared_expert_composition_observed") is True),
+                "bounded_native_shared_expert_composition_keeps_intermediate_on_device": native_shared_expert_composition.get("status") == "NOT_RUN" or native_shared_expert_composition.get("device_intermediate_no_host_roundtrip") is True,
+                "bounded_native_shared_expert_composition_refuses_promotion": native_shared_expert_composition.get("promotion_allowed") is False,
+                "bounded_native_shared_residual_hyperconnection_is_explicit": native_shared_residual_hyperconnection.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_native_shared_residual_hyperconnection_does_not_claim_whole_model": native_shared_residual_hyperconnection.get("whole_model_capability") in {None, "NOT_TESTED"} and native_shared_residual_hyperconnection.get("complete_expert_runtime") in {None, "NOT_TESTED"} and native_shared_residual_hyperconnection.get("complete_token_runtime") in {None, "NOT_TESTED"},
+                "bounded_native_shared_residual_hyperconnection_is_source_independent": native_shared_residual_hyperconnection.get("status") == "NOT_RUN" or native_shared_residual_hyperconnection.get("source_independent_execution") is True,
+                "bounded_native_shared_residual_hyperconnection_is_physically_observed_only_when_present": native_shared_residual_hyperconnection.get("status") == "NOT_RUN" or (native_shared_residual_hyperconnection.get("native_hyperconnection_stream_injection_observed") is True and native_shared_residual_hyperconnection.get("native_hyperconnection_low_rank_down_observed") is True and native_shared_residual_hyperconnection.get("native_hyperconnection_low_rank_up_observed") is True and native_shared_residual_hyperconnection.get("native_hyperconnection_block_inject_observed") is True and native_shared_residual_hyperconnection.get("native_hyperconnection_residual_mix_observed") is True and native_shared_residual_hyperconnection.get("native_shared_residual_composition_observed") is True),
+                "bounded_native_shared_residual_hyperconnection_keeps_intermediate_on_device": native_shared_residual_hyperconnection.get("status") == "NOT_RUN" or native_shared_residual_hyperconnection.get("device_intermediate_no_host_roundtrip") is True,
+                "bounded_native_shared_residual_hyperconnection_refuses_promotion": native_shared_residual_hyperconnection.get("promotion_allowed") is False,
+                "bounded_native_exact_hyperconnection_is_explicit": native_exact_hyperconnection.get("status") in {"NOT_RUN", "PASSED"},
+                "bounded_native_exact_hyperconnection_does_not_claim_whole_model": native_exact_hyperconnection.get("whole_model_capability") in {None, "NOT_TESTED"} and native_exact_hyperconnection.get("complete_token_runtime") in {None, "NOT_TESTED"},
+                "bounded_native_exact_hyperconnection_is_source_independent": native_exact_hyperconnection.get("status") == "NOT_RUN" or native_exact_hyperconnection.get("source_independent_execution") is True,
+                "bounded_native_exact_hyperconnection_is_physically_observed_only_when_present": native_exact_hyperconnection.get("status") == "NOT_RUN" or (native_exact_hyperconnection.get("complete_layer0_moe_candidate") is True and native_exact_hyperconnection.get("complete_moe_combine") is True and native_exact_hyperconnection.get("device_intermediate_no_host_roundtrip") is True),
+                "bounded_native_exact_hyperconnection_refuses_promotion": native_exact_hyperconnection.get("promotion_allowed") is False,
                 "bounded_router_representation_ab_is_explicit": router_representation_ab.get("status") in {"NOT_RUN", "PASSED"},
                 "bounded_router_representation_ab_does_not_claim_whole_model": router_representation_ab.get("whole_model_capability") in {None, "NOT_TESTED"} and router_representation_ab.get("complete_token_runtime") in {None, "NOT_TESTED"},
                 "bounded_router_representation_ab_does_not_persist_bodies": router_representation_ab.get("candidate_bodies_persisted") in {None, False},
@@ -1392,10 +2427,21 @@ def main(argv: Optional[list[str]] = None) -> int:
     parser.add_argument("--transform-parity-receipt")
     parser.add_argument("--loader-roundtrip-receipt")
     parser.add_argument("--kernel-parity-receipt")
+    parser.add_argument("--shared-expert-kernel-parity-receipt")
+    parser.add_argument("--deltanet-kernel-parity-receipt")
+    parser.add_argument("--sparse-attention-kernel-parity-receipt")
+    parser.add_argument("--mtp-gate-kernel-parity-receipt")
     parser.add_argument("--graph-component-receipt")
     parser.add_argument("--component-campaign-receipt")
     parser.add_argument("--router-graph-receipt")
     parser.add_argument("--router-selection-receipt")
+    parser.add_argument("--native-router-selection-receipt")
+    parser.add_argument("--native-routed-expert-dispatch-receipt")
+    parser.add_argument("--native-gate-up-swiglu-receipt")
+    parser.add_argument("--native-expert-composition-receipt")
+    parser.add_argument("--native-shared-expert-composition-receipt")
+    parser.add_argument("--native-shared-residual-hyperconnection-receipt")
+    parser.add_argument("--native-exact-hyperconnection-receipt")
     parser.add_argument("--router-representation-ab-receipt")
     parser.add_argument("--emit")
     parser.add_argument("--ebpw-emit")
@@ -1409,10 +2455,21 @@ def main(argv: Optional[list[str]] = None) -> int:
         transform_parity_receipt=args.transform_parity_receipt,
         loader_roundtrip_receipt=args.loader_roundtrip_receipt,
         kernel_parity_receipt=args.kernel_parity_receipt,
+        shared_expert_kernel_parity_receipt=args.shared_expert_kernel_parity_receipt,
+        deltanet_kernel_parity_receipt=args.deltanet_kernel_parity_receipt,
+        sparse_attention_kernel_parity_receipt=args.sparse_attention_kernel_parity_receipt,
+        mtp_gate_kernel_parity_receipt=args.mtp_gate_kernel_parity_receipt,
         graph_component_receipt=args.graph_component_receipt,
         component_campaign_receipt=args.component_campaign_receipt,
         router_graph_receipt=args.router_graph_receipt,
         router_selection_receipt=args.router_selection_receipt,
+        native_router_selection_receipt=args.native_router_selection_receipt,
+        native_routed_expert_dispatch_receipt=args.native_routed_expert_dispatch_receipt,
+        native_gate_up_swiglu_receipt=args.native_gate_up_swiglu_receipt,
+        native_expert_composition_receipt=args.native_expert_composition_receipt,
+        native_shared_expert_composition_receipt=args.native_shared_expert_composition_receipt,
+        native_shared_residual_hyperconnection_receipt=args.native_shared_residual_hyperconnection_receipt,
+        native_exact_hyperconnection_receipt=args.native_exact_hyperconnection_receipt,
         router_representation_ab_receipt=args.router_representation_ab_receipt,
         emit=args.emit,
         ebpw_emit=args.ebpw_emit,
@@ -1422,7 +2479,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     return 0 if report.get("status") == "PASSED" else 1
 
 
-__all__ = ["DEFAULT_KERNEL_PARITY", "DEFAULT_LOADER_ROUNDTRIP", "DEFAULT_REPRESENTATION_EXPERIMENT", "DEFAULT_REPRESENTATION_REPLICATION", "DEFAULT_ROUTER_REPRESENTATION_AB", "DEFAULT_ROUTER_SELECTION", "DEFAULT_TENSOR_PROBE", "DEFAULT_TRANSFORM_PARITY", "EBPW_SCHEMA", "SCHEMA", "TOKEN_NS_SCHEMA", "main", "run_flash_executable_scaffold"]
+__all__ = ["DEFAULT_DELTANET_KERNEL_PARITY", "DEFAULT_KERNEL_PARITY", "DEFAULT_LOADER_ROUNDTRIP", "DEFAULT_MTP_GATE_KERNEL_PARITY", "DEFAULT_NATIVE_EXACT_HYPERCONNECTION", "DEFAULT_NATIVE_EXPERT_COMPOSITION", "DEFAULT_NATIVE_GATE_UP_SWIGLU", "DEFAULT_NATIVE_ROUTED_EXPERT_DISPATCH", "DEFAULT_NATIVE_ROUTER_SELECTION", "DEFAULT_NATIVE_SHARED_EXPERT_COMPOSITION", "DEFAULT_NATIVE_SHARED_RESIDUAL_HYPERCONNECTION", "DEFAULT_REPRESENTATION_EXPERIMENT", "DEFAULT_REPRESENTATION_REPLICATION", "DEFAULT_ROUTER_REPRESENTATION_AB", "DEFAULT_ROUTER_SELECTION", "DEFAULT_SHARED_EXPERT_KERNEL_PARITY", "DEFAULT_SPARSE_ATTENTION_KERNEL_PARITY", "DEFAULT_TENSOR_PROBE", "DEFAULT_TRANSFORM_PARITY", "EBPW_SCHEMA", "SCHEMA", "TOKEN_NS_SCHEMA", "main", "run_flash_executable_scaffold"]
 
 
 if __name__ == "__main__":

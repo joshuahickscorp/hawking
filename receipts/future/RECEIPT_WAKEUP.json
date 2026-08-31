@@ -1,0 +1,441 @@
+{
+ "api": {
+  "dispatch": "wake verifier, graph, frontier; at most once per event_id",
+  "harvest": "supervisor reads expected paths; not a model poll",
+  "refused": [
+   "done_yet",
+   "is_complete",
+   "is_done",
+   "is_it_done_yet",
+   "poll",
+   "wait",
+   "wait_for"
+  ],
+  "register_consumer": "bind a named callable in the process that is awake",
+  "register_expectation": "persist a path-keyed wait; launching context may then exit",
+  "run_once": "harvest then dispatch"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:46:05Z",
+  "recorded_by": "tools/future/wakeup.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. A missing Metal GPU is SLEEPING work, not a forged COMPLETED.",
+ "dispatch_wakes": [
+  "verifier",
+  "graph",
+  "frontier"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "fail_closed_terminals": [
+  "MISSING_PAST_DEADLINE",
+  "PARTIAL_TRUNCATED",
+  "SEAL_MISMATCH"
+ ],
+ "gaps_closed": [
+  "receipt appearance or content-hash change at an expected path is the completion event",
+  "dispatch(event) wakes named verifier, dependency graph and named frontier callables",
+  "cross-process: a child writes the receipt; a freshly-constructed watcher dispatches",
+  "MISSING_PAST_DEADLINE, PARTIAL_TRUNCATED and SEAL_MISMATCH are distinct terminals that never unblock dependents",
+  "same completion event_id dispatches once; replay is a no-op",
+  "no is-it-done-yet / poll / wait API; model-facing surface is register-expectation and dispatch-on-event",
+  "SLEEPING units wait on disk evidence of qualification; synthetic COMPLETED without matching bytes is refused",
+  "corrupt wakeup ledger fails closed instead of resetting the dispatch set"
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "idempotent": true,
+ "integration_points": {
+  "detached.py": "supervisor that harvests after a detached worker exits",
+  "evidence_dag.py": "completion events are DAG edges once that module lands",
+  "frontiers.py": "swap the named frontier consumer for the landed frontier refill",
+  "qualification_pipeline.py": "SLEEPING units wake on its sealed receipt, never on a synthetic",
+  "resident_api.py": "resident discovers this via --selftest / run_once",
+  "workgraph.py": "swap Watcher._apply_graph for the landed dependency graph"
+ },
+ "named_frontier": "future.wakeup",
+ "negative_findings": [
+  "hcli.events.EventBus cannot be the completion path: it is in-memory and bound to the launching process",
+  "Codex physical blockers (no Metal GPU, no Metal compiler, unproven bench locks, HEAVY quiescence, Flash NX SCAFFOLD_ONLY, teacher capture 0/256) stay SLEEPING; wakeup will not mint a synthetic qualification receipt",
+  "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; every emission is STATIC_ONLY / bench UNKNOWN",
+  "named consumers workgraph.py / frontiers.py / detached.py are this-wave siblings and are not imported; Watcher is the local interface until they land"
+ ],
+ "no_model_poll": true,
+ "poll_aliases_refused": [
+  "done_yet",
+  "is_complete",
+  "is_done",
+  "is_it_done_yet",
+  "poll",
+  "wait",
+  "wait_for"
+ ],
+ "proofs": {
+  "corrupt_ledger_fail_closed": true,
+  "cross_process": {
+   "child_unblocked": true,
+   "consumers_fired": [
+    "frontier",
+    "graph",
+    "verifier"
+   ],
+   "fresh_watcher_dispatched": true,
+   "registrar_pid_separate": true,
+   "registrar_stdout": "registered",
+   "writer_pid_separate": true,
+   "writer_stdout": "wrote"
+  },
+  "dispatch_twice_is_once": true,
+  "fail_closed_terminals_distinct": true,
+  "missing_past_deadline": true,
+  "missing_terminal": "MISSING_PAST_DEADLINE",
+  "mtime_is_not_a_change": true,
+  "n_proofs": 15,
+  "replay_is_noop": true,
+  "seal_mismatch_does_not_unblock": true,
+  "seal_mismatch_terminal": "SEAL_MISMATCH",
+  "sleeping_without_receipt_is_not_synthetic": true,
+  "synthetic_completion_refused": true,
+  "truncated_does_not_unblock": true,
+  "truncated_terminal": "PARTIAL_TRUNCATED",
+  "valid_unblocks_and_wakes_consumers": true
+ },
+ "purpose": "When work finishes, the verifier, the dependency graph and the relevant frontier wake \u2014 not necessarily the model context that launched it. A receipt on disk is the completion event.",
+ "recovered_implementation": {
+  "adequate_existing_watcher": null,
+  "already_existed": [
+   {
+    "in_git": true,
+    "note": "landed content-hashed cursor over a receipt directory; closest existing mechanism; extend the idea, do not fork the classifier",
+    "on_disk": true,
+    "path": "tools/future/codex_ingest.py"
+   },
+   {
+    "in_git": true,
+    "note": "idempotent routing of deltas into named consumers; dispatch ledger is the same idea at completion grain",
+    "on_disk": true,
+    "path": "tools/future/propagate.py"
+   },
+   {
+    "in_git": true,
+    "note": "in-memory EventBus; launching-context bound \u2014 recovered as the anti-pattern. Completion must not live here.",
+    "on_disk": true,
+    "path": "hcli/events.py"
+   },
+   {
+    "in_git": true,
+    "note": "obligation ledger: VERIFIED only via run_verify. Read-only. Wakeup does not mark HCLI obligations.",
+    "on_disk": true,
+    "path": "hcli/ledger.py"
+   },
+   {
+    "in_git": true,
+    "note": "atomic_write_json is the crash-safe writer; the wakeup ledger goes through it.",
+    "on_disk": true,
+    "path": "hcli/persist.py"
+   },
+   {
+    "in_git": true,
+    "note": "corrupt_receipt / partial_result fail-closed faults; seal_is_valid reused.",
+    "on_disk": true,
+    "path": "tools/future/repro_science.py"
+   },
+   {
+    "in_git": true,
+    "note": "byte sha vs meaning; wakeup change detector is bytes, like ingest, never mtime.",
+    "on_disk": true,
+    "path": "tools/future/freshness.py"
+   },
+   {
+    "in_git": true,
+    "note": "emit_hcli_workunit into the recovered HCLI field set; SLEEPING maps to blocked + wakeup_state.",
+    "on_disk": true,
+    "path": "tools/future/workunit_species.py"
+   },
+   {
+    "in_git": true,
+    "note": "sidecar inventory; wakeup was not in the 49-system set \u2014 this lane adds the resident-facing completion bus",
+    "on_disk": true,
+    "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+   },
+   {
+    "in_git": true,
+    "note": "live frontier the named consumer feeds; this module does not rewrite it",
+    "on_disk": true,
+    "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
+   },
+   {
+    "in_git": true,
+    "note": "durable sha256 cursor; shape reference for the wakeup ledger",
+    "on_disk": true,
+    "path": "receipts/future/CODEX_INGEST_STATE.json"
+   },
+   {
+    "in_git": true,
+    "note": "applied_keys ledger; same-event-once is the same invariant at a different grain",
+    "on_disk": true,
+    "path": "receipts/future/PROPAGATION_STATE.json"
+   }
+  ],
+  "extended": [
+   "content-hashed cursor (codex_ingest) \u2014 appearance OR sha change is the event",
+   "idempotent applied-key ledger (propagate) \u2014 same event_id dispatches once",
+   "corrupt_receipt / partial_result (repro_science) \u2014 distinct terminals, no silent pass",
+   "atomic_write_json (hcli.persist) \u2014 torn ledger must not reset the dispatch set",
+   "O_RDONLY open (codex_ingest) \u2014 the watcher never creates the evidence it waits on"
+  ],
+  "not_used_as_completion_path": "hcli.events.EventBus",
+  "present": [
+   "tools/future/codex_ingest.py",
+   "tools/future/propagate.py",
+   "hcli/events.py",
+   "hcli/ledger.py",
+   "hcli/persist.py",
+   "tools/future/repro_science.py",
+   "tools/future/freshness.py",
+   "tools/future/workunit_species.py",
+   "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
+   "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "receipts/future/CODEX_INGEST_STATE.json",
+   "receipts/future/PROPAGATION_STATE.json"
+  ],
+  "unresolved_in_this_checkout": [],
+  "why_not_redundant": "codex_ingest.py hashes a directory and emits LAW/SCAR deltas; it does not register a per-unit expectation, wake a verifier/graph/frontier by name, fail-close on truncated/seal-mismatch/deadline, or survive a supervisor restart as a completion bus. hcli.events.EventBus is in-memory and dies with the launching context. propagate.py is the idempotent consumer router this module mirrors at completion grain."
+ },
+ "resident_callable": {
+  "callables": {
+   "dispatch": "tools.future.wakeup.dispatch",
+   "harvest": "tools.future.wakeup.Watcher.harvest",
+   "register_expectation": "tools.future.wakeup.Watcher.register_expectation",
+   "run_once": "tools.future.wakeup.run_once"
+  },
+  "can_hcli_invoke": true,
+  "entry_point": "python3 tools/future/wakeup.py --selftest",
+  "fail_closed": {
+   "MISSING_PAST_DEADLINE": "expected path absent and now_tick > deadline_tick; dependents stay BLOCKED",
+   "PARTIAL_TRUNCATED": "empty, undecodable, invalid JSON, non-object, or complete:false; dependents stay BLOCKED",
+   "SEAL_MISMATCH": "parseable object whose seal_sha256 is missing or does not match canonical body; dependents stay BLOCKED",
+   "corrupt_ledger": "truncated or checksum-mismatched wakeup ledger refuses to load rather than replay every event",
+   "synthetic_completion": "dispatch of COMPLETED without matching sealed bytes on disk is refused"
+  },
+  "frontier_fed": "future.wakeup",
+  "how_the_resident_uses_it": "HCLI registers an expectation naming the output receipt, the verifier, the graph consumer and the frontier. The worker writes the receipt via atomic replace. A supervisor \u2014 possibly a different process after a restart \u2014 harvests the path and dispatch() wakes the three consumers. The model never asks whether it is done.",
+  "receipt": "receipts/future/RECEIPT_WAKEUP.json",
+  "workunit_emitted": [
+   "future.wakeup.dispatch-on-receipt",
+   "future.wakeup.sleeping-until-qualification"
+  ],
+  "workunits": [
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": null,
+    "candidate_status": "STATIC_ONLY",
+    "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, or forge a completion.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "bd316761f2613622a863d9ed8259e30ed3ada406a0b3e0c92bbb2ca62a623a1a",
+    "dependencies": [],
+    "description": "Watch sealed receipts at expected paths and dispatch verifier, dependency graph and named frontier. Completion evidence is on disk; a supervisor restart harvests work it did not start.",
+    "effect_class": "READ_ONLY",
+    "evidence_parents": [
+     "tools/future/codex_ingest.py",
+     "tools/future/propagate.py",
+     "tools/future/repro_science.py",
+     "hcli/persist.py"
+    ],
+    "failure_context": null,
+    "finished_at": null,
+    "frontier": "future.wakeup",
+    "id": "future.wakeup.dispatch-on-receipt",
+    "output_receipt_path": "receipts/future/RECEIPT_WAKEUP.json",
+    "preferred_backend": null,
+    "provider": "future.wakeup",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "independent_reproduction",
+    "status": "pending",
+    "verification": null,
+    "verifier": "future.wakeup.seal_and_dispatch",
+    "wakeup_state": "WAITING",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "blocked_reason": "SLEEPING: awaiting a sealed qualification receipt on disk. MetalContext / xcrun / protected bench lock / HEAVY quiescence are Codex physical blockers; this sidecar will not invent them.",
+    "candidate_status": "STATIC_ONLY",
+    "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, or forge a completion.",
+    "classification": "BLOCKED",
+    "content_hash": "88b01df0e02269b196af0d9514fe36b830ed6248d192585ef02ec8e517be9a46",
+    "dependencies": [],
+    "description": "SLEEPING WorkUnit for blocked physical work. Wakes when a sealed qualification receipt appears on disk. Never a synthetic GPU or Metal result; UNKNOWN stays UNKNOWN until hardware qualifies.",
+    "effect_class": "READ_ONLY",
+    "evidence_parents": [
+     "tools/future/codex_ingest.py",
+     "tools/future/propagate.py",
+     "tools/future/repro_science.py",
+     "hcli/persist.py"
+    ],
+    "failure_context": null,
+    "finished_at": null,
+    "frontier": "future.wakeup",
+    "id": "future.wakeup.sleeping-until-qualification",
+    "output_receipt_path": "receipts/future/RECEIPT_WAKEUP.json",
+    "preferred_backend": null,
+    "provider": "future.wakeup",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "independent_reproduction",
+    "status": "blocked",
+    "verification": null,
+    "verifier": "future.wakeup.seal_and_dispatch",
+    "wakeup_state": "SLEEPING",
+    "workspace": "repo-root"
+   }
+  ]
+ },
+ "schema": "hawking.future.wakeup.v1",
+ "seal_sha256": "f773af17e34ac894a672b094c0c11b0742d035ceacf55be18c3fde026e3e3f79",
+ "version": 1,
+ "vocabulary": {
+  "bench_state": "UNKNOWN",
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "evidence_class_we_emit": "STATIC_ONLY",
+  "evidence_classes_we_do_not_emit": [
+   "DIAGNOSTIC_RELATIVE",
+   "PROTECTED_ABSOLUTE"
+  ],
+  "fpga_is": "part of Accelerator / Physical Compiler / Fusion, not its own civilization",
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ },
+ "watch_receipts_not_processes": true,
+ "workunit_ids": [
+  "future.wakeup.dispatch-on-receipt",
+  "future.wakeup.sleeping-until-qualification"
+ ],
+ "workunits": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, or forge a completion.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "bd316761f2613622a863d9ed8259e30ed3ada406a0b3e0c92bbb2ca62a623a1a",
+   "dependencies": [],
+   "description": "Watch sealed receipts at expected paths and dispatch verifier, dependency graph and named frontier. Completion evidence is on disk; a supervisor restart harvests work it did not start.",
+   "effect_class": "READ_ONLY",
+   "evidence_parents": [
+    "tools/future/codex_ingest.py",
+    "tools/future/propagate.py",
+    "tools/future/repro_science.py",
+    "hcli/persist.py"
+   ],
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "future.wakeup",
+   "id": "future.wakeup.dispatch-on-receipt",
+   "output_receipt_path": "receipts/future/RECEIPT_WAKEUP.json",
+   "preferred_backend": null,
+   "provider": "future.wakeup",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.wakeup.seal_and_dispatch",
+   "wakeup_state": "WAITING",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": "SLEEPING: awaiting a sealed qualification receipt on disk. MetalContext / xcrun / protected bench lock / HEAVY quiescence are Codex physical blockers; this sidecar will not invent them.",
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, or forge a completion.",
+   "classification": "BLOCKED",
+   "content_hash": "88b01df0e02269b196af0d9514fe36b830ed6248d192585ef02ec8e517be9a46",
+   "dependencies": [],
+   "description": "SLEEPING WorkUnit for blocked physical work. Wakes when a sealed qualification receipt appears on disk. Never a synthetic GPU or Metal result; UNKNOWN stays UNKNOWN until hardware qualifies.",
+   "effect_class": "READ_ONLY",
+   "evidence_parents": [
+    "tools/future/codex_ingest.py",
+    "tools/future/propagate.py",
+    "tools/future/repro_science.py",
+    "hcli/persist.py"
+   ],
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "future.wakeup",
+   "id": "future.wakeup.sleeping-until-qualification",
+   "output_receipt_path": "receipts/future/RECEIPT_WAKEUP.json",
+   "preferred_backend": null,
+   "provider": "future.wakeup",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.wakeup.seal_and_dispatch",
+   "wakeup_state": "SLEEPING",
+   "workspace": "repo-root"
+  }
+ ]
+}

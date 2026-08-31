@@ -1,0 +1,1469 @@
+{
+ "avoid": [
+  {
+   "experiment": "AMX can't eat Q4_K. ANE 4\u20137\u00d7 slower. ICB encode 0.27% of GPU. Prefetcher WILLNEED \u221229%. Multi-CQ: kernels already \u22652\u00d7 saturated. MTLHeap 8.5% slower than shared.",
+   "family": "hardware_axis",
+   "negative_science": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "nns_ids": [
+    "hawking-experiments/superwave/g1/g1-arch-negative.md#cross_engine_host_dispatch_families_on_m3_uma_amx_ane_icb_prefetcher_multi_cq"
+   ],
+   "predicts_not_certifies": true,
+   "reason": "hawking-experiments/superwave/g1/g1-arch-negative.md#cross_engine_host_dispatch_families_on_m3_uma_amx_ane_icb_prefetcher_multi_cq is recorded DEAD in receipts/future/NEGATIVE_SCIENCE_INDEX.json. Diagnosis does not re-run the dead experiment."
+  },
+  {
+   "experiment": "Random LUT gather punished on Apple GPU",
+   "family": "hardware_axis",
+   "negative_science": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "nns_ids": [
+    "workspace/docs/guides/dead_levers.md#learned_codebook"
+   ],
+   "predicts_not_certifies": true,
+   "reason": "workspace/docs/guides/dead_levers.md#learned_codebook is recorded DEAD in receipts/future/NEGATIVE_SCIENCE_INDEX.json. Diagnosis does not re-run the dead experiment."
+  },
+  {
+   "experiment": "Serial 50 ms > parallel 44 ms",
+   "family": "hardware_axis",
+   "negative_science": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "nns_ids": [
+    "workspace/docs/guides/dead_levers.md#moe_serial_route_dispatch"
+   ],
+   "predicts_not_certifies": true,
+   "reason": "workspace/docs/guides/dead_levers.md#moe_serial_route_dispatch is recorded DEAD in receipts/future/NEGATIVE_SCIENCE_INDEX.json. Diagnosis does not re-run the dead experiment."
+  },
+  {
+   "experiment": "3.2% wall + serial deps",
+   "family": "hardware_axis",
+   "negative_science": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "nns_ids": [
+    "workspace/docs/guides/dead_levers.md#non_gemm_cpu_offload"
+   ],
+   "predicts_not_certifies": true,
+   "reason": "workspace/docs/guides/dead_levers.md#non_gemm_cpu_offload is recorded DEAD in receipts/future/NEGATIVE_SCIENCE_INDEX.json. Diagnosis does not re-run the dead experiment."
+  },
+  {
+   "experiment": "0.11 vs 18 tps; serial verify",
+   "family": "hardware_axis",
+   "negative_science": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "nns_ids": [
+    "workspace/docs/guides/dead_levers.md#spec_exactshared_as_is"
+   ],
+   "predicts_not_certifies": true,
+   "reason": "workspace/docs/guides/dead_levers.md#spec_exactshared_as_is is recorded DEAD in receipts/future/NEGATIVE_SCIENCE_INDEX.json. Diagnosis does not re-run the dead experiment."
+  }
+ ],
+ "axes": [
+  "arithmetic_width",
+  "bit_serial_vs_bit_parallel",
+  "dsp_lut_balance",
+  "tiling",
+  "hbm_mapping",
+  "banking",
+  "pipeline_depth",
+  "module_composition",
+  "persistent_state",
+  "dfx_boundary",
+  "transport_format",
+  "compute_transfer_overlap"
+ ],
+ "axes_covered": [
+  "arithmetic_width",
+  "banking",
+  "bit_serial_vs_bit_parallel",
+  "compute_transfer_overlap",
+  "dfx_boundary",
+  "dsp_lut_balance",
+  "hbm_mapping",
+  "module_composition",
+  "persistent_state",
+  "pipeline_depth",
+  "tiling",
+  "transport_format"
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:56Z",
+  "recorded_by": "tools/future/hardware_doctor.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "entries": [
+  {
+   "axis": "persistent_state",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "An HWIR that sets persistent_state.per_token_transfer=true still satisfies the organ mapping, or adding per-token state bytes to the link simulator does not increase transport class.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 1,
+    "fidelity": "static_hwir",
+    "ladder_note": "inspect organ-map HWIR graph, buffer lifetimes, placements, DFX cuts"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token transport of sequence-lifetime DeltaNet state",
+   "falsifier": "An HWIR that sets persistent_state.per_token_transfer=true still satisfies the organ mapping, or adding per-token state bytes to the link simulator does not increase transport class.",
+   "hypothesis": "DeltaNet state must live in the HWIR persistent_state buffer (lifetime=sequence, per_token_transfer=false). Shipping that state over the transport link each token contradicts the organ mapping 'persistent state machine with resident state'.",
+   "id": "HD-009",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 1
+   },
+   "organ_mapping": "persistent state machine with resident state",
+   "predicted_effect": {
+    "direction": "keep_state_resident",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "QWEN27_FPGA_ORGAN_MAP hwir.buffers (present)",
+   "rank": 1,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 1,
+   "target_model": "qwen27",
+   "target_organ": "deltanet_state_and_input_projection",
+   "uncertainty": "State byte count is not in the organ map. The hypothesis is a consistency claim against declared buffer lifetime, not a measured win."
+  },
+  {
+   "axis": "dfx_boundary",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "The proposed DFX cut crosses a token-path dependency in hwir.dependencies, or the module_cache key would change per token.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 1,
+    "fidelity": "static_hwir",
+    "ladder_note": "inspect organ-map HWIR graph, buffer lifetimes, placements, DFX cuts"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "reloading P0 GEMV whenever a P1 graph changes",
+   "falsifier": "The proposed DFX cut crosses a token-path dependency in hwir.dependencies, or the module_cache key would change per token.",
+   "hypothesis": "A DFX boundary around P1 organs (norm_add_epilogues, lm_head_and_sampling, command_buffer_graph) lets P0 GEMV stay resident while the P1 graph swaps, matching the module_cache key algorithm sha256(HWIR + device genome + HBM genome + toolchain).",
+   "id": "HD-010",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 1
+   },
+   "organ_mapping": "persistent scheduling and reduced synchronization",
+   "predicted_effect": {
+    "direction": "enable_p0_residency_across_p1_swap",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "module_cache schema (present, SCHEMA_ONLY); device still unselected",
+   "rank": 2,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 1,
+   "target_model": "qwen27",
+   "target_organ": "command_buffer_graph",
+   "uncertainty": "module_cache is SCHEMA_ONLY. No bitstream exists. DFX on an unselected part is a floorplan claim, not a timing claim."
+  },
+  {
+   "axis": "tiling",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "On the organ-map transport_link_simulator, a resident-shard tile does not reduce per-token transport class versus a weight-body restream of the same organ.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token weight-body transfer",
+   "falsifier": "On the organ-map transport_link_simulator, a resident-shard tile does not reduce per-token transport class versus a weight-body restream of the same organ.",
+   "hypothesis": "Tiles that honour the organ map partition_axis within_organ_tensor_parallel and the resident-shard policy resident_shards_no_weight_body_per_token_transfer move only activations and partial reductions per token, versus a tile that restreams the weight body.",
+   "id": "HD-004",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "reduce_per_token_transport",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "transport_link_simulator already present on QWEN27_FPGA_ORGAN_MAP",
+   "rank": 3,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 2,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "Link parameters on the organ map are scenario inputs labelled [S], not measurements. Device HBM capacity is UNKNOWN (hbm_genome TARGET_UNSELECTED)."
+  },
+  {
+   "axis": "hbm_mapping",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Selected-subset residency does not reduce per-token transport class versus streaming the expert bank on the organ-map [S] link simulator.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token transfer of unselected expert weight bodies",
+   "falsifier": "Selected-subset residency does not reduce per-token transport class versus streaming the expert bank on the organ-map [S] link simulator.",
+   "hypothesis": "HBM-resident selected expert subsets (the organ map's own P0 mapping for expert_bank) reduce per-token transport versus streaming the whole expert bank. This is an FPGA HBM subset map, not an 8 GiB host-side expert-residency arena on Q80.",
+   "id": "HD-005",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "HBM-resident selected expert subsets with native NF GEMV",
+   "predicted_effect": {
+    "direction": "reduce_per_token_transport",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "a selected HBM genome; NS-028 (8 GiB Q80 arena) is a different mechanism",
+   "rank": 4,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [
+    "NS-028",
+    "large_expert_cache"
+   ],
+   "simulator_cost": 2,
+   "target_model": "flash-next",
+   "target_organ": "expert_bank",
+   "uncertainty": "hbm_genome channels=0 and TARGET_UNSELECTED; no capacity is known. Selected-subset cardinality is a Flash routing fact not measured here."
+  },
+  {
+   "axis": "module_composition",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Fused composition does not reduce per-token transport hops or bytes versus split modules on the organ-map [S] link simulator.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "an extra activation round-trip between routed, shared and epilogue modules",
+   "falsifier": "Fused composition does not reduce per-token transport hops or bytes versus split modules on the organ-map [S] link simulator.",
+   "hypothesis": "Composing routed expert, shared expert and epilogue as one HWIR node (organ mapping: fused selected-expert execution and epilogue) removes a cross-module activation hop versus three separately placed modules. This is a fusion cut, not a collapse of command-buffer topology as a complete-token wall lever.",
+   "id": "HD-008",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "fused selected-expert execution and epilogue",
+   "predicted_effect": {
+    "direction": "reduce_cross_module_hops",
+    "magnitude_class": "SINGLE_DIGIT_FRACTION"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "transport_link_simulator; NS-020 is a different (command-buffer topology) mechanism",
+   "rank": 5,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [
+    "NS-020"
+   ],
+   "simulator_cost": 2,
+   "target_model": "flash-next",
+   "target_organ": "routed_plus_shared_expert",
+   "uncertainty": "Activation/partial-reduction byte counts on the organ map are scenario inputs. Occupancy on a real part is UNKNOWN."
+  },
+  {
+   "axis": "transport_format",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Adding weight-body bytes to the [S] transfer still leaves mixed beating apple-only, or the declared transport_policy already includes the weight body (the organ map says it does not).",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token weight-body transfer on gqa_qkv_and_output",
+   "falsifier": "Adding weight-body bytes to the [S] transfer still leaves mixed beating apple-only, or the declared transport_policy already includes the weight body (the organ map says it does not).",
+   "hypothesis": "The only transport format that can beat an Apple-only path on the existing partition_simulation is the declared policy: activations and partial reductions only, never the weight body. Flash adds route metadata to that same restriction.",
+   "id": "HD-011",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "projection shards with activation/partial-reduction transport",
+   "predicted_effect": {
+    "direction": "reduce_per_token_transport",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "organ-map transport_policy activations_and_partial_reductions_only (present)",
+   "rank": 6,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 2,
+   "target_model": "qwen27",
+   "target_organ": "gqa_qkv_and_output",
+   "uncertainty": "partition_simulation inputs are labelled [S] scenario parameters. A real PCIe/HBM number would require a board."
+  },
+  {
+   "axis": "pipeline_depth",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "The deltanet_state partition scenario still reports mixed as not beating apple-only after the serial mixed_ns is replaced by an overlapped (max of compute, transfer) formula, or HWIR dependencies forbid overlapping the state update with the next projection.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 3,
+    "fidelity": "partition_simulation",
+    "ladder_note": "organ-map partition_simulation; serial mixed_ns scenario model, [S]"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "idle between DeltaNet state update and the next input projection",
+   "falsifier": "The deltanet_state partition scenario still reports mixed as not beating apple-only after the serial mixed_ns is replaced by an overlapped (max of compute, transfer) formula, or HWIR dependencies forbid overlapping the state update with the next projection.",
+   "hypothesis": "Deepening the state-machine/update pipeline so the resident-state read-modify-write overlaps the next token's input projection reduces idle on the persistent_state buffer (lifetime=sequence, per_token_transfer=false).",
+   "id": "HD-007",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 3
+   },
+   "organ_mapping": "persistent state machine with resident state",
+   "predicted_effect": {
+    "direction": "reduce_initiation_idle",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "organ-map partition_simulation deltanet_state scenario (exists, [S])",
+   "rank": 7,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 3,
+   "target_model": "qwen27",
+   "target_organ": "deltanet_state_and_input_projection",
+   "uncertainty": "partition_simulation.deltanet_state exists but is a serial mixed_ns scenario, not a staged pipeline model. Cycle-accurate overlap is unavailable."
+  },
+  {
+   "axis": "compute_transfer_overlap",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Overlapped mixed still does not beat apple-only on within_ffn_split, or hwir.dependencies require partial_reductions to wait for the full GEMV so the max() formula is illegal.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 3,
+    "fidelity": "partition_simulation",
+    "ladder_note": "organ-map partition_simulation; serial mixed_ns scenario model, [S]"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "serial addition of transfer latency onto FPGA compute",
+   "falsifier": "Overlapped mixed still does not beat apple-only on within_ffn_split, or hwir.dependencies require partial_reductions to wait for the full GEMV so the max() formula is illegal.",
+   "hypothesis": "Overlapping FPGA GEMV compute with the return transfer of partial reductions hides link latency that partition_simulation currently adds in series (mixed = fpga_compute + transfer + sync). The first test is to replace that sum with max(compute, transfer) + sync on the existing within_ffn_split scenario \u2014 still [S], still not a board.",
+   "id": "HD-012",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 3
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "hide_link_latency",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "organ-map partition_simulation within_ffn_split scenario (exists, [S])",
+   "rank": 8,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 3,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "Whether HWIR dependencies allow the overlap is unread from a cycle model; only the scenario formula is being changed. The apple_compute_ns / fpga_compute_ns inputs are hypothetical."
+  },
+  {
+   "axis": "arithmetic_width",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "A resource-bounds estimate at equal initiation-interval class shows the packed-width operator does not reduce LUT+DSP envelope versus unpack-then-wide-MAC, or the epilogue dominates the envelope.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 4,
+    "fidelity": "rtl_resource_estimate",
+    "ladder_note": "rtl_hls_verifier_surface is CONTRACT_ONLY; resource bounds listed, not executed"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "unpack-to-wide-accumulator glue on the resident GEMV",
+   "falsifier": "A resource-bounds estimate at equal initiation-interval class shows the packed-width operator does not reduce LUT+DSP envelope versus unpack-then-wide-MAC, or the epilogue dominates the envelope.",
+   "hypothesis": "Packing the organ-map low-bit GEMV at the stored operand width, rather than unpacking every MAC to a wider accumulator, reduces LUT glue on mlp_gate_up_down. This is a datapath-width question, not a Gray/LUT permutation of packed codes.",
+   "id": "HD-001",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 4
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "reduce_glue_resource",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "a selected FPGA device_genome (currently unselected) plus an executable resource-bounds check (rtl_hls_verifier_surface is CONTRACT_ONLY)",
+   "rank": 9,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [
+    "NS-027"
+   ],
+   "simulator_cost": 4,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "device_genome is TARGET_UNSELECTED; DSP/LUT ratio is a property of a named part that has not been selected. No RTL has been compiled."
+  },
+  {
+   "axis": "bit_serial_vs_bit_parallel",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Bind-time expand plus a bit-parallel resident MAC uses a larger LUT+DSP envelope, at the same initiation-interval class, than a purely parallel packed MAC with no expand stage.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 4,
+    "fidelity": "rtl_resource_estimate",
+    "ladder_note": "rtl_hls_verifier_surface is CONTRACT_ONLY; resource bounds listed, not executed"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token serial expand inside the GEMV",
+   "falsifier": "Bind-time expand plus a bit-parallel resident MAC uses a larger LUT+DSP envelope, at the same initiation-interval class, than a purely parallel packed MAC with no expand stage.",
+   "hypothesis": "A bit-parallel packed MAC on the resident low-bit GEMV, with any expand done at bind/load time into resident shards, is the legal default. Bind-time expand is a different mechanism from a per-token serial expand inside the matvec.",
+   "id": "HD-002",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 4
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "reduce_initiation_idle",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "rtl_hls_verifier_surface resource bounds become executable; NS-031 stays as the AVOID for per-token serial expand",
+   "rank": 10,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [
+    "NS-031"
+   ],
+   "simulator_cost": 4,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "No cycle-accurate model exists (cycle_simulation is false). Whether bind-time expand fits the module_cache key is untested because module_cache is SCHEMA_ONLY."
+  },
+  {
+   "axis": "dsp_lut_balance",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Forcing the epilogue onto LUT does not drop DSP count of the P0 GEMV, or LUT overflows the part envelope while DSP sits idle.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 4,
+    "fidelity": "rtl_resource_estimate",
+    "ladder_note": "rtl_hls_verifier_surface is CONTRACT_ONLY; resource bounds listed, not executed"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "DSP spent on epilogue glue instead of the P0 GEMV",
+   "falsifier": "Forcing the epilogue onto LUT does not drop DSP count of the P0 GEMV, or LUT overflows the part envelope while DSP sits idle.",
+   "hypothesis": "Putting low-bit GEMV MACs on DSP and the fused epilogue (organ mapping: fused epilogue near producer) on LUT glue reduces DSP pressure on the P0 GEMV. This is arithmetic-versus-glue placement, not a switching-activity permutation of packed codes.",
+   "id": "HD-003",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 4
+   },
+   "organ_mapping": "fused epilogue near producer",
+   "predicted_effect": {
+    "direction": "reduce_dsp_pressure",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "selected device_genome; related scar NS-027 is not this experiment",
+   "rank": 11,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [
+    "NS-027"
+   ],
+   "simulator_cost": 4,
+   "target_model": "qwen27",
+   "target_organ": "norm_add_epilogues",
+   "uncertainty": "Part unselected, so DSP/LUT budgets are UNKNOWN. CONTRACT_ONLY verifier cannot currently emit a resource envelope."
+  },
+  {
+   "axis": "banking",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "A bank-aware link model shows conflict stalls do not drop when selected-expert shards are spread across channels, or the selected part has a single effective channel.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 3,
+    "fidelity": "hbm_bank_model",
+    "ladder_note": "not built; cheapest that could test HBM banking. Current link simulator is hop/bandwidth only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "HBM bank-conflict stalls on selected-expert GEMV",
+   "falsifier": "A bank-aware link model shows conflict stalls do not drop when selected-expert shards are spread across channels, or the selected part has a single effective channel.",
+   "hypothesis": "Once a device is selected, placing selected-expert shards across independent HBM channels reduces bank-conflict stalls versus packing every selected expert into one channel. This is a channel-bank map on a named part, not a DRAM-row interleave of a live file catalog.",
+   "id": "HD-006",
+   "information_per_cost": {
+    "refutation_weight": 1,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 3
+   },
+   "organ_mapping": "HBM-resident selected expert subsets with native NF GEMV",
+   "predicted_effect": {
+    "direction": "reduce_bank_conflicts",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "selected device_genome with hbm_channels > 0, plus a bank-aware simulator that does not yet exist",
+   "rank": 12,
+   "refutation_probability": "LOW",
+   "refutation_weight": 1,
+   "related_scars_not_the_same": [
+    "NS-026"
+   ],
+   "simulator_cost": 3,
+   "target_model": "flash-next",
+   "target_organ": "expert_bank",
+   "uncertainty": "device_genome.hbm_channels is 0 (TARGET_UNSELECTED). The current transport_link_simulator models hops and bandwidth, not banks."
+  }
+ ],
+ "experiment_queue": [
+  {
+   "axis": "persistent_state",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "An HWIR that sets persistent_state.per_token_transfer=true still satisfies the organ mapping, or adding per-token state bytes to the link simulator does not increase transport class.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 1,
+    "fidelity": "static_hwir",
+    "ladder_note": "inspect organ-map HWIR graph, buffer lifetimes, placements, DFX cuts"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token transport of sequence-lifetime DeltaNet state",
+   "falsifier": "An HWIR that sets persistent_state.per_token_transfer=true still satisfies the organ mapping, or adding per-token state bytes to the link simulator does not increase transport class.",
+   "hypothesis": "DeltaNet state must live in the HWIR persistent_state buffer (lifetime=sequence, per_token_transfer=false). Shipping that state over the transport link each token contradicts the organ mapping 'persistent state machine with resident state'.",
+   "id": "HD-009",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 1
+   },
+   "organ_mapping": "persistent state machine with resident state",
+   "predicted_effect": {
+    "direction": "keep_state_resident",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "QWEN27_FPGA_ORGAN_MAP hwir.buffers (present)",
+   "rank": 1,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 1,
+   "target_model": "qwen27",
+   "target_organ": "deltanet_state_and_input_projection",
+   "uncertainty": "State byte count is not in the organ map. The hypothesis is a consistency claim against declared buffer lifetime, not a measured win."
+  },
+  {
+   "axis": "dfx_boundary",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "The proposed DFX cut crosses a token-path dependency in hwir.dependencies, or the module_cache key would change per token.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 1,
+    "fidelity": "static_hwir",
+    "ladder_note": "inspect organ-map HWIR graph, buffer lifetimes, placements, DFX cuts"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "reloading P0 GEMV whenever a P1 graph changes",
+   "falsifier": "The proposed DFX cut crosses a token-path dependency in hwir.dependencies, or the module_cache key would change per token.",
+   "hypothesis": "A DFX boundary around P1 organs (norm_add_epilogues, lm_head_and_sampling, command_buffer_graph) lets P0 GEMV stay resident while the P1 graph swaps, matching the module_cache key algorithm sha256(HWIR + device genome + HBM genome + toolchain).",
+   "id": "HD-010",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 1
+   },
+   "organ_mapping": "persistent scheduling and reduced synchronization",
+   "predicted_effect": {
+    "direction": "enable_p0_residency_across_p1_swap",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "module_cache schema (present, SCHEMA_ONLY); device still unselected",
+   "rank": 2,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 1,
+   "target_model": "qwen27",
+   "target_organ": "command_buffer_graph",
+   "uncertainty": "module_cache is SCHEMA_ONLY. No bitstream exists. DFX on an unselected part is a floorplan claim, not a timing claim."
+  },
+  {
+   "axis": "tiling",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "On the organ-map transport_link_simulator, a resident-shard tile does not reduce per-token transport class versus a weight-body restream of the same organ.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token weight-body transfer",
+   "falsifier": "On the organ-map transport_link_simulator, a resident-shard tile does not reduce per-token transport class versus a weight-body restream of the same organ.",
+   "hypothesis": "Tiles that honour the organ map partition_axis within_organ_tensor_parallel and the resident-shard policy resident_shards_no_weight_body_per_token_transfer move only activations and partial reductions per token, versus a tile that restreams the weight body.",
+   "id": "HD-004",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "reduce_per_token_transport",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "transport_link_simulator already present on QWEN27_FPGA_ORGAN_MAP",
+   "rank": 3,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 2,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "Link parameters on the organ map are scenario inputs labelled [S], not measurements. Device HBM capacity is UNKNOWN (hbm_genome TARGET_UNSELECTED)."
+  },
+  {
+   "axis": "hbm_mapping",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Selected-subset residency does not reduce per-token transport class versus streaming the expert bank on the organ-map [S] link simulator.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token transfer of unselected expert weight bodies",
+   "falsifier": "Selected-subset residency does not reduce per-token transport class versus streaming the expert bank on the organ-map [S] link simulator.",
+   "hypothesis": "HBM-resident selected expert subsets (the organ map's own P0 mapping for expert_bank) reduce per-token transport versus streaming the whole expert bank. This is an FPGA HBM subset map, not an 8 GiB host-side expert-residency arena on Q80.",
+   "id": "HD-005",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "HBM-resident selected expert subsets with native NF GEMV",
+   "predicted_effect": {
+    "direction": "reduce_per_token_transport",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "a selected HBM genome; NS-028 (8 GiB Q80 arena) is a different mechanism",
+   "rank": 4,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [
+    "NS-028",
+    "large_expert_cache"
+   ],
+   "simulator_cost": 2,
+   "target_model": "flash-next",
+   "target_organ": "expert_bank",
+   "uncertainty": "hbm_genome channels=0 and TARGET_UNSELECTED; no capacity is known. Selected-subset cardinality is a Flash routing fact not measured here."
+  },
+  {
+   "axis": "module_composition",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Fused composition does not reduce per-token transport hops or bytes versus split modules on the organ-map [S] link simulator.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "an extra activation round-trip between routed, shared and epilogue modules",
+   "falsifier": "Fused composition does not reduce per-token transport hops or bytes versus split modules on the organ-map [S] link simulator.",
+   "hypothesis": "Composing routed expert, shared expert and epilogue as one HWIR node (organ mapping: fused selected-expert execution and epilogue) removes a cross-module activation hop versus three separately placed modules. This is a fusion cut, not a collapse of command-buffer topology as a complete-token wall lever.",
+   "id": "HD-008",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "fused selected-expert execution and epilogue",
+   "predicted_effect": {
+    "direction": "reduce_cross_module_hops",
+    "magnitude_class": "SINGLE_DIGIT_FRACTION"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "transport_link_simulator; NS-020 is a different (command-buffer topology) mechanism",
+   "rank": 5,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [
+    "NS-020"
+   ],
+   "simulator_cost": 2,
+   "target_model": "flash-next",
+   "target_organ": "routed_plus_shared_expert",
+   "uncertainty": "Activation/partial-reduction byte counts on the organ map are scenario inputs. Occupancy on a real part is UNKNOWN."
+  },
+  {
+   "axis": "transport_format",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Adding weight-body bytes to the [S] transfer still leaves mixed beating apple-only, or the declared transport_policy already includes the weight body (the organ map says it does not).",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 2,
+    "fidelity": "transport_link_simulator",
+    "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token weight-body transfer on gqa_qkv_and_output",
+   "falsifier": "Adding weight-body bytes to the [S] transfer still leaves mixed beating apple-only, or the declared transport_policy already includes the weight body (the organ map says it does not).",
+   "hypothesis": "The only transport format that can beat an Apple-only path on the existing partition_simulation is the declared policy: activations and partial reductions only, never the weight body. Flash adds route metadata to that same restriction.",
+   "id": "HD-011",
+   "information_per_cost": {
+    "refutation_weight": 3,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 2
+   },
+   "organ_mapping": "projection shards with activation/partial-reduction transport",
+   "predicted_effect": {
+    "direction": "reduce_per_token_transport",
+    "magnitude_class": "FACTOR"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "organ-map transport_policy activations_and_partial_reductions_only (present)",
+   "rank": 6,
+   "refutation_probability": "HIGH",
+   "refutation_weight": 3,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 2,
+   "target_model": "qwen27",
+   "target_organ": "gqa_qkv_and_output",
+   "uncertainty": "partition_simulation inputs are labelled [S] scenario parameters. A real PCIe/HBM number would require a board."
+  },
+  {
+   "axis": "pipeline_depth",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "The deltanet_state partition scenario still reports mixed as not beating apple-only after the serial mixed_ns is replaced by an overlapped (max of compute, transfer) formula, or HWIR dependencies forbid overlapping the state update with the next projection.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 3,
+    "fidelity": "partition_simulation",
+    "ladder_note": "organ-map partition_simulation; serial mixed_ns scenario model, [S]"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "idle between DeltaNet state update and the next input projection",
+   "falsifier": "The deltanet_state partition scenario still reports mixed as not beating apple-only after the serial mixed_ns is replaced by an overlapped (max of compute, transfer) formula, or HWIR dependencies forbid overlapping the state update with the next projection.",
+   "hypothesis": "Deepening the state-machine/update pipeline so the resident-state read-modify-write overlaps the next token's input projection reduces idle on the persistent_state buffer (lifetime=sequence, per_token_transfer=false).",
+   "id": "HD-007",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 3
+   },
+   "organ_mapping": "persistent state machine with resident state",
+   "predicted_effect": {
+    "direction": "reduce_initiation_idle",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "organ-map partition_simulation deltanet_state scenario (exists, [S])",
+   "rank": 7,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 3,
+   "target_model": "qwen27",
+   "target_organ": "deltanet_state_and_input_projection",
+   "uncertainty": "partition_simulation.deltanet_state exists but is a serial mixed_ns scenario, not a staged pipeline model. Cycle-accurate overlap is unavailable."
+  },
+  {
+   "axis": "compute_transfer_overlap",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Overlapped mixed still does not beat apple-only on within_ffn_split, or hwir.dependencies require partial_reductions to wait for the full GEMV so the max() formula is illegal.",
+   "cheapest_simulator": {
+    "available": true,
+    "cost": 3,
+    "fidelity": "partition_simulation",
+    "ladder_note": "organ-map partition_simulation; serial mixed_ns scenario model, [S]"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "serial addition of transfer latency onto FPGA compute",
+   "falsifier": "Overlapped mixed still does not beat apple-only on within_ffn_split, or hwir.dependencies require partial_reductions to wait for the full GEMV so the max() formula is illegal.",
+   "hypothesis": "Overlapping FPGA GEMV compute with the return transfer of partial reductions hides link latency that partition_simulation currently adds in series (mixed = fpga_compute + transfer + sync). The first test is to replace that sum with max(compute, transfer) + sync on the existing within_ffn_split scenario \u2014 still [S], still not a board.",
+   "id": "HD-012",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 3
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "hide_link_latency",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "organ-map partition_simulation within_ffn_split scenario (exists, [S])",
+   "rank": 8,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [],
+   "simulator_cost": 3,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "Whether HWIR dependencies allow the overlap is unread from a cycle model; only the scenario formula is being changed. The apple_compute_ns / fpga_compute_ns inputs are hypothetical."
+  },
+  {
+   "axis": "arithmetic_width",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "A resource-bounds estimate at equal initiation-interval class shows the packed-width operator does not reduce LUT+DSP envelope versus unpack-then-wide-MAC, or the epilogue dominates the envelope.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 4,
+    "fidelity": "rtl_resource_estimate",
+    "ladder_note": "rtl_hls_verifier_surface is CONTRACT_ONLY; resource bounds listed, not executed"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "unpack-to-wide-accumulator glue on the resident GEMV",
+   "falsifier": "A resource-bounds estimate at equal initiation-interval class shows the packed-width operator does not reduce LUT+DSP envelope versus unpack-then-wide-MAC, or the epilogue dominates the envelope.",
+   "hypothesis": "Packing the organ-map low-bit GEMV at the stored operand width, rather than unpacking every MAC to a wider accumulator, reduces LUT glue on mlp_gate_up_down. This is a datapath-width question, not a Gray/LUT permutation of packed codes.",
+   "id": "HD-001",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 4
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "reduce_glue_resource",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "a selected FPGA device_genome (currently unselected) plus an executable resource-bounds check (rtl_hls_verifier_surface is CONTRACT_ONLY)",
+   "rank": 9,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [
+    "NS-027"
+   ],
+   "simulator_cost": 4,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "device_genome is TARGET_UNSELECTED; DSP/LUT ratio is a property of a named part that has not been selected. No RTL has been compiled."
+  },
+  {
+   "axis": "bit_serial_vs_bit_parallel",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Bind-time expand plus a bit-parallel resident MAC uses a larger LUT+DSP envelope, at the same initiation-interval class, than a purely parallel packed MAC with no expand stage.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 4,
+    "fidelity": "rtl_resource_estimate",
+    "ladder_note": "rtl_hls_verifier_surface is CONTRACT_ONLY; resource bounds listed, not executed"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "per-token serial expand inside the GEMV",
+   "falsifier": "Bind-time expand plus a bit-parallel resident MAC uses a larger LUT+DSP envelope, at the same initiation-interval class, than a purely parallel packed MAC with no expand stage.",
+   "hypothesis": "A bit-parallel packed MAC on the resident low-bit GEMV, with any expand done at bind/load time into resident shards, is the legal default. Bind-time expand is a different mechanism from a per-token serial expand inside the matvec.",
+   "id": "HD-002",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 4
+   },
+   "organ_mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+   "predicted_effect": {
+    "direction": "reduce_initiation_idle",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "rtl_hls_verifier_surface resource bounds become executable; NS-031 stays as the AVOID for per-token serial expand",
+   "rank": 10,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [
+    "NS-031"
+   ],
+   "simulator_cost": 4,
+   "target_model": "qwen27",
+   "target_organ": "mlp_gate_up_down",
+   "uncertainty": "No cycle-accurate model exists (cycle_simulation is false). Whether bind-time expand fits the module_cache key is untested because module_cache is SCHEMA_ONLY."
+  },
+  {
+   "axis": "dsp_lut_balance",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "Forcing the epilogue onto LUT does not drop DSP count of the P0 GEMV, or LUT overflows the part envelope while DSP sits idle.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 4,
+    "fidelity": "rtl_resource_estimate",
+    "ladder_note": "rtl_hls_verifier_surface is CONTRACT_ONLY; resource bounds listed, not executed"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "DSP spent on epilogue glue instead of the P0 GEMV",
+   "falsifier": "Forcing the epilogue onto LUT does not drop DSP count of the P0 GEMV, or LUT overflows the part envelope while DSP sits idle.",
+   "hypothesis": "Putting low-bit GEMV MACs on DSP and the fused epilogue (organ mapping: fused epilogue near producer) on LUT glue reduces DSP pressure on the P0 GEMV. This is arithmetic-versus-glue placement, not a switching-activity permutation of packed codes.",
+   "id": "HD-003",
+   "information_per_cost": {
+    "refutation_weight": 2,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 4
+   },
+   "organ_mapping": "fused epilogue near producer",
+   "predicted_effect": {
+    "direction": "reduce_dsp_pressure",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "selected device_genome; related scar NS-027 is not this experiment",
+   "rank": 11,
+   "refutation_probability": "MEDIUM",
+   "refutation_weight": 2,
+   "related_scars_not_the_same": [
+    "NS-027"
+   ],
+   "simulator_cost": 4,
+   "target_model": "qwen27",
+   "target_organ": "norm_add_epilogues",
+   "uncertainty": "Part unselected, so DSP/LUT budgets are UNKNOWN. CONTRACT_ONLY verifier cannot currently emit a resource envelope."
+  },
+  {
+   "axis": "banking",
+   "bench_state": "UNKNOWN",
+   "cheapest_falsifier": "A bank-aware link model shows conflict stalls do not drop when selected-expert shards are spread across channels, or the selected part has a single effective channel.",
+   "cheapest_simulator": {
+    "available": false,
+    "cost": 3,
+    "fidelity": "hbm_bank_model",
+    "ladder_note": "not built; cheapest that could test HBM banking. Current link simulator is hop/bandwidth only"
+   },
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": "HBM bank-conflict stalls on selected-expert GEMV",
+   "falsifier": "A bank-aware link model shows conflict stalls do not drop when selected-expert shards are spread across channels, or the selected part has a single effective channel.",
+   "hypothesis": "Once a device is selected, placing selected-expert shards across independent HBM channels reduces bank-conflict stalls versus packing every selected expert into one channel. This is a channel-bank map on a named part, not a DRAM-row interleave of a live file catalog.",
+   "id": "HD-006",
+   "information_per_cost": {
+    "refutation_weight": 1,
+    "rule": "rank by refutation_weight / simulator_cost; never a hardware measurement",
+    "simulator_cost": 3
+   },
+   "organ_mapping": "HBM-resident selected expert subsets with native NF GEMV",
+   "predicted_effect": {
+    "direction": "reduce_bank_conflicts",
+    "magnitude_class": "UNKNOWN"
+   },
+   "predicts_not_certifies": true,
+   "prerequisite": "selected device_genome with hbm_channels > 0, plus a bank-aware simulator that does not yet exist",
+   "rank": 12,
+   "refutation_probability": "LOW",
+   "refutation_weight": 1,
+   "related_scars_not_the_same": [
+    "NS-026"
+   ],
+   "simulator_cost": 3,
+   "target_model": "flash-next",
+   "target_organ": "expert_bank",
+   "uncertainty": "device_genome.hbm_channels is 0 (TARGET_UNSELECTED). The current transport_link_simulator models hops and bandwidth, not banks."
+  }
+ ],
+ "frontier_id": "F004",
+ "gaps_closed": [
+  "hardware-axis Doctor with emit() hard-fail on missing required fields",
+  "cheapest_simulator fidelity ladder recovered from organ-map experiment_dag / provider_capabilities",
+  "ranking by refutation_weight / simulator_cost (information per unit cost)",
+  "scar query before emit; sibling NEGATIVE_SCIENCE_INDEX if present, else atlas files via git show",
+  "proposals grounded in FLASH_NEXT and QWEN27 FPGA organ maps, not imagined organs",
+  "AVOID list for hardware-axis scars (NS-018/020/026/027/028/029/031/032 and atlas large_expert_cache)",
+  "atlas field names experiment_queue and entries[].cheapest_falsifier reused even though the atlas file is absent from HEAD"
+ ],
+ "integration": {
+  "avoid_list": "avoid_list(scars=None) -> list[dict]  # Doctor AVOID vocabulary",
+  "build": "build() -> Path  # receipts/future/HARDWARE_DOCTOR.json",
+  "emit": "emit(proposal, *, organs=None, scars=None) -> dict  # raises MissingFieldError | ScarRefusal | UnknownOrganError",
+  "load_organs": "load_organs() -> {maps, organs}",
+  "load_scars": "load_scars() -> {source_used, consulted, missing, scars}",
+  "rank_queue": "rank_queue(records) -> list[dict]"
+ },
+ "n_proposals": 12,
+ "negative_findings": [
+  "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json is not in this worktree HEAD; experiment_queue / cheapest_falsifier reused as field names only",
+  "receipts/future/NEGATIVE_SCIENCE_INDEX.json was absent at build; fell back to atlas files",
+  "organ maps and negative-science receipts are not materialized in this sparse checkout; loaded via git show HEAD:<path>",
+  "device_genome is TARGET_UNSELECTED and physical_board_present is false on both maps",
+  "hbm_genome channels=0, capacity UNKNOWN, bandwidth UNKNOWN",
+  "provider_capabilities.cycle_simulation is false; rtl_hls_verifier_surface is CONTRACT_ONLY; hardware_receipt is BLOCKED_NO_BOARD",
+  "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; every number that would need a GPU, FPGA, or joule meter is UNKNOWN",
+  "FPGA is not a civilization and this module does not build an FPGA backend"
+ ],
+ "organs_recovered": {
+  "maps": {
+   "flash-next": {
+    "buffers": [
+     {
+      "id": "resident_weight_shards",
+      "lifetime": "persistent",
+      "per_token_transfer": false
+     },
+     {
+      "id": "activations",
+      "lifetime": "token",
+      "per_token_transfer": true
+     },
+     {
+      "id": "partial_reductions",
+      "lifetime": "token",
+      "per_token_transfer": true
+     },
+     {
+      "id": "persistent_state",
+      "lifetime": "sequence",
+      "per_token_transfer": false
+     }
+    ],
+    "claim_boundary": "Candidate FPGA mapping only. [D] denotes a derived hypothesis and [S] denotes executable link/partition simulation. No physical board, bitstream, hardware timing, or U50 performance is claimed.",
+    "device_id": "unselected-fpga-device",
+    "device_status": "[D] TARGET_UNSELECTED",
+    "experiment_dag": [
+     {
+      "id": "metadata_identity",
+      "status": "READY"
+     },
+     {
+      "id": "hwir_compile",
+      "status": "READY"
+     },
+     {
+      "id": "link_sensitivity",
+      "status": "SIMULATED"
+     },
+     {
+      "id": "native_parity",
+      "status": "WAITING_FOR_PHYSICAL_OR_NATIVE_BACKEND"
+     },
+     {
+      "id": "hardware_receipt",
+      "status": "BLOCKED_NO_BOARD"
+     }
+    ],
+    "hbm_channels_selected": false,
+    "hbm_status": "[D] TARGET_UNSELECTED",
+    "module_cache_status": "SCHEMA_ONLY",
+    "organs": [
+     {
+      "mapping": "HBM-resident selected expert subsets with native NF GEMV",
+      "model": "flash-next",
+      "organ": "expert_bank",
+      "priority": "P0"
+     },
+     {
+      "mapping": "irregular route/index processing close to expert bank",
+      "model": "flash-next",
+      "organ": "router_topk_and_gather",
+      "priority": "P0"
+     },
+     {
+      "mapping": "fused selected-expert execution and epilogue",
+      "model": "flash-next",
+      "organ": "routed_plus_shared_expert",
+      "priority": "P0"
+     },
+     {
+      "mapping": "state-machine/update pipeline with resident state",
+      "model": "flash-next",
+      "organ": "deltanet_persistent_state",
+      "priority": "P0"
+     },
+     {
+      "mapping": "HBM lookup/compositional generator rather than matrix GEMV",
+      "model": "flash-next",
+      "organ": "ngram_lookup_or_generator",
+      "priority": "P1"
+     },
+     {
+      "mapping": "indexer budget traversal, sparse KV gather, reductions",
+      "model": "flash-next",
+      "organ": "sparse_attention",
+      "priority": "P1"
+     },
+     {
+      "mapping": "explicit draft/accept/reject/state rollback accounting",
+      "model": "flash-next",
+      "organ": "mtp_draft_verify_rollback",
+      "priority": "P1"
+     }
+    ],
+    "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+    "physical_board_present": false,
+    "provider_capabilities": {
+     "cycle_simulation": false,
+     "hwir": true,
+     "link_simulation": true,
+     "physical_execution": false
+    },
+    "rtl_hls_verifier_status": "CONTRACT_ONLY",
+    "schema": "hcli.fpga.organ_map.v1",
+    "transport_link_status": "SIMULATION_ONLY"
+   },
+   "qwen27": {
+    "buffers": [
+     {
+      "id": "resident_weight_shards",
+      "lifetime": "persistent",
+      "per_token_transfer": false
+     },
+     {
+      "id": "activations",
+      "lifetime": "token",
+      "per_token_transfer": true
+     },
+     {
+      "id": "partial_reductions",
+      "lifetime": "token",
+      "per_token_transfer": true
+     },
+     {
+      "id": "persistent_state",
+      "lifetime": "sequence",
+      "per_token_transfer": false
+     }
+    ],
+    "claim_boundary": "Candidate FPGA mapping only. [D] denotes a derived hypothesis and [S] denotes executable link/partition simulation. No physical board, bitstream, hardware timing, or U50 performance is claimed.",
+    "device_id": "unselected-fpga-device",
+    "device_status": "[D] TARGET_UNSELECTED",
+    "experiment_dag": [
+     {
+      "id": "metadata_identity",
+      "status": "READY"
+     },
+     {
+      "id": "hwir_compile",
+      "status": "READY"
+     },
+     {
+      "id": "link_sensitivity",
+      "status": "SIMULATED"
+     },
+     {
+      "id": "native_parity",
+      "status": "WAITING_FOR_PHYSICAL_OR_NATIVE_BACKEND"
+     },
+     {
+      "id": "hardware_receipt",
+      "status": "BLOCKED_NO_BOARD"
+     }
+    ],
+    "hbm_channels_selected": false,
+    "hbm_status": "[D] TARGET_UNSELECTED",
+    "module_cache_status": "SCHEMA_ONLY",
+    "organs": [
+     {
+      "mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+      "model": "qwen27",
+      "organ": "mlp_gate_up_down",
+      "priority": "P0"
+     },
+     {
+      "mapping": "projection shards with activation/partial-reduction transport",
+      "model": "qwen27",
+      "organ": "gqa_qkv_and_output",
+      "priority": "P0"
+     },
+     {
+      "mapping": "persistent state machine with resident state",
+      "model": "qwen27",
+      "organ": "deltanet_state_and_input_projection",
+      "priority": "P0"
+     },
+     {
+      "mapping": "fused epilogue near producer",
+      "model": "qwen27",
+      "organ": "norm_add_epilogues",
+      "priority": "P1"
+     },
+     {
+      "mapping": "partitioned vocabulary reduction and selection",
+      "model": "qwen27",
+      "organ": "lm_head_and_sampling",
+      "priority": "P1"
+     },
+     {
+      "mapping": "persistent scheduling and reduced synchronization",
+      "model": "qwen27",
+      "organ": "command_buffer_graph",
+      "priority": "P1"
+     }
+    ],
+    "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+    "physical_board_present": false,
+    "provider_capabilities": {
+     "cycle_simulation": false,
+     "hwir": true,
+     "link_simulation": true,
+     "physical_execution": false
+    },
+    "rtl_hls_verifier_status": "CONTRACT_ONLY",
+    "schema": "hcli.fpga.organ_map.v1",
+    "transport_link_status": "SIMULATION_ONLY"
+   }
+  },
+  "organs": [
+   {
+    "mapping": "state-machine/update pipeline with resident state",
+    "model": "flash-next",
+    "organ": "deltanet_persistent_state",
+    "priority": "P0"
+   },
+   {
+    "mapping": "HBM-resident selected expert subsets with native NF GEMV",
+    "model": "flash-next",
+    "organ": "expert_bank",
+    "priority": "P0"
+   },
+   {
+    "mapping": "explicit draft/accept/reject/state rollback accounting",
+    "model": "flash-next",
+    "organ": "mtp_draft_verify_rollback",
+    "priority": "P1"
+   },
+   {
+    "mapping": "HBM lookup/compositional generator rather than matrix GEMV",
+    "model": "flash-next",
+    "organ": "ngram_lookup_or_generator",
+    "priority": "P1"
+   },
+   {
+    "mapping": "fused selected-expert execution and epilogue",
+    "model": "flash-next",
+    "organ": "routed_plus_shared_expert",
+    "priority": "P0"
+   },
+   {
+    "mapping": "irregular route/index processing close to expert bank",
+    "model": "flash-next",
+    "organ": "router_topk_and_gather",
+    "priority": "P0"
+   },
+   {
+    "mapping": "indexer budget traversal, sparse KV gather, reductions",
+    "model": "flash-next",
+    "organ": "sparse_attention",
+    "priority": "P1"
+   },
+   {
+    "mapping": "persistent scheduling and reduced synchronization",
+    "model": "qwen27",
+    "organ": "command_buffer_graph",
+    "priority": "P1"
+   },
+   {
+    "mapping": "persistent state machine with resident state",
+    "model": "qwen27",
+    "organ": "deltanet_state_and_input_projection",
+    "priority": "P0"
+   },
+   {
+    "mapping": "projection shards with activation/partial-reduction transport",
+    "model": "qwen27",
+    "organ": "gqa_qkv_and_output",
+    "priority": "P0"
+   },
+   {
+    "mapping": "partitioned vocabulary reduction and selection",
+    "model": "qwen27",
+    "organ": "lm_head_and_sampling",
+    "priority": "P1"
+   },
+   {
+    "mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+    "model": "qwen27",
+    "organ": "mlp_gate_up_down",
+    "priority": "P0"
+   },
+   {
+    "mapping": "fused epilogue near producer",
+    "model": "qwen27",
+    "organ": "norm_add_epilogues",
+    "priority": "P1"
+   }
+  ]
+ },
+ "purpose": "Propose falsifiable hardware-design experiments on recovered FPGA organs. Models propose; disk state decides. This receipt is STATIC_ONLY.",
+ "ranking_rule": "expected information per unit cost = refutation_weight / simulator_cost; prefer the proposal whose cheapest falsifier is cheapest and whose refutation probability is highest",
+ "recovered_implementation": [
+  {
+   "path": "tools/headless/doctor_diagnosis.py",
+   "present": true,
+   "what": "representation Doctor: FAMILIES, organ_plan, avoid_list citing NNS, ORGAN/DIAGNOSIS/PRESCRIPTION/AVOID"
+  },
+  {
+   "path": "tools/headless/doctor_technique_library.py",
+   "present": true,
+   "what": "general TechniqueLibrary; KEEP/PRUNE; applicability per architecture class"
+  },
+  {
+   "path": "tools/headless/doctor_technique_registry.py",
+   "present": true,
+   "what": "REQUIRED_ENTRY_FIELDS, cheapest() CPU probe, SCAR_* phrases, git-fallback load_json"
+  },
+  {
+   "path": "hcli/agentos/fpga_preboard.py",
+   "present": true,
+   "what": "author of the FPGA organ maps; MockFPGAProvider; TransportLinkSimulator; partition_simulation"
+  },
+  {
+   "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "present": true,
+   "what": "7 Flash organs, experiment_dag, HWIR, transport_link_simulator, BLOCKED_NO_BOARD"
+  },
+  {
+   "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+   "present": true,
+   "what": "6 Qwen27 organs, same experiment_dag shape, APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS"
+  },
+  {
+   "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+   "present": true,
+   "what": "14 named dead levers (large_expert_cache, inter_expert_redundancy, ...)"
+  },
+  {
+   "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+   "present": true,
+   "what": "NS-001..NS-038; hardware-axis REFUTED: NS-018, NS-020, NS-026, NS-027, NS-028, NS-029, NS-031, NS-032"
+  },
+  {
+   "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "present": true,
+   "what": "NNS-001..NNS-032 PROPERTY_OF_IDEA vs ARTIFACT_OF_METHOD"
+  },
+  {
+   "path": "tools/headless/negative_science.py",
+   "present": true,
+   "what": "query API prior_failures(); not imported \u2014 Codex surface, sibling to this sidecar"
+  },
+  {
+   "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "present": false,
+   "what": "frontier F012 cites experiment_queue and cheapest_falsifier; file is NOT in this HEAD"
+  },
+  {
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "present": true,
+   "what": "F004 MISSING Hardware Doctor; this module is that integration_target"
+  }
+ ],
+ "required_fields": [
+  "axis",
+  "hypothesis",
+  "target_organ",
+  "predicted_effect",
+  "uncertainty",
+  "cheapest_simulator",
+  "falsifier",
+  "expected_removed_cost",
+  "prerequisite"
+ ],
+ "scar_query": {
+  "consulted": [
+   "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+  ],
+  "index_present": true,
+  "missing": [],
+  "n_dead": 51,
+  "n_scars": 653,
+  "source_used": "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+ },
+ "schema": "hawking.future.hardware_doctor.v1",
+ "seal_sha256": "875c3384464fb96644384bc8b2fc9443bba4263928ca79b2c43ad172d226bf8c",
+ "simulator_ladder": [
+  {
+   "available": true,
+   "cost": 1,
+   "fidelity": "static_hwir",
+   "note": "inspect organ-map HWIR graph, buffer lifetimes, placements, DFX cuts"
+  },
+  {
+   "available": true,
+   "cost": 2,
+   "fidelity": "transport_link_simulator",
+   "note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+  },
+  {
+   "available": true,
+   "cost": 3,
+   "fidelity": "partition_simulation",
+   "note": "organ-map partition_simulation; serial mixed_ns scenario model, [S]"
+  },
+  {
+   "available": false,
+   "cost": 3,
+   "fidelity": "hbm_bank_model",
+   "note": "not built; cheapest that could test HBM banking. Current link simulator is hop/bandwidth only"
+  },
+  {
+   "available": false,
+   "cost": 4,
+   "fidelity": "rtl_resource_estimate",
+   "note": "rtl_hls_verifier_surface is CONTRACT_ONLY; resource bounds listed, not executed"
+  },
+  {
+   "available": false,
+   "cost": 5,
+   "fidelity": "cycle_accurate",
+   "note": "provider_capabilities.cycle_simulation is false"
+  },
+  {
+   "available": false,
+   "cost": 6,
+   "fidelity": "physical_board",
+   "note": "experiment_dag hardware_receipt is BLOCKED_NO_BOARD"
+  }
+ ],
+ "version": 1,
+ "vocabulary": {
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "evidence": {
+   "DIAGNOSTIC_RELATIVE": "contaminated A/B; guides; never promotes; this lane does not produce it",
+   "PROTECTED_ABSOLUTE": "protected GPU lease; decides; this lane does not produce it",
+   "STATIC_ONLY": "the only evidence class this lane may emit"
+  },
+  "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 not its own civilization",
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ }
+}

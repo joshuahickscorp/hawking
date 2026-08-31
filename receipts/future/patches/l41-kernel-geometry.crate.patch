@@ -1,0 +1,734 @@
+diff --git a/crates/hawking-core/shaders/q80_mixed_decode.metal b/crates/hawking-core/shaders/q80_mixed_decode.metal
+index 6a4f3410c..79367a197 100644
+--- a/crates/hawking-core/shaders/q80_mixed_decode.metal
++++ b/crates/hawking-core/shaders/q80_mixed_decode.metal
+@@ -912,6 +912,10 @@ kernel void q80_hgravs01_factor_matvec_simd3(
+ // Same thread mapping as qwen_uniform_q4_group64_matvec_geo_tpr64_tg128:
+ //   TG 128, 4 simdgroups, 2 rows/TG, 64 threads/row, col = lane*8, stride 512.
+ // Consumes the HGRAVU01 body already on disk. No repack. No dense W.
++// This body's K in {5120, 6144, 17408} divides that stride: zero dropped
++// columns, zero idle lanes on the last trip. BA (96 rows) is occupancy-poor
++// (48 TGs / 60 cores) and negligible in bytes. Changing TPR changes the
++// reduction tree; do not retarget without a token-id parity gate.
+ //
+ //   bits=3: 24 code bytes/group, LSB 3-bit, q = code - bound (bound=3)
+ //   bits=4: 32 code bytes/group, even nibble low, q = nibble - bound (bound=7)
+diff --git a/crates/hawking-core/shaders/qwen_uniform_q4.metal b/crates/hawking-core/shaders/qwen_uniform_q4.metal
+index e827ddd47..05d47d083 100644
+--- a/crates/hawking-core/shaders/qwen_uniform_q4.metal
++++ b/crates/hawking-core/shaders/qwen_uniform_q4.metal
+@@ -180,6 +180,9 @@ static inline float qwen_uniform_q4_unpack8(
+ 
+ // Geometry-sweep winner for Q4 gate [512, 2048]: 64 threads/row, 128-thread
+ // TG, 2 rows/TG. Packed decode stays in registers. Grid: ceil(rows/2)*128.
++// This body's K in {5120, 6144, 17408} is a multiple of the 512-col stride,
++// so the 64-lane map covers every column with zero tail. Loop bound is
++// `col + 8 <= cols` (not `col < cols`) so a non-multiple cannot over-read x.
+ kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128(
+     device const uchar* codes       [[buffer(0)]],
+     device const half* scales       [[buffer(1)]],
+@@ -201,7 +204,7 @@ kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128(
+     float acc = 0.0f;
+     if (row < rows) {
+         const uint rgb0 = row * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+@@ -249,7 +252,7 @@ kernel void qwen_uniform_q4_group128_matvec_geo_tpr64_tg128(
+     float acc = 0.0f;
+     if (row < rows) {
+         const ulong rgb0 = (ulong)row * (ulong)groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE_128;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE_128;
+             const ulong rgb = rgb0 + (ulong)group;
+@@ -296,7 +299,7 @@ kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe(
+     float acc = 0.0f;
+     if (row < rows) {
+         const uint rgb0 = row * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+@@ -350,7 +353,7 @@ kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_decode_probe(
+     float acc = 0.0f;
+     if (row < rows) {
+         const uint rgb0 = row * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+@@ -1176,7 +1179,7 @@ static inline void qwen_uniform_q4_geo_tpr64_matmul_k_body(
+     }
+     if (row < rows) {
+         const uint rgb0 = row * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+@@ -1280,7 +1283,7 @@ static inline void qwen_uniform_q4_geo_tpr64_matmul_rk_body(
+         acc[i] = 0.0f;
+     }
+ 
+-    for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++    for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+         const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+         const uint local_byte = (col - group * QWEN_UNIFORM_Q4_GROUP_SIZE) >> 1u;
+ 
+@@ -1421,7 +1424,7 @@ static inline void qwen_binary_planes_geo_tpr64_body(
+     const uint row = group_id * 2u + team;
+     float acc = 0.0f;
+     if (row < rows) {
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint gbase = (row * groups_per_row + group) * K;
+@@ -1699,7 +1702,7 @@ kernel void qwen_uniform_q4_group64_matvec_gate_up_geo_tpr64_tg128(
+     float acc_u = 0.0f;
+     if (row < rows) {
+         const uint rgb0 = row * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+@@ -1750,7 +1753,7 @@ kernel void qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128(
+     float acc_u = 0.0f;
+     if (row < rows) {
+         const uint rgb0 = row * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+@@ -1811,7 +1814,7 @@ kernel void qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128(
+         device const uchar* codes = is_a ? a_codes : b_codes;
+         device const half* scales = is_a ? a_scales : b_scales;
+         const uint rgb0 = local * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint lo = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+@@ -1878,7 +1881,7 @@ kernel void qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128(
+             codes = v_codes; scales = v_scales; local = tid - q_rows - k_rows;
+         }
+         const uint rgb0 = local * groups_per_row;
+-        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
++        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+             const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint lo = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+             const uint rgb = rgb0 + group;
+diff --git a/crates/hawking-core/src/metal/mod.rs b/crates/hawking-core/src/metal/mod.rs
+index f96d17fa7..f37d43c64 100644
+--- a/crates/hawking-core/src/metal/mod.rs
++++ b/crates/hawking-core/src/metal/mod.rs
+@@ -632,6 +632,64 @@ pub fn current_layer() -> Option<u32> {
+     layer_hint::get()
+ }
+ 
++/// `*_tpr64_tg128` kernels size `threadgroup float red[4]` for 4 simdgroups
++/// (TG 128). A wider threadgroup overruns that scratch (`simd_id` 4..7 at
++/// TG 256) and is a silent memory smash, not a geometry lever.
++pub fn assert_tpr64_tg128_threadgroup(fn_name: &str, tg: (u32, u32, u32)) -> Result<()> {
++    if fn_name.contains("tpr64_tg128") && tg != (128, 1, 1) {
++        return Err(Error::Metal(format!(
++            "kernel `{fn_name}` is the tpr64/tg128 occupancy class but threadgroup is {tg:?}; \
++             the shader's red[4] scratch is 4 simdgroups. Refusing rather than overflowing."
++        )));
++    }
++    Ok(())
++}
++
++#[cfg(test)]
++mod tpr64_tg128_threadgroup_guard_tests {
++    use super::assert_tpr64_tg128_threadgroup;
++
++    #[test]
++    fn tg128_is_ok() {
++        assert!(assert_tpr64_tg128_threadgroup(
++            "qwen_q2f_group64_matvec_geo_tpr64_tg128",
++            (128, 1, 1)
++        )
++        .is_ok());
++        assert!(assert_tpr64_tg128_threadgroup(
++            "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
++            (128, 1, 1)
++        )
++        .is_ok());
++    }
++
++    #[test]
++    fn tg256_is_refused() {
++        let err = assert_tpr64_tg128_threadgroup(
++            "qwen_q2f_group64_matvec_geo_tpr64_tg128",
++            (256, 1, 1),
++        )
++        .expect_err("TG 256 must refuse");
++        let msg = err.to_string();
++        assert!(msg.contains("tpr64/tg128"), "{msg}");
++        assert!(msg.contains("256"), "{msg}");
++    }
++
++    #[test]
++    fn other_kernels_keep_their_own_threadgroup() {
++        assert!(assert_tpr64_tg128_threadgroup(
++            "qwen_affine_q2_group64_matvec_tgx_r8tg256",
++            (256, 1, 1)
++        )
++        .is_ok());
++        assert!(assert_tpr64_tg128_threadgroup(
++            "qwen_affine_q2_group64_matvec_qmvfast_r8tg64",
++            (64, 1, 1)
++        )
++        .is_ok());
++    }
++}
++
+ #[cfg(target_os = "macos")]
+ mod imp {
+     use super::*;
+@@ -2978,6 +3036,7 @@ mod imp {
+             tg: (u32, u32, u32),
+             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+         ) -> Result<()> {
++            assert_tpr64_tg128_threadgroup(fn_name, tg)?;
+             use crate::cost_ledger::{self, Bucket};
+ 
+             let trace_enabled = self.trace_dispatch;
+@@ -3082,6 +3141,7 @@ mod imp {
+             tg: (u32, u32, u32),
+             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+         ) -> Result<super::MetalDispatchTiming> {
++            assert_tpr64_tg128_threadgroup(fn_name, tg)?;
+             let total_started = Instant::now();
+             let pipeline_started = Instant::now();
+             let pipe = self.pipeline(fn_name)?;
+@@ -3480,6 +3540,7 @@ mod imp {
+             tg: (u32, u32, u32),
+             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+         ) -> Result<()> {
++            assert_tpr64_tg128_threadgroup(fn_name, tg)?;
+             let pipeline_started = Instant::now();
+             let pipe = self.ctx.pipeline(fn_name)?;
+             self.pipeline_lookup_us += pipeline_started.elapsed().as_micros() as u64;
+@@ -3522,6 +3583,7 @@ mod imp {
+             tg: (u32, u32, u32),
+             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+         ) -> Result<()> {
++            assert_tpr64_tg128_threadgroup(fn_name, tg)?;
+             if self.concurrent_encoder.is_some() && !self.serial_group_active {
+                 return Err(Error::Metal(
+                     "dispatch_threads cannot run while a concurrent group is active".into(),
+@@ -3607,6 +3669,8 @@ mod imp {
+             second_tg: (u32, u32, u32),
+             second_encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+         ) -> Result<()> {
++            assert_tpr64_tg128_threadgroup(first_name, first_tg)?;
++            assert_tpr64_tg128_threadgroup(second_name, second_tg)?;
+             if self.concurrent_encoder.is_some() {
+                 return Err(Error::Metal(
+                     "dispatch_threads_pair_in_one_encoder cannot run while a concurrent group is active".into(),
+@@ -3948,6 +4012,7 @@ mod imp {
+                         pipeline.max_total_threads_per_threadgroup()
+                     )));
+                 }
++                assert_tpr64_tg128_threadgroup(&stage.kernel, stage.threadgroup)?;
+                 stage_pipeline_slots.push(pipeline_slot);
+             }
+             if tagged_stage_count != 0 && tagged_stage_count != stages.len() {
+@@ -5008,6 +5073,7 @@ mod imp {
+             tg: (u32, u32, u32),
+             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+         ) -> Result<()> {
++            assert_tpr64_tg128_threadgroup(fn_name, tg)?;
+             // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
+             self.dispatch_count += 1;
+             self.has_encoded_work = true;
+diff --git a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+index db814f9df..8e600b3c4 100644
+--- a/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
++++ b/crates/hawking-core/src/model/qwen38_hybrid_decode.rs
+@@ -9,10 +9,11 @@
+ use super::qwen38_64_layer_execution_schedule::qwen38_assert_schedule_intact;
+ use super::qwen38_geometry::{ARGMAX_GROUPS, 
+     qwen38_deltanet_state_slot, qwen38_gqa_state_slot, qwen38_layer_name, qwen38_mixer_kind,
+-    Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_DELTANET_LAYERS, QWEN38_GQA_HEAD_DIM,
+-    QWEN38_GQA_HEADS, QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS, QWEN38_GQA_ROTARY_DIM,
+-    QWEN38_HIDDEN, QWEN38_INTERMEDIATE, QWEN38_LAYERS, QWEN38_RMS_EPS, QWEN38_ROPE_THETA,
+-    QWEN38_VOCAB,
++    Qwen38DeltaNetLayout, Qwen38MixerKind, QWEN38_BA_ROWS, QWEN38_DELTANET_LAYERS,
++    QWEN38_GQA_HEAD_DIM, QWEN38_GQA_HEADS, QWEN38_GQA_KV_HEADS, QWEN38_GQA_LAYERS,
++    QWEN38_GQA_ROTARY_DIM, QWEN38_HIDDEN, QWEN38_INTERMEDIATE, QWEN38_KV_PROJ_ROWS,
++    QWEN38_LAYERS, QWEN38_O_PROJ_COLS, QWEN38_O_PROJ_ROWS, QWEN38_QKVZ_ROWS,
++    QWEN38_Q_PROJ_ROWS, QWEN38_RMS_EPS, QWEN38_ROPE_THETA, QWEN38_VOCAB,
+ };
+ use super::qwen38_pack::{
+     load_qwen38_manifest, read_qwen38_f32_payload, QWEN38_EXPECTED_CATALOG_TENSORS,
+@@ -1005,6 +1006,180 @@ pub const QWEN38_Q2F_GATE_UP_SWIGLU_KERNEL: &str =
+     "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128";
+ pub const QWEN38_HGRAFV_EMBED: &str = "qwen38_hgrafv_embedding_lookup";
+ 
++/// Production geo_tpr64 occupancy class. Tuned on Q80 512×2048 organs;
++/// this body's K in {5120, 6144, 17408} is a multiple of the 512-col
++/// stride, so the same map covers every column with zero tail.
++pub const QWEN38_GEO_TPR64_THREADS_PER_ROW: u32 = 64;
++pub const QWEN38_GEO_TPR64_THREADGROUP: u32 = 128;
++pub const QWEN38_GEO_TPR64_ROWS_PER_TG: u32 = 2;
++pub const QWEN38_GEO_TPR64_COL_TILE: u32 = 8;
++pub const QWEN38_GEO_TPR64_COL_STRIDE: u32 = 512;
++/// Not a hardware occupancy counter. Same 60-core figure the token-ns
++/// ledger occupancy note uses.
++pub const QWEN38_GEO_TPR64_GPU_CORES: u32 = 60;
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct GeoTpr64ColumnCoverage {
++    pub cols: u32,
++    pub trips: u32,
++    pub idle_lanes_last_trip: u32,
++    pub dropped: u32,
++}
++
++/// Columns owned by the tpr64 map: lane `t` holds `[8t, 8t+8)` then +512.
++/// Exact cover iff `dropped == 0`. Production K values are exact.
++pub fn qwen38_geo_tpr64_column_coverage(cols: u32) -> GeoTpr64ColumnCoverage {
++    let tile = QWEN38_GEO_TPR64_COL_TILE;
++    let stride = QWEN38_GEO_TPR64_COL_STRIDE;
++    let tpr = QWEN38_GEO_TPR64_THREADS_PER_ROW;
++    let mut covered = 0u32;
++    for lane in 0..tpr {
++        let mut col = lane.saturating_mul(tile);
++        while col.saturating_add(tile) <= cols {
++            covered = covered.saturating_add(tile);
++            col = col.saturating_add(stride);
++        }
++    }
++    let trips = if cols >= tile {
++        (cols - tile) / stride + 1
++    } else {
++        0
++    };
++    let rem = cols % stride;
++    let idle_lanes_last_trip = if rem == 0 { 0 } else { tpr - rem / tile };
++    GeoTpr64ColumnCoverage {
++        cols,
++        trips,
++        idle_lanes_last_trip,
++        dropped: cols.saturating_sub(covered),
++    }
++}
++
++#[derive(Clone, Copy, Debug, PartialEq)]
++pub struct GeoTpr64Occupancy {
++    pub rows: u32,
++    pub threadgroups: u32,
++    pub threads: u32,
++    pub gpu_cores: u32,
++    pub threadgroups_per_core: f64,
++}
++
++/// Launch occupancy derived from rows, not a GPU occupancy counter.
++pub fn qwen38_geo_tpr64_occupancy(rows: u32) -> GeoTpr64Occupancy {
++    let tg = QWEN38_GEO_TPR64_THREADGROUP;
++    let threadgroups = rows.div_ceil(QWEN38_GEO_TPR64_ROWS_PER_TG).max(1);
++    let threads = threadgroups.saturating_mul(tg);
++    let cores = QWEN38_GEO_TPR64_GPU_CORES;
++    GeoTpr64Occupancy {
++        rows,
++        threadgroups,
++        threads,
++        gpu_cores: cores,
++        threadgroups_per_core: threadgroups as f64 / f64::from(cores),
++    }
++}
++
++pub fn qwen38_geo_tpr64_grid_tg(rows: u32) -> ((u32, u32, u32), (u32, u32, u32)) {
++    let tg = QWEN38_GEO_TPR64_THREADGROUP;
++    let grid = rows
++        .div_ceil(QWEN38_GEO_TPR64_ROWS_PER_TG)
++        .saturating_mul(tg)
++        .max(tg);
++    ((grid, 1, 1), (tg, 1, 1))
++}
++
++#[derive(Clone, Copy, Debug, PartialEq, Eq)]
++pub struct Qwen38ProductionGemvOrgan {
++    pub role: &'static str,
++    pub kernel_class: &'static str,
++    pub count: u32,
++    pub rows: u32,
++    pub cols: u32,
++}
++
++/// 401 production GEMVs: 192 affine MLP + 144 DeltaNet q4 + 64 GQA q4 + lm_head.
++pub fn qwen38_production_gemv_organs() -> [Qwen38ProductionGemvOrgan; 11] {
++    [
++        Qwen38ProductionGemvOrgan {
++            role: "mlp.gate_proj",
++            kernel_class: "affine2",
++            count: QWEN38_LAYERS as u32,
++            rows: QWEN38_INTERMEDIATE as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "mlp.up_proj",
++            kernel_class: "affine2",
++            count: QWEN38_LAYERS as u32,
++            rows: QWEN38_INTERMEDIATE as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "mlp.down_proj",
++            kernel_class: "affine2",
++            count: QWEN38_LAYERS as u32,
++            rows: QWEN38_HIDDEN as u32,
++            cols: QWEN38_INTERMEDIATE as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "linear_attn.in_proj_qkvz",
++            kernel_class: "q4",
++            count: QWEN38_DELTANET_LAYERS as u32,
++            rows: QWEN38_QKVZ_ROWS as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "linear_attn.in_proj_ba",
++            kernel_class: "q4",
++            count: QWEN38_DELTANET_LAYERS as u32,
++            rows: QWEN38_BA_ROWS as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "linear_attn.out_proj",
++            kernel_class: "q4",
++            count: QWEN38_DELTANET_LAYERS as u32,
++            rows: QWEN38_HIDDEN as u32,
++            cols: QWEN38_O_PROJ_COLS as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "self_attn.q_proj",
++            kernel_class: "q4",
++            count: QWEN38_GQA_LAYERS as u32,
++            rows: QWEN38_Q_PROJ_ROWS as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "self_attn.k_proj",
++            kernel_class: "q4",
++            count: QWEN38_GQA_LAYERS as u32,
++            rows: QWEN38_KV_PROJ_ROWS as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "self_attn.v_proj",
++            kernel_class: "q4",
++            count: QWEN38_GQA_LAYERS as u32,
++            rows: QWEN38_KV_PROJ_ROWS as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "self_attn.o_proj",
++            kernel_class: "q4",
++            count: QWEN38_GQA_LAYERS as u32,
++            rows: QWEN38_O_PROJ_ROWS as u32,
++            cols: QWEN38_O_PROJ_COLS as u32,
++        },
++        Qwen38ProductionGemvOrgan {
++            role: "lm_head",
++            kernel_class: "q4",
++            count: 1,
++            rows: QWEN38_VOCAB as u32,
++            cols: QWEN38_HIDDEN as u32,
++        },
++    ]
++}
++
+ /// G0-class launch for Affine HGRAVF01 q2 at group 32 or 64.
+ /// None selects the serial `qwen_affine_q2_group32_matvec`.
+ /// Never falls through to HGRAVU01. Kernel names keep the group32 family.
+@@ -1034,14 +1209,12 @@ pub fn qwen38_affine_q2_launch(
+     }
+     match geo {
+         Affine2Geo::Tpr64 => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-            Some((QWEN38_AFFINE_Q2_GEO_TPR64, (grid, 1, 1), (tg, 1, 1)))
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++            Some((QWEN38_AFFINE_Q2_GEO_TPR64, grid, tg))
+         }
+         Affine2Geo::RuntimeDiv => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-            Some((QWEN38_AFFINE_Q2_GEO_TPR64_RUNTIME_DIV, (grid, 1, 1), (tg, 1, 1)))
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++            Some((QWEN38_AFFINE_Q2_GEO_TPR64_RUNTIME_DIV, grid, tg))
+         }
+         Affine2Geo::QmvFast => {
+             let tg = 64u32;
+@@ -1059,14 +1232,12 @@ pub fn qwen38_affine_q2_launch(
+             Some((QWEN38_AFFINE_Q2_TGX, (grid, 1, 1), (tg, 1, 1)))
+         }
+         Affine2Geo::Tgsb => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-            Some((QWEN38_AFFINE_Q2_TGSB, (grid, 1, 1), (tg, 1, 1)))
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++            Some((QWEN38_AFFINE_Q2_TGSB, grid, tg))
+         }
+         Affine2Geo::Pipe => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-            Some((QWEN38_AFFINE_Q2_PIPE, (grid, 1, 1), (tg, 1, 1)))
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++            Some((QWEN38_AFFINE_Q2_PIPE, grid, tg))
+         }
+         Affine2Geo::SplitK4 => {
+             let tg = 256u32;
+@@ -1074,16 +1245,14 @@ pub fn qwen38_affine_q2_launch(
+             Some((QWEN38_AFFINE_Q2_SPLITK4, (grid, 1, 1), (tg, 1, 1)))
+         }
+         Affine2Geo::AccFuse => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-            Some((QWEN38_AFFINE_Q2_ACCFUSE, (grid, 1, 1), (tg, 1, 1)))
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++            Some((QWEN38_AFFINE_Q2_ACCFUSE, grid, tg))
+         }
+         Affine2Geo::BiasPrep | Affine2Geo::BiasPrepDrop => {
+             // mlp_down and other single GEMVs stay on tpr64. BiasPrep is
+             // a fused gate_up_swiglu organ cut (N031 owns down).
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-            Some((QWEN38_AFFINE_Q2_GEO_TPR64, (grid, 1, 1), (tg, 1, 1)))
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++            Some((QWEN38_AFFINE_Q2_GEO_TPR64, grid, tg))
+         }
+     }
+ }
+@@ -1125,24 +1294,22 @@ fn qwen38_affine_gate_up_launch(
+             (name, (grid, 1, 1), (tg, 1, 1))
+         }
+         Affine2Geo::Tgsb => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
+             let name = if with_swiglu {
+                 QWEN38_AFFINE_GATE_UP_SWIGLU_TGSB
+             } else {
+                 QWEN38_AFFINE_GATE_UP_TGSB
+             };
+-            (name, (grid, 1, 1), (tg, 1, 1))
++            (name, grid, tg)
+         }
+         Affine2Geo::Pipe => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
+             let name = if with_swiglu {
+                 QWEN38_AFFINE_GATE_UP_SWIGLU_PIPE
+             } else {
+                 QWEN38_AFFINE_GATE_UP_PIPE
+             };
+-            (name, (grid, 1, 1), (tg, 1, 1))
++            (name, grid, tg)
+         }
+         Affine2Geo::SplitK4 => {
+             let tg = 256u32;
+@@ -1155,44 +1322,40 @@ fn qwen38_affine_gate_up_launch(
+             (name, (grid, 1, 1), (tg, 1, 1))
+         }
+         Affine2Geo::AccFuse => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
+             let name = if with_swiglu {
+                 QWEN38_AFFINE_GATE_UP_SWIGLU_ACCFUSE
+             } else {
+                 QWEN38_AFFINE_GATE_UP_ACCFUSE
+             };
+-            (name, (grid, 1, 1), (tg, 1, 1))
++            (name, grid, tg)
+         }
+         Affine2Geo::BiasPrep => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
+             let name = if with_swiglu {
+                 QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP
+             } else {
+                 QWEN38_AFFINE_GATE_UP_BIASPREP
+             };
+-            (name, (grid, 1, 1), (tg, 1, 1))
++            (name, grid, tg)
+         }
+         Affine2Geo::BiasPrepDrop => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
+             let name = if with_swiglu {
+                 QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP_DROP
+             } else {
+                 QWEN38_AFFINE_GATE_UP_BIASPREP
+             };
+-            (name, (grid, 1, 1), (tg, 1, 1))
++            (name, grid, tg)
+         }
+         Affine2Geo::Tpr64 | Affine2Geo::RuntimeDiv => {
+-            let tg = 128u32;
+-            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
++            let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
+             let name = if with_swiglu {
+                 QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL
+             } else {
+                 QWEN38_AFFINE_GATE_UP_KERNEL
+             };
+-            (name, (grid, 1, 1), (tg, 1, 1))
++            (name, grid, tg)
+         }
+     }
+ }
+@@ -1219,9 +1382,8 @@ pub fn qwen38_hgravu01_geo_tpr64_launch(
+         (4, 64) => QWEN38_HGRAVU01_Q4_GEO_TPR64,
+         _ => return None,
+     };
+-    let tg = 128u32;
+-    let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-    Some((name, (grid, 1, 1), (tg, 1, 1)))
++    let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++    Some((name, grid, tg))
+ }
+ 
+ /// HQ30UQ4 geo_tpr64 bind. Supported group sizes are exactly 64 and 128.
+@@ -1240,9 +1402,8 @@ pub fn qwen38_uniform_q4_geo_tpr64_launch(
+         128 => QWEN38_Q4_GROUP128_MATVEC_KERNEL,
+         _ => return None,
+     };
+-    let tg = 128u32;
+-    let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-    Some((name, (grid, 1, 1), (tg, 1, 1)))
++    let (grid, tg) = qwen38_geo_tpr64_grid_tg(rows);
++    Some((name, grid, tg))
+ }
+ 
+ /// Shipped uniform-Q4 matvec bindings. The Qwen3.8 default is the geometry-
+@@ -1270,11 +1431,7 @@ impl Qwen38MatvecKernel {
+     /// (grid, threadgroup) for `rows` output elements.
+     pub fn launch(self, rows: u32) -> ((u32, u32, u32), (u32, u32, u32)) {
+         match self {
+-            Self::GeoTpr64Tg128 => {
+-                let tg = 128u32;
+-                let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+-                ((grid, 1, 1), (tg, 1, 1))
+-            }
++            Self::GeoTpr64Tg128 => qwen38_geo_tpr64_grid_tg(rows),
+             Self::Vecgroup => {
+                 let tg = 256u32;
+                 let grid = rows.div_ceil(8).saturating_mul(tg).max(tg);
+@@ -2686,9 +2843,8 @@ mod device {
+                 )));
+             }
+             if !self.q2f_force_serial && qwen38_recon_fuse_enabled() {
+-                let tg = 128u32;
+-                let grid = body.rows.div_ceil(2).saturating_mul(tg).max(tg);
+-                return tcb.dispatch_threads(QWEN38_Q2F_GEO_TPR64, (grid, 1, 1), (tg, 1, 1), |enc| {
++                let (grid, tg) = qwen38_geo_tpr64_grid_tg(body.rows);
++                return tcb.dispatch_threads(QWEN38_Q2F_GEO_TPR64, grid, tg, |enc| {
+                     self.encode_q2f_args(enc, body, input, output)
+                 });
+             }
+@@ -8539,6 +8695,88 @@ mod mixed_catalog_contract_tests {
+     }
+ }
+ 
++#[cfg(test)]
++mod geo_tpr64_this_body_tests {
++    use super::*;
++
++    #[test]
++    fn production_k_has_zero_dropped_columns() {
++        for cols in [5120u32, 6144, 17408] {
++            let c = qwen38_geo_tpr64_column_coverage(cols);
++            assert_eq!(c.dropped, 0, "cols={cols}");
++            assert_eq!(c.idle_lanes_last_trip, 0, "cols={cols}");
++            assert_eq!(c.trips * QWEN38_GEO_TPR64_COL_STRIDE, cols, "cols={cols}");
++            assert_eq!(cols % K_COMPLETE_TILE_COLS, 0, "256-col tile cols={cols}");
++        }
++    }
++
++    #[test]
++    fn a_non_multiple_of_eight_drops_a_remainder() {
++        let c = qwen38_geo_tpr64_column_coverage(160);
++        assert_eq!(c.dropped, 0, "160 is 8-aligned so it still covers");
++        assert_eq!(c.idle_lanes_last_trip, 44);
++        let tail = qwen38_geo_tpr64_column_coverage(7);
++        assert_eq!(tail.dropped, 7);
++        assert_eq!(tail.trips, 0);
++    }
++
++    #[test]
++    fn production_organs_census_is_401_and_ba_is_the_only_starved() {
++        let organs = qwen38_production_gemv_organs();
++        let total: u32 = organs.iter().map(|o| o.count).sum();
++        assert_eq!(total, 401);
++        let affine: u32 = organs
++            .iter()
++            .filter(|o| o.kernel_class == "affine2")
++            .map(|o| o.count)
++            .sum();
++        let q4: u32 = organs
++            .iter()
++            .filter(|o| o.kernel_class == "q4")
++            .map(|o| o.count)
++            .sum();
++        assert_eq!(affine, 192);
++        assert_eq!(q4, 209);
++        let mut starved = Vec::new();
++        for organ in &organs {
++            let occ = qwen38_geo_tpr64_occupancy(organ.rows);
++            let cover = qwen38_geo_tpr64_column_coverage(organ.cols);
++            assert_eq!(cover.dropped, 0, "{}", organ.role);
++            if occ.threadgroups_per_core < 1.0 {
++                starved.push(organ.role);
++            }
++        }
++        assert_eq!(starved, ["linear_attn.in_proj_ba"]);
++        let ba = organs.iter().find(|o| o.role == "linear_attn.in_proj_ba").unwrap();
++        let occ = qwen38_geo_tpr64_occupancy(ba.rows);
++        assert_eq!(occ.threadgroups, 48);
++        assert_eq!(occ.gpu_cores, 60);
++    }
++
++    #[test]
++    fn launch_grid_matches_occupancy_class() {
++        let (grid, tg) = qwen38_geo_tpr64_grid_tg(17408);
++        assert_eq!(tg, (128, 1, 1));
++        assert_eq!(grid, (17408u32.div_ceil(2) * 128, 1, 1));
++        let gate = qwen38_affine_q2_geo_tpr64_launch(32, 17408, 5120);
++        if qwen38_recon_fuse_enabled() {
++            let launch = gate.expect("affine geo");
++            assert_eq!(launch.1, grid);
++            assert_eq!(launch.2, tg);
++        }
++        crate::metal::assert_tpr64_tg128_threadgroup(
++            "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++            tg,
++        )
++        .unwrap();
++        crate::metal::assert_tpr64_tg128_threadgroup(
++            "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
++            (256, 1, 1),
++        )
++        .expect_err("wrong TG must refuse");
++    }
++}
++
+ #[cfg(test)]
+ mod complete_wall_identity_tests {
+     use super::{Qwen38CompleteToken, Qwen38StepWall};

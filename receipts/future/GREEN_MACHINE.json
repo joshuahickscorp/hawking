@@ -1,0 +1,471 @@
+{
+ "any_probe_declared_token_energy_trust": false,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:16Z",
+  "recorded_by": "tools/future/green_machine.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "Defined joules/token, joules/accepted-token, WorkUnits/kWh, idle vs active, and thermal_state as a sealed contract.",
+  "Probed this Mac without root and without a GPU lease; recorded exactly which probes ran and which did not.",
+  "Forced every metric value to UNKNOWN; no TDP/FLOP estimate path succeeds.",
+  "Energy-aware scheduler refuses while untrustworthy and refuses numeric claims without authority; there is no Admit path.",
+  "Named the scoreboard slot (JOULES_PER_TOKEN, JOULES_PER_ACCEPTED_TOKEN, WORK_UNITS_PER_KWH) as ABSENT/UNKNOWN cells.",
+  "Cited recovered Codex energy.rs / orch scheduler / EnergyMode / accepted-token ledger so this is not a fork of them."
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "honesty_rule": "Any metric that is not trustworthily measurable is UNKNOWN. Never an estimate, never a TDP-derived guess, never a FLOP-derived CMOS guess, never an idle GPU-rail sample presented as joules_per_token, never a number with invented precision. write_receipt already refuses a numeric joules_per_token. This module does not catch that error, does not add fields to HARDWARE_FIELDS, and does not convert UNKNOWN into 0 or into a datasheet watt. Saying UNKNOWN clearly is the deliverable. This sidecar produces STATIC_ONLY with bench state UNKNOWN; it produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+ "measurement_is_trustworthy": false,
+ "metric_contract": [
+  {
+   "blocked_by_write_receipt": true,
+   "definition": "Joules integrated over the same closed interval as TOKEN_NS body_ns (complete-token wall), divided by tokens emitted in that interval. The interval must include draft + verify + rollback when speculation is on; emitting tokens that later get rejected still cost energy. A datasheet TDP, an idle GPU-rail sample, or a FLOP-derived CMOS guess is not this metric.",
+   "denominator": "tokens emitted in that interval, including rejected speculative drafts",
+   "hardware_field": "joules_per_token",
+   "id": "joules_per_token",
+   "numerator": "joules over the TOKEN_NS interval (CPU+GPU+DRAM rails, or a documented subset)",
+   "requires": [
+    "PROTECTED_ABSOLUTE GPU lease",
+    "energy wrap around the same interval as TOKEN_NS",
+    "root powermetrics OR a working IOReport Energy Model subscription"
+   ],
+   "unit": "J/token"
+  },
+  {
+   "blocked_by_write_receipt": false,
+   "definition": "Joules over the same closed interval as TOKEN_NS, divided by accepted tokens only. Speculative decoding drafts tokens that the verifier rejects; those drafts still move weights and still draw the GPU rail. Accepted tokens are the unit of useful work (see crates/hawking-speculate/src/metrics_sep.rs: ACCELERATED_ACCEPTED_TPS = accepted_tokens / (draft+verify+rollback)). joules_per_accepted_token is therefore the real energy axis of the scoreboard whenever speculation is enabled. It is always >= joules_per_token when any draft is rejected, and equal only when every drafted token is accepted (or speculation is off).",
+   "denominator": "accepted_tokens (target-verified tokens that advanced committed state)",
+   "hardware_field": null,
+   "id": "joules_per_accepted_token",
+   "numerator": "same joule integral as joules_per_token",
+   "requires": [
+    "everything joules_per_token requires",
+    "an accepted-token count from the same interval (AccelCostLedger)"
+   ],
+   "unit": "J/accepted-token"
+  },
+  {
+   "blocked_by_write_receipt": false,
+   "definition": "HCLI WorkUnits completed per kilowatt-hour of measured energy over the same wall. This is not tokens/watt and not VERIFIED_WUS_PER_HOUR (a time axis already present and ABSENT on the noetic scoreboard). It is useful work per joule, scaled to kWh so a production day is readable. Requires a WorkUnit completion ledger AND a trustworthy joule integral over the same window.",
+   "denominator": "kilowatt-hours = joules / 3.6e6 over the same window",
+   "hardware_field": null,
+   "id": "work_units_per_kwh",
+   "numerator": "WorkUnits sealed complete in the window",
+   "requires": [
+    "everything joules_per_token requires",
+    "WorkUnit completion count with the same closed wall"
+   ],
+   "unit": "WorkUnits/kWh"
+  },
+  {
+   "blocked_by_write_receipt": false,
+   "definition": "Mean joules per second while no decode/prefill is in flight. IOReport GPU Energy increments with a display even at idle (energy.rs standing finding: ~1 W GPU rail). Without an idle baseline, an 'active' sample attributes display/other-lane energy to the token. Idle is a measurement under a protected lease with the GPU held still, not a TDP fraction.",
+   "denominator": "idle window seconds",
+   "hardware_field": null,
+   "id": "idle_joules_per_second",
+   "numerator": "joules over an idle window with no token work",
+   "requires": [
+    "PROTECTED_ABSOLUTE GPU lease",
+    "a still machine (no other GPU lane)",
+    "working energy source"
+   ],
+   "unit": "J/s"
+  },
+  {
+   "blocked_by_write_receipt": false,
+   "definition": "Mean joules per second while a token interval is open. Distinct from idle; the token-attributable power is (active - idle) only when both were taken under the same protected lease, same thermal state, and same rail set. Mixing a dirty idle with a dirty active is DIAGNOSTIC_RELATIVE at best and is not this metric.",
+   "denominator": "active window seconds",
+   "hardware_field": null,
+   "id": "active_joules_per_second",
+   "numerator": "joules over a token-in-flight window",
+   "requires": [
+    "PROTECTED_ABSOLUTE GPU lease",
+    "token work actually in flight",
+    "working energy source"
+   ],
+   "unit": "J/s"
+  },
+  {
+   "blocked_by_write_receipt": false,
+   "definition": "Machine thermal pressure/throttling state during the energy wrap (cool / warming / throttling, or a measured die temperature). A throttled run is not comparable to a cool run; thermal_envelope on the machine genome is currently ABSENT. 'No thermal warning recorded' from pmset is the absence of a warning log, not a temperature, and is not this metric.",
+   "denominator": null,
+   "hardware_field": null,
+   "id": "thermal_state",
+   "numerator": null,
+   "requires": [
+    "a thermal sensor or throttle flag that this process can read",
+    "the reading taken inside the same window as the joule integral"
+   ],
+   "unit": "enum"
+  }
+ ],
+ "metrics": {
+  "active_joules_per_second": {
+   "claim_class": "STATIC_ONLY",
+   "state": "UNKNOWN",
+   "trustworthy": false,
+   "unit": "J/s",
+   "value": "UNKNOWN"
+  },
+  "idle_joules_per_second": {
+   "claim_class": "STATIC_ONLY",
+   "state": "UNKNOWN",
+   "trustworthy": false,
+   "unit": "J/s",
+   "value": "UNKNOWN"
+  },
+  "joules_per_accepted_token": {
+   "claim_class": "STATIC_ONLY",
+   "state": "UNKNOWN",
+   "trustworthy": false,
+   "unit": "J/accepted-token",
+   "value": "UNKNOWN"
+  },
+  "joules_per_token": {
+   "claim_class": "STATIC_ONLY",
+   "state": "UNKNOWN",
+   "trustworthy": false,
+   "unit": "J/token",
+   "value": "UNKNOWN"
+  },
+  "thermal_state": {
+   "claim_class": "STATIC_ONLY",
+   "state": "UNKNOWN",
+   "trustworthy": false,
+   "unit": "enum",
+   "value": "UNKNOWN"
+  },
+  "work_units_per_kwh": {
+   "claim_class": "STATIC_ONLY",
+   "state": "UNKNOWN",
+   "trustworthy": false,
+   "unit": "WorkUnits/kWh",
+   "value": "UNKNOWN"
+  }
+ },
+ "negative_findings": [
+  "No tools/future/green_machine.py existed before this lane (frontier F006).",
+  "No energy axis on the noetic scoreboard (JOULES_PER_TOKEN / JOULES_PER_ACCEPTED_TOKEN / WORK_UNITS_PER_KWH absent).",
+  "receipts/headless/ACCELERATOR_SCOREBOARD.json is not in git HEAD and not on disk in this sparse worktree.",
+  "Sidecar has no GPU lease and must not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE.",
+  "Cannot wrap TOKEN_NS: no complete-token interval is available to this process.",
+  "Cannot run cargo test on hawking-core energy.rs (crates/ is Codex-owned; GPU touch forbidden).",
+  "powermetrics without root failed: powermetrics must be invoked as the superuser",
+  "sudo -n powermetrics is not available (no password prompt was issued): sudo: a password is required",
+  "pmset -g therm ran but is not a thermal_state measurement: Note: No thermal warning level has been recorded Note: No performance warning level has been recorded Note: No CPU power status has been recorded",
+  "sysctl thermal oids (machdep.xcpm.* / machdep.thermal) are absent on this Darwin.",
+  "ioreg AppleSmartBattery PowerTelemetryData is named Estimate and was not recorded as a joule.",
+  "Could not inspect ACCELERATOR_SCOREBOARD.json contents; energy-axis slot is described against the noetic scoreboard instead."
+ ],
+ "probes": [
+  {
+   "command_ok": false,
+   "id": "powermetrics_without_root",
+   "invoked": true,
+   "missing_dependency": "root",
+   "numeric_sample_recorded": false,
+   "observation": "powermetrics must be invoked as the superuser",
+   "succeeded": false,
+   "trustworthy_for_token_energy": false
+  },
+  {
+   "command_ok": false,
+   "id": "sudo_n_powermetrics",
+   "invoked": true,
+   "missing_dependency": "root",
+   "numeric_sample_recorded": false,
+   "observation": "sudo: a password is required",
+   "succeeded": false,
+   "trustworthy_for_token_energy": false
+  },
+  {
+   "command_ok": true,
+   "id": "pmset_therm",
+   "invoked": true,
+   "missing_dependency": null,
+   "numeric_sample_recorded": false,
+   "observation": "Note: No thermal warning level has been recorded Note: No performance warning level has been recorded Note: No CPU power status has been recorded",
+   "succeeded": false,
+   "trustworthy_for_token_energy": false,
+   "why_not_thermal_state": "pmset -g therm reports whether a warning was logged; 'No thermal warning level has been recorded' is not a temperature or headroom reading"
+  },
+  {
+   "command_ok": true,
+   "id": "pmset_batt",
+   "invoked": true,
+   "missing_dependency": null,
+   "numeric_sample_recorded": false,
+   "observation": "Now drawing from 'AC Power'",
+   "succeeded": true,
+   "trustworthy_for_token_energy": false,
+   "why_not_token_energy": "power source (AC/battery) is not a joule integral"
+  },
+  {
+   "command_ok": true,
+   "id": "sysctl_thermal_levels",
+   "invoked": true,
+   "missing_dependency": "sysctl_thermal_oids",
+   "numeric_sample_recorded": false,
+   "observation": {
+    "absent": [
+     "machdep.xcpm.cpu_thermal_level",
+     "machdep.xcpm.gpu_thermal_level",
+     "machdep.xcpm.io_thermal_level",
+     "machdep.thermal"
+    ],
+    "note": "Darwin 27 / Apple Silicon in this session: the historical machdep.xcpm.* thermal oids are unknown. Absent keys are not a thermal_state measurement.",
+    "present": {}
+   },
+   "succeeded": false,
+   "trustworthy_for_token_energy": false
+  },
+  {
+   "command_ok": true,
+   "id": "ioreport_energy_model_catalog",
+   "invoked": true,
+   "missing_dependency": null,
+   "numeric_sample_recorded": false,
+   "observation": {
+    "channel_count": 565,
+    "cpu_energy_channels_present": [
+     "DIE_0_CPU Energy",
+     "DIE_1_CPU Energy"
+    ],
+    "dram_channels_present": [
+     "DRAM0_0",
+     "DRAM0_1"
+    ],
+    "gpu_energy_channel_present": true,
+    "libioreport_dlopen_without_root": true,
+    "unique_channel_names": 341
+   },
+   "succeeded": true,
+   "trustworthy_for_token_energy": false,
+   "why_not_token_energy": "a catalog of channel names is not a joule integral over a token interval"
+  },
+  {
+   "command_ok": true,
+   "id": "ioreport_energy_model_subscription",
+   "invoked": true,
+   "missing_dependency": null,
+   "numeric_sample_recorded": false,
+   "observation": {
+    "note": "Live samples would still not be joules_per_token: this sidecar has no GPU lease and does not wrap TOKEN_NS. Numeric nJ is deliberately not recorded.",
+    "subscription_obtained": true
+   },
+   "succeeded": true,
+   "trustworthy_for_token_energy": false
+  },
+  {
+   "command_ok": true,
+   "id": "ioreg_power_telemetry",
+   "invoked": true,
+   "missing_dependency": null,
+   "numeric_sample_recorded": false,
+   "observation": {
+    "named_estimate": true,
+    "power_telemetry_block_present": true,
+    "why_untrustworthy": "Keys are named Estimate; PowerTelemetryErrorCount is nonzero on this machine; AppleSmartBattery is a stub on this desktop (capacity/voltage/amperage 0). Whole-system and not wrapped around TOKEN_NS. Recording the milliwatt fields would be fantasy precision."
+   },
+   "succeeded": false,
+   "trustworthy_for_token_energy": false
+  }
+ ],
+ "probes_failed": [
+  "ioreg_power_telemetry",
+  "pmset_therm",
+  "powermetrics_without_root",
+  "sudo_n_powermetrics",
+  "sysctl_thermal_levels"
+ ],
+ "probes_succeeded": [
+  "ioreport_energy_model_catalog",
+  "ioreport_energy_model_subscription",
+  "pmset_batt"
+ ],
+ "produces_diagnostic_relative": false,
+ "produces_protected_absolute": false,
+ "protected_lease": false,
+ "purpose": "Energy accounting contract and an honest probe of what this Mac can measure without root and without a GPU lease.",
+ "recovered_implementation": [
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "crates/hawking-core/src/token_ns/energy.rs",
+   "what": "Codex energy probe: powermetrics needs root; IOReport Energy Model GPU Energy (nJ) documented as readable without root on 2026-08-16; idle sample is explicitly not joules_per_token; EnergySampler wraps the same interval as TOKEN_NS.",
+   "why_not_adequate": "Rust runtime under crates/; sidecar must not mutate it. It fills pJ only from a caller joule or a wrap. It is not a scoreboard contract, not an inert scheduler, and this session could not reproduce live IOReport samples."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "crates/hawking-core/src/token_ns/served_weight.rs",
+   "what": "pJ_per_weight_served is None unless joules_per_token is supplied.",
+   "why_not_adequate": "geometry + optional caller joule; no metric contract for accepted-token or WU/kWh."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "crates/hawking-core/src/token_ns/schema.rs",
+   "what": "EmitMeta.joules_per_token: Option<f64>, default None.",
+   "why_not_adequate": "a field is not a measurement and not a scoreboard axis."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "crates/hawking-orch/src/scheduler.rs",
+   "what": "Admission controller defers heavy roles when on_battery and PowerMode::Quiet (DeferReason::Energy). Thermal headroom is a caller-supplied proxy in [0,1].",
+   "why_not_adequate": "It schedules on a battery+quiet heuristic, which is a guess. This lane's scheduler must refuse while unmeasured, not copy that heuristic."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "crates/hawking-serve/src/lib.rs",
+   "what": "EnergyMode {Off, Balanced, Efficient} sizes a gather window (0/3/8 ms).",
+   "why_not_adequate": "batching heuristic for J/tok in the comment; no joule is measured."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "crates/hawking-serve/tests/energy_gather_window.rs",
+   "what": "Unit tests for EnergyMode.should_gather. Not a measurement.",
+   "why_not_adequate": "tests a gather window, not energy accounting."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "crates/hawking-speculate/src/metrics_sep.rs",
+   "what": "AccelCostLedger.accepted_tokens / draft_tokens / rejected_tokens; ACCELERATED_ACCEPTED_TPS.",
+   "why_not_adequate": "defines the accepted-token denominator; does not attach joules."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "tools/accelerator/machine_genome.py",
+   "what": "thermal_envelope and sustained_behaviour are ABSENT with reasons. No energy fields.",
+   "why_not_adequate": "honest ABSENT on thermal; no joule contract."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "hcli/machine.py",
+   "what": "MemGate / Metal working-set admission. Host snapshot is RAM/swap/pressure.",
+   "why_not_adequate": "memory admission, not energy."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "tools/headless/noetic_scoreboard.py",
+   "what": "S017 \u00a744 columns. Every unmeasured cell is ABSENT, never 0. No joule column.",
+   "why_not_adequate": "the energy axis is exactly the missing column."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "workspace/campaign/evidence/models/glm52/GLM52_FUNCTIONAL_FLOP_BYTE_JOULE.json",
+   "what": "joule.status = UNAVAILABLE; 'no accepted on-device energy source is wired; no joules are inferred from FLOPs or bytes'.",
+   "why_not_adequate": "one model's honest UNAVAILABLE, not a civilization-wide contract."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
+   "what": "claim_boundary: thermal_envelope and sustained_behaviour both ABSENT.",
+   "why_not_adequate": "identity + bandwidth; no energy axis."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "in_git_head": false,
+   "on_disk_this_worktree": true,
+   "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+   "what": "Named by frontier F015 as the live accelerator scoreboard.",
+   "why_not_adequate": "not in git HEAD of this worktree; not on disk in the sparse checkout."
+  },
+  {
+   "adequate_for_this_lane": true,
+   "in_git_head": true,
+   "on_disk_this_worktree": true,
+   "path": "tools/future/green_machine.py",
+   "what": "this module (F006 integration target).",
+   "why_not_adequate": null
+  }
+ ],
+ "scheduler": {
+  "admit_implemented": false,
+  "does_not_copy": "crates/hawking-orch/src/scheduler.rs on_battery+quiet heuristic",
+  "inert": true,
+  "interface": "EnergyAwareScheduler.schedule(work, metrics=None, *, gpu_authority=False) -> EnergyScheduleDecision",
+  "self_decision": {
+   "action": "REFUSE",
+   "admit_implemented": false,
+   "claim_class": "STATIC_ONLY",
+   "detail": "no GPU authority and all energy metrics are UNKNOWN; scheduler is inert rather than guessing",
+   "metrics_consulted": [
+    "joules_per_token",
+    "joules_per_accepted_token",
+    "work_units_per_kwh",
+    "idle_joules_per_second",
+    "active_joules_per_second",
+    "thermal_state"
+   ],
+   "numeric_energy_used": false,
+   "reason_code": "MEASUREMENT_UNTRUSTWORTHY",
+   "substituted_default": false,
+   "work_id": "green-machine-self"
+  }
+ },
+ "schema": "hawking.future.green_machine.v1",
+ "scoreboard_slot": {
+  "accelerator_scoreboard": {
+   "note": "Frontier F015 probed this path as present on the campaign disk. It is not in git HEAD of this worktree and is not materialized in the sparse checkout. An energy axis would slot next to the existing complete-token / TPS columns the same way: ABSENT until a PROTECTED_ABSOLUTE wrap exists.",
+   "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+  },
+  "noetic_scoreboard": {
+   "cell_today": "ABSENT/UNKNOWN",
+   "existing_columns": [
+    "EBPW",
+    "RESIDENT_GB",
+    "ACTIVE_GB_PER_TOKEN",
+    "DRAM_GB_PER_TOKEN",
+    "FLOP_PER_TOKEN",
+    "DISPATCHES_PER_TOKEN",
+    "ROUTES_PER_TOKEN",
+    "ROUTING_NS_PER_TOKEN",
+    "COMPLETE_TOKEN_NS",
+    "TPS",
+    "AGGREGATE_TPS_C2",
+    "AGGREGATE_TPS_C4",
+    "VERIFIED_WUS_PER_HOUR",
+    "CAPABILITY"
+   ],
+   "honesty": "An unmeasured cell is never rendered as 0. A plausible zero makes an unmeasured candidate look cheap, which is the specific way a scoreboard lies.",
+   "missing_energy_columns": [
+    "JOULES_PER_TOKEN",
+    "JOULES_PER_ACCEPTED_TOKEN",
+    "WORK_UNITS_PER_KWH"
+   ],
+   "path": "receipts/headless/NOETIC_SCOREBOARD.json"
+  }
+ },
+ "seal_sha256": "c4d72345fb44665753a1e45cd987703c5ceb4ffe0e832284c0e6c80266dede8c",
+ "version": 1
+}

@@ -1,0 +1,533 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:18:38Z",
+  "recorded_by": "tools/future/repro_science.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "grok/l36-torture-wiring-20260830-182109",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+ "claim_downgrade": {
+  "after": {
+   "C_child": "DOWNGRADED",
+   "C_grandchild": "DOWNGRADED",
+   "C_unrelated": "VALID",
+   "E_other": "VALID",
+   "E_parent": "INVALID"
+  },
+  "before": {
+   "C_child": "VALID",
+   "C_grandchild": "VALID",
+   "C_unrelated": "VALID",
+   "E_other": "VALID",
+   "E_parent": "VALID"
+  },
+  "meaning": "Invalidating an input's evidence downgrades every downstream claim, including a grandchild. Unrelated claims stay VALID. This is not a promotion and not a hardware measurement.",
+  "transitivity_holds": true
+ },
+ "clean_build_recipe": [
+  {
+   "action": "pin experiment identity over inputs + code + machine genome",
+   "deterministic": true,
+   "n": 1
+  },
+  {
+   "action": "materialize inputs by content hash (never by path string)",
+   "deterministic": true,
+   "n": 2
+  },
+  {
+   "action": "pin code identity and compiler",
+   "deterministic": true,
+   "n": 3
+  },
+  {
+   "action": "pin MachineGenome as PIN_ONLY; do not treat it as a measurement",
+   "deterministic": true,
+   "n": 4
+  },
+  {
+   "action": "admit() the world; refuse on any of the twelve faults",
+   "deterministic": true,
+   "n": 5
+  },
+  {
+   "action": "seal outputs; bind claims to outputs in the provenance graph",
+   "deterministic": true,
+   "n": 6
+  },
+  {
+   "action": "never report PASS on SKIP; never invent a hardware number",
+   "deterministic": true,
+   "n": 7
+  }
+ ],
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "experiment_identity": {
+  "code_sensitive": true,
+  "compiler_sensitive": true,
+  "identity": "a30f62f986faae0d12060caea95230dddb60cb708a1153f1c2bc04f6cc444dbc",
+  "identity_changed_input": "782531bc40ed6758424d03eae9580667491f7c38937273e0c6d1f3a37e447df7",
+  "input_sensitive": true,
+  "machine_genome_sensitive": true,
+  "reproduces": true
+ },
+ "fault_injection": {
+  "all_detected": true,
+  "faults": [
+   {
+    "detected": true,
+    "fault": "stale_nx",
+    "injected": true,
+    "matched": "stale_nx",
+    "reason": "NX is not runnable under this code identity (status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION', nx_code='000000000000', code='1bf7423bc867'). A metadata-only NX must not be treated as a physical executable.",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "wrong_specimen_hash",
+    "injected": true,
+    "matched": "wrong_specimen_hash",
+    "reason": "specimen hash on disk does not match the experiment pin; refusing rather than running against the wrong bytes",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "corrupt_receipt",
+    "injected": true,
+    "matched": "corrupt_receipt",
+    "reason": "experiment receipt seal does not match canonical body; a broken seal is not evidence",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "stale_pipeline_cache",
+    "injected": true,
+    "matched": "stale_pipeline_cache",
+    "reason": "pipeline cache identity does not match the live experiment identity; a cache hit on a different experiment is not a result",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "changed_compiler",
+    "injected": true,
+    "matched": "changed_compiler",
+    "reason": "live compiler 'mutated-compiler-not-the-pin' != pinned 'sidecar-static-compiler-pin'",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "changed_machine_genome",
+    "injected": true,
+    "matched": "changed_machine_genome",
+    "reason": "live MachineGenome pin does not match the experiment's pinned genome",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "failed_worker",
+    "injected": true,
+    "matched": "failed_worker",
+    "reason": "worker status 'failed'; refusing rather than skipping remaining units as PASS",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "killed_subprocess",
+    "injected": true,
+    "matched": "killed_subprocess",
+    "reason": "subprocess status 'killed'; partial stdout is not a result. Restore the checkpoint to resume.",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "partial_result",
+    "injected": true,
+    "matched": "partial_result",
+    "reason": "result incomplete complete=False n_got=1 n_expected=4",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "invalid_route_corpus",
+    "injected": true,
+    "matched": "invalid_route_corpus",
+    "reason": "route corpus has no routes",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "malformed_teacher_receipt",
+    "injected": true,
+    "matched": "malformed_teacher_receipt",
+    "reason": "teacher receipt schema missing or wrong",
+    "resume_reason": "",
+    "resumed": true
+   },
+   {
+    "detected": true,
+    "fault": "missing_hardware",
+    "injected": true,
+    "matched": "missing_hardware",
+    "reason": "experiment requires hardware this process does not have (no protected GPU lease, no FPGA, no power meter). UNKNOWN is the correct answer; an estimate is not a measurement. Sidecar emits STATIC_ONLY and will not invent a number.",
+    "resume_reason": "",
+    "resumed": true
+   }
+  ],
+  "incomplete_bundle_refused": true,
+  "n_detected": 12,
+  "n_faults": 12,
+  "physical_killed_subprocess": {
+   "child_returncode": -9,
+   "detected": true,
+   "fault": "killed_subprocess",
+   "partial_present": true,
+   "physical": true,
+   "reason": "subprocess status 'killed'; partial stdout is not a result. Restore the checkpoint to resume.",
+   "resumed": true
+  },
+  "policy": "FAIL CLOSED: refuse and say why. Never proceed on a default, never silently skip, never report PASS on a SKIP.",
+  "skip_is_not_pass": true
+ },
+ "fpga_note": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
+ "gaps_closed": [
+  "end-to-end provenance graph from experiment through inputs/code/machine/outputs to claims, with claim tracing",
+  "immutable experiment identity over inputs + code + compiler + machine genome; input/code/genome/compiler sensitivity proven",
+  "mutation canaries for the receipt-reader suite shape and the leftover negative-control mutation shape",
+  "clean-build recipe and replication bundle with a completeness checker that refuses on missing pieces",
+  "twelve named fail-closed injectors, each refused by name, each restoring a checkpoint",
+  "physical killed-subprocess proof (SIGKILL a child, refuse partial stdout, resume from checkpoint)",
+  "transitive claim downgrade: invalidating parent evidence downgrades a grandchild; unrelated claims stay VALID",
+  "SKIP is not PASS: finalize_verdict('SKIP') refuses"
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "measurement_states": {
+  "DIAGNOSTIC_RELATIVE": "contaminated A/B on a busy machine; guides; never promotes; this module does not produce it",
+  "PROTECTED_ABSOLUTE": "measurement under a real protected GPU lease; decides; this module does not produce it",
+  "STATIC_ONLY": "everything this module emits"
+ },
+ "module_sha256": "f565c5df51465c7493d8016a6c2b03be92846779746dedb9184989f9d558e7b0",
+ "mutation_canaries": {
+  "dead_verification_caught": true,
+  "dead_verification_stayed_green": true,
+  "historical_shapes": [
+   "suite read a checked-in receipt instead of running the tool; stayed green through source mutations",
+   "killed agent left its negative-control mutation live in source"
+  ],
+  "leftover_negative_control_caught": true,
+  "live_suite_not_flagged": true,
+  "live_verification_fails_on_mutation": true,
+  "receipt_reader_suite_flagged": true,
+  "this_module_has_no_leftover_canary": true
+ },
+ "negative_findings": [
+  "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json is not in HEAD of this checkout and is not on disk in this sparse worktree; measurement_contract and claim_boundary could not be read",
+  "tools/headless/* and hcli/agentos/* are not materialized here; recovered via git show HEAD:<path>, not live import",
+  "no existing tools/future/repro_science.py, no *replication_bundle* file, no *provenance_graph* module \u2014 F008 was accurate",
+  "this process has no protected GPU lease and produced no DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE number",
+  "did not call tools/accelerator/machine_genome.py (would require mlx/GPU); MachineGenome here is PIN_ONLY",
+  "did not create a file named *replication_bundle* \u2014 the contract permits only this module, and that filename would flip F008's absent-probe without a frontier edit we must not make"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "provenance_graph": {
+  "claim": "CLAIM_GRANDCHILD",
+  "graph": {
+   "edges": [
+    {
+     "dst": "CLAIM_PARENT",
+     "rel": "inherits",
+     "src": "CLAIM_CHILD"
+    },
+    {
+     "dst": "CLAIM_CHILD",
+     "rel": "inherits",
+     "src": "CLAIM_GRANDCHILD"
+    },
+    {
+     "dst": "OUT1",
+     "rel": "supported_by",
+     "src": "CLAIM_PARENT"
+    },
+    {
+     "dst": "CODE",
+     "rel": "compiled_from",
+     "src": "EXP1"
+    },
+    {
+     "dst": "MACHINE",
+     "rel": "ran_on",
+     "src": "EXP1"
+    },
+    {
+     "dst": "ROUTES",
+     "rel": "uses",
+     "src": "EXP1"
+    },
+    {
+     "dst": "SPECIMEN",
+     "rel": "uses",
+     "src": "EXP1"
+    },
+    {
+     "dst": "EXP1",
+     "rel": "produced_by",
+     "src": "OUT1"
+    }
+   ],
+   "nodes": [
+    {
+     "content_sha256": "8f52d76c5d9986dad6824b472944f4dc7ddf649a6fbee0a0c4f4c7b78580721d",
+     "id": "CLAIM_CHILD",
+     "kind": "claim",
+     "status": "VALID"
+    },
+    {
+     "content_sha256": "941634a5882b1f81836b87feb1f7a5b27e107a233fa9d2010f5c425d6c5a5e2f",
+     "id": "CLAIM_GRANDCHILD",
+     "kind": "claim",
+     "status": "VALID"
+    },
+    {
+     "content_sha256": "47c6152b59dff5af58abd8bf015736053f14b03f8242e024f8b02142a1f15f37",
+     "id": "CLAIM_PARENT",
+     "kind": "claim",
+     "status": "VALID"
+    },
+    {
+     "compiler": "sidecar-static-compiler-pin",
+     "content_sha256": "1bf7423bc8670857894e1f3a27d9810855a9a2f943a98772d82fcdefa2b88d91",
+     "id": "CODE",
+     "kind": "code"
+    },
+    {
+     "content_sha256": "d5ec0df43658641dd9518cac04c6b03446e39db1389ac75cca479a2ce6ff6152",
+     "id": "EXP1",
+     "kind": "experiment"
+    },
+    {
+     "content_sha256": "5fc1cd9689c42927f733fb226cfc419a723f4b9bfa6163e7acb3f55bdf55a8f7",
+     "id": "MACHINE",
+     "kind": "machine",
+     "knowledge_level": "PIN_ONLY"
+    },
+    {
+     "complete": true,
+     "content_sha256": "cdb50a42b21f3564e2683ee23a28ad841db5e436dab6fd0c7e323a71cf309c73",
+     "id": "OUT1",
+     "kind": "output"
+    },
+    {
+     "content_sha256": "dd191696e15e2ee293410d02454c5f9461a2249dee6d57c75f264eaeb83a3782",
+     "id": "ROUTES",
+     "kind": "input",
+     "role": "route_corpus"
+    },
+    {
+     "content_sha256": "34ad06ba1446ef0255d726b7081e4eaea7d5b799f26d62399346d29cee50be5f",
+     "id": "SPECIMEN",
+     "kind": "input",
+     "role": "specimen"
+    }
+   ]
+  },
+  "holds": true,
+  "traced_ids": [
+   "CLAIM_GRANDCHILD",
+   "CLAIM_CHILD",
+   "CLAIM_PARENT",
+   "OUT1",
+   "EXP1",
+   "SPECIMEN",
+   "ROUTES",
+   "MACHINE",
+   "CODE"
+  ],
+  "traced_kinds": [
+   "claim",
+   "code",
+   "experiment",
+   "input",
+   "machine",
+   "output"
+  ]
+ },
+ "purpose": "Provenance, immutable experiment identity, mutation canaries, replication bundle, and fail-closed fault injection so autonomy cannot launder weak evidence into a strong claim.",
+ "recovered_implementation": [
+  {
+   "path": "tools/future/_common.py",
+   "use": "used as-is; this module does not reimplement write_receipt or weaken HARDWARE_FIELDS",
+   "what": "seal() hashes canonical JSON minus seal_sha256; write_receipt attaches STATIC_ONLY/UNKNOWN bench and raises HardwareClaimError on numeric hardware fields"
+  },
+  {
+   "path": "tools/provenance_chain.py",
+   "use": "law kept: hash content never path strings; CONTROL must be shown to fire. Not forked (Codex tools/ surface)",
+   "what": "PARENT\u2192NR\u2192NX content digests with a CONTROL tamper that must make the chain check FAIL"
+  },
+  {
+   "path": "lab/provenance.py",
+   "use": "same pin family; not imported (sparse / not this write partition)",
+   "what": "pin_digest / verify_pin over canonical JSON"
+  },
+  {
+   "path": "tools/headless/causal_benchmark_law.py",
+   "use": "mutation canaries generalize the no-op law to verification itself",
+   "what": "a benchmark a no-op would also pass is invalid; kernel identity, sentinel, noop_control, bad_control"
+  },
+  {
+   "path": "tools/headless/disk_truth.py",
+   "use": "experiment identity is a content hash; missing hardware is UNKNOWN/REFUSED, not estimated",
+   "what": "disk state is authority; tree hashes; genomes PRESENT or ABSENT, never guessed"
+  },
+  {
+   "path": "tools/headless/dirty_tree_preservation.py",
+   "use": "the twelve injectors plus leftover-canary scan are that demonstration",
+   "what": "demonstrate_detector_can_fire: a gate never seen to fail is not evidence; scratch clone only"
+  },
+  {
+   "path": "hcli/agentos/recovery.py",
+   "use": "killed_subprocess + checkpoint/resume; not imported, not rewritten",
+   "what": "kill resident+host, recover_mission, continue; malformed JSON REJECTED; nonsense model not self-certified"
+  },
+  {
+   "path": "hcli/agentos/checkpoint.py",
+   "use": "checkpoint()/resume() is the static analog",
+   "what": "program census, not a success stamp; durable snapshot for resume"
+  },
+  {
+   "path": "hcli/machine.py",
+   "use": "changed_machine_genome refuse; pin is PIN_ONLY, not a measured genome",
+   "what": "MachineGenome is a PRIOR; GenomeStale on identity/time drift; never silently trust a prior"
+  },
+  {
+   "path": "tools/accelerator/machine_genome.py",
+   "use": "NOT called. Sidecar has no GPU. We pin identity only.",
+   "what": "physical MachineGenome with measured bandwidth under a protected window"
+  },
+  {
+   "path": "lab/verification_authority.py",
+   "use": "this module never emits PROTECTED_ABSOLUTE or DIAGNOSTIC_RELATIVE",
+   "what": "models propose; protected controller decides; forbidden self-promotion"
+  },
+  {
+   "path": "tools/headless/experiment_engine.py",
+   "use": "stale_pipeline_cache + mutation canaries",
+   "what": "adversary questions include 'what cache is STALE?' and 'what NO-OP would also pass?'"
+  }
+ ],
+ "replication_bundle": {
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+  "code_identity": "f565c5df51465c7493d8016a6c2b03be92846779746dedb9184989f9d558e7b0",
+  "expected_outputs": [
+   {
+    "name": "sealed experiment receipt",
+    "role": "output"
+   },
+   {
+    "name": "provenance graph",
+    "role": "graph"
+   }
+  ],
+  "experiment_identity": "6723f2aee72633c902875daa0e2cc70e26489475e8f58f469f52bfbaf00aee16",
+  "how_to_verify": "python3 -m pytest tools/future/test_repro_science.py -q && python3 tools/future/repro_science.py --selftest",
+  "inputs": [
+   {
+    "name": "specimen",
+    "role": "specimen",
+    "sha256": "34ad06ba1446ef0255d726b7081e4eaea7d5b799f26d62399346d29cee50be5f"
+   },
+   {
+    "name": "route_corpus",
+    "role": "route_corpus",
+    "sha256": "fbff3c1170e6cb018164b8319260d08bb2a2f95aa69173c6e80cd4e2c6d9f474"
+   }
+  ],
+  "machine_genome_pin": {
+   "arch": "arm64",
+   "gpu_authority": false,
+   "knowledge_level": "PIN_ONLY",
+   "note": "identity pin only; not a MachineGenome measurement and not a roof",
+   "os_family": "darwin",
+   "schema": "hawking.future.machine_genome_pin.v1"
+  },
+  "recipe_steps": [
+   {
+    "action": "pin experiment identity over inputs + code + machine genome",
+    "deterministic": true,
+    "n": 1
+   },
+   {
+    "action": "materialize inputs by content hash (never by path string)",
+    "deterministic": true,
+    "n": 2
+   },
+   {
+    "action": "pin code identity and compiler",
+    "deterministic": true,
+    "n": 3
+   },
+   {
+    "action": "pin MachineGenome as PIN_ONLY; do not treat it as a measurement",
+    "deterministic": true,
+    "n": 4
+   },
+   {
+    "action": "admit() the world; refuse on any of the twelve faults",
+    "deterministic": true,
+    "n": 5
+   },
+   {
+    "action": "seal outputs; bind claims to outputs in the provenance graph",
+    "deterministic": true,
+    "n": 6
+   },
+   {
+    "action": "never report PASS on SKIP; never invent a hardware number",
+    "deterministic": true,
+    "n": 7
+   }
+  ],
+  "vocabulary": {
+   "eras": [
+    "I Genesis of the Laboratory",
+    "II Compounding Civilization",
+    "III Autonomous Science Civilization",
+    "IV Synthetic Machine Civilization",
+    "V Released Hawking Civilization"
+   ],
+   "fpga": "FPGA is part of Accelerator / Physical Compiler / Fusion, not its own civilization",
+   "odysseys": [
+    "I WHAT IS TRUE?",
+    "II WHAT DID HAWKING ALREADY LEARN?",
+    "III WHERE IS HAWKING WRONG?"
+   ]
+  }
+ },
+ "schema": "hawking.future.repro_science.v1",
+ "seal_sha256": "e1a01c2717af15d0f93897b74ca47637cd5dc58f0d71c20cfe7751d86a633c88",
+ "version": 1
+}

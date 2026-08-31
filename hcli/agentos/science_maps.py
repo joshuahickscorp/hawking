@@ -184,7 +184,7 @@ def build_transfer_map(repo_root: Optional[str | os.PathLike[str]] = None) -> Di
             "architecture_fingerprint": (flash_receipt.get("architecture_fingerprint") or {}).get("value"),
             "architecture": flash_receipt.get("architecture"),
             "physical_status": "metadata_only_weights_not_present",
-            "identity_receipts": _find(repo, ["HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json", "HCLI_MODELLAKE_FLASH_CENSUS.json"]),
+            "identity_receipts": _find(repo, ["HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json", "MODELLAKE_FLASH_NEXT_CENSUS.json", "HCLI_MODELLAKE_FLASH_CENSUS.json"]),
         },
         "transfer_matrix": common,
         "model_a_regression_observation": {

@@ -29,6 +29,7 @@ from hcli.flash_next import (
     REPO_ID,
     evaluate_flash_promotion,
 )
+from hcli.agentos.modellake_receipts import preferred_census_receipt
 from hcli.persist import atomic_write_json
 
 
@@ -1137,7 +1138,7 @@ def run_flash_science_gate(
         weight_map = index.get("weight_map") if isinstance(index.get("weight_map"), Mapping) else {}
         text_config = config.get("text_config") if isinstance(config.get("text_config"), Mapping) else config
         remote_sizes: Dict[str, int] = {}
-        census_path = repo / "receipts" / "headless" / "HCLI_MODELLAKE_FLASH_CENSUS.json"
+        census_path = preferred_census_receipt(repo)
         census = None
         try:
             census = json.loads(census_path.read_text(encoding="utf-8"))
@@ -1243,7 +1244,7 @@ def run_flash_science_gate(
             "local_physical": {
                 "machine": platform.platform(),
                 "architecture": platform.machine(),
-                "model_lake_target_present": (repo / "receipts" / "headless" / "HCLI_MODELLAKE_FLASH_CENSUS.json").is_file() and bool((census or {}).get("flash_target_manifest", {}).get("final_present")),
+                "model_lake_target_present": census_path.is_file() and bool((census or {}).get("flash_target_manifest", {}).get("final_present")),
                 "weights_loaded": False,
                 "native_executable": False,
                 "native_kernel": "NOT_COMPILED",

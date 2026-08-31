@@ -1,0 +1,1803 @@
+{
+ "attack_families": [
+  "negative_transfer",
+  "blind_holdout",
+  "measurement_trap",
+  "contamination_trap",
+  "goodhart",
+  "compiler_prior",
+  "representation_overfit",
+  "law_scope",
+  "causal_control"
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T19:28:51Z",
+  "recorded_by": "tools/future/odyssey3_adversary.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_boundary_reminder": "DIAGNOSTIC_RELATIVE guides, never promotes. PROTECTED_ABSOLUTE decides. This module produces neither.",
+ "closed_loop": {
+  "adversarial_target": "harness_self_measure_controls",
+  "bench_state": "UNKNOWN",
+  "cpu_observation": {
+   "attack_id": "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+   "bench_state": "UNKNOWN",
+   "controls": [
+    {
+     "control": "scale_invariance",
+     "cosine": 1.0000000000000002,
+     "dim": 256,
+     "note": "synthetic vector; not a model organ; STATIC_ONLY",
+     "rel_fro": 0.9900000000000001,
+     "scale": 0.01,
+     "seed": 0,
+     "trap_fired": true
+    },
+    {
+     "control": "skip_counted_as_pass",
+     "honest_pass": false,
+     "n_skipped": 2,
+     "n_tests": 2,
+     "naive_pass": true,
+     "note": "SKIPPED is not PASSED; a grade that cannot fail is not a grade",
+     "trap_fired": true
+    },
+    {
+     "control": "receipt_reread_as_run",
+     "note": "a test that only loads a checked-in receipt has not run the tool",
+     "ran_generator": true,
+     "read_checked_in_receipt": false,
+     "trap_fired": false
+    }
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "family": "measurement_trap",
+   "physical_arm": "not_run",
+   "reason": "CPU controls fired: ['scale_invariance', 'skip_counted_as_pass']",
+   "synthetic": true,
+   "traps_fired": [
+    "scale_invariance",
+    "skip_counted_as_pass"
+   ],
+   "verdict": "TRAP_TRIGGERED"
+  },
+  "evidence_class": "STATIC_ONLY",
+  "experiment_spec_command": [
+   "python3",
+   "tools/future/odyssey3_adversary.py",
+   "--replay-attack",
+   "LAW-COSINE-ADEQUACY-GATE::measurement_trap"
+  ],
+  "hold_negative_control": {
+   "attack_id": "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+   "bench_state": "UNKNOWN",
+   "direction": "NONE",
+   "evidence_class": "STATIC_ONLY",
+   "family": "measurement_trap",
+   "law_after": {
+    "architecture_family": "moe_and_dense_qwen_glm",
+    "backend": "metal",
+    "counterexample_requirement": "a packing whose cosine clears 0.86 while magnitude, generation, or rel_fro shows the organ is destroyed (0.01*W is the canonical trap)",
+    "evidence_refs": [
+     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+    ],
+    "evidence_strength": "historically_used_as_gate",
+    "law_id": "LAW-COSINE-ADEQUACY-GATE",
+    "organ_class": "packed_organ.held_out_activation",
+    "scope": "GENERIC_VERIFIED",
+    "source_device": "APPLE_GPU_0",
+    "source_model": "glm-5.2 / qwen3-80b / qwen3.8-27b",
+    "statement": "Mean component cosine >= 0.86 on held-out activations is an adequacy certificate for a packed organ: the organ is functionally preserved.",
+    "transfer_candidates": [
+     "qwen3-30b-a3b",
+     "qwen3-vl-30b-a3b",
+     "any_packed_organ"
+    ],
+    "transfer_confidence": 0.85
+   },
+   "law_id": "LAW-COSINE-ADEQUACY-GATE",
+   "moved": false,
+   "reason": "negative control: a hold must not move scope",
+   "scope_after": "GENERIC_VERIFIED",
+   "scope_before": "GENERIC_VERIFIED",
+   "synthetic": true,
+   "verdict": "HOLDS"
+  },
+  "law_id": "LAW-COSINE-ADEQUACY-GATE",
+  "loop": [
+   "LAW",
+   "TRANSFER_HYPOTHESIS",
+   "ADVERSARIAL_TARGET",
+   "EXPERIMENT_SPEC",
+   "RESULT",
+   "LAW_SCOPE_UPDATE"
+  ],
+  "moved_down": true,
+  "ranked_attack_ids": [
+   "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+   "LAW-COSINE-ADEQUACY-GATE::blind_holdout",
+   "LAW-COSINE-ADEQUACY-GATE::causal_control",
+   "LAW-COSINE-ADEQUACY-GATE::law_scope",
+   "LAW-COSINE-ADEQUACY-GATE::contamination_trap",
+   "LAW-COSINE-ADEQUACY-GATE::compiler_prior",
+   "LAW-COSINE-ADEQUACY-GATE::representation_overfit",
+   "LAW-COSINE-ADEQUACY-GATE::goodhart",
+   "LAW-COSINE-ADEQUACY-GATE::negative_transfer"
+  ],
+  "scope_after": "REFUTED",
+  "scope_before": "GENERIC_VERIFIED",
+  "scope_update": {
+   "attack_id": "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+   "bench_state": "UNKNOWN",
+   "direction": "DOWN",
+   "evidence_class": "STATIC_ONLY",
+   "family": "measurement_trap",
+   "law_after": {
+    "architecture_family": "moe_and_dense_qwen_glm",
+    "backend": "metal",
+    "counterexample_requirement": "a packing whose cosine clears 0.86 while magnitude, generation, or rel_fro shows the organ is destroyed (0.01*W is the canonical trap)",
+    "evidence_refs": [
+     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+    ],
+    "evidence_strength": "historically_used_as_gate",
+    "law_id": "LAW-COSINE-ADEQUACY-GATE",
+    "organ_class": "packed_organ.held_out_activation",
+    "scope": "REFUTED",
+    "source_device": "APPLE_GPU_0",
+    "source_model": "glm-5.2 / qwen3-80b / qwen3.8-27b",
+    "statement": "Mean component cosine >= 0.86 on held-out activations is an adequacy certificate for a packed organ: the organ is functionally preserved.",
+    "transfer_candidates": [
+     "qwen3-30b-a3b",
+     "qwen3-vl-30b-a3b",
+     "any_packed_organ"
+    ],
+    "transfer_confidence": 0.85
+   },
+   "law_id": "LAW-COSINE-ADEQUACY-GATE",
+   "moved": true,
+   "reason": "synthetic refuting result for closed-loop proof: cosine is scale-invariant, so 0.01*W scores ~1.0 while rel_fro ~0.99; mixed-2p0 cosine 0.907 was native-INCOHERENT. The metric is not an adequacy certificate.",
+   "scope_after": "REFUTED",
+   "scope_before": "GENERIC_VERIFIED",
+   "synthetic": true,
+   "verdict": "REFUTED"
+  },
+  "selected_attack_id": "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+  "selected_family": "measurement_trap",
+  "statement": "Mean component cosine >= 0.86 on held-out activations is an adequacy certificate for a packed organ: the organ is functionally preserved.",
+  "synthetic_result": {
+   "reason": "synthetic refuting result for closed-loop proof: cosine is scale-invariant, so 0.01*W scores ~1.0 while rel_fro ~0.99; mixed-2p0 cosine 0.907 was native-INCOHERENT. The metric is not an adequacy certificate.",
+   "synthetic": true,
+   "verdict": "REFUTED"
+  },
+  "transfer_hypothesis": "the metric named by LAW-COSINE-ADEQUACY-GATE measures the organ, not the harness"
+ },
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "gaps_closed": [
+  "law-record input with the exact Odyssey II field set, store-or-fixture",
+  "nine attack-family generators each emitting an executable spec",
+  "ranking by cost_units / p_refutation; cheapest capable first",
+  "apply_result(law, attack, result) -> scope_update with mandatory DOWN",
+  "emitter refusal when a law generates zero attacks (watched failing in tests)",
+  "CPU replay of the cosine scale-invariance and SKIPPED-as-pass traps",
+  "closed loop demonstrated on LAW-COSINE-ADEQUACY-GATE with synthetic REFUTED"
+ ],
+ "law_source": {
+  "n_store_records": 24,
+  "n_store_rejected": 24,
+  "n_store_valid": 0,
+  "rejected_store_ids": [
+   "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED: transfer_confidence is not a number",
+   "LAW-COMPETENT-KERNEL-FIRST: transfer_confidence is not a number",
+   "LAW-DEVICE-ROOFS: transfer_confidence is not a number",
+   "LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS: transfer_confidence is not a number",
+   "LAW-FITTED-AFFINE-BEATS-RTN: unknown scope 'GENERIC_CANDIDATE'",
+   "LAW-HEAD-ORTHOGONALITY-BLOCKS-ELIMINATION: transfer_confidence is not a number",
+   "LAW-HELDOUT-REAL-ACTIVATIONS: unknown scope 'ARCHITECTURE_FAMILY'",
+   "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT: unknown scope 'GENERIC_CANDIDATE'",
+   "LAW-MLP-FLOOR-2.25: transfer_confidence is not a number",
+   "LAW-MODEL-REACHABLE-ROOF: transfer_confidence is not a number",
+   "LAW-MOE-EXPERTS-ARE-ORTHOGONAL: transfer_confidence is not a number",
+   "LAW-PER-ORGAN-FLOOR: unknown scope 'GENERIC_CANDIDATE'",
+   "LAW-QWEN-FAILURE-NEVER-PRUNES: transfer_confidence is not a number",
+   "LAW-REHEARSAL-NO-SMUGGLING: transfer_confidence is not a number",
+   "LAW-REPRESENTATION-COSINE-ROBUST-TO-LAYOUT: unknown scope 'ARCHITECTURE_FAMILY'",
+   "LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO: unknown scope 'ARCHITECTURE_FAMILY'",
+   "LAW-XFER-FLASH-COMMAND_BUFFER_SCHEDULING_TELEMETRY: transfer_confidence is not a number",
+   "LAW-XFER-FLASH-DENSE_VS_NF_A_B_PROTOCOL: transfer_confidence is not a number",
+   "LAW-XFER-QWEN27-COMMAND_BUFFER_SCHEDULING_TELEMETRY: transfer_confidence is not a number",
+   "LAW-XFER-QWEN27-DENSE_VS_NF_A_B_PROTOCOL: transfer_confidence is not a number"
+  ],
+  "source": "inline_fixture_store_present_but_no_valid_laws",
+  "store_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+  "store_present": true
+ },
+ "laws_attacked": [
+  {
+   "architecture_family": "qwen3_moe",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+   "n_attacks": 9,
+   "organ_class": "moe_expert",
+   "ranked_attack_ids": [
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::blind_holdout",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::measurement_trap",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::causal_control",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::law_scope",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::contamination_trap",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::representation_overfit",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::compiler_prior",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::negative_transfer",
+    "LAW-AFFINE-SEEDED-MATCHED-BITS::goodhart"
+   ],
+   "ranked_attacks": [
+    {
+     "adversarial_target": "moe_expert#holdout_slice",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::blind_holdout",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::blind_holdout"
+     ],
+     "cost_units": 4,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "holdout_agrees_with_fit": false,
+      "underdetermined_fit_refused": false
+     },
+     "expected_if_law_holds": {
+      "holdout_agrees_with_fit": true,
+      "underdetermined_fit_refused": true
+     },
+     "falsifier": "holdout_agrees_with_fit is False, or the fit was underdetermined (n_fit < organ dim) and still certified itself",
+     "family": "blind_holdout",
+     "inputs": {
+      "fit_fraction": 0.5,
+      "forbid_fit_on_holdout": true,
+      "holdout_fraction": 0.5,
+      "organ_class": "moe_expert",
+      "score_on": "holdout_only",
+      "split_seed": 0
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.7,
+     "selection_score": 5.714286,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "LAW-AFFINE-SEEDED-MATCHED-BITS was not an in-sample tautology; it survives a withheld slice"
+    },
+    {
+     "adversarial_target": "harness_self_measure_controls",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::measurement_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::measurement_trap"
+     ],
+     "cost_units": 1,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "harness_self_measure": true,
+      "note": "a control with the mechanism absent produced an 'effect'"
+     },
+     "expected_if_law_holds": {
+      "harness_self_measure": false,
+      "receipt_reread_trap_fired": false,
+      "scale_invariance_trap_fired": false,
+      "skip_as_pass_trap_fired": false
+     },
+     "falsifier": "any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+     "family": "measurement_trap",
+     "inputs": {
+      "controls": [
+       "scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "past_failure_shapes": [
+       "cosine_scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "scale_factor": 0.01,
+      "skip_suite": [
+       {
+        "name": "control_a",
+        "status": "SKIPPED"
+       },
+       {
+        "name": "control_b",
+        "status": "SKIPPED"
+       }
+      ],
+      "vector_dim": 256,
+      "vector_seed": 0
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.12,
+     "selection_score": 8.333333,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the metric named by LAW-AFFINE-SEEDED-MATCHED-BITS measures the organ, not the harness"
+    },
+    {
+     "adversarial_target": "mechanism_disabled_control",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::causal_control",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::causal_control"
+     ],
+     "cost_units": 3,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_on_disabled": true,
+      "effect_on_enabled": true
+     },
+     "expected_if_law_holds": {
+      "effect_on_disabled": false,
+      "effect_on_enabled": true
+     },
+     "falsifier": "the effect persists with the claimed mechanism disabled: the law is not causal",
+     "family": "causal_control",
+     "inputs": {
+      "arm_a": "mechanism_enabled",
+      "arm_b": "same_change_mechanism_disabled",
+      "known_shape": "shared-operator 'breakthrough' vanished under leakage/aggregation/wrong-input audit; the leaked number is not a reopen",
+      "require_effect_to_vanish_on_arm_b": true
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.35,
+     "selection_score": 8.571429,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the mechanism named by LAW-AFFINE-SEEDED-MATCHED-BITS is necessary for the effect"
+    },
+    {
+     "adversarial_target": "scope_probe:MODEL_LOCAL->ORGAN_LOCAL",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::law_scope",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::law_scope"
+     ],
+     "cost_units": 6,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "scope_becomes": "ORGAN_LOCAL",
+      "still_holds_one_step_narrower": false
+     },
+     "expected_if_law_holds": {
+      "scope_survives": true,
+      "still_holds_one_step_narrower": true
+     },
+     "falsifier": "the cheapest experiment that would force a scope DOWNGRADE to ORGAN_LOCAL reports the effect absent",
+     "family": "law_scope",
+     "inputs": {
+      "cheapest_discriminating_axis": "a second organ_class on the same model",
+      "current_scope": "MODEL_LOCAL",
+      "one_step_narrower": "ORGAN_LOCAL"
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.35,
+     "selection_score": 17.142857,
+     "target_scope_if_refuted": "ORGAN_LOCAL",
+     "transfer_hypothesis": "LAW-AFFINE-SEEDED-MATCHED-BITS at MODEL_LOCAL still holds after a one-step scope probe"
+    },
+    {
+     "adversarial_target": "contaminated_machine_state",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::contamination_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::contamination_trap"
+     ],
+     "cost_units": 5,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_agrees_across_arms": false,
+      "effect_present_on_dirty_arm": false,
+      "scope_becomes": "MACHINE_LOCAL"
+     },
+     "expected_if_law_holds": {
+      "effect_agrees_across_arms": true,
+      "effect_present_on_dirty_arm": true
+     },
+     "falsifier": "the effect vanishes or reverses under a deliberately contaminated machine state: the law is MACHINE_LOCAL, not a physical law",
+     "family": "contamination_trap",
+     "inputs": {
+      "dirty_arm": "DIAGNOSTIC_RELATIVE_busy_machine",
+      "if_only_quiet_holds": "MACHINE_LOCAL",
+      "quiet_arm": "PROTECTED_ABSOLUTE_required_not_available",
+      "same_command": true,
+      "sidecar_cannot_open_protected_lease": true
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.25,
+     "selection_score": 20.0,
+     "target_scope_if_refuted": "MACHINE_LOCAL",
+     "transfer_hypothesis": "LAW-AFFINE-SEEDED-MATCHED-BITS is a property of the organ, not of a quiet window"
+    },
+    {
+     "adversarial_target": "moe_expert#alternate_representation",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::representation_overfit",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::representation_overfit"
+     ],
+     "cost_units": 10,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_survives_repack": false
+     },
+     "expected_if_law_holds": {
+      "effect_survives_repack": true
+     },
+     "falsifier": "the law fails under a different representation of the same organ (layout, packing, or real vs synthetic X)",
+     "family": "representation_overfit",
+     "inputs": {
+      "alternate_representation": "repack_or_alternate_layout_of_the_same_organ",
+      "known_shape": "Gaussian-proxy ranking inverted on real X; VL fused layout broke kernel identity the config-similarity ranking promised",
+      "same_model": "Qwen3-30B-A3B",
+      "same_organ": "moe_expert"
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.4,
+     "selection_score": 25.0,
+     "target_scope_if_refuted": "ORGAN_LOCAL",
+     "transfer_hypothesis": "LAW-AFFINE-SEEDED-MATCHED-BITS is a property of the organ, not of one packing of it"
+    },
+    {
+     "adversarial_target": "unrelated_compiler_default",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::compiler_prior",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::compiler_prior"
+     ],
+     "cost_units": 8,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_absent_on_default_flip_alone": false,
+      "effect_present_when_default_reverted": false
+     },
+     "expected_if_law_holds": {
+      "effect_absent_on_default_flip_alone": true,
+      "effect_present_when_default_reverted": true
+     },
+     "falsifier": "reverting the compiler default removes the effect while the 'law' change is held fixed, or flipping the default alone reproduces the effect",
+     "family": "compiler_prior",
+     "inputs": {
+      "arm_a": "law_change_with_incumbent_compiler_defaults",
+      "arm_b": "no_law_change_with_the_same_default_flip",
+      "isolate": "unrelated_compiler_default",
+      "known_shape": "Qwen3-VL stores fused 3-D gate_up transposed vs per-expert 2-D; kernel identity is a storage claim, not an architecture-config claim"
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.3,
+     "selection_score": 26.666667,
+     "target_scope_if_refuted": "DEVICE_LOCAL",
+     "transfer_hypothesis": "the effect named by LAW-AFFINE-SEEDED-MATCHED-BITS is caused by the law, not a compiler default"
+    },
+    {
+     "adversarial_target": "Qwen3-VL-30B-A3B-Instruct",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::negative_transfer",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::negative_transfer"
+     ],
+     "cost_units": 15,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_present_on_hostile_target": false,
+      "scope_survives": false
+     },
+     "expected_if_law_holds": {
+      "effect_present_on_hostile_target": true,
+      "scope_survives": true
+     },
+     "falsifier": "effect_present_on_hostile_target is False: the transfer hypothesis does not survive the hostile target",
+     "family": "negative_transfer",
+     "inputs": {
+      "apply_on": {
+       "kind": "transfer_candidate",
+       "name": "Qwen3-VL-30B-A3B-Instruct",
+       "source_backend": "metal",
+       "source_device": "APPLE_GPU_0",
+       "source_family": "qwen3_moe",
+       "source_model": "Qwen3-30B-A3B",
+       "source_organ": "moe_expert"
+      },
+      "do_not_run_on_gpu": true,
+      "out_of_evidenced_scope": true,
+      "predicted_effect": "An affine-seeded Odyssey transfer, fitted as a METHOD on Qwen MLP, beats uniform round-to-nearest on moe_expert at matched bits per weight on every scored tier."
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.49,
+     "selection_score": 30.612245,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "LAW-AFFINE-SEEDED-MATCHED-BITS transfers from Qwen3-30B-A3B (qwen3_moe/moe_expert) to Qwen3-VL-30B-A3B-Instruct"
+    },
+    {
+     "adversarial_target": "metric_direct_optimisation",
+     "attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::goodhart",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-AFFINE-SEEDED-MATCHED-BITS::goodhart"
+     ],
+     "cost_units": 12,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "capability_collapsed": true,
+      "metric_improved": true
+     },
+     "expected_if_law_holds": {
+      "capability_collapsed": false,
+      "metric_improved": true
+     },
+     "falsifier": "the named metric improved while the underlying capability collapsed (cosine-as-gate, BPW-as-velocity, skip-as-pass)",
+     "family": "goodhart",
+     "inputs": {
+      "capability_probe": "generation_coherence_or_rel_fro_not_the_metric",
+      "hold_capability_probe": true,
+      "known_shape": "mixed-2p0 mean component cosine 0.907 is native-INCOHERENT; 0.01*W cosine 1.0 destroys magnitude",
+      "optimize": "the_named_metric_directly"
+     },
+     "law_id": "LAW-AFFINE-SEEDED-MATCHED-BITS",
+     "p_refutation": 0.1,
+     "selection_score": 120.0,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "optimising the metric of LAW-AFFINE-SEEDED-MATCHED-BITS still preserves capability"
+    }
+   ],
+   "scope": "MODEL_LOCAL",
+   "selected_attack_id": "LAW-AFFINE-SEEDED-MATCHED-BITS::blind_holdout",
+   "selected_cost_units": 4,
+   "selected_family": "blind_holdout",
+   "selected_p_refutation": 0.7,
+   "source_model": "Qwen3-30B-A3B",
+   "statement": "An affine-seeded Odyssey transfer, fitted as a METHOD on Qwen MLP, beats uniform round-to-nearest on moe_expert at matched bits per weight on every scored tier."
+  },
+  {
+   "architecture_family": "moe_and_dense_qwen_glm",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "law_id": "LAW-COSINE-ADEQUACY-GATE",
+   "n_attacks": 9,
+   "organ_class": "packed_organ.held_out_activation",
+   "ranked_attack_ids": [
+    "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+    "LAW-COSINE-ADEQUACY-GATE::blind_holdout",
+    "LAW-COSINE-ADEQUACY-GATE::causal_control",
+    "LAW-COSINE-ADEQUACY-GATE::law_scope",
+    "LAW-COSINE-ADEQUACY-GATE::contamination_trap",
+    "LAW-COSINE-ADEQUACY-GATE::compiler_prior",
+    "LAW-COSINE-ADEQUACY-GATE::representation_overfit",
+    "LAW-COSINE-ADEQUACY-GATE::goodhart",
+    "LAW-COSINE-ADEQUACY-GATE::negative_transfer"
+   ],
+   "ranked_attacks": [
+    {
+     "adversarial_target": "harness_self_measure_controls",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::measurement_trap"
+     ],
+     "cost_units": 1,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "harness_self_measure": true,
+      "note": "a control with the mechanism absent produced an 'effect'"
+     },
+     "expected_if_law_holds": {
+      "harness_self_measure": false,
+      "receipt_reread_trap_fired": false,
+      "scale_invariance_trap_fired": false,
+      "skip_as_pass_trap_fired": false
+     },
+     "falsifier": "any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+     "family": "measurement_trap",
+     "inputs": {
+      "controls": [
+       "scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "past_failure_shapes": [
+       "cosine_scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "scale_factor": 0.01,
+      "skip_suite": [
+       {
+        "name": "control_a",
+        "status": "SKIPPED"
+       },
+       {
+        "name": "control_b",
+        "status": "SKIPPED"
+       }
+      ],
+      "vector_dim": 256,
+      "vector_seed": 0
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.85,
+     "selection_score": 1.176471,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the metric named by LAW-COSINE-ADEQUACY-GATE measures the organ, not the harness"
+    },
+    {
+     "adversarial_target": "packed_organ.held_out_activation#holdout_slice",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::blind_holdout",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::blind_holdout"
+     ],
+     "cost_units": 4,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "holdout_agrees_with_fit": false,
+      "underdetermined_fit_refused": false
+     },
+     "expected_if_law_holds": {
+      "holdout_agrees_with_fit": true,
+      "underdetermined_fit_refused": true
+     },
+     "falsifier": "holdout_agrees_with_fit is False, or the fit was underdetermined (n_fit < organ dim) and still certified itself",
+     "family": "blind_holdout",
+     "inputs": {
+      "fit_fraction": 0.5,
+      "forbid_fit_on_holdout": true,
+      "holdout_fraction": 0.5,
+      "organ_class": "packed_organ.held_out_activation",
+      "score_on": "holdout_only",
+      "split_seed": 0
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.7,
+     "selection_score": 5.714286,
+     "target_scope_if_refuted": "FAMILY_VERIFIED",
+     "transfer_hypothesis": "LAW-COSINE-ADEQUACY-GATE was not an in-sample tautology; it survives a withheld slice"
+    },
+    {
+     "adversarial_target": "mechanism_disabled_control",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::causal_control",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::causal_control"
+     ],
+     "cost_units": 3,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_on_disabled": true,
+      "effect_on_enabled": true
+     },
+     "expected_if_law_holds": {
+      "effect_on_disabled": false,
+      "effect_on_enabled": true
+     },
+     "falsifier": "the effect persists with the claimed mechanism disabled: the law is not causal",
+     "family": "causal_control",
+     "inputs": {
+      "arm_a": "mechanism_enabled",
+      "arm_b": "same_change_mechanism_disabled",
+      "known_shape": "shared-operator 'breakthrough' vanished under leakage/aggregation/wrong-input audit; the leaked number is not a reopen",
+      "require_effect_to_vanish_on_arm_b": true
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.5,
+     "selection_score": 6.0,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the mechanism named by LAW-COSINE-ADEQUACY-GATE is necessary for the effect"
+    },
+    {
+     "adversarial_target": "scope_probe:GENERIC_VERIFIED->FAMILY_VERIFIED",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::law_scope",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::law_scope"
+     ],
+     "cost_units": 6,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "scope_becomes": "FAMILY_VERIFIED",
+      "still_holds_one_step_narrower": false
+     },
+     "expected_if_law_holds": {
+      "scope_survives": true,
+      "still_holds_one_step_narrower": true
+     },
+     "falsifier": "the cheapest experiment that would force a scope DOWNGRADE to FAMILY_VERIFIED reports the effect absent",
+     "family": "law_scope",
+     "inputs": {
+      "cheapest_discriminating_axis": "a second architecture_family",
+      "current_scope": "GENERIC_VERIFIED",
+      "one_step_narrower": "FAMILY_VERIFIED"
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.8,
+     "selection_score": 7.5,
+     "target_scope_if_refuted": "FAMILY_VERIFIED",
+     "transfer_hypothesis": "LAW-COSINE-ADEQUACY-GATE at GENERIC_VERIFIED still holds after a one-step scope probe"
+    },
+    {
+     "adversarial_target": "contaminated_machine_state",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::contamination_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::contamination_trap"
+     ],
+     "cost_units": 5,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_agrees_across_arms": false,
+      "effect_present_on_dirty_arm": false,
+      "scope_becomes": "MACHINE_LOCAL"
+     },
+     "expected_if_law_holds": {
+      "effect_agrees_across_arms": true,
+      "effect_present_on_dirty_arm": true
+     },
+     "falsifier": "the effect vanishes or reverses under a deliberately contaminated machine state: the law is MACHINE_LOCAL, not a physical law",
+     "family": "contamination_trap",
+     "inputs": {
+      "dirty_arm": "DIAGNOSTIC_RELATIVE_busy_machine",
+      "if_only_quiet_holds": "MACHINE_LOCAL",
+      "quiet_arm": "PROTECTED_ABSOLUTE_required_not_available",
+      "same_command": true,
+      "sidecar_cannot_open_protected_lease": true
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.55,
+     "selection_score": 9.090909,
+     "target_scope_if_refuted": "MACHINE_LOCAL",
+     "transfer_hypothesis": "LAW-COSINE-ADEQUACY-GATE is a property of the organ, not of a quiet window"
+    },
+    {
+     "adversarial_target": "unrelated_compiler_default",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::compiler_prior",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::compiler_prior"
+     ],
+     "cost_units": 8,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_absent_on_default_flip_alone": false,
+      "effect_present_when_default_reverted": false
+     },
+     "expected_if_law_holds": {
+      "effect_absent_on_default_flip_alone": true,
+      "effect_present_when_default_reverted": true
+     },
+     "falsifier": "reverting the compiler default removes the effect while the 'law' change is held fixed, or flipping the default alone reproduces the effect",
+     "family": "compiler_prior",
+     "inputs": {
+      "arm_a": "law_change_with_incumbent_compiler_defaults",
+      "arm_b": "no_law_change_with_the_same_default_flip",
+      "isolate": "unrelated_compiler_default",
+      "known_shape": "Qwen3-VL stores fused 3-D gate_up transposed vs per-expert 2-D; kernel identity is a storage claim, not an architecture-config claim"
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.7,
+     "selection_score": 11.428571,
+     "target_scope_if_refuted": "DEVICE_LOCAL",
+     "transfer_hypothesis": "the effect named by LAW-COSINE-ADEQUACY-GATE is caused by the law, not a compiler default"
+    },
+    {
+     "adversarial_target": "packed_organ.held_out_activation#alternate_representation",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::representation_overfit",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::representation_overfit"
+     ],
+     "cost_units": 10,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_survives_repack": false
+     },
+     "expected_if_law_holds": {
+      "effect_survives_repack": true
+     },
+     "falsifier": "the law fails under a different representation of the same organ (layout, packing, or real vs synthetic X)",
+     "family": "representation_overfit",
+     "inputs": {
+      "alternate_representation": "repack_or_alternate_layout_of_the_same_organ",
+      "known_shape": "Gaussian-proxy ranking inverted on real X; VL fused layout broke kernel identity the config-similarity ranking promised",
+      "same_model": "glm-5.2 / qwen3-80b / qwen3.8-27b",
+      "same_organ": "packed_organ.held_out_activation"
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.75,
+     "selection_score": 13.333333,
+     "target_scope_if_refuted": "ORGAN_LOCAL",
+     "transfer_hypothesis": "LAW-COSINE-ADEQUACY-GATE is a property of the organ, not of one packing of it"
+    },
+    {
+     "adversarial_target": "metric_direct_optimisation",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::goodhart",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::goodhart"
+     ],
+     "cost_units": 12,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "capability_collapsed": true,
+      "metric_improved": true
+     },
+     "expected_if_law_holds": {
+      "capability_collapsed": false,
+      "metric_improved": true
+     },
+     "falsifier": "the named metric improved while the underlying capability collapsed (cosine-as-gate, BPW-as-velocity, skip-as-pass)",
+     "family": "goodhart",
+     "inputs": {
+      "capability_probe": "generation_coherence_or_rel_fro_not_the_metric",
+      "hold_capability_probe": true,
+      "known_shape": "mixed-2p0 mean component cosine 0.907 is native-INCOHERENT; 0.01*W cosine 1.0 destroys magnitude",
+      "optimize": "the_named_metric_directly"
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.8,
+     "selection_score": 15.0,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "optimising the metric of LAW-COSINE-ADEQUACY-GATE still preserves capability"
+    },
+    {
+     "adversarial_target": "qwen3-vl-30b-a3b",
+     "attack_id": "LAW-COSINE-ADEQUACY-GATE::negative_transfer",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-COSINE-ADEQUACY-GATE::negative_transfer"
+     ],
+     "cost_units": 15,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_present_on_hostile_target": false,
+      "scope_survives": false
+     },
+     "expected_if_law_holds": {
+      "effect_present_on_hostile_target": true,
+      "scope_survives": true
+     },
+     "falsifier": "effect_present_on_hostile_target is False: the transfer hypothesis does not survive the hostile target",
+     "family": "negative_transfer",
+     "inputs": {
+      "apply_on": {
+       "kind": "transfer_candidate",
+       "name": "qwen3-vl-30b-a3b",
+       "source_backend": "metal",
+       "source_device": "APPLE_GPU_0",
+       "source_family": "moe_and_dense_qwen_glm",
+       "source_model": "glm-5.2 / qwen3-80b / qwen3.8-27b",
+       "source_organ": "packed_organ.held_out_activation"
+      },
+      "do_not_run_on_gpu": true,
+      "out_of_evidenced_scope": true,
+      "predicted_effect": "Mean component cosine >= 0.86 on held-out activations is an adequacy certificate for a packed organ: the organ is functionally preserved."
+     },
+     "law_id": "LAW-COSINE-ADEQUACY-GATE",
+     "p_refutation": 0.91,
+     "selection_score": 16.483516,
+     "target_scope_if_refuted": "FAMILY_VERIFIED",
+     "transfer_hypothesis": "LAW-COSINE-ADEQUACY-GATE transfers from glm-5.2 / qwen3-80b / qwen3.8-27b (moe_and_dense_qwen_glm/packed_organ.held_out_activation) to qwen3-vl-30b-a3b"
+    }
+   ],
+   "scope": "GENERIC_VERIFIED",
+   "selected_attack_id": "LAW-COSINE-ADEQUACY-GATE::measurement_trap",
+   "selected_cost_units": 1,
+   "selected_family": "measurement_trap",
+   "selected_p_refutation": 0.85,
+   "source_model": "glm-5.2 / qwen3-80b / qwen3.8-27b",
+   "statement": "Mean component cosine >= 0.86 on held-out activations is an adequacy certificate for a packed organ: the organ is functionally preserved."
+  },
+  {
+   "architecture_family": "qwen3_dense_hybrid",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+   "n_attacks": 9,
+   "organ_class": "packed_lowbit_gemv",
+   "ranked_attack_ids": [
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::causal_control",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::contamination_trap",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::measurement_trap",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::law_scope",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::blind_holdout",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::compiler_prior",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::representation_overfit",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::negative_transfer",
+    "LAW-PACKED-GEMV-DIRECT-TRANSFER::goodhart"
+   ],
+   "ranked_attacks": [
+    {
+     "adversarial_target": "mechanism_disabled_control",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::causal_control",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::causal_control"
+     ],
+     "cost_units": 3,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_on_disabled": true,
+      "effect_on_enabled": true
+     },
+     "expected_if_law_holds": {
+      "effect_on_disabled": false,
+      "effect_on_enabled": true
+     },
+     "falsifier": "the effect persists with the claimed mechanism disabled: the law is not causal",
+     "family": "causal_control",
+     "inputs": {
+      "arm_a": "mechanism_enabled",
+      "arm_b": "same_change_mechanism_disabled",
+      "known_shape": "shared-operator 'breakthrough' vanished under leakage/aggregation/wrong-input audit; the leaked number is not a reopen",
+      "require_effect_to_vanish_on_arm_b": true
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.5,
+     "selection_score": 6.0,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the mechanism named by LAW-PACKED-GEMV-DIRECT-TRANSFER is necessary for the effect"
+    },
+    {
+     "adversarial_target": "contaminated_machine_state",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::contamination_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::contamination_trap"
+     ],
+     "cost_units": 5,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_agrees_across_arms": false,
+      "effect_present_on_dirty_arm": false,
+      "scope_becomes": "MACHINE_LOCAL"
+     },
+     "expected_if_law_holds": {
+      "effect_agrees_across_arms": true,
+      "effect_present_on_dirty_arm": true
+     },
+     "falsifier": "the effect vanishes or reverses under a deliberately contaminated machine state: the law is MACHINE_LOCAL, not a physical law",
+     "family": "contamination_trap",
+     "inputs": {
+      "dirty_arm": "DIAGNOSTIC_RELATIVE_busy_machine",
+      "if_only_quiet_holds": "MACHINE_LOCAL",
+      "quiet_arm": "PROTECTED_ABSOLUTE_required_not_available",
+      "same_command": true,
+      "sidecar_cannot_open_protected_lease": true
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.8,
+     "selection_score": 6.25,
+     "target_scope_if_refuted": "MACHINE_LOCAL",
+     "transfer_hypothesis": "LAW-PACKED-GEMV-DIRECT-TRANSFER is a property of the organ, not of a quiet window"
+    },
+    {
+     "adversarial_target": "harness_self_measure_controls",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::measurement_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::measurement_trap"
+     ],
+     "cost_units": 1,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "harness_self_measure": true,
+      "note": "a control with the mechanism absent produced an 'effect'"
+     },
+     "expected_if_law_holds": {
+      "harness_self_measure": false,
+      "receipt_reread_trap_fired": false,
+      "scale_invariance_trap_fired": false,
+      "skip_as_pass_trap_fired": false
+     },
+     "falsifier": "any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+     "family": "measurement_trap",
+     "inputs": {
+      "controls": [
+       "scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "past_failure_shapes": [
+       "cosine_scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "scale_factor": 0.01,
+      "skip_suite": [
+       {
+        "name": "control_a",
+        "status": "SKIPPED"
+       },
+       {
+        "name": "control_b",
+        "status": "SKIPPED"
+       }
+      ],
+      "vector_dim": 256,
+      "vector_seed": 0
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.12,
+     "selection_score": 8.333333,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the metric named by LAW-PACKED-GEMV-DIRECT-TRANSFER measures the organ, not the harness"
+    },
+    {
+     "adversarial_target": "scope_probe:FAMILY_VERIFIED->MODEL_LOCAL",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::law_scope",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::law_scope"
+     ],
+     "cost_units": 6,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "scope_becomes": "MODEL_LOCAL",
+      "still_holds_one_step_narrower": false
+     },
+     "expected_if_law_holds": {
+      "scope_survives": true,
+      "still_holds_one_step_narrower": true
+     },
+     "falsifier": "the cheapest experiment that would force a scope DOWNGRADE to MODEL_LOCAL reports the effect absent",
+     "family": "law_scope",
+     "inputs": {
+      "cheapest_discriminating_axis": "a second source_model in-family",
+      "current_scope": "FAMILY_VERIFIED",
+      "one_step_narrower": "MODEL_LOCAL"
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.55,
+     "selection_score": 10.909091,
+     "target_scope_if_refuted": "MODEL_LOCAL",
+     "transfer_hypothesis": "LAW-PACKED-GEMV-DIRECT-TRANSFER at FAMILY_VERIFIED still holds after a one-step scope probe"
+    },
+    {
+     "adversarial_target": "packed_lowbit_gemv#holdout_slice",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::blind_holdout",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::blind_holdout"
+     ],
+     "cost_units": 4,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "holdout_agrees_with_fit": false,
+      "underdetermined_fit_refused": false
+     },
+     "expected_if_law_holds": {
+      "holdout_agrees_with_fit": true,
+      "underdetermined_fit_refused": true
+     },
+     "falsifier": "holdout_agrees_with_fit is False, or the fit was underdetermined (n_fit < organ dim) and still certified itself",
+     "family": "blind_holdout",
+     "inputs": {
+      "fit_fraction": 0.5,
+      "forbid_fit_on_holdout": true,
+      "holdout_fraction": 0.5,
+      "organ_class": "packed_lowbit_gemv",
+      "score_on": "holdout_only",
+      "split_seed": 0
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.35,
+     "selection_score": 11.428571,
+     "target_scope_if_refuted": "MODEL_LOCAL",
+     "transfer_hypothesis": "LAW-PACKED-GEMV-DIRECT-TRANSFER was not an in-sample tautology; it survives a withheld slice"
+    },
+    {
+     "adversarial_target": "unrelated_compiler_default",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::compiler_prior",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::compiler_prior"
+     ],
+     "cost_units": 8,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_absent_on_default_flip_alone": false,
+      "effect_present_when_default_reverted": false
+     },
+     "expected_if_law_holds": {
+      "effect_absent_on_default_flip_alone": true,
+      "effect_present_when_default_reverted": true
+     },
+     "falsifier": "reverting the compiler default removes the effect while the 'law' change is held fixed, or flipping the default alone reproduces the effect",
+     "family": "compiler_prior",
+     "inputs": {
+      "arm_a": "law_change_with_incumbent_compiler_defaults",
+      "arm_b": "no_law_change_with_the_same_default_flip",
+      "isolate": "unrelated_compiler_default",
+      "known_shape": "Qwen3-VL stores fused 3-D gate_up transposed vs per-expert 2-D; kernel identity is a storage claim, not an architecture-config claim"
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.7,
+     "selection_score": 11.428571,
+     "target_scope_if_refuted": "DEVICE_LOCAL",
+     "transfer_hypothesis": "the effect named by LAW-PACKED-GEMV-DIRECT-TRANSFER is caused by the law, not a compiler default"
+    },
+    {
+     "adversarial_target": "packed_lowbit_gemv#alternate_representation",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::representation_overfit",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::representation_overfit"
+     ],
+     "cost_units": 10,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_survives_repack": false
+     },
+     "expected_if_law_holds": {
+      "effect_survives_repack": true
+     },
+     "falsifier": "the law fails under a different representation of the same organ (layout, packing, or real vs synthetic X)",
+     "family": "representation_overfit",
+     "inputs": {
+      "alternate_representation": "repack_or_alternate_layout_of_the_same_organ",
+      "known_shape": "Gaussian-proxy ranking inverted on real X; VL fused layout broke kernel identity the config-similarity ranking promised",
+      "same_model": "qwen3.8-27b-abliterated",
+      "same_organ": "packed_lowbit_gemv"
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.75,
+     "selection_score": 13.333333,
+     "target_scope_if_refuted": "ORGAN_LOCAL",
+     "transfer_hypothesis": "LAW-PACKED-GEMV-DIRECT-TRANSFER is a property of the organ, not of one packing of it"
+    },
+    {
+     "adversarial_target": "Qwen27",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::negative_transfer",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::negative_transfer"
+     ],
+     "cost_units": 15,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_present_on_hostile_target": false,
+      "scope_survives": false
+     },
+     "expected_if_law_holds": {
+      "effect_present_on_hostile_target": true,
+      "scope_survives": true
+     },
+     "falsifier": "effect_present_on_hostile_target is False: the transfer hypothesis does not survive the hostile target",
+     "family": "negative_transfer",
+     "inputs": {
+      "apply_on": {
+       "kind": "transfer_candidate",
+       "name": "Qwen27",
+       "source_backend": "metal",
+       "source_device": "APPLE_GPU_0",
+       "source_family": "qwen3_dense_hybrid",
+       "source_model": "qwen3.8-27b-abliterated",
+       "source_organ": "packed_lowbit_gemv"
+      },
+      "do_not_run_on_gpu": true,
+      "out_of_evidenced_scope": true,
+      "predicted_effect": "Packed low-bit GEMV is a DIRECT_TRANSFER primitive from the Qwen3.8 accelerator parent; command-buffer scheduling is provider-neutral."
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.73,
+     "selection_score": 20.547945,
+     "target_scope_if_refuted": "MODEL_LOCAL",
+     "transfer_hypothesis": "LAW-PACKED-GEMV-DIRECT-TRANSFER transfers from qwen3.8-27b-abliterated (qwen3_dense_hybrid/packed_lowbit_gemv) to Qwen27"
+    },
+    {
+     "adversarial_target": "metric_direct_optimisation",
+     "attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::goodhart",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-PACKED-GEMV-DIRECT-TRANSFER::goodhart"
+     ],
+     "cost_units": 12,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "capability_collapsed": true,
+      "metric_improved": true
+     },
+     "expected_if_law_holds": {
+      "capability_collapsed": false,
+      "metric_improved": true
+     },
+     "falsifier": "the named metric improved while the underlying capability collapsed (cosine-as-gate, BPW-as-velocity, skip-as-pass)",
+     "family": "goodhart",
+     "inputs": {
+      "capability_probe": "generation_coherence_or_rel_fro_not_the_metric",
+      "hold_capability_probe": true,
+      "known_shape": "mixed-2p0 mean component cosine 0.907 is native-INCOHERENT; 0.01*W cosine 1.0 destroys magnitude",
+      "optimize": "the_named_metric_directly"
+     },
+     "law_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER",
+     "p_refutation": 0.1,
+     "selection_score": 120.0,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "optimising the metric of LAW-PACKED-GEMV-DIRECT-TRANSFER still preserves capability"
+    }
+   ],
+   "scope": "FAMILY_VERIFIED",
+   "selected_attack_id": "LAW-PACKED-GEMV-DIRECT-TRANSFER::causal_control",
+   "selected_cost_units": 3,
+   "selected_family": "causal_control",
+   "selected_p_refutation": 0.5,
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "Packed low-bit GEMV is a DIRECT_TRANSFER primitive from the Qwen3.8 accelerator parent; command-buffer scheduling is provider-neutral."
+  },
+  {
+   "architecture_family": "qwen3_moe",
+   "bench_state": "UNKNOWN",
+   "evidence_class": "STATIC_ONLY",
+   "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+   "n_attacks": 9,
+   "organ_class": "moe_expert.gate_proj",
+   "ranked_attack_ids": [
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::measurement_trap",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::causal_control",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::contamination_trap",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::law_scope",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::blind_holdout",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::compiler_prior",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::representation_overfit",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::goodhart",
+    "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::negative_transfer"
+   ],
+   "ranked_attacks": [
+    {
+     "adversarial_target": "harness_self_measure_controls",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::measurement_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::measurement_trap"
+     ],
+     "cost_units": 1,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "harness_self_measure": true,
+      "note": "a control with the mechanism absent produced an 'effect'"
+     },
+     "expected_if_law_holds": {
+      "harness_self_measure": false,
+      "receipt_reread_trap_fired": false,
+      "scale_invariance_trap_fired": false,
+      "skip_as_pass_trap_fired": false
+     },
+     "falsifier": "any control fires: scale-invariant cosine certifies 0.01*W, SKIPPED tests count as passes, or a checked-in receipt is treated as a run",
+     "family": "measurement_trap",
+     "inputs": {
+      "controls": [
+       "scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "past_failure_shapes": [
+       "cosine_scale_invariance",
+       "skip_counted_as_pass",
+       "receipt_reread_as_run"
+      ],
+      "scale_factor": 0.01,
+      "skip_suite": [
+       {
+        "name": "control_a",
+        "status": "SKIPPED"
+       },
+       {
+        "name": "control_b",
+        "status": "SKIPPED"
+       }
+      ],
+      "vector_dim": 256,
+      "vector_seed": 0
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.85,
+     "selection_score": 1.176471,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the metric named by LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER measures the organ, not the harness"
+    },
+    {
+     "adversarial_target": "mechanism_disabled_control",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::causal_control",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::causal_control"
+     ],
+     "cost_units": 3,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_on_disabled": true,
+      "effect_on_enabled": true
+     },
+     "expected_if_law_holds": {
+      "effect_on_disabled": false,
+      "effect_on_enabled": true
+     },
+     "falsifier": "the effect persists with the claimed mechanism disabled: the law is not causal",
+     "family": "causal_control",
+     "inputs": {
+      "arm_a": "mechanism_enabled",
+      "arm_b": "same_change_mechanism_disabled",
+      "known_shape": "shared-operator 'breakthrough' vanished under leakage/aggregation/wrong-input audit; the leaked number is not a reopen",
+      "require_effect_to_vanish_on_arm_b": true
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.7,
+     "selection_score": 4.285714,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "the mechanism named by LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER is necessary for the effect"
+    },
+    {
+     "adversarial_target": "contaminated_machine_state",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::contamination_trap",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::contamination_trap"
+     ],
+     "cost_units": 5,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_agrees_across_arms": false,
+      "effect_present_on_dirty_arm": false,
+      "scope_becomes": "MACHINE_LOCAL"
+     },
+     "expected_if_law_holds": {
+      "effect_agrees_across_arms": true,
+      "effect_present_on_dirty_arm": true
+     },
+     "falsifier": "the effect vanishes or reverses under a deliberately contaminated machine state: the law is MACHINE_LOCAL, not a physical law",
+     "family": "contamination_trap",
+     "inputs": {
+      "dirty_arm": "DIAGNOSTIC_RELATIVE_busy_machine",
+      "if_only_quiet_holds": "MACHINE_LOCAL",
+      "quiet_arm": "PROTECTED_ABSOLUTE_required_not_available",
+      "same_command": true,
+      "sidecar_cannot_open_protected_lease": true
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.55,
+     "selection_score": 9.090909,
+     "target_scope_if_refuted": "MACHINE_LOCAL",
+     "transfer_hypothesis": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER is a property of the organ, not of a quiet window"
+    },
+    {
+     "adversarial_target": "scope_probe:FAMILY_VERIFIED->MODEL_LOCAL",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::law_scope",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::law_scope"
+     ],
+     "cost_units": 6,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "scope_becomes": "MODEL_LOCAL",
+      "still_holds_one_step_narrower": false
+     },
+     "expected_if_law_holds": {
+      "scope_survives": true,
+      "still_holds_one_step_narrower": true
+     },
+     "falsifier": "the cheapest experiment that would force a scope DOWNGRADE to MODEL_LOCAL reports the effect absent",
+     "family": "law_scope",
+     "inputs": {
+      "cheapest_discriminating_axis": "a second source_model in-family",
+      "current_scope": "FAMILY_VERIFIED",
+      "one_step_narrower": "MODEL_LOCAL"
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.55,
+     "selection_score": 10.909091,
+     "target_scope_if_refuted": "MODEL_LOCAL",
+     "transfer_hypothesis": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER at FAMILY_VERIFIED still holds after a one-step scope probe"
+    },
+    {
+     "adversarial_target": "moe_expert.gate_proj#holdout_slice",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::blind_holdout",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::blind_holdout"
+     ],
+     "cost_units": 4,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "holdout_agrees_with_fit": false,
+      "underdetermined_fit_refused": false
+     },
+     "expected_if_law_holds": {
+      "holdout_agrees_with_fit": true,
+      "underdetermined_fit_refused": true
+     },
+     "falsifier": "holdout_agrees_with_fit is False, or the fit was underdetermined (n_fit < organ dim) and still certified itself",
+     "family": "blind_holdout",
+     "inputs": {
+      "fit_fraction": 0.5,
+      "forbid_fit_on_holdout": true,
+      "holdout_fraction": 0.5,
+      "organ_class": "moe_expert.gate_proj",
+      "score_on": "holdout_only",
+      "split_seed": 0
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.35,
+     "selection_score": 11.428571,
+     "target_scope_if_refuted": "MODEL_LOCAL",
+     "transfer_hypothesis": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER was not an in-sample tautology; it survives a withheld slice"
+    },
+    {
+     "adversarial_target": "unrelated_compiler_default",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::compiler_prior",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::compiler_prior"
+     ],
+     "cost_units": 8,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_absent_on_default_flip_alone": false,
+      "effect_present_when_default_reverted": false
+     },
+     "expected_if_law_holds": {
+      "effect_absent_on_default_flip_alone": true,
+      "effect_present_when_default_reverted": true
+     },
+     "falsifier": "reverting the compiler default removes the effect while the 'law' change is held fixed, or flipping the default alone reproduces the effect",
+     "family": "compiler_prior",
+     "inputs": {
+      "arm_a": "law_change_with_incumbent_compiler_defaults",
+      "arm_b": "no_law_change_with_the_same_default_flip",
+      "isolate": "unrelated_compiler_default",
+      "known_shape": "Qwen3-VL stores fused 3-D gate_up transposed vs per-expert 2-D; kernel identity is a storage claim, not an architecture-config claim"
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.7,
+     "selection_score": 11.428571,
+     "target_scope_if_refuted": "DEVICE_LOCAL",
+     "transfer_hypothesis": "the effect named by LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER is caused by the law, not a compiler default"
+    },
+    {
+     "adversarial_target": "moe_expert.gate_proj#alternate_representation",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::representation_overfit",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::representation_overfit"
+     ],
+     "cost_units": 10,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_survives_repack": false
+     },
+     "expected_if_law_holds": {
+      "effect_survives_repack": true
+     },
+     "falsifier": "the law fails under a different representation of the same organ (layout, packing, or real vs synthetic X)",
+     "family": "representation_overfit",
+     "inputs": {
+      "alternate_representation": "repack_or_alternate_layout_of_the_same_organ",
+      "known_shape": "Gaussian-proxy ranking inverted on real X; VL fused layout broke kernel identity the config-similarity ranking promised",
+      "same_model": "Qwen3-30B-A3B",
+      "same_organ": "moe_expert.gate_proj"
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.75,
+     "selection_score": 13.333333,
+     "target_scope_if_refuted": "ORGAN_LOCAL",
+     "transfer_hypothesis": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER is a property of the organ, not of one packing of it"
+    },
+    {
+     "adversarial_target": "metric_direct_optimisation",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::goodhart",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::goodhart"
+     ],
+     "cost_units": 12,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "capability_collapsed": true,
+      "metric_improved": true
+     },
+     "expected_if_law_holds": {
+      "capability_collapsed": false,
+      "metric_improved": true
+     },
+     "falsifier": "the named metric improved while the underlying capability collapsed (cosine-as-gate, BPW-as-velocity, skip-as-pass)",
+     "family": "goodhart",
+     "inputs": {
+      "capability_probe": "generation_coherence_or_rel_fro_not_the_metric",
+      "hold_capability_probe": true,
+      "known_shape": "mixed-2p0 mean component cosine 0.907 is native-INCOHERENT; 0.01*W cosine 1.0 destroys magnitude",
+      "optimize": "the_named_metric_directly"
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.8,
+     "selection_score": 15.0,
+     "target_scope_if_refuted": "REFUTED",
+     "transfer_hypothesis": "optimising the metric of LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER still preserves capability"
+    },
+    {
+     "adversarial_target": "Qwen3-VL-30B-A3B-Instruct",
+     "attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::negative_transfer",
+     "bench_state": "UNKNOWN",
+     "command": [
+      "python3",
+      "tools/future/odyssey3_adversary.py",
+      "--replay-attack",
+      "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::negative_transfer"
+     ],
+     "cost_units": 15,
+     "evidence_class": "STATIC_ONLY",
+     "expected_if_law_false": {
+      "effect_present_on_hostile_target": false,
+      "scope_survives": false
+     },
+     "expected_if_law_holds": {
+      "effect_present_on_hostile_target": true,
+      "scope_survives": true
+     },
+     "falsifier": "effect_present_on_hostile_target is False: the transfer hypothesis does not survive the hostile target",
+     "family": "negative_transfer",
+     "inputs": {
+      "apply_on": {
+       "kind": "transfer_candidate",
+       "name": "Qwen3-VL-30B-A3B-Instruct",
+       "source_backend": "metal",
+       "source_device": "APPLE_GPU_0",
+       "source_family": "qwen3_moe",
+       "source_model": "Qwen3-30B-A3B",
+       "source_organ": "moe_expert.gate_proj"
+      },
+      "do_not_run_on_gpu": true,
+      "out_of_evidenced_scope": true,
+      "predicted_effect": "ws_rtn_q4_g64 weight cosine remains >= 0.993 on moe expert gate_proj across Qwen3-30B-A3B family specimens, so the representation transfers."
+     },
+     "law_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+     "p_refutation": 0.82,
+     "selection_score": 18.292683,
+     "target_scope_if_refuted": "MODEL_LOCAL",
+     "transfer_hypothesis": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER transfers from Qwen3-30B-A3B (qwen3_moe/moe_expert.gate_proj) to Qwen3-VL-30B-A3B-Instruct"
+    }
+   ],
+   "scope": "FAMILY_VERIFIED",
+   "selected_attack_id": "LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER::measurement_trap",
+   "selected_cost_units": 1,
+   "selected_family": "measurement_trap",
+   "selected_p_refutation": 0.85,
+   "source_model": "Qwen3-30B-A3B",
+   "statement": "ws_rtn_q4_g64 weight cosine remains >= 0.993 on moe expert gate_proj across Qwen3-30B-A3B family specimens, so the representation transfers."
+  }
+ ],
+ "n_attacks": 36,
+ "n_laws": 4,
+ "negative_findings": [
+  "receipts/future/ODYSSEY2_LAW_STORE.json present; sibling module was not imported",
+  "sparse checkout: recovered adversary/negative-science paths not on disk: (all recovered paths materialized)",
+  "no GPU lease: physical arms of every spec are not_run / UNKNOWN",
+  "did not execute tools/headless/adversarial_sweep.py (it writes Codex receipts)",
+  "did not execute tools/headless/frontier_adversary.py or gate_adversary.py",
+  "evidence_refs on fixture laws are citations; this checkout may not materialize them",
+  "independence limitation: the same operator wrote the fixture laws and the attacks",
+  "on_disk recovered paths: receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json, receipts/future/CLAUDE_GLOBAL_FRONTIER.json, receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json, receipts/headless/NOETIC_NEGATIVE_SCIENCE.json, receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json, receipts/headless/ODYSSEY_TRANSFER_PROVEN.json, tools/headless/adversarial_sweep.py, tools/headless/frontier_adversary.py, tools/headless/gate_adversary.py, tools/headless/negative_science.py, tools/headless/noetic_negative_science.py, tools/odyssey/contamination.py, tools/odyssey/known_failures.py"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "past_failure_shapes_encoded": [
+  "cosine_scale_invariance",
+  "skip_counted_as_pass",
+  "receipt_reread_as_run",
+  "gaussian_proxy_inversion",
+  "layout_vs_kernel_reuse"
+ ],
+ "purpose": "Odyssey III adversary: for any Odyssey II law, emit ranked executable attack specs and close LAW -> TRANSFER HYPOTHESIS -> ADVERSARIAL TARGET -> EXPERIMENT SPEC -> RESULT -> LAW SCOPE UPDATE. Sidecar has no GPU; every spec is STATIC_ONLY / UNKNOWN.",
+ "recovered_implementation": [
+  {
+   "gap": "attacks PASS gates, not Odyssey II law records; no scope loop",
+   "on_disk": true,
+   "path": "tools/headless/adversarial_sweep.py",
+   "role": "ten gate attacks (self-certified PASS, dead evidence, vacuous check, skip-shaped)"
+  },
+  {
+   "gap": "does not consume a law record or emit ranked experiment specs",
+   "on_disk": true,
+   "path": "tools/headless/frontier_adversary.py",
+   "role": "plants against Noetic frontier claims; live GPU optional"
+  },
+  {
+   "gap": "gate-shaped, writes receipts/headless; not a sidecar law adversary",
+   "on_disk": true,
+   "path": "tools/headless/gate_adversary.py",
+   "role": "re-verifies newly closed headless gates; default REFUTED when uncertain"
+  },
+  {
+   "gap": "query-before-experiment, not attack generation against a live law",
+   "on_disk": true,
+   "path": "tools/headless/negative_science.py",
+   "role": "failure store, nine fields, three levels, promotion refusal"
+  },
+  {
+   "gap": "catalog of past refutations, not a generator of new attack specs",
+   "on_disk": true,
+   "path": "tools/headless/noetic_negative_science.py",
+   "role": "killed-idea archaeology; PROPERTY_OF_IDEA vs ARTIFACT_OF_METHOD"
+  },
+  {
+   "gap": "evidence of a different adversary; not a law store",
+   "on_disk": true,
+   "path": "receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+   "role": "G031 sweep receipt (27 gates, 1 weakened on stale_cache)"
+  },
+  {
+   "gap": "consumed as scar memory for attack families; not extended in place",
+   "on_disk": true,
+   "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "role": "watched-fail memory: cosine scale-invariance, Gaussian proxy, skip-as-gate"
+  },
+  {
+   "gap": "ascent-campaign register, not an Odyssey III loop",
+   "on_disk": true,
+   "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+   "role": "38 entries REFUTED/DEAUTHORISED/CATEGORY_ERROR with retry_when"
+  },
+  {
+   "gap": "asserts a receipt still reads as negative; does not attack a law",
+   "on_disk": true,
+   "path": "tools/odyssey/known_failures.py",
+   "role": "sealed negatives with cheap reproductions"
+  },
+  {
+   "gap": "corpus overlap, not DIAGNOSTIC_RELATIVE vs PROTECTED_ABSOLUTE",
+   "on_disk": true,
+   "path": "tools/odyssey/contamination.py",
+   "role": "train/eval contamination barrier (shingles/jaccard)"
+  },
+  {
+   "gap": "seed for LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
+   "on_disk": true,
+   "path": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+   "role": "kernel vs representation transfer; layout trap on Qwen3-VL"
+  },
+  {
+   "gap": "seed for LAW-AFFINE-SEEDED-MATCHED-BITS",
+   "on_disk": true,
+   "path": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+   "role": "cold vs transfer; matched-bits 3/3; honest_note that COLD won landing"
+  },
+  {
+   "gap": "this module is the Odyssey III sidecar F010/F015 asked for, not a fork of them",
+   "on_disk": true,
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "role": "F010 (no scoped law store), F009 (negative science unindexed), F015 (no ingest)"
+  }
+ ],
+ "schema": "hawking.future.odyssey3_adversary.v1",
+ "scope_ladder_general_to_refuted": [
+  "GENERIC_VERIFIED",
+  "FAMILY_VERIFIED",
+  "MODEL_LOCAL",
+  "ORGAN_LOCAL",
+  "DEVICE_LOCAL",
+  "MACHINE_LOCAL",
+  "REFUTED"
+ ],
+ "seal_sha256": "2a3fc855fab96b49297cadd9b67edd01f5d18ce99466599fd2462a2f263b394e",
+ "selection_rule": "selection_score = cost_units / p_refutation; emit lowest score first (cheapest expected cost per refutation). Every law gets at least one attack or the emitter refuses.",
+ "version": 1
+}

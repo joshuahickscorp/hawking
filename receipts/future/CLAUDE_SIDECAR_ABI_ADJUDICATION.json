@@ -1,0 +1,147 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:43:20Z",
+  "recorded_by": "tools/future/claude_abi_adjudication.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "claim_boundary": "Source adjudication only. No Metal device, timing, throughput, BPW, or physical qualification claim is present.",
+ "evidence_class": "STATIC_ONLY",
+ "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "outcomes": [
+  {
+   "classification": "REAL_DEFECT",
+   "evidence": [
+    "crates/hawking-core/shaders/attn.metal:446",
+    "crates/hawking-core/src/kernels/mod.rs:8535"
+   ],
+   "finding_id": "claude-abi-01-kv-append-q8",
+   "fix": "Added the Q8_0 kernel with the ArgbufKvAppend contract, fp16 scale serialization, ties-away-from-zero code rounding, and in-launch k_pe copy; widened the grid for a longer RoPE tail.",
+   "preflight": {
+    "check": "kernel_existence",
+    "host_sites": [
+     "crates/hawking-core/src/kernels/mod.rs:8509"
+    ],
+    "kernel": "kv_append_q8_0_f32",
+    "severity": "ERROR"
+   },
+   "reachability": "Public kv_append_q8_0_f32_metal is called by q8_kv_parity; the entry point was not dead code and the host already selected it.",
+   "status": "FIXED"
+  },
+  {
+   "classification": "BLOCKED_BY_GENERATION",
+   "evidence": [
+    "crates/hawking-core/shaders/qwen_uniform_q4.metal:1203",
+    "crates/hawking-core/shaders/qwen_uniform_q4.metal:1222",
+    "tools/future/static_kernel_verify.py:568"
+   ],
+   "finding_id": "claude-abi-02-qwen-generated-k1",
+   "fix": "Taught the static verifier to recover the K, RK, and binary-plane macro families. It resolves existence only; generated-body ABI and PSO checks remain explicitly compiler/runtime work.",
+   "preflight": {
+    "check": "kernel_existence",
+    "host_sites": [
+     "crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs:221",
+     "crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs:351"
+    ],
+    "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+    "severity": "ERROR"
+   },
+   "reachability": "The Qwen example references a concrete entry point emitted by QWEN_UNIFORM_Q4_MATMUL_K(1); it is reachable, but its body is created by token pasting before Metal compilation.",
+   "status": "RESOLVED_BY_MACRO_AWARE_PREFLIGHT"
+  },
+  {
+   "classification": "REAL_DEFECT",
+   "evidence": [
+    "crates/hawking-core/src/kernels/mod.rs:8683",
+    "crates/hawking-core/shaders/attn.metal:157"
+   ],
+   "finding_id": "claude-abi-03-gemv-attn-command-batch",
+   "fix": "Packed rows and cols into one contiguous ArgbufRowsCols buffer at buffer(3).",
+   "preflight": {
+    "check": "type_width",
+    "host_site": "crates/hawking-core/src/kernels/mod.rs:8694",
+    "kernel": "gemv_f32_attn",
+    "severity": "ERROR"
+   },
+   "reachability": "mla_decode_and_o_proj_metal is a live combined attention path.",
+   "status": "FIXED"
+  },
+  {
+   "classification": "REAL_DEFECT",
+   "evidence": [
+    "crates/hawking-core/src/kernels/mod.rs:8683",
+    "crates/hawking-core/shaders/attn.metal:157"
+   ],
+   "finding_id": "claude-abi-04-gemv-attn-arena",
+   "fix": "Applied the same single-buffer ArgbufRowsCols binding to the arena variant.",
+   "preflight": {
+    "check": "type_width",
+    "host_site": "crates/hawking-core/src/kernels/mod.rs:8789",
+    "kernel": "gemv_f32_attn",
+    "severity": "ERROR"
+   },
+   "reachability": "mla_decode_and_o_proj_arena_metal is the arena-resident attention path.",
+   "status": "FIXED"
+  },
+  {
+   "classification": "REAL_DEFECT",
+   "evidence": [
+    "crates/hawking-core/src/kernels/mod.rs:9197",
+    "crates/hawking-core/shaders/moe.metal:1381"
+   ],
+   "finding_id": "claude-abi-05-moe-silu",
+   "fix": "Packed n into one ArgbufN constant buffer at buffer(3).",
+   "preflight": {
+    "check": "type_width",
+    "host_site": "crates/hawking-core/src/kernels/mod.rs:9166",
+    "kernel": "moe_batched_silu_mul",
+    "severity": "ERROR"
+   },
+   "reachability": "moe_block_batched_indexed_metal reaches encode_silu_mul.",
+   "status": "FIXED"
+  },
+  {
+   "classification": "REAL_DEFECT",
+   "evidence": [
+    "crates/hawking-core/src/kernels/mod.rs:9228",
+    "crates/hawking-core/shaders/moe.metal:1394"
+   ],
+   "finding_id": "claude-abi-06-moe-route-accumulate",
+   "fix": "Packed hidden, routes, and has_shared into one ArgbufRouteAcc at buffer(4).",
+   "preflight": {
+    "check": "type_width",
+    "host_site": "crates/hawking-core/src/kernels/mod.rs:9193",
+    "kernel": "moe_route_accumulate",
+    "severity": "ERROR"
+   },
+   "reachability": "The non-TCB MoE route accumulation helper is directly callable by the MoE host path.",
+   "status": "FIXED"
+  }
+ ],
+ "purpose": "Claude sidecar six-row static ABI adjudication and verifier feedback.",
+ "schema": "hawking.future.claude_sidecar_abi_adjudication.v1",
+ "seal_sha256": "5fe6a4220493e530d8b22de12531bcc9ff30e303b8dedbc55a1512a2cb06c8ec",
+ "source_preflight": {
+  "current_blocking_error_count": 0,
+  "current_would_waste_a_protected_window": false,
+  "receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json"
+ },
+ "summary": {
+  "blocked_by_generation_resolved": 1,
+  "dead_paths": 0,
+  "intentional_aliases": 0,
+  "outstanding_confirmed_defects": 0,
+  "real_defects_fixed": 5,
+  "reported_findings": 6
+ },
+ "verifier_feedback": {
+  "constant_struct_abi": "A Metal constant struct at buffer(N) requires one contiguous host binding with the matching layout; adjacent set_u32 calls at N/N+1 are not equivalent.",
+  "kernel_existence": "Recognize token-pasted entry points only from explicit macro invocation and preserve generated-body ABI as a compiler/runtime boundary.",
+  "physical_gate": "Static resolution clears a protected-window correctness blocker; it does not promote Flash or produce qualified physical EBPW."
+ },
+ "version": 1
+}

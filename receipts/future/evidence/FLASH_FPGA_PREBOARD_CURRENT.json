@@ -1,0 +1,273 @@
+{
+  "checks": {
+    "deterministic_preboard_fingerprint": true,
+    "interfaces_defined": true,
+    "negative_science_receipts_censused": true,
+    "no_fpga_backend_built_claim": true,
+    "no_physical_board_claim": true
+  },
+  "claim_boundary": "This is a planning/preboard receipt. No FPGA board, FPGA backend, simulator timing, or hardware performance is claimed.",
+  "elapsed_s": 0.018,
+  "finished_at": 1787832129.4590878,
+  "fpga_surface": {
+    "backend": {
+      "claim": false,
+      "status": "NOT_BUILT"
+    },
+    "candidate_source_paths": [
+      "/Users/scammermike/Downloads/hawking/hcli/agentos/fpga_preboard.py"
+    ],
+    "physical_board": {
+      "claim": false,
+      "reason": "no physical FPGA board is attached or claimed by this preboard",
+      "status": "ABSENT"
+    },
+    "status": "AVAILABLE"
+  },
+  "negative_science": {
+    "interpretation": "negative receipts constrain the next experiment; they do not certify impossibility outside their stated boundary",
+    "present_count": 6,
+    "receipts": [
+      {
+        "claim_boundary": null,
+        "headline": null,
+        "next_action": null,
+        "pass": null,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+        "present": true,
+        "schema": "hawking.headless.noetic_negative_science.v1",
+        "status": null,
+        "verdict": null
+      },
+      {
+        "claim_boundary": null,
+        "headline": null,
+        "next_action": null,
+        "pass": null,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NO_CANDIDATE_YET_BEATS_PARENT.json",
+        "present": true,
+        "schema": "hawking.headless.no_candidate_yet_beats_parent.v1",
+        "status": null,
+        "verdict": "REOPENED_CANDIDATE_LEADS_BUT_QUALIFICATION_NOT_RUN"
+      },
+      {
+        "claim_boundary": {
+          "corpus_still_absent": [
+            "FFT",
+            "convolution"
+          ],
+          "nothing_timed": "the sparse kernel is verified, not benchmarked; no performance claim",
+          "one_organ_one_family": "8 expert gate_proj tensors of ONE model; MODEL_FAMILY at most, and the organ-floor receipt already measured that the organ ranking does NOT transfer across architectures, so this must not be read as a law about sparse residuals in general",
+          "one_residual_coding": "8-bit values plus a raw 11-bit column index. A smarter coding -- delta indices, rice, a per-group bitmap -- would lower the tax, and the 4.6x concentration says the CEILING is still far from the 2.5x gap, but that is an argument this receipt does not measure",
+          "weight_space_only": "cosine and magnitude on WEIGHTS, no activations, no model executed -- this campaign sealed on 2026-07-27 that sub-bit negatives judged on synthetic activations were artifacts, and on 2026-08-17 that LOCAL ADEQUACY DOES NOT COMPOSE. Neither is contradicted and neither is relied on."
+        },
+        "headline": "SPARSE was the next named-absent corpus item, and the question that decides whether it earns a place is a REPRESENTATION question. MY PREDICTION WAS REFUTED: a sparse residual is BEATEN 2.5-3.9x PER BIT by simply spending the same bits on a finer group or one more level. Then the failure was diagnosed and the diagnosis holds: THE OUTLIER HURTS BY SETTING THE GROUP SCALE, not by being stored badly, so the error it causes is DENSE and a sparse fix cannot reach it.",
+        "next_action": null,
+        "pass": true,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SPARSE.json",
+        "present": true,
+        "schema": "hawking.accelerator.receipt.v1",
+        "status": null,
+        "verdict": null
+      },
+      {
+        "claim_boundary": {
+          "knowledge_level": "MODEL_FAMILY not ARCHITECTURE: two Qwen MoE variants agreeing is one family, and Kimi and Falcon are single specimens each.",
+          "ladder_saturates": "the coarse floor is 4 bits nearly everywhere because 3 bits fails the 0.99 bar for every organ measured; the informative axis is the GROUP and the continuous cosine, which is why both are reported rather than the floor alone.",
+          "sampling": "256 rows of ONE tensor per organ per specimen for the main table (the depth series adds 5 layers x 2 organs x 2 specimens). Grouped absmax makes each row's groups independent, so a row slice is an unbiased sample of GROUPS -- but it is still one tensor, one layer, for most rows.",
+          "weight_space_only": "no activations, no model executed, no adequacy. A cosine floor is a NECESSARY-NOT-SUFFICIENT input to Gravity's question and this campaign has a sealed finding that weight-space proxies mislead about the ANSWER."
+        },
+        "headline": "THE PRIOR LAW IS ARCHITECTURE-SPECIFIC, NOT GENERAL. Attention sets the floor on BOTH Qwen models -- q_proj needs group 32 where every MLP and expert tensor clears at group 128 -- and DOES NOT TRANSFER: on Kimi-VL and Falcon-H1 no organ is more demanding than any other. The mechanism is within-group outliers, confirmed at Pearson -0.9841 across 33 organs and 4 architectures.",
+        "next_action": null,
+        "pass": true,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json",
+        "present": true,
+        "schema": "hawking.accelerator.receipt.v1",
+        "status": null,
+        "verdict": null
+      },
+      {
+        "claim_boundary": [
+          "NOTHING IS TIMED. The double-double chain costs real instructions and no speed figure is offered -- what is measured is PRECISION, and the cost in throughput is unmeasured.",
+          "ONE chain length (4096) and ONE operation mix. Effective bits depend on both, and a shorter chain would lose fewer; 42.6 is this chain's number and not a constant.",
+          "double-double is ONE emulation. Triple-double or an integer-based approach would land elsewhere and neither was built."
+        ],
+        "headline": null,
+        "next_action": null,
+        "pass": null,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FP64_IS_A_HARDWARE_REFUSAL.json",
+        "present": true,
+        "schema": null,
+        "status": null,
+        "verdict": null
+      },
+      {
+        "claim_boundary": null,
+        "headline": null,
+        "next_action": null,
+        "pass": null,
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN_TUNE_SKIPPED.json",
+        "present": true,
+        "schema": "hawking.headless.qwen_tune_skipped.v1",
+        "status": null,
+        "verdict": null
+      }
+    ]
+  },
+  "preboard": {
+    "cache": {
+      "key": "sha256(canonical HWIR + kernel genome + target identity)",
+      "status": "SCHEMA_ONLY"
+    },
+    "compiler_interfaces": [
+      {
+        "fields": [
+          "kernel_id",
+          "input_layout",
+          "output_layout",
+          "dtype",
+          "resources",
+          "proof_hash"
+        ],
+        "name": "kernel_genome",
+        "schema": "hcli.fpga.kernel_genome.v1",
+        "status": "INTERFACE_DEFINED"
+      },
+      {
+        "fields": [
+          "nodes",
+          "buffers",
+          "dependencies",
+          "synchronization",
+          "placement_constraints"
+        ],
+        "name": "hwir",
+        "schema": "hcli.fpga.hwir.v1",
+        "status": "INTERFACE_DEFINED"
+      },
+      {
+        "fields": [
+          "symbols",
+          "memory_regions",
+          "relocations",
+          "artifact_hash"
+        ],
+        "name": "link",
+        "schema": "hcli.fpga.link.v1",
+        "status": "INTERFACE_DEFINED"
+      },
+      {
+        "fields": [
+          "source_graph",
+          "partitions",
+          "cut_bytes",
+          "cut_synchronization",
+          "device_assignment"
+        ],
+        "name": "partitioner",
+        "schema": "hcli.fpga.partitioner.v1",
+        "status": "INTERFACE_DEFINED"
+      },
+      {
+        "fields": [
+          "content_address",
+          "kernel_genome",
+          "toolchain_identity",
+          "target_identity",
+          "verification"
+        ],
+        "name": "cache",
+        "schema": "hcli.fpga.cache.v1",
+        "status": "INTERFACE_DEFINED"
+      },
+      {
+        "fields": [
+          "hwir",
+          "cycle_trace",
+          "resource_usage",
+          "numerical_output",
+          "negative_controls"
+        ],
+        "name": "simulator",
+        "schema": "hcli.fpga.simulator.v1",
+        "status": "CONTRACT_ONLY"
+      },
+      {
+        "fields": [
+          "input_fixture",
+          "reference_output",
+          "candidate_output",
+          "tolerance",
+          "trace"
+        ],
+        "name": "harness",
+        "schema": "hcli.fpga.harness.v1",
+        "status": "CONTRACT_ONLY"
+      },
+      {
+        "fields": [
+          "identity",
+          "numerical_parity",
+          "resource_bounds",
+          "capability_contract",
+          "receipt"
+        ],
+        "name": "verifier",
+        "schema": "hcli.fpga.verifier.v1",
+        "status": "INTERFACE_DEFINED"
+      }
+    ],
+    "fpga_backend": {
+      "physical_board_claim": false,
+      "status": "NOT_BUILT"
+    },
+    "harness": {
+      "capability_claim": false,
+      "status": "CONTRACT_ONLY"
+    },
+    "hwir": {
+      "buffers": [],
+      "dependencies": [],
+      "nodes": [],
+      "status": "SCHEMA_ONLY",
+      "synchronization": []
+    },
+    "kernel_genome": {
+      "physical_kernel": false,
+      "status": "SCHEMA_ONLY"
+    },
+    "linker": {
+      "binary_generation": false,
+      "status": "SCHEMA_ONLY"
+    },
+    "partitioner": {
+      "device_assignment": null,
+      "status": "SCHEMA_ONLY"
+    },
+    "preboard_fingerprint": "d4f5a4ae782c10148d6ea0cd555a3c77cf67cae2d444a3442a64596d238a76aa",
+    "simulator": {
+      "output_claim": "none",
+      "physical_execution": false,
+      "status": "NOT_IMPLEMENTED"
+    },
+    "verifier": {
+      "acceptance_authority": "deterministic verifier",
+      "status": "CONTRACT_ONLY"
+    }
+  },
+  "qualification": "NEGATIVE_SCIENCE_CENSUS_AND_FPGA_PREBOARD_NO_PHYSICAL_BOARD_CLAIM",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.preboard.v1",
+  "started_at": 1787832129.4411242,
+  "status": "PASSED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

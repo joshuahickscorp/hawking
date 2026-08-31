@@ -42,6 +42,15 @@ def _emit(value: Any) -> None:
     print(json.dumps(value, indent=2, sort_keys=True, default=str))
 
 
+def _parse_env_assignment(value: str) -> tuple[str, str]:
+    key, separator, item = str(value).partition("=")
+    if not separator or not key:
+        raise argparse.ArgumentTypeError(
+            f"expected KEY=VALUE, got {value!r}"
+        )
+    return key, item
+
+
 def _add_paths(parser: argparse.ArgumentParser) -> None:
     parser.add_argument("--workspace", default=os.getcwd(), help="AgentOS workspace root")
     parser.add_argument("--repo-root", default=None, help="repository root for read/evidence surfaces")
@@ -195,10 +204,21 @@ def build_parser() -> argparse.ArgumentParser:
     flash_executable.add_argument("--transform-parity-receipt", default=None)
     flash_executable.add_argument("--loader-roundtrip-receipt", default=None)
     flash_executable.add_argument("--kernel-parity-receipt", default=None)
+    flash_executable.add_argument("--shared-expert-kernel-parity-receipt", default=None)
+    flash_executable.add_argument("--deltanet-kernel-parity-receipt", default=None)
+    flash_executable.add_argument("--sparse-attention-kernel-parity-receipt", default=None)
+    flash_executable.add_argument("--mtp-gate-kernel-parity-receipt", default=None)
     flash_executable.add_argument("--graph-component-receipt", default=None)
     flash_executable.add_argument("--component-campaign-receipt", default=None)
     flash_executable.add_argument("--router-graph-receipt", default=None)
     flash_executable.add_argument("--router-selection-receipt", default=None)
+    flash_executable.add_argument("--native-router-selection-receipt", default=None)
+    flash_executable.add_argument("--native-routed-expert-dispatch-receipt", default=None)
+    flash_executable.add_argument("--native-gate-up-swiglu-receipt", default=None)
+    flash_executable.add_argument("--native-expert-composition-receipt", default=None)
+    flash_executable.add_argument("--native-shared-expert-composition-receipt", default=None)
+    flash_executable.add_argument("--native-shared-residual-hyperconnection-receipt", default=None)
+    flash_executable.add_argument("--native-exact-hyperconnection-receipt", default=None)
     flash_executable.add_argument("--router-representation-ab-receipt", default=None)
     flash_executable.add_argument("--emit", default=None)
     flash_executable.add_argument("--ebpw-emit", default=None)
@@ -276,6 +296,18 @@ def build_parser() -> argparse.ArgumentParser:
     flash_matrix.add_argument("--row-count", type=int, default=128)
     flash_matrix.add_argument("--body", default=None)
     flash_matrix.add_argument("--emit", default=None)
+
+    flash_vector = sub.add_parser(
+        "flash-vector-body",
+        help="persist one exact source BF16 vector for a Flash Noetic boundary",
+    )
+    flash_vector.add_argument("--root", default=None, help="final specimen root; defaults to the canonical ModelLake specimen")
+    flash_vector.add_argument("--repo-root", default=None)
+    flash_vector.add_argument("--tensor-name", default="model.language_model.layers.0.mlp_hyper_connection.hc_norm.weight")
+    flash_vector.add_argument("--candidate", default="source_bf16_exact")
+    flash_vector.add_argument("--component-kind", default="mlp_hyperconnection_hc_norm")
+    flash_vector.add_argument("--body", default=None)
+    flash_vector.add_argument("--emit", default=None)
 
     flash_router_graph = sub.add_parser(
         "flash-router-graph",
@@ -377,6 +409,30 @@ def build_parser() -> argparse.ArgumentParser:
     protected_bench_watch.add_argument("--timeout-s", type=float, default=180.0)
     protected_bench_watch.add_argument("--once", action="store_true")
     protected_bench_watch.add_argument("--pause-known-jobs", action="store_true")
+
+    protected_accelerator = sub.add_parser(
+        "protected-accelerator-bench",
+        help="run one provider-neutral protected persistent-resident physical benchmark",
+    )
+    protected_accelerator.add_argument("--repo-root", default=None)
+    protected_accelerator.add_argument("--profile", default=None)
+    protected_accelerator.add_argument("--resident-binary", default=None)
+    protected_accelerator.add_argument(
+        "--fusion-env",
+        action="append",
+        default=[],
+        type=_parse_env_assignment,
+        metavar="KEY=VALUE",
+        help="child-only fusion environment override; repeat for multiple controls",
+    )
+    protected_accelerator.add_argument("--prompt", default="Return exactly: HAWKING_OK")
+    protected_accelerator.add_argument("--warmup-requests", type=int, default=1)
+    protected_accelerator.add_argument("--measure-requests", type=int, default=5)
+    protected_accelerator.add_argument("--max-new-tokens", type=int, default=32)
+    protected_accelerator.add_argument("--ready-timeout-s", type=float, default=6 * 3600.0)
+    protected_accelerator.add_argument("--interval-s", type=float, default=30.0)
+    protected_accelerator.add_argument("--timeout-s", type=float, default=180.0)
+    protected_accelerator.add_argument("--emit", default=None)
 
     handoff = sub.add_parser(
         "handoff",
@@ -551,6 +607,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 repo_root=args.repo_root,
                 profile=args.profile,
                 resident_binary=args.resident_binary,
+                fusion_env_overrides=dict(args.fusion_env),
                 emit=args.emit,
                 timeout_s=args.timeout_s,
             )
@@ -612,10 +669,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 transform_parity_receipt=args.transform_parity_receipt,
                 loader_roundtrip_receipt=args.loader_roundtrip_receipt,
                 kernel_parity_receipt=args.kernel_parity_receipt,
+                shared_expert_kernel_parity_receipt=args.shared_expert_kernel_parity_receipt,
+                deltanet_kernel_parity_receipt=args.deltanet_kernel_parity_receipt,
+                sparse_attention_kernel_parity_receipt=args.sparse_attention_kernel_parity_receipt,
+                mtp_gate_kernel_parity_receipt=args.mtp_gate_kernel_parity_receipt,
                 graph_component_receipt=args.graph_component_receipt,
                 component_campaign_receipt=args.component_campaign_receipt,
                 router_graph_receipt=args.router_graph_receipt,
                 router_selection_receipt=args.router_selection_receipt,
+                native_router_selection_receipt=args.native_router_selection_receipt,
+                native_routed_expert_dispatch_receipt=args.native_routed_expert_dispatch_receipt,
+                native_gate_up_swiglu_receipt=args.native_gate_up_swiglu_receipt,
+                native_expert_composition_receipt=args.native_expert_composition_receipt,
+                native_shared_expert_composition_receipt=args.native_shared_expert_composition_receipt,
+                native_shared_residual_hyperconnection_receipt=args.native_shared_residual_hyperconnection_receipt,
+                native_exact_hyperconnection_receipt=args.native_exact_hyperconnection_receipt,
                 router_representation_ab_receipt=args.router_representation_ab_receipt,
                 emit=args.emit,
                 ebpw_emit=args.ebpw_emit,
@@ -713,6 +781,21 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
                 component_kind=args.component_kind,
                 row_start=args.row_start,
                 row_count=args.row_count,
+                body=args.body,
+                emit=args.emit,
+            )
+            _emit(report)
+            return 0 if report.get("status") == "PASSED" else 1
+
+        if args.command == "flash-vector-body":
+            from hcli.agentos.flash_vector_component_body import run_flash_vector_body
+
+            report = run_flash_vector_body(
+                root=args.root,
+                repo_root=args.repo_root,
+                tensor_name=args.tensor_name,
+                candidate_id=args.candidate,
+                component_kind=args.component_kind,
                 body=args.body,
                 emit=args.emit,
             )
@@ -846,6 +929,26 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             )
             _emit(report)
             return 0 if report.get("status") in {"COMPLETED", "WAITING_FOR_QUIESCENCE"} else 1
+
+        if args.command == "protected-accelerator-bench":
+            from hcli.agentos.protected_accelerator_benchmark import run_protected_accelerator_benchmark
+
+            report = run_protected_accelerator_benchmark(
+                repo_root=args.repo_root,
+                profile=args.profile,
+                resident_binary=args.resident_binary,
+                fusion_env_overrides=dict(args.fusion_env),
+                prompt=args.prompt,
+                warmup_requests=args.warmup_requests,
+                measure_requests=args.measure_requests,
+                max_new_tokens=args.max_new_tokens,
+                ready_timeout_s=args.ready_timeout_s,
+                interval_s=args.interval_s,
+                timeout_s=args.timeout_s,
+                emit=args.emit,
+            )
+            _emit(report)
+            return 0 if report.get("status") == "PASSED" else 1
 
         if args.command == "handoff":
             from hcli.agentos.handoff import build_handoff

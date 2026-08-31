@@ -1,0 +1,486 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T18:59:36Z",
+  "recorded_by": "tools/future/odyssey_tool_driver.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "STATIC_ONLY",
+ "executed_error": null,
+ "executed_invocation": {
+  "evidence_class": "STATIC_ONLY",
+  "frontier": "FT.MODEL_CAPABILITY.hard-gates",
+  "gpu_authority": false,
+  "headless_untouched": true,
+  "id": "doctor_seal",
+  "invoked": true,
+  "isolation": "cli_out",
+  "receipt": "receipts/future/DOCTOR_SEAL_DRIVEN.json",
+  "refused": false,
+  "wall_seconds": 0.119
+ },
+ "gaps_closed": [
+  "no sidecar module actually invoked Doctor/Gravity; this one does",
+  "invoke isolates hardcoded receipts/headless writes into receipts/future/",
+  "unrunnable tools emit SLEEPING WorkUnits with a wake condition",
+  "route() and refill() exist so frontier/refill are satisfiable"
+ ],
+ "gate_measured": {
+  "doctor": {
+   "driver_module": "odyssey_tool_driver.py",
+   "frontier": "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+   "refill": true,
+   "schedule": true,
+   "why": "bound via orchestration"
+  },
+  "gravity": {
+   "driver_module": "odyssey_tool_driver.py",
+   "frontier": "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+   "refill": true,
+   "schedule": true,
+   "why": "bound via orchestration"
+  }
+ },
+ "gpu_authority": false,
+ "negative_findings": [
+  "orchestration.BINDINGS does not name odyssey_tool_driver.py; this lane cannot write that file. The gate therefore still measures schedule/frontier/refill as false.",
+  "the gate's refill probe passes lane names CPU_ANALYSIS/CPU_VERIFY/CPU_REPRESENTATION that match no frontiers.py required_lanes, so refill stays false even after a bind",
+  "test_odyssey_launch.test_negative_control_the_gate_cannot_certify_itself_as_the_driver asserts schedule is False; a later bind must update that test to 'driver is not odyssey_launch.py'",
+  "decoding_gravity.main and state_gravity.main need /tmp measurement files from a prior GPU campaign; those files are not invented here",
+  "doctor_tournament.probes imports torch+safetensors, which this interpreter does not have; the 52GB SVD is not run",
+  "gravity_doctor_capability/dimensions drive the native greedy binary and a GPU lane lock; refused",
+  "gravity_doctor_gate --demo writes no receipt; the full gate needs workspace BF16 tensors",
+  "hcli/gravity/__init__.py is a package marker, not an entry point"
+ ],
+ "purpose": "Resident driver for Odyssey Doctor and Gravity: discover, emit, plan, actually invoke without writing receipts/headless, route, refill.",
+ "recovered_implementation": [
+  "tools/future/odyssey_launch.py _eval_callable_tool / _resident_schedulable / _declared_inputs",
+  "tools/future/orchestration.py BINDINGS, invoke, emit_workunit (connector; not edited)",
+  "tools/future/frontiers.py refill, next_work, THIS_HOST_LANES",
+  "tools/future/workunit_species.py emit_hcli_workunit",
+  "tools/future/mutation_surface.py intersects_codex",
+  "tools/odyssey/doctor_tournament.py (hardcoded RH, PARENT on volume)",
+  "tools/odyssey/decoding_gravity.py (hardcoded RH, needs /tmp/draft_agree.json)",
+  "tools/odyssey/state_gravity.py (hardcoded RH, needs /tmp/prefill_scale.json)",
+  "tools/doctor_seal.py (--out, CPU self-test)",
+  "hcli/gravity/__init__.py (OWNED_PREFIXES, not a tool)"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.odyssey_tool_driver.invoke(t)",
+  "fails_closed": "InvokeRefused on absent inputs or unisolatable output; NoReceipt if the tool ran and wrote nothing; never writes receipts/headless/",
+  "frontier": "FT.MODEL_CAPABILITY.hard-gates (doctor); FT.DECODING.cost-model / FT.STATE.coverage-audit (gravity)",
+  "receipt": "receipts/future/ODYSSEY_TOOL_DRIVER.json",
+  "workunit": "one CPU_ANALYSIS unit per tool via emit_workunit(t); HCLI STATIC_ANALYSIS/CPU_HEAVY, gpu_authority false"
+ },
+ "runnable": [
+  {
+   "id": "doctor_seal",
+   "why": "inputs present, output isolatable, no GPU authority required"
+  }
+ ],
+ "satisfiability": {
+  "frontier": {
+   "evidence": "route() maps each driven receipt onto a named frontiers.py item. The gate's frontier flag is the binding's frontier_id and stays false until BINDINGS includes this module.",
+   "measured": true,
+   "satisfiable": true
+  },
+  "invoke_executed": true,
+  "invoke_receipt": "receipts/future/DOCTOR_SEAL_DRIVEN.json",
+  "refill": {
+   "evidence": "refill() calls frontiers.refill with CPU/ANALYSIS/ODYSSEY/TOOLING. The gate probe calls refill(('CPU_ANALYSIS','CPU_VERIFY','CPU_REPRESENTATION')), which matches no required_lanes in the book, so its refill flag stays false even after a bind. That is a gate-probe defect, recorded not patched.",
+   "informed_ids": [
+    "FT.DECODING.cost-model",
+    "FT.STATE.coverage-audit"
+   ],
+   "measured": true,
+   "satisfiable": true
+  },
+  "schedule": {
+   "calls_owned_paths": {
+    "hcli/gravity/__init__.py": true,
+    "tools/doctor_seal.py": true,
+    "tools/gravity_doctor_capability.py": true,
+    "tools/gravity_doctor_dimensions.py": true,
+    "tools/gravity_doctor_gate.py": true,
+    "tools/odyssey/decoding_gravity.py": true,
+    "tools/odyssey/doctor_tournament.py": true,
+    "tools/odyssey/state_gravity.py": true
+   },
+   "evidence": "emit_workunit() emits a real HCLI unit; AST Calls name every owned path. orchestration.BINDINGS does not yet name this module, so the gate's _resident_schedulable still returns schedule=false (in_bindings=True).",
+   "in_bindings": true,
+   "measured": true,
+   "satisfiable": true
+  }
+ },
+ "schema": "hawking.future.odyssey_tool_driver.v1",
+ "seal_sha256": "bf89497cfe5f9835ccb9e18436893c8ae957c0bd3f2c8bddcb9de5c331046ba9",
+ "sleeping": [
+  {
+   "id": "doctor_tournament",
+   "why": "interpreter cannot import torch, safetensors; doctor_tournament would fail after start"
+  },
+  {
+   "id": "gravity_doctor_capability",
+   "why": "gravity_doctor_capability drives a GPU runtime / lane lock; this sidecar has no GPU authority and will not seize a lease"
+  },
+  {
+   "id": "gravity_doctor_dimensions",
+   "why": "gravity_doctor_dimensions drives a GPU runtime / lane lock; this sidecar has no GPU authority and will not seize a lease"
+  },
+  {
+   "id": "gravity_doctor_gate",
+   "why": "gravity_doctor_gate is a package marker, not an invocable tool"
+  },
+  {
+   "id": "decoding_gravity",
+   "why": "required runtime input absent: /tmp/draft_agree.json; inventing the measurement file would be a synthetic result"
+  },
+  {
+   "id": "state_gravity",
+   "why": "required runtime input absent: /tmp/prefill_scale.json; inventing the measurement file would be a synthetic result"
+  },
+  {
+   "id": "gravity_package",
+   "why": "gravity_package is a package marker, not an invocable tool"
+  }
+ ],
+ "tools": [
+  {
+   "cli_args": [],
+   "declared_inputs": [
+    {
+     "declared_in": "tools/odyssey/doctor_tournament.py",
+     "name": "PARENT",
+     "path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "present": true
+    }
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [],
+   "family": "doctor",
+   "frontier": "FT.MODEL_CAPABILITY.hard-gates",
+   "gpu_authority": false,
+   "id": "doctor_tournament",
+   "missing_modules": [
+    "torch",
+    "safetensors"
+   ],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [],
+    "env_keys": [],
+    "hardcoded_rh": true,
+    "has_main": true,
+    "headless_receipt": "DOCTOR_TOURNAMENT.json",
+    "isolatable": true,
+    "kind": "hardcoded_rh",
+    "requires_gpu": false,
+    "writes_ascent_literal": false,
+    "writes_headless_literal": true
+   },
+   "reads_from_headless": [
+    "DOCTOR_TECHNIQUE_LIBRARY.json"
+   ],
+   "rel": "tools/odyssey/doctor_tournament.py",
+   "requires_modules": [
+    "torch",
+    "safetensors"
+   ],
+   "sidecar_receipt": "DOCTOR_TOURNAMENT_DRIVEN.json"
+  },
+  {
+   "cli_args": [
+    "--self-test"
+   ],
+   "declared_inputs": [],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [],
+   "family": "doctor",
+   "frontier": "FT.MODEL_CAPABILITY.hard-gates",
+   "gpu_authority": false,
+   "id": "doctor_seal",
+   "missing_modules": [],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [
+     "--out"
+    ],
+    "env_keys": [],
+    "hardcoded_rh": false,
+    "has_main": true,
+    "headless_receipt": null,
+    "isolatable": true,
+    "kind": "cli_out",
+    "requires_gpu": false,
+    "writes_ascent_literal": true,
+    "writes_headless_literal": false
+   },
+   "reads_from_headless": [],
+   "rel": "tools/doctor_seal.py",
+   "requires_modules": [],
+   "sidecar_receipt": "DOCTOR_SEAL_DRIVEN.json"
+  },
+  {
+   "cli_args": [],
+   "declared_inputs": [],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [],
+   "family": "doctor",
+   "frontier": "FT.MODEL_CAPABILITY.hard-gates",
+   "gpu_authority": false,
+   "id": "gravity_doctor_capability",
+   "missing_modules": [],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [
+     "--json"
+    ],
+    "env_keys": [],
+    "hardcoded_rh": false,
+    "has_main": true,
+    "headless_receipt": null,
+    "isolatable": false,
+    "kind": "gpu_runtime",
+    "requires_gpu": true,
+    "writes_ascent_literal": false,
+    "writes_headless_literal": false
+   },
+   "reads_from_headless": [],
+   "rel": "tools/gravity_doctor_capability.py",
+   "requires_modules": [],
+   "sidecar_receipt": "GRAVITY_DOCTOR_CAPABILITY_DRIVEN.json"
+  },
+  {
+   "cli_args": [],
+   "declared_inputs": [],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [],
+   "family": "doctor",
+   "frontier": "FT.MODEL_CAPABILITY.hard-gates",
+   "gpu_authority": false,
+   "id": "gravity_doctor_dimensions",
+   "missing_modules": [],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [
+     "--out"
+    ],
+    "env_keys": [],
+    "hardcoded_rh": false,
+    "has_main": true,
+    "headless_receipt": null,
+    "isolatable": false,
+    "kind": "gpu_runtime",
+    "requires_gpu": true,
+    "writes_ascent_literal": true,
+    "writes_headless_literal": false
+   },
+   "reads_from_headless": [],
+   "rel": "tools/gravity_doctor_dimensions.py",
+   "requires_modules": [],
+   "sidecar_receipt": "GRAVITY_DOCTOR_DIMENSIONS_DRIVEN.json"
+  },
+  {
+   "cli_args": [],
+   "declared_inputs": [],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [],
+   "family": "doctor",
+   "frontier": "FT.MODEL_CAPABILITY.hard-gates",
+   "gpu_authority": false,
+   "id": "gravity_doctor_gate",
+   "missing_modules": [],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [
+     "--json"
+    ],
+    "env_keys": [],
+    "hardcoded_rh": false,
+    "has_main": false,
+    "headless_receipt": null,
+    "isolatable": false,
+    "kind": "cli_json",
+    "requires_gpu": false,
+    "writes_ascent_literal": false,
+    "writes_headless_literal": false
+   },
+   "reads_from_headless": [],
+   "rel": "tools/gravity_doctor_gate.py",
+   "requires_modules": [],
+   "sidecar_receipt": "GRAVITY_DOCTOR_GATE_DRIVEN.json"
+  },
+  {
+   "cli_args": [],
+   "declared_inputs": [
+    {
+     "declared_in": "tools/odyssey/decoding_gravity.py",
+     "name": "PARENT",
+     "path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "present": true
+    }
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [
+    {
+     "path": "/tmp/draft_agree.json",
+     "present": false
+    }
+   ],
+   "family": "gravity",
+   "frontier": "FT.DECODING.cost-model",
+   "gpu_authority": false,
+   "id": "decoding_gravity",
+   "missing_modules": [
+    "safetensors"
+   ],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [],
+    "env_keys": [],
+    "hardcoded_rh": true,
+    "has_main": true,
+    "headless_receipt": "DECODING_GRAVITY.json",
+    "isolatable": true,
+    "kind": "hardcoded_rh",
+    "requires_gpu": false,
+    "writes_ascent_literal": false,
+    "writes_headless_literal": true
+   },
+   "reads_from_headless": [],
+   "rel": "tools/odyssey/decoding_gravity.py",
+   "requires_modules": [
+    "safetensors"
+   ],
+   "sidecar_receipt": "DECODING_GRAVITY_DRIVEN.json"
+  },
+  {
+   "cli_args": [],
+   "declared_inputs": [
+    {
+     "declared_in": "tools/odyssey/state_gravity.py",
+     "name": "PARENT",
+     "path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
+     "present": true
+    }
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [
+    {
+     "path": "/tmp/prefill_scale.json",
+     "present": false
+    }
+   ],
+   "family": "gravity",
+   "frontier": "FT.STATE.coverage-audit",
+   "gpu_authority": false,
+   "id": "state_gravity",
+   "missing_modules": [],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [],
+    "env_keys": [],
+    "hardcoded_rh": true,
+    "has_main": true,
+    "headless_receipt": "STATE_GRAVITY.json",
+    "isolatable": true,
+    "kind": "hardcoded_rh",
+    "requires_gpu": false,
+    "writes_ascent_literal": false,
+    "writes_headless_literal": true
+   },
+   "reads_from_headless": [],
+   "rel": "tools/odyssey/state_gravity.py",
+   "requires_modules": [],
+   "sidecar_receipt": "STATE_GRAVITY_DRIVEN.json"
+  },
+  {
+   "cli_args": [],
+   "declared_inputs": [],
+   "evidence_class": "STATIC_ONLY",
+   "extra_inputs": [],
+   "family": "gravity",
+   "frontier": "FT.STATE.coverage-audit",
+   "gpu_authority": false,
+   "id": "gravity_package",
+   "missing_modules": [],
+   "on_disk": true,
+   "output_policy": {
+    "cli_flags": [],
+    "env_keys": [],
+    "hardcoded_rh": false,
+    "has_main": false,
+    "headless_receipt": null,
+    "isolatable": false,
+    "kind": "package_marker",
+    "requires_gpu": false,
+    "writes_ascent_literal": false,
+    "writes_headless_literal": false
+   },
+   "reads_from_headless": [],
+   "rel": "hcli/gravity/__init__.py",
+   "requires_modules": [],
+   "sidecar_receipt": "GRAVITY_PACKAGE_DRIVEN.json"
+  }
+ ],
+ "version": 1,
+ "workunits": [
+  {
+   "blocked_reason": "interpreter cannot import torch, safetensors; doctor_tournament would fail after start",
+   "classification": "SLEEPING",
+   "id": "WU.ODYSSEY.doctor_tournament",
+   "status": "sleeping"
+  },
+  {
+   "blocked_reason": null,
+   "classification": "STATIC_ONLY",
+   "id": "WU.ODYSSEY.doctor_seal",
+   "status": "pending"
+  },
+  {
+   "blocked_reason": "gravity_doctor_capability drives a GPU runtime / lane lock; this sidecar has no GPU authority and will not seize a lease",
+   "classification": "SLEEPING",
+   "id": "WU.ODYSSEY.gravity_doctor_capability",
+   "status": "sleeping"
+  },
+  {
+   "blocked_reason": "gravity_doctor_dimensions drives a GPU runtime / lane lock; this sidecar has no GPU authority and will not seize a lease",
+   "classification": "SLEEPING",
+   "id": "WU.ODYSSEY.gravity_doctor_dimensions",
+   "status": "sleeping"
+  },
+  {
+   "blocked_reason": "gravity_doctor_gate is a package marker, not an invocable tool",
+   "classification": "SLEEPING",
+   "id": "WU.ODYSSEY.gravity_doctor_gate",
+   "status": "sleeping"
+  },
+  {
+   "blocked_reason": "required runtime input absent: /tmp/draft_agree.json; inventing the measurement file would be a synthetic result",
+   "classification": "SLEEPING",
+   "id": "WU.ODYSSEY.decoding_gravity",
+   "status": "sleeping"
+  },
+  {
+   "blocked_reason": "required runtime input absent: /tmp/prefill_scale.json; inventing the measurement file would be a synthetic result",
+   "classification": "SLEEPING",
+   "id": "WU.ODYSSEY.state_gravity",
+   "status": "sleeping"
+  },
+  {
+   "blocked_reason": "gravity_package is a package marker, not an invocable tool",
+   "classification": "SLEEPING",
+   "id": "WU.ODYSSEY.gravity_package",
+   "status": "sleeping"
+  }
+ ],
+ "write_surface": {
+  "codex_destination": "receipts/headless/",
+  "isolation": "cli --out pointed at receipts/future/, or RH patched to a scratch directory with the produced JSON copied into receipts/future/",
+  "refusal": "a tool that cannot be isolated is refused rather than driven onto Codex's surface"
+ }
+}

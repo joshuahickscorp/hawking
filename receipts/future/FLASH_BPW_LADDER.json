@@ -1,0 +1,3041 @@
+{
+ "artifacts": [
+  {
+   "id": "source_independent_nx",
+   "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+   "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+   "resolved_via": "headless",
+   "state": "PRESENT_NOT_MET"
+  },
+  {
+   "id": "closed_complete_system_byte_ledger",
+   "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+   "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+   "resolved_via": "headless",
+   "state": "PRESENT_NOT_MET"
+  },
+  {
+   "id": "capability_preserving_runtime",
+   "must": "capability preserved on an accepted complete-token runtime",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+   "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+   "resolved_via": "headless",
+   "state": "PRESENT_NOT_MET"
+  },
+  {
+   "id": "protected_complete_token",
+   "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+   "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+   "resolved_via": "headless",
+   "state": "PRESENT_NOT_MET"
+  },
+  {
+   "id": "qualified_complete_physical_ebpw",
+   "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+   "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+   "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+   "state": "ABSENT",
+   "value": null
+  },
+  {
+   "id": "direct_production_consume",
+   "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+   "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+   "state": "PRESENT_NOT_MET"
+  },
+  {
+   "id": "coherence_held",
+   "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+   "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+   "state": "PRESENT_NOT_MET"
+  }
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:44:26Z",
+  "recorded_by": "tools/future/flash_bpw_ladder.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "budgets": [
+  {
+   "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
+   "allocation_reason": "premium floors held; bulk organs share remaining weighted mass 2.159296 / 0.986205 = 2.189501 proposed bpw so the weighted total equals search-pressure target 2.25",
+   "claim_boundary": "Search-pressure allocation proposal. proposed_bpw is not qualified_complete_physical_ebpw, not a packed artifact, and not a capability result. Capability of any allocation is UNTESTED.",
+   "counts": {
+    "bulk": 3,
+    "distinct_proposed_bpw": 6,
+    "near_zero": 1,
+    "organs": 14,
+    "premium": 10
+   },
+   "emitted_uniform": false,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "forces_uniform_bpw": false,
+   "gpu_authority": false,
+   "label": "2.25 coherent-class floor",
+   "not_a_measurement": true,
+   "organs": [
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.88,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "routed_experts",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 2.189500525412445,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 246625075200,
+     "source_fraction": 0.6850697234996967,
+     "why": "premium floors held; bulk organs share remaining weighted mass 2.159296 / 0.986205 = 2.189501 proposed bpw so the weighted total equals search-pressure target 2.25"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.7,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "ngram_embedding",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 2.189500525412445,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 102400491520,
+     "source_fraction": 0.2844458389113527,
+     "why": "premium floors held; bulk organs share remaining weighted mass 2.159296 / 0.986205 = 2.189501 proposed bpw so the weighted total equals search-pressure target 2.25"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "linear_attention_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 4820291328,
+     "source_fraction": 0.013389699504736112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "embedding_lm_head",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.5,
+     "proposed_bpw": 3.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 2564759064,
+     "source_fraction": 0.007124331463023194,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "full_attention",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.0,
+     "proposed_bpw": 3.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1337609728,
+     "source_fraction": 0.0037155829583360414,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mlp_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1311502048,
+     "source_fraction": 0.003643061617574911,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "shared_expert",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 481940480,
+     "source_fraction": 0.0013387236926706112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "other",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 457917440,
+     "source_fraction": 0.0012719930191692405,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 16.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "norm",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 376320,
+     "source_fraction": 1.0453334403987072e-06,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "router",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 125829120,
+     "source_fraction": 0.00034357203539209344,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mtp",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 2.189500525412445,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 5214301696,
+     "source_fraction": 0.014237469409649888,
+     "why": "premium floors held; bulk organs share remaining weighted mass 2.159296 / 0.986205 = 2.189501 proposed bpw so the weighted total equals search-pressure target 2.25"
+    },
+    {
+     "bit_class": "NEAR_ZERO",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "vision_backbone",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 897862112,
+     "source_fraction": 0.0024515812660955093,
+     "why": "unused on the language decode path; near-zero storage is the proposal"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "support_misc",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "recurrent_state",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    }
+   ],
+   "rung": "bpw_2_25",
+   "target_bpw": 2.25,
+   "uniform_reason": "uniform bits-per-value across organs is not the objective and is the recorded-dead family uniform_subbit_allocation; router and other control structures keep premium precision while predictable bulk goes near zero",
+   "uniform_refused": true,
+   "unit": "TOTAL_EXECUTABLE_INFORMATION",
+   "weighted_proposed_bpw": 2.2446322615297944,
+   "weighted_withheld_reason": null
+  },
+  {
+   "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
+   "allocation_reason": "premium floors held; bulk organs share remaining weighted mass 1.909296 / 0.986205 = 1.936003 proposed bpw so the weighted total equals search-pressure target 2.0",
+   "claim_boundary": "Search-pressure allocation proposal. proposed_bpw is not qualified_complete_physical_ebpw, not a packed artifact, and not a capability result. Capability of any allocation is UNTESTED.",
+   "counts": {
+    "bulk": 3,
+    "distinct_proposed_bpw": 6,
+    "near_zero": 1,
+    "organs": 14,
+    "premium": 10
+   },
+   "emitted_uniform": false,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "forces_uniform_bpw": false,
+   "gpu_authority": false,
+   "label": "2.0",
+   "not_a_measurement": true,
+   "organs": [
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.88,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "routed_experts",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.936003434968397,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 246625075200,
+     "source_fraction": 0.6850697234996967,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.909296 / 0.986205 = 1.936003 proposed bpw so the weighted total equals search-pressure target 2.0"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.7,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "ngram_embedding",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.936003434968397,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 102400491520,
+     "source_fraction": 0.2844458389113527,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.909296 / 0.986205 = 1.936003 proposed bpw so the weighted total equals search-pressure target 2.0"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "linear_attention_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 4820291328,
+     "source_fraction": 0.013389699504736112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "embedding_lm_head",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.5,
+     "proposed_bpw": 3.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 2564759064,
+     "source_fraction": 0.007124331463023194,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "full_attention",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.0,
+     "proposed_bpw": 3.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1337609728,
+     "source_fraction": 0.0037155829583360414,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mlp_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1311502048,
+     "source_fraction": 0.003643061617574911,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "shared_expert",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 481940480,
+     "source_fraction": 0.0013387236926706112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "other",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 457917440,
+     "source_fraction": 0.0012719930191692405,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 16.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "norm",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 376320,
+     "source_fraction": 1.0453334403987072e-06,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "router",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 125829120,
+     "source_fraction": 0.00034357203539209344,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mtp",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.936003434968397,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 5214301696,
+     "source_fraction": 0.014237469409649888,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.909296 / 0.986205 = 1.936003 proposed bpw so the weighted total equals search-pressure target 2.0"
+    },
+    {
+     "bit_class": "NEAR_ZERO",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "vision_backbone",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 897862112,
+     "source_fraction": 0.0024515812660955093,
+     "why": "unused on the language decode path; near-zero storage is the proposal"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "support_misc",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "recurrent_state",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    }
+   ],
+   "rung": "bpw_2_00",
+   "target_bpw": 2.0,
+   "uniform_reason": "uniform bits-per-value across organs is not the objective and is the recorded-dead family uniform_subbit_allocation; router and other control structures keep premium precision while predictable bulk goes near zero",
+   "uniform_refused": true,
+   "unit": "TOTAL_EXECUTABLE_INFORMATION",
+   "weighted_proposed_bpw": 1.9952537302477351,
+   "weighted_withheld_reason": null
+  },
+  {
+   "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
+   "allocation_reason": "premium floors held; bulk organs share remaining weighted mass 1.659296 / 0.986205 = 1.682506 proposed bpw so the weighted total equals search-pressure target 1.75",
+   "claim_boundary": "Search-pressure allocation proposal. proposed_bpw is not qualified_complete_physical_ebpw, not a packed artifact, and not a capability result. Capability of any allocation is UNTESTED.",
+   "counts": {
+    "bulk": 3,
+    "distinct_proposed_bpw": 6,
+    "near_zero": 1,
+    "organs": 14,
+    "premium": 10
+   },
+   "emitted_uniform": false,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "forces_uniform_bpw": false,
+   "gpu_authority": false,
+   "label": "1.75",
+   "not_a_measurement": true,
+   "organs": [
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.88,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "routed_experts",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.6825063445243496,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 246625075200,
+     "source_fraction": 0.6850697234996967,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.659296 / 0.986205 = 1.682506 proposed bpw so the weighted total equals search-pressure target 1.75"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.7,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "ngram_embedding",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.6825063445243496,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 102400491520,
+     "source_fraction": 0.2844458389113527,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.659296 / 0.986205 = 1.682506 proposed bpw so the weighted total equals search-pressure target 1.75"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "linear_attention_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 4820291328,
+     "source_fraction": 0.013389699504736112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "embedding_lm_head",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.5,
+     "proposed_bpw": 3.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 2564759064,
+     "source_fraction": 0.007124331463023194,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "full_attention",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.0,
+     "proposed_bpw": 3.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1337609728,
+     "source_fraction": 0.0037155829583360414,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mlp_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1311502048,
+     "source_fraction": 0.003643061617574911,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "shared_expert",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 481940480,
+     "source_fraction": 0.0013387236926706112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "other",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 457917440,
+     "source_fraction": 0.0012719930191692405,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 16.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "norm",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 376320,
+     "source_fraction": 1.0453334403987072e-06,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "router",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 125829120,
+     "source_fraction": 0.00034357203539209344,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mtp",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.6825063445243496,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 5214301696,
+     "source_fraction": 0.014237469409649888,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.659296 / 0.986205 = 1.682506 proposed bpw so the weighted total equals search-pressure target 1.75"
+    },
+    {
+     "bit_class": "NEAR_ZERO",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "vision_backbone",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 897862112,
+     "source_fraction": 0.0024515812660955093,
+     "why": "unused on the language decode path; near-zero storage is the proposal"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "support_misc",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "recurrent_state",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    }
+   ],
+   "rung": "bpw_1_75",
+   "target_bpw": 1.75,
+   "uniform_reason": "uniform bits-per-value across organs is not the objective and is the recorded-dead family uniform_subbit_allocation; router and other control structures keep premium precision while predictable bulk goes near zero",
+   "uniform_refused": true,
+   "unit": "TOTAL_EXECUTABLE_INFORMATION",
+   "weighted_proposed_bpw": 1.7458751989656773,
+   "weighted_withheld_reason": null
+  },
+  {
+   "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
+   "allocation_reason": "premium floors held; bulk organs share remaining weighted mass 1.409296 / 0.986205 = 1.429009 proposed bpw so the weighted total equals search-pressure target 1.5",
+   "claim_boundary": "Search-pressure allocation proposal. proposed_bpw is not qualified_complete_physical_ebpw, not a packed artifact, and not a capability result. Capability of any allocation is UNTESTED.",
+   "counts": {
+    "bulk": 3,
+    "distinct_proposed_bpw": 6,
+    "near_zero": 1,
+    "organs": 14,
+    "premium": 10
+   },
+   "emitted_uniform": false,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "forces_uniform_bpw": false,
+   "gpu_authority": false,
+   "label": "1.5",
+   "not_a_measurement": true,
+   "organs": [
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.88,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "routed_experts",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.4290092540803023,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 246625075200,
+     "source_fraction": 0.6850697234996967,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.409296 / 0.986205 = 1.429009 proposed bpw so the weighted total equals search-pressure target 1.5"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.7,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "ngram_embedding",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.4290092540803023,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 102400491520,
+     "source_fraction": 0.2844458389113527,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.409296 / 0.986205 = 1.429009 proposed bpw so the weighted total equals search-pressure target 1.5"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "linear_attention_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 4820291328,
+     "source_fraction": 0.013389699504736112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "embedding_lm_head",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.5,
+     "proposed_bpw": 3.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 2564759064,
+     "source_fraction": 0.007124331463023194,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "full_attention",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.0,
+     "proposed_bpw": 3.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1337609728,
+     "source_fraction": 0.0037155829583360414,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mlp_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1311502048,
+     "source_fraction": 0.003643061617574911,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "shared_expert",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 481940480,
+     "source_fraction": 0.0013387236926706112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "other",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 457917440,
+     "source_fraction": 0.0012719930191692405,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 16.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "norm",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 376320,
+     "source_fraction": 1.0453334403987072e-06,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "router",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 125829120,
+     "source_fraction": 0.00034357203539209344,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mtp",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.4290092540803023,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 5214301696,
+     "source_fraction": 0.014237469409649888,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.409296 / 0.986205 = 1.429009 proposed bpw so the weighted total equals search-pressure target 1.5"
+    },
+    {
+     "bit_class": "NEAR_ZERO",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "vision_backbone",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 897862112,
+     "source_fraction": 0.0024515812660955093,
+     "why": "unused on the language decode path; near-zero storage is the proposal"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "support_misc",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "recurrent_state",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    }
+   ],
+   "rung": "bpw_1_50",
+   "target_bpw": 1.5,
+   "uniform_reason": "uniform bits-per-value across organs is not the objective and is the recorded-dead family uniform_subbit_allocation; router and other control structures keep premium precision while predictable bulk goes near zero",
+   "uniform_refused": true,
+   "unit": "TOTAL_EXECUTABLE_INFORMATION",
+   "weighted_proposed_bpw": 1.49649666768362,
+   "weighted_withheld_reason": null
+  },
+  {
+   "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
+   "allocation_reason": "premium floors held; bulk organs share remaining weighted mass 1.159296 / 0.986205 = 1.175512 proposed bpw so the weighted total equals search-pressure target 1.25",
+   "claim_boundary": "Search-pressure allocation proposal. proposed_bpw is not qualified_complete_physical_ebpw, not a packed artifact, and not a capability result. Capability of any allocation is UNTESTED.",
+   "counts": {
+    "bulk": 3,
+    "distinct_proposed_bpw": 6,
+    "near_zero": 1,
+    "organs": 14,
+    "premium": 10
+   },
+   "emitted_uniform": false,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "forces_uniform_bpw": false,
+   "gpu_authority": false,
+   "label": "1.25",
+   "not_a_measurement": true,
+   "organs": [
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.88,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "routed_experts",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.1755121636362549,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 246625075200,
+     "source_fraction": 0.6850697234996967,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.159296 / 0.986205 = 1.175512 proposed bpw so the weighted total equals search-pressure target 1.25"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.7,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "ngram_embedding",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.1755121636362549,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 102400491520,
+     "source_fraction": 0.2844458389113527,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.159296 / 0.986205 = 1.175512 proposed bpw so the weighted total equals search-pressure target 1.25"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "linear_attention_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 4820291328,
+     "source_fraction": 0.013389699504736112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "embedding_lm_head",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.5,
+     "proposed_bpw": 3.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 2564759064,
+     "source_fraction": 0.007124331463023194,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "full_attention",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.0,
+     "proposed_bpw": 3.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1337609728,
+     "source_fraction": 0.0037155829583360414,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mlp_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1311502048,
+     "source_fraction": 0.003643061617574911,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "shared_expert",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 481940480,
+     "source_fraction": 0.0013387236926706112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "other",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 457917440,
+     "source_fraction": 0.0012719930191692405,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 16.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "norm",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 376320,
+     "source_fraction": 1.0453334403987072e-06,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "router",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 125829120,
+     "source_fraction": 0.00034357203539209344,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mtp",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 1.1755121636362549,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 5214301696,
+     "source_fraction": 0.014237469409649888,
+     "why": "premium floors held; bulk organs share remaining weighted mass 1.159296 / 0.986205 = 1.175512 proposed bpw so the weighted total equals search-pressure target 1.25"
+    },
+    {
+     "bit_class": "NEAR_ZERO",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "vision_backbone",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 897862112,
+     "source_fraction": 0.0024515812660955093,
+     "why": "unused on the language decode path; near-zero storage is the proposal"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "support_misc",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "recurrent_state",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    }
+   ],
+   "rung": "bpw_1_25",
+   "target_bpw": 1.25,
+   "uniform_reason": "uniform bits-per-value across organs is not the objective and is the recorded-dead family uniform_subbit_allocation; router and other control structures keep premium precision while predictable bulk goes near zero",
+   "uniform_refused": true,
+   "unit": "TOTAL_EXECUTABLE_INFORMATION",
+   "weighted_proposed_bpw": 1.2471181364015622,
+   "weighted_withheld_reason": null
+  },
+  {
+   "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
+   "allocation_reason": "premium floors held; bulk organs share remaining weighted mass 0.909296 / 0.986205 = 0.922015 proposed bpw so the weighted total equals search-pressure target 1.0",
+   "claim_boundary": "Search-pressure allocation proposal. proposed_bpw is not qualified_complete_physical_ebpw, not a packed artifact, and not a capability result. Capability of any allocation is UNTESTED.",
+   "counts": {
+    "bulk": 3,
+    "distinct_proposed_bpw": 6,
+    "near_zero": 1,
+    "organs": 14,
+    "premium": 10
+   },
+   "emitted_uniform": false,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "forces_uniform_bpw": false,
+   "gpu_authority": false,
+   "label": "~1.0",
+   "not_a_measurement": true,
+   "organs": [
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.88,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "routed_experts",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.9220150731922074,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 246625075200,
+     "source_fraction": 0.6850697234996967,
+     "why": "premium floors held; bulk organs share remaining weighted mass 0.909296 / 0.986205 = 0.922015 proposed bpw so the weighted total equals search-pressure target 1.0"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.7,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "ngram_embedding",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.9220150731922074,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 102400491520,
+     "source_fraction": 0.2844458389113527,
+     "why": "premium floors held; bulk organs share remaining weighted mass 0.909296 / 0.986205 = 0.922015 proposed bpw so the weighted total equals search-pressure target 1.0"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "linear_attention_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 4820291328,
+     "source_fraction": 0.013389699504736112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "embedding_lm_head",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.5,
+     "proposed_bpw": 3.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 2564759064,
+     "source_fraction": 0.007124331463023194,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "full_attention",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.0,
+     "proposed_bpw": 3.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1337609728,
+     "source_fraction": 0.0037155829583360414,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mlp_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1311502048,
+     "source_fraction": 0.003643061617574911,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "shared_expert",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 481940480,
+     "source_fraction": 0.0013387236926706112,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "other",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 457917440,
+     "source_fraction": 0.0012719930191692405,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 16.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "norm",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 376320,
+     "source_fraction": 1.0453334403987072e-06,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "router",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 125829120,
+     "source_fraction": 0.00034357203539209344,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mtp",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.9220150731922074,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 5214301696,
+     "source_fraction": 0.014237469409649888,
+     "why": "premium floors held; bulk organs share remaining weighted mass 0.909296 / 0.986205 = 0.922015 proposed bpw so the weighted total equals search-pressure target 1.0"
+    },
+    {
+     "bit_class": "NEAR_ZERO",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "vision_backbone",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 897862112,
+     "source_fraction": 0.0024515812660955093,
+     "why": "unused on the language decode path; near-zero storage is the proposal"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "support_misc",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "recurrent_state",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    }
+   ],
+   "rung": "bpw_1_00",
+   "target_bpw": 1.0,
+   "uniform_reason": "uniform bits-per-value across organs is not the objective and is the recorded-dead family uniform_subbit_allocation; router and other control structures keep premium precision while predictable bulk goes near zero",
+   "uniform_refused": true,
+   "unit": "TOTAL_EXECUTABLE_INFORMATION",
+   "weighted_proposed_bpw": 0.9977396051195044,
+   "weighted_withheld_reason": null
+  },
+  {
+   "allocation_kind": "SEARCH_PRESSURE_PROPOSAL",
+   "allocation_reason": "premium floors held; bulk organs share remaining weighted mass 0.796296 / 0.986205 = 0.807434 proposed bpw so the weighted total equals search-pressure target 0.887",
+   "claim_boundary": "Search-pressure allocation proposal. proposed_bpw is not qualified_complete_physical_ebpw, not a packed artifact, and not a capability result. Capability of any allocation is UNTESTED.",
+   "counts": {
+    "bulk": 3,
+    "distinct_proposed_bpw": 8,
+    "near_zero": 1,
+    "organs": 14,
+    "premium": 10
+   },
+   "emitted_uniform": false,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": true,
+   "forces_uniform_bpw": false,
+   "gpu_authority": false,
+   "label": "sub-1",
+   "not_a_measurement": true,
+   "organs": [
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.88,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "routed_experts",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.88,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 246625075200,
+     "source_fraction": 0.6850697234996967,
+     "why": "sub-1 bulk target cited from FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=0.88; RESEARCH_TARGET, not a physical claim"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": 0.7,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "ngram_embedding",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.7,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 102400491520,
+     "source_fraction": 0.2844458389113527,
+     "why": "sub-1 bulk target cited from FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=0.7; RESEARCH_TARGET, not a physical claim"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "linear_attention_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 4820291328,
+     "source_fraction": 0.013389699504736112,
+     "why": "sub-1 search pressure reuses FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=2.5 as a description-budget allocation, not as qualified_complete_physical_ebpw"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "embedding_lm_head",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.5,
+     "proposed_bpw": 3.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 2564759064,
+     "source_fraction": 0.007124331463023194,
+     "why": "sub-1 search pressure reuses FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=3.5 as a description-budget allocation, not as qualified_complete_physical_ebpw"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 3.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "full_attention",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 3.0,
+     "proposed_bpw": 3.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1337609728,
+     "source_fraction": 0.0037155829583360414,
+     "why": "sub-1 search pressure reuses FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=3.0 as a description-budget allocation, not as qualified_complete_physical_ebpw"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mlp_hyperconnection",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 1311502048,
+     "source_fraction": 0.003643061617574911,
+     "why": "sub-1 search pressure reuses FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=2.5 as a description-budget allocation, not as qualified_complete_physical_ebpw"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "shared_expert",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 481940480,
+     "source_fraction": 0.0013387236926706112,
+     "why": "sub-1 search pressure reuses FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=2.5 as a description-budget allocation, not as qualified_complete_physical_ebpw"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 2.5,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "other",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 457917440,
+     "source_fraction": 0.0012719930191692405,
+     "why": "sub-1 search pressure reuses FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=2.5 as a description-budget allocation, not as qualified_complete_physical_ebpw"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": 16.0,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "norm",
+     "origin": "FLASH_ORGAN_CENSUS.family_summary",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 376320,
+     "source_fraction": 1.0453334403987072e-06,
+     "why": "sub-1 search pressure reuses FLASH_META_REPRESENTATION_SUB1 family_budget meta_bpw_target=16.0 as a description-budget allocation, not as qualified_complete_physical_ebpw"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "router",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 16.0,
+     "proposed_bpw": 16.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 125829120,
+     "source_fraction": 0.00034357203539209344,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "PREDICTABLE_BULK",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "mtp",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.8074343883114979,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 5214301696,
+     "source_fraction": 0.014237469409649888,
+     "why": "premium floors held; bulk organs share remaining weighted mass 0.796296 / 0.986205 = 0.807434 proposed bpw so the weighted total equals search-pressure target 0.887"
+    },
+    {
+     "bit_class": "NEAR_ZERO",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "vision_backbone",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": null,
+     "proposed_bpw": 0.0,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 897862112,
+     "source_fraction": 0.0024515812660955093,
+     "why": "unused on the language decode path; near-zero storage is the proposal"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "support_misc",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    },
+    {
+     "bit_class": "CONTROL_PREMIUM",
+     "meta_bpw_target_cited": null,
+     "not_a_measurement": true,
+     "not_qualified_complete_physical_ebpw": true,
+     "organ": "recurrent_state",
+     "origin": "FLASH_EBPW_BUDGET.organs",
+     "premium_floor_bpw": 2.5,
+     "proposed_bpw": 2.5,
+     "quantity": "search_pressure_allocation",
+     "source_bytes": 0,
+     "source_fraction": 0.0,
+     "why": "control / terminal / recurrent island keeps a premium bit class; uniform crush with bulk is the dead family uniform_subbit_allocation"
+    }
+   ],
+   "rung": "bpw_sub1",
+   "target_bpw": 1.0,
+   "uniform_reason": "uniform bits-per-value across organs is not the objective and is the recorded-dead family uniform_subbit_allocation; router and other control structures keep premium precision while predictable bulk goes near zero",
+   "uniform_refused": true,
+   "unit": "TOTAL_EXECUTABLE_INFORMATION",
+   "weighted_proposed_bpw": 0.9041737478038507,
+   "weighted_withheld_reason": null
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Search pressure, not a win. prospective_meta_bpw and diagnostic factor bpw cannot mark a rung REACHED.",
+ "disk_reached_count": 0,
+ "disk_status": [
+  {
+   "artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+     "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+     "state": "ABSENT",
+     "value": null
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+     "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+     "state": "PRESENT_NOT_MET"
+    }
+   ],
+   "claimed_quantity": "prospective_meta_bpw",
+   "claimed_value": 0.8871807728336929,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "gpu_authority": false,
+   "label": "2.25 coherent-class floor",
+   "missing_artifacts": [
+    "source_independent_nx",
+    "closed_complete_system_byte_ledger",
+    "capability_preserving_runtime",
+    "protected_complete_token",
+    "qualified_complete_physical_ebpw",
+    "direct_production_consume",
+    "coherence_held"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "qualified_complete_physical_ebpw_state": "UNKNOWN",
+   "reason": "no qualified_complete_physical_ebpw on disk; prospective_meta_bpw=0.8871807728336929 is RESEARCH_TARGET and cannot mark bpw_2_25 REACHED; missing_artifacts=['source_independent_nx', 'closed_complete_system_byte_ledger', 'capability_preserving_runtime', 'protected_complete_token', 'qualified_complete_physical_ebpw', 'direct_production_consume', 'coherence_held']",
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "rung": "bpw_2_25",
+   "target_bpw": 2.25,
+   "verdict": "UNTESTED"
+  },
+  {
+   "artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+     "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+     "state": "ABSENT",
+     "value": null
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+     "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+     "state": "PRESENT_NOT_MET"
+    }
+   ],
+   "claimed_quantity": "prospective_meta_bpw",
+   "claimed_value": 0.8871807728336929,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "gpu_authority": false,
+   "label": "2.0",
+   "missing_artifacts": [
+    "source_independent_nx",
+    "closed_complete_system_byte_ledger",
+    "capability_preserving_runtime",
+    "protected_complete_token",
+    "qualified_complete_physical_ebpw",
+    "direct_production_consume",
+    "coherence_held"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "qualified_complete_physical_ebpw_state": "UNKNOWN",
+   "reason": "no qualified_complete_physical_ebpw on disk; prospective_meta_bpw=0.8871807728336929 is RESEARCH_TARGET and cannot mark bpw_2_00 REACHED; missing_artifacts=['source_independent_nx', 'closed_complete_system_byte_ledger', 'capability_preserving_runtime', 'protected_complete_token', 'qualified_complete_physical_ebpw', 'direct_production_consume', 'coherence_held']",
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "rung": "bpw_2_00",
+   "target_bpw": 2.0,
+   "verdict": "UNTESTED"
+  },
+  {
+   "artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+     "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+     "state": "ABSENT",
+     "value": null
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+     "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+     "state": "PRESENT_NOT_MET"
+    }
+   ],
+   "claimed_quantity": "prospective_meta_bpw",
+   "claimed_value": 0.8871807728336929,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "gpu_authority": false,
+   "label": "1.75",
+   "missing_artifacts": [
+    "source_independent_nx",
+    "closed_complete_system_byte_ledger",
+    "capability_preserving_runtime",
+    "protected_complete_token",
+    "qualified_complete_physical_ebpw",
+    "direct_production_consume",
+    "coherence_held"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "qualified_complete_physical_ebpw_state": "UNKNOWN",
+   "reason": "no qualified_complete_physical_ebpw on disk; prospective_meta_bpw=0.8871807728336929 is RESEARCH_TARGET and cannot mark bpw_1_75 REACHED; missing_artifacts=['source_independent_nx', 'closed_complete_system_byte_ledger', 'capability_preserving_runtime', 'protected_complete_token', 'qualified_complete_physical_ebpw', 'direct_production_consume', 'coherence_held']",
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "rung": "bpw_1_75",
+   "target_bpw": 1.75,
+   "verdict": "UNTESTED"
+  },
+  {
+   "artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+     "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+     "state": "ABSENT",
+     "value": null
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+     "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+     "state": "PRESENT_NOT_MET"
+    }
+   ],
+   "claimed_quantity": "prospective_meta_bpw",
+   "claimed_value": 0.8871807728336929,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "gpu_authority": false,
+   "label": "1.5",
+   "missing_artifacts": [
+    "source_independent_nx",
+    "closed_complete_system_byte_ledger",
+    "capability_preserving_runtime",
+    "protected_complete_token",
+    "qualified_complete_physical_ebpw",
+    "direct_production_consume",
+    "coherence_held"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "qualified_complete_physical_ebpw_state": "UNKNOWN",
+   "reason": "no qualified_complete_physical_ebpw on disk; prospective_meta_bpw=0.8871807728336929 is RESEARCH_TARGET and cannot mark bpw_1_50 REACHED; missing_artifacts=['source_independent_nx', 'closed_complete_system_byte_ledger', 'capability_preserving_runtime', 'protected_complete_token', 'qualified_complete_physical_ebpw', 'direct_production_consume', 'coherence_held']",
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "rung": "bpw_1_50",
+   "target_bpw": 1.5,
+   "verdict": "UNTESTED"
+  },
+  {
+   "artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+     "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+     "state": "ABSENT",
+     "value": null
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+     "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+     "state": "PRESENT_NOT_MET"
+    }
+   ],
+   "claimed_quantity": "prospective_meta_bpw",
+   "claimed_value": 0.8871807728336929,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "gpu_authority": false,
+   "label": "1.25",
+   "missing_artifacts": [
+    "source_independent_nx",
+    "closed_complete_system_byte_ledger",
+    "capability_preserving_runtime",
+    "protected_complete_token",
+    "qualified_complete_physical_ebpw",
+    "direct_production_consume",
+    "coherence_held"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "qualified_complete_physical_ebpw_state": "UNKNOWN",
+   "reason": "no qualified_complete_physical_ebpw on disk; prospective_meta_bpw=0.8871807728336929 is RESEARCH_TARGET and cannot mark bpw_1_25 REACHED; missing_artifacts=['source_independent_nx', 'closed_complete_system_byte_ledger', 'capability_preserving_runtime', 'protected_complete_token', 'qualified_complete_physical_ebpw', 'direct_production_consume', 'coherence_held']",
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "rung": "bpw_1_25",
+   "target_bpw": 1.25,
+   "verdict": "UNTESTED"
+  },
+  {
+   "artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+     "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+     "state": "ABSENT",
+     "value": null
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+     "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+     "state": "PRESENT_NOT_MET"
+    }
+   ],
+   "claimed_quantity": "prospective_meta_bpw",
+   "claimed_value": 0.8871807728336929,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": false,
+   "gpu_authority": false,
+   "label": "~1.0",
+   "missing_artifacts": [
+    "source_independent_nx",
+    "closed_complete_system_byte_ledger",
+    "capability_preserving_runtime",
+    "protected_complete_token",
+    "qualified_complete_physical_ebpw",
+    "direct_production_consume",
+    "coherence_held"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "qualified_complete_physical_ebpw_state": "UNKNOWN",
+   "reason": "no qualified_complete_physical_ebpw on disk; prospective_meta_bpw=0.8871807728336929 is RESEARCH_TARGET and cannot mark bpw_1_00 REACHED; missing_artifacts=['source_independent_nx', 'closed_complete_system_byte_ledger', 'capability_preserving_runtime', 'protected_complete_token', 'qualified_complete_physical_ebpw', 'direct_production_consume', 'coherence_held']",
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "rung": "bpw_1_00",
+   "target_bpw": 1.0,
+   "verdict": "UNTESTED"
+  },
+  {
+   "artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION'; metadata seal is not a complete executable",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "reason": "ledger present but not a closed packed-NX ledger (self_contained=None, for_this_executable=None, status='MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "reason": "capability not preserved (status='PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED')",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "reason": "complete-token receipt is not PROTECTED_ABSOLUTE (bench.state='UNKNOWN', authority=None)",
+     "resolved_via": "headless",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "path": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+     "reason": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+     "state": "ABSENT",
+     "value": null
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "reason": "NX status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' is not a production consumer; direct consume is unproven",
+     "state": "PRESENT_NOT_MET"
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+     "reason": "screen status=OFFLINE_META_SURFACE_GATE_FAILED; heldout_relative_fro_error=0.5284149054408503; diagnostic_factor_equivalent_bpw=0.025427350427350427; a smaller diagnostic number is not coherence",
+     "state": "PRESENT_NOT_MET"
+    }
+   ],
+   "claimed_quantity": "prospective_meta_bpw",
+   "claimed_value": 0.8871807728336929,
+   "evidence_class": "STATIC_ONLY",
+   "exclusive": true,
+   "gpu_authority": false,
+   "label": "sub-1",
+   "missing_artifacts": [
+    "source_independent_nx",
+    "closed_complete_system_byte_ledger",
+    "capability_preserving_runtime",
+    "protected_complete_token",
+    "qualified_complete_physical_ebpw",
+    "direct_production_consume",
+    "coherence_held"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "qualified_complete_physical_ebpw_state": "UNKNOWN",
+   "reason": "no qualified_complete_physical_ebpw on disk; prospective_meta_bpw=0.8871807728336929 is RESEARCH_TARGET and cannot mark bpw_sub1 REACHED; missing_artifacts=['source_independent_nx', 'closed_complete_system_byte_ledger', 'capability_preserving_runtime', 'protected_complete_token', 'qualified_complete_physical_ebpw', 'direct_production_consume', 'coherence_held']",
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "rung": "bpw_sub1",
+   "target_bpw": 1.0,
+   "verdict": "UNTESTED"
+  }
+ ],
+ "domination_rules": [
+  "smaller_but_incoherent",
+  "smaller_but_dense_rematerializing",
+  "smaller_but_compute_multiplied"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "Gated 2.25\u21922.0\u21921.75\u21921.5\u21921.25\u2192~1.0\u2192sub-1 ladder; each rung names required quantity, evidence class, and artifacts.",
+  "status() is REACHED only on qualified_complete_physical_ebpw; prospective_meta_bpw and diagnostic factor bpw are REFUSED and name the required class.",
+  "With no qualified physical evidence on disk, every rung is UNTESTED or REFUSED and none REACHED.",
+  "budget() emits a heterogeneous per-organ search-pressure proposal; uniform bpw is refused; control keeps premium bits, bulk absorbs compression.",
+  "dominated() encodes three independent rules (incoherent / dense-rematerializing / compute-multiplied) and keeps the Pareto front.",
+  "Seven EBPW types imported from flash_nr_complete; mixed arithmetic still raises CategoryError; none redefined here."
+ ],
+ "gpu_authority": false,
+ "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "measurement_class": "STATIC_ONLY",
+ "negative_findings": [
+  {
+   "found": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+   "looked_for": "qualified_complete_physical_ebpw on disk",
+   "value": null
+  },
+  {
+   "found": "nx_v0 resolved_via=pinned; metadata seals are not complete executables",
+   "looked_for": "a source-independent complete NX"
+  },
+  {
+   "found": "screen reachable=True status=OFFLINE_META_SURFACE_GATE_FAILED diagnostic_factor_equivalent_bpw=0.025427350427350427 heldout_relative_fro_error=0.5284149054408503",
+   "looked_for": "a coherent sub-1 representation"
+  },
+  {
+   "found": "sidecar is STATIC_ONLY / gpu_authority false; no GPU lease",
+   "looked_for": "hardware measurement of any rung"
+  },
+  {
+   "found": "tools/future/orchestration.py is outside this lane's WRITE list; resident_callable names the frontier this receipt informs, but the binding table is not mutated here",
+   "looked_for": "orchestration BINDINGS entry for this module"
+  }
+ ],
+ "next_workunits": [
+  {
+   "id": "future.flash_bpw_ladder.status",
+   "resource_class": "CPU_ANALYSIS",
+   "status": "pending"
+  },
+  {
+   "id": "future.orchestration.bind_flash_bpw_ladder",
+   "reason": "orchestration.py BINDINGS is outside this lane's WRITE list; the frontier this receipt informs is named, not bound",
+   "status": "blocked_write_partition"
+  },
+  {
+   "id": "future.flash_nr_complete.qualified_physical_ebpw",
+   "must_not_synthesize_result": true,
+   "reason": "the only quantity that can mark a rung REACHED is still UNKNOWN",
+   "resource_class": "GPU_EXCLUSIVE",
+   "status": "sleeping"
+  }
+ ],
+ "purpose": "Gate the 2.25\u2192sub-1 complete-executable EBPW search so a description budget or a diagnostic factor bpw cannot be reported as a reached rung, and so a smaller incoherent / rematerializing / compute-multiplied plan cannot sit on the Pareto front.",
+ "recovered_implementation": [
+  {
+   "adequate": false,
+   "gap": "five types, not the seven; no ladder, no dominated(), no per-rung budget",
+   "path": "tools/future/ebpw_categories.py",
+   "what": "Five Quantity subclasses, can_promote, production/verification remat split, PromotionLedger. The seven named quantities the lane listed are NOT here."
+  },
+  {
+   "adequate": false,
+   "gap": "types and promotion, not a gated 2.25\u2192sub-1 ladder or three-rule domination",
+   "path": "tools/future/flash_nr_complete.py",
+   "what": "The seven typed quantities (SourceControlEbpw, StaticActiveEbpwEstimate, StaticCompleteEbpwEstimate, ProspectiveMetaBpw, SerializedNrInformation, SerializedNxEbpw, QualifiedCompletePhysicalEbpw), SevenLedger, can_promote, continuous NR, resolve_evidence. IMPORTED, not redefined."
+  },
+  {
+   "adequate": false,
+   "gap": "NX completeness, not EBPW rungs",
+   "path": "tools/future/flash_nx_audit.py",
+   "what": "SEVEN_REQUIREMENTS for a promotable NX. Cited as required artifacts."
+  },
+  {
+   "adequate": false,
+   "gap": "funnel kills candidates; does not gate a physical-EBPW ladder",
+   "path": "tools/future/meta_funnel.py",
+   "what": "Nine-gate advance refusal; total executable information as the unit; uniform-bpw plans are well-formed-but-not-the-objective."
+  },
+  {
+   "adequate": false,
+   "gap": "organ Gravity search, not complete-executable EBPW rungs",
+   "path": "tools/future/flash_schools.py",
+   "what": "joint_cost / make_trap 0.5x-bytes/3.0x-FLOPs; heterogeneous router premium vs uniform crush; forbids_dense_rematerialization."
+  },
+  {
+   "adequate": false,
+   "gap": "qualification rungs, not executable-information rungs; Codex-owned",
+   "path": "tools/headless/composition_ladder.py",
+   "what": "Eight-rung QUALIFICATION ladder (local probe \u2192 capability). UNREACHED \u2260 FAILED. Recovered via git show; not forked."
+  },
+  {
+   "adequate": false,
+   "gap": "a failed organ screen, not a ladder",
+   "path": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+   "what": "L4 REAL256 screen: diagnostic_factor_equivalent_bpw ~0.0254 with heldout_relative_fro_error ~0.5284; status OFFLINE_META_SURFACE_GATE_FAILED. The trap this module exists to keep."
+  }
+ ],
+ "required_evidence_class": "PROTECTED_ABSOLUTE",
+ "required_quantity": "qualified_complete_physical_ebpw",
+ "resident_callable": {
+  "callables": [
+   "rungs",
+   "status",
+   "budget",
+   "dominated",
+   "pareto_front",
+   "build"
+  ],
+  "can_hcli_invoke": true,
+  "discoverable": true,
+  "entry_point": "tools.future.flash_bpw_ladder.status()",
+  "fails_closed": "unknown rung raises; empty plan raises; missing size refuses domination rather than passing; absent physical evidence is UNTESTED not REACHED; wrong-class claims are REFUSED and name qualified_complete_physical_ebpw; HardwareClaimError on numeric hardware fields",
+  "frontier": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+  "receipt": "receipts/future/FLASH_BPW_LADDER.json",
+  "work_units_emitted": [
+   "future.flash_bpw_ladder.status"
+  ],
+  "workunit": "one CPU_ANALYSIS unit; evaluate every rung against disk and refuse REACHED on any quantity other than qualified_complete_physical_ebpw"
+ },
+ "rungs": [
+  {
+   "bound": "<= 2.25",
+   "exclusive": false,
+   "id": "bpw_2_25",
+   "label": "2.25 coherent-class floor",
+   "nx_completeness_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "required_artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+      "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V2.nx.json",
+      "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+     ]
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+     ]
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "paths": [
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+     ]
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+      "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+     ]
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "paths": []
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "paths": []
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "paths": [
+      "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+     ]
+    }
+   ],
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "search_pressure": "This is a gated search target, not a requirement to produce a win. UNTESTED is the honest state until qualified_complete_physical_ebpw exists.",
+   "target_bpw": 2.25,
+   "what_reaching_does_not_prove": "that a cheaper description budget (prospective_meta_bpw), a diagnostic factor bpw, serialized NR/NX bytes, or a STATIC estimate is a complete executable; that capability is preserved beyond the stated suite; that this sidecar measured hardware; the 2.25 figure is the measured coherent-class floor used as search pressure, not a Flash qualified-physical result on this host",
+   "what_reaching_proves": "qualified_complete_physical_ebpw of a complete executable is at or below this bound, under PROTECTED_ABSOLUTE, without dense rematerialization, with held-out function inside contract"
+  },
+  {
+   "bound": "<= 2.0",
+   "exclusive": false,
+   "id": "bpw_2_00",
+   "label": "2.0",
+   "nx_completeness_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "required_artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+      "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V2.nx.json",
+      "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+     ]
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+     ]
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "paths": [
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+     ]
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+      "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+     ]
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "paths": []
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "paths": []
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "paths": [
+      "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+     ]
+    }
+   ],
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "search_pressure": "This is a gated search target, not a requirement to produce a win. UNTESTED is the honest state until qualified_complete_physical_ebpw exists.",
+   "target_bpw": 2.0,
+   "what_reaching_does_not_prove": "that a cheaper description budget (prospective_meta_bpw), a diagnostic factor bpw, serialized NR/NX bytes, or a STATIC estimate is a complete executable; that capability is preserved beyond the stated suite; that this sidecar measured hardware",
+   "what_reaching_proves": "qualified_complete_physical_ebpw of a complete executable is at or below this bound, under PROTECTED_ABSOLUTE, without dense rematerialization, with held-out function inside contract"
+  },
+  {
+   "bound": "<= 1.75",
+   "exclusive": false,
+   "id": "bpw_1_75",
+   "label": "1.75",
+   "nx_completeness_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "required_artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+      "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V2.nx.json",
+      "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+     ]
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+     ]
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "paths": [
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+     ]
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+      "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+     ]
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "paths": []
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "paths": []
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "paths": [
+      "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+     ]
+    }
+   ],
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "search_pressure": "This is a gated search target, not a requirement to produce a win. UNTESTED is the honest state until qualified_complete_physical_ebpw exists.",
+   "target_bpw": 1.75,
+   "what_reaching_does_not_prove": "that a cheaper description budget (prospective_meta_bpw), a diagnostic factor bpw, serialized NR/NX bytes, or a STATIC estimate is a complete executable; that capability is preserved beyond the stated suite; that this sidecar measured hardware",
+   "what_reaching_proves": "qualified_complete_physical_ebpw of a complete executable is at or below this bound, under PROTECTED_ABSOLUTE, without dense rematerialization, with held-out function inside contract"
+  },
+  {
+   "bound": "<= 1.5",
+   "exclusive": false,
+   "id": "bpw_1_50",
+   "label": "1.5",
+   "nx_completeness_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "required_artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+      "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V2.nx.json",
+      "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+     ]
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+     ]
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "paths": [
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+     ]
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+      "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+     ]
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "paths": []
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "paths": []
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "paths": [
+      "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+     ]
+    }
+   ],
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "search_pressure": "This is a gated search target, not a requirement to produce a win. UNTESTED is the honest state until qualified_complete_physical_ebpw exists.",
+   "target_bpw": 1.5,
+   "what_reaching_does_not_prove": "that a cheaper description budget (prospective_meta_bpw), a diagnostic factor bpw, serialized NR/NX bytes, or a STATIC estimate is a complete executable; that capability is preserved beyond the stated suite; that this sidecar measured hardware",
+   "what_reaching_proves": "qualified_complete_physical_ebpw of a complete executable is at or below this bound, under PROTECTED_ABSOLUTE, without dense rematerialization, with held-out function inside contract"
+  },
+  {
+   "bound": "<= 1.25",
+   "exclusive": false,
+   "id": "bpw_1_25",
+   "label": "1.25",
+   "nx_completeness_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "required_artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+      "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V2.nx.json",
+      "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+     ]
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+     ]
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "paths": [
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+     ]
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+      "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+     ]
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "paths": []
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "paths": []
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "paths": [
+      "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+     ]
+    }
+   ],
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "search_pressure": "This is a gated search target, not a requirement to produce a win. UNTESTED is the honest state until qualified_complete_physical_ebpw exists.",
+   "target_bpw": 1.25,
+   "what_reaching_does_not_prove": "that a cheaper description budget (prospective_meta_bpw), a diagnostic factor bpw, serialized NR/NX bytes, or a STATIC estimate is a complete executable; that capability is preserved beyond the stated suite; that this sidecar measured hardware",
+   "what_reaching_proves": "qualified_complete_physical_ebpw of a complete executable is at or below this bound, under PROTECTED_ABSOLUTE, without dense rematerialization, with held-out function inside contract"
+  },
+  {
+   "bound": "<= 1.0",
+   "exclusive": false,
+   "id": "bpw_1_00",
+   "label": "~1.0",
+   "nx_completeness_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "required_artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+      "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V2.nx.json",
+      "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+     ]
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+     ]
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "paths": [
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+     ]
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+      "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+     ]
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "paths": []
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "paths": []
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "paths": [
+      "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+     ]
+    }
+   ],
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "search_pressure": "This is a gated search target, not a requirement to produce a win. UNTESTED is the honest state until qualified_complete_physical_ebpw exists.",
+   "target_bpw": 1.0,
+   "what_reaching_does_not_prove": "that a cheaper description budget (prospective_meta_bpw), a diagnostic factor bpw, serialized NR/NX bytes, or a STATIC estimate is a complete executable; that capability is preserved beyond the stated suite; that this sidecar measured hardware",
+   "what_reaching_proves": "qualified_complete_physical_ebpw of a complete executable is at or below this bound, under PROTECTED_ABSOLUTE, without dense rematerialization, with held-out function inside contract"
+  },
+  {
+   "bound": "< 1.0",
+   "exclusive": true,
+   "id": "bpw_sub1",
+   "label": "sub-1",
+   "nx_completeness_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "prospective_meta_bpw_role": "RESEARCH_TARGET",
+   "required_artifacts": [
+    {
+     "id": "source_independent_nx",
+     "must": "a source-independent complete NX whose status is not SEALED_METADATA_ONLY / NOT_FOR_PROMOTION",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+      "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V2.nx.json",
+      "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+      "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+     ]
+    },
+    {
+     "id": "closed_complete_system_byte_ledger",
+     "must": "self_contained and for_this_executable with positive complete_storage_bytes; exact-control 16.0 identity is not this ledger",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+      "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+     ]
+    },
+    {
+     "id": "capability_preserving_runtime",
+     "must": "capability preserved on an accepted complete-token runtime",
+     "paths": [
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+      "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json"
+     ]
+    },
+    {
+     "id": "protected_complete_token",
+     "must": "PROTECTED_ABSOLUTE complete-token measurement; DIAGNOSTIC_RELATIVE and STATIC_ONLY cannot back a rung",
+     "paths": [
+      "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+      "receipts/headless/FLASH_TOKEN_NS_BUDGET.json"
+     ]
+    },
+    {
+     "id": "qualified_complete_physical_ebpw",
+     "must": "typed qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE, at or below the rung bound; never a copy of prospective_meta_bpw",
+     "paths": []
+    },
+    {
+     "id": "direct_production_consume",
+     "must": "production consumes the representation directly; decompress-then-ordinary-kernels / dense-parent rematerialization is refused",
+     "paths": []
+    },
+    {
+     "id": "coherence_held",
+     "must": "held-out function within contract (relative Frobenius error <= 0.05, cosine >= 0.999); a diagnostic factor bpw is not coherence",
+     "paths": [
+      "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+     ]
+    }
+   ],
+   "required_evidence_class": "PROTECTED_ABSOLUTE",
+   "required_quantity": "qualified_complete_physical_ebpw",
+   "search_pressure": "This is a gated search target, not a requirement to produce a win. UNTESTED is the honest state until qualified_complete_physical_ebpw exists.",
+   "target_bpw": 1.0,
+   "what_reaching_does_not_prove": "that a cheaper description budget (prospective_meta_bpw), a diagnostic factor bpw, serialized NR/NX bytes, or a STATIC estimate is a complete executable; that capability is preserved beyond the stated suite; that this sidecar measured hardware; prospective_meta_bpw 0.887 is RESEARCH_TARGET and proves nothing; the L4 REAL256 diagnostic factor bpw of ~0.0254 proves nothing",
+   "what_reaching_proves": "qualified_complete_physical_ebpw of a complete executable is at or below this bound, under PROTECTED_ABSOLUTE, without dense rematerialization, with held-out function inside contract and strictly below 1.0 qualified_complete_physical_ebpw"
+  }
+ ],
+ "schema": "hawking.future.flash_bpw_ladder.v1",
+ "screen": {
+  "diagnostic_factor_equivalent_bpw": 0.025427350427350427,
+  "first_surface_failure": "held-out function error",
+  "heldout_cosine": 0.8489876521675802,
+  "heldout_relative_fro_error": 0.5284149054408503,
+  "meta_bpw_target": 0.8871807728336929,
+  "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+  "physical_ebpw": null,
+  "reachable": true,
+  "resolved_via": "pinned",
+  "status": "OFFLINE_META_SURFACE_GATE_FAILED",
+  "surface_gate_pass": false,
+  "why_this_is_not_a_win": "A diagnostic factor bpw below 1 sat alongside a held-out error far above contract. Smaller number, representation that does not work."
+ },
+ "seal_sha256": "cc64b209289eaa3bfb9289bb08b1fe73874a038f48c612cf315ef7d3489b7489",
+ "selftest": {
+  "above_target_verdict": "REFUSED",
+  "all_six_wrong_classes_refused": true,
+  "budgets_heterogeneous": true,
+  "combinator_is_not_a_measurement": true,
+  "combinator_verdict": "REACHED",
+  "compute_fired": [
+   "smaller_but_compute_multiplied"
+  ],
+  "cross_category_still_raises": true,
+  "disk_reached": [],
+  "disk_verdicts": {
+   "bpw_1_00": "UNTESTED",
+   "bpw_1_25": "UNTESTED",
+   "bpw_1_50": "UNTESTED",
+   "bpw_1_75": "UNTESTED",
+   "bpw_2_00": "UNTESTED",
+   "bpw_2_25": "UNTESTED",
+   "bpw_sub1": "UNTESTED"
+  },
+  "empty_plan_raises": true,
+  "honest_verdict": "ON_FRONT",
+  "meta_claim_reason": "rung bpw_sub1 claimed on prospective_meta_bpw; required class is qualified_complete_physical_ebpw backed by PROTECTED_ABSOLUTE. prospective_meta_bpw is not interchangeable with qualified_complete_physical_ebpw (source=RESEARCH_TARGET)",
+  "meta_claim_verdict": "REFUSED",
+  "remat_fired": [
+   "smaller_but_dense_rematerializing"
+  ],
+  "rung_count": 7,
+  "rung_ids": [
+   "bpw_2_25",
+   "bpw_2_00",
+   "bpw_1_75",
+   "bpw_1_50",
+   "bpw_1_25",
+   "bpw_1_00",
+   "bpw_sub1"
+  ],
+  "screen_factor_bpw": 0.025427350427350427,
+  "screen_fired": [
+   "smaller_but_incoherent"
+  ],
+  "screen_heldout_error": 0.5284149054408503,
+  "screen_reachable": true,
+  "screen_status_verdict": "REFUSED",
+  "seven_imported_not_redefined": true,
+  "unknown_rung_raises": true
+ },
+ "seven_from_disk": {
+  "prospective_meta_bpw": {
+   "category": "prospective_meta_bpw",
+   "evidence": "RESEARCH_TARGET; description budget, not a representation, not a claim, never promotes alone",
+   "present": true,
+   "role": "RESEARCH_TARGET",
+   "source": "FLASH_META_REPRESENTATION_SUB1.metric.prospective_target",
+   "unit": "bits per source weight (description budget, not serialized bytes)",
+   "value": 0.8871807728336929
+  },
+  "qualified_complete_physical_ebpw": {
+   "category": "qualified_complete_physical_ebpw",
+   "evidence": "handoff current_qualified_physical_ebpw='UNKNOWN'; UNKNOWN; this sidecar has no GPU authority; MetalContext reports no Metal-capable GPU on the host of record; no PROTECTED_ABSOLUTE complete-token measurement exists for a source-independent Flash NX",
+   "gpu_authority": false,
+   "present": false,
+   "source": "CODEX_ACCELERATOR_HANDOFF.current_qualified_physical_ebpw",
+   "state": "UNKNOWN",
+   "unit": "bits per weight of a complete executable from PROTECTED_ABSOLUTE measurement \u2014 never from a description budget or a STATIC estimate",
+   "value": null
+  },
+  "serialized_nr_information": {
+   "category": "serialized_nr_information",
+   "evidence": "packed NR information payload is NOT_BUILT; composition document resolved_via=pinned path=/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json; document bytes are not serialized_nr_information",
+   "present": false,
+   "source": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+   "unit": "bytes of a packed NR information payload (not a composition document; not source-control EBPW)",
+   "value": null
+  },
+  "serialized_nx_ebpw": {
+   "category": "serialized_nx_ebpw",
+   "evidence": "NX status=SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; qualification.complete_system_ebpw is null; metadata seal is not serialized_nx_ebpw",
+   "present": false,
+   "source": "FLASH_COMPLETE_V0.nx.json",
+   "unit": "bits per weight of a serialized NX artifact; not qualified_complete_physical_ebpw",
+   "value": null
+  },
+  "source_control_ebpw": {
+   "category": "source_control_ebpw",
+   "evidence": "COMPILE_TIME_SCIENCE_ONLY; BF16 exact-control identity of the source; not qualified_complete_physical_ebpw",
+   "present": true,
+   "source": "FLASH_COMPLETE_V2.nr.json representation.complete_bits_per_weight",
+   "unit": "bits per source weight of the BF16 exact-control identity (COMPILE_TIME_SCIENCE_ONLY; not a packed artifact; not physical)",
+   "value": 16.0
+  },
+  "static_active_ebpw_estimate": {
+   "category": "static_active_ebpw_estimate",
+   "evidence": "STATIC estimate: 8 * sum(source_active_bytes_per_token)=18792263128.0 / n_params=179999981564 over 13 EBPW organs; not a measurement",
+   "present": true,
+   "source": "FLASH_EBPW_BUDGET.json organs[].source_active_bytes_per_token",
+   "unit": "STATIC estimate of active-path bits per source weight from census/budget headers; not a protected measurement",
+   "value": 0.8352117801220243
+  },
+  "static_complete_ebpw_estimate": {
+   "category": "static_complete_ebpw_estimate",
+   "evidence": "STATIC estimate: 8 * source_parameter_bytes_indexed=359999963128 / n_params=179999981564; header-derived; not a measurement",
+   "present": true,
+   "source": "FLASH_ORGAN_CENSUS.source_parameter_bytes_indexed",
+   "unit": "STATIC estimate of complete-system bits per source weight from indexed header payload; not a protected measurement",
+   "value": 16.0
+  }
+ },
+ "seven_quantities": [
+  "source_control_ebpw",
+  "static_active_ebpw_estimate",
+  "static_complete_ebpw_estimate",
+  "prospective_meta_bpw",
+  "serialized_nr_information",
+  "serialized_nx_ebpw",
+  "qualified_complete_physical_ebpw"
+ ],
+ "seven_quantities_imported_from": "tools.future.flash_nr_complete.SEVEN_TYPES",
+ "version": 1,
+ "work_units": [
+  {
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "command": [
+    "python3",
+    "tools/future/flash_bpw_ladder.py",
+    "--build"
+   ],
+   "dependencies": [],
+   "description": "Evaluate the complete-executable EBPW ladder against disk. One CPU_ANALYSIS unit. Never marks a rung REACHED on a description budget or a diagnostic factor bpw.",
+   "effect_class": "READ_ONLY",
+   "id": "future.flash_bpw_ladder.status",
+   "output_receipt_path": "receipts/future/FLASH_BPW_LADDER.json",
+   "preferred_backend": null,
+   "provider": "sidecar.flash_bpw_ladder",
+   "resource_class": "CPU_ANALYSIS",
+   "role": "science",
+   "species": "independent_reproduction",
+   "status": "pending",
+   "verifier": "future.flash_bpw_ladder.selftest"
+  }
+ ]
+}

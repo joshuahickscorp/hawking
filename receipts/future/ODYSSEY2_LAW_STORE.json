@@ -1,0 +1,1192 @@
+{
+ "accounting": {
+  "n_laws": 24,
+  "n_with_actual_saved_experiments": 2,
+  "n_with_expected_saved_experiments": 1,
+  "note": "Counts are experiment-evaluations from sealed receipts, not hardware. A negative actual means the transfer arm spent more evaluations than cold. Nulls stay null: a prescription is not an execution.",
+  "null_time_to_first_useful_executable_ns": true,
+  "sum_actual_saved_experiments": 121,
+  "sum_expected_saved_experiments": 219
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T19:28:50Z",
+  "recorded_by": "tools/future/odyssey2_law_store.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "by_evidence_strength": {
+   "ANECDOTE": 0,
+   "DIAGNOSTIC_RELATIVE": 12,
+   "PROTECTED_ABSOLUTE": 0,
+   "REPRODUCED": 0,
+   "STATIC": 12
+  },
+  "by_scope": {
+   "ARCHITECTURE_FAMILY": 3,
+   "BACKEND_FAMILY": 0,
+   "GENERIC_CANDIDATE": 3,
+   "GENERIC_VERIFIED": 0,
+   "MACHINE_LOCAL": 1,
+   "MODEL_LOCAL": 17
+  },
+  "n_laws": 24
+ },
+ "evidence_strengths": [
+  "ANECDOTE",
+  "STATIC",
+  "DIAGNOSTIC_RELATIVE",
+  "PROTECTED_ABSOLUTE",
+  "REPRODUCED"
+ ],
+ "failed_transfers_indexed": [
+  "calibration_88_tokens",
+  "cross_expert_and_cross_layer_tying",
+  "entropy_coded_pq_indices",
+  "expert_merging_omitted_from_survivors",
+  "inter_expert_redundancy",
+  "kronecker_factorisation",
+  "large_expert_cache",
+  "posthoc_scalar_gain",
+  "raw_weight_pq_vq_at_one_bit",
+  "row_norm_stratification_premise",
+  "ternary_factorization",
+  "uniform_subbit_allocation"
+ ],
+ "gaps_closed": [
+  "Law record with the Odyssey II field set, including scope and evidence_strength.",
+  "Sequential scope lattice MODEL_LOCAL < ARCHITECTURE_FAMILY < BACKEND_FAMILY < MACHINE_LOCAL < GENERIC_CANDIDATE < GENERIC_VERIFIED.",
+  "promote() raises typed ScopeViolation on level skip, on single-model ARCHITECTURE_FAMILY, on single-backend BACKEND_FAMILY, and on GENERIC_VERIFIED without PROTECTED_ABSOLUTE/REPRODUCED plus a discharged counterexample.",
+  "Seeding from the listed transfer receipts (via git show when sparse-checkout hides them).",
+  "Flash <-> Qwen27 transfer school from QWEN38_ACCELERATOR_TRANSFER_MAP, both as source and as target.",
+  "transfer_candidates() consults NEGATIVE_TRANSFER_ATLAS and raises NegativeTransferError.",
+  "expected_saved_experiments vs actual_saved_experiments accounting (null until known; negative actual is legal).",
+  "time_to_first_useful_executable_ns forced null: sidecar has no executable-timing authority."
+ ],
+ "lattice": [
+  "MODEL_LOCAL",
+  "ARCHITECTURE_FAMILY",
+  "BACKEND_FAMILY",
+  "MACHINE_LOCAL",
+  "GENERIC_CANDIDATE",
+  "GENERIC_VERIFIED"
+ ],
+ "laws": [
+  {
+   "actual_saved_experiments": -8,
+   "architecture_family": "qwen3_moe",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+   "evidence_refs": [
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+   "organ_class": "moe_expert",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3-30B-A3B",
+   "statement": "On Qwen3-30B-A3B moe_expert layer 2, under the pre-registered loose landing target (held-out rel_fro <= 1.15x of uniform q4 g64), the COLD arm landed in 2 evaluations and the ODYSSEY_TRANSFER seed landed in 10; evaluations_avoided=-8. The transfer signal is in the matched-bits comparison (seeded affine wins 3/3 tiers), not in search-length. Values did not save experiments; the method still discriminated at matched bits.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    },
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "Only one model has had its kernels profiled on this device. The second specimen has no native kernel yet, so the law has one measurement.",
+   "evidence_refs": [
+    "receipts/headless/SHARED_BASIS_KERNEL.json",
+    "receipts/headless/KERNEL_LIBRARY.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-COMPETENT-KERNEL-FIRST",
+   "organ_class": "cross_model",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "A representation evaluated with an incompetent kernel is not evaluated. Fewer stored bits is not fewer nanoseconds.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "Only one model has had its kernels profiled on this device. The second specimen has no native kernel yet, so the law has one measurement.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "Already at the top level for what it describes: these are properties of the box, not of any model. They are valid only on this machine.",
+   "evidence_refs": [
+    "receipts/headless/BANDWIDTH_ROOF.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-DEVICE-ROOFS",
+   "organ_class": "cross_model",
+   "scope": "MACHINE_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "Device theoretical roof 819.0 GB/s and device measured sustained roof 778.8 GB/s on this machine.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MACHINE_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "Already at the top level for what it describes: these are properties of the box, not of any model. They are valid only on this machine.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MACHINE_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "falcon_h1",
+   "backend": "Metal",
+   "counterexample_requirement": "a Falcon-H1 checkpoint that stores expert tensors",
+   "evidence_refs": [
+    "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS",
+   "organ_class": "moe_expert",
+   "scope": "MODEL_LOCAL",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Falcon-H1-7B",
+   "statement": "Falcon-H1-7B has no expert tensors (0 of 751). It is the zero that makes the other kernel-reuse numbers meaningful and is not a MoE transfer target.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a Falcon-H1 checkpoint that stores expert tensors",
+     "source_model": "Falcon-H1-7B",
+     "source_school": null,
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a Falcon-H1 checkpoint that stores expert tensors",
+     "source_model": "Falcon-H1-7B",
+     "source_school": null,
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.25
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "ARCHITECTURE_GENERAL is the ceiling for a claim about weights; MACHINE_GENERAL is reserved for properties of the box. Promoted here because the reopening condition this law carried has been MET: it was measured on a second architecture family. On Falcon-H1-7B -- hybrid mamba+attention, a different vendor and a different backbone -- the seeded family wins 3 of 3 matched-bit tiers, and the advantage is nearly the same size as on the Qwen MoE: 1.828x vs 1.899x at 2.25 bpw, 1.327x vs 1.333x at 3.25, 1.122x vs 1.138x at 4.25.",
+   "evidence_refs": [
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+    "receipts/headless/MATCHED_BITS_FALCON_H1.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-FITTED-AFFINE-BEATS-RTN",
+   "organ_class": "cross_model",
+   "scope": "GENERIC_CANDIDATE",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "At matched bits per weight, a least-squares-refit affine codec beats generic grouped-absmax round-to-nearest.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=3 n_architecture_families=3",
+     "counterexample_requirement": "ARCHITECTURE_GENERAL is the ceiling for a claim about weights; MACHINE_GENERAL is reserved for properties of the box. Promoted here because the reopening condition this law carried has been MET: it was measured on a second architecture family. On Falcon-H1-7B -- hybrid mamba+attention, a different vendor and a different backbone -- the seeded family wins 3 of 3 matched-bit tiers, and the advantage is nearly the same size as on the Qwen MoE: 1.828x vs 1.899x at 2.25 bpw, 1.327x vs 1.333x at 3.25, 1.122x vs 1.138x at 4.25.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=3 n_architecture_families=3",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "One measurement, and the law is explicitly conditional on the measured geometry rather than on the technique. Any model with high head cosine reopens it.",
+   "evidence_refs": [
+    "receipts/headless/STRUCTURAL_ELIMINATION.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-HEAD-ORTHOGONALITY-BLOCKS-ELIMINATION",
+   "organ_class": "cross_model",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "Attention head sharing is refuted where heads are near-orthogonal.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "One measurement, and the law is explicitly conditional on the measured geometry rather than on the technique. Any model with high head cosine reopens it.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "A Falcon-H1 measurement was taken specifically to promote this and it REFUSED to: on that dense MLP, weight-space and held-out-activation rankings are IDENTICAL across all 13 candidates with zero matched-tier winner flips. So the law is not that weight-space always misranks -- it does not. It is narrower and sharper than it was written: weight-space error is adequate for ranking codecs on one tensor triple, and it inverted the answer on the question that actually mattered, which was WHICH REPRESENTATION CHANGE BREAKS THE COMPOSED MODEL. There weight-space said the non-MLP drop was 6.2x larger and therefore dominant; the physical measurement priced the MLP change at 19 capability points against the non-MLP change's 8. Promotion needs a second family measured on the COMPOSITION question, not on the codec question.",
+   "evidence_refs": [
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+    "receipts/headless/MATCHED_BITS_FALCON_H1.json",
+    "receipts/headless/COMPOSITION_ATTRIBUTION.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-HELDOUT-REAL-ACTIVATIONS",
+   "organ_class": "cross_model",
+   "scope": "ARCHITECTURE_FAMILY",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "Rank COMPOSITION choices on held-out real activations. Weight-space error ranks a codec against a single tensor triple correctly, and ranks the whole-model consequence of a representation change BACKWARDS.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+     "counterexample_requirement": "A Falcon-H1 measurement was taken specifically to promote this and it REFUSED to: on that dense MLP, weight-space and held-out-activation rankings are IDENTICAL across all 13 candidates with zero matched-tier winner flips. So the law is not that weight-space always misranks -- it does not. It is narrower and sharper than it was written: weight-space error is adequate for ranking codecs on one tensor triple, and it inverted the answer on the question that actually mattered, which was WHICH REPRESENTATION CHANGE BREAKS THE COMPOSED MODEL. There weight-space said the non-MLP drop was 6.2x larger and therefore dominant; the physical measurement priced the MLP change at 19 capability points against the non-MLP change's 8. Promotion needs a second family measured on the COMPOSITION question, not on the codec question.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "qwen3_moe",
+   "backend": "Metal",
+   "counterexample_requirement": "two specimens with divergent on-disk expert layout whose stored tensors emit the same MSL without a pack-time transpose/de-interleave",
+   "evidence_refs": [
+    "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT",
+   "organ_class": "moe_expert_kernel",
+   "scope": "GENERIC_CANDIDATE",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3-30B-A3B",
+   "statement": "Kernel reuse is a claim about storage layout, not only about GEMV shape or architecture-config similarity. Qwen3-30B-A3B and Qwen3-VL-30B-A3B share byte-identical MSL only AFTER a de-interleave and a transpose: the VL variant stores fused 3-D gate_up_proj, so the tensor as stored emits a different kernel. Kimi-VL uses the same per-expert 2-D convention but a different row size and shares no kernel. Falcon-H1 has no expert tensors at all.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=4 n_architecture_families=4",
+     "counterexample_requirement": "two specimens with divergent on-disk expert layout whose stored tensors emit the same MSL without a pack-time transpose/de-interleave",
+     "source_model": "Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    },
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=4 n_architecture_families=4",
+     "counterexample_requirement": "two specimens with divergent on-disk expert layout whose stored tensors emit the same MSL without a pack-time transpose/de-interleave",
+     "source_model": "Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=4 n_architecture_families=4",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "already refuted on ['Qwen/Qwen3-30B-A3B']; any further transfer of the VALUE must re-measure. It does not survive the very first jump inside its own family. On Qwen3-30B-A3B moe_expert the best candidate at 2.25 bpw reaches held-out rel_fro 0.498769, nowhere near usable, and even 3.5 bpw only reaches 0.238596. The value is a property of that organ in that model, not of Qwen and not of dense MLPs.",
+   "evidence_refs": [
+    "receipts/headless/ORGAN_FRONTIER_MATRIX.json",
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-MLP-FLOOR-2.25",
+   "organ_class": "cross_model",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "The coherent MLP information floor is 2.25 bpw.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "already refuted on ['Qwen/Qwen3-30B-A3B']; any further transfer of the VALUE must re-measure. It does not survive the very first jump inside its own family. On Qwen3-30B-A3B moe_expert the best candidate at 2.25 bpw reaches held-out rel_fro 0.498769, nowhere near usable, and even 3.5 bpw only reaches 0.238596. The value is a property of that organ in that model, not of Qwen and not of dense MLPs.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "It is a property of one executable in one regime. The directive forbids copying it into another model, and the transfer rehearsal asserts it appears nowhere in a new specimen's seeded genome.",
+   "evidence_refs": [
+    "receipts/headless/WHOLE_MODEL_NATIVE.json",
+    "receipts/headless/QWEN_TRANSFER_REHEARSAL.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-MODEL-REACHABLE-ROOF",
+   "organ_class": "cross_model",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "The model-reachable bandwidth roof is 690.8 GB/s.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "It is a property of one executable in one regime. The directive forbids copying it into another model, and the transfer rehearsal asserts it appears nowhere in a new specimen's seeded genome.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "qwen3_moe",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "Measured on exactly one MoE with a receipt in this repository. A similar observation on DeepSeek V4-Flash exists in operator memory but has no receipt here, and a model claim is not evidence, so it does not count toward promotion. A non-Qwen MoE (GLM-4.5-Air and Kimi-VL-A3B are both in the queue) is the condition.",
+   "evidence_refs": [
+    "receipts/headless/EXPERT_FAMILY_GENOME.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-MOE-EXPERTS-ARE-ORTHOGONAL",
+   "organ_class": "cross_model",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3-30B-A3B",
+   "statement": "MoE experts within a layer are mutually near-orthogonal, so there is no cheap shared substrate to factor out of an expert family.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "Measured on exactly one MoE with a receipt in this repository. A similar observation on DeepSeek V4-Flash exists in operator memory but has no receipt here, and a model claim is not evidence, so it does not count toward promotion. A non-Qwen MoE (GLM-4.5-Air and Kimi-VL-A3B are both in the queue) is the condition.",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    },
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "Measured on exactly one MoE with a receipt in this repository. A similar observation on DeepSeek V4-Flash exists in operator memory but has no receipt here, and a model claim is not evidence, so it does not count toward promotion. A non-Qwen MoE (GLM-4.5-Air and Kimi-VL-A3B are both in the queue) is the condition.",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "Two Qwen models. On the first, attention/DeltaNet/embedding survive q3_g128 and fail at q2f_g64 while the MLP survives it; on the second, the MoE expert floor is far above the dense MLP's. Same conclusion twice, same family both times.",
+   "evidence_refs": [
+    "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+    "receipts/headless/CROSS_MODEL_LAWS.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-PER-ORGAN-FLOOR",
+   "organ_class": "cross_model",
+   "scope": "GENERIC_CANDIDATE",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "Measure the information floor per ORGAN, never per model. Organs in one model do not share a floor.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=2 n_architecture_families=2",
+     "counterexample_requirement": "Two Qwen models. On the first, attention/DeltaNet/embedding survive q3_g128 and fail at q2f_g64 while the MLP survives it; on the second, the MoE expert floor is far above the dense MLP's. Same conclusion twice, same family both times.",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=2 n_architecture_families=2",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": 129,
+   "architecture_family": "qwen3_moe",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a technique deleted from the library solely because it failed on a Qwen organ, with no reopening condition attached",
+   "evidence_refs": [
+    "receipts/headless/DOCTOR_TRANSFER.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": 219,
+   "law_id": "LAW-QWEN-FAILURE-NEVER-PRUNES",
+   "organ_class": "method",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3-30B-A3B",
+   "statement": "a Qwen failure alone never prunes a technique; UNLIKELY is a ranking, not a deletion, and every skipped technique stays in the library with its reopening condition",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a technique deleted from the library solely because it failed on a Qwen organ, with no reopening condition attached",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a technique deleted from the library solely because it failed on a Qwen organ, with no reopening condition attached",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.25
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "qwen3_moe",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a rehearsal whose input_audit.clean is false or whose n_forbidden_reads > 0; that rehearsal is not a transfer",
+   "evidence_refs": [
+    "receipts/headless/QWEN_TRANSFER_REHEARSAL.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-REHEARSAL-NO-SMUGGLING",
+   "organ_class": "method",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3-30B-A3B",
+   "statement": "the rehearsal may read only the canonical libraries, the transfer report and the specimen's own architecture metadata. Everything else is smuggling.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a rehearsal whose input_audit.clean is false or whose n_forbidden_reads > 0; that rehearsal is not a transfer",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    },
+    {
+     "confidence": 0.25,
+     "confidence_basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "counterexample_requirement": "a rehearsal whose input_audit.clean is false or whose n_forbidden_reads > 0; that rehearsal is not a transfer",
+     "source_model": "Qwen/Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+    "value": 0.25
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "qwen3_moe",
+   "backend": "Metal",
+   "counterexample_requirement": "a layout transform of the same tensor under ws_rtn_q4_g64 whose weight cosine against the representation drops below the pair observed here",
+   "evidence_refs": [
+    "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json"
+   ],
+   "evidence_strength": "DIAGNOSTIC_RELATIVE",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-REPRESENTATION-COSINE-ROBUST-TO-LAYOUT",
+   "organ_class": "moe_expert",
+   "scope": "ARCHITECTURE_FAMILY",
+   "source_device": "APPLE_GPU_0",
+   "source_model": "Qwen3-30B-A3B",
+   "statement": "Representation fidelity under ws_rtn_q4_g64 transfers across the Qwen3 MoE / VL storage-layout split: weight cosine is 0.993952 on model #2 gate_proj and 0.993965 on the VL variant's canonical gate, and 0.993816 even in the on-disk orientation. Adequacy per tensor is robust to layout; only the kernel is layout-sensitive.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=1",
+     "counterexample_requirement": "a layout transform of the same tensor under ws_rtn_q4_g64 whose weight cosine against the representation drops below the pair observed here",
+     "source_model": "Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    },
+    {
+     "confidence": 0.45,
+     "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=1",
+     "counterexample_requirement": "a layout transform of the same tensor under ws_rtn_q4_g64 whose weight cosine against the representation drops below the pair observed here",
+     "source_model": "Qwen3-30B-A3B",
+     "source_school": null,
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=1",
+    "value": 0.45
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a numeric floor, roof, or bpw copied onto a new model that then beats a re-measurement of that value on the new model's own organ",
+   "evidence_refs": [
+    "receipts/headless/QWEN_TRANSFER_REPORT.json",
+    "receipts/headless/QWEN_TRANSFER_REHEARSAL.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO",
+   "organ_class": "method",
+   "scope": "ARCHITECTURE_FAMILY",
+   "source_device": "UNKNOWN",
+   "source_model": "qwen3.8-27b-abliterated",
+   "statement": "values do not transfer, methods do. Every number in this report is a Qwen measurement; every recommendation is a method with an applicability condition.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.25,
+     "confidence_basis": "evidence_strength=STATIC scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+     "counterexample_requirement": "a numeric floor, roof, or bpw copied onto a new model that then beats a re-measurement of that value on the new model's own organ",
+     "source_model": "qwen3.8-27b-abliterated",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "evidence_strength=STATIC scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+    "value": 0.25
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "qwen4_exp",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a Qwen27 execution of 'command-buffer scheduling/telemetry' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-FLASH-COMMAND_BUFFER_SCHEDULING_TELEMETRY",
+   "organ_class": "command-buffer scheduling/telemetry",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3.8-Flash-Next",
+   "statement": "Primitive 'command-buffer scheduling/telemetry' is labelled DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source) as well as on Qwen27. dispatch, sync, complete wall, and fallback accounting are provider/runtime-neutral Flash weights were not present on disk (metadata_only); this is a sealed hypothesis, not a Flash measurement.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.7,
+     "confidence_basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+     "counterexample_requirement": "a Qwen27 execution of 'command-buffer scheduling/telemetry' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist",
+     "source_model": "Qwen/Qwen3.8-Flash-Next",
+     "source_school": "Flash",
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+    "value": 0.7
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "qwen4_exp",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a Qwen27 execution of 'dense-vs-NF A/B protocol' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-FLASH-DENSE_VS_NF_A_B_PROTOCOL",
+   "organ_class": "dense-vs-NF A/B protocol",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen/Qwen3.8-Flash-Next",
+   "statement": "Primitive 'dense-vs-NF A/B protocol' is labelled DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source) as well as on Qwen27. same source/input/device/bench/capability controls apply to both Flash weights were not present on disk (metadata_only); this is a sealed hypothesis, not a Flash measurement.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.7,
+     "confidence_basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+     "counterexample_requirement": "a Qwen27 execution of 'dense-vs-NF A/B protocol' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist",
+     "source_model": "Qwen/Qwen3.8-Flash-Next",
+     "source_school": "Flash",
+     "target_architecture_family": "dense_hybrid_transformer",
+     "target_model": "Qwen3.8-27B",
+     "target_school": "Qwen27"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+    "value": 0.7
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a same-source Flash run of 'command-buffer scheduling/telemetry' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-QWEN27-COMMAND_BUFFER_SCHEDULING_TELEMETRY",
+   "organ_class": "command-buffer scheduling/telemetry",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen3.8-27B",
+   "statement": "Primitive 'command-buffer scheduling/telemetry': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). dispatch, sync, complete wall, and fallback accounting are provider/runtime-neutral Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.7,
+     "confidence_basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+     "counterexample_requirement": "a same-source Flash run of 'command-buffer scheduling/telemetry' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+    "value": 0.7
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a same-source Flash run of 'dense-vs-NF A/B protocol' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-QWEN27-DENSE_VS_NF_A_B_PROTOCOL",
+   "organ_class": "dense-vs-NF A/B protocol",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen3.8-27B",
+   "statement": "Primitive 'dense-vs-NF A/B protocol': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). same source/input/device/bench/capability controls apply to both Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.7,
+     "confidence_basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+     "counterexample_requirement": "a same-source Flash run of 'dense-vs-NF A/B protocol' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+    "value": 0.7
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a same-source Flash run of 'norms and fused epilogues' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-QWEN27-NORMS_AND_FUSED_EPILOGUES",
+   "organ_class": "norms and fused epilogues",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen3.8-27B",
+   "statement": "Primitive 'norms and fused epilogues': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). command-boundary and complete-token effects can transfer, tensor shapes cannot be assumed Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.7,
+     "confidence_basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+     "counterexample_requirement": "a same-source Flash run of 'norms and fused epilogues' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+    "value": 0.7
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a same-source Flash run of 'packed low-bit GEMV' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-QWEN27-PACKED_LOW_BIT_GEMV",
+   "organ_class": "packed low-bit GEMV",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen3.8-27B",
+   "statement": "Primitive 'packed low-bit GEMV': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). representation-native arithmetic and layout need same-source parity on each architecture Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.7,
+     "confidence_basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+     "counterexample_requirement": "a same-source Flash run of 'packed low-bit GEMV' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+    "value": 0.7
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a same-source Flash run of 'resident state/update' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-QWEN27-RESIDENT_STATE_UPDATE",
+   "organ_class": "resident state/update",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen3.8-27B",
+   "statement": "Primitive 'resident state/update': labelled ARCHITECTURE_SPECIFIC on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). DeltaNet/state-machine work is a Flash target and must be revalidated against Qwen27 Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.2,
+     "confidence_basis": "ARCHITECTURE_SPECIFIC in QWEN38_ACCELERATOR_TRANSFER_MAP; not a free transfer",
+     "counterexample_requirement": "a same-source Flash run of 'resident state/update' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "ARCHITECTURE_SPECIFIC in QWEN38_ACCELERATOR_TRANSFER_MAP; not a free transfer",
+    "value": 0.2
+   }
+  },
+  {
+   "actual_saved_experiments": null,
+   "architecture_family": "dense_hybrid_transformer",
+   "backend": "UNKNOWN",
+   "counterexample_requirement": "a same-source Flash run of 'router/top-k and selected-expert gather' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+   "evidence_refs": [
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+   ],
+   "evidence_strength": "STATIC",
+   "expected_saved_experiments": null,
+   "law_id": "LAW-XFER-QWEN27-ROUTER_TOP_K_AND_SELECTED_EXPERT_GATHER",
+   "organ_class": "router/top-k and selected-expert gather",
+   "scope": "MODEL_LOCAL",
+   "source_device": "UNKNOWN",
+   "source_model": "Qwen3.8-27B",
+   "statement": "Primitive 'router/top-k and selected-expert gather': labelled TEST_ON_FLASH on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). sparse routing is not present in the sealed dense-ish parent contract; transfer is a hypothesis Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+   "time_to_first_useful_executable_ns": null,
+   "transfer_candidates": [
+    {
+     "confidence": 0.4,
+     "confidence_basis": "TEST_ON_FLASH hypothesis in QWEN38_ACCELERATOR_TRANSFER_MAP",
+     "counterexample_requirement": "a same-source Flash run of 'router/top-k and selected-expert gather' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "source_model": "Qwen3.8-27B",
+     "source_school": "Qwen27",
+     "target_architecture_family": "qwen4_exp",
+     "target_model": "Qwen/Qwen3.8-Flash-Next",
+     "target_school": "Flash"
+    }
+   ],
+   "transfer_confidence": {
+    "basis": "TEST_ON_FLASH hypothesis in QWEN38_ACCELERATOR_TRANSFER_MAP",
+    "value": 0.4
+   }
+  }
+ ],
+ "negative_findings": [
+  "No PROTECTED_ABSOLUTE or REPRODUCED evidence is available to this sidecar, so no law is seeded at GENERIC_VERIFIED. That is a correct UNKNOWN, not a skip.",
+  "BACKEND_FAMILY is uninhabited in the seed: every cited receipt is Metal-only. promote() still requires >=2 backends; we did not invent a CUDA/FPGA measurement.",
+  "time_to_first_useful_executable_ns is null on every law; a number here would be an executable-timing claim this lane cannot make."
+ ],
+ "odyssey": "II WHAT DID HAWKING ALREADY LEARN?",
+ "promotion_rules": {
+  "ARCHITECTURE_FAMILY": ">=2 distinct models in that architecture family",
+  "BACKEND_FAMILY": ">=2 backends",
+  "GENERIC_CANDIDATE": ">=2 architecture families",
+  "GENERIC_VERIFIED": "PROTECTED_ABSOLUTE or REPRODUCED on >=2 architecture families AND a discharged counterexample requirement",
+  "MACHINE_LOCAL": "named machine/device identity; UNKNOWN is not a machine",
+  "level_skip": "refused outright (ScopeViolation, never clamped)"
+ },
+ "purpose": "Odyssey II scoped law store: every law carries its evidence and its scope; promotion without evidence is refused; Flash <-> Qwen27 is the first transfer school.",
+ "recovered_implementation": {
+  "accelerator_knowledge_base": {
+   "akb_evidence_classes_to_odyssey_strength": {
+    "Derived": "STATIC",
+    "Measured": "DIAGNOSTIC_RELATIVE",
+    "ProtectedVerified": "PROTECTED_ABSOLUTE",
+    "Reproduced": "REPRODUCED",
+    "Simulated": "ANECDOTE"
+   },
+   "found": true,
+   "gap": "11-axis applicability store, Codex-owned. evidence_class vocabulary reused. Entries were not ingested: they are kernel/dispatch laws, not Odyssey II transfer laws, and forking them would duplicate Codex.",
+   "path": "tools/accelerator/akb.py",
+   "receipt": "receipts/headless/ACCELERATOR_LAW_BASE.json"
+  },
+  "architecture_atlas": {
+   "found": true,
+   "gap": "Named by F010/F012 as the shape to reuse (entries[].transfer_confidence, evidence_class, architecture_independent_invariant). Not present in git HEAD of this worktree. Cannot seed from it.",
+   "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+  },
+  "cross_model_laws": {
+   "found": true,
+   "gap": "Qwen-centric 4-level ladder with validate-at-emit. No BACKEND_FAMILY, no sequential skip guard, no Flash/Qwen27 school, no expected/actual saved-experiment accounting. Consumed as seed, not forked.",
+   "legacy_levels": [
+    "QWEN_SPECIFIC",
+    "FAMILY_TRANSFERRED",
+    "ARCHITECTURE_GENERAL",
+    "MACHINE_GENERAL"
+   ],
+   "legacy_mapping": {
+    "ARCHITECTURE_GENERAL": "GENERIC_CANDIDATE",
+    "FAMILY_TRANSFERRED": "ARCHITECTURE_FAMILY",
+    "MACHINE_GENERAL": "MACHINE_LOCAL",
+    "QWEN_SPECIFIC": "MODEL_LOCAL"
+   },
+   "path": "tools/headless/cross_model_laws.py",
+   "receipt": "receipts/headless/CROSS_MODEL_LAWS.json"
+  },
+  "negative_transfer_atlas": {
+   "failed_keys": [
+    "calibration_88_tokens",
+    "cross_expert_and_cross_layer_tying",
+    "entropy_coded_pq_indices",
+    "expert_merging_omitted_from_survivors",
+    "inter_expert_redundancy",
+    "kronecker_factorisation",
+    "large_expert_cache",
+    "posthoc_scalar_gain",
+    "raw_weight_pq_vq_at_one_bit",
+    "row_norm_stratification_premise",
+    "ternary_factorization",
+    "uniform_subbit_allocation"
+   ],
+   "found": true,
+   "live_or_open_keys": [
+    "layer_zero_is_a_different_source",
+    "post_hoc_coding_of_frozen_weights"
+   ],
+   "path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+   "role": "mechanical refusal source for transfer_candidates()"
+  },
+  "not_adequate_alone": "cross_model_laws.py and akb.py already store laws. Neither holds the Odyssey II lattice, neither refuses MODEL_LOCAL -> GENERIC_VERIFIED as a level skip, neither seeds Flash <-> Qwen27. This module extends them by consuming their receipts; it does not replace them.",
+  "related_not_ingested": [
+   "tools/odyssey/admission_chain_scope.py \u2014 packer/admission scoping, not a law lattice",
+   "tools/odyssey/known_failures.py \u2014 T0 claim-regression registry, Codex-owned",
+   "receipts/headless/DENSE_SUBBIT_TRANSFER.json \u2014 GLM->dense Qwen3.8 NO-GO, not in the F010 seed list",
+   "receipts/headless/ACCELERATOR_CLIFF_TRANSFER.json \u2014 occupancy-cliff INSTANCE, not a transfer school"
+  ],
+  "transfer_receipts_consumed": {
+   "ACCELERATOR_TRANSFER_VERIFIED": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+   "DOCTOR_TRANSFER": "receipts/headless/DOCTOR_TRANSFER.json",
+   "ODYSSEY_TRANSFER_PROVEN": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+   "QWEN38_ACCELERATOR_TRANSFER_MAP": "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+   "QWEN_TRANSFER_REHEARSAL": "receipts/headless/QWEN_TRANSFER_REHEARSAL.json",
+   "QWEN_TRANSFER_REPORT": "receipts/headless/QWEN_TRANSFER_REPORT.json"
+  }
+ },
+ "schema": "hawking.future.odyssey2_law_store.v1",
+ "school_presence": {
+  "as_source": {
+   "Flash": 2,
+   "Qwen27": 15
+  },
+  "as_target": {
+   "Flash": 22,
+   "Qwen27": 9
+  },
+  "both_schools_are_sources": true,
+  "both_schools_are_targets": true
+ },
+ "schools": {
+  "Flash": {
+   "aliases": [
+    "Flash",
+    "Qwen/Qwen3.8-Flash-Next",
+    "Qwen3.8-Flash-Next",
+    "qwen4_exp"
+   ],
+   "architecture_family": "qwen4_exp",
+   "map_label": "Qwen/Qwen3.8-Flash-Next pinned ModelLake source",
+   "physical_status": "metadata_only_weights_not_present",
+   "role_in_map": "model_b",
+   "school": "Flash",
+   "source_model": "Qwen/Qwen3.8-Flash-Next"
+  },
+  "Qwen27": {
+   "aliases": [
+    "qwen3.8-27b-abliterated",
+    "Qwen3.8-27B",
+    "Qwen3.8-27B sealed resident / NOETIC_PARENT_A",
+    "NOETIC_PARENT_A"
+   ],
+   "architecture_family": "dense_hybrid_transformer",
+   "map_label": "Qwen3.8-27B sealed resident / NOETIC_PARENT_A",
+   "role_in_map": "model_a",
+   "school": "Qwen27",
+   "source_model": "Qwen3.8-27B"
+  }
+ },
+ "seal_sha256": "5748b5e5f6cfbafcede51f1f29ab97c38cb51b32203797ee4e40b987c5003641",
+ "seed_report": {
+  "atlas_failed_keys": [
+   "calibration_88_tokens",
+   "cross_expert_and_cross_layer_tying",
+   "entropy_coded_pq_indices",
+   "expert_merging_omitted_from_survivors",
+   "inter_expert_redundancy",
+   "kronecker_factorisation",
+   "large_expert_cache",
+   "posthoc_scalar_gain",
+   "raw_weight_pq_vq_at_one_bit",
+   "row_norm_stratification_premise",
+   "ternary_factorization",
+   "uniform_subbit_allocation"
+  ],
+  "atlas_live_or_open_keys": [
+   "layer_zero_is_a_different_source",
+   "post_hoc_coding_of_frozen_weights"
+  ],
+  "atlas_seed_refusals": [],
+  "n_laws": 24,
+  "notes": [
+   "LAW-MLP-FLOOR-2.25: legacy_level=QWEN_SPECIFIC -> scope=MODEL_LOCAL models=['qwen3.8-27b-abliterated'] architecture_families=['dense_hybrid_transformer']",
+   "LAW-FITTED-AFFINE-BEATS-RTN: legacy_level=ARCHITECTURE_GENERAL -> scope=GENERIC_CANDIDATE models=['qwen3.8-27b-abliterated', 'Qwen/Qwen3-30B-A3B', 'tiiuae/Falcon-H1-7B-Instruct'] architecture_families=['dense_hybrid_transformer', 'qwen3_moe', 'falcon_h1']",
+   "LAW-HELDOUT-REAL-ACTIVATIONS: Falcon-H1 refused the composition misranking; seeded at ARCHITECTURE_FAMILY, not GENERIC_CANDIDATE",
+   "LAW-HELDOUT-REAL-ACTIVATIONS: legacy_level=FAMILY_TRANSFERRED -> scope=ARCHITECTURE_FAMILY models=['qwen3.8-27b-abliterated', 'Qwen/Qwen3-30B-A3B'] architecture_families=['dense_hybrid_transformer', 'qwen3_moe']",
+   "LAW-PER-ORGAN-FLOOR: legacy_level=FAMILY_TRANSFERRED -> scope=GENERIC_CANDIDATE models=['qwen3.8-27b-abliterated', 'Qwen/Qwen3-30B-A3B'] architecture_families=['dense_hybrid_transformer', 'qwen3_moe']",
+   "LAW-MOE-EXPERTS-ARE-ORTHOGONAL: legacy_level=QWEN_SPECIFIC -> scope=MODEL_LOCAL models=['Qwen/Qwen3-30B-A3B'] architecture_families=['qwen3_moe']",
+   "LAW-DEVICE-ROOFS: legacy_level=MACHINE_GENERAL -> scope=MACHINE_LOCAL models=['qwen3.8-27b-abliterated'] architecture_families=['dense_hybrid_transformer']",
+   "LAW-MODEL-REACHABLE-ROOF: legacy_level=QWEN_SPECIFIC -> scope=MODEL_LOCAL models=['qwen3.8-27b-abliterated'] architecture_families=['dense_hybrid_transformer']",
+   "LAW-COMPETENT-KERNEL-FIRST: legacy_level=QWEN_SPECIFIC -> scope=MODEL_LOCAL models=['qwen3.8-27b-abliterated'] architecture_families=['dense_hybrid_transformer']",
+   "LAW-HEAD-ORTHOGONALITY-BLOCKS-ELIMINATION: legacy_level=QWEN_SPECIFIC -> scope=MODEL_LOCAL models=['qwen3.8-27b-abliterated'] architecture_families=['dense_hybrid_transformer']",
+   "ODYSSEY_TRANSFER_PROVEN pass=True organ=moe_expert layer=2 n_tiers_seeded_wins=3 evaluations_avoided=-8 specimen='/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1'",
+   "ACCELERATOR_TRANSFER_VERIFIED pass=True knowledge_level=MODEL_FAMILY specimens=['Qwen3-30B-A3B', 'Qwen3-VL-30B-A3B-Instruct', 'Kimi-VL-A3B-Instruct', 'Falcon-H1-7B'] families=['qwen3_moe', 'qwen3_moe_vl', 'kimi_vl_moe', 'falcon_h1'] layout_keys=['Falcon-H1-7B', 'Kimi-VL-A3B', 'Qwen3-30B-A3B', 'Qwen3-VL-30B-A3B']",
+   "QWEN38_ACCELERATOR_TRANSFER_MAP model_a='Qwen3.8-27B sealed resident / NOETIC_PARENT_A' model_b='Qwen/Qwen3.8-Flash-Next pinned ModelLake source' physical_status='metadata_only_weights_not_present' n_primitives=6 claim_boundary=Transfer labels are hypotheses bounded by the cited receipts. Every physical primitive and whole-model claim must re-earn same-model parity, capability, and com",
+   "Flash weights are metadata_only_weights_not_present; Flash-sourced laws are STATIC hypotheses, not measurements",
+   "primitive 'packed low-bit GEMV': Flash label is TEST_ON_FLASH; not seeded as a Flash-sourced law (no Flash measurement)",
+   "primitive 'norms and fused epilogues': Flash label is TEST_ON_FLASH; not seeded as a Flash-sourced law (no Flash measurement)",
+   "primitive 'resident state/update': Flash label is TEST_ON_FLASH; not seeded as a Flash-sourced law (no Flash measurement)",
+   "primitive 'router/top-k and selected-expert gather': Flash label is TEST_ON_FLASH; not seeded as a Flash-sourced law (no Flash measurement)",
+   "QWEN_TRANSFER_REHEARSAL pass=True architecture_class=qwen3_moe n_methods_inherited=5 n_prior_failures=41 input_audit.clean=True",
+   "QWEN_TRANSFER_REPORT pass=True n_entries=25 n_methods=5 n_negatives=9 n_rejected=0 parent=qwen3.8-27b-abliterated",
+   "DOCTOR_TRANSFER pass=True n_techniques=39 n_organs=6 experiments_to_run=15 irrelevant_avoided=101 repeated_failures_avoided=28 all_KEEP=True",
+   "NEGATIVE_TRANSFER_ATLAS 14 entries; failed=['calibration_88_tokens', 'cross_expert_and_cross_layer_tying', 'entropy_coded_pq_indices', 'expert_merging_omitted_from_survivors', 'inter_expert_redundancy', 'kronecker_factorisation', 'large_expert_cache', 'posthoc_scalar_gain', 'raw_weight_pq_vq_at_one_bit', 'row_norm_stratification_premise', 'ternary_factorization', 'uniform_subbit_allocation']; live_or_open=['layer_zero_is_a_different_source', 'post_hoc_coding_of_frozen_weights']",
+   "ACCELERATOR_ARCHITECTURE_ATLAS.json WAS found; not expected on this HEAD. Inspected, not forked.",
+   "ACCELERATOR_LAW_BASE.json present: n_entries=45 evidence_classes=['Simulated', 'Derived', 'Measured', 'Reproduced', 'ProtectedVerified'] \u2014 Codex-owned 11-axis store; consumed for vocabulary, not ingested as Odyssey II laws"
+  ],
+  "seed_receipts_found": {
+   "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json": true,
+   "receipts/headless/ACCELERATOR_LAW_BASE.json": true,
+   "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json": true,
+   "receipts/headless/CROSS_MODEL_LAWS.json": true,
+   "receipts/headless/DOCTOR_TRANSFER.json": true,
+   "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json": true,
+   "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json": true,
+   "receipts/headless/QWEN_TRANSFER_REHEARSAL.json": true,
+   "receipts/headless/QWEN_TRANSFER_REPORT.json": true,
+   "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json": true
+  },
+  "seed_receipts_missing": [],
+  "source_models": [
+   "Falcon-H1-7B",
+   "Qwen/Qwen3-30B-A3B",
+   "Qwen/Qwen3.8-Flash-Next",
+   "Qwen3-30B-A3B",
+   "Qwen3.8-27B",
+   "qwen3.8-27b-abliterated"
+  ],
+  "transfer_target_schools": [
+   "Flash",
+   "Qwen27"
+  ]
+ },
+ "version": 1
+}

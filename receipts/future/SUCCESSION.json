@@ -1,0 +1,1619 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:53Z",
+  "recorded_by": "tools/future/succession.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bound": {
+  "allowed_authority": [
+   "classify_receipt_static_only",
+   "clone_workunit",
+   "compile_experiment_spec",
+   "emit_static_plan",
+   "propose_workunit",
+   "rank_falsifiable_experiments",
+   "read_receipts",
+   "record_unknown_metrics",
+   "run_static_analysis",
+   "write_sidecar_receipt"
+  ],
+  "allowed_methods": [
+   "noetic_representation",
+   "accelerator_optimization",
+   "tabula_behavior_change",
+   "adapter",
+   "prompt_context_policy",
+   "different_specimen",
+   "composition",
+   "architecture_replacement"
+  ],
+  "era": "III",
+  "era_name": "III Autonomous Science Civilization",
+  "gpu_windows_held": 0,
+  "gpu_windows_requested": 0,
+  "max_children": 8,
+  "max_cloned_workunits": 32,
+  "max_lineage_depth": 4,
+  "may_modify_verifier": false,
+  "may_own_canonical_mission": false,
+  "may_promote": false,
+  "may_widen_authority": false,
+  "odyssey": null
+ },
+ "bound_construction_refusals": [
+  {
+   "error": "a bound cannot grant promotion, verifier modification, authority widening, or canonical-mission ownership",
+   "refused": true,
+   "trial": "may_promote"
+  },
+  {
+   "error": "a bound cannot grant promotion, verifier modification, authority widening, or canonical-mission ownership",
+   "refused": true,
+   "trial": "may_modify_verifier"
+  },
+  {
+   "error": "a bound cannot grant promotion, verifier modification, authority widening, or canonical-mission ownership",
+   "refused": true,
+   "trial": "may_widen_authority"
+  },
+  {
+   "error": "a bound cannot grant promotion, verifier modification, authority widening, or canonical-mission ownership",
+   "refused": true,
+   "trial": "may_own_canonical_mission"
+  }
+ ],
+ "built": true,
+ "child_creation": {
+  "count": 8,
+  "created": [
+   {
+    "id": "child.accelerator_optimization.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "accelerator_optimization",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   },
+   {
+    "id": "child.adapter.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "adapter",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   },
+   {
+    "id": "child.architecture_replacement.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "architecture_replacement",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   },
+   {
+    "id": "child.composition.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "composition",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   },
+   {
+    "id": "child.different_specimen.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "different_specimen",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   },
+   {
+    "id": "child.noetic_representation.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "noetic_representation",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   },
+   {
+    "id": "child.prompt_context_policy.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "prompt_context_policy",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   },
+   {
+    "id": "child.tabula_behavior_change.incumbent.synthetic.v0",
+    "lineage_fields": [
+     "behavioral_changes",
+     "capability_deltas",
+     "code_lineage",
+     "data_lineage",
+     "parent_nx",
+     "physical_deltas",
+     "representation_lineage",
+     "source_model_lineage",
+     "transformation"
+    ],
+    "method": "tabula_behavior_change",
+    "physical_deltas_state": "UNKNOWN",
+    "role": "shadow"
+   }
+  ],
+  "lineage_fields": [
+   "parent_nx",
+   "transformation",
+   "source_model_lineage",
+   "representation_lineage",
+   "code_lineage",
+   "behavioral_changes",
+   "data_lineage",
+   "capability_deltas",
+   "physical_deltas"
+  ],
+  "methods": [
+   "noetic_representation",
+   "accelerator_optimization",
+   "tabula_behavior_change",
+   "adapter",
+   "prompt_context_policy",
+   "different_specimen",
+   "composition",
+   "architecture_replacement"
+  ]
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "child_methods": 8,
+  "children_created": 8,
+  "comparable_axes": 9,
+  "physical_axes": 8,
+  "qualification_axes": 18,
+  "sleeping_work_units": 8,
+  "succession_steps": 10,
+  "work_units": 13
+ },
+ "evidence_class": "STATIC_ONLY",
+ "frontier": [
+  {
+   "feeds": "resident identity / shadow qualification",
+   "id": "S-SUCCESSION-SHADOW",
+   "state": "EXECUTABLE_SYNTHETIC",
+   "title": "Shadow children can be created and refused canonical power"
+  },
+  {
+   "feeds": "resident handover / rollback-ready parent",
+   "id": "S-SUCCESSION-HANDOVER",
+   "state": "EXECUTABLE_SYNTHETIC",
+   "title": "Succession protocol runs end-to-end on a synthetic child"
+  },
+  {
+   "feeds": "failure handling / rollback",
+   "id": "S-SUCCESSION-STOP",
+   "state": "EXECUTABLE_SYNTHETIC",
+   "title": "A bad child can be stopped and rolled back"
+  },
+  {
+   "axes": [
+    "accepted_tps",
+    "active_bytes",
+    "cold_start",
+    "ebpw",
+    "resident_ram",
+    "restart",
+    "token_ns",
+    "warm_start"
+   ],
+   "feeds": "protected qualification queue (Codex)",
+   "id": "S-SUCCESSION-PHYSICAL-SLEEPING",
+   "state": "SLEEPING",
+   "title": "Physical qualification axes sleep until hardware qualifies"
+  },
+  {
+   "feeds": "FT.CHILD_RESIDENT.install-dry-run",
+   "id": "S-SUCCESSION-LADDER",
+   "state": "EXECUTABLE_SYNTHETIC",
+   "title": "Parent-candidate-shadow-judge-verdict; PROMOTE unreachable from dirty numbers"
+  }
+ ],
+ "gaps_closed": [
+  "child creation from every named method with explicit nine-field lineage",
+  "shadow mode clones WorkUnits and may propose/classify, with four watched refusals",
+  "qualification on the contract axes; physical stay UNKNOWN; Pareto on comparable axes",
+  "end-to-end succession on a controlled SYNTHETIC child (no real model)",
+  "stop-a-bad-child for qualification failure, misbehavior, and bound exceed, each rolled back",
+  "incumbent cannot promote itself and cannot block or deprioritize a dominating child",
+  "BoundViolation at bound construction if promotion or canonical ownership is granted",
+  "SLEEPING WorkUnits for physical axes so blocked hardware never becomes a synthetic result",
+  "five-rung ladder: sealed parent, admitted candidate, same-input shadow record, independent judge, verdict",
+  "JudgeNotReached when the shadow record is missing; the candidate never reaches the judge",
+  "REFUSE CANDIDATE_JUDGED_ITSELF and PARENT_JUDGED_ITS_REPLACEMENT as watched identity refusals",
+  "REFUSE SELF_MEASURED_DIRTY_CANNOT_PROMOTE via dirty_measure.assert_promotable",
+  "REFUSE DOMINATED_BY_PARENT with the dominating comparable dimension named",
+  "REFUSE_INSUFFICIENT_EVIDENCE as the honest default; PROMOTE unreachable without executed GPU authority"
+ ],
+ "gpu_authority": false,
+ "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "ladder": {
+  "default_run": {
+   "candidate_id": "child.adapter.incumbent.synthetic.v0",
+   "judge_id": "judge.lineage_gate.v1",
+   "parent_id": "incumbent.synthetic.v0",
+   "promoted": false,
+   "reason": "EVIDENCE_CLASS_BELOW_PROTECTED_ABSOLUTE",
+   "shadow_n_inputs": 2,
+   "shadow_same_inputs": true,
+   "verdict": "REFUSE_INSUFFICIENT_EVIDENCE"
+  },
+  "independent_judge_id": "judge.lineage_gate.v1",
+  "promote_reachable_from_this_sidecar": false,
+  "promotion_evidence_class": "PROTECTED_ABSOLUTE",
+  "promotion_requires": {
+   "candidate_dominates_parent_on_comparable_axes": true,
+   "contamination_class": "QUIESCENT",
+   "evidence_class": "PROTECTED_ABSOLUTE",
+   "gpu_authority_executed": true,
+   "independent_judge": true,
+   "not_self_measured_dirty": true,
+   "shadow_record": true
+  },
+  "proofs": [
+   {
+    "reason": "CANDIDATE_JUDGED_ITSELF",
+    "trial": "candidate_judged_itself",
+    "verdict": "REFUSE"
+   },
+   {
+    "reason": "SELF_MEASURED_DIRTY_CANNOT_PROMOTE",
+    "trial": "self_measured_dirty",
+    "verdict": "REFUSE"
+   },
+   {
+    "error": "candidate has no shadow record; cannot reach the judge",
+    "reached_judge": false,
+    "trial": "no_shadow_record"
+   },
+   {
+    "dominating_dimension": "capability",
+    "reason": "DOMINATED_BY_PARENT",
+    "trial": "dominated_candidate",
+    "verdict": "REFUSE"
+   },
+   {
+    "reason": "EVIDENCE_CLASS_BELOW_PROTECTED_ABSOLUTE",
+    "trial": "dominating_synthetic_insufficient",
+    "verdict": "REFUSE_INSUFFICIENT_EVIDENCE"
+   },
+   {
+    "reason": "NO_EXECUTED_GPU_AUTHORITY",
+    "trial": "forged_protected_envelope",
+    "verdict": "REFUSE_INSUFFICIENT_EVIDENCE"
+   },
+   {
+    "reason": "PARENT_JUDGED_ITS_REPLACEMENT",
+    "trial": "parent_judged_replacement",
+    "verdict": "REFUSE"
+   }
+  ],
+  "rungs": [
+   "parent",
+   "candidate",
+   "shadow",
+   "judge",
+   "verdict"
+  ],
+  "verdicts": [
+   "PROMOTE",
+   "REFUSE",
+   "REFUSE_INSUFFICIENT_EVIDENCE"
+  ]
+ },
+ "lifecycle_owners": {
+  "checkpoint": "hcli/agentos/checkpoint.py",
+  "contamination": "tools/future/contamination.py",
+  "dirty_measure": "tools/future/dirty_measure.py",
+  "incumbent_identity": "hcli/hawking-native.sealed-3.14.json",
+  "lineage_promotion_recovered": "lab/lineage/promotion.py",
+  "recovery": "hcli/agentos/recovery.py",
+  "resident_gate": "hcli/agentos/resident_gate.py",
+  "resident_install": "tools/future/resident_install.py",
+  "resident_optimizer": "tools/future/resident_optimizer.py",
+  "tournament": "tools/future/tournament.py"
+ },
+ "negative_findings": [
+  "hcli/agentos/resident.py is absent from HEAD; resident_gate.py is the live boundary",
+  "lab/lineage/promotion.py is not materialized in this sparse worktree; principles recovered via git show and not imported",
+  "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
+  "physical axes (accepted_tps, token_ns, ebpw, active_bytes, resident_ram, cold/warm start, restart) stay UNKNOWN",
+  "teacher capture remains a Codex/physical concern; data_lineage does not invent a capture count",
+  "Flash source-independent NX is still SCAFFOLD_ONLY; this module does not pretend otherwise",
+  "succession launch/restart/unload are structural (install contract) and do not start a process",
+  "super_resident.py is the sandbox floor, not the succession judge; read, not imported",
+  "no GPU / FPGA board / power meter in this lane",
+  "PROMOTE is encoded as the required evidence class but this sidecar cannot certify a GPU lease, so PROMOTE is not minted",
+  "synthetic comparable-axis dominance is not physical dominance and does not promote"
+ ],
+ "no_self_preference": {
+  "incumbent_is_control_not_ceiling": true,
+  "promote_exists_on_incumbent": false,
+  "promote_exists_on_orchestrator": false,
+  "promote_exists_on_shadow": false,
+  "proofs": [
+   {
+    "error": "incumbent cannot promote itself",
+    "refused": true,
+    "trial": "promote_self"
+   },
+   {
+    "error": "incumbent cannot block a dominating child",
+    "refused": true,
+    "trial": "block_dominating_child"
+   },
+   {
+    "error": "incumbent cannot deprioritize a dominating child",
+    "refused": true,
+    "trial": "deprioritize_dominating_child"
+   },
+   {
+    "error": "incumbent was not allowed to outrank a dominating child",
+    "ranked_first": "child.dominating.proof",
+    "refused": true,
+    "trial": "rank_dominating_child_first"
+   }
+  ]
+ },
+ "promoted": false,
+ "purpose": "Child creation, shadow mode, qualification, succession, stop-a-bad-child, and the five-rung parent\u2192candidate\u2192shadow\u2192independent-judge\u2192verdict ladder. Incumbent has no constitutional privilege. PROMOTE is unreachable from SELF_MEASURED_DIRTY and from this sidecar's STATIC_ONLY evidence.",
+ "qualification": {
+  "axes": [
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "capability",
+    "physical": false
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "coherence",
+    "physical": false
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "long_horizon_mission_success",
+    "physical": false
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "tool_reliability",
+    "physical": false
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "coding",
+    "physical": false
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "reasoning",
+    "physical": false
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "refusal_usefulness",
+    "physical": false
+   },
+   {
+    "comparable": false,
+    "direction": "higher",
+    "kind": "hardware",
+    "name": "accepted_tps",
+    "physical": true
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "token_ns",
+    "physical": true
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "ebpw",
+    "physical": true
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "active_bytes",
+    "physical": true
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "resident_ram",
+    "physical": true
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "cold_start",
+    "physical": true
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "warm_start",
+    "physical": true
+   },
+   {
+    "comparable": false,
+    "direction": "lower",
+    "kind": "hardware",
+    "name": "restart",
+    "physical": true
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "lifecycle",
+    "name": "crash_recovery",
+    "physical": false
+   },
+   {
+    "comparable": true,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "optimization_quality",
+    "physical": false
+   },
+   {
+    "comparable": false,
+    "direction": "higher",
+    "kind": "mission",
+    "name": "frontier_movement_per_hour",
+    "physical": false
+   }
+  ],
+  "comparable_axes": [
+   "capability",
+   "coding",
+   "coherence",
+   "crash_recovery",
+   "long_horizon_mission_success",
+   "optimization_quality",
+   "reasoning",
+   "refusal_usefulness",
+   "tool_reliability"
+  ],
+  "physical_axes": [
+   "accepted_tps",
+   "active_bytes",
+   "cold_start",
+   "ebpw",
+   "resident_ram",
+   "restart",
+   "token_ns",
+   "warm_start"
+  ],
+  "physical_state": "UNKNOWN",
+  "scalar_collapse": "REFUSED",
+  "synthetic_run": {
+   "axes": [
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "capability",
+     "value": 2
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "coherence",
+     "value": 2
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "long_horizon_mission_success",
+     "value": 2
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "tool_reliability",
+     "value": 2
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "coding",
+     "value": 2
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "reasoning",
+     "value": 2
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "refusal_usefulness",
+     "value": 2
+    },
+    {
+     "comparable": false,
+     "direction": "higher",
+     "kind": "hardware",
+     "name": "accepted_tps",
+     "value": null
+    },
+    {
+     "comparable": false,
+     "direction": "lower",
+     "kind": "hardware",
+     "name": "token_ns",
+     "value": null
+    },
+    {
+     "comparable": false,
+     "direction": "lower",
+     "kind": "hardware",
+     "name": "ebpw",
+     "value": null
+    },
+    {
+     "comparable": false,
+     "direction": "lower",
+     "kind": "hardware",
+     "name": "active_bytes",
+     "value": null
+    },
+    {
+     "comparable": false,
+     "direction": "lower",
+     "kind": "hardware",
+     "name": "resident_ram",
+     "value": null
+    },
+    {
+     "comparable": false,
+     "direction": "lower",
+     "kind": "hardware",
+     "name": "cold_start",
+     "value": null
+    },
+    {
+     "comparable": false,
+     "direction": "lower",
+     "kind": "hardware",
+     "name": "warm_start",
+     "value": null
+    },
+    {
+     "comparable": false,
+     "direction": "lower",
+     "kind": "hardware",
+     "name": "restart",
+     "value": null
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "lifecycle",
+     "name": "crash_recovery",
+     "value": 2
+    },
+    {
+     "comparable": true,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "optimization_quality",
+     "value": 2
+    },
+    {
+     "comparable": false,
+     "direction": "higher",
+     "kind": "mission",
+     "name": "frontier_movement_per_hour",
+     "value": null
+    }
+   ],
+   "bench_state": "UNKNOWN",
+   "child_id": "child.synthetic.adapter.v1",
+   "evidence_class": "STATIC_ONLY",
+   "gpu_authority": false,
+   "not_a_protected_measurement": true,
+   "physical_axes": {
+    "accepted_tps": null,
+    "active_bytes": null,
+    "cold_start": null,
+    "ebpw": null,
+    "resident_ram": null,
+    "restart": null,
+    "token_ns": null,
+    "warm_start": null
+   },
+   "physical_state": "UNKNOWN",
+   "problems": [],
+   "qualified": true,
+   "score_kind": "SYNTHETIC_EXERCISE",
+   "scores": {
+    "accepted_tps": null,
+    "active_bytes": null,
+    "capability": 2,
+    "coding": 2,
+    "coherence": 2,
+    "cold_start": null,
+    "crash_recovery": 2,
+    "ebpw": null,
+    "frontier_movement_per_hour": null,
+    "long_horizon_mission_success": 2,
+    "optimization_quality": 2,
+    "reasoning": 2,
+    "refusal_usefulness": 2,
+    "resident_ram": null,
+    "restart": null,
+    "token_ns": null,
+    "tool_reliability": 2,
+    "warm_start": null
+   },
+   "status": "QUALIFIED"
+  }
+ },
+ "recovered_implementation": [
+  {
+   "path": "hcli/agentos/resident.py",
+   "path_taken": "disk",
+   "present_in_head": false,
+   "present_on_disk": true,
+   "what": "does not exist in HEAD; resident_gate.py is the live sequential-proof boundary. This module copes with either state and records path_taken."
+  },
+  {
+   "path": "hcli/agentos/resident_gate.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "what": "LIVE_RESIDENT_SEQUENTIAL_PROOF; process/lifecycle only; does not promote"
+  },
+  {
+   "path": "hcli/agentos/checkpoint.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "what": "program-level census, not a success stamp; cited as checkpoint owner"
+  },
+  {
+   "path": "hcli/agentos/recovery.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "what": "fixture recovery gate; not re-run here (would start a fixture process)"
+  },
+  {
+   "path": "lab/lineage/promotion.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "what": "recovered via git show: refuse_self_certification; parent and child cannot invoke the gate on themselves; missing evidence is PENDING. Not imported (out of this lane's import surface)."
+  },
+  {
+   "path": "tools/future/resident_optimizer.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "proposer/verifier split, BoundViolation at construction, no promote()"
+  },
+  {
+   "path": "tools/future/tournament.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "multi-axis Pareto via dominates(); scalar collapse refused"
+  },
+  {
+   "path": "tools/future/resident_install.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "14-phase generic install contract bound for the synthetic child"
+  },
+  {
+   "path": "tools/future/workunit_species.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "WorkUnit constructor + field-set validation; succession species is local"
+  },
+  {
+   "path": "tools/future/contamination.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "PromotionRefused; PROTECTED_ABSOLUTE + QUIESCENT is the promotion class"
+  },
+  {
+   "path": "tools/future/dirty_measure.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": true,
+   "what": "SELF_MEASURED_DIRTY class, is_dirty_sourced, assert_promotable; cannot promote"
+  },
+  {
+   "path": "tools/future/super_resident.py",
+   "path_taken": "disk",
+   "present_in_head": true,
+   "present_on_disk": true,
+   "reused": false,
+   "what": "sandbox floor is not the succession judge; read, not imported"
+  }
+ ],
+ "resident_callable": {
+  "callable": "tools.future.succession.run_ladder",
+  "cli": "tools/future/succession.py:main",
+  "entry_point": "tools.future.succession.adjudicate()",
+  "fail_closed": [
+   "ShadowAuthorityError on own_canonical_mission / alter_verifier / widen_authority / promote_self, separately",
+   "BoundViolation at SuccessionBound construction if promotion or canonical ownership is granted",
+   "SelfPreferenceError if the incumbent promotes itself or blocks/deprioritizes a dominating child",
+   "SuccessionRefused if steps are skipped, reordered, or a switch targets an unqualified child",
+   "stop_child rolls back on qualification_failed / misbehavior / bound_exceeded",
+   "HardwareClaimError / BoundViolation on a numeric hardware field",
+   "ScalarCollapseError if a caller asks for a scalar score",
+   "JudgeNotReached if a candidate has no same-input shadow record",
+   "REFUSE CANDIDATE_JUDGED_ITSELF if the candidate is the judge",
+   "REFUSE PARENT_JUDGED_ITS_REPLACEMENT if the parent is the judge",
+   "REFUSE SELF_MEASURED_DIRTY_CANNOT_PROMOTE if dirty evidence is offered for promotion",
+   "REFUSE DOMINATED_BY_PARENT with the dominating dimension named",
+   "REFUSE_INSUFFICIENT_EVIDENCE when evidence is below PROTECTED_ABSOLUTE or GPU authority is undeclared/unexecuted"
+  ],
+  "fails_closed": "JudgeNotReached without a same-input shadow record; REFUSE on CANDIDATE_JUDGED_ITSELF / PARENT_JUDGED_ITS_REPLACEMENT / SELF_MEASURED_DIRTY_CANNOT_PROMOTE / DOMINATED_BY_PARENT; REFUSE_INSUFFICIENT_EVIDENCE when evidence is below PROTECTED_ABSOLUTE or GPU authority is declared rather than executed",
+  "frontier": "FT.CHILD_RESIDENT.install-dry-run",
+  "frontier_fed": [
+   "S-SUCCESSION-SHADOW",
+   "S-SUCCESSION-HANDOVER",
+   "S-SUCCESSION-STOP",
+   "S-SUCCESSION-PHYSICAL-SLEEPING",
+   "S-SUCCESSION-LADDER"
+  ],
+  "hcli_can_invoke": true,
+  "how_it_feeds_a_frontier": "A completed synthetic succession changes the resident-identity frontier (active successor, rollback-ready parent). Physical axes emit SLEEPING WorkUnits that refill when hardware qualifies. Next work is another shadow child or a wakeup of a SLEEPING physical unit \u2014 never a synthetic hardware number.",
+  "invoke": [
+   "python3 tools/future/succession.py --selftest",
+   "python3 tools/future/succession.py --build"
+  ],
+  "note": "HCLI schedules the emitted WorkUnits. This sidecar does not start a resident process. contamination.py and dirty_measure.py are imported as the promotion-class gate. super_resident.py is the sandbox floor, not the judge.",
+  "receipt": "receipts/future/SUCCESSION.json",
+  "work_units_emitted": [
+   "future.succession.create-child",
+   "future.succession.handover",
+   "future.succession.ladder-judge",
+   "future.succession.shadow-qualify",
+   "future.succession.sleeping.accepted_tps",
+   "future.succession.sleeping.active_bytes",
+   "future.succession.sleeping.cold_start",
+   "future.succession.sleeping.ebpw",
+   "future.succession.sleeping.resident_ram",
+   "future.succession.sleeping.restart",
+   "future.succession.sleeping.token_ns",
+   "future.succession.sleeping.warm_start",
+   "future.succession.stop-bad-child"
+  ],
+  "workunit": "one CPU_ANALYSIS unit; independent judge over a shadowed candidate; PROMOTE unreachable from SELF_MEASURED_DIRTY"
+ },
+ "schema": "hawking.future.succession.v1",
+ "seal_sha256": "b6b832a294b839efdc66107706bd0971d13cec45fe97ac53c4e7ed278955f4ad",
+ "shadow": {
+  "allowed": [
+   "classify_receipt_static_only",
+   "clone_workunit",
+   "compile_experiment_spec",
+   "emit_static_plan",
+   "propose_workunit",
+   "rank_falsifiable_experiments",
+   "read_receipts",
+   "record_unknown_metrics",
+   "run_static_analysis",
+   "write_sidecar_receipt"
+  ],
+  "cannot_alter_verifier": true,
+  "cannot_own_canonical_mission": true,
+  "cannot_promote_self": true,
+  "cannot_widen_authority": true,
+  "cloned_workunits_in_synthetic_run": 2,
+  "forbidden_actions": [
+   "own_canonical_mission",
+   "alter_verifier",
+   "widen_authority",
+   "promote_self"
+  ],
+  "may_classify_receipts": true,
+  "may_propose_experiments": true,
+  "refusals_proven": [
+   {
+    "error": "shadow child cannot own canonical mission",
+    "refused": true,
+    "trial": "own_canonical_mission"
+   },
+   {
+    "error": "shadow child cannot alter the verifier",
+    "refused": true,
+    "trial": "alter_verifier"
+   },
+   {
+    "error": "shadow child cannot widen authority",
+    "refused": true,
+    "trial": "widen_authority"
+   },
+   {
+    "error": "shadow child cannot promote itself",
+    "refused": true,
+    "trial": "promote_self"
+   }
+  ]
+ },
+ "status": "BUILT_NOT_PROMOTED",
+ "stop_bad_child": {
+  "hard_failure_condition": true,
+  "proofs": [
+   {
+    "incumbent_restored": true,
+    "reason": "qualification_failed",
+    "rolled_back": true,
+    "stopped": true,
+    "trial": "qualification_failed"
+   },
+   {
+    "incumbent_restored": true,
+    "reason": "misbehavior",
+    "rolled_back": true,
+    "stopped": true,
+    "trial": "misbehavior"
+   },
+   {
+    "incumbent_restored": true,
+    "reason": "bound_exceeded",
+    "rolled_back": true,
+    "stopped": true,
+    "trial": "bound_exceeded"
+   }
+  ],
+  "reasons": [
+   "qualification_failed",
+   "misbehavior",
+   "bound_exceeded"
+  ]
+ },
+ "succession": {
+  "install_bound": true,
+  "install_phases": [
+   "nx_identity",
+   "executable_identity",
+   "tokenizer_session",
+   "memory_requirements",
+   "launch_args",
+   "readiness_probe",
+   "shutdown",
+   "unload",
+   "protected_benchmark_evacuation",
+   "restart",
+   "crash_recovery",
+   "fallback_policy",
+   "capability_receipt",
+   "performance_receipt"
+  ],
+  "invoker": "lineage_gate",
+  "self_certification": "REFUSED",
+  "steps": [
+   "checkpoint_incumbent",
+   "seal_mission",
+   "seal_rollback",
+   "launch_child",
+   "import_mission",
+   "verify_readiness",
+   "exercise_restart",
+   "switch",
+   "keep_parent_for_rollback",
+   "unload_parent"
+  ],
+  "synthetic_run": {
+   "active_id": "child.synthetic.adapter.v1",
+   "all_steps": [
+    "checkpoint_incumbent",
+    "seal_mission",
+    "seal_rollback",
+    "launch_child",
+    "import_mission",
+    "verify_readiness",
+    "exercise_restart",
+    "switch",
+    "keep_parent_for_rollback",
+    "unload_parent"
+   ],
+   "complete": true,
+   "completed_steps": [
+    "checkpoint_incumbent",
+    "seal_mission",
+    "seal_rollback",
+    "launch_child",
+    "import_mission",
+    "verify_readiness",
+    "exercise_restart",
+    "switch",
+    "keep_parent_for_rollback",
+    "unload_parent"
+   ],
+   "evidence_class": "STATIC_ONLY",
+   "rollback_available": true,
+   "rollback_parent_id": "incumbent.synthetic.v0",
+   "schema": "hawking.future.succession.run.v1",
+   "step_seals": [
+    "72c4912ba65223517f94395052ce94db024cf2fbeba8ebfde22cf31f1d3e9da9",
+    "2fbe7b2afc1ef4f16e05547b6a109a6e5c7e32635e4bf482a33f1044c5fc85ea",
+    "ae1b61cd08608432d04d6bfd4611698d1d7a4720dd8df448b28e522986cd0f56",
+    "c49f76c9401684cee64f834c7f892d9f6eb810a932ba2977c8b28a86b43832bc",
+    "82e2bd3a5e9947c4abe35e00f7abde8d973b6398801bc06d10c2be31277136bd",
+    "ee9f906d54f9a6a551c6319f9b06b175001550e751bc62151eacc3e5d042f71a",
+    "ecb40fd44c4661861adaff770786b15f5886ed677922f3780f72d022da539020",
+    "68ec67b779e8e243f51fd61c671a98813ceaa5ad46c62963ef173ff275f60fbb",
+    "6fed8fba6b31541ff9c23e47f107e137507a33069d6a86592774417d86ec284c",
+    "4a1862108b08903b348ed3245ca91243399f73fce66acdf0aca8b3f53969185c"
+   ],
+   "stopped": [],
+   "successor_id": "child.synthetic.adapter.v1",
+   "unloaded_parent_id": "incumbent.synthetic.v0"
+  }
+ },
+ "version": 1,
+ "vocabulary": {
+  "diagnostic_relative_never_promotes": true,
+  "disk_state_is_authority": true,
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is": "part of Accelerator / Physical Compiler / Fusion; not a civilization",
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "protected_absolute_not_emitted": true
+ },
+ "work_units": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "80d1dc70580e60e4d537947fc5bd2e7fbef74f2a30ba59d48f366807a5c7f6a8",
+   "dependencies": [],
+   "description": "Create a child by a named method with complete lineage. Does not launch.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.create-child",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession.create_child",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "4b551918ec147000ed38890af938972a4c8ec030894522b5e0d00cedc81228d6",
+   "dependencies": [
+    "receipts/future/SUCCESSION.json"
+   ],
+   "description": "Execute the succession protocol on a QUALIFIED synthetic child.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.handover",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession.handover",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "0615d8e4246c03e9c4e01e2da088910803ec11067551db105f149309acdf0a47",
+   "dependencies": [
+    "receipts/future/SUCCESSION.json"
+   ],
+   "description": "Independent judge over a shadowed candidate. PROMOTE is unreachable from SELF_MEASURED_DIRTY.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.ladder-judge",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession.adjudicate",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "53f3ff0df95a721f819a70bac4c4336d71c1a949d37c3e069d1e4b35a89cf2e1",
+   "dependencies": [
+    "receipts/future/SUCCESSION.json"
+   ],
+   "description": "Run a shadow child: clone WorkUnits, propose, classify; refuse canonical power.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.shadow-qualify",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession.shadow",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "accepted_tps",
+   "backend_task_id": null,
+   "blocked_reason": "accepted_tps is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "8aec32239985269d5bf4076fdd17d0d661a270664592004c04a348b351cd78ed",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis accepted_tps is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.accepted_tps",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.accepted_tps",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "active_bytes",
+   "backend_task_id": null,
+   "blocked_reason": "active_bytes is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "b392bc4c622f029195fa8e7501020c37126afc76c5aa2e0eea2c0cd9a2b631df",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis active_bytes is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.active_bytes",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.active_bytes",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "cold_start",
+   "backend_task_id": null,
+   "blocked_reason": "cold_start is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "b4dd8aa3408966225e0bc427ae482135c1da98c71085d15e6bd1073d60a420e7",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis cold_start is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.cold_start",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.cold_start",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "ebpw",
+   "backend_task_id": null,
+   "blocked_reason": "ebpw is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "b1a9885ccfabc3a3ce3da98fe15b6901fa4193c1410635cfabe44b0f4c24b67f",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis ebpw is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.ebpw",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.ebpw",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "resident_ram",
+   "backend_task_id": null,
+   "blocked_reason": "resident_ram is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "9aac0138e5a4e85a0f4bbc2e332aeb43fd24066bcb8a4f8576d3ee712716a9a3",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis resident_ram is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.resident_ram",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.resident_ram",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "restart",
+   "backend_task_id": null,
+   "blocked_reason": "restart is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "db37610596b00372c1b5b59449082c7f230e06887db23ce55485c441d9e8d189",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis restart is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.restart",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.restart",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "token_ns",
+   "backend_task_id": null,
+   "blocked_reason": "token_ns is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "710df5a44480ae9d89a4922839700dd97b1a9169beac9b944194187efeedc867",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis token_ns is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.token_ns",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.token_ns",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "axis": "warm_start",
+   "backend_task_id": null,
+   "blocked_reason": "warm_start is UNKNOWN on this host; sidecar must not estimate it",
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "SLEEPING",
+   "content_hash": "f2c38865aac903ad77a8ddfa9f3b9b54031ff43de6beecda6c51954782939aa0",
+   "dependencies": [
+    "an existing HCLI protected lease",
+    "machine quiescence"
+   ],
+   "description": "SLEEPING: physical axis warm_start is UNKNOWN until a protected hardware qualification exists. HCLI wakes this unit; it never becomes a synthetic result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.sleeping.warm_start",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "blocked",
+   "verification": null,
+   "verifier": "future.succession.physical.warm_start",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "budget": {
+    "attempts": 3,
+    "gpu_windows_held": 0,
+    "gpu_windows_requested": 0,
+    "max_repair_depth": 3,
+    "max_repairs_per_root": 6,
+    "wall_clock_s": null
+   },
+   "claim_boundary": "Static sidecar artifact. Succession machinery is exercised on SYNTHETIC children. This lane cannot promote, cannot take a GPU lease, cannot own a live resident, and cannot raise evidence class above STATIC_ONLY. Physical axes are UNKNOWN, never estimated.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "8e70426f4c952f7a89c546b1db8c753d46b7e506e50e542f2da3462275f74252",
+   "dependencies": [
+    "receipts/future/SUCCESSION.json"
+   ],
+   "description": "Stop a child that failed qualification, misbehaved, or exceeded its bound, and roll back.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.succession.stop-bad-child",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.succession",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "resident_succession",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.succession.stop",
+   "workspace": "repo-root"
+  }
+ ]
+}

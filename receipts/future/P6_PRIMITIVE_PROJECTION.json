@@ -1,0 +1,4975 @@
+{
+ "atlas_primitives": [
+  "PersistentPhysicalRegion",
+  "StationaryRepresentation",
+  "AsyncPrefetch",
+  "DoubleBufferedTile",
+  "SpatialPipeline",
+  "FusedDecodeCompute",
+  "DirectRoutedAccumulate",
+  "LocalStateMachine",
+  "SemanticTransportEdge",
+  "TiledProjection",
+  "LayoutTransform",
+  "SparseSkip",
+  "ConditionalPhysicalProgram",
+  "GraphReplay",
+  "CollectiveRegion",
+  "MoveOrRecompute",
+  "MemoryTierIdentity"
+ ],
+ "attack_families": [
+  "negative_transfer",
+  "blind_holdout",
+  "measurement_trap",
+  "contamination_trap",
+  "goodhart",
+  "compiler_prior",
+  "representation_overfit",
+  "law_scope",
+  "causal_control"
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:18:37Z",
+  "recorded_by": "tools.future.p6_projection.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "grok/l36-torture-wiring-20260830-182109",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "by_scope": {
+   "BACKEND_FAMILY": 8,
+   "MACHINE_LOCAL": 1,
+   "MODEL_LOCAL": 6
+  },
+  "by_status": {
+   "BLOCKED": 15
+  },
+  "p6_p7_candidates": 15,
+  "queue_candidates": 49,
+  "spatially_meaningful": 13,
+  "spatially_not_meaningful": 2,
+  "unmapped": 0
+ },
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_inputs": {
+  "architecture_atlas": {
+   "consulted": [
+    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+   ],
+   "evidence_source": "live_headless",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "present": true
+  },
+  "evidence_snapshot_manifest": {
+   "evidence_source": "pinned_snapshot",
+   "path": "receipts/future/EVIDENCE_SNAPSHOT.json",
+   "present": true
+  },
+  "front_g_p6": {
+   "consulted": [
+    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json"
+   ],
+   "evidence_source": "live_headless",
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+   "present": true
+  },
+  "qualification_queue": {
+   "consulted": [
+    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "evidence_source": "live_headless",
+   "n_candidates_in_queue": 49,
+   "n_p6_p7": 15,
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "present": true
+  }
+ },
+ "evidence_source": "live_headless",
+ "front_g_p6": {
+  "claim_boundary_excerpt": "WHY THIS IS MACHINE-SPECIFIC: on a discrete GPU the host-to-device and device-to-host copies are NOT optional -- there is separate device memory and the data must cross it. On this machine there is none, so both copies can simply not happen. That is why it qualifies for P6 where the flat autotune landscape did not.\nFAIRNESS CAVEAT, STATED PLAINLY: the CUDA-era arm copies on EVERY call, which is the NAIVE pattern. A competent CUDA programmer hoists the upload out of the loop and keeps data resident, and would not pay this 7x. So the honest claim is NOT 'Apple beats CUDA by 7x'. It is that per-call host<->device copying costs 7.17-7.44x on this operation, and that on unified memory the elimination is structural rather than something the programmer must remember to do.\nThe ADP is PROVISIONAL,",
+  "constrains": "Unified-memory copy elision is machine-specific. Discrete GPUs still pay host-device copies. That ceiling applies to any P6 idea whose mechanism is 'do not copy / keep resident' (expert-cache reuse).",
+  "experiment_class": "ACCEL-MEMORY",
+  "knowledge_level": "INSTANCE",
+  "numbers_omitted": "FRONT_G_P6 result timings are Codex measurements; sidecar does not restate them",
+  "proof": "P6 \u2014 a reproducible machine-specific win"
+ },
+ "gaps_closed": [
+  "P6/P7 queue rows now have a primitive mapping justified from exact_mutation.",
+  "Spatially meaningful rows have an HWIR sketch that passes hwir.validate.",
+  "Command-buffer / host-admission rows are recorded spatially_meaningful=false.",
+  "Transfer-scope ceiling defaults DOWN; GENERIC_VERIFIED is refused by the emitter.",
+  "Odyssey III counterexample uses attack-family vocabulary and planning cost_units.",
+  "FPGA form cites fpga_engines functional references; no HDL, no backend."
+ ],
+ "gpu_authority": false,
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "negative_findings": [
+  "No protected GPU lease: every hardware quantity remains UNKNOWN.",
+  "No FPGA board, bitstream, or cycle-accurate model; FPGA forms are hypotheses.",
+  "fpga_engines has no SwiGLU/silu golden; fused gate/up/SwiGLU cites qgemv + routed_expert_accumulate only.",
+  "Nothing here is GENERIC_VERIFIED; candidates are BLOCKED and unmeasured.",
+  "Sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+  "FRONT_G_P6 is not in receipts/future/evidence/ (snapshot did not capture it)."
+ ],
+ "not_an_fpga_backend": true,
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "projections": [
+  {
+   "affected_physical_region": "Flash P6 BF16-to-E4M3FN activation quantization",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 quantizer candidate has no byte-exact parity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-act-quant-simdgroup",
+   "codex_expectations": {
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 quantizer candidate has no byte-exact parity/coherence and protected-latency receipt",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source BF16 reads and E4M3FN/UE8M0 output bytes; NX active bytes unqualified",
+    "expected_dispatch_reduction": "0; the quantizer remains one dispatch per source activation, with wider block ownership",
+    "expected_eliminated_work": "one serial thread per 128-wide activation block across the routed/shared MoE projections",
+    "expected_gpu_ns_mechanism": "one SIMD-group owns each 128-wide block with packed BF16/uchar4 loads and the same finite-table RNE encoding",
+    "expected_intermediate_byte_reduction": "0; quantized bytes and UE8M0 scale bytes retain the existing buffers",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_ACT_QUANT_SIMD": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_ACT_QUANT_SIMD=1. expected_gpu_ns_mechanism: one SIMD-group owns each 128-wide block with packed BF16/uchar4 loads and the same finite-table RNE encoding. expected_dispatch_reduction: 0 (wider block ownership, same dispatch). LayoutTransform (lane/block map) + FusedDecodeCompute (BF16->E4M3FN at the consumer). Simdgroup width is Metal, so BACKEND_FAMILY.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "semantic_transport_transform"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "explicit_banking",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": []
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_ACT_QUANT_SIMD=1. expected_gpu_ns_mechanism: one SIMD-group owns each 128-wide block with packed BF16/uchar4 loads and the same finite-table RNE encoding. expected_dispatch_reduction: 0 (wider block ownership, same dispatch). LayoutTransform (lane/block map) + FusedDecodeCompute (BF16->E4M3FN at the consumer). Simdgroup width is Metal, so BACKEND_FAMILY.",
+    "names": [
+     "LayoutTransform",
+     "FusedDecodeCompute"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "quant",
+       "dst_port": "tiled",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_t",
+       "in_transit_transform": "identity",
+       "src": "layout",
+       "src_port": "tiled"
+      },
+      {
+       "dst": "layout",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "quant",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "f5ee2b7aefc1996cec48daeb169cecf49dbf53513bd83e9b780abd41a3c117a2",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "layout",
+       "inputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "organ": "",
+       "outputs": {
+        "tiled": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": 4,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": [
+         128
+        ]
+       },
+       "primitive": "LayoutTransform",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "quant",
+       "inputs": {
+        "tiled": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "BF16 activation to packed E4M3FN at the consumer; RNE table",
+       "organ": "",
+       "outputs": {
+        "q": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_ACT_QUANT_SIMD=1. expected_gpu_ns_mechanism: one SIMD-group owns each 128-wide block with packed BF16/uchar4 loads and the same finite-table RNE encoding. expected_dispatch_reduction: 0 (wider block ownership, same dispatch). LayoutTransform (lane/block map) + FusedDecodeCompute (BF16->E4M3FN at the consumer). Simdgroup width is Metal, so BACKEND_FAMILY.",
+      "hypothesis for flash-p6-act-quant-simdgroup; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 8,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Replay flash-p6-act-quant-simdgroup on a backend whose SIMD/command-buffer geometry is not Metal simdgroup/CB (or force the scalar/fused-off control). If the concept were BACKEND_FAMILY it would still hold; collapse refutes transfer.",
+    "falsifier": "same mutation, different backend geometry, concept does not hold",
+    "family": "compiler_prior",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Treat simdgroup width, block ownership and packed-load layout as compiler objects (LayoutTransform), not kernel folklore. Keep the sequential reduction order as the numerical contract; simd_sum needs an associativity waiver against fpga_engines.reductions.",
+      "primitive": "LayoutTransform"
+     },
+     {
+      "lesson": "Fuse representation decode with the consumer and do not write the dense/FP32 staging the fused path no longer needs. Authority scratch may stay allocated for A/B; it should not become a traffic path.",
+      "primitive": "FusedDecodeCompute"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation HAWKING_DSV4F_P6_ACT_QUANT_SIMD=1. expected_gpu_ns_mechanism: one SIMD-group owns each 128-wide block with packed BF16/uchar4 loads and the same finite-table RNE encoding. expected_dispatch_reduction: 0 (wider block ownership, same dispatch). LayoutTransform (lane/block map) + FusedDecodeCompute (BF16->E4M3FN at the consumer). Simdgroup width is Metal, so BACKEND_FAMILY.",
+    "scope": "BACKEND_FAMILY"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 fixed-seven down activation quantization wave",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-batched-down-qat",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged BF16 SwiGLU inputs, E4M3FN quantized outputs, and E8M0FNU scale bytes",
+    "expected_dispatch_reduction": "replace seven down-QAT dispatches with one fixed-seven indirect dispatch; P6 structural topology falls from 60 to 54 while compute-encoder count is unchanged",
+    "expected_eliminated_work": "six routed and one shared independent BF16-to-E4M3FN/E8M0 activation-quantization launch boundaries",
+    "expected_gpu_ns_mechanism": "one logical source 128-value block per thread reads one of six routed or one shared scratch tensor through a fixed indirect record; block arithmetic and byte order match the authority quantizer",
+    "expected_intermediate_byte_reduction": "same seven quantized activation buffers and seven E8M0FNU scale buffers remain the downstream ABI; only pointer binding is packed",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_BATCHED_DOWN_QAT=1. expected_eliminated_work: six routed and one shared independent BF16-to-E4M3FN/E8M0 launch boundaries. expected_gpu_ns_mechanism: one logical 128-value block per thread reads one of seven scratch tensors through a fixed indirect record. SpatialPipeline (one engine, seven banks) + GraphReplay (one dispatch topology). The seven-count is Flash P6; default DOWN to MODEL_LOCAL.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "semantic_transport_transform"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "explicit_banking",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": []
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_BATCHED_DOWN_QAT=1. expected_eliminated_work: six routed and one shared independent BF16-to-E4M3FN/E8M0 launch boundaries. expected_gpu_ns_mechanism: one logical 128-value block per thread reads one of seven scratch tensors through a fixed indirect record. SpatialPipeline (one engine, seven banks) + GraphReplay (one dispatch topology). The seven-count is Flash P6; default DOWN to MODEL_LOCAL.",
+    "names": [
+     "SpatialPipeline",
+     "GraphReplay"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "replay",
+       "dst_port": "y",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_r",
+       "in_transit_transform": "identity",
+       "src": "pipe",
+       "src_port": "y"
+      },
+      {
+       "dst": "pipe",
+       "dst_port": "q",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_q",
+       "in_transit_transform": "identity",
+       "src": "qat",
+       "src_port": "q"
+      },
+      {
+       "dst": "qat",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "c272f7ec0a3416ef7cdc46dea3c17860508dc3bfdbb7138ca03a1bcbdf3764ca",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "pipe",
+       "inputs": {
+        "q": "compact_representation_fragment"
+       },
+       "kind": "persistent-pipeline",
+       "lifetime": null,
+       "mapping": "one engine, seven banks; GraphReplay of the dispatch topology",
+       "organ": "",
+       "outputs": {
+        "y": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "SpatialPipeline",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "qat",
+       "inputs": {
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "fixed-seven indirect QAT; same arithmetic, packed pointer binding",
+       "organ": "",
+       "outputs": {
+        "q": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": 7,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": [
+         128
+        ]
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "replay",
+       "inputs": {
+        "y": "compact_representation_fragment"
+       },
+       "kind": "persistent-pipeline",
+       "lifetime": "resident",
+       "mapping": "compile_once_reuse of the fixed-seven indirect record",
+       "organ": "",
+       "outputs": {
+        "out": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "GraphReplay",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_BATCHED_DOWN_QAT=1. expected_eliminated_work: six routed and one shared independent BF16-to-E4M3FN/E8M0 launch boundaries. expected_gpu_ns_mechanism: one logical 128-value block per thread reads one of seven scratch tensors through a fixed indirect record. SpatialPipeline (one engine, seven banks) + GraphReplay (one dispatch topology). The seven-count is Flash P6; default DOWN to MODEL_LOCAL.",
+      "hypothesis for flash-p6-batched-down-qat; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "memory",
+     "persistent-pipeline",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 3,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Hold representation and dispatch topology fixed; disable only the flash-p6-batched-down-qat flag. If complete-token wall is unchanged the mechanism is not causal.",
+    "falsifier": "flag off, complete-token behaviour unchanged",
+    "family": "causal_control",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "REFUTED"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Independent producers that share an input and write disjoint outputs belong in one spatial region / one encoder. Overlap is a measured window, never an assumed one.",
+      "primitive": "SpatialPipeline"
+     },
+     {
+      "lesson": "Do not insert a host commit/wait between device-resident waves whose hazards are already explicit. Collapsing command-buffer ceremony is GraphReplay, not a new kernel.",
+      "primitive": "GraphReplay"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling MODEL_LOCAL: exact_mutation HAWKING_DSV4F_P6_BATCHED_DOWN_QAT=1. expected_eliminated_work: six routed and one shared independent BF16-to-E4M3FN/E8M0 launch boundaries. expected_gpu_ns_mechanism: one logical 128-value block per thread reads one of seven scratch tensors through a fixed indirect record. SpatialPipeline (one engine, seven banks) + GraphReplay (one dispatch topology). The seven-count is Flash P6; default DOWN to MODEL_LOCAL.",
+    "scope": "MODEL_LOCAL"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 routed FP4 W2 plus shared FP8 W2 and BF16 combine",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; this full composition still requires matched parity/coherence and protected latency",
+   "candidate_id": "flash-p6-fused-down-shared-combine",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; this full composition still requires matched parity/coherence and protected latency",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged routed FP4 weights, shared FP8 weights, E8M0 scales, and seven activation-quantized input buffers; inactive scratch allocation is reduced by 344022 structural bytes and transient down traffic is reduced",
+    "expected_dispatch_reduction": "replace the fifteen downstream W2/cast/combine dispatches with one source-order fused launch; fixed-hash P6 structural topology falls from 60 to 46 while the seven authoritative QAT launches remain",
+    "expected_eliminated_work": "six routed FP4 W2 dispatches, one shared FP8 W2 dispatch, seven FP32-to-BF16 cast dispatches, one final combine dispatch, and the routed/shared down intermediates",
+    "expected_gpu_ns_mechanism": "one 256-thread row launch reads six resident indirect FP4 records, computes source-order FP4 rows with BF16 round-trips, computes the shared FP8 row with 128-value blocks, then performs the fixed-six numeric-order BF16 combine directly into output",
+    "expected_intermediate_byte_reduction": "bypass six routed down_f32/down_bf16 buffers and the shared down FP32/BF16 staging at the consumer; inactive authority scratch is one-byte guarded storage, while QAT bytes and final caller-owned BF16 output remain explicit",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED=1. expected_eliminated_work: six routed FP4 W2, one shared FP8 W2, seven FP32-to-BF16 casts, one final combine. expected_gpu_ns_mechanism: one 256-thread row launch reads six resident indirect FP4 records, the shared FP8 row, then the fixed-six numeric-order BF16 combine. FusedDecodeCompute + DirectRoutedAccumulate. Flash fixed-six+shared topology; default DOWN to MODEL_LOCAL. Live-queue id not in the pinned snapshot.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "streaming_producer_consumer",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED=1. expected_eliminated_work: six routed FP4 W2, one shared FP8 W2, seven FP32-to-BF16 casts, one final combine. expected_gpu_ns_mechanism: one 256-thread row launch reads six resident indirect FP4 records, the shared FP8 row, then the fixed-six numeric-order BF16 combine. FusedDecodeCompute + DirectRoutedAccumulate. Flash fixed-six+shared topology; default DOWN to MODEL_LOCAL. Live-queue id not in the pinned snapshot.",
+    "names": [
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "accum",
+       "dst_port": "y",
+       "frame_kind": "activation",
+       "id": "e_y",
+       "in_transit_transform": "identity",
+       "src": "decode",
+       "src_port": "y"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "f0baff7a71731c6a70b39e896b53dfc94e05c2734c77a11d2e54cd4571553f6e",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "accum",
+       "inputs": {
+        "y": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "route_then_native_expert; selected_payload_only",
+       "organ": "",
+       "outputs": {
+        "out": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "DirectRoutedAccumulate",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "decode",
+       "inputs": {
+        "packed": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "projection_plus_decode native_decode; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "y": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED=1. expected_eliminated_work: six routed FP4 W2, one shared FP8 W2, seven FP32-to-BF16 casts, one final combine. expected_gpu_ns_mechanism: one 256-thread row launch reads six resident indirect FP4 records, the shared FP8 row, then the fixed-six numeric-order BF16 combine. FusedDecodeCompute + DirectRoutedAccumulate. Flash fixed-six+shared topology; default DOWN to MODEL_LOCAL. Live-queue id not in the pinned snapshot.",
+      "hypothesis for flash-p6-fused-down-shared-combine; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 15,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Apply the fused/fixed-K idea of flash-p6-fused-down-shared-combine to another MoE that is not Flash's fixed-six/fixed-seven hash graph. Failure keeps the idea MODEL_LOCAL.",
+    "falsifier": "non-Flash MoE does not accept the fused topology",
+    "family": "negative_transfer",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "REFUTED"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Fuse representation decode with the consumer and do not write the dense/FP32 staging the fused path no longer needs. Authority scratch may stay allocated for A/B; it should not become a traffic path.",
+      "primitive": "FusedDecodeCompute"
+     },
+     {
+      "lesson": "Keep route metadata with the selected payloads in one physical region. Do not gather inactive experts and do not introduce a second combine.",
+      "primitive": "DirectRoutedAccumulate"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling MODEL_LOCAL: exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED=1. expected_eliminated_work: six routed FP4 W2, one shared FP8 W2, seven FP32-to-BF16 casts, one final combine. expected_gpu_ns_mechanism: one 256-thread row launch reads six resident indirect FP4 records, the shared FP8 row, then the fixed-six numeric-order BF16 combine. FusedDecodeCompute + DirectRoutedAccumulate. Flash fixed-six+shared topology; default DOWN to MODEL_LOCAL. Live-queue id not in the pinned snapshot.",
+    "scope": "MODEL_LOCAL"
+   }
+  },
+  {
+   "affected_physical_region": "Flash reusable P6 composed latency stack",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; composition interactions require a fresh parity/coherence and latency receipt",
+   "candidate_id": "flash-p6-fused-epilogue-stack",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; composition interactions require a fresh parity/coherence and latency receipt",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source FP4/FP8 weights, E8M0 scales, route IDs/weights, and BF16 final output contract",
+    "expected_dispatch_reduction": "P6 structural target is 60 to 7 dispatches, 10 to 4 compute encoders, and 2 to 1 command buffer on the hash path; the fixed-seven QAT producer and full down fusion share one serial dependency encoder, so measure interaction rather than summing isolated wins",
+    "expected_eliminated_work": "the independently bounded routed/shared gate-up epilogues, seven-to-one down activation-quantization wave, full routed FP4/shared FP8 down-and-combine tail, one prefix encoder, and one hash-route command-buffer wait",
+    "expected_gpu_ns_mechanism": "compose the existing guarded primitives with explicit dependency waves; no new arithmetic or representation is introduced by the stack row",
+    "expected_intermediate_byte_reduction": "retain only the output buffers required by the fixed-six combine contract; the full down fusion bypasses routed/shared down staging while dormant authority scratch remains allocated for matched A/B compatibility",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
+     "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED": "1",
+     "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "1",
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "0",
+     "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0",
+     "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "1",
+     "HAWKING_DSV4F_P6_SINGLE_CB": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation composes existing fused-epilogue, batched-QAT, prefix, and single-CB flags. expected_gpu_ns_mechanism: compose guarded primitives with explicit dependency waves; no new arithmetic. SpatialPipeline + GraphReplay. Interaction, not a summed isolated win.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "routed_expert_accumulate",
+     "semantic_transport_transform"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "persistent_state_machine",
+    "missing_functional_reference": "no SwiGLU/silu golden in fpga_engines; fused gate/up/SwiGLU cites qgemv for the projections and routed_expert_accumulate for the combine",
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation composes existing fused-epilogue, batched-QAT, prefix, and single-CB flags. expected_gpu_ns_mechanism: compose guarded primitives with explicit dependency waves; no new arithmetic. SpatialPipeline + GraphReplay. Interaction, not a summed isolated win.",
+    "names": [
+     "SpatialPipeline",
+     "GraphReplay"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "replay",
+       "dst_port": "y",
+       "frame_kind": "activation",
+       "id": "e_y",
+       "in_transit_transform": "identity",
+       "src": "pipe",
+       "src_port": "y"
+      },
+      {
+       "dst": "pipe",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "9a9cd31b96968e3ecc236d24ee644f60d7668545acf0f789ac05bc027b2a3b0d",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "pipe",
+       "inputs": {
+        "x": "activation"
+       },
+       "kind": "persistent-pipeline",
+       "lifetime": null,
+       "mapping": "composed fused epilogues; explicit dependency waves",
+       "organ": "",
+       "outputs": {
+        "y": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "SpatialPipeline",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "replay",
+       "inputs": {
+        "y": "activation"
+       },
+       "kind": "persistent-pipeline",
+       "lifetime": null,
+       "mapping": "compile_once_reuse of the composed P6 graph; measure interaction",
+       "organ": "",
+       "outputs": {
+        "z": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "GraphReplay",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation composes existing fused-epilogue, batched-QAT, prefix, and single-CB flags. expected_gpu_ns_mechanism: compose guarded primitives with explicit dependency waves; no new arithmetic. SpatialPipeline + GraphReplay. Interaction, not a summed isolated win.",
+      "hypothesis for flash-p6-fused-epilogue-stack; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "memory",
+     "persistent-pipeline"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 12,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Measure the composed stack flash-p6-fused-epilogue-stack as one A/B rather than summing the isolated expected_dispatch_reduction strings. If the composed graph does not dominate the control, isolated 'wins' were not transferable inward.",
+    "falsifier": "composed stack does not beat control after interaction",
+    "family": "goodhart",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "REFUTED"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Independent producers that share an input and write disjoint outputs belong in one spatial region / one encoder. Overlap is a measured window, never an assumed one.",
+      "primitive": "SpatialPipeline"
+     },
+     {
+      "lesson": "Do not insert a host commit/wait between device-resident waves whose hazards are already explicit. Collapsing command-buffer ceremony is GraphReplay, not a new kernel.",
+      "primitive": "GraphReplay"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling MODEL_LOCAL: exact_mutation composes existing fused-epilogue, batched-QAT, prefix, and single-CB flags. expected_gpu_ns_mechanism: compose guarded primitives with explicit dependency waves; no new arithmetic. SpatialPipeline + GraphReplay. Interaction, not a summed isolated win.",
+    "scope": "MODEL_LOCAL"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 command-buffer topology after route resolution",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the single-command-buffer path has no matched parity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-hash-single-command-buffer",
+   "codex_expectations": {
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the single-command-buffer path has no matched parity/coherence and protected-latency receipt",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source BF16/FP4/FP8 bytes; NX active bytes unqualified",
+    "expected_dispatch_reduction": "hash path: 1 command buffer and wait instead of historical 2; learned path: 2 instead of 3; 60 dispatches remain unchanged",
+    "expected_eliminated_work": "one CPU-visible commit/wait between the device-resident up/SwiGLU wave and down/combine wave; on learned layers the same switch removes the post-residency phase fence",
+    "expected_gpu_ns_mechanism": "append dependency-ordered down/combine waves to the first P6 command buffer while preserving the route/readback residency boundary, explicit wave boundaries, and Metal hazards",
+    "expected_intermediate_byte_reduction": "0; all routed/shared BF16 and route-control buffers remain resident",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_SINGLE_CB": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_SINGLE_CB=1. expected_eliminated_work: one CPU-visible commit/wait between the up/SwiGLU wave and the down/combine wave. expected_dispatch_reduction: command buffers 2->1; 60 dispatches unchanged. GraphReplay covers command-topology reuse. A forced HWIR spatial graph would invent a region the mutation does not have; spatially_meaningful is false.",
+    "emits_hdl": false,
+    "engine_refs": [],
+    "engine_refs_are_functional_goldens": true,
+    "form": "not_spatially_meaningful",
+    "missing_functional_reference": "no SwiGLU/silu golden in fpga_engines; fused gate/up/SwiGLU cites qgemv for the projections and routed_expert_accumulate for the combine",
+    "not_an_fpga_backend": true,
+    "organ": "command_buffer_graph",
+    "organ_engine_map_refs": []
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_SINGLE_CB=1. expected_eliminated_work: one CPU-visible commit/wait between the up/SwiGLU wave and the down/combine wave. expected_dispatch_reduction: command buffers 2->1; 60 dispatches unchanged. GraphReplay covers command-topology reuse. A forced HWIR spatial graph would invent a region the mutation does not have; spatially_meaningful is false.",
+    "names": [
+     "GraphReplay"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "graph": null,
+    "reason": "exact_mutation HAWKING_DSV4F_P6_SINGLE_CB=1. expected_eliminated_work: one CPU-visible commit/wait between the up/SwiGLU wave and the down/combine wave. expected_dispatch_reduction: command buffers 2->1; 60 dispatches unchanged. GraphReplay covers command-topology reuse. A forced HWIR spatial graph would invent a region the mutation does not have; spatially_meaningful is false.",
+    "spatially_meaningful": false,
+    "validate": null
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 8,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Replay flash-p6-hash-single-command-buffer on a backend whose SIMD/command-buffer geometry is not Metal simdgroup/CB (or force the scalar/fused-off control). If the concept were BACKEND_FAMILY it would still hold; collapse refutes transfer.",
+    "falsifier": "same mutation, different backend geometry, concept does not hold",
+    "family": "compiler_prior",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Do not insert a host commit/wait between device-resident waves whose hazards are already explicit. Collapsing command-buffer ceremony is GraphReplay, not a new kernel.",
+      "primitive": "GraphReplay"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation HAWKING_DSV4F_P6_SINGLE_CB=1. expected_eliminated_work: one CPU-visible commit/wait between the up/SwiGLU wave and the down/combine wave. expected_dispatch_reduction: command buffers 2->1; 60 dispatches unchanged. GraphReplay covers command-topology reuse. A forced HWIR spatial graph would invent a region the mutation does not have; spatially_meaningful is false.",
+    "scope": "BACKEND_FAMILY"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 learned-route bounded expert source cache",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-learned-expert-cache-reuse",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source FP4/FP8 and activation bytes; overlapping routes reuse existing GPU weight buffers rather than uploading a second copy",
+    "expected_dispatch_reduction": "0; device dispatch topology, route-ID readback, and GPU upload boundaries are unchanged",
+    "expected_eliminated_work": "repeated source chunk materialization and GPU re-upload of expert bundles that overlap successive learned routes",
+    "expected_gpu_ns_mechanism": "avoid repeated host source reads and GPU buffer uploads before the expert wave when route overlap exists; route overlap, allocation bytes, and complete-token wall time are the falsifiers",
+    "expected_intermediate_byte_reduction": "retain at most the exact six-bundle hot capacity plus the same six-entry GPU weight handle cache; pre-route FP4 placeholders are one byte per pointer component, and no dense or decoded representation is added",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE": "1",
+     "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE=1 (with reader reuse). expected_eliminated_work: repeated source-chunk materialization for overlapping learned-route expert bundles. expected_dispatch_reduction: 0. StationaryRepresentation of packed FP4/FP8 source + PersistentPhysicalRegion. FRONT_G_P6 claim_boundary: skipping host<->device copies is unified-memory-specific, so the transfer ceiling is MACHINE_LOCAL not GENERIC.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "dictionary_arithmetic",
+     "codebook_arithmetic"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "stationary_operand",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "expert_bank",
+    "organ_engine_map_refs": [
+     "dictionary_arithmetic",
+     "codebook_arithmetic"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE=1 (with reader reuse). expected_eliminated_work: repeated source-chunk materialization for overlapping learned-route expert bundles. expected_dispatch_reduction: 0. StationaryRepresentation of packed FP4/FP8 source + PersistentPhysicalRegion. FRONT_G_P6 claim_boundary: skipping host<->device copies is unified-memory-specific, so the transfer ceiling is MACHINE_LOCAL not GENERIC.",
+    "names": [
+     "StationaryRepresentation",
+     "PersistentPhysicalRegion"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "region",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_b",
+       "in_transit_transform": "identity",
+       "src": "bank",
+       "src_port": "packed"
+      }
+     ],
+     "fingerprint": "60205e19c0c6f674c6903c6c96cd0abbba973f10d3dcc6fd245375cb1556cb05",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "bank",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed FP4/FP8 expert source bundles; no decoded dense weights",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native six_bundle_hot_capacity",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "region",
+       "inputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "kind": "persistent-pipeline",
+       "lifetime": "sequence",
+       "mapping": "long_lived_executor; bindings remain valid across overlapping routes",
+       "organ": "",
+       "outputs": {
+        "held": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "PersistentPhysicalRegion",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE=1 (with reader reuse). expected_eliminated_work: repeated source-chunk materialization for overlapping learned-route expert bundles. expected_dispatch_reduction: 0. StationaryRepresentation of packed FP4/FP8 source + PersistentPhysicalRegion. FRONT_G_P6 claim_boundary: skipping host<->device copies is unified-memory-specific, so the transfer ceiling is MACHINE_LOCAL not GENERIC.",
+      "hypothesis for flash-p6-learned-expert-cache-reuse; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "expert_bank",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "memory",
+     "persistent-pipeline"
+    ],
+    "organ": "expert_bank",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 6,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Run the resident-source/cache claim of flash-p6-learned-expert-cache-reuse on a discrete-memory GPU where host-device copies are not optional (FRONT_G_P6 claim_boundary). If the win vanishes, MACHINE_LOCAL is the ceiling, not a family law.",
+    "falsifier": "discrete-memory machine still pays the copy; UMA elision does not transfer",
+    "family": "law_scope",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "BACKEND_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Keep the packed source (not a decoded dense body) as the stationary operand. FRONT_G_P6: on unified memory the copy can be absent; on a discrete GPU it cannot. Do not write software that assumes UMA.",
+      "primitive": "StationaryRepresentation"
+     },
+     {
+      "lesson": "Reuse bindings and admission state across tokens/routes while they remain valid. Reconstructing a sealed reader every route change is host ceremony the Metal path can already drop.",
+      "primitive": "PersistentPhysicalRegion"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": {
+     "claim_boundary_excerpt": "WHY THIS IS MACHINE-SPECIFIC: on a discrete GPU the host-to-device and device-to-host copies are NOT optional -- there is separate device memory and the data must cross it. On this machine there is none, so both copies can simply not happen. That is why it qualifies for P6 where the flat autotune landscape did not.\nFAIRNESS CAVEAT, STATED PLAINLY: the CUDA-era arm copies on EVERY call, which is the NAIVE pattern. A competent CUDA programmer hoists the upload out of the loop and keeps data resident, and would not pay this 7x. So the honest claim is NOT 'Apple beats CUDA by 7x'. It is that per-call host<->device copying costs 7.17-7.44x on this operation, and that on unified memory the elimination is structural rather than something the programmer must remember to do.\nThe ADP is PROVISIONAL,",
+     "constrains": "Unified-memory copy elision is machine-specific. Discrete GPUs still pay host-device copies. That ceiling applies to any P6 idea whose mechanism is 'do not copy / keep resident' (expert-cache reuse).",
+     "experiment_class": "ACCEL-MEMORY",
+     "knowledge_level": "INSTANCE",
+     "numbers_omitted": "FRONT_G_P6 result timings are Codex measurements; sidecar does not restate them",
+     "proof": "P6 \u2014 a reproducible machine-specific win"
+    },
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling MACHINE_LOCAL: exact_mutation HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE=1 (with reader reuse). expected_eliminated_work: repeated source-chunk materialization for overlapping learned-route expert bundles. expected_dispatch_reduction: 0. StationaryRepresentation of packed FP4/FP8 source + PersistentPhysicalRegion. FRONT_G_P6 claim_boundary: skipping host<->device copies is unified-memory-specific, so the transfer ceiling is MACHINE_LOCAL not GENERIC. FRONT_G_P6 claim_boundary constrains copy-elision to this memory topology.",
+    "scope": "MACHINE_LOCAL"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 learned-route source admission boundary",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-learned-reader-reuse",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source FP4/FP8 and activation bytes; no decoded weights are retained by the reader",
+    "expected_dispatch_reduction": "0; device dispatch topology and the selected-ID residency boundary are unchanged",
+    "expected_eliminated_work": "repeated sealed-reader manifest/index admission and metadata-map construction on each changed learned route",
+    "expected_gpu_ns_mechanism": "remove repeated host admission ceremony before the second GPU wave while preserving the manifest-seal guard, source reads, uploads, and route-ID readback",
+    "expected_intermediate_byte_reduction": "0; the candidate retains a metadata-only reader and still creates a fresh bounded six-expert cache",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_LEARNED_READER_REUSE=1. expected_eliminated_work: repeated sealed-reader manifest/index admission. expected_dispatch_reduction: 0; device topology unchanged. PersistentPhysicalRegion covers binding residency. Host manifest admission has no spatial FPGA analogue; spatially_meaningful is false.",
+    "emits_hdl": false,
+    "engine_refs": [],
+    "engine_refs_are_functional_goldens": true,
+    "form": "not_spatially_meaningful",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "expert_bank",
+    "organ_engine_map_refs": []
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_LEARNED_READER_REUSE=1. expected_eliminated_work: repeated sealed-reader manifest/index admission. expected_dispatch_reduction: 0; device topology unchanged. PersistentPhysicalRegion covers binding residency. Host manifest admission has no spatial FPGA analogue; spatially_meaningful is false.",
+    "names": [
+     "PersistentPhysicalRegion"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "graph": null,
+    "reason": "exact_mutation HAWKING_DSV4F_P6_LEARNED_READER_REUSE=1. expected_eliminated_work: repeated sealed-reader manifest/index admission. expected_dispatch_reduction: 0; device topology unchanged. PersistentPhysicalRegion covers binding residency. Host manifest admission has no spatial FPGA analogue; spatially_meaningful is false.",
+    "spatially_meaningful": false,
+    "validate": null
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 1,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "A drop in host ceremony or dispatch count for flash-p6-learned-reader-reuse is not a complete-token result (ACCELERATOR_DISPATCH_IS_NOT_THE_COST). If only the proxy moves, the transfer claim is a trap.",
+    "falsifier": "proxy (ceremony/dispatch) moves, complete-token wall does not",
+    "family": "measurement_trap",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "REFUTED"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Reuse bindings and admission state across tokens/routes while they remain valid. Reconstructing a sealed reader every route change is host ceremony the Metal path can already drop.",
+      "primitive": "PersistentPhysicalRegion"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling MODEL_LOCAL: exact_mutation HAWKING_DSV4F_P6_LEARNED_READER_REUSE=1. expected_eliminated_work: repeated sealed-reader manifest/index admission. expected_dispatch_reduction: 0; device topology unchanged. PersistentPhysicalRegion covers binding residency. Host manifest admission has no spatial FPGA analogue; spatially_meaningful is false.",
+    "scope": "MODEL_LOCAL"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 Gate and activation-quantization prefix",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the shared prefix has no matched parity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-prefix-concurrent-wave",
+   "codex_expectations": {
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the shared prefix has no matched parity/coherence and protected-latency receipt",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source BF16 input, Gate BF16 weights, and quantizer output bytes",
+    "expected_dispatch_reduction": "0; Gate, QAT, and route dispatches remain unchanged",
+    "expected_eliminated_work": "one compute-encoder boundary between the independent Gate reduction and activation quantization",
+    "expected_gpu_ns_mechanism": "place Gate and activation quantization in one concurrent encoder because both only read the shared input and write disjoint outputs, then retain a separate route dependency boundary",
+    "expected_intermediate_byte_reduction": "0; Gate logits and E4M3FN/UE8M0 quantized buffers remain separate and source-visible",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_PREFIX_CONCURRENT=1. expected_eliminated_work: one compute-encoder boundary between independent Gate reduction and activation quantization. expected_gpu_ns_mechanism: both only read the shared input and write disjoint outputs. SpatialPipeline (overlap). Encoder grouping is Metal.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "semantic_transport_transform",
+     "reductions"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "streaming_producer_consumer",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": []
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_PREFIX_CONCURRENT=1. expected_eliminated_work: one compute-encoder boundary between independent Gate reduction and activation quantization. expected_gpu_ns_mechanism: both only read the shared input and write disjoint outputs. SpatialPipeline (overlap). Encoder grouping is Metal.",
+    "names": [
+     "SpatialPipeline"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "pipe",
+       "dst_port": "logits",
+       "frame_kind": "activation",
+       "id": "e_pg",
+       "in_transit_transform": "identity",
+       "src": "gate",
+       "src_port": "logits"
+      },
+      {
+       "dst": "pipe",
+       "dst_port": "q",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_pq",
+       "in_transit_transform": "identity",
+       "src": "qat",
+       "src_port": "q"
+      },
+      {
+       "dst": "gate",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_g",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      },
+      {
+       "dst": "qat",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_q",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "79d464e0a97ad66cdccaaa81caafe8510a1cfc77e162b55de5796052ddc408c6",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "gate",
+       "inputs": {
+        "x": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "Gate reduction; reads shared input, disjoint output vs QAT",
+       "organ": "",
+       "outputs": {
+        "logits": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "TiledProjection",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "pipe",
+       "inputs": {
+        "logits": "activation",
+        "q": "compact_representation_fragment"
+       },
+       "kind": "persistent-pipeline",
+       "lifetime": null,
+       "mapping": "spatial_regions; local_intermediates; producer-consumer overlap",
+       "organ": "",
+       "outputs": {
+        "y": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "SpatialPipeline",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "qat",
+       "inputs": {
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "activation quantization; reads shared input, disjoint output vs Gate",
+       "organ": "",
+       "outputs": {
+        "q": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_PREFIX_CONCURRENT=1. expected_eliminated_work: one compute-encoder boundary between independent Gate reduction and activation quantization. expected_gpu_ns_mechanism: both only read the shared input and write disjoint outputs. SpatialPipeline (overlap). Encoder grouping is Metal.",
+      "hypothesis for flash-p6-prefix-concurrent-wave; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory",
+     "persistent-pipeline",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 3,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Hold representation and dispatch topology fixed; disable only the flash-p6-prefix-concurrent-wave flag. If complete-token wall is unchanged the mechanism is not causal.",
+    "falsifier": "flag off, complete-token behaviour unchanged",
+    "family": "causal_control",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Independent producers that share an input and write disjoint outputs belong in one spatial region / one encoder. Overlap is a measured window, never an assumed one.",
+      "primitive": "SpatialPipeline"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation HAWKING_DSV4F_P6_PREFIX_CONCURRENT=1. expected_eliminated_work: one compute-encoder boundary between independent Gate reduction and activation quantization. expected_gpu_ns_mechanism: both only read the shared input and write disjoint outputs. SpatialPipeline (overlap). Encoder grouping is Metal.",
+    "scope": "BACKEND_FAMILY"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6A routed FP4 W2/down projection and BF16 boundary",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-down-bf16-fused",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged six routed FP4 W2 weight/scale buffers, per-expert QAT outputs, and final BF16 combine bytes; inactive routed down_f32 scratch is reduced by 98298 structural bytes",
+    "expected_dispatch_reduction": "reduce the fixed hash graph from 60 to 49 dispatches; P6 batch 2 falls from 22 to 11",
+    "expected_eliminated_work": "six routed W2 launches and six routed FP32-to-BF16 cast launches",
+    "expected_gpu_ns_mechanism": "one fixed-six indirect launch consumes the already-authoritative per-expert E4M3FN/UE8M0 QAT buffers, preserves FP4 block accumulation, and writes exact BF16 W2 outputs",
+    "expected_intermediate_byte_reduction": "routed down FP32 staging is bypassed; the existing six per-expert BF16 outputs remain the combine contract",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1. expected_eliminated_work: six routed W2 launches and six FP32-to-BF16 cast launches. expected_gpu_ns_mechanism: one fixed-six indirect launch consumes authoritative per-expert QAT buffers and writes BF16 W2. FusedDecodeCompute + DirectRoutedAccumulate. Fixed-six is Flash P6.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "streaming_producer_consumer",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1. expected_eliminated_work: six routed W2 launches and six FP32-to-BF16 cast launches. expected_gpu_ns_mechanism: one fixed-six indirect launch consumes authoritative per-expert QAT buffers and writes BF16 W2. FusedDecodeCompute + DirectRoutedAccumulate. Fixed-six is Flash P6.",
+    "names": [
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "accum",
+       "dst_port": "y",
+       "frame_kind": "activation",
+       "id": "e_y",
+       "in_transit_transform": "identity",
+       "src": "decode",
+       "src_port": "y"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "f3389b29c82a6d18fcf22ae141af514a5f18dec83fcc30f0caa3bc2750d1ce04",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "accum",
+       "inputs": {
+        "y": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "route_then_native_expert; selected_payload_only",
+       "organ": "",
+       "outputs": {
+        "out": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "DirectRoutedAccumulate",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "decode",
+       "inputs": {
+        "packed": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "projection_plus_decode native_decode; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "y": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1. expected_eliminated_work: six routed W2 launches and six FP32-to-BF16 cast launches. expected_gpu_ns_mechanism: one fixed-six indirect launch consumes authoritative per-expert QAT buffers and writes BF16 W2. FusedDecodeCompute + DirectRoutedAccumulate. Fixed-six is Flash P6.",
+      "hypothesis for flash-p6-routed-fp4-down-bf16-fused; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 15,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Apply the fused/fixed-K idea of flash-p6-routed-fp4-down-bf16-fused to another MoE that is not Flash's fixed-six/fixed-seven hash graph. Failure keeps the idea MODEL_LOCAL.",
+    "falsifier": "non-Flash MoE does not accept the fused topology",
+    "family": "negative_transfer",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "REFUTED"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Fuse representation decode with the consumer and do not write the dense/FP32 staging the fused path no longer needs. Authority scratch may stay allocated for A/B; it should not become a traffic path.",
+      "primitive": "FusedDecodeCompute"
+     },
+     {
+      "lesson": "Keep route metadata with the selected payloads in one physical region. Do not gather inactive experts and do not introduce a second combine.",
+      "primitive": "DirectRoutedAccumulate"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling MODEL_LOCAL: exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1. expected_eliminated_work: six routed W2 launches and six FP32-to-BF16 cast launches. expected_gpu_ns_mechanism: one fixed-six indirect launch consumes authoritative per-expert QAT buffers and writes BF16 W2. FusedDecodeCompute + DirectRoutedAccumulate. Fixed-six is Flash P6.",
+    "scope": "MODEL_LOCAL"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6A fused routed FP4 W2/down occupancy",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-down-bf16-simd",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged routed FP4 W2 weights, E8M0 scales, per-expert QAT bytes, and BF16 output bytes",
+    "expected_dispatch_reduction": "0 relative to scalar fusion; one fixed-six indirect launch remains",
+    "expected_eliminated_work": "the same six routed W2 launches and six routed FP32-to-BF16 cast launches as scalar fusion while changing only row-reduction geometry",
+    "expected_gpu_ns_mechanism": "eight SIMDgroups per 256-threadgroup split each 32-value FP4 block across lanes, preserving source block order while isolating intra-block reduction association for an A/B",
+    "expected_intermediate_byte_reduction": "0 relative to scalar fusion; existing six per-expert BF16 combine buffers remain the contract",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD=1. expected_dispatch_reduction: 0 relative to scalar fusion. expected_gpu_ns_mechanism: eight SIMDgroups per 256-threadgroup split each 32-value FP4 block. LayoutTransform on top of the fused decode/accumulate. Metal simdgroup.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "routed_expert_accumulate",
+     "reductions"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "explicit_banking",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD=1. expected_dispatch_reduction: 0 relative to scalar fusion. expected_gpu_ns_mechanism: eight SIMDgroups per 256-threadgroup split each 32-value FP4 block. LayoutTransform on top of the fused decode/accumulate. Metal simdgroup.",
+    "names": [
+     "LayoutTransform",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "accum",
+       "dst_port": "y",
+       "frame_kind": "activation",
+       "id": "e_y",
+       "in_transit_transform": "identity",
+       "src": "decode",
+       "src_port": "y"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "tiled",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_t",
+       "in_transit_transform": "identity",
+       "src": "layout",
+       "src_port": "tiled"
+      },
+      {
+       "dst": "layout",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "2bf68a5ef79a61b037b143a22e6564733fa5ca853b0abee2d93cbdbfaa94864c",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "accum",
+       "inputs": {
+        "y": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "route_then_native_expert",
+       "organ": "",
+       "outputs": {
+        "out": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "DirectRoutedAccumulate",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "decode",
+       "inputs": {
+        "tiled": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "projection_plus_decode native_decode",
+       "organ": "",
+       "outputs": {
+        "y": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "layout",
+       "inputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "organ": "",
+       "outputs": {
+        "tiled": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": 8,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": [
+         32
+        ]
+       },
+       "primitive": "LayoutTransform",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD=1. expected_dispatch_reduction: 0 relative to scalar fusion. expected_gpu_ns_mechanism: eight SIMDgroups per 256-threadgroup split each 32-value FP4 block. LayoutTransform on top of the fused decode/accumulate. Metal simdgroup.",
+      "hypothesis for flash-p6-routed-fp4-down-bf16-simd; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 8,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Replay flash-p6-routed-fp4-down-bf16-simd on a backend whose SIMD/command-buffer geometry is not Metal simdgroup/CB (or force the scalar/fused-off control). If the concept were BACKEND_FAMILY it would still hold; collapse refutes transfer.",
+    "falsifier": "same mutation, different backend geometry, concept does not hold",
+    "family": "compiler_prior",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Treat simdgroup width, block ownership and packed-load layout as compiler objects (LayoutTransform), not kernel folklore. Keep the sequential reduction order as the numerical contract; simd_sum needs an associativity waiver against fpga_engines.reductions.",
+      "primitive": "LayoutTransform"
+     },
+     {
+      "lesson": "Fuse representation decode with the consumer and do not write the dense/FP32 staging the fused path no longer needs. Authority scratch may stay allocated for A/B; it should not become a traffic path.",
+      "primitive": "FusedDecodeCompute"
+     },
+     {
+      "lesson": "Keep route metadata with the selected payloads in one physical region. Do not gather inactive experts and do not introduce a second combine.",
+      "primitive": "DirectRoutedAccumulate"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED=1 plus HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD=1. expected_dispatch_reduction: 0 relative to scalar fusion. expected_gpu_ns_mechanism: eight SIMDgroups per 256-threadgroup split each 32-value FP4 block. LayoutTransform on top of the fused decode/accumulate. Metal simdgroup.",
+    "scope": "BACKEND_FAMILY"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6A fixed-six routed FP4 gate/up/SwiGLU epilogue",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-fused",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged six routed FP4 weight/scale buffers and activation bytes; inactive gate/up scratch allocation is reduced by 147432 structural bytes",
+    "expected_dispatch_reduction": "reduce P6 batch 1 from 38 to 9 and the fixed hash graph from 60 to 31 dispatches",
+    "expected_eliminated_work": "six routed W1 launches, six routed W3 launches, twelve routed FP32-to-BF16 casts, and six routed SwiGLU launches",
+    "expected_gpu_ns_mechanism": "one fixed-six indirect-address launch performs paired source-order FP4 reductions, exact BF16 round-trips, clamp/SwiGLU, and device route weighting; explicit read/write residency covers every indirect buffer",
+    "expected_intermediate_byte_reduction": "routed gate/up FP32 and BF16 staging is replaced by one-byte guarded placeholders; the live per-expert BF16 SwiGLU output contract remains explicit",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED=1 with SIMD=0. expected_eliminated_work: six W1, six W3, twelve FP32-to-BF16 casts, six SwiGLU launches. expected_gpu_ns_mechanism: one fixed-six indirect-address launch, paired FP4 reductions, clamp/SwiGLU, device route weighting. FusedDecodeCompute + DirectRoutedAccumulate.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "streaming_producer_consumer",
+    "missing_functional_reference": "no SwiGLU/silu golden in fpga_engines; fused gate/up/SwiGLU cites qgemv for the projections and routed_expert_accumulate for the combine",
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED=1 with SIMD=0. expected_eliminated_work: six W1, six W3, twelve FP32-to-BF16 casts, six SwiGLU launches. expected_gpu_ns_mechanism: one fixed-six indirect-address launch, paired FP4 reductions, clamp/SwiGLU, device route weighting. FusedDecodeCompute + DirectRoutedAccumulate.",
+    "names": [
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "accum",
+       "dst_port": "y",
+       "frame_kind": "activation",
+       "id": "e_y",
+       "in_transit_transform": "identity",
+       "src": "decode",
+       "src_port": "y"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "c660852db037658932efb2c51a908fc5bdbabf384f504f4e877e413925c426c9",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "accum",
+       "inputs": {
+        "y": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "route_then_native_expert; selected_payload_only",
+       "organ": "",
+       "outputs": {
+        "out": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "DirectRoutedAccumulate",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "decode",
+       "inputs": {
+        "packed": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "projection_plus_decode native_decode; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "y": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED=1 with SIMD=0. expected_eliminated_work: six W1, six W3, twelve FP32-to-BF16 casts, six SwiGLU launches. expected_gpu_ns_mechanism: one fixed-six indirect-address launch, paired FP4 reductions, clamp/SwiGLU, device route weighting. FusedDecodeCompute + DirectRoutedAccumulate.",
+      "hypothesis for flash-p6-routed-fp4-gate-up-swiglu-fused; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 15,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Apply the fused/fixed-K idea of flash-p6-routed-fp4-gate-up-swiglu-fused to another MoE that is not Flash's fixed-six/fixed-seven hash graph. Failure keeps the idea MODEL_LOCAL.",
+    "falsifier": "non-Flash MoE does not accept the fused topology",
+    "family": "negative_transfer",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "REFUTED"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Fuse representation decode with the consumer and do not write the dense/FP32 staging the fused path no longer needs. Authority scratch may stay allocated for A/B; it should not become a traffic path.",
+      "primitive": "FusedDecodeCompute"
+     },
+     {
+      "lesson": "Keep route metadata with the selected payloads in one physical region. Do not gather inactive experts and do not introduce a second combine.",
+      "primitive": "DirectRoutedAccumulate"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling MODEL_LOCAL: exact_mutation HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED=1 with SIMD=0. expected_eliminated_work: six W1, six W3, twelve FP32-to-BF16 casts, six SwiGLU launches. expected_gpu_ns_mechanism: one fixed-six indirect-address launch, paired FP4 reductions, clamp/SwiGLU, device route weighting. FusedDecodeCompute + DirectRoutedAccumulate.",
+    "scope": "MODEL_LOCAL"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6A fused routed FP4 gate/up/SwiGLU occupancy",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-simd",
+   "codex_expectations": {
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged FP4 source bytes and routed output bytes",
+    "expected_dispatch_reduction": "0 relative to scalar fusion; one fixed-six launch remains",
+    "expected_eliminated_work": "the same routed P6 epilogue dispatch and staging work as the scalar-fused candidate while changing only row reduction geometry",
+    "expected_gpu_ns_mechanism": "eight SIMDgroups per threadgroup split each 32-value FP4 block across lanes, with an explicit independent A/B against scalar fusion",
+    "expected_intermediate_byte_reduction": "0 relative to scalar fusion; per-expert BF16 output pointers and source route slots remain unchanged",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation fused flag plus HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD=1. expected_eliminated_work is the same epilogue as scalar fusion; only row-reduction geometry changes. LayoutTransform on the fused pair. Simdgroup occupancy is BACKEND_FAMILY.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "routed_expert_accumulate",
+     "reductions"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "explicit_banking",
+    "missing_functional_reference": "no SwiGLU/silu golden in fpga_engines; fused gate/up/SwiGLU cites qgemv for the projections and routed_expert_accumulate for the combine",
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv",
+     "routed_expert_accumulate"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation fused flag plus HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD=1. expected_eliminated_work is the same epilogue as scalar fusion; only row-reduction geometry changes. LayoutTransform on the fused pair. Simdgroup occupancy is BACKEND_FAMILY.",
+    "names": [
+     "LayoutTransform",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "accum",
+       "dst_port": "y",
+       "frame_kind": "activation",
+       "id": "e_y",
+       "in_transit_transform": "identity",
+       "src": "decode",
+       "src_port": "y"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "tiled",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_t",
+       "in_transit_transform": "identity",
+       "src": "layout",
+       "src_port": "tiled"
+      },
+      {
+       "dst": "layout",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "decode",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "b8fa95d902f084973e064f00e7d171bc9c12d166b3313ede69c3ceffe09fb973",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "accum",
+       "inputs": {
+        "y": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "route_then_native_expert",
+       "organ": "",
+       "outputs": {
+        "out": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "DirectRoutedAccumulate",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "decode",
+       "inputs": {
+        "tiled": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "representation-decoder",
+       "lifetime": null,
+       "mapping": "projection_plus_decode native_decode",
+       "organ": "",
+       "outputs": {
+        "y": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "FusedDecodeCompute",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "layout",
+       "inputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "organ": "",
+       "outputs": {
+        "tiled": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": 8,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": [
+         32
+        ]
+       },
+       "primitive": "LayoutTransform",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation fused flag plus HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD=1. expected_eliminated_work is the same epilogue as scalar fusion; only row-reduction geometry changes. LayoutTransform on the fused pair. Simdgroup occupancy is BACKEND_FAMILY.",
+      "hypothesis for flash-p6-routed-fp4-gate-up-swiglu-simd; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory",
+     "representation-decoder"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 8,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Replay flash-p6-routed-fp4-gate-up-swiglu-simd on a backend whose SIMD/command-buffer geometry is not Metal simdgroup/CB (or force the scalar/fused-off control). If the concept were BACKEND_FAMILY it would still hold; collapse refutes transfer.",
+    "falsifier": "same mutation, different backend geometry, concept does not hold",
+    "family": "compiler_prior",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Treat simdgroup width, block ownership and packed-load layout as compiler objects (LayoutTransform), not kernel folklore. Keep the sequential reduction order as the numerical contract; simd_sum needs an associativity waiver against fpga_engines.reductions.",
+      "primitive": "LayoutTransform"
+     },
+     {
+      "lesson": "Fuse representation decode with the consumer and do not write the dense/FP32 staging the fused path no longer needs. Authority scratch may stay allocated for A/B; it should not become a traffic path.",
+      "primitive": "FusedDecodeCompute"
+     },
+     {
+      "lesson": "Keep route metadata with the selected payloads in one physical region. Do not gather inactive experts and do not introduce a second combine.",
+      "primitive": "DirectRoutedAccumulate"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation fused flag plus HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD=1. expected_eliminated_work is the same epilogue as scalar fusion; only row-reduction geometry changes. LayoutTransform on the fused pair. Simdgroup occupancy is BACKEND_FAMILY.",
+    "scope": "BACKEND_FAMILY"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 routed-expert FP4 matvec",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP4 candidate has no NumericParity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-routed-fp4-simdgroup",
+   "codex_expectations": {
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP4 candidate has no NumericParity/coherence and protected-latency receipt",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source FP4/FP8 bytes; NX active bytes unqualified",
+    "expected_dispatch_reduction": "0; six expert waves remain concurrent and the 18 matvec dispatches remain unchanged",
+    "expected_eliminated_work": "one serial thread per routed-expert output row across the 18 W1/W3/W2 FP4 projections per full MoE layer",
+    "expected_gpu_ns_mechanism": "one 64-lane-x-4-row threadgroup uses packed uchar4 loads and SIMDgroup split-K partials before a deterministic row reduction",
+    "expected_intermediate_byte_reduction": "0; packed FP4 weights, E8M0 scales, activation bytes, and output buffers retain their existing ABI",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_SIMD": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_FP4_SIMD=1. expected_eliminated_work: one serial thread per routed-expert output row. expected_dispatch_reduction: 0 (18 matvec dispatches remain). expected_gpu_ns_mechanism: 64-lane-x-4-row threadgroup, packed uchar4 loads, SIMDgroup split-K, deterministic row reduction. LayoutTransform + TiledProjection. Not a new primitive.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "reductions"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "explicit_banking",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_FP4_SIMD=1. expected_eliminated_work: one serial thread per routed-expert output row. expected_dispatch_reduction: 0 (18 matvec dispatches remain). expected_gpu_ns_mechanism: 64-lane-x-4-row threadgroup, packed uchar4 loads, SIMDgroup split-K, deterministic row reduction. LayoutTransform + TiledProjection. Not a new primitive.",
+    "names": [
+     "LayoutTransform",
+     "TiledProjection"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "proj",
+       "dst_port": "tiled",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_t",
+       "in_transit_transform": "identity",
+       "src": "layout",
+       "src_port": "tiled"
+      },
+      {
+       "dst": "layout",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "proj",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "ee86903a3f282f3610d3647480fa4437edbacb92b337086eea9545b8d3648f37",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "layout",
+       "inputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "organ": "",
+       "outputs": {
+        "tiled": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": 4,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": [
+         128
+        ]
+       },
+       "primitive": "LayoutTransform",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "proj",
+       "inputs": {
+        "tiled": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "tiled projection of packed low-bit codes; no dense weight body",
+       "organ": "",
+       "outputs": {
+        "y": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "TiledProjection",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_FP4_SIMD=1. expected_eliminated_work: one serial thread per routed-expert output row. expected_dispatch_reduction: 0 (18 matvec dispatches remain). expected_gpu_ns_mechanism: 64-lane-x-4-row threadgroup, packed uchar4 loads, SIMDgroup split-K, deterministic row reduction. LayoutTransform + TiledProjection. Not a new primitive.",
+      "hypothesis for flash-p6-routed-fp4-simdgroup; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 8,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Replay flash-p6-routed-fp4-simdgroup on a backend whose SIMD/command-buffer geometry is not Metal simdgroup/CB (or force the scalar/fused-off control). If the concept were BACKEND_FAMILY it would still hold; collapse refutes transfer.",
+    "falsifier": "same mutation, different backend geometry, concept does not hold",
+    "family": "compiler_prior",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Treat simdgroup width, block ownership and packed-load layout as compiler objects (LayoutTransform), not kernel folklore. Keep the sequential reduction order as the numerical contract; simd_sum needs an associativity waiver against fpga_engines.reductions.",
+      "primitive": "LayoutTransform"
+     },
+     {
+      "lesson": "Own the projection as tiles that cover the logical result. Packed uchar4 loads are a layout of the same operator, not a different math.",
+      "primitive": "TiledProjection"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation HAWKING_DSV4F_P6_FP4_SIMD=1. expected_eliminated_work: one serial thread per routed-expert output row. expected_dispatch_reduction: 0 (18 matvec dispatches remain). expected_gpu_ns_mechanism: 64-lane-x-4-row threadgroup, packed uchar4 loads, SIMDgroup split-K, deterministic row reduction. LayoutTransform + TiledProjection. Not a new primitive.",
+    "scope": "BACKEND_FAMILY"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P6 shared-expert FP8 matvec",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP8 candidate has no NumericParity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-shared-fp8-simdgroup",
+   "codex_expectations": {
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP8 candidate has no NumericParity/coherence and protected-latency receipt",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source FP8 bytes; NX active bytes unqualified",
+    "expected_dispatch_reduction": "0; the shared W1/W3/W2 matvec dispatches remain unchanged",
+    "expected_eliminated_work": "one serial thread per shared-expert output row across the three W1/W3/W2 FP8 projections per full MoE layer",
+    "expected_gpu_ns_mechanism": "one 256-threadgroup assigns eight SIMDgroups to the source 128-wide blocks and combines block partials in source block order",
+    "expected_intermediate_byte_reduction": "0; FP8 weights, E8M0 scales, activation bytes, and output buffers retain their existing ABI",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP8_SIMD": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_P6_FP8_SIMD=1. expected_gpu_ns_mechanism: 256-threadgroup, eight SIMDgroups on 128-wide blocks, block partials in source block order. expected_dispatch_reduction: 0. LayoutTransform + TiledProjection on shared-expert FP8 matvec.",
+    "emits_hdl": false,
+    "engine_refs": [
+     "qgemv",
+     "reductions"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "explicit_banking",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "routed_plus_shared_expert",
+    "organ_engine_map_refs": [
+     "qgemv"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_P6_FP8_SIMD=1. expected_gpu_ns_mechanism: 256-threadgroup, eight SIMDgroups on 128-wide blocks, block partials in source block order. expected_dispatch_reduction: 0. LayoutTransform + TiledProjection on shared-expert FP8 matvec.",
+    "names": [
+     "LayoutTransform",
+     "TiledProjection"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "proj",
+       "dst_port": "tiled",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_t",
+       "in_transit_transform": "identity",
+       "src": "layout",
+       "src_port": "tiled"
+      },
+      {
+       "dst": "layout",
+       "dst_port": "packed",
+       "frame_kind": "compact_representation_fragment",
+       "id": "e_w",
+       "in_transit_transform": "identity",
+       "src": "w",
+       "src_port": "packed"
+      },
+      {
+       "dst": "proj",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "x",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "1639087ef8e6128417a5a820528d69dbc8003b3647c1e39d81656599b5e25404",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "layout",
+       "inputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "organ": "",
+       "outputs": {
+        "tiled": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": 4,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": [
+         128
+        ]
+       },
+       "primitive": "LayoutTransform",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "proj",
+       "inputs": {
+        "tiled": "compact_representation_fragment",
+        "x": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "tiled projection of packed low-bit codes; no dense weight body",
+       "organ": "",
+       "outputs": {
+        "y": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "TiledProjection",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "w",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "resident",
+       "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "organ": "",
+       "outputs": {
+        "packed": "compact_representation_fragment"
+       },
+       "owner": null,
+       "per_token_transfer": false,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": "no_weight_body packed_native",
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "x",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_P6_FP8_SIMD=1. expected_gpu_ns_mechanism: 256-threadgroup, eight SIMDgroups on 128-wide blocks, block partials in source block order. expected_dispatch_reduction: 0. LayoutTransform + TiledProjection on shared-expert FP8 matvec.",
+      "hypothesis for flash-p6-shared-fp8-simdgroup; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "routed_plus_shared_expert",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory"
+    ],
+    "organ": "routed_plus_shared_expert",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 8,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Replay flash-p6-shared-fp8-simdgroup on a backend whose SIMD/command-buffer geometry is not Metal simdgroup/CB (or force the scalar/fused-off control). If the concept were BACKEND_FAMILY it would still hold; collapse refutes transfer.",
+    "falsifier": "same mutation, different backend geometry, concept does not hold",
+    "family": "compiler_prior",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Treat simdgroup width, block ownership and packed-load layout as compiler objects (LayoutTransform), not kernel folklore. Keep the sequential reduction order as the numerical contract; simd_sum needs an associativity waiver against fpga_engines.reductions.",
+      "primitive": "LayoutTransform"
+     },
+     {
+      "lesson": "Own the projection as tiles that cover the logical result. Packed uchar4 loads are a layout of the same operator, not a different math.",
+      "primitive": "TiledProjection"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation HAWKING_DSV4F_P6_FP8_SIMD=1. expected_gpu_ns_mechanism: 256-threadgroup, eight SIMDgroups on 128-wide blocks, block partials in source block order. expected_dispatch_reduction: 0. LayoutTransform + TiledProjection on shared-expert FP8 matvec.",
+    "scope": "BACKEND_FAMILY"
+   }
+  },
+  {
+   "affected_physical_region": "Flash P4B/P7 mHC-pre wide reduction",
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the SIMD mHC reduction has no bounded parity/coherence receipt",
+   "candidate_id": "flash-p7-mhc-pre-simdgroup",
+   "codex_expectations": {
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the SIMD mHC reduction has no bounded parity/coherence receipt",
+    "cited_from": [
+     "expected_eliminated_work",
+     "expected_dispatch_reduction",
+     "expected_gpu_ns_mechanism",
+     "expected_active_byte_change",
+     "expected_intermediate_byte_reduction",
+     "status",
+     "blocked_reason"
+    ],
+    "codex_measurement_status": "NOT_MEASURED",
+    "expected_active_byte_change": "unchanged source BF16 residual and F32 control bytes; NX active bytes unqualified",
+    "expected_dispatch_reduction": "0; the shared mHC-pre remains one dispatch with a 24-SIMDgroup threadgroup",
+    "expected_eliminated_work": "one-thread serialization across the 24 source mHC rows and 16,384-wide dot products in the bounded P4B attention and P7 FFN graphs",
+    "expected_gpu_ns_mechanism": "assign one 24-SIMDgroup threadgroup to the shared P4B/P7 mHC-pre rows, stage the RMS partials, and leave the nonlinear Sinkhorn/control grammar source-ordered",
+    "expected_intermediate_byte_reduction": "0; the existing reduced BF16 and mHC diagnostic buffers are retained",
+    "label": "expectation_not_result",
+    "status": "BLOCKED"
+   },
+   "exact_mutation": {
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_MHC_PRE_SIMD": "1"
+    }
+   },
+   "fpga_realization": {
+    "associativity_note": "fpga_engines sequential_left_to_right is the golden. A Metal simd_sum or spatial tree is a different float32 number without an associativity waiver.",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "affected_physical_region",
+     "exact_mutation"
+    ],
+    "description": "exact_mutation HAWKING_DSV4F_MHC_PRE_SIMD=1. expected_eliminated_work: one-thread serialization across 24 mHC rows. expected_dispatch_reduction: 0. expected_gpu_ns_mechanism: one 24-SIMDgroup threadgroup, stage RMS partials, leave Sinkhorn/control source-ordered. LayoutTransform. A simd_sum reordering is a different float32 number than fpga_engines.reductions sequential golden (associativity waiver required).",
+    "emits_hdl": false,
+    "engine_refs": [
+     "reductions"
+    ],
+    "engine_refs_are_functional_goldens": true,
+    "form": "explicit_banking",
+    "missing_functional_reference": null,
+    "not_an_fpga_backend": true,
+    "organ": "sparse_attention",
+    "organ_engine_map_refs": [
+     "reductions"
+    ]
+   },
+   "gpu_authority": false,
+   "hawking_primitive": {
+    "atlas": [
+     "PersistentPhysicalRegion",
+     "StationaryRepresentation",
+     "AsyncPrefetch",
+     "DoubleBufferedTile",
+     "SpatialPipeline",
+     "FusedDecodeCompute",
+     "DirectRoutedAccumulate",
+     "LocalStateMachine",
+     "SemanticTransportEdge",
+     "TiledProjection",
+     "LayoutTransform",
+     "SparseSkip",
+     "ConditionalPhysicalProgram",
+     "GraphReplay",
+     "CollectiveRegion",
+     "MoveOrRecompute",
+     "MemoryTierIdentity"
+    ],
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "justification": "exact_mutation HAWKING_DSV4F_MHC_PRE_SIMD=1. expected_eliminated_work: one-thread serialization across 24 mHC rows. expected_dispatch_reduction: 0. expected_gpu_ns_mechanism: one 24-SIMDgroup threadgroup, stage RMS partials, leave Sinkhorn/control source-ordered. LayoutTransform. A simd_sum reordering is a different float32 number than fpga_engines.reductions sequential golden (associativity waiver required).",
+    "names": [
+     "LayoutTransform"
+    ],
+    "new_primitive_proposed": null,
+    "unmapped": false
+   },
+   "hwir_hypothesis": {
+    "cited_from": [
+     "exact_mutation",
+     "affected_physical_region",
+     "expected_gpu_ns_mechanism"
+    ],
+    "graph": {
+     "device_budget": null,
+     "edges": [
+      {
+       "dst": "layout",
+       "dst_port": "x",
+       "frame_kind": "activation",
+       "id": "e_x",
+       "in_transit_transform": "identity",
+       "src": "residual",
+       "src_port": "x"
+      }
+     ],
+     "fingerprint": "a2bd055c0f404633ecd255a7e07a5c60bfe71cab57f6613a08950f38b547e268",
+     "model": "Flash",
+     "nodes": [
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "layout",
+       "inputs": {
+        "x": "activation"
+       },
+       "kind": "compute",
+       "lifetime": null,
+       "mapping": "24-SIMDgroup occupancy of mHC-pre rows; RMS partials staged",
+       "organ": "",
+       "outputs": {
+        "partial": "partial_reduction"
+       },
+       "owner": null,
+       "per_token_transfer": null,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": 24,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": [
+         24
+        ]
+       },
+       "primitive": "LayoutTransform",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      },
+      {
+       "assumes_source_tensor_identity": false,
+       "dense_weight_materialization": false,
+       "id": "residual",
+       "inputs": {},
+       "kind": "memory",
+       "lifetime": "token",
+       "mapping": "token activation at occupying tier",
+       "organ": "",
+       "outputs": {
+        "x": "activation"
+       },
+       "owner": null,
+       "per_token_transfer": true,
+       "physical": {
+        "arithmetic_width": null,
+        "banking": null,
+        "dfx_module_boundary": null,
+        "hbm_channel": null,
+        "resource_class": {
+         "BRAM": 0,
+         "DSP": 0,
+         "LUT": 0,
+         "URAM": 0
+        },
+        "tile_shape": null
+       },
+       "primitive": "StationaryRepresentation",
+       "resident_weight_policy": null,
+       "semantics": "noetic_native",
+       "transport_policy": null
+      }
+     ],
+     "notes": [
+      "exact_mutation HAWKING_DSV4F_MHC_PRE_SIMD=1. expected_eliminated_work: one-thread serialization across 24 mHC rows. expected_dispatch_reduction: 0. expected_gpu_ns_mechanism: one 24-SIMDgroup threadgroup, stage RMS partials, leave Sinkhorn/control source-ordered. LayoutTransform. A simd_sum reordering is a different float32 number than fpga_engines.reductions sequential golden (associativity waiver required).",
+      "hypothesis for flash-p7-mhc-pre-simdgroup; STATIC_ONLY; not a board placement"
+     ],
+     "organ": "sparse_attention",
+     "qualification": "STATIC_ONLY",
+     "schema": "hawking.future.hwir.v1",
+     "semantics_consumed": "physical_graph_noetic_native",
+     "source_hwir_schema": "",
+     "source_receipt": "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE",
+     "version": 1
+    },
+    "ir_node_kinds": [
+     "compute",
+     "memory"
+    ],
+    "organ": "sparse_attention",
+    "spatially_meaningful": true,
+    "validate": {
+     "errors": [],
+     "ok": true
+    }
+   },
+   "model": "Flash",
+   "odyssey_iii_counterexample": {
+    "bench_state": "UNKNOWN",
+    "cited_from": [
+     "expected_gpu_ns_mechanism",
+     "exact_mutation",
+     "blocked_reason"
+    ],
+    "cost_units": 8,
+    "cost_units_are": "dimensionless Odyssey III planning cost; not a wall-clock",
+    "evidence_class": "STATIC_ONLY",
+    "experiment": "Replay flash-p7-mhc-pre-simdgroup on a backend whose SIMD/command-buffer geometry is not Metal simdgroup/CB (or force the scalar/fused-off control). If the concept were BACKEND_FAMILY it would still hold; collapse refutes transfer.",
+    "falsifier": "same mutation, different backend geometry, concept does not hold",
+    "family": "compiler_prior",
+    "not_a_measurement": true,
+    "target_scope_if_refuted": "ARCHITECTURE_FAMILY"
+   },
+   "qualification": "STATIC_ONLY",
+   "software_lesson_now": {
+    "cited_from": [
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "expected_eliminated_work"
+    ],
+    "lessons": [
+     {
+      "lesson": "Treat simdgroup width, block ownership and packed-load layout as compiler objects (LayoutTransform), not kernel folklore. Keep the sequential reduction order as the numerical contract; simd_sum needs an associativity waiver against fpga_engines.reductions.",
+      "primitive": "LayoutTransform"
+     }
+    ],
+    "loop": "FPGA-teaches-Metal: spatial ownership, then current software"
+   },
+   "status": "BLOCKED",
+   "transfer_scope": {
+    "cited_from": [
+     "scope_tags",
+     "exact_mutation",
+     "expected_gpu_ns_mechanism",
+     "status"
+    ],
+    "defaulted_down_from": "GENERIC_CANDIDATE",
+    "front_g_p6_constraint": null,
+    "lattice": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE",
+     "GENERIC_VERIFIED"
+    ],
+    "legal_emitted_scopes": [
+     "MODEL_LOCAL",
+     "ARCHITECTURE_FAMILY",
+     "BACKEND_FAMILY",
+     "MACHINE_LOCAL",
+     "GENERIC_CANDIDATE"
+    ],
+    "queue_scope_tags": [
+     "MODEL_LOCAL"
+    ],
+    "reason": "Default DOWN from GENERIC_CANDIDATE: status='BLOCKED' is BLOCKED/unmeasured, so GENERIC_VERIFIED is illegal. Queue scope_tags=['MODEL_LOCAL']. Assigned ceiling BACKEND_FAMILY: exact_mutation HAWKING_DSV4F_MHC_PRE_SIMD=1. expected_eliminated_work: one-thread serialization across 24 mHC rows. expected_dispatch_reduction: 0. expected_gpu_ns_mechanism: one 24-SIMDgroup threadgroup, stage RMS partials, leave Sinkhorn/control source-ordered. LayoutTransform. A simd_sum reordering is a different float32 number than fpga_engines.reductions sequential golden (associativity waiver required).",
+    "scope": "BACKEND_FAMILY"
+   }
+  }
+ ],
+ "purpose": "Project each Codex P6/P7 physical-qualification candidate onto a Hawking atlas primitive, an HWIR hypothesis where spatially meaningful, an FPGA spatial form, a transfer-scope ceiling, an Odyssey III counterexample, and a software lesson. STATIC_ONLY. No hardware claim.",
+ "recovered_implementation": {
+  "existed_before_this_module": [
+   "tools/future/physical_primitives.py",
+   "tools/future/hwir.py",
+   "tools/future/fpga_engines.py",
+   "tools/future/odyssey2_law_store.py",
+   "tools/future/odyssey3_adversary.py",
+   "tools/future/candidate_planner.py",
+   "receipts/future/PHYSICAL_PRIMITIVES.json",
+   "receipts/future/HWIR_V1.json",
+   "receipts/future/FPGA_ENGINE_SCHOOL.json",
+   "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "receipts/future/ODYSSEY3_ADVERSARY.json",
+   "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+  ],
+  "note": "The 41-system sidecar already owned primitives, HWIR, FPGA goldens, and both Odysseys. This module maps Codex P6/P7 candidates onto them. It does not fork a parallel primitive list or an FPGA backend.",
+  "p6_projection_module_existed": false
+ },
+ "schema": "hawking.future.p6_projection.v1",
+ "seal_sha256": "e9ceb38bcfa3b2c33bffbb2f9cc35a9886f0fcc4571744e001b3a5c2189b06a0",
+ "spatially_not_meaningful_ids": [
+  "flash-p6-hash-single-command-buffer",
+  "flash-p6-learned-reader-reuse"
+ ],
+ "transfer_scope_lattice": [
+  "MODEL_LOCAL",
+  "ARCHITECTURE_FAMILY",
+  "BACKEND_FAMILY",
+  "MACHINE_LOCAL",
+  "GENERIC_CANDIDATE",
+  "GENERIC_VERIFIED"
+ ],
+ "unmapped_ids": [],
+ "version": 1
+}

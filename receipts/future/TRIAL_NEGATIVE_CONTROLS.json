@@ -1,0 +1,97 @@
+{
+ "a_bad_control_of_my_own": {
+  "the_lesson": "a negative control is itself a probe and can be narrow. Emptying the wrong key proves nothing and looks exactly like a leak.",
+  "what": "a first pass emptied challenges/labels/verdicts/results in STATUS_CAUSALITY_CHALLENGE.json and reported a LEAK when the evaluator still passed",
+  "why_it_was_wrong": "the evaluator reads historical_cases and supported_fixtures. Those keys were never touched, so nothing had been removed."
+ },
+ "all_controls_flipped_the_judge": true,
+ "claim_boundary": "These controls test the JUDGE, not the resident. They show that removing evidence removes the verdict. They do not show the trial's behaviour was good; a separate finding records that the same PASS contains a 477-second idle the judge cannot see.",
+ "controls": [
+  {
+   "control": "seal_detects_the_elapsed_lie",
+   "flipped": true,
+   "tampered_verifies": false,
+   "untouched_verifies": true,
+   "what": "rewrite elapsed_s from the real 565 to the full 1800"
+  },
+  {
+   "control": "strip_events_overlap_detached_work",
+   "flipped": true,
+   "met_after": false,
+   "what": "delete every detached_started / detached_completed event"
+  },
+  {
+   "control": "strip_events_use_negative_science",
+   "flipped": true,
+   "met_after": false,
+   "what": "delete every negative_science_query / negative_science_refusal event"
+  },
+  {
+   "control": "strip_events_alter_priority_from_evidence",
+   "flipped": true,
+   "met_after": false,
+   "what": "delete every priority_altered event"
+  },
+  {
+   "control": "strip_events_refill_work",
+   "flipped": true,
+   "met_after": false,
+   "what": "delete every work_refilled event"
+  },
+  {
+   "control": "strip_events_ingest_completed_result",
+   "flipped": true,
+   "met_after": false,
+   "what": "delete every result_ingested event"
+  },
+  {
+   "control": "strip_citation_mutation_proposed_and_rolled_back",
+   "flipped": true,
+   "met_after": false,
+   "what": "delete every cite naming MUTATION_ENGINE.json"
+  },
+  {
+   "control": "strip_citation_status_causality_challenged",
+   "flipped": true,
+   "met_after": false,
+   "what": "delete every cite naming STATUS_CAUSALITY_CHALLENGE.json"
+  },
+  {
+   "control": "corrupt_receipt_mutation_all_hold_false",
+   "detail": "the mutation engine's own proofs do not all hold",
+   "flipped": true,
+   "met_after": false,
+   "what": "set proofs.all_hold false in the receipt the judge reads"
+  },
+  {
+   "control": "corrupt_receipt_status_blank_historical_cases",
+   "flipped": true,
+   "met_after": false,
+   "what": "empty historical_cases in the receipt the judge reads"
+  },
+  {
+   "control": "corrupt_receipt_status_blank_supported_fixtures",
+   "flipped": true,
+   "met_after": false,
+   "what": "empty supported_fixtures in the receipt the judge reads"
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "leaks": [],
+ "n_controls": 11,
+ "n_leaks": 0,
+ "real_limitation_the_controls_do_not_fix": {
+  "class": "fixture-only success",
+  "condition": "status_causality_challenged",
+  "not_a_leak_because": "the negative controls do flip it, so the evaluator reads what it claims to read",
+  "still_weak_because": "a trial could pass this condition while its own run produced no causal challenge at all",
+  "what": "it rests on historical_cases and supported_fixtures, which are replayed history and named fixtures. The condition is therefore satisfied without any status label produced DURING the trial being challenged.",
+  "what_would_close_it": "require at least one OVERREACHING verdict whose subject label was recorded during this trial"
+ },
+ "recorded_by": "tools/future/trial_negative_controls.py",
+ "schema": "hawking.future.trial_negative_controls.v1",
+ "timeline": "receipts/future/AUTONOMY_TIMELINE_30m.json",
+ "trial": "30m",
+ "version": 1
+}

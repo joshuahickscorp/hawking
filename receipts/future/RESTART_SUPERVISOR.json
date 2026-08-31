@@ -1,0 +1,428 @@
+{
+ "authority_boundary": {
+  "request_executable": false,
+  "resident_may": "file a RestartRequest with a reason",
+  "resident_may_not": "execute stop/restart/restore/restart_cycle",
+  "supervisor_decides": "decide(request) issues a SupervisorDecision",
+  "supervisor_performs": "restart_cycle(decision, ...)",
+  "user_constructible_decision": false
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:48:01Z",
+  "recorded_by": "tools/future/restart_supervisor.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "built": true,
+ "checkpoint_schema": "hawking.future.restart_supervisor.checkpoint.v1",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. A restart verdict is process-identity and disk state, not a bench. A RestartRequest is not supervisor authority.",
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "fates": [
+  "INGESTED",
+  "ADOPTED",
+  "UNKNOWN"
+ ],
+ "gaps_closed": [
+  "no supervisor made a restart survivable: checkpoint of mission+frontier+queue+detached handles+artifact sha256, stop with cooperative-vs-escalated evidence, restart of the exact named artifact, restore, rediscover",
+  "resident-issued restart was not a type boundary; RestartRequest now cannot execute and cannot be passed to restart_cycle",
+  "detached jobs that outlived a dead resident had adopt() but nothing called it on restart, so a cycle could silently relaunch duplicates",
+  "truncated checkpoint mid-write had no loader; wakeup.classify_receipt_bytes is now the gate",
+  "restore had no artifact-existence check, so a checkpoint could restore a queue for a binary that was gone"
+ ],
+ "gpu_authority": false,
+ "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "live_mission_state_present": true,
+ "module_sha256": "de5cfd902fff364723c2e1e8dc34c8bef645ef68bae04bcef5de0b327305ba6f",
+ "negative_controls": {
+  "absent_mission_refuses": {
+   "detail": "mission file not on disk: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/no-mission.json",
+   "fires": true
+  },
+  "empty_reason_refuses": {
+   "detail": "empty reason is not grounds for a restart",
+   "fires": true
+  },
+  "rediscover_ingests_finished": {
+   "detail": {
+    "adopted": false,
+    "assumed_complete": false,
+    "expected_receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/results/done.json",
+    "fate": "INGESTED",
+    "job_id": "done-job-c514b248",
+    "observed_complete_with_receipt": true,
+    "reason": "finished job ingested; not relaunched",
+    "relaunched": false,
+    "terminal": "completed-with-receipt"
+   },
+   "fires": true
+  },
+  "rediscover_no_double_count": {
+   "detail": {
+    "fates": {
+     "ADOPTED": 1,
+     "INGESTED": 0,
+     "UNKNOWN": 0
+    },
+    "n_duplicates_dropped": 1,
+    "n_input_mentions": 2,
+    "n_jobs": 1
+   },
+   "fires": true
+  },
+  "rediscover_unknown_undetermined": {
+   "detail": {
+    "adopted": false,
+    "assumed_complete": false,
+    "fate": "UNKNOWN",
+    "identity_status": "dead",
+    "job_id": "ghost-no-record",
+    "reason": "fate undetermined (identity_status=dead, state=None, terminal=None); not assumed complete; not relaunched",
+    "relaunched": false,
+    "terminal": null
+   },
+   "fires": true
+  },
+  "refuse_decision_does_not_restart": {
+   "detail": "empty reason is not grounds for a restart",
+   "fires": true
+  },
+  "refuse_runtime_path_lookup": {
+   "detail": "artifact.argv[0] is not absolute; refusing PATH resolution at restart",
+   "fires": true
+  },
+  "request_cannot_execute": {
+   "detail": {
+    "attr": true,
+    "ctor": true,
+    "cycle": true
+   },
+   "fires": true
+  },
+  "restart_cycle_each_step": {
+   "detail": {
+    "checkpoint": "ok",
+    "rediscover_detached": "ok",
+    "restart": "ok",
+    "restore": "ok",
+    "stop": "ok"
+   },
+   "fires": true
+  },
+  "restore_hash_mismatch": {
+   "detail": "artifact bytes do not match checkpoint sha256 at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/resident_artifact.py; not the named artifact",
+   "fires": true
+  },
+  "restore_missing_artifact": {
+   "detail": "named artifact no longer exists: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/resident_artifact.py",
+   "fires": true
+  },
+  "stop_cooperative": {
+   "detail": {
+    "channel": "killpg",
+    "identity_status": "dead",
+    "needed": "cooperative",
+    "pid": 40343,
+    "reason": "SIGTERM reaped the resident within grace",
+    "result": "ok",
+    "signal": "SIGTERM",
+    "stopped": true
+   },
+   "fires": true
+  },
+  "stop_escalates": {
+   "detail": {
+    "channel": "killpg",
+    "identity_status": "dead",
+    "needed": "escalated",
+    "pid": 40344,
+    "reason": "SIGTERM did not reap within grace; SIGKILL did",
+    "result": "ok",
+    "signal": "SIGKILL",
+    "stopped": true
+   },
+   "fires": true
+  },
+  "stop_refuses_unproven_identity": {
+   "detail": {
+    "foreign_alive": true,
+    "stop": {
+     "identity_status": "reused",
+     "needed": "refused",
+     "pid": 40347,
+     "reason": "identity_status=reused: will not signal a pid we cannot prove is the resident",
+     "result": "refused",
+     "signal": null,
+     "stopped": false
+    }
+   },
+   "fires": true
+  },
+  "truncated_checkpoint": {
+   "detail": "truncated checkpoint: truncated or invalid JSON: Expecting property name enclosed in double quotes",
+   "fires": true
+  },
+  "truncated_tmp_sibling": {
+   "detail": "checkpoint missing at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/ghost.json; leftover tmp ['.ghost.json.1.deadbeef.tmp'] is a mid-write; refusing to half-read",
+   "fires": true
+  }
+ },
+ "negative_findings": [
+  "does not start a model (sandbox forbids; no GPU lease; super_resident never starts a process)",
+  "does not flock a bench lock or take a GPU lease; refuse_reason still gates argv",
+  "live hcli/agentos/resident_gate.py and recovery.py remain Codex-owned; proofs run on fixture processes",
+  "orchestration.py BINDINGS cannot be updated from this write partition, so the connector will report this module unbound until a later lane binds it",
+  "pid wraparound was not waited out; reuse is proven by a live foreign process plus a forged start_token",
+  "MISSION_STATE may be absent; checkpoint without a mission is refused rather than invented",
+  "a still-alive-after-SIGKILL resident is recorded refused, not claimed stopped"
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "operations": [
+  "checkpoint",
+  "stop",
+  "restart",
+  "restore",
+  "rediscover_detached",
+  "restart_cycle"
+ ],
+ "promoted": false,
+ "proofs": {
+  "absent_mission_refuses": {
+   "detail": "mission file not on disk: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/no-mission.json",
+   "fires": true
+  },
+  "all_passed": true,
+  "empty_reason_refuses": {
+   "detail": "empty reason is not grounds for a restart",
+   "fires": true
+  },
+  "rediscover_ingests_finished": {
+   "detail": {
+    "adopted": false,
+    "assumed_complete": false,
+    "expected_receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/results/done.json",
+    "fate": "INGESTED",
+    "job_id": "done-job-c514b248",
+    "observed_complete_with_receipt": true,
+    "reason": "finished job ingested; not relaunched",
+    "relaunched": false,
+    "terminal": "completed-with-receipt"
+   },
+   "fires": true
+  },
+  "rediscover_no_double_count": {
+   "detail": {
+    "fates": {
+     "ADOPTED": 1,
+     "INGESTED": 0,
+     "UNKNOWN": 0
+    },
+    "n_duplicates_dropped": 1,
+    "n_input_mentions": 2,
+    "n_jobs": 1
+   },
+   "fires": true
+  },
+  "rediscover_unknown_undetermined": {
+   "detail": {
+    "adopted": false,
+    "assumed_complete": false,
+    "fate": "UNKNOWN",
+    "identity_status": "dead",
+    "job_id": "ghost-no-record",
+    "reason": "fate undetermined (identity_status=dead, state=None, terminal=None); not assumed complete; not relaunched",
+    "relaunched": false,
+    "terminal": null
+   },
+   "fires": true
+  },
+  "refuse_decision_does_not_restart": {
+   "detail": "empty reason is not grounds for a restart",
+   "fires": true
+  },
+  "refuse_runtime_path_lookup": {
+   "detail": "artifact.argv[0] is not absolute; refusing PATH resolution at restart",
+   "fires": true
+  },
+  "request_cannot_execute": {
+   "detail": {
+    "attr": true,
+    "ctor": true,
+    "cycle": true
+   },
+   "fires": true
+  },
+  "restart_cycle_each_step": {
+   "detail": {
+    "checkpoint": "ok",
+    "rediscover_detached": "ok",
+    "restart": "ok",
+    "restore": "ok",
+    "stop": "ok"
+   },
+   "fires": true
+  },
+  "restore_hash_mismatch": {
+   "detail": "artifact bytes do not match checkpoint sha256 at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/resident_artifact.py; not the named artifact",
+   "fires": true
+  },
+  "restore_missing_artifact": {
+   "detail": "named artifact no longer exists: /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/resident_artifact.py",
+   "fires": true
+  },
+  "stop_cooperative": {
+   "detail": {
+    "channel": "killpg",
+    "identity_status": "dead",
+    "needed": "cooperative",
+    "pid": 40343,
+    "reason": "SIGTERM reaped the resident within grace",
+    "result": "ok",
+    "signal": "SIGTERM",
+    "stopped": true
+   },
+   "fires": true
+  },
+  "stop_escalates": {
+   "detail": {
+    "channel": "killpg",
+    "identity_status": "dead",
+    "needed": "escalated",
+    "pid": 40344,
+    "reason": "SIGTERM did not reap within grace; SIGKILL did",
+    "result": "ok",
+    "signal": "SIGKILL",
+    "stopped": true
+   },
+   "fires": true
+  },
+  "stop_refuses_unproven_identity": {
+   "detail": {
+    "foreign_alive": true,
+    "stop": {
+     "identity_status": "reused",
+     "needed": "refused",
+     "pid": 40347,
+     "reason": "identity_status=reused: will not signal a pid we cannot prove is the resident",
+     "result": "refused",
+     "signal": null,
+     "stopped": false
+    }
+   },
+   "fires": true
+  },
+  "truncated_checkpoint": {
+   "detail": "truncated checkpoint: truncated or invalid JSON: Expecting property name enclosed in double quotes",
+   "fires": true
+  },
+  "truncated_tmp_sibling": {
+   "detail": "checkpoint missing at /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/restart-sup-fduvdhyd/ghost.json; leftover tmp ['.ghost.json.1.deadbeef.tmp'] is a mid-write; refusing to half-read",
+   "fires": true
+  }
+ },
+ "proofs_all_passed": true,
+ "purpose": "Supervisor that makes a resident restart survivable and provable: durable checkpoint, cooperative-then-escalated stop, exact-artifact restart, restore of frontier/queue, rediscovery of detached jobs.",
+ "recovered_implementation": [
+  "tools/future/detached.py DetachedSupervisor.adopt/list/inspect/identity_status \u2014 re-adopt is pid+start_token; this lane calls it rather than forking a second supervisor",
+  "tools/future/wakeup.py classify_receipt_bytes / write_sealed / PARTIAL_TRUNCATED \u2014 torn checkpoints are the same fault as torn receipts",
+  "tools/future/resident_identity.py load() \u2014 restart-survivable identity document; snapshot is a digest, never a conversational reconstruction",
+  "tools/future/resident_install.py restart slot no_silent_restart=True \u2014 silent restart remains forbidden",
+  "tools/future/autonomy_run.py MISSION_STATE \u2014 durable mission path; absent file is a refusal, not an empty success",
+  "tools/future/sandbox.py start_model raises AuthorityRefused \u2014 this supervisor does not start a model",
+  "tools/future/frontiers.py next_work/refill \u2014 restore rebuilds the snapshotted queue; it does not call live refill as a substitute",
+  "tools/future/succession.py checkpoint_incumbent \u2014 census-style, not a live process snapshot; this lane is the live-process snapshot that was missing",
+  "tools/future/super_resident.py SilentRestartRefused \u2014 crash does not silently restart the body; this lane is the explicit, evidenced restart",
+  "hcli/agentos/recovery.py \u2014 fixture recovery (read, not forked); production recovery remains Codex-owned",
+  "hcli/persist.py atomic_write_json \u2014 crash-safe writer; leftover .tmp is treated as truncated mid-write",
+  "hcli/resources.py pid_is_alive / process_start_token \u2014 pid alone is never identity"
+ ],
+ "required_checkpoint_keys": [
+  "schema",
+  "complete",
+  "artifact",
+  "mission",
+  "frontier",
+  "in_flight",
+  "queue",
+  "detached_handles",
+  "scar_consultations",
+  "identity"
+ ],
+ "resident_callable": {
+  "callable": true,
+  "entry_point": "tools.future.restart_supervisor.restart_cycle(decision, workspace=...)",
+  "fails_closed": "RestartRequest cannot execute; truncated/unsealed checkpoints refuse; missing or hash-mismatched artifacts refuse; unproven pid identity is not signalled; undetermined detached jobs are UNKNOWN and never assumed complete; never relaunches",
+  "frontier": "FT.HCLI_SELF.no-launch",
+  "python_api": {
+   "checkpoint": "tools.future.restart_supervisor.checkpoint(mission, workspace=..., artifact=...)",
+   "decide": "tools.future.restart_supervisor.decide(request) -> SupervisorDecision",
+   "rediscover_detached": "tools.future.restart_supervisor.rediscover_detached(...)",
+   "request_restart": "tools.future.restart_supervisor.request_restart(reason) -> RestartRequest",
+   "restart": "tools.future.restart_supervisor.restart(artifact, workspace=...)",
+   "restore": "tools.future.restart_supervisor.restore(checkpoint, workspace=...)",
+   "stop": "tools.future.restart_supervisor.stop(resident)"
+  },
+  "receipt": "receipts/future/RESTART_SUPERVISOR.json",
+  "workunit": "one CPU_ANALYSIS unit; checkpoint/stop/restart/restore/rediscover_detached; id=future.restart-supervisor.restart-cycle",
+  "workunit_record": {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. A restart verdict is process-identity and disk state, not a bench. A RestartRequest is not supervisor authority.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "087a34916612fa0ff6f976d57e99b7070378729e5d5aa8eee0e9d9ca001ba16b",
+   "dependencies": [],
+   "description": "Checkpoint mission+artifact identity, cooperatively stop then escalate, restart the exact named artifact, restore frontier/queue, rediscover detached jobs without relaunching. CPU_ANALYSIS; no GPU lease.",
+   "effect_class": "REVERSIBLE",
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "id": "future.restart-supervisor.restart-cycle",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "preferred_backend": null,
+   "provider": "future.restart_supervisor",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "LIGHT_CONTROL",
+   "resource_class_note": "CPU_ANALYSIS protocol; LIGHT_CONTROL because this sidecar holds no GPU lease",
+   "role": "science",
+   "running_at": null,
+   "species": "HCLI_SELF_OPTIMIZE",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.restart_supervisor.cycle_verdict",
+   "workspace": "repo-root"
+  }
+ },
+ "schema": "hawking.future.restart_supervisor.v1",
+ "seal_sha256": "2ed3fe4516d3cae1e74e7e78b9169f2eb76bfbbcdc6b21867791c85382fdc1c3",
+ "status": "BUILT_NOT_PROMOTED",
+ "stop_needed": [
+  "cooperative",
+  "escalated",
+  "already_dead",
+  "refused"
+ ],
+ "version": 1
+}

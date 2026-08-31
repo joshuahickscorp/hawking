@@ -1,0 +1,167 @@
+{
+  "schema": "hawking.flash.stateful_tps_gate.v1",
+  "status": "BLOCKED_FIRST_PHYSICAL_BOUNDARY",
+  "generated_at": "2026-08-29T04:37:21.738867Z",
+  "source_files": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_fast_chain.rs",
+      "sha256": "fba754e776a07e985f0fe22fb2f1c20cdfec8aa8179b868c46e3d1f0d1198fcd"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+      "sha256": "023a3546fac801d86a2a8889c6164c5b4aa0d68b7d7740c2e03fa5525473271f"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_full_attention_layer3.rs",
+      "sha256": "db11010109fd521facbf6d9698c49dd6b94754280b5115ac26449c161869b0d6"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+      "sha256": "6b878b93ae4868bc310abc89f58ddd9ba7491a53da39c2791526d5f6ba1b0a21"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
+      "sha256": "68fdaa04b0554456f77890c8e9da6a79a509ea98ac470e597a56f2296f08cc65"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_tokenizer_acceptance_contract.rs",
+      "sha256": "4b70d7dd554fd3f76e51dcab20457fe15dab52181ea59dd08ac07c1de10f4be0"
+    }
+  ],
+  "source_checks": {
+    "tokenizer_contract": {
+      "Tokenizer::from_file": true,
+      "encode": true,
+      "decode_one": true,
+      "is_eog": true
+    },
+    "tokenizer_or_prompt_loop": {
+      "tokenizer": true,
+      "generate": true,
+      "max_new_tokens": false
+    },
+    "persistent_full_attention_kv": {
+      "kv_cache": true,
+      "key_cache": true,
+      "position": true
+    },
+    "persistent_linear_recurrence": {
+      "reset_states": true,
+      "recurrent_state": true
+    },
+    "persistent_terminal_executor": {
+      "TerminalExecutor": true,
+      "source_index_reused": true,
+      "lm_head_reused": true
+    },
+    "terminal_probe_only": {
+      "FIRST_COMPLETE_TOKEN_TERMINAL_PROBE": true,
+      "terminal::run_with": true
+    }
+  },
+  "qualified_state_organs": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LINEAR_ORGAN.json",
+      "sha256": "177a37324f4b6251ba809506ce1fbdd66b10a3cf2e36a6af29dc4cb1011baa7c",
+      "status": "PASSED_STATEFUL_ORGAN",
+      "schema": "hawking.flash.stateful_linear_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN.json",
+      "sha256": "b220cc8b5b2fadcfe65fe223f33b60f34ec0064fdc55eb2e540485ff078c2b10",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN_V2.json",
+      "sha256": "526f8aa129b647acc63ca3bc4e758686818710c8bb16c577c0e4d1e6eb4e01a2",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM_V3_ATTN.json",
+      "sha256": "2ba596d839d6679877b85b68b40ac339fd269bc142ffb7f31725df3519c7195e",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM_V2_ATTN.json",
+      "sha256": "4a06ef747efe7e6cb08968f890be468f8ba988a8398645b6a4a4fa20a2395740",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json",
+      "sha256": "4648d586dfca77062caaa580cbd93338b2136136aad2b25a3b6cacaf203a8014",
+      "status": "PASSED_STATEFUL_PREFIX_SESSION",
+      "schema": "hawking.flash.stateful_linear_prefix_session.v1"
+    }
+  ],
+  "stateful_cross_species_bridge": {
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE.json",
+    "sha256": "93dcc4f1e70b65580626c0fe4e19dbfd16a20b090018e0d7f17c6a04bd8e4980",
+    "status": "PASSED_STATEFUL_CROSS_SPECIES_CHAIN",
+    "claim": "Two token steps traverse layers 0..2 stateful DeltaNet, layer 3 stateful full-attention KV plus MLP/MoE, layers 4..6 stateful DeltaNet with device inter-layer handoffs, layer 7 stateful full-attention KV plus MLP/MoE, layers 8..10 stateful DeltaNet with device inter-layer handoffs, and layer 11 stateful full-attention KV plus MLP/MoE. Cross-species seams remain host diagnostic copies; this does not prove device-only 48-layer integration, tokenizer acceptance, TPS, EBPW, or residency."
+  },
+  "complete_stateful_session": {
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+    "sha256": "c6e688b6fb621fac7a1cb0198d023c9257379da0187546fd23f68f955755cc85",
+    "status": "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED",
+    "accepted_generation_tokens": 1,
+    "claim": "The pinned tokenizer prompt completed all 48 Flash layers in the dense exact stateful oracle, and the native terminal argmax produced token 2972 as the first generated token. This closes one accepted-token prediction without claiming that token's continuation state was advanced; repeated accepted decode, TPS, EBPW, capability and HCLI residency remain open."
+  },
+  "terminal_executor_compile": {
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_TERMINAL_EXECUTOR_COMPILE.json",
+    "sha256": "d046afd5a39b642539ae338765edc58d918da3e2f3455ae3b15e3697bdf9a5a3",
+    "status": "COMPILE_PASSED",
+    "architecture": {
+      "executor": "TerminalExecutor",
+      "source_index_lifetime": "one native session",
+      "metal_context_lifetime": "one native session",
+      "readout_weights": "cached immutable payloads",
+      "lm_head": "cached reusable buffer",
+      "state_buffers": "reused ping-pong workspace"
+    },
+    "physical_execution": false
+  },
+  "tokenizer_contract": {
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_TOKENIZER_ACCEPTANCE_CONTRACT.json",
+    "status": "PASSED_TOKENIZER_SESSION_PREREQUISITE"
+  },
+  "first_physical_failure_boundary": {
+    "stage": "token_acceptance_loop",
+    "status": "ONE_TOKEN_ACCEPTED",
+    "evidence": "the complete 48-layer stateful oracle produced the tokenizer-bound terminal argmax as one accepted generated token; continuation state, repeated decode and protected TPS remain open"
+  },
+  "blockers": [
+    {
+      "stage": "token_acceptance_loop",
+      "status": "ONE_TOKEN_ACCEPTED",
+      "evidence": "the complete 48-layer stateful oracle produced the tokenizer-bound terminal argmax as one accepted generated token; continuation state, repeated decode and protected TPS remain open"
+    },
+    {
+      "stage": "full_attention_state",
+      "status": "ORGAN_QUALIFIED",
+      "evidence": "the newest stateful attention receipt proves two-position persistent KV slots, the full-attention MLP epilogue, and source parity; complete 48-layer per-layer KV integration remains absent"
+    },
+    {
+      "stage": "linear_recurrence_state",
+      "status": "ORGAN_AND_PREFIX_QUALIFIED",
+      "evidence": "FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json proves recurrent state across layers 0..2 and two token steps; complete 48-layer executor still does not expose the session"
+    }
+  ],
+  "accepted_tokens": 1,
+  "accepted_tps": null,
+  "complete_system_ebpw": null,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T04:37:21Z",
+    "recorded_by": "tools/flash_stateful_gate.py",
+    "machine": "Apple M3 Ultra (source audit; no multi-token benchmark run)",
+    "rule": "S032 \u00a73 -- no performance claim; state is UNKNOWN",
+    "provenance": "source audit only; no synthetic token loop was timed"
+  },
+  "claim_boundary": "No accepted multi-token TPS or EBPW claim. The complete stateful session receipt, when present, is bounded to its recorded candidate result; repeated accepted decode, capability, EBPW and residency remain open.",
+  "next_action": "Continue from the complete-session receipt with a predicted candidate, then measure repeated accepted decode steps with deterministic tokenizer and terminal checks.",
+  "seal_sha256": "3a2564a9c792db3b301a87a9eba421c22603acc65cbc5e73fc4ddfe0595c0150"
+}

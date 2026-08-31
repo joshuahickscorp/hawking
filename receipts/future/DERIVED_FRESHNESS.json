@@ -1,0 +1,415 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:55Z",
+  "recorded_by": "tools/future/freshness.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "grok/l36-torture-wiring-20260830-182109",
+ "check": {
+  "rule": "exit 1 iff any registered artifact is STALE_SEMANTIC; STALE_FINGERPRINT_ONLY exits 0",
+  "stale_semantic": [],
+  "would_exit_nonzero": false
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "classifications": [
+  {
+   "derived": "CANDIDATE_STAGED_PLAN.json",
+   "kind": "queue",
+   "producer": "tools.future.candidate_planner:build",
+   "reason": "derived receipt is not readable in receipts/future/",
+   "sources": [],
+   "status": "UNKNOWN"
+  },
+  {
+   "derived": "QUALIFICATION_PIPELINE.json",
+   "kind": "generic",
+   "producer": "tools.future.qualification_pipeline:build",
+   "reason": "derived receipt is not readable in receipts/future/",
+   "sources": [],
+   "status": "UNKNOWN"
+  },
+  {
+   "derived": "FLASH_NX_COMPLETENESS_AUDIT.json",
+   "kind": "generic",
+   "producer": "tools.future.flash_nx_audit:build",
+   "reason": "derived receipt is not readable in receipts/future/",
+   "sources": [],
+   "status": "UNKNOWN"
+  },
+  {
+   "added_candidate_ids": [],
+   "derived": "HCLI_FUTURE_WORKUNITS.json",
+   "evidence_source": "live_headless",
+   "kind": "generic",
+   "missing_at_capture": [],
+   "producer": "tools.future.workunit_species:build",
+   "reason": "no provenance recorded, or a current source is not visible",
+   "removed_candidate_ids": [],
+   "sources": [
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "git_common",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      }
+     ],
+     "current_candidate_count": 49,
+     "current_semantic_fingerprint": "0b8de5da310a2dd957f5638c1ba6aca11fe72f1bda456c0d4f214a329f6f34e0",
+     "current_sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "git_common",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+       "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "f01d81e42bc880953c206c26d7b56fd917e6ed348f0477672345d048ed29f3e4",
+     "current_sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    }
+   ],
+   "status": "UNKNOWN",
+   "status_changed_candidate_ids": []
+  },
+  {
+   "derived": "TOURNAMENT_READINESS.json",
+   "kind": "generic",
+   "producer": "tools.future.tournament:build",
+   "reason": "derived receipt is not readable in receipts/future/",
+   "sources": [],
+   "status": "UNKNOWN"
+  },
+  {
+   "added_candidate_ids": [],
+   "derived": "EVIDENCE_SNAPSHOT.json",
+   "evidence_source": null,
+   "kind": "manifest",
+   "missing_at_capture": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+    "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+    "receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+    "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+    "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+    "receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+    "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+    "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+    "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+    "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+    "receipts/headless/FLASH_ORGAN_CENSUS.json",
+    "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+    "receipts/headless/FLASH_ROUTE_STABILITY.json",
+    "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+    "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+    "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+    "receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+    "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
+    "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+    "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+    "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+    "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+    "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+    "receipts/headless/QWEN80_BIT_BUDGET_LEDGER.json",
+    "receipts/headless/APPLE_ANE_ATLAS.json",
+    "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+    "receipts/headless/HCLI_FPGA_PREBOARD.json",
+    "receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+    "receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+    "receipts/headless/ODYSSEY_LEARNING_CURVE.json",
+    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+    "receipts/headless/DOCTOR_TRANSFER.json",
+    "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+    "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+    "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+    "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+    "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+    "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+    "receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+    "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+    "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "producer": "tools.future.evidence_snapshot:build",
+   "reason": "no provenance recorded, or a current source is not visible",
+   "removed_candidate_ids": [],
+   "sources": [],
+   "status": "UNKNOWN",
+   "status_changed_candidate_ids": []
+  }
+ ],
+ "counts": {
+  "FRESH": 0,
+  "STALE_FINGERPRINT_ONLY": 0,
+  "STALE_SEMANTIC": 0,
+  "UNKNOWN": 6,
+  "registered": 6,
+  "unregistered": 19
+ },
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_source": "live_headless",
+ "fpga": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
+ "gaps_closed": [
+  "semantic fingerprint over (candidate_id, status, affected_physical_region, exact_mutation, dependencies, blocked_reason); count derived from the rows",
+  "ordering, whitespace, timestamps and zero-valued status buckets do not move the fingerprint",
+  "FRESH / STALE_FINGERPRINT_ONLY / STALE_SEMANTIC / UNKNOWN with added/removed/status-changed ids",
+  "--check exits 1 on STALE_SEMANTIC and 0 on STALE_FINGERPRINT_ONLY",
+  "--refresh invokes each producer's own build() and does not rewrite sibling receipts here",
+  "registry of derived -> source(s) -> producer; unregistered receipts/future/*.json are findings",
+  "source resolution copes with live-present, live-absent, and pinned-snapshot copies and records which"
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "measurement_class": "STATIC_ONLY",
+ "negative_findings": [
+  "QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json and TOURNAMENT_READINESS.json record no source sha256/semantic fingerprint, so they classify UNKNOWN until those producers start writing the CANDIDATE_STAGED_PLAN.input pattern",
+  "queue.fingerprint on ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json is a full-document hash, not the 6-tuple semantic fingerprint used here",
+  "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; bench.state stays UNKNOWN",
+  "no GPU / FPGA / power meter in this lane; no hardware quantity is asserted",
+  "--refresh was not invoked by --check/--report; STALE_SEMANTIC artifacts stay on disk until a caller passes --refresh",
+  "UNKNOWN artifacts: CANDIDATE_STAGED_PLAN.json, QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json, TOURNAMENT_READINESS.json, EVIDENCE_SNAPSHOT.json",
+  "19 receipts/future/*.json files are not in the freshness registry",
+  "this worktree has no receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json; resolution used other_worktree/git_common/pinned_snapshot when present (absence here is a checkout fact, not a claim that the file does not exist)"
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "purpose": "Distinguish a cosmetic Codex rewrite (byte sha moved, meaning did not) from a semantic change that requires regenerating derived sidecar artifacts. FIVE ERAS, THREE ODYSSEYS. FPGA stays inside Accelerator / Physical Compiler / Fusion. DISK STATE IS AUTHORITY.",
+ "queue_semantic_fields": [
+  "candidate_id",
+  "status",
+  "affected_physical_region",
+  "exact_mutation",
+  "dependencies",
+  "blocked_reason"
+ ],
+ "recovered_implementation": {
+  "adequate_as": "CANDIDATE_STAGED_PLAN.input records queue_sha256 (bytes) and queue_fingerprint (the queue document's own full-body hash). codex_ingest hashes file bytes. evidence_snapshot pins captured[].sha256. None of those distinguish a cosmetic rewrite from a semantic change.",
+  "already_existed": [
+   {
+    "in_git": true,
+    "note": "already records input.queue_sha256 + input.queue_fingerprint + candidate_count + by_status",
+    "on_disk": false,
+    "path": "receipts/future/CANDIDATE_STAGED_PLAN.json"
+   },
+   {
+    "in_git": true,
+    "note": "assert_plan_dramatically_smaller no longer uses a capped n<=40 convenience integer",
+    "on_disk": true,
+    "path": "tools/future/candidate_planner.py"
+   },
+   {
+    "in_git": true,
+    "note": "pinned hash-manifest of Codex receipts; EVIDENCE_SNAPSHOT.json is the manifest",
+    "on_disk": true,
+    "path": "tools/future/evidence_snapshot.py"
+   },
+   {
+    "in_git": true,
+    "note": "durable sha256 cursor over receipts/headless; change detection is bytes, not mtime",
+    "on_disk": true,
+    "path": "tools/future/codex_ingest.py"
+   },
+   {
+    "in_git": true,
+    "note": "sequences planner/preflight; does not record source sha/fingerprint",
+    "on_disk": false,
+    "path": "receipts/future/QUALIFICATION_PIPELINE.json"
+   },
+   {
+    "in_git": true,
+    "note": "audits Flash NX completeness against the queue; no source sha recorded",
+    "on_disk": false,
+    "path": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+   },
+   {
+    "in_git": true,
+    "note": "live_sources.loaded_from is a path, not a sha",
+    "on_disk": true,
+    "path": "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+   },
+   {
+    "in_git": true,
+    "note": "reads NX identity documents; no source sha recorded",
+    "on_disk": false,
+    "path": "receipts/future/TOURNAMENT_READINESS.json"
+   },
+   {
+    "in_git": true,
+    "note": "captured[].sha256 is per-file byte provenance",
+    "on_disk": true,
+    "path": "receipts/future/EVIDENCE_SNAPSHOT.json"
+   },
+   {
+    "in_git": true,
+    "note": "41-system inventory; this lane extends it, does not replace it",
+    "on_disk": false,
+    "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
+   },
+   {
+    "in_git": true,
+    "note": "live frontier; stale_entries is a different probe, not derived-artifact freshness",
+    "on_disk": false,
+    "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
+   },
+   {
+    "in_git": false,
+    "note": "Codex live queue (untracked on many worktrees); disk state is authority",
+    "on_disk": false,
+    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   },
+   {
+    "in_git": true,
+    "note": "pinned snapshot copy used when live headless is not visible",
+    "on_disk": false,
+    "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   }
+  ],
+  "gap_closed_by_this_module": "semantic fingerprint over the candidate identity set; four-way classification; --check/--refresh; a one-row registry.",
+  "not_adequate_as": "queue.fingerprint is sha256 of the whole document minus the fingerprint field, so timestamps, zero-valued status buckets and candidate list order move it. No module classified STALE_FINGERPRINT_ONLY vs STALE_SEMANTIC, gated --check on meaning, or refreshed only the semantic-stale producers."
+ },
+ "registry": [
+  {
+   "derived": "CANDIDATE_STAGED_PLAN.json",
+   "kind": "queue",
+   "producer": "tools.future.candidate_planner:build",
+   "recorded_sha_path": "input.queue_sha256",
+   "sources": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ]
+  },
+  {
+   "derived": "QUALIFICATION_PIPELINE.json",
+   "kind": "generic",
+   "producer": "tools.future.qualification_pipeline:build",
+   "recorded_sha_path": null,
+   "sources": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "receipts/future/CANDIDATE_STAGED_PLAN.json"
+   ]
+  },
+  {
+   "derived": "FLASH_NX_COMPLETENESS_AUDIT.json",
+   "kind": "generic",
+   "producer": "tools.future.flash_nx_audit:build",
+   "recorded_sha_path": null,
+   "sources": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+    "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+    "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json"
+   ]
+  },
+  {
+   "derived": "HCLI_FUTURE_WORKUNITS.json",
+   "kind": "generic",
+   "producer": "tools.future.workunit_species:build",
+   "recorded_sha_path": null,
+   "sources": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json"
+   ]
+  },
+  {
+   "derived": "TOURNAMENT_READINESS.json",
+   "kind": "generic",
+   "producer": "tools.future.tournament:build",
+   "recorded_sha_path": null,
+   "sources": [
+    "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+   ]
+  },
+  {
+   "derived": "EVIDENCE_SNAPSHOT.json",
+   "kind": "manifest",
+   "producer": "tools.future.evidence_snapshot:build",
+   "recorded_sha_path": "captured.sha256",
+   "sources": []
+  }
+ ],
+ "schema": "hawking.future.freshness.v1",
+ "seal_sha256": "c07670ee157ce7550ae18593fa891b9428894a09e13447cb98e89fc8625a73ba",
+ "unregistered": [
+  "AUTONOMY_MISSION_STATE.json",
+  "AUTONOMY_RUN.json",
+  "CODEX_INGEST_STATE.json",
+  "CUDA_LOWBIT_HYPOTHESES.json",
+  "DECODE_CIVILIZATION.json",
+  "DIRTY_MEASUREMENT.json",
+  "EVIDENCE_DAG.json",
+  "FPGA_ENGINE_SCHOOL.json",
+  "HBM_DOCTOR.json",
+  "HCLI_SELF_PROFILE.json",
+  "NEGATIVE_SCIENCE_INDEX.json",
+  "NGRAM_SCHOOL.json",
+  "ODYSSEY_LAUNCH_GATE.json",
+  "P6_PRIMITIVE_PROJECTION.json",
+  "REPRO_SCIENCE.json",
+  "SPECIMEN_VERIFICATION.json",
+  "STATIC_KERNEL_PREFLIGHT.json",
+  "SUCCESSION.json",
+  "WORKGRAPH_STATE.json"
+ ],
+ "version": 1,
+ "vocabulary": {
+  "FRESH": "byte sha and semantic fingerprint both match",
+  "STALE_FINGERPRINT_ONLY": "byte sha differs, semantic fingerprint identical \u2014 do not regenerate",
+  "STALE_SEMANTIC": "semantic fingerprint differs \u2014 regeneration required",
+  "UNKNOWN": "derived artifact recorded no provenance to compare (a finding)",
+  "UNREGISTERED": "a receipts/future/*.json file with no registry row"
+ }
+}

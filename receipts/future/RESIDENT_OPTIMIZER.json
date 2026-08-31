@@ -1,0 +1,1654 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:48:00Z",
+  "recorded_by": "tools/future/resident_optimizer.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bound": {
+  "allowed_authority": [
+   "compile_experiment_spec",
+   "emit_static_plan",
+   "propose_workunit",
+   "rank_falsifiable_experiments",
+   "read_receipts",
+   "record_unknown_metrics",
+   "run_static_analysis",
+   "transfer_law_within_declared_scope",
+   "write_sidecar_receipt"
+  ],
+  "allowed_kinds": [
+   "compiler-pass",
+   "transfer",
+   "hardware-profile"
+  ],
+  "era": "III",
+  "era_name": "III Autonomous Science Civilization",
+  "gpu_windows_held": 0,
+  "gpu_windows_requested": 0,
+  "max_hypotheses": 9,
+  "max_total_cost_units": 24,
+  "may_modify_verifier": false,
+  "may_promote": false,
+  "may_widen_authority": false,
+  "odyssey": null
+ },
+ "built": true,
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "by_kind": {
+   "compiler-pass": 3,
+   "hardware-profile": 3,
+   "transfer": 3
+  },
+  "hypotheses": 9
+ },
+ "economy": {
+  "budget": {
+   "attempts": 3,
+   "gpu_windows_held": 0,
+   "gpu_windows_requested": 0,
+   "max_repair_depth": 3,
+   "max_repairs_per_root": 6,
+   "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+   "wall_clock_s": null
+  },
+  "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+  "count": 9,
+  "schema": "hawking.future.resident_optimizer.economy.v1",
+  "species_catalog_present": [
+   "accelerator_candidate_qualification",
+   "architecture_transfer",
+   "fpga_simulation",
+   "fusion_simulation",
+   "green_machine_measurement",
+   "hardware_doctor_experiment",
+   "independent_reproduction",
+   "learned_compiler_experiment",
+   "odyssey_ii_transfer_experiment",
+   "odyssey_iii_adversarial_experiment"
+  ],
+  "species_consumed": [
+   "hardware_doctor_experiment",
+   "learned_compiler_experiment",
+   "odyssey_ii_transfer_experiment"
+  ],
+  "stop_conditions": [
+   "stop when bound.max_hypotheses is reached",
+   "stop when bound.max_total_cost_units is spent",
+   "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+   "stop when the named species verifier (not the proposer) settles the unit",
+   "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+  ],
+  "work_units": [
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "7381a35f0c385194e31ad4f02d78ff6392831433df20f8cb8190379eb3d21c50",
+    "dependencies": [
+     "receipts/future/HARDWARE_DOCTOR.json",
+     "receipts/future/HARDWARE_DOCTOR.json#experiment_queue.HD-009"
+    ],
+    "description": "DeltaNet state must live in the HWIR persistent_state buffer (lifetime=sequence, per_token_transfer=false). Shipping that state over the transport link each token contradicts the organ mapping 'persistent state machine with resident state'.",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-HW-HD-009",
+    "id": "future.resident-optimizer.RO-HW-HD-009",
+    "kind": "hardware-profile",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "hardware_doctor_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.hardware_doctor.rank",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "51f7a1b469371bef7fc7e082e9633b4d9f9e9fe6aaf398e42e50062aea229607",
+    "dependencies": [
+     "receipts/future/HARDWARE_DOCTOR.json",
+     "receipts/future/HARDWARE_DOCTOR.json#experiment_queue.HD-010"
+    ],
+    "description": "A DFX boundary around P1 organs (norm_add_epilogues, lm_head_and_sampling, command_buffer_graph) lets P0 GEMV stay resident while the P1 graph swaps, matching the module_cache key algorithm sha256(HWIR + device genome + HBM genome + toolchain).",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-HW-HD-010",
+    "id": "future.resident-optimizer.RO-HW-HD-010",
+    "kind": "hardware-profile",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "hardware_doctor_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.hardware_doctor.rank",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "4706578fdc461d4633a513ad1b1f7f4bc17055adee8f3c1e3d0d054eb68e91c3",
+    "dependencies": [
+     "receipts/future/LPC_DATASET.json",
+     "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+     "recovered physical candidate qwen27-gqa-qkv-fusion"
+    ],
+    "description": "Treat qwen27-gqa-qkv-fusion as a compiler pass: the packed GQA Q/K/V fusion is a physical-compiler mutation whose result, if a protected verifier later accepts it, is ingestible as one LPC row. This sidecar does not run the pass and does not claim a token.",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-CP-001",
+    "id": "future.resident-optimizer.RO-CP-001",
+    "kind": "compiler-pass",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "learned_compiler_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.lpc.dataset_contract",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "469c1bb3a5d96874a258839d3cc83af57728c9bdb0ce895aefce73d5906e34cd",
+    "dependencies": [
+     "receipts/future/LPC_DATASET.json",
+     "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+     "recovered physical candidate qwen27-attention-gate-fusion"
+    ],
+    "description": "Treat qwen27-attention-gate-fusion as a compiler pass over the attention-gate organ. The LPC row stays STATIC_ONLY until a protected measurement exists; DIAGNOSTIC_RELATIVE never completes.",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-CP-002",
+    "id": "future.resident-optimizer.RO-CP-002",
+    "kind": "compiler-pass",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "learned_compiler_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.lpc.dataset_contract",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "5dd45698e44094dd72e117991a2f4a1364f33e7d8dbe4438983755edc372f73d",
+    "dependencies": [
+     "receipts/future/HARDWARE_DOCTOR.json",
+     "receipts/future/HARDWARE_DOCTOR.json#experiment_queue.HD-004"
+    ],
+    "description": "Tiles that honour the organ map partition_axis within_organ_tensor_parallel and the resident-shard policy resident_shards_no_weight_body_per_token_transfer move only activations and partial reductions per token, versus a tile that restreams the weight body.",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-HW-HD-004",
+    "id": "future.resident-optimizer.RO-HW-HD-004",
+    "kind": "hardware-profile",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "hardware_doctor_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.hardware_doctor.rank",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "965b58d3a3ba5d463b9d13cb4252fa1060e4d0af644ea2293824020fbcb94994",
+    "dependencies": [
+     "receipts/future/LPC_DATASET.json",
+     "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+     "recovered physical candidate qwen27-encoder-label-elision"
+    ],
+    "description": "Treat qwen27-encoder-label-elision as a host-ceremony compiler pass. Elision of encoder labels is a plan, not a complete-token measurement, and is ranked only by expected information per cost.",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-CP-003",
+    "id": "future.resident-optimizer.RO-CP-003",
+    "kind": "compiler-pass",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "learned_compiler_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.lpc.dataset_contract",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "6ddb0f863f729c1562cfde733ad69e2ddab5ec690b96920026e6368aa5f5cadf",
+    "dependencies": [
+     "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "receipts/future/ODYSSEY2_LAW_STORE.json#LAW-COMPETENT-KERNEL-FIRST",
+     "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+    ],
+    "description": "Re-earn LAW-COMPETENT-KERNEL-FIRST on a named transfer candidate without widening scope. Odyssey II already holds the law; this is a PROPOSAL to test transfer, not a call to Law.promote().",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-TR-LAW-COMPETENT-KERNEL-FIRST",
+    "id": "future.resident-optimizer.RO-TR-LAW-COMPETENT-KERNEL-FIRST",
+    "kind": "transfer",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "odyssey_ii_transfer_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.odyssey_ii.law_scope",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "ff1d1220dda965622c905e1923be5eaf03f6cbdbea8dba8a045c3d5dcb44f980",
+    "dependencies": [
+     "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "receipts/future/ODYSSEY2_LAW_STORE.json#LAW-FITTED-AFFINE-BEATS-RTN",
+     "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+    ],
+    "description": "Re-earn LAW-FITTED-AFFINE-BEATS-RTN on a named transfer candidate without widening scope. Odyssey II already holds the law; this is a PROPOSAL to test transfer, not a call to Law.promote().",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-TR-LAW-FITTED-AFFINE-BEATS-RTN",
+    "id": "future.resident-optimizer.RO-TR-LAW-FITTED-AFFINE-BEATS-RTN",
+    "kind": "transfer",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "odyssey_ii_transfer_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.odyssey_ii.law_scope",
+    "workspace": "repo-root"
+   },
+   {
+    "assigned_backend": null,
+    "assigned_runtime": null,
+    "attempts": 0,
+    "backend_task_id": null,
+    "budget": {
+     "attempts": 3,
+     "gpu_windows_held": 0,
+     "gpu_windows_requested": 0,
+     "max_repair_depth": 3,
+     "max_repairs_per_root": 6,
+     "source": "hcli/workunit.py DEFAULT_RETRY_BUDGET / MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT",
+     "wall_clock_s": null
+    },
+    "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+    "classification": "STATIC_ONLY",
+    "content_hash": "313acaf5da3e0378a7162a2174edc4e9cbd9233b5f0dce546ba3b9cbafea775a",
+    "dependencies": [
+     "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "receipts/future/ODYSSEY2_LAW_STORE.json#LAW-HELDOUT-REAL-ACTIVATIONS",
+     "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+    ],
+    "description": "Re-earn LAW-HELDOUT-REAL-ACTIVATIONS on a named transfer candidate without widening scope. Odyssey II already holds the law; this is a PROPOSAL to test transfer, not a call to Law.promote().",
+    "effect_class": "READ_ONLY",
+    "failure_context": null,
+    "finished_at": null,
+    "hypothesis_id": "RO-TR-LAW-HELDOUT-REAL-ACTIVATIONS",
+    "id": "future.resident-optimizer.RO-TR-LAW-HELDOUT-REAL-ACTIVATIONS",
+    "kind": "transfer",
+    "may_modify_verifier": false,
+    "may_promote": false,
+    "preferred_backend": null,
+    "provider": "future.resident_optimizer",
+    "ready_at": null,
+    "repair_depth": 0,
+    "repair_exhausted": false,
+    "repair_reason": null,
+    "repair_root": null,
+    "repairs": null,
+    "requires_quiescence": false,
+    "resource_class": "STATIC_ANALYSIS",
+    "role": "science",
+    "running_at": null,
+    "species": "odyssey_ii_transfer_experiment",
+    "status": "pending",
+    "stop_conditions": [
+     "stop when bound.max_hypotheses is reached",
+     "stop when bound.max_total_cost_units is spent",
+     "stop when the HCLI repair budget is exhausted (MAX_REPAIR_DEPTH / MAX_REPAIRS_PER_ROOT)",
+     "stop when the named species verifier (not the proposer) settles the unit",
+     "never promote; DIAGNOSTIC_RELATIVE never becomes PROTECTED_ABSOLUTE here"
+    ],
+    "verification": null,
+    "verifier": "future.odyssey_ii.law_scope",
+    "workspace": "repo-root"
+   }
+  ],
+  "workunits_receipt": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+  "workunits_receipt_present": true
+ },
+ "gaps_closed": [
+  "bounded self-generated hypotheses, each carrying evidence parents",
+  "ranking by expected information per unit cost (Hardware Doctor integer rule, mixed kinds)",
+  "compiler-pass / transfer / hardware-profile delegated to owner schemas, not reimplemented",
+  "WorkUnit economy with HCLI repair budgets and stop conditions that cannot grant promotion",
+  "recovery contract pointing at resident_gate / recovery.py / autonomy A3-A5, not forked",
+  "proposer and IsolatedVerifier are distinct objects with no shared mutable state",
+  "mark_verified / weaken_verifier / widen_authority each RAISE on the proposer",
+  "promote() does not exist; receipt status is BUILT_NOT_PROMOTED"
+ ],
+ "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "hypotheses": [
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 1,
+   "delegated_body": {
+    "axis": "persistent_state",
+    "cheapest_simulator": {
+     "available": true,
+     "cost": 1,
+     "fidelity": "static_hwir",
+     "ladder_note": "inspect organ-map HWIR graph, buffer lifetimes, placements, DFX cuts"
+    },
+    "expected_removed_cost": "per-token transport of sequence-lifetime DeltaNet state",
+    "falsifier": "An HWIR that sets persistent_state.per_token_transfer=true still satisfies the organ mapping, or adding per-token state bytes to the link simulator does not increase transport class.",
+    "hypothesis": "DeltaNet state must live in the HWIR persistent_state buffer (lifetime=sequence, per_token_transfer=false). Shipping that state over the transport link each token contradicts the organ mapping 'persistent state machine with resident state'.",
+    "predicted_effect": {
+     "direction": "keep_state_resident",
+     "magnitude_class": "FACTOR"
+    },
+    "prerequisite": "QWEN27_FPGA_ORGAN_MAP hwir.buffers (present)",
+    "target_organ": "deltanet_state_and_input_projection",
+    "uncertainty": "State byte count is not in the organ map. The hypothesis is a consistency claim against declared buffer lifetime, not a measured win."
+   },
+   "delegation": {
+    "owner_module": "tools/future/hardware_doctor.py",
+    "owner_receipt": "receipts/future/HARDWARE_DOCTOR.json",
+    "owner_schema": "hawking.future.hardware_doctor.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "axis",
+     "hypothesis",
+     "target_organ",
+     "predicted_effect",
+     "uncertainty",
+     "cheapest_simulator",
+     "falsifier",
+     "expected_removed_cost",
+     "prerequisite"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HARDWARE_DOCTOR.json",
+    "receipts/future/HARDWARE_DOCTOR.json#experiment_queue.HD-009"
+   ],
+   "expected_information": 3,
+   "id": "RO-HW-HD-009",
+   "information_per_cost": {
+    "cost_units": 1,
+    "expected_information": 3,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "hardware-profile",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": null,
+   "rank": 1,
+   "statement": "DeltaNet state must live in the HWIR persistent_state buffer (lifetime=sequence, per_token_transfer=false). Shipping that state over the transport link each token contradicts the organ mapping 'persistent state machine with resident state'.",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.hardware_doctor.rank",
+   "workunit_species": "hardware_doctor_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 1,
+   "delegated_body": {
+    "axis": "dfx_boundary",
+    "cheapest_simulator": {
+     "available": true,
+     "cost": 1,
+     "fidelity": "static_hwir",
+     "ladder_note": "inspect organ-map HWIR graph, buffer lifetimes, placements, DFX cuts"
+    },
+    "expected_removed_cost": "reloading P0 GEMV whenever a P1 graph changes",
+    "falsifier": "The proposed DFX cut crosses a token-path dependency in hwir.dependencies, or the module_cache key would change per token.",
+    "hypothesis": "A DFX boundary around P1 organs (norm_add_epilogues, lm_head_and_sampling, command_buffer_graph) lets P0 GEMV stay resident while the P1 graph swaps, matching the module_cache key algorithm sha256(HWIR + device genome + HBM genome + toolchain).",
+    "predicted_effect": {
+     "direction": "enable_p0_residency_across_p1_swap",
+     "magnitude_class": "UNKNOWN"
+    },
+    "prerequisite": "module_cache schema (present, SCHEMA_ONLY); device still unselected",
+    "target_organ": "command_buffer_graph",
+    "uncertainty": "module_cache is SCHEMA_ONLY. No bitstream exists. DFX on an unselected part is a floorplan claim, not a timing claim."
+   },
+   "delegation": {
+    "owner_module": "tools/future/hardware_doctor.py",
+    "owner_receipt": "receipts/future/HARDWARE_DOCTOR.json",
+    "owner_schema": "hawking.future.hardware_doctor.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "axis",
+     "hypothesis",
+     "target_organ",
+     "predicted_effect",
+     "uncertainty",
+     "cheapest_simulator",
+     "falsifier",
+     "expected_removed_cost",
+     "prerequisite"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HARDWARE_DOCTOR.json",
+    "receipts/future/HARDWARE_DOCTOR.json#experiment_queue.HD-010"
+   ],
+   "expected_information": 3,
+   "id": "RO-HW-HD-010",
+   "information_per_cost": {
+    "cost_units": 1,
+    "expected_information": 3,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "hardware-profile",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": null,
+   "rank": 2,
+   "statement": "A DFX boundary around P1 organs (norm_add_epilogues, lm_head_and_sampling, command_buffer_graph) lets P0 GEMV stay resident while the P1 graph swaps, matching the module_cache key algorithm sha256(HWIR + device genome + HBM genome + toolchain).",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.hardware_doctor.rank",
+   "workunit_species": "hardware_doctor_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 1,
+   "delegated_body": {
+    "active_bytes": null,
+    "backend": "metal",
+    "capability": null,
+    "complete_token_effect": null,
+    "contamination_class": "STATIC_ONLY",
+    "dispatches": null,
+    "fusion": "HAWKING_QWEN38_FUSE_GQA_QKV",
+    "grouping": "UNKNOWN",
+    "latency": null,
+    "layout": "UNKNOWN",
+    "machine_genome": null,
+    "model": "Qwen27",
+    "organ_fingerprint": "Qwen27 GQA Q/K/V packed projection",
+    "persistent_resources": null,
+    "physical_graph_identity": null,
+    "representation": "sealed-resident",
+    "resident_bytes": null,
+    "synchronization": null,
+    "tile": "UNKNOWN"
+   },
+   "delegation": {
+    "owner_module": "tools/future/lpc_dataset.py",
+    "owner_receipt": "receipts/future/LPC_DATASET.json",
+    "owner_schema": "hawking.future.lpc_dataset.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "model",
+     "organ_fingerprint",
+     "representation",
+     "machine_genome",
+     "physical_graph_identity",
+     "backend",
+     "layout",
+     "tile",
+     "grouping",
+     "fusion",
+     "persistent_resources",
+     "active_bytes",
+     "resident_bytes",
+     "dispatches",
+     "synchronization",
+     "latency",
+     "complete_token_effect",
+     "contamination_class",
+     "capability"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/LPC_DATASET.json",
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+    "recovered physical candidate qwen27-gqa-qkv-fusion"
+   ],
+   "expected_information": 2,
+   "id": "RO-CP-001",
+   "information_per_cost": {
+    "cost_units": 1,
+    "expected_information": 2,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "compiler-pass",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": null,
+   "rank": 3,
+   "statement": "Treat qwen27-gqa-qkv-fusion as a compiler pass: the packed GQA Q/K/V fusion is a physical-compiler mutation whose result, if a protected verifier later accepts it, is ingestible as one LPC row. This sidecar does not run the pass and does not claim a token.",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.lpc.dataset_contract",
+   "workunit_species": "learned_compiler_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 1,
+   "delegated_body": {
+    "active_bytes": null,
+    "backend": "metal",
+    "capability": null,
+    "complete_token_effect": null,
+    "contamination_class": "STATIC_ONLY",
+    "dispatches": null,
+    "fusion": "HAWKING_QWEN38_FUSE_ATTENTION_GATE",
+    "grouping": "UNKNOWN",
+    "latency": null,
+    "layout": "UNKNOWN",
+    "machine_genome": null,
+    "model": "Qwen27",
+    "organ_fingerprint": "Qwen27 GQA attention output sigmoid gate",
+    "persistent_resources": null,
+    "physical_graph_identity": null,
+    "representation": "sealed-resident",
+    "resident_bytes": null,
+    "synchronization": null,
+    "tile": "UNKNOWN"
+   },
+   "delegation": {
+    "owner_module": "tools/future/lpc_dataset.py",
+    "owner_receipt": "receipts/future/LPC_DATASET.json",
+    "owner_schema": "hawking.future.lpc_dataset.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "model",
+     "organ_fingerprint",
+     "representation",
+     "machine_genome",
+     "physical_graph_identity",
+     "backend",
+     "layout",
+     "tile",
+     "grouping",
+     "fusion",
+     "persistent_resources",
+     "active_bytes",
+     "resident_bytes",
+     "dispatches",
+     "synchronization",
+     "latency",
+     "complete_token_effect",
+     "contamination_class",
+     "capability"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/LPC_DATASET.json",
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+    "recovered physical candidate qwen27-attention-gate-fusion"
+   ],
+   "expected_information": 2,
+   "id": "RO-CP-002",
+   "information_per_cost": {
+    "cost_units": 1,
+    "expected_information": 2,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "compiler-pass",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": null,
+   "rank": 4,
+   "statement": "Treat qwen27-attention-gate-fusion as a compiler pass over the attention-gate organ. The LPC row stays STATIC_ONLY until a protected measurement exists; DIAGNOSTIC_RELATIVE never completes.",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.lpc.dataset_contract",
+   "workunit_species": "learned_compiler_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 2,
+   "delegated_body": {
+    "axis": "tiling",
+    "cheapest_simulator": {
+     "available": true,
+     "cost": 2,
+     "fidelity": "transport_link_simulator",
+     "ladder_note": "hcli.fpga.link.v1 already on both organ maps; [S] sensitivity only"
+    },
+    "expected_removed_cost": "per-token weight-body transfer",
+    "falsifier": "On the organ-map transport_link_simulator, a resident-shard tile does not reduce per-token transport class versus a weight-body restream of the same organ.",
+    "hypothesis": "Tiles that honour the organ map partition_axis within_organ_tensor_parallel and the resident-shard policy resident_shards_no_weight_body_per_token_transfer move only activations and partial reductions per token, versus a tile that restreams the weight body.",
+    "predicted_effect": {
+     "direction": "reduce_per_token_transport",
+     "magnitude_class": "FACTOR"
+    },
+    "prerequisite": "transport_link_simulator already present on QWEN27_FPGA_ORGAN_MAP",
+    "target_organ": "mlp_gate_up_down",
+    "uncertainty": "Link parameters on the organ map are scenario inputs labelled [S], not measurements. Device HBM capacity is UNKNOWN (hbm_genome TARGET_UNSELECTED)."
+   },
+   "delegation": {
+    "owner_module": "tools/future/hardware_doctor.py",
+    "owner_receipt": "receipts/future/HARDWARE_DOCTOR.json",
+    "owner_schema": "hawking.future.hardware_doctor.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "axis",
+     "hypothesis",
+     "target_organ",
+     "predicted_effect",
+     "uncertainty",
+     "cheapest_simulator",
+     "falsifier",
+     "expected_removed_cost",
+     "prerequisite"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/HARDWARE_DOCTOR.json",
+    "receipts/future/HARDWARE_DOCTOR.json#experiment_queue.HD-004"
+   ],
+   "expected_information": 3,
+   "id": "RO-HW-HD-004",
+   "information_per_cost": {
+    "cost_units": 2,
+    "expected_information": 3,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "hardware-profile",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": null,
+   "rank": 5,
+   "statement": "Tiles that honour the organ map partition_axis within_organ_tensor_parallel and the resident-shard policy resident_shards_no_weight_body_per_token_transfer move only activations and partial reductions per token, versus a tile that restreams the weight body.",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.hardware_doctor.rank",
+   "workunit_species": "hardware_doctor_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 1,
+   "delegated_body": {
+    "active_bytes": null,
+    "backend": "metal",
+    "capability": null,
+    "complete_token_effect": null,
+    "contamination_class": "STATIC_ONLY",
+    "dispatches": null,
+    "fusion": "HAWKING_METAL_ENCODER_LABEL_ELISION",
+    "grouping": "UNKNOWN",
+    "latency": null,
+    "layout": "UNKNOWN",
+    "machine_genome": null,
+    "model": "Qwen27",
+    "organ_fingerprint": "Qwen27 shared Metal ordinary encoder labeling",
+    "persistent_resources": null,
+    "physical_graph_identity": null,
+    "representation": "sealed-resident",
+    "resident_bytes": null,
+    "synchronization": null,
+    "tile": "UNKNOWN"
+   },
+   "delegation": {
+    "owner_module": "tools/future/lpc_dataset.py",
+    "owner_receipt": "receipts/future/LPC_DATASET.json",
+    "owner_schema": "hawking.future.lpc_dataset.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "model",
+     "organ_fingerprint",
+     "representation",
+     "machine_genome",
+     "physical_graph_identity",
+     "backend",
+     "layout",
+     "tile",
+     "grouping",
+     "fusion",
+     "persistent_resources",
+     "active_bytes",
+     "resident_bytes",
+     "dispatches",
+     "synchronization",
+     "latency",
+     "complete_token_effect",
+     "contamination_class",
+     "capability"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/LPC_DATASET.json",
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+    "recovered physical candidate qwen27-encoder-label-elision"
+   ],
+   "expected_information": 1,
+   "id": "RO-CP-003",
+   "information_per_cost": {
+    "cost_units": 1,
+    "expected_information": 1,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "compiler-pass",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": null,
+   "rank": 6,
+   "statement": "Treat qwen27-encoder-label-elision as a host-ceremony compiler pass. Elision of encoder labels is a plan, not a complete-token measurement, and is ranked only by expected information per cost.",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.lpc.dataset_contract",
+   "workunit_species": "learned_compiler_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 2,
+   "delegated_body": {
+    "actual_saved_experiments": null,
+    "architecture_family": "dense_hybrid_transformer",
+    "backend": "UNKNOWN",
+    "counterexample_requirement": "Only one model has had its kernels profiled on this device. The second specimen has no native kernel yet, so the law has one measurement.",
+    "evidence_refs": [
+     "receipts/headless/SHARED_BASIS_KERNEL.json",
+     "receipts/headless/KERNEL_LIBRARY.json",
+     "receipts/headless/CROSS_MODEL_LAWS.json"
+    ],
+    "evidence_strength": "DIAGNOSTIC_RELATIVE",
+    "expected_saved_experiments": null,
+    "law_id": "LAW-COMPETENT-KERNEL-FIRST",
+    "organ_class": "cross_model",
+    "scope": "MODEL_LOCAL",
+    "source_device": "UNKNOWN",
+    "source_model": "qwen3.8-27b-abliterated",
+    "statement": "A representation evaluated with an incompetent kernel is not evaluated. Fewer stored bits is not fewer nanoseconds.",
+    "time_to_first_useful_executable_ns": null,
+    "transfer_candidates": [
+     {
+      "confidence": 0.45,
+      "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "counterexample_requirement": "Only one model has had its kernels profiled on this device. The second specimen has no native kernel yet, so the law has one measurement.",
+      "promotion_requested": false,
+      "scope_widening": "REFUSED",
+      "source_model": "qwen3.8-27b-abliterated",
+      "source_school": "Qwen27",
+      "target_architecture_family": "qwen4_exp",
+      "target_model": "Qwen/Qwen3.8-Flash-Next",
+      "target_school": "Flash"
+     }
+    ],
+    "transfer_confidence": {
+     "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+     "value": 0.45
+    }
+   },
+   "delegation": {
+    "owner_module": "tools/future/odyssey2_law_store.py",
+    "owner_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "owner_schema": "hawking.future.odyssey2_law_store.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "law_id",
+     "statement",
+     "source_model",
+     "source_device",
+     "architecture_family",
+     "organ_class",
+     "backend",
+     "evidence_strength",
+     "evidence_refs",
+     "scope",
+     "transfer_candidates",
+     "transfer_confidence",
+     "counterexample_requirement",
+     "expected_saved_experiments",
+     "actual_saved_experiments",
+     "time_to_first_useful_executable_ns"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "receipts/future/ODYSSEY2_LAW_STORE.json#LAW-COMPETENT-KERNEL-FIRST",
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+   ],
+   "expected_information": 2,
+   "id": "RO-TR-LAW-COMPETENT-KERNEL-FIRST",
+   "information_per_cost": {
+    "cost_units": 2,
+    "expected_information": 2,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "transfer",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": "II",
+   "rank": 7,
+   "statement": "Re-earn LAW-COMPETENT-KERNEL-FIRST on a named transfer candidate without widening scope. Odyssey II already holds the law; this is a PROPOSAL to test transfer, not a call to Law.promote().",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.odyssey_ii.law_scope",
+   "workunit_species": "odyssey_ii_transfer_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 2,
+   "delegated_body": {
+    "actual_saved_experiments": null,
+    "architecture_family": "dense_hybrid_transformer",
+    "backend": "UNKNOWN",
+    "counterexample_requirement": "ARCHITECTURE_GENERAL is the ceiling for a claim about weights; MACHINE_GENERAL is reserved for properties of the box. Promoted here because the reopening condition this law carried has been MET: it was measured on a second architecture family. On Falcon-H1-7B -- hybrid mamba+attention, a different vendor and a different backbone -- the seeded family wins 3 of 3 matched-bit tiers, and the advantage is nearly the same size as on the Qwen MoE: 1.828x vs 1.899x at 2.25 bpw, 1.327x vs 1.333x at 3.25, 1.122x vs 1.138x at 4.25.",
+    "evidence_refs": [
+     "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+     "receipts/headless/MATCHED_BITS_FALCON_H1.json",
+     "receipts/headless/CROSS_MODEL_LAWS.json"
+    ],
+    "evidence_strength": "DIAGNOSTIC_RELATIVE",
+    "expected_saved_experiments": null,
+    "law_id": "LAW-FITTED-AFFINE-BEATS-RTN",
+    "organ_class": "cross_model",
+    "scope": "GENERIC_CANDIDATE",
+    "source_device": "UNKNOWN",
+    "source_model": "qwen3.8-27b-abliterated",
+    "statement": "At matched bits per weight, a least-squares-refit affine codec beats generic grouped-absmax round-to-nearest.",
+    "time_to_first_useful_executable_ns": null,
+    "transfer_candidates": [
+     {
+      "confidence": 0.45,
+      "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=3 n_architecture_families=3",
+      "counterexample_requirement": "ARCHITECTURE_GENERAL is the ceiling for a claim about weights; MACHINE_GENERAL is reserved for properties of the box. Promoted here because the reopening condition this law carried has been MET: it was measured on a second architecture family. On Falcon-H1-7B -- hybrid mamba+attention, a different vendor and a different backbone -- the seeded family wins 3 of 3 matched-bit tiers, and the advantage is nearly the same size as on the Qwen MoE: 1.828x vs 1.899x at 2.25 bpw, 1.327x vs 1.333x at 3.25, 1.122x vs 1.138x at 4.25.",
+      "promotion_requested": false,
+      "scope_widening": "REFUSED",
+      "source_model": "qwen3.8-27b-abliterated",
+      "source_school": "Qwen27",
+      "target_architecture_family": "qwen4_exp",
+      "target_model": "Qwen/Qwen3.8-Flash-Next",
+      "target_school": "Flash"
+     }
+    ],
+    "transfer_confidence": {
+     "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=3 n_architecture_families=3",
+     "value": 0.45
+    }
+   },
+   "delegation": {
+    "owner_module": "tools/future/odyssey2_law_store.py",
+    "owner_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "owner_schema": "hawking.future.odyssey2_law_store.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "law_id",
+     "statement",
+     "source_model",
+     "source_device",
+     "architecture_family",
+     "organ_class",
+     "backend",
+     "evidence_strength",
+     "evidence_refs",
+     "scope",
+     "transfer_candidates",
+     "transfer_confidence",
+     "counterexample_requirement",
+     "expected_saved_experiments",
+     "actual_saved_experiments",
+     "time_to_first_useful_executable_ns"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "receipts/future/ODYSSEY2_LAW_STORE.json#LAW-FITTED-AFFINE-BEATS-RTN",
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+   ],
+   "expected_information": 2,
+   "id": "RO-TR-LAW-FITTED-AFFINE-BEATS-RTN",
+   "information_per_cost": {
+    "cost_units": 2,
+    "expected_information": 2,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "transfer",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": "II",
+   "rank": 8,
+   "statement": "Re-earn LAW-FITTED-AFFINE-BEATS-RTN on a named transfer candidate without widening scope. Odyssey II already holds the law; this is a PROPOSAL to test transfer, not a call to Law.promote().",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.odyssey_ii.law_scope",
+   "workunit_species": "odyssey_ii_transfer_experiment"
+  },
+  {
+   "bench_state": "UNKNOWN",
+   "bounded_authority": [
+    "compile_experiment_spec",
+    "emit_static_plan",
+    "propose_workunit",
+    "rank_falsifiable_experiments",
+    "read_receipts",
+    "record_unknown_metrics",
+    "run_static_analysis",
+    "transfer_law_within_declared_scope",
+    "write_sidecar_receipt"
+   ],
+   "claim_boundary": "Static sidecar artifact. Proposer emits a PROPOSAL. A separate protected verifier decides. This lane cannot promote, cannot take a GPU lease, and cannot raise evidence class above STATIC_ONLY.",
+   "cost_units": 2,
+   "delegated_body": {
+    "actual_saved_experiments": null,
+    "architecture_family": "dense_hybrid_transformer",
+    "backend": "UNKNOWN",
+    "counterexample_requirement": "A Falcon-H1 measurement was taken specifically to promote this and it REFUSED to: on that dense MLP, weight-space and held-out-activation rankings are IDENTICAL across all 13 candidates with zero matched-tier winner flips. So the law is not that weight-space always misranks -- it does not. It is narrower and sharper than it was written: weight-space error is adequate for ranking codecs on one tensor triple, and it inverted the answer on the question that actually mattered, which was WHICH REPRESENTATION CHANGE BREAKS THE COMPOSED MODEL. There weight-space said the non-MLP drop was 6.2x larger and therefore dominant; the physical measurement priced the MLP change at 19 capability points against the non-MLP change's 8. Promotion needs a second family measured on the COMPOSITION question, not on the codec question.",
+    "evidence_refs": [
+     "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+     "receipts/headless/MATCHED_BITS_FALCON_H1.json",
+     "receipts/headless/COMPOSITION_ATTRIBUTION.json",
+     "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "receipts/headless/CROSS_MODEL_LAWS.json"
+    ],
+    "evidence_strength": "DIAGNOSTIC_RELATIVE",
+    "expected_saved_experiments": null,
+    "law_id": "LAW-HELDOUT-REAL-ACTIVATIONS",
+    "organ_class": "cross_model",
+    "scope": "ARCHITECTURE_FAMILY",
+    "source_device": "UNKNOWN",
+    "source_model": "qwen3.8-27b-abliterated",
+    "statement": "Rank COMPOSITION choices on held-out real activations. Weight-space error ranks a codec against a single tensor triple correctly, and ranks the whole-model consequence of a representation change BACKWARDS.",
+    "time_to_first_useful_executable_ns": null,
+    "transfer_candidates": [
+     {
+      "confidence": 0.45,
+      "confidence_basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+      "counterexample_requirement": "A Falcon-H1 measurement was taken specifically to promote this and it REFUSED to: on that dense MLP, weight-space and held-out-activation rankings are IDENTICAL across all 13 candidates with zero matched-tier winner flips. So the law is not that weight-space always misranks -- it does not. It is narrower and sharper than it was written: weight-space error is adequate for ranking codecs on one tensor triple, and it inverted the answer on the question that actually mattered, which was WHICH REPRESENTATION CHANGE BREAKS THE COMPOSED MODEL. There weight-space said the non-MLP drop was 6.2x larger and therefore dominant; the physical measurement priced the MLP change at 19 capability points against the non-MLP change's 8. Promotion needs a second family measured on the COMPOSITION question, not on the codec question.",
+      "promotion_requested": false,
+      "scope_widening": "REFUSED",
+      "source_model": "qwen3.8-27b-abliterated",
+      "source_school": "Qwen27",
+      "target_architecture_family": "qwen4_exp",
+      "target_model": "Qwen/Qwen3.8-Flash-Next",
+      "target_school": "Flash"
+     }
+    ],
+    "transfer_confidence": {
+     "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+     "value": 0.45
+    }
+   },
+   "delegation": {
+    "owner_module": "tools/future/odyssey2_law_store.py",
+    "owner_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "owner_schema": "hawking.future.odyssey2_law_store.v1",
+    "reimplemented": false,
+    "required_fields": [
+     "law_id",
+     "statement",
+     "source_model",
+     "source_device",
+     "architecture_family",
+     "organ_class",
+     "backend",
+     "evidence_strength",
+     "evidence_refs",
+     "scope",
+     "transfer_candidates",
+     "transfer_confidence",
+     "counterexample_requirement",
+     "expected_saved_experiments",
+     "actual_saved_experiments",
+     "time_to_first_useful_executable_ns"
+    ]
+   },
+   "era": "III",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "receipts/future/ODYSSEY2_LAW_STORE.json#LAW-HELDOUT-REAL-ACTIVATIONS",
+    "receipts/future/HCLI_FUTURE_WORKUNITS.json"
+   ],
+   "expected_information": 2,
+   "id": "RO-TR-LAW-HELDOUT-REAL-ACTIVATIONS",
+   "information_per_cost": {
+    "cost_units": 2,
+    "expected_information": 2,
+    "rule": "rank by expected_information / cost_units; integer key -(info*60//cost); never a hardware measurement; same rule as tools/future/hardware_doctor.py::rank_queue"
+   },
+   "kind": "transfer",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "odyssey": "II",
+   "rank": 9,
+   "statement": "Re-earn LAW-HELDOUT-REAL-ACTIVATIONS on a named transfer candidate without widening scope. Odyssey II already holds the law; this is a PROPOSAL to test transfer, not a call to Law.promote().",
+   "status": "PROPOSED",
+   "verified": false,
+   "verifier": "future.odyssey_ii.law_scope",
+   "workunit_species": "odyssey_ii_transfer_experiment"
+  }
+ ],
+ "negative_findings": [
+  "hcli/agentos/resident.py does not exist in HEAD",
+  "lab/hcli/self_evolution.py is not materialized in this sparse worktree; recovered via git show",
+  "tools/accelerator/ and tools/headless/ are not materialized here",
+  "this lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
+  "IsolatedVerifier cannot settle a physical claim and cannot record VERIFIED/PROMOTED",
+  "tournament winner is not chosen; resident_install remains unbound",
+  "workunit_species / odyssey2_law_store / hardware_doctor / lpc_dataset were consumed as receipts, not imported",
+  "no GPU / FPGA board / power meter in this lane; hardware fields stay null/UNKNOWN"
+ ],
+ "promoted": false,
+ "promotion": {
+  "decider": "separate protected verifier (not this sidecar)",
+  "emits": "PROPOSAL",
+  "possible_from_this_lane": false,
+  "promote_method": null,
+  "waits_for": "tournament winner; tools/future/resident_install.py binds the NX"
+ },
+ "proposal_kinds": {
+  "compiler-pass": {
+   "owner_module": "tools/future/lpc_dataset.py",
+   "owner_receipt": "receipts/future/LPC_DATASET.json",
+   "owner_receipt_present": true,
+   "owner_schema": "hawking.future.lpc_dataset.v1",
+   "reimplemented": false,
+   "required_fields": [
+    "model",
+    "organ_fingerprint",
+    "representation",
+    "machine_genome",
+    "physical_graph_identity",
+    "backend",
+    "layout",
+    "tile",
+    "grouping",
+    "fusion",
+    "persistent_resources",
+    "active_bytes",
+    "resident_bytes",
+    "dispatches",
+    "synchronization",
+    "latency",
+    "complete_token_effect",
+    "contamination_class",
+    "capability"
+   ],
+   "verifier": "future.lpc.dataset_contract",
+   "workunit_species": "learned_compiler_experiment"
+  },
+  "hardware-profile": {
+   "owner_module": "tools/future/hardware_doctor.py",
+   "owner_receipt": "receipts/future/HARDWARE_DOCTOR.json",
+   "owner_receipt_present": true,
+   "owner_schema": "hawking.future.hardware_doctor.v1",
+   "reimplemented": false,
+   "required_fields": [
+    "axis",
+    "hypothesis",
+    "target_organ",
+    "predicted_effect",
+    "uncertainty",
+    "cheapest_simulator",
+    "falsifier",
+    "expected_removed_cost",
+    "prerequisite"
+   ],
+   "verifier": "future.hardware_doctor.rank",
+   "workunit_species": "hardware_doctor_experiment"
+  },
+  "transfer": {
+   "owner_module": "tools/future/odyssey2_law_store.py",
+   "owner_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "owner_receipt_present": true,
+   "owner_schema": "hawking.future.odyssey2_law_store.v1",
+   "reimplemented": false,
+   "required_fields": [
+    "law_id",
+    "statement",
+    "source_model",
+    "source_device",
+    "architecture_family",
+    "organ_class",
+    "backend",
+    "evidence_strength",
+    "evidence_refs",
+    "scope",
+    "transfer_candidates",
+    "transfer_confidence",
+    "counterexample_requirement",
+    "expected_saved_experiments",
+    "actual_saved_experiments",
+    "time_to_first_useful_executable_ns"
+   ],
+   "verifier": "future.odyssey_ii.law_scope",
+   "workunit_species": "odyssey_ii_transfer_experiment"
+  }
+ },
+ "purpose": "Bounded hypothesis proposer a future resident will wake into. Verifier held strictly apart. Promotion is impossible from this lane.",
+ "ranking_rule": "expected information per unit cost; integer key -(info*60//cost); same rule as hardware_doctor.rank_queue; never a hardware measurement",
+ "recovered_implementation": [
+  {
+   "path": "hcli/agentos/resident.py",
+   "present": false,
+   "what": "does not exist in HEAD; resident_gate.py is the live boundary"
+  },
+  {
+   "path": "hcli/agentos/resident_gate.py",
+   "present": true,
+   "what": "LIVE_RESIDENT_SEQUENTIAL_PROOF; measures process/lifecycle only; does not score model quality and does not promote generated prose"
+  },
+  {
+   "path": "hcli/agentos/autonomy_gate.py",
+   "present": true,
+   "what": "A1-A5 autonomy qualification; fixed verifier the model cannot nominate; A3 resident kill, A4 process kill, A5 post-mutation crash / replay refused"
+  },
+  {
+   "path": "hcli/agentos/recovery.py",
+   "present": true,
+   "what": "fixture recovery gate; provider must not self-certify (nonsense_case)"
+  },
+  {
+   "path": "hcli/verifier_pipeline.py",
+   "present": true,
+   "what": "plan/execute/verify/synth; execute must not render a verdict; verify settles mechanically; Check-5 override"
+  },
+  {
+   "path": "hcli/mutation.py",
+   "present": true,
+   "what": "bounded reversible mutations, snapshots, rollback_mutation, content_hash"
+  },
+  {
+   "path": "hcli/workunit.py",
+   "present": true,
+   "what": "WorkUnit constructor, DEFAULT_RETRY_BUDGET=3, MAX_REPAIR_DEPTH=3, MAX_REPAIRS_PER_ROOT=6"
+  },
+  {
+   "path": "lab/hcli/self_evolution.py",
+   "present": true,
+   "what": "recovered via git show; tribunal separation: the proposer is never the admitter; missing evidence yields PENDING not fabricated ACCEPT"
+  },
+  {
+   "consumed_as": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+   "path": "tools/future/workunit_species.py",
+   "present": true,
+   "what": "WorkUnit species + starting queue; read the receipt, do not import the module"
+  },
+  {
+   "consumed_as": "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "path": "tools/future/odyssey2_law_store.py",
+   "present": true,
+   "what": "transfer law schema + scope lattice; promote() without evidence raises ScopeViolation"
+  },
+  {
+   "consumed_as": "receipts/future/HARDWARE_DOCTOR.json",
+   "path": "tools/future/hardware_doctor.py",
+   "present": true,
+   "what": "hardware-profile schema + rank by expected information per unit cost"
+  },
+  {
+   "consumed_as": "receipts/future/LPC_DATASET.json",
+   "path": "tools/future/lpc_dataset.py",
+   "present": true,
+   "what": "compiler-pass experiment row schema; DIAGNOSTIC_RELATIVE never completes"
+  },
+  {
+   "path": "tools/future/resident_install.py",
+   "present": true,
+   "what": "generic NX install contract; tournament winner binds later; this lane does not install"
+  },
+  {
+   "path": "tools/future/candidate_planner.py",
+   "present": true,
+   "what": "staged qualification plan; not a compiler-pass schema owner, not rivalled"
+  }
+ ],
+ "recovery": {
+  "owners": {
+   "autonomy_a3_resident_kill": "hcli/agentos/autonomy_gate.py::run_resident_kill",
+   "autonomy_a4_process_kill": "hcli/agentos/autonomy_gate.py::run_process_kill",
+   "autonomy_a5_idempotency": "hcli/agentos/autonomy_gate.py::run_idempotency_crash",
+   "autonomy_gate": "hcli/agentos/autonomy_gate.py",
+   "mutation_rollback": "hcli/mutation.py::rollback_mutation",
+   "recovery_gate": "hcli/agentos/recovery.py",
+   "recovery_schema": "hcli.agentos.recovery_gate.v1",
+   "resident_gate": "hcli/agentos/resident_gate.py",
+   "resident_gate_schema": "hcli.agentos.resident_gate.v1",
+   "resident_install": "tools/future/resident_install.py",
+   "workunit_repair": "hcli/workunit.py"
+  },
+  "policy": "fail-closed fixture proof in hcli.agentos.recovery; production recovery is Codex-owned. This sidecar records the contract.",
+  "resident_py": null,
+  "resident_py_note": "hcli/agentos/resident.py does not exist in HEAD; resident_gate.py is the live sequential-proof boundary",
+  "runs_recovery": false,
+  "self_evolution": {
+   "materialized_in_this_worktree": true,
+   "path": "lab/hcli/self_evolution.py",
+   "recovered_principle": "the proposer is never the admitter (tribunal separation)"
+  },
+  "verifier_pipeline": {
+   "path": "hcli/verifier_pipeline.py",
+   "principle": "execute() gathers refs and must not render a verdict; verify() settles. Check-5: TRUE against nonzero exit is forced FALSE."
+  }
+ },
+ "schema": "hawking.future.resident_optimizer.v1",
+ "seal_sha256": "36c6f88b874d5aea51f7bb4c0cbf9eec65ce6ccfc9c2690abecf7d55b46e4f43",
+ "status": "BUILT_NOT_PROMOTED",
+ "verifier_separation": {
+  "principle": "Models propose; protected deterministic evidence decides. The IsolatedVerifier in this module is STATIC_ONLY structure checking. A protected GPU verifier is Codex-owned and absent here.",
+  "promote_exists_on_optimizer": false,
+  "promote_exists_on_proposer": false,
+  "proposer_type": "tools.future.resident_optimizer.Proposer",
+  "refusals_proven": [
+   {
+    "error": "proposer cannot mark its own proposal verified",
+    "refused": true,
+    "trial": "mark_verified"
+   },
+   {
+    "error": "proposer cannot weaken a verifier",
+    "refused": true,
+    "trial": "weaken_verifier"
+   },
+   {
+    "error": "proposer cannot widen its own authority",
+    "refused": true,
+    "trial": "widen_authority"
+   }
+  ],
+  "shared_mutable_state": false,
+  "verifier_type": "tools.future.resident_optimizer.IsolatedVerifier"
+ },
+ "version": 1,
+ "vocabulary": {
+  "diagnostic_relative_never_promotes": true,
+  "disk_state_is_authority": true,
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga_is": "part of Accelerator / Physical Compiler / Fusion; not a civilization and this module does not build an FPGA backend",
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "protected_absolute_not_emitted": true
+ }
+}

@@ -1,0 +1,230 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:48:51Z",
+  "recorded_by": "tools/future/work_events.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "driver_kind_today": {
+  "next_work_left": "FRONTIER_HAS_WORK",
+  "result_ingested": "RESULT_INGESTED (fixed after e08529b84)",
+  "work_refilled": "WORK_REFILLED (payload key is queue_remaining_when_asked)",
+  "workunit_launched": "WORK_LAUNCHED (also used for generate and admit)"
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "one canonical taxonomy of six acts with required payload keys",
+  "validate() rejects a kind that lacks the payload that would make its claim checkable",
+  "WORK_REFILLED without unit ids or without observed queue depth is rejected",
+  "WORK_REFILLED with an empty unit list is rejected",
+  "LEGACY_ALIASES maps receipt_ingested -> RESULT_INGESTED and names the 15m trial",
+  "canonicalize() rewrites a retired name and sets legacy_kind so a rewrite is never mistaken for a correct emit",
+  "FRONTIER_HAS_WORK is a distinct kind from WORK_REFILLED and earns the daemon nothing"
+ ],
+ "gpu_authority": false,
+ "judge_kind_today": {
+  "eval_ingest_completed_result": "result_ingested -> RESULT_INGESTED",
+  "eval_launch_valid_workunit": "workunit_launched -> WORK_LAUNCHED",
+  "eval_leave_next_work": "next_work_left -> FRONTIER_HAS_WORK",
+  "eval_refill_work": "work_refilled -> WORK_REFILLED (judge does not yet require queue_depth; this contract does)"
+ },
+ "kinds": {
+  "FRONTIER_HAS_WORK": {
+   "claims": "the frontier reports runnable items exist; a fact about the world; earns the daemon nothing",
+   "nonempty": [
+    "unit_ids"
+   ],
+   "required": [
+    "unit_ids"
+   ]
+  },
+  "RESULT_INGESTED": {
+   "claims": "a real receipt was read back and routed",
+   "nonempty": [
+    "cites"
+   ],
+   "required": [
+    "cites"
+   ]
+  },
+  "WORK_GENERATED": {
+   "claims": "the daemon PRODUCED a candidate that did not exist before (a hypothesis, a derived unit)",
+   "nonempty": [],
+   "required": [
+    "candidate"
+   ]
+  },
+  "WORK_LAUNCHED": {
+   "claims": "execution actually started",
+   "nonempty": [],
+   "required": [
+    "unit"
+   ]
+  },
+  "WORK_REFILLED": {
+   "claims": "the daemon replaced completed or invalidated work by asking the frontier again",
+   "nonempty": [
+    "unit_ids"
+   ],
+   "required": [
+    "unit_ids",
+    "queue_depth"
+   ]
+  },
+  "WORK_SCHEDULED": {
+   "claims": "a valid WorkUnit was admitted to the queue",
+   "nonempty": [],
+   "required": [
+    "unit"
+   ]
+  }
+ },
+ "legacy_alias_runs": {
+  "receipt_ingested": "15m autonomy trial e08529b84: driver emitted receipt_ingested; judge scored result_ingested; seventy real ingestions counted as zero and nothing errored"
+ },
+ "legacy_aliases": {
+  "receipt_ingested": "RESULT_INGESTED"
+ },
+ "legacy_emits_in_partition": [],
+ "negative_findings": [
+  "this lane cannot switch autonomy_run.py or autonomy_trial.py onto the canonical names (WRITE list)",
+  "frontiers.refill is still identical to frontiers.next_work",
+  "the driver still emits precanonical spellings; canonicalize() parses them, make() will not emit them",
+  "the judge still scores precanonical names and does not require queue_depth on work_refilled",
+  "WORK_GENERATED and WORK_SCHEDULED are not yet distinct emits in the loop (generate and admit currently look like WORK_LAUNCHED)",
+  "the seventy ingestions dropped by e08529b84 are not retroactively re-scored; the contract prevents the next silent drop"
+ ],
+ "precanonical_spellings": {
+  "next_work_left": "FRONTIER_HAS_WORK",
+  "workunit_launched": "WORK_LAUNCHED"
+ },
+ "purpose": "One canonical work-event contract so the autonomy driver and the autonomy judge score the same acts. FRONTIER_HAS_WORK is a fact about the world and earns nothing; WORK_REFILLED is the daemon asking the frontier again and requires unit ids plus the queue depth it observed.",
+ "queue_depth_accepted_keys": [
+  "queue_depth",
+  "queue_remaining_when_asked"
+ ],
+ "recovered_implementation": [
+  "tools/future/autonomy_run.py _emit is the live emitter: result_ingested, work_refilled, workunit_launched, next_work_left",
+  "tools/future/autonomy_trial.py eval_ingest_completed_result scores result_ingested; eval_refill_work scores work_refilled; eval_launch_valid_workunit scores workunit_launched; eval_leave_next_work scores next_work_left",
+  "tools/future/frontiers.py next_work / refill \u2014 refill currently returns next_work, so the world-fact and the refill act are the same function; the event contract is what splits them"
+ ],
+ "refill_vs_world_fact": "frontiers.refill is currently identical to frontiers.next_work. The distinction is the daemon's act, not the frontier function: WORK_REFILLED requires the unit ids the ask produced AND the queue depth at the moment it asked. FRONTIER_HAS_WORK is the same list of ids with no depth, and earns no refill credit. The 1h trial (d6eb11c79) previously used next_work_left for both.",
+ "resident_callable": {
+  "entry_point": "tools.future.work_events.validate(event)",
+  "fails_closed": "an event that names a kind but lacks the payload that would make its claim checkable is rejected; a legacy name is rejected until canonicalize(); make() refuses to emit a legacy name",
+  "frontier": "FT.HCLI_SELF.emit-workunits",
+  "receipt": "receipts/future/WORK_EVENT_CONTRACT.json",
+  "workunit": "one CPU_ANALYSIS unit; the contract both the driver and the judge must speak before a refill or an ingest counts"
+ },
+ "schema": "hawking.future.work_events.v1",
+ "seal_sha256": "03fa2474d8cc4485804b369d23dbeb2bfd8fc1632f4a6c4defd6d85b9908eba7",
+ "version": 1,
+ "watched_refusals": [
+  {
+   "expect_ok": true,
+   "refused": false,
+   "trial": "FRONTIER_HAS_WORK.valid",
+   "why": "ok"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "FRONTIER_HAS_WORK.missing_payload",
+   "why": "FRONTIER_HAS_WORK missing unit_ids"
+  },
+  {
+   "expect_ok": true,
+   "refused": false,
+   "trial": "WORK_GENERATED.valid",
+   "why": "ok"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "WORK_GENERATED.missing_payload",
+   "why": "WORK_GENERATED missing candidate"
+  },
+  {
+   "expect_ok": true,
+   "refused": false,
+   "trial": "WORK_REFILLED.valid",
+   "why": "ok"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "WORK_REFILLED.missing_payload",
+   "why": "WORK_REFILLED missing unit_ids"
+  },
+  {
+   "expect_ok": true,
+   "refused": false,
+   "trial": "WORK_SCHEDULED.valid",
+   "why": "ok"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "WORK_SCHEDULED.missing_payload",
+   "why": "WORK_SCHEDULED missing unit"
+  },
+  {
+   "expect_ok": true,
+   "refused": false,
+   "trial": "WORK_LAUNCHED.valid",
+   "why": "ok"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "WORK_LAUNCHED.missing_payload",
+   "why": "WORK_LAUNCHED missing unit"
+  },
+  {
+   "expect_ok": true,
+   "refused": false,
+   "trial": "RESULT_INGESTED.valid",
+   "why": "ok"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "RESULT_INGESTED.missing_payload",
+   "why": "RESULT_INGESTED missing cites"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "WORK_REFILLED.empty_unit_ids",
+   "why": "WORK_REFILLED unit_ids is empty; a refill that added nothing is not a refill"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "WORK_REFILLED.missing_queue_depth",
+   "why": "WORK_REFILLED missing queue_depth (the depth observed when the frontier was asked)"
+  },
+  {
+   "expect_ok": true,
+   "refused": false,
+   "trial": "FRONTIER_HAS_WORK.is_not_a_refill",
+   "why": "ok"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "same_unit_ids_without_depth_is_not_WORK_REFILLED",
+   "why": "WORK_REFILLED missing queue_depth (the depth observed when the frontier was asked)"
+  },
+  {
+   "expect_ok": false,
+   "refused": true,
+   "trial": "legacy_name_rejected_until_canonicalize",
+   "why": "kind 'receipt_ingested' is a legacy alias of RESULT_INGESTED; canonicalize() first"
+  }
+ ]
+}

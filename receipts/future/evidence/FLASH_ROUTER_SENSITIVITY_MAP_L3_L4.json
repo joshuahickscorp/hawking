@@ -1,0 +1,294 @@
+{
+  "schema": "hawking.flash.router_sensitivity_map.v1",
+  "status": "MEASURED_SEAM_DIAGNOSTIC",
+  "artifact_kind": "NR_DIAGNOSTIC",
+  "model": "Qwen3.8-Flash-Next",
+  "seam": {
+    "preceding_layer": 3,
+    "router_layer": 4,
+    "dense_state": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DENSE_L0_L7_V1/layer-3/state.f32",
+    "compact_state": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_L0_L7_V1/layer-3/state.f32",
+    "positions": 4,
+    "hidden": 2560
+  },
+  "router_source": {
+    "tensor": "model.language_model.layers.4.mlp.gate.weight",
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00104-of-00131.safetensors",
+    "tensor_bytes": 2621440,
+    "sha256": "59ee8b7c1f07b916353ec16f5e5a57719e59dd7442b7077eff1a2d5bcde4a7a5"
+  },
+  "routing": {
+    "dense_top10": [
+      [
+        309,
+        290,
+        106,
+        410,
+        108,
+        287,
+        252,
+        306,
+        496,
+        367
+      ],
+      [
+        367,
+        131,
+        106,
+        381,
+        439,
+        506,
+        35,
+        252,
+        476,
+        301
+      ],
+      [
+        165,
+        106,
+        139,
+        131,
+        353,
+        476,
+        509,
+        59,
+        369,
+        162
+      ],
+      [
+        309,
+        252,
+        106,
+        488,
+        496,
+        59,
+        453,
+        68,
+        410,
+        306
+      ]
+    ],
+    "compact_top10": [
+      [
+        309,
+        290,
+        106,
+        410,
+        108,
+        287,
+        252,
+        306,
+        496,
+        367
+      ],
+      [
+        367,
+        131,
+        106,
+        381,
+        439,
+        506,
+        35,
+        252,
+        476,
+        144
+      ],
+      [
+        165,
+        106,
+        139,
+        131,
+        353,
+        476,
+        509,
+        59,
+        369,
+        162
+      ],
+      [
+        309,
+        106,
+        252,
+        488,
+        496,
+        59,
+        453,
+        68,
+        410,
+        306
+      ]
+    ],
+    "top10_membership_symmetric_difference": [
+      0,
+      2,
+      0,
+      0
+    ],
+    "rows_with_membership_change": 1,
+    "dense_top10_top11_margin": [
+      3.536790609359741e-05,
+      7.858499884605408e-06,
+      0.0007034391164779663,
+      0.004267316311597824
+    ],
+    "compact_top10_top11_margin": [
+      2.9534101486206055e-05,
+      7.46995210647583e-05,
+      0.000664055347442627,
+      0.007277142256498337
+    ],
+    "dense_margin_min": 7.858499884605408e-06,
+    "compact_margin_min": 2.9534101486206055e-05
+  },
+  "delta": {
+    "l2": 0.07877291738986969,
+    "max_abs": 0.006731508299708366,
+    "router_logit_l2": 0.03345860168337822,
+    "router_logit_max_abs": 0.005146630574017763,
+    "router_singular_values_head": [
+      10.784625053405762,
+      4.076363563537598,
+      3.6030805110931396,
+      3.209606170654297,
+      3.1556811332702637,
+      2.95176362991333,
+      2.6126515865325928,
+      2.4526307582855225,
+      2.3108327388763428,
+      2.115838050842285,
+      2.0432045459747314,
+      1.974076747894287,
+      1.846590280532837,
+      1.8167051076889038,
+      1.7383095026016235,
+      1.6708019971847534,
+      1.6559929847717285,
+      1.6140708923339844,
+      1.551377534866333,
+      1.5336954593658447,
+      1.4949688911437988,
+      1.4628504514694214,
+      1.4188809394836426,
+      1.3933573961257935,
+      1.367780089378357,
+      1.3475364446640015,
+      1.334094762802124,
+      1.2979071140289307,
+      1.2922284603118896,
+      1.2689149379730225,
+      1.2339482307434082,
+      1.2085922956466675
+    ],
+    "router_visible_subspace": [
+      {
+        "rank": 8,
+        "delta_energy_fraction": 0.004872831050306559,
+        "projected_rel_norm": 0.06980566680431366,
+        "oracle_projected_repair_bytes_fp16": 64,
+        "oracle_repaired_rows_with_membership_change": 1,
+        "oracle_repaired_mean_topk_symmetric_difference": 0.5
+      },
+      {
+        "rank": 16,
+        "delta_energy_fraction": 0.013232707045972347,
+        "projected_rel_norm": 0.11503349989652634,
+        "oracle_projected_repair_bytes_fp16": 128,
+        "oracle_repaired_rows_with_membership_change": 1,
+        "oracle_repaired_mean_topk_symmetric_difference": 0.5
+      },
+      {
+        "rank": 32,
+        "delta_energy_fraction": 0.022886082530021667,
+        "projected_rel_norm": 0.151281476020813,
+        "oracle_projected_repair_bytes_fp16": 256,
+        "oracle_repaired_rows_with_membership_change": 1,
+        "oracle_repaired_mean_topk_symmetric_difference": 0.5
+      },
+      {
+        "rank": 64,
+        "delta_energy_fraction": 0.0407201424241066,
+        "projected_rel_norm": 0.20179231464862823,
+        "oracle_projected_repair_bytes_fp16": 512,
+        "oracle_repaired_rows_with_membership_change": 1,
+        "oracle_repaired_mean_topk_symmetric_difference": 0.5
+      },
+      {
+        "rank": 128,
+        "delta_energy_fraction": 0.06615317612886429,
+        "projected_rel_norm": 0.2572026252746582,
+        "oracle_projected_repair_bytes_fp16": 1024,
+        "oracle_repaired_rows_with_membership_change": 1,
+        "oracle_repaired_mean_topk_symmetric_difference": 0.5
+      },
+      {
+        "rank": 256,
+        "delta_energy_fraction": 0.1200057864189148,
+        "projected_rel_norm": 0.34641849994659424,
+        "oracle_projected_repair_bytes_fp16": 2048,
+        "oracle_repaired_rows_with_membership_change": 1,
+        "oracle_repaired_mean_topk_symmetric_difference": 0.5
+      },
+      {
+        "rank": 512,
+        "delta_energy_fraction": 0.22175653278827667,
+        "projected_rel_norm": 0.47091034054756165,
+        "oracle_projected_repair_bytes_fp16": 4096,
+        "oracle_repaired_rows_with_membership_change": 0,
+        "oracle_repaired_mean_topk_symmetric_difference": 0.0
+      }
+    ]
+  },
+  "coordinate_salience": [
+    {
+      "fraction": 0.001,
+      "dimensions": 3,
+      "residual_bytes_f32": 48,
+      "logit_delta_l2_fraction": 0.3462471067905426,
+      "mean_topk_symmetric_difference": 0.5,
+      "rows_with_membership_change": 1
+    },
+    {
+      "fraction": 0.005,
+      "dimensions": 13,
+      "residual_bytes_f32": 208,
+      "logit_delta_l2_fraction": 0.4253232479095459,
+      "mean_topk_symmetric_difference": 0.5,
+      "rows_with_membership_change": 1
+    },
+    {
+      "fraction": 0.01,
+      "dimensions": 26,
+      "residual_bytes_f32": 416,
+      "logit_delta_l2_fraction": 0.4671165347099304,
+      "mean_topk_symmetric_difference": 0.5,
+      "rows_with_membership_change": 1
+    },
+    {
+      "fraction": 0.02,
+      "dimensions": 51,
+      "residual_bytes_f32": 816,
+      "logit_delta_l2_fraction": 0.5412788987159729,
+      "mean_topk_symmetric_difference": 0.5,
+      "rows_with_membership_change": 1
+    },
+    {
+      "fraction": 0.05,
+      "dimensions": 128,
+      "residual_bytes_f32": 2048,
+      "logit_delta_l2_fraction": 0.657504677772522,
+      "mean_topk_symmetric_difference": 0.5,
+      "rows_with_membership_change": 1
+    }
+  ],
+  "claim_boundary": "bounded diagnostic of the observed layer-3 compact error and layer-4 router; no residual-repair parity, native execution, complete-token, capability, TPS, EBPW, or promotion claim",
+  "promotion_allowed": false,
+  "next_gate": "fit a margin-aware router-sensitive residual NR and test exact layer-3/4 organ parity; retain dense router at high fidelity",
+  "bench": {
+    "state": "UNKNOWN",
+    "measurement_state": "MEASURED_SEAM_DIAGNOSTIC",
+    "recorded_at": "2026-08-29T02:31:22Z",
+    "machine": "Apple host CPU; existing state artifacts plus BF16 router",
+    "rule": "S032 \u00a73 -- seam diagnostic, not execution timing",
+    "elapsed_ns": 1049863416
+  }
+}

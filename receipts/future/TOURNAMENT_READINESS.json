@@ -1,0 +1,494 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:57Z",
+  "recorded_by": "tools/future/tournament.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "common_profile": {
+  "coherence": [
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.fact-capital",
+    "item": "fact-capital"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.fact-arith",
+    "item": "fact-arith"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.no-think-leak",
+    "item": "no-think-leak"
+   },
+   {
+    "corpus": "hcli/agentos/resident_gate.py",
+    "id": "coherence.state_reset_isolated",
+    "item": "state_reset_isolated"
+   }
+  ],
+  "designed_before_either_complete_nx": true,
+  "energy_policy": "energy_joules_per_token is compared only when every candidate sets energy_trustworthy=true; otherwise the axis is dropped. No Green Machine module exists yet (frontier F006).",
+  "hard_gate_rule": "a contender failing one HARD GATE is out regardless of speed",
+  "hard_gates": [
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.fact-capital",
+    "item": "fact-capital"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.fact-arith",
+    "item": "fact-arith"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.json-answer",
+    "item": "json-answer"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.json-kind-correct",
+    "item": "json-kind-correct"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.json-no-prose",
+    "item": "json-no-prose"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.mutation-anchor-exact",
+    "item": "mutation-anchor-exact"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.mutation-refuses-invention",
+    "item": "mutation-refuses-invention"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.code-compiles",
+    "item": "code-compiles"
+   },
+   {
+    "corpus": "tools/headless/capability_suite.py",
+    "id": "capability.no-think-leak",
+    "item": "no-think-leak"
+   },
+   {
+    "corpus": "hcli/agentos/native_mission_gate.py",
+    "id": "tool.typed_write_read",
+    "item": "typed_write_ok+typed_read_ok"
+   },
+   {
+    "corpus": "hcli/agentos/native_mission_gate.py",
+    "id": "tool.verifier_owns_acceptance",
+    "item": "acceptance_source=workunit_verifier"
+   },
+   {
+    "corpus": "hcli/agentos/resident_gate.py",
+    "id": "tool.zero_fallbacks",
+    "item": "zero_fallbacks"
+   },
+   {
+    "corpus": "hcli/agentos/resident_gate.py",
+    "id": "coherence.state_reset_isolated",
+    "item": "state_reset_isolated"
+   },
+   {
+    "corpus": "hcli/agentos/resident_gate.py",
+    "id": "lifecycle.one_model_open",
+    "item": "one_model_open"
+   },
+   {
+    "corpus": "hcli/agentos/resident_gate.py",
+    "id": "lifecycle.no_restart_during_gate",
+    "item": "no_restart"
+   }
+  ],
+  "identical_for": [
+   "FLASH_SINGULARITY.NX",
+   "QWEN27_SINGULARITY.NX"
+  ],
+  "mission_corpus": [
+   {
+    "path": "hcli/mission.py",
+    "role": "persistent mission loop; WorkUnits stay bounded"
+   },
+   {
+    "path": "hcli/agentos/native_mission_gate.py",
+    "role": "one live HCLI tool/fact/verifier mission"
+   },
+   {
+    "path": "hcli/agentos/resident_gate.py",
+    "role": "sequential residency + state-isolation prompts"
+   },
+   {
+    "path": "tools/headless/capability_suite.py",
+    "role": "deterministic 11-item / 43-repeat capability contract"
+   },
+   {
+    "path": "tools/coherence_gate.py",
+    "role": "coherence gate (existing; not forked)"
+   }
+  ],
+  "no_anchoring": {
+   "beating_control_is_not_success": true,
+   "falling_short_of_control_is_not_failure": true,
+   "headline_control": "~3.14 EBPW / ~25 accepted TPS",
+   "identity": "hcli/hawking-native.sealed-3.14.json",
+   "quoted_capability": "30/43 historical sealed contract",
+   "quoted_complete_tps_from_identity": "24.4086",
+   "quoted_historical_qualified_tps": "34.0",
+   "quoted_physical_ebpw": 3.1393,
+   "resident_identity": "sealed-3.14",
+   "role": "CONTROL_NOT_TARGET_NOT_CEILING",
+   "success_predicate": null
+  },
+  "no_scalar": true,
+  "scored_axes": [
+   {
+    "direction": "higher",
+    "energy": false,
+    "kind": "hardware",
+    "name": "accepted_tps",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": false,
+    "kind": "hardware",
+    "name": "complete_token_ns",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": false,
+    "kind": "artifact",
+    "name": "complete_ebpw",
+    "note": "UNKNOWN until disk evidence exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": false,
+    "kind": "hardware_or_ledger",
+    "name": "active_bytes_per_token",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": false,
+    "kind": "artifact",
+    "name": "resident_memory_bytes",
+    "note": "UNKNOWN until disk evidence exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": false,
+    "kind": "hardware",
+    "name": "cold_launch_ns",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": false,
+    "kind": "hardware",
+    "name": "warm_launch_ns",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": false,
+    "kind": "hardware",
+    "name": "restart_ns",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   },
+   {
+    "direction": "higher",
+    "energy": false,
+    "kind": "mission",
+    "name": "long_mission_verified_work",
+    "note": "UNKNOWN until disk evidence exists",
+    "value": null
+   },
+   {
+    "direction": "higher",
+    "energy": false,
+    "kind": "hardware",
+    "name": "optimization_headroom",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   },
+   {
+    "direction": "lower",
+    "energy": true,
+    "kind": "hardware",
+    "name": "energy_joules_per_token",
+    "note": "UNKNOWN until a PROTECTED_ABSOLUTE measurement exists",
+    "value": null
+   }
+  ],
+  "tool_reliability": [
+   {
+    "corpus": "hcli/agentos/native_mission_gate.py",
+    "id": "tool.typed_write_read",
+    "item": "typed_write_ok+typed_read_ok"
+   },
+   {
+    "corpus": "hcli/agentos/native_mission_gate.py",
+    "id": "tool.verifier_owns_acceptance",
+    "item": "acceptance_source=workunit_verifier"
+   },
+   {
+    "corpus": "hcli/agentos/resident_gate.py",
+    "id": "tool.zero_fallbacks",
+    "item": "zero_fallbacks"
+   }
+  ]
+ },
+ "contenders": {
+  "FLASH_SINGULARITY.NX": {
+   "accepted_multitoken_tps": null,
+   "claim_boundary": "Machine-bound Flash NX metadata seal only. It binds source, shaders, NR, and machine genome; it is not a promoted resident executable until accepted multi-token TPS, EBPW, capability, and residency evidence exist.",
+   "complete_nx": false,
+   "complete_system_ebpw": null,
+   "id": "FLASH_SINGULARITY.NX",
+   "nx_kind": "hawking.nos.flash_noetic_executable_genome",
+   "reasons": [
+    "FLASH_SINGULARITY.NX: status SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "FLASH_SINGULARITY.NX: resident_promotion=False",
+    "FLASH_SINGULARITY.NX: accepted_multitoken_tps is null",
+    "FLASH_SINGULARITY.NX: complete_system_ebpw is null",
+    "FLASH_SINGULARITY.NX: no capability suite receipt"
+   ],
+   "resident_promotion": false,
+   "schema": "hawking.flash.nx_genome.v1",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  "QWEN27_SINGULARITY.NX": {
+   "complete_nx": false,
+   "family": "qwen3.8",
+   "historical_nx_kind": "hawking.nos.noetic_executable_genome",
+   "historical_nx_seal": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/G104_NX_SEAL.json",
+   "id": "QWEN27_SINGULARITY.NX",
+   "nx_kind": null,
+   "protocol": "hawking.qwen38.resident.v1",
+   "reasons": [
+    "QWEN27_SINGULARITY.NX: QWEN27_SINGULARITY.NX document not found",
+    "QWEN27_SINGULARITY.NX: hcli/hawking-native.sealed-3.14.json is a resident profile (resident_identity='sealed-3.14'), not an NX genome"
+   ],
+   "resident_identity": "sealed-3.14",
+   "role": "CONTROL_INCUMBENT_RESIDENT_NOT_TOURNAMENT_NX",
+   "singularity_source": null,
+   "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json"
+  }
+ },
+ "dominance": {
+  "axes": [
+   "accepted_tps",
+   "complete_token_ns",
+   "complete_ebpw",
+   "active_bytes_per_token",
+   "resident_memory_bytes",
+   "cold_launch_ns",
+   "warm_launch_ns",
+   "restart_ns",
+   "long_mission_verified_work",
+   "optimization_headroom",
+   "energy_joules_per_token"
+  ],
+  "scalar_collapse": "REFUSED",
+  "winner_returns": "non-dominated set; unique winner only under genuine dominance"
+ },
+ "flash_nx_siblings": [
+  {
+   "metadata_only": true,
+   "path": "receipts/headless/FLASH_COMPLETE_V1.nx.json",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V1.nx.json",
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  {
+   "metadata_only": true,
+   "path": "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  {
+   "metadata_only": true,
+   "path": "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  }
+ ],
+ "gaps_closed": [
+  "pre-registered common profile identical for both NX contenders",
+  "multi-axis Pareto winner() that refuses scalar collapse",
+  "can_run() completeness gate against real Flash NX receipts",
+  "incumbent ~3.14 EBPW / ~25 TPS recorded as CONTROL not target/ceiling",
+  "generic resident install contract the winner binds into"
+ ],
+ "incumbent_control": {
+  "beating_control_is_not_success": true,
+  "falling_short_of_control_is_not_failure": true,
+  "headline_control": "~3.14 EBPW / ~25 accepted TPS",
+  "identity": "hcli/hawking-native.sealed-3.14.json",
+  "identity_source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "quoted_capability": "30/43 historical sealed contract",
+  "quoted_complete_tps_from_identity": "24.4086",
+  "quoted_historical_qualified_tps": "34.0",
+  "quoted_physical_ebpw": 3.1393,
+  "resident_identity": "sealed-3.14",
+  "role": "CONTROL_NOT_TARGET_NOT_CEILING",
+  "success_predicate": null
+ },
+ "negative_findings": [
+  "hcli/agentos/resident.py does not exist; resident_gate.py is the live gate",
+  "QWEN27_SINGULARITY.NX document does not exist",
+  "FLASH_COMPLETE_V0.nx.json is not in git HEAD; recovered from the main working tree",
+  "ACCELERATOR_SCOREBOARD.json is not in git HEAD; recovered from the main working tree when present",
+  "this worktree is a sparse checkout; Codex receipts loaded via main checkout and git show",
+  "no tournament was run (no complete Flash NX, no GPU)",
+  "energy axis has no trustworthy measurement (no Green Machine; frontier F006)",
+  "FLASH_COMPLETE_V1/V2.nx.json and FLASH_NEXT_MACHINE.nx.json are also metadata-only",
+  "sidecar produces STATIC_ONLY / bench UNKNOWN; never DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE"
+ ],
+ "purpose": "Pre-registered FLASH_SINGULARITY.NX vs QWEN27_SINGULARITY.NX comparison. Refuses to run while either contender is not a complete NX. Does not collapse to a scalar. Does not treat beating the incumbent control as success.",
+ "qwen_capability_receipt": {
+  "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+  "quoted_overall": "30/43",
+  "source": "/Users/scammermike/Downloads/hawking/receipts/headless/CAPABILITY_noetic-sealed-3.14.json"
+ },
+ "readiness": {
+  "can_run": false,
+  "headline": "NO",
+  "honest_answer_today": "NO for Flash (metadata-only NX); Qwen27 is an incumbent resident CONTROL, not a complete SINGULARITY NX",
+  "reasons": [
+   "FLASH_SINGULARITY.NX: status SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+   "FLASH_SINGULARITY.NX: resident_promotion=False",
+   "FLASH_SINGULARITY.NX: accepted_multitoken_tps is null",
+   "FLASH_SINGULARITY.NX: complete_system_ebpw is null",
+   "FLASH_SINGULARITY.NX: no capability suite receipt",
+   "QWEN27_SINGULARITY.NX: QWEN27_SINGULARITY.NX document not found",
+   "QWEN27_SINGULARITY.NX: hcli/hawking-native.sealed-3.14.json is a resident profile (resident_identity='sealed-3.14'), not an NX genome"
+  ]
+ },
+ "recovered_implementation": [
+  {
+   "path": "tools/genesis_tournament.py",
+   "role": "different tournament: Qwen3.8 vs Q80 chopping-block model selection"
+  },
+  {
+   "path": "tools/odyssey/doctor_tournament.py",
+   "role": "different tournament: Doctor technique preconditions"
+  },
+  {
+   "path": "tools/odyssey/tournament.py",
+   "role": "different tournament: checkpoint selection, newest does not automatically win"
+  },
+  {
+   "path": "tools/odyssey/pareto_archive.py",
+   "role": "Qwen-body Pareto + capability floor; consumed as style, not forked"
+  },
+  {
+   "path": "tools/pareto_table.py",
+   "role": "G150 candidate Pareto table; different candidates"
+  },
+  {
+   "path": "lab/operators/ascension_manager_tournament_protocol.py",
+   "role": "Gravity manager tournament; different contenders"
+  },
+  {
+   "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+   "role": "Flash NX identity; status SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  {
+   "path": "hcli/hawking-native.sealed-3.14.json",
+   "role": "incumbent Qwen27 resident identity (CONTROL, not tournament NX)"
+  },
+  {
+   "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+   "role": "HCLI resident seal for sealed-3.14"
+  },
+  {
+   "path": "hcli/agentos/resident_gate.py",
+   "role": "live residency proof"
+  },
+  {
+   "path": "hcli/agentos/native_mission_gate.py",
+   "role": "HCLI mission corpus entry"
+  },
+  {
+   "path": "hcli/mission.py",
+   "role": "persistent mission loop"
+  },
+  {
+   "path": "hcli/agentos/recovery.py",
+   "role": "crash recovery gate"
+  },
+  {
+   "path": "hcli/agentos/protected_accelerator_benchmark.py",
+   "role": "protected-benchmark evacuation (stop before closing quiescence)"
+  },
+  {
+   "path": "tools/nx_genome.py",
+   "role": "Qwen NX genome sealer (G104); not QWEN27_SINGULARITY.NX"
+  },
+  {
+   "path": "tools/flash_nx_genome.py",
+   "role": "Flash NX metadata sealer; writes METADATA_ONLY status"
+  },
+  {
+   "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+   "role": "accelerator scoreboard (Codex-owned; sidecar reads only)"
+  }
+ ],
+ "resident_install": {
+  "generic_over_winner": true,
+  "module": "tools/future/resident_install.py",
+  "phases": [
+   "nx_identity",
+   "executable_identity",
+   "tokenizer_session",
+   "memory_requirements",
+   "launch_args",
+   "readiness_probe",
+   "shutdown",
+   "unload",
+   "protected_benchmark_evacuation",
+   "restart",
+   "crash_recovery",
+   "fallback_policy",
+   "capability_receipt",
+   "performance_receipt"
+  ]
+ },
+ "run_policy": {
+  "do_not_run_until_both_complete_nx": true,
+  "measurement_class_if_run": "PROTECTED_ABSOLUTE owned by Codex, never this sidecar",
+  "sidecar_has_no_gpu": true
+ },
+ "schema": "hawking.future.tournament.v1",
+ "scoreboard_view": {
+  "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+  "schema": "hawking.accelerator.scoreboard.v1",
+  "source": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+  "status": "DERIVED_RECEIPT_VIEW"
+ },
+ "seal_sha256": "08543da13104aa8ce9396d72ab810f2930a28cd33378f7640e94c3721909601f",
+ "version": 1
+}

@@ -1,0 +1,3195 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:47:10Z",
+  "recorded_by": "tools/future/flash_nx_audit.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "blocked_flash_candidates": [
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete-token and source-independent capability gates remain open",
+   "candidate_id": "flash-attention-gate-fusion",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-compact-moe-bf16-vec4",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent compact expert consumer is not yet qualified",
+   "candidate_id": "flash-compact-moe-epilogue",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "ADDITIONAL",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [
+    "compact_expert_consumer"
+   ],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx",
+    "compact_expert_consumer"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; device mHC still requires matched parity/coherence and protected latency",
+   "candidate_id": "flash-device-mhc-state",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_DEVICE_MHC": "0",
+     "HAWKING_DSV4F_MHC_NORM_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-encoder-label-elision",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-fullseq-catalog-cache",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "fullseq source path is not a complete source-independent Flash NX executable",
+   "candidate_id": "flash-fullseq-ordered-encoder",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete source-independent NX executable is not qualified",
+   "candidate_id": "flash-hc-staged-threadgroup",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "meta budget is only a prospective function description; no serialized functional artifact, source-independent Flash NX consumer, or protected complete-token path exists",
+   "candidate_id": "flash-meta-sub1-coherent",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "ADDITIONAL",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [
+    "serialized_functional_artifact"
+   ],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx",
+    "serialized_functional_artifact"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 quantizer candidate has no byte-exact parity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-act-quant-simdgroup",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_ACT_QUANT_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-batched-down-qat",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; this full composition still requires matched parity/coherence and protected latency",
+   "candidate_id": "flash-p6-fused-down-shared-combine",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "0",
+     "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; composition interactions require a fresh parity/coherence and latency receipt",
+   "candidate_id": "flash-p6-fused-epilogue-stack",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "0",
+     "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED": "0",
+     "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "0",
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "0",
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "0",
+     "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "0",
+     "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0",
+     "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "0",
+     "HAWKING_DSV4F_P6_SINGLE_CB": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the single-command-buffer path has no matched parity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-hash-single-command-buffer",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_SINGLE_CB": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-learned-expert-cache-reuse",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE": "0",
+     "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "1"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-learned-reader-reuse",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the shared prefix has no matched parity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-prefix-concurrent-wave",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-down-bf16-fused",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-down-bf16-simd",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-fused",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "0",
+     "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-simd",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
+     "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP4 candidate has no NumericParity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-routed-fp4-simdgroup",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP4_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP8 candidate has no NumericParity/coherence and protected-latency receipt",
+   "candidate_id": "flash-p6-shared-fp8-simdgroup",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_P6_FP8_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash complete source-independent NX is not qualified and the SIMD mHC reduction has no bounded parity/coherence receipt",
+   "candidate_id": "flash-p7-mhc-pre-simdgroup",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_MHC_PRE_SIMD": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-pipeline-cache-reuse",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_FLASH_PIPELINE_CACHE_REUSE": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-pipeline-id-resolution",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_FLASH_PIPELINE_CACHE_REUSE": "1",
+     "HAWKING_METAL_PIPELINE_ID_RESOLUTION": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-qkv-gqa-rope-fusion",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-routed-fp4-gate-up-swiglu-fused",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source-independent Flash route consumer and protected capability are not qualified",
+   "candidate_id": "flash-router-topk-fusion",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_FLASH_ROUTER_TOPK_FUSED": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-shared-fp8-down-combine-fused",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP8_SHARED_DOWN_COMBINE_FUSED": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+   "candidate_id": "flash-shared-fp8-gate-up-swiglu-fused",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold",
+    "source_oracle_controls": {
+     "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED": "0"
+    }
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  },
+  {
+   "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+   "blocked_reason": "source oracle is a control; Flash NX and protected complete-token path are open",
+   "candidate_id": "flash-source-bf16-simd",
+   "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+   "cluster": "DOMINANT",
+   "control_configuration": {
+    "mode": "source_oracle_or_scaffold"
+   },
+   "extra_pieces": [],
+   "measurements_status": "NOT_MEASURED",
+   "requires": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding",
+    "protected_complete_token_measurement",
+    "capability_suite_on_nx"
+   ],
+   "status": "BLOCKED"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_boundary_audit": "STATIC_ONLY. No hardware measurement. DIAGNOSTIC_RELATIVE token receipts are cited by status/path only and are not promoted to PROTECTED_ABSOLUTE.",
+ "dense_rematerialization": {
+  "policy": {
+   "bounded_native_loader.dense_rematerialization": "forbidden",
+   "flash_executable_native_kernels": "FORBIDDEN_BY_FINAL_RUNTIME_POLICY",
+   "flash_next_capability_required": [
+    "same-model output parity",
+    "multimodal/text contract",
+    "sequence isolation",
+    "zero hidden dense rematerialization",
+    "fallback disclosure",
+    "accepted-token accounting"
+   ],
+   "meta_accelerator_contract.dense_rematerialization": false,
+   "meta_program.dense_weight_materialization": "forbidden"
+  },
+  "production_may_not_reconstruct_dense_weights": true,
+  "production_path": {
+   "byte_ledger_exact_control_representation": "source_bf16_exact fallback for every family",
+   "current_runtime_representation": null,
+   "device_resident_token_representation": "source_bf16_exact_mixed_compact_linear_and_dense_full_attention_expert_banks",
+   "exact_control_runtime_ready": true,
+   "finding": "No whole-model Flash NX production path exists to rematerialize into. The live source-oracle / exact-control path IS dense source-BF16; it does not unpack a compact code into a dense parent as a hidden fallback because the compact NX is not built. The stateful accepted-token next step still names 'eliminate dense source-bank reloads', which is a production residual on the source path, not a compact-code rematerializer. The planned meta path forbids dense rematerialization and is NOT_BUILT.",
+   "stateful_accepted_next": "Use the accepted token as the next session input in a route-safe persistent executor; measure repeated accepted decode and eliminate dense source-bank reloads.",
+   "whole_model_nx_production": "NOT_BUILT"
+  },
+  "verdict": {
+   "built_production_compact_path": "NOT_BUILT",
+   "designed_production_rematerialization": "forbidden",
+   "hidden_dense_rematerialization_on_whole_model_nx": "UNKNOWN_BECAUSE_NX_NOT_BUILT",
+   "verification_reconstruction_present": true
+  },
+  "verification_may_reconstruct": true,
+  "verification_reconstructs": {
+   "also": "FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP roundtrip.weight_reconstruction is a bounded descriptor probe, not production decode",
+   "found": true,
+   "note": "independent_weight_reconstruction is a verification metric on a bounded Q4 probe. in_memory_study_only appears on the router representation A/B. Neither is a production NX decode path.",
+   "router_ab": "in_memory_study_only",
+   "where": "FLASH_NEXT_NOETIC_EXECUTABLE.chosen_representation.bounded_source_transform.independent_weight_reconstruction"
+  }
+ },
+ "dependency_chain": {
+  "additional_candidates": [
+   "flash-compact-moe-epilogue",
+   "flash-meta-sub1-coherent"
+  ],
+  "additional_count": 2,
+  "blocked_count": 32,
+  "candidates": [
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete-token and source-independent capability gates remain open",
+    "candidate_id": "flash-attention-gate-fusion",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-compact-moe-bf16-vec4",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent compact expert consumer is not yet qualified",
+    "candidate_id": "flash-compact-moe-epilogue",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "ADDITIONAL",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [
+     "compact_expert_consumer"
+    ],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx",
+     "compact_expert_consumer"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; device mHC still requires matched parity/coherence and protected latency",
+    "candidate_id": "flash-device-mhc-state",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_DEVICE_MHC": "0",
+      "HAWKING_DSV4F_MHC_NORM_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-encoder-label-elision",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-fullseq-catalog-cache",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "fullseq source path is not a complete source-independent Flash NX executable",
+    "candidate_id": "flash-fullseq-ordered-encoder",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete source-independent NX executable is not qualified",
+    "candidate_id": "flash-hc-staged-threadgroup",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "meta budget is only a prospective function description; no serialized functional artifact, source-independent Flash NX consumer, or protected complete-token path exists",
+    "candidate_id": "flash-meta-sub1-coherent",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "ADDITIONAL",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [
+     "serialized_functional_artifact"
+    ],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx",
+     "serialized_functional_artifact"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 quantizer candidate has no byte-exact parity/coherence and protected-latency receipt",
+    "candidate_id": "flash-p6-act-quant-simdgroup",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_ACT_QUANT_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-p6-batched-down-qat",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; this full composition still requires matched parity/coherence and protected latency",
+    "candidate_id": "flash-p6-fused-down-shared-combine",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "0",
+      "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; composition interactions require a fresh parity/coherence and latency receipt",
+    "candidate_id": "flash-p6-fused-epilogue-stack",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "0",
+      "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED": "0",
+      "HAWKING_DSV4F_P6_BATCHED_DOWN_QAT": "0",
+      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "0",
+      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "0",
+      "HAWKING_DSV4F_P6_FP4_DOWN_SHARED_COMBINE_FUSED": "0",
+      "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0",
+      "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "0",
+      "HAWKING_DSV4F_P6_SINGLE_CB": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the single-command-buffer path has no matched parity/coherence and protected-latency receipt",
+    "candidate_id": "flash-p6-hash-single-command-buffer",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_SINGLE_CB": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-p6-learned-expert-cache-reuse",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_LEARNED_EXPERT_CACHE_REUSE": "0",
+      "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "1"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-p6-learned-reader-reuse",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_LEARNED_READER_REUSE": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the shared prefix has no matched parity/coherence and protected-latency receipt",
+    "candidate_id": "flash-p6-prefix-concurrent-wave",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_PREFIX_CONCURRENT": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-p6-routed-fp4-down-bf16-fused",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-p6-routed-fp4-down-bf16-simd",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_FUSED": "1",
+      "HAWKING_DSV4F_P6_FP4_DOWN_BF16_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-fused",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "0",
+      "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-simd",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED": "1",
+      "HAWKING_DSV4F_P6_FP4_GATE_UP_SWIGLU_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP4 candidate has no NumericParity/coherence and protected-latency receipt",
+    "candidate_id": "flash-p6-routed-fp4-simdgroup",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_FP4_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP8 candidate has no NumericParity/coherence and protected-latency receipt",
+    "candidate_id": "flash-p6-shared-fp8-simdgroup",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_P6_FP8_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash complete source-independent NX is not qualified and the SIMD mHC reduction has no bounded parity/coherence receipt",
+    "candidate_id": "flash-p7-mhc-pre-simdgroup",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_MHC_PRE_SIMD": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-pipeline-cache-reuse",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_FLASH_PIPELINE_CACHE_REUSE": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-pipeline-id-resolution",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_FLASH_PIPELINE_CACHE_REUSE": "1",
+      "HAWKING_METAL_PIPELINE_ID_RESOLUTION": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-qkv-gqa-rope-fusion",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-routed-fp4-gate-up-swiglu-fused",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source-independent Flash route consumer and protected capability are not qualified",
+    "candidate_id": "flash-router-topk-fusion",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_FLASH_ROUTER_TOPK_FUSED": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-shared-fp8-down-combine-fused",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_FP8_SHARED_DOWN_COMBINE_FUSED": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+    "candidate_id": "flash-shared-fp8-gate-up-swiglu-fused",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold",
+     "source_oracle_controls": {
+      "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED": "0"
+     }
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   },
+   {
+    "baseline_path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "blocked_reason": "source oracle is a control; Flash NX and protected complete-token path are open",
+    "candidate_id": "flash-source-bf16-simd",
+    "capability_contract": "blocked until a complete source-independent NX executable and independent capability path exist",
+    "cluster": "DOMINANT",
+    "control_configuration": {
+     "mode": "source_oracle_or_scaffold"
+    },
+    "extra_pieces": [],
+    "measurements_status": "NOT_MEASURED",
+    "requires": [
+     "serialized_source_independent_nx_artifact",
+     "physical_loader",
+     "whole_model_native_kernel_binding",
+     "protected_complete_token_measurement",
+     "capability_suite_on_nx"
+    ],
+    "status": "BLOCKED"
+   }
+  ],
+  "dominant_candidates": [
+   "flash-attention-gate-fusion",
+   "flash-compact-moe-bf16-vec4",
+   "flash-device-mhc-state",
+   "flash-encoder-label-elision",
+   "flash-fullseq-catalog-cache",
+   "flash-fullseq-ordered-encoder",
+   "flash-hc-staged-threadgroup",
+   "flash-p6-act-quant-simdgroup",
+   "flash-p6-batched-down-qat",
+   "flash-p6-fused-down-shared-combine",
+   "flash-p6-fused-epilogue-stack",
+   "flash-p6-hash-single-command-buffer",
+   "flash-p6-learned-expert-cache-reuse",
+   "flash-p6-learned-reader-reuse",
+   "flash-p6-prefix-concurrent-wave",
+   "flash-p6-routed-fp4-down-bf16-fused",
+   "flash-p6-routed-fp4-down-bf16-simd",
+   "flash-p6-routed-fp4-gate-up-swiglu-fused",
+   "flash-p6-routed-fp4-gate-up-swiglu-simd",
+   "flash-p6-routed-fp4-simdgroup",
+   "flash-p6-shared-fp8-simdgroup",
+   "flash-p7-mhc-pre-simdgroup",
+   "flash-pipeline-cache-reuse",
+   "flash-pipeline-id-resolution",
+   "flash-qkv-gqa-rope-fusion",
+   "flash-routed-fp4-gate-up-swiglu-fused",
+   "flash-router-topk-fusion",
+   "flash-shared-fp8-down-combine-fused",
+   "flash-shared-fp8-gate-up-swiglu-fused",
+   "flash-source-bf16-simd"
+  ],
+  "dominant_count": 30,
+  "dominant_dependency": "source-independent Flash NX with a protected complete-token measurement",
+  "gpu_window_worth_the_most": {
+   "cpu_prerequisites_that_must_exist_first": [
+    "serialized_source_independent_nx_artifact",
+    "physical_loader",
+    "whole_model_native_kernel_binding"
+   ],
+   "piece": "protected_complete_token_measurement",
+   "still_blocked_after_window": [
+    "flash-compact-moe-epilogue",
+    "flash-meta-sub1-coherent"
+   ],
+   "unblocks_count": 30,
+   "unblocks_to_qualifiable": [
+    "flash-attention-gate-fusion",
+    "flash-compact-moe-bf16-vec4",
+    "flash-device-mhc-state",
+    "flash-encoder-label-elision",
+    "flash-fullseq-catalog-cache",
+    "flash-fullseq-ordered-encoder",
+    "flash-hc-staged-threadgroup",
+    "flash-p6-act-quant-simdgroup",
+    "flash-p6-batched-down-qat",
+    "flash-p6-fused-down-shared-combine",
+    "flash-p6-fused-epilogue-stack",
+    "flash-p6-hash-single-command-buffer",
+    "flash-p6-learned-expert-cache-reuse",
+    "flash-p6-learned-reader-reuse",
+    "flash-p6-prefix-concurrent-wave",
+    "flash-p6-routed-fp4-down-bf16-fused",
+    "flash-p6-routed-fp4-down-bf16-simd",
+    "flash-p6-routed-fp4-gate-up-swiglu-fused",
+    "flash-p6-routed-fp4-gate-up-swiglu-simd",
+    "flash-p6-routed-fp4-simdgroup",
+    "flash-p6-shared-fp8-simdgroup",
+    "flash-p7-mhc-pre-simdgroup",
+    "flash-pipeline-cache-reuse",
+    "flash-pipeline-id-resolution",
+    "flash-qkv-gqa-rope-fusion",
+    "flash-routed-fp4-gate-up-swiglu-fused",
+    "flash-router-topk-fusion",
+    "flash-shared-fp8-down-combine-fused",
+    "flash-shared-fp8-gate-up-swiglu-fused",
+    "flash-source-bf16-simd"
+   ]
+  },
+  "missing_pieces": [
+   {
+    "evidence": [
+     {
+      "field": "measurement_state.serialized_artifact",
+      "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+      "value": "NOT_BUILT"
+     },
+     {
+      "field": "status",
+      "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+     }
+    ],
+    "id": "serialized_source_independent_nx_artifact",
+    "lane": "CPU",
+    "prerequisite_state": "MET",
+    "prerequisites": [
+     "flash_nr_v2_exists"
+    ],
+    "state": "NOT_BUILT",
+    "still_required_by": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-compact-moe-epilogue",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-meta-sub1-coherent",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "unblocks_to_qualifiable": [],
+    "why_not_sufficient_alone": "A packed artifact without a loader, kernels, and a protected complete-token receipt cannot move a BLOCKED row."
+   },
+   {
+    "evidence": [
+     {
+      "field": "measurement_state.physical_loader",
+      "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+      "value": "NOT_BUILT"
+     },
+     {
+      "field": "native_loader.status",
+      "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+      "value": "NOT_IMPLEMENTED"
+     },
+     {
+      "field": "status",
+      "path": "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+      "value": "BLOCKED"
+     }
+    ],
+    "id": "physical_loader",
+    "lane": "CPU",
+    "prerequisites": [
+     "serialized_source_independent_nx_artifact"
+    ],
+    "state": "NOT_IMPLEMENTED",
+    "still_required_by": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-compact-moe-epilogue",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-meta-sub1-coherent",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "unblocks_to_qualifiable": []
+   },
+   {
+    "evidence": [
+     {
+      "field": "measurement_state.native_kernel",
+      "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+      "value": "NOT_BUILT"
+     },
+     {
+      "field": "native_kernels.status",
+      "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+      "value": "PLAN_ONLY"
+     }
+    ],
+    "id": "whole_model_native_kernel_binding",
+    "lane": "CPU",
+    "prerequisites": [
+     "physical_loader"
+    ],
+    "state": "PLAN_ONLY",
+    "still_required_by": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-compact-moe-epilogue",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-meta-sub1-coherent",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "unblocks_to_qualifiable": []
+   },
+   {
+    "evidence": [
+     {
+      "field": "measurement_state.complete_token",
+      "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+      "value": "NOT_MEASURED"
+     },
+     {
+      "field": "status",
+      "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+      "value": "PLANNED_UNTIL_NATIVE_EXECUTION"
+     },
+     {
+      "field": "bench.state",
+      "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+      "value": "UNKNOWN"
+     }
+    ],
+    "id": "protected_complete_token_measurement",
+    "lane": "GPU",
+    "prerequisites": [
+     "whole_model_native_kernel_binding"
+    ],
+    "state": "NOT_MEASURED",
+    "still_required_by": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-compact-moe-epilogue",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-meta-sub1-coherent",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "unblocks_to_qualifiable": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "why_this_is_the_gpu_window": "Once artifact, loader, and kernels exist, one protected complete-token lease with capability and zero-fallback gates is the measurement that makes the largest number of BLOCKED rows qualifiable."
+   },
+   {
+    "evidence": [
+     {
+      "field": "measurement_state.capability",
+      "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+      "value": "NOT_MEASURED"
+     },
+     {
+      "field": "capability_contract.status",
+      "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+      "value": "NOT_RUN"
+     }
+    ],
+    "id": "capability_suite_on_nx",
+    "lane": "GPU",
+    "prerequisites": [
+     "protected_complete_token_measurement"
+    ],
+    "same_window_as": "protected_complete_token_measurement",
+    "state": "NOT_RUN",
+    "still_required_by": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-compact-moe-epilogue",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-meta-sub1-coherent",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "unblocks_to_qualifiable": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ]
+   },
+   {
+    "evidence": [
+     {
+      "field": "candidates[flash-compact-moe-epilogue].blocked_reason",
+      "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+      "value": "Flash source-independent compact expert consumer is not yet qualified"
+     }
+    ],
+    "id": "compact_expert_consumer",
+    "lane": "CPU_THEN_GPU",
+    "prerequisites": [
+     "protected_complete_token_measurement"
+    ],
+    "state": "NOT_QUALIFIED",
+    "still_required_by": [
+     "flash-compact-moe-epilogue"
+    ],
+    "unblocks_to_qualifiable": [
+     "flash-compact-moe-epilogue"
+    ]
+   },
+   {
+    "evidence": [
+     {
+      "field": "measurement_state.serialized_artifact",
+      "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+      "value": "NOT_BUILT"
+     },
+     {
+      "field": "status",
+      "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+      "value": "PROSPECTIVE_META_ONLY"
+     }
+    ],
+    "id": "serialized_functional_artifact",
+    "lane": "CPU_THEN_GPU",
+    "prerequisites": [
+     "protected_complete_token_measurement"
+    ],
+    "state": "NOT_BUILT",
+    "still_required_by": [
+     "flash-meta-sub1-coherent"
+    ],
+    "unblocks_to_qualifiable": [
+     "flash-meta-sub1-coherent"
+    ]
+   }
+  ],
+  "topological_order": [
+   {
+    "id": "serialized_source_independent_nx_artifact",
+    "lane": "CPU",
+    "prerequisites": [
+     "flash_nr_v2_exists"
+    ],
+    "rank": 1,
+    "state": "NOT_BUILT",
+    "still_required_by_count": 32,
+    "unblocks_count": 0,
+    "unblocks_to_qualifiable": [],
+    "why_this_position": "Must exist before any later piece can be consumed."
+   },
+   {
+    "id": "physical_loader",
+    "lane": "CPU",
+    "prerequisites": [
+     "serialized_source_independent_nx_artifact"
+    ],
+    "rank": 2,
+    "state": "NOT_IMPLEMENTED",
+    "still_required_by_count": 32,
+    "unblocks_count": 0,
+    "unblocks_to_qualifiable": [],
+    "why_this_position": "Must exist before any later piece can be consumed."
+   },
+   {
+    "id": "whole_model_native_kernel_binding",
+    "lane": "CPU",
+    "prerequisites": [
+     "physical_loader"
+    ],
+    "rank": 3,
+    "state": "PLAN_ONLY",
+    "still_required_by_count": 32,
+    "unblocks_count": 0,
+    "unblocks_to_qualifiable": [],
+    "why_this_position": "Must exist before any later piece can be consumed."
+   },
+   {
+    "id": "protected_complete_token_measurement",
+    "lane": "GPU",
+    "prerequisites": [
+     "whole_model_native_kernel_binding"
+    ],
+    "rank": 4,
+    "state": "NOT_MEASURED",
+    "still_required_by_count": 32,
+    "unblocks_count": 30,
+    "unblocks_to_qualifiable": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "why_this_position": "Largest number of candidates become qualifiable at the first GPU window, but that window is worthless until the CPU artifact/loader/kernel chain exists."
+   },
+   {
+    "id": "capability_suite_on_nx",
+    "lane": "GPU",
+    "prerequisites": [
+     "protected_complete_token_measurement"
+    ],
+    "rank": 5,
+    "state": "NOT_RUN",
+    "still_required_by_count": 32,
+    "unblocks_count": 30,
+    "unblocks_to_qualifiable": [
+     "flash-attention-gate-fusion",
+     "flash-compact-moe-bf16-vec4",
+     "flash-device-mhc-state",
+     "flash-encoder-label-elision",
+     "flash-fullseq-catalog-cache",
+     "flash-fullseq-ordered-encoder",
+     "flash-hc-staged-threadgroup",
+     "flash-p6-act-quant-simdgroup",
+     "flash-p6-batched-down-qat",
+     "flash-p6-fused-down-shared-combine",
+     "flash-p6-fused-epilogue-stack",
+     "flash-p6-hash-single-command-buffer",
+     "flash-p6-learned-expert-cache-reuse",
+     "flash-p6-learned-reader-reuse",
+     "flash-p6-prefix-concurrent-wave",
+     "flash-p6-routed-fp4-down-bf16-fused",
+     "flash-p6-routed-fp4-down-bf16-simd",
+     "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "flash-p6-routed-fp4-simdgroup",
+     "flash-p6-shared-fp8-simdgroup",
+     "flash-p7-mhc-pre-simdgroup",
+     "flash-pipeline-cache-reuse",
+     "flash-pipeline-id-resolution",
+     "flash-qkv-gqa-rope-fusion",
+     "flash-routed-fp4-gate-up-swiglu-fused",
+     "flash-router-topk-fusion",
+     "flash-shared-fp8-down-combine-fused",
+     "flash-shared-fp8-gate-up-swiglu-fused",
+     "flash-source-bf16-simd"
+    ],
+    "why_this_position": "Same protected window as complete-token; listed after it because the funnel promotion rule requires both."
+   },
+   {
+    "id": "compact_expert_consumer",
+    "lane": "CPU_THEN_GPU",
+    "prerequisites": [
+     "protected_complete_token_measurement"
+    ],
+    "rank": 6,
+    "state": "NOT_QUALIFIED",
+    "still_required_by_count": 1,
+    "unblocks_count": 1,
+    "unblocks_to_qualifiable": [
+     "flash-compact-moe-epilogue"
+    ],
+    "why_this_position": "Specialized consumer; does not sit on the 12-wide path."
+   },
+   {
+    "id": "serialized_functional_artifact",
+    "lane": "CPU_THEN_GPU",
+    "prerequisites": [
+     "protected_complete_token_measurement"
+    ],
+    "rank": 7,
+    "state": "NOT_BUILT",
+    "still_required_by_count": 1,
+    "unblocks_count": 1,
+    "unblocks_to_qualifiable": [
+     "flash-meta-sub1-coherent"
+    ],
+    "why_this_position": "Specialized consumer; does not sit on the 12-wide path."
+   }
+  ]
+ },
+ "evidence_roots": [
+  "/Users/scammermike/Downloads/hawking"
+ ],
+ "existing_nx_seals": [
+  {
+   "accepted_multitoken_tps": null,
+   "bench_state": "UNKNOWN",
+   "complete_system_ebpw": null,
+   "lowers_nr": "receipts/headless/FLASH_COMPLETE_V0.nr.json",
+   "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+   "resident_promotion": false,
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  {
+   "accepted_multitoken_tps": null,
+   "bench_state": "UNKNOWN",
+   "complete_system_ebpw": null,
+   "lowers_nr": "receipts/headless/FLASH_COMPLETE_V1.nr.json",
+   "path": "receipts/headless/FLASH_COMPLETE_V1.nx.json",
+   "resident_promotion": false,
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  {
+   "accepted_multitoken_tps": null,
+   "bench_state": "UNKNOWN",
+   "complete_system_ebpw": null,
+   "lowers_nr": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+   "path": "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+   "resident_promotion": false,
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  {
+   "accepted_multitoken_tps": null,
+   "bench_state": "UNKNOWN",
+   "complete_system_ebpw": null,
+   "lowers_nr": "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json",
+   "path": "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+   "resident_promotion": false,
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  }
+ ],
+ "frontier_vs_disk": {
+  "added_since_frontier_wording": [
+   "flash-device-mhc-state",
+   "flash-p6-act-quant-simdgroup",
+   "flash-p6-batched-down-qat",
+   "flash-p6-fused-down-shared-combine",
+   "flash-p6-fused-epilogue-stack",
+   "flash-p6-hash-single-command-buffer",
+   "flash-p6-learned-expert-cache-reuse",
+   "flash-p6-learned-reader-reuse",
+   "flash-p6-prefix-concurrent-wave",
+   "flash-p6-routed-fp4-down-bf16-fused",
+   "flash-p6-routed-fp4-down-bf16-simd",
+   "flash-p6-routed-fp4-gate-up-swiglu-fused",
+   "flash-p6-routed-fp4-gate-up-swiglu-simd",
+   "flash-p6-routed-fp4-simdgroup",
+   "flash-p6-shared-fp8-simdgroup",
+   "flash-p7-mhc-pre-simdgroup",
+   "flash-pipeline-id-resolution",
+   "flash-shared-fp8-down-combine-fused"
+  ],
+  "authority": "disk",
+  "disk_additional": 2,
+  "disk_blocked_flash": 32,
+  "disk_dominant": 30,
+  "frontier_F001_wording": "12 of 14 BLOCKED Flash candidates"
+ },
+ "gaps_closed": [
+  "reusable NX promotability checker with a watched refusal on the real V0 metadata NX",
+  "seven-requirement scoring with exact receipt field citations",
+  "dependency chain from missing pieces to each BLOCKED Flash candidate",
+  "topological order that puts the dominant GPU window after the CPU artifact/loader/kernel chain",
+  "designed-vs-built runtime audit for loader, kernel, catalog, and consumer",
+  "verification-vs-production dense rematerialization split"
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "meta_measurement_state": {
+  "capability": "NOT_MEASURED",
+  "complete_token": "NOT_MEASURED",
+  "meta_budget": "COMPUTED_FROM_CENSUS_AND_PREREGISTERED_TARGETS",
+  "native_kernel": "NOT_BUILT",
+  "physical_ebpw": "NULL_BY_RULE",
+  "physical_loader": "NOT_BUILT",
+  "promotion_allowed": false,
+  "serialized_artifact": "NOT_BUILT"
+ },
+ "negative_findings": [
+  {
+   "found": "FLASH_COMPLETE_V0/V1/V2.nx.json and FLASH_NEXT_MACHINE.nx.json, all SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+   "looked_for": "a packed source-independent Flash NX body"
+  },
+  {
+   "found": "native_loader.status NOT_IMPLEMENTED; FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT BLOCKED at whole_token_weight_loader",
+   "looked_for": "a physical loader that opens Flash as NX"
+  },
+  {
+   "found": "single-terminal and one-token stateful receipts with bench.state UNKNOWN; complete_token NOT_MEASURED",
+   "looked_for": "a PROTECTED_ABSOLUTE Flash complete-token receipt"
+  },
+  {
+   "found": "capability_contract.status NOT_RUN",
+   "looked_for": "capability suite on Flash NX"
+  },
+  {
+   "found": "exact-control 16.0 EBPW ledger; promotion_allowed false; compact storage bytes null",
+   "looked_for": "complete-system byte ledger with the Flash-Next accounting categories"
+  },
+  {
+   "found": "native_kernels.status PLAN_ONLY; most organs NOT_IMPLEMENTED",
+   "looked_for": "whole-model native kernel catalog bound to an NX"
+  },
+  {
+   "found": "sidecar has no GPU; all numbers that would require a lease remain unclaimed here",
+   "looked_for": "hardware measurement"
+  }
+ ],
+ "nr_v2": {
+  "generation": "v2",
+  "kernel_requirements": [
+   {
+    "applies_to": "exact fallback organs",
+    "requires": "source_bf16_gemv_family"
+   },
+   {
+    "applies_to": "future compact routed-expert candidates only",
+    "requires": "grouped_absmax_decoder"
+   },
+   {
+    "applies_to": "routed expert family",
+    "requires": "route_conditioned_expert_selection"
+   },
+   {
+    "applies_to": "linear-attention state",
+    "requires": "gated_delta_recurrence"
+   },
+   {
+    "applies_to": "full-attention state",
+    "requires": "causal_attention_kv_state"
+   }
+  ],
+  "negative_science": [
+   {
+    "finding": 0.003477525221917917,
+    "law": "do not assume routed experts share a low-dimensional basis; sampled gate-up expert cosine was near zero",
+    "receipt": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN.json"
+   },
+   {
+    "finding": 0.0013096139929922714,
+    "law": "do not assume n-gram shards share a low-dimensional basis; shard-row similarity was near zero",
+    "receipt": "receipts/headless/FLASH_DOCTOR_NGRAM_SCREEN.json"
+   }
+  ],
+  "next": "compile exact-control NX first, then replace only Pareto-surviving organs and measure complete accepted-token impact",
+  "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+  "promotion": {
+   "allowed": false,
+   "blockers": [
+    "complete accepted-token session",
+    "complete candidate byte ledger",
+    "capability suite",
+    "machine-bound NX compilation"
+   ]
+  },
+  "schema": "hawking.flash.complete_nr.v2",
+  "status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION"
+ },
+ "nx_completeness_checker": {
+  "api": "check_nx(nx: dict, context: dict | None) -> {promotable, reasons, requirements}",
+  "discriminator_holds": true,
+  "real_FLASH_COMPLETE_V0_nx": {
+   "failed_requirements": [
+    "complete_byte_ledger",
+    "self_contained_dependencies",
+    "accepted_generation",
+    "capability",
+    "reproducibility",
+    "protected_performance",
+    "no_forbidden_fallback"
+   ],
+   "promotable": false,
+   "reasons": [
+    "status is SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "complete_byte_ledger: bound ledger is exact-control / I/O profile only; complete candidate ledger remains open (cited qualification.byte_ledger -> status/promotion_allowed={'path': 'receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json', 'status': 'MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE', 'promotion_allowed': False, 'routed_expert_sensitivity.complete_storage_bytes': None})",
+    "self_contained_dependencies: NX is a metadata seal, not a self-contained executable (cited status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION')",
+    "accepted_generation: no multi-token accepted generation; a single terminal argmax is not accepted generation (cited qualification.accepted_multitoken_tps=None)",
+    "capability: no capability suite result on the NX (cited capability=None)",
+    "reproducibility: no executable closure hash; metadata hashes of source files are not byte reproducibility (cited reproducibility=None)",
+    "protected_performance: bench.state is UNKNOWN; DIAGNOSTIC_RELATIVE and metadata seals do not decide (cited bench.state='UNKNOWN')",
+    "no_forbidden_fallback: fallback_count is undisclosed; missing is not zero (cited fallback_count={'fallback_count': None, 'dense_rematerialization': None, 'source_independent': None})",
+    "qualification.resident_promotion is false"
+   ],
+   "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+  },
+  "synthetic_promotable_nx": {
+   "failed_requirements": [],
+   "promotable": true,
+   "written_to_disk": false
+  }
+ },
+ "purpose": "Static completeness audit of the path from Flash NR V2 to a promotable source-independent NX, and the queue fan-out that collapses onto that NX.",
+ "recovered_implementation": {
+  "existing_receipts": {
+   "census": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ORGAN_CENSUS.json",
+    "tracked_in_head": false
+   },
+   "ebpw": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_EBPW_BUDGET.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EBPW_BUDGET.json",
+    "tracked_in_head": true
+   },
+   "executable": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "tracked_in_head": true
+   },
+   "ledger": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+    "tracked_in_head": false
+   },
+   "meta": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+    "tracked_in_head": false
+   },
+   "nr_v2": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+    "tracked_in_head": false
+   },
+   "nx_next_machine": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+    "tracked_in_head": false
+   },
+   "nx_v0": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+    "tracked_in_head": false
+   },
+   "nx_v1": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_COMPLETE_V1.nx.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V1.nx.json",
+    "tracked_in_head": false
+   },
+   "nx_v2": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_COMPLETE_V2.nx.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nx.json",
+    "tracked_in_head": false
+   },
+   "queue": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "tracked_in_head": false
+   },
+   "token_accepted": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+    "tracked_in_head": false
+   },
+   "token_attempt": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+    "tracked_in_head": false
+   },
+   "token_device": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+    "tracked_in_head": false
+   },
+   "token_ns": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+    "tracked_in_head": true
+   },
+   "token_session": {
+    "in_this_worktree": true,
+    "present": true,
+    "rel": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
+    "tracked_in_head": false
+   }
+  },
+  "existing_tools": [
+   {
+    "adequate_for_this_lane": false,
+    "does": "composes the portable Flash NR; status COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION",
+    "gap": "does not audit NX promotion or the qualification-queue fan-out",
+    "path": "tools/flash_complete_nr.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "seals a machine-bound metadata NX; status SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "gap": "explicitly not a packed executable and not a completeness checker",
+    "path": "tools/flash_nx_genome.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "closes the exact-control 16.0 EBPW book with a route I/O profile",
+    "gap": "compact/complete-candidate ledger remains open; not an NX promotion checker",
+    "path": "tools/flash_complete_byte_ledger.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "transforms a 0..47 chain plus one terminal probe into a single-token receipt",
+    "gap": "refuses to invent accepted TPS; not a protected complete-token path",
+    "path": "tools/flash_complete_token_receipt.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "index/header-only organ census",
+    "gap": "STRUCTURAL_METADATA_SCREEN; not an NX",
+    "path": "tools/flash_organ_census.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "prospective sub-1 meta budget; measurement_state lists NOT_BUILT/NOT_MEASURED",
+    "gap": "the NOT_BUILT fields are inputs to this audit, not a substitute for it",
+    "path": "tools/flash_meta_representation.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "evaluate_flash_promotion \u2014 the hard Flash-Next joint promotion law",
+    "gap": "Codex-owned; cannot be modified here. It does not name the seven directive requirements, does not map missing pieces onto the BLOCKED Flash candidates, and does not distinguish designed vs built.",
+    "path": "hcli/flash_next.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "scaffold for FLASH_NEXT_NOETIC_EXECUTABLE",
+    "gap": "status SCAFFOLD_ONLY; native_loader NOT_IMPLEMENTED; native_kernels PLAN_ONLY",
+    "path": "hcli/agentos/flash_executable.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "the candidate queue this audit reads",
+    "gap": "Codex-owned queue builder; sidecar must not mutate it",
+    "path": "tools/accelerator/physical_qualification.py"
+   },
+   {
+    "adequate_for_this_lane": false,
+    "does": "Qwen38 NR/NX container and machine-genome sealer",
+    "gap": "not Flash-complete; Flash has its own flash_nx_genome.py",
+    "path": "tools/nr_container.py / tools/nx_genome.py"
+   }
+  ],
+  "fork_decision": "Nothing on disk is an NX completeness checker that maps the seven requirements onto the BLOCKED Flash candidates. This module adds that checker and the dependency chain. It does not fork flash_nx_genome.py or evaluate_flash_promotion.",
+  "this_worktree_is_sparse": true,
+  "untracked_on_origin_working_tree": [
+   "queue",
+   "nr_v2",
+   "nx_v0",
+   "nx_v1",
+   "nx_v2",
+   "nx_next_machine",
+   "meta",
+   "ledger",
+   "census",
+   "token_attempt",
+   "token_device",
+   "token_accepted",
+   "token_session"
+  ]
+ },
+ "runtime_dependency_audit": [
+  {
+   "built": false,
+   "designed": true,
+   "evidence": [
+    {
+     "field": "measurement_state.serialized_artifact",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_BUILT"
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+    }
+   ],
+   "need": "serialized_nx_artifact",
+   "note": "tools/flash_nx_genome.py emits a metadata seal, not a packed body.",
+   "wired": false
+  },
+  {
+   "built": false,
+   "designed": true,
+   "evidence": [
+    {
+     "field": "native_loader.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_IMPLEMENTED"
+    },
+    {
+     "field": "native_loader.required",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": [
+      "verified body manifest",
+      "zero-copy/streaming policy",
+      "per-organ ownership",
+      "resident lifetime",
+      "loader hash"
+     ]
+    },
+    {
+     "field": "measurement_state.physical_loader",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_BUILT"
+    }
+   ],
+   "need": "physical_loader",
+   "note": "flash_executable.py lists loader requirements. native_loader.status is NOT_IMPLEMENTED. Bounded Q4 body load exists for a 128-row expert slice; whole-model Flash load does not.",
+   "wired": false
+  },
+  {
+   "built": false,
+   "designed": true,
+   "evidence": [
+    {
+     "field": "native_kernels.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "PLAN_ONLY"
+    },
+    {
+     "field": "measurement_state.native_kernel",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_BUILT"
+    }
+   ],
+   "need": "native_kernel_catalog",
+   "note": "Coverage is a plan. Layer-0 selected-top-10 composition is bounded evidence, not a whole-model NX kernel catalog. Most organs are NOT_IMPLEMENTED.",
+   "organs": [
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "partitioned_embedding_lookup",
+     "organ": "embeddings",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": true,
+     "designed": true,
+     "kernel": "native_nf_expert_gemv",
+     "organ": "routed_experts",
+     "status": "BOUNDED_LAYER0_SELECTED_TOP10_COMPOSITION_ONLY",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": true,
+     "designed": true,
+     "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu + qwen_uniform_q4_group64_matvec + qwen_next_shared_expert_sigmoid_gate",
+     "organ": "shared_expert",
+     "status": "BOUNDED_LAYER0_COMPOSITION_ONLY",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": true,
+     "designed": true,
+     "kernel": "qwen_next_moe_weighted_sum + qwen_next_moe_add_shared",
+     "organ": "moe_join",
+     "status": "BOUNDED_LAYER0_EXACT_MOE_JOIN",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "router_topk_gather",
+     "organ": "router",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "persistent_state_update",
+     "organ": "deltanet",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "resident_state_read_modify_write",
+     "organ": "recurrent_state",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "budgeted_sparse_gather_reduce",
+     "organ": "sparse_attention",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "lookup_or_compositional_generator",
+     "organ": "ngram_engine",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "draft_verify_rollback",
+     "organ": "mtp",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "fused_norm_epilogue",
+     "organ": "norms",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "vocabulary_projection_and_reduce",
+     "organ": "lm_head",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": false,
+     "designed": true,
+     "kernel": "conditional_multimodal_vision_path",
+     "organ": "vision_backbone",
+     "status": "NOT_IMPLEMENTED",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": true,
+     "designed": true,
+     "kernel": "qwen_next_expand_shared_to_hyper_state + qwen_uniform_q4_group64_matvec + qwen_next_hyperconnection_residual_mix_candidate",
+     "organ": "residual_hyperconnections",
+     "status": "BOUNDED_LAYER0_CANDIDATE_ONLY",
+     "wired_as_whole_model_nx_consumer": false
+    },
+    {
+     "built": true,
+     "designed": true,
+     "kernel": "ownership_audit_required",
+     "organ": "support_misc",
+     "status": "UNRESOLVED",
+     "wired_as_whole_model_nx_consumer": false
+    }
+   ],
+   "wired": false
+  },
+  {
+   "built": false,
+   "designed": true,
+   "evidence": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "SCAFFOLD_ONLY"
+    },
+    {
+     "field": "runtime_genome.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "BOUNDED_MULTI_COMPONENT_ONLY"
+    }
+   ],
+   "need": "whole_model_nx_consumer",
+   "note": "FLASH_NEXT_NOETIC_EXECUTABLE is SCAFFOLD_ONLY. Bounded multi-component is not a complete NX.",
+   "wired": false
+  },
+  {
+   "built": true,
+   "designed": false,
+   "evidence": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "value": "BLOCKED"
+    },
+    {
+     "field": "first_physical_failure_boundary.cause",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "value": "ascension_qwen38_hybrid_greedy accepts a packed HQ38/Q4 catalog, while the pinned Flash specimen is source safetensors without a catalog manifest"
+    }
+   ],
+   "need": "packed_qwen38_greedy_as_flash_loader",
+   "note": "ascension_qwen38_hybrid_greedy is a real binary. It cannot open the pinned Flash specimen. Built for a different artifact class, not wired.",
+   "wired": false
+  },
+  {
+   "built": true,
+   "designed": true,
+   "evidence": [
+    {
+     "field": "physical_program.source_binding",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "exact Flash fast-chain executor plus both organ executors; shader files are content-bound"
+    },
+    {
+     "field": "queue_policy.flash_source_oracle_is_not_flash_nx",
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "value": true
+    }
+   ],
+   "need": "source_oracle_executors",
+   "note": "flash_fast_chain.rs / organ executors exist and are content-bound by the metadata NX. Queue policy forbids reading them as Flash NX.",
+   "wired": false
+  },
+  {
+   "built": false,
+   "designed": true,
+   "evidence": [
+    {
+     "field": "measurement_contract.metric_scope",
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "value": "accepted complete generated token; not isolated kernel time"
+    },
+    {
+     "field": "complete_token_timing.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_MEASURED"
+    }
+   ],
+   "need": "protected_complete_token_path",
+   "note": "Contract exists. No native protected complete-token receipt exists for Flash NX.",
+   "wired": false
+  },
+  {
+   "built": false,
+   "designed": true,
+   "evidence": [
+    {
+     "field": "capability_contract.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_RUN"
+    }
+   ],
+   "need": "capability_suite_on_nx",
+   "note": "Required list is declared. Status is NOT_RUN. Declarations are not runtime evidence.",
+   "wired": false
+  }
+ ],
+ "schema": "hawking.future.flash_nx_audit.v1",
+ "seal_sha256": "f6417fbc8eff695e2ba25938d6dd5537241f66b171ed99703e525f878a7abbbd",
+ "seven_all_met": false,
+ "seven_requirements": [
+  {
+   "checker_on_FLASH_COMPLETE_V0_nx": {
+    "cited_field": "qualification.byte_ledger -> status/promotion_allowed",
+    "cited_value": {
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "promotion_allowed": false,
+     "routed_expert_sensitivity.complete_storage_bytes": null,
+     "status": "MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE"
+    },
+    "ok": false,
+    "requirement": "complete_byte_ledger",
+    "state": "NOT_MET",
+    "why": "bound ledger is exact-control / I/O profile only; complete candidate ledger remains open"
+   },
+   "cited": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": "MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE"
+    },
+    {
+     "field": "promotion_allowed",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": false
+    },
+    {
+     "field": "routed_expert_sensitivity.complete_storage_bytes",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": null
+    },
+    {
+     "field": "measured_fastpath_profile.complete_ebpw",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": null
+    },
+    {
+     "field": "promotion.blockers",
+     "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "value": [
+      "complete accepted-token session",
+      "complete candidate byte ledger",
+      "capability suite",
+      "machine-bound NX compilation"
+     ]
+    },
+    {
+     "field": "promotion_gate.missing_or_refused",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": [
+      "MTP accounting",
+      "complete-system byte ledger",
+      "dense-versus-NF A/B receipt",
+      "ebpw_accounting.all_required_bytes_included=true",
+      "ebpw_accounting.bases.bytes",
+      "ebpw_accounting.dictionaries.bytes",
+      "ebpw_accounting.expert_indices.bytes",
+      "ebpw_accounting.generators.bytes",
+      "ebpw_accounting.lookup_structures.bytes",
+      "ebpw_accounting.mtp_representation.bytes",
+      "ebpw_accounting.ngram_representation.bytes",
+      "ebpw_accounting.required_executable_metadata.bytes",
+      "ebpw_accounting.residuals.bytes",
+      "ebpw_accounting.routing_metadata.bytes",
+      "ebpw_accounting.scales.bytes",
+      "ebpw_accounting.weight_codes.bytes",
+      "ebpw_accounting.zero_points.bytes",
+      "fallback_count disclosure",
+      "native executable",
+      "protected capability contract",
+      "reproducible protected receipt",
+      "runtime/kernel genome",
+      "whole-model reference comparison"
+     ]
+    }
+   ],
+   "note": "FLASH_COMPLETE_V0.BYTE_LEDGER.json closes the exact-control 16.0 EBPW book and explicitly leaves compact/complete-candidate storage open. NR V2 still lists 'complete candidate byte ledger' as a promotion blocker. evaluate_flash_promotion reports the complete-system byte-field set missing.",
+   "requirement": "complete_byte_ledger",
+   "state": "NOT_MET"
+  },
+  {
+   "checker_on_FLASH_COMPLETE_V0_nx": {
+    "cited_field": "status",
+    "cited_value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+    "ok": false,
+    "requirement": "self_contained_dependencies",
+    "state": "NOT_MET",
+    "why": "NX is a metadata seal, not a self-contained executable"
+   },
+   "cited": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+    },
+    {
+     "field": "physical_program.source_binding",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "exact Flash fast-chain executor plus both organ executors; shader files are content-bound"
+    },
+    {
+     "field": "measurement_state.serialized_artifact",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_BUILT"
+    },
+    {
+     "field": "measurement_state.physical_loader",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_BUILT"
+    },
+    {
+     "field": "native_loader.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_IMPLEMENTED"
+    },
+    {
+     "field": "first_physical_failure_boundary.stage",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json",
+     "value": "whole_token_weight_loader"
+    }
+   ],
+   "note": "V0/V1/V2 NX files are metadata seals that bind source .rs executors and the Metal shader tree. There is no packed NX body. The packed Qwen38 greedy loader refuses the raw Flash specimen. native_loader.status is NOT_IMPLEMENTED. serialized_artifact and physical_loader are NOT_BUILT.",
+   "requirement": "self_contained_dependencies",
+   "state": "NOT_MET"
+  },
+  {
+   "checker_on_FLASH_COMPLETE_V0_nx": {
+    "cited_field": "qualification.accepted_multitoken_tps",
+    "cited_value": null,
+    "ok": false,
+    "requirement": "accepted_generation",
+    "state": "NOT_MET",
+    "why": "no multi-token accepted generation; a single terminal argmax is not accepted generation"
+   },
+   "cited": [
+    {
+     "field": "qualification.accepted_multitoken_tps",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": null
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": "MEASURED_SINGLE_TERMINAL_TOKEN"
+    },
+    {
+     "field": "terminal_token.classification",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": "single terminal argmax probe; not multi-token accepted generation"
+    },
+    {
+     "field": "terminal_token.accepted_generation_tokens",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": null
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED"
+    },
+    {
+     "field": "accepted_generation_tokens",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": 1
+    },
+    {
+     "field": "promotion_allowed",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": false
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
+     "value": "PASSED_COMPLETE_FORWARD_CANDIDATE_REJECTED"
+    }
+   ],
+   "note": "The device-resident receipt is a single terminal argmax probe, not multi-token accepted generation. The stateful acceptance receipt records one token and refuses promotion; continuation state is not advanced. The session receipt is PASSED_COMPLETE_FORWARD_CANDIDATE_REJECTED. NX accepted_multitoken_tps is null.",
+   "requirement": "accepted_generation",
+   "state": "NOT_MET"
+  },
+  {
+   "checker_on_FLASH_COMPLETE_V0_nx": {
+    "cited_field": "capability",
+    "cited_value": null,
+    "ok": false,
+    "requirement": "capability",
+    "state": "NOT_MET",
+    "why": "no capability suite result on the NX"
+   },
+   "cited": [
+    {
+     "field": "measurement_state.capability",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_MEASURED"
+    },
+    {
+     "field": "capability_contract.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_RUN"
+    },
+    {
+     "field": "promotion.blockers",
+     "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "value": [
+      "complete accepted-token session",
+      "complete candidate byte ledger",
+      "capability suite",
+      "machine-bound NX compilation"
+     ]
+    }
+   ],
+   "note": "No capability suite has been run on a source-independent Flash NX. FLASH_NEXT_NOETIC_EXECUTABLE.capability_contract.status is NOT_RUN. NR V2 lists 'capability suite' as a promotion blocker.",
+   "requirement": "capability",
+   "state": "NOT_MET"
+  },
+  {
+   "checker_on_FLASH_COMPLETE_V0_nx": {
+    "cited_field": "reproducibility",
+    "cited_value": null,
+    "ok": false,
+    "requirement": "reproducibility",
+    "state": "NOT_MET",
+    "why": "no executable closure hash; metadata hashes of source files are not byte reproducibility"
+   },
+   "cited": [
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+    },
+    {
+     "field": "runtime_genome.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "BOUNDED_MULTI_COMPONENT_ONLY"
+    },
+    {
+     "field": "runtime_genome.executable_sha256",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": null
+    },
+    {
+     "field": "runtime_genome.loader_sha256",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": null
+    },
+    {
+     "field": "promotion_gate.evidence.reproducible_protected_receipt",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": false
+    }
+   ],
+   "note": "The metadata NX hashes source files and a machine genome. There is no packed executable digest, no loader digest, and no byte-reproducible closure. runtime_genome.executable_sha256 and loader_sha256 are null. reproducible_protected_receipt is false.",
+   "requirement": "reproducibility",
+   "state": "NOT_MET"
+  },
+  {
+   "checker_on_FLASH_COMPLETE_V0_nx": {
+    "cited_field": "bench.state",
+    "cited_value": "UNKNOWN",
+    "ok": false,
+    "requirement": "protected_performance",
+    "state": "NOT_MET",
+    "why": "bench.state is UNKNOWN; DIAGNOSTIC_RELATIVE and metadata seals do not decide"
+   },
+   "cited": [
+    {
+     "field": "bench.state",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "value": "UNKNOWN"
+    },
+    {
+     "field": "measurement_state.complete_token",
+     "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "value": "NOT_MEASURED"
+    },
+    {
+     "field": "complete_token_timing.status",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "NOT_MEASURED"
+    },
+    {
+     "field": "status",
+     "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+     "value": "PLANNED_UNTIL_NATIVE_EXECUTION"
+    },
+    {
+     "field": "funnel.promotion_rule",
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "value": "only a protected complete-token receipt with capability and zero-fallback gates may promote"
+    },
+    {
+     "field": "bench.state",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": "UNKNOWN"
+    },
+    {
+     "field": "bench.state",
+     "path": "receipts/headless/FLASH_COMPLETE_TOKEN_DEVICE_RESIDENT_V1.json",
+     "value": "UNKNOWN"
+    }
+   ],
+   "note": "Every Flash NX/token receipt on disk has bench.state UNKNOWN. complete_token is NOT_MEASURED. The token-ns budget is PLANNED_UNTIL_NATIVE_EXECUTION. Queue promotion requires a protected complete-token receipt. Existing token receipts are not PROTECTED_ABSOLUTE and must not be read as such.",
+   "requirement": "protected_performance",
+   "state": "NOT_MET"
+  },
+  {
+   "checker_on_FLASH_COMPLETE_V0_nx": {
+    "cited_field": "fallback_count",
+    "cited_value": {
+     "dense_rematerialization": null,
+     "fallback_count": null,
+     "source_independent": null
+    },
+    "ok": false,
+    "requirement": "no_forbidden_fallback",
+    "state": "NOT_MET",
+    "why": "fallback_count is undisclosed; missing is not zero"
+   },
+   "cited": [
+    {
+     "field": "representation.parts[routed_experts].representation",
+     "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "value": "route_conditioned_compact_candidate"
+    },
+    {
+     "field": "complete_exact_control.representation",
+     "path": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "value": "source_bf16_exact fallback for every family"
+    },
+    {
+     "field": "fallback_count",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": null
+    },
+    {
+     "field": "native_kernels.dense_rematerialization",
+     "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "value": "FORBIDDEN_BY_FINAL_RUNTIME_POLICY"
+    },
+    {
+     "field": "next",
+     "path": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_ACCEPTED.json",
+     "value": "Use the accepted token as the next session input in a route-safe persistent executor; measure repeated accepted decode and eliminate dense source-bank reloads."
+    },
+    {
+     "field": "queue_policy.flash_source_oracle_is_not_flash_nx",
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "value": true
+    }
+   ],
+   "note": "fallback_count is undisclosed on the scaffold. Exact-control NR/ledger still name source_bf16_exact as the runtime fallback. The source oracle is policy-not-NX. Dense rematerialization is forbidden by policy and not evidenced as absent on a whole-model NX, because that NX is not built. The accepted-token next-step still asks to eliminate dense source-bank reloads.",
+   "requirement": "no_forbidden_fallback",
+   "state": "NOT_MET"
+  }
+ ],
+ "static_only_flash_candidates": [
+  {
+   "blocked_reason": "source-independent Flash NX and protected capability are not qualified",
+   "candidate_id": "flash-hc-router-topk-fusion",
+   "status": "STATIC_ONLY"
+  }
+ ],
+ "version": 1
+}

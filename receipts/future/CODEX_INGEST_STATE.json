@@ -1,0 +1,224 @@
+{
+ "active_deltas": [],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:18:38Z",
+  "recorded_by": "tools/future/codex_ingest.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "grok/l36-torture-wiring-20260830-182109",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. Deltas are proposals for downstream modules; disk evidence stays in receipts/headless.",
+ "classified_this_scan": [],
+ "cursor": {},
+ "deltas_this_scan": [],
+ "gaps_closed": [
+  "durable sha256 cursor over receipts/headless keyed by relpath",
+  "pure-content LAW/SCAR/NEUTRAL classifier with recorded driver field/token",
+  "downstream deltas for Odyssey II/III, Architecture Atlas, PhysicalGraph, LPC, HWIR",
+  "SCAR invalidation deltas (kills / makes_redundant / reopen_condition)",
+  "--once --assert-idempotent refusal that is capable of firing",
+  "read-only open; writes only receipts/future/CODEX_INGEST_STATE.json"
+ ],
+ "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "idempotence": {
+  "assert_idempotent": "exit non-zero iff n_new + n_changed > 0",
+  "change_detector": "sha256 of file bytes; mtime is recorded and never consulted",
+  "second_run_must_yield": {
+   "n_changed": 0,
+   "n_deltas": 0,
+   "n_new": 0
+  }
+ },
+ "negative_findings": [
+  "absent: receipts/headless/ACCELERATOR_SCOREBOARD.json",
+  "absent: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+  "ACCELERATOR_SCOREBOARD.json was named as the current scoreboard and is not in HEAD",
+  "ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json (status_transitions/funnel/candidate_statuses) is not in HEAD",
+  "tools/odyssey/modellake_watch.py was named as the style template and is not in HEAD; lane_watch.py was used instead",
+  "ACCELERATOR_ARCHITECTURE_ATLAS.json is not materialized in this sparse checkout (and is absent from HEAD name-search)",
+  "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; every delta is STATIC_ONLY / bench UNKNOWN",
+  "hardware numbers in source receipts are deliberately not copied; LPC measured.* is null"
+ ],
+ "purpose": "Read-only ingest of receipts/headless. Detect new/changed artifacts by sha256, classify LAW/SCAR/NEUTRAL from content, emit downstream deltas. Produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+ "recovered_implementation": {
+  "absent_from_head_and_disk": [
+   "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+   "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+  ],
+  "adequate_existing_watcher": null,
+  "already_existed": [
+   {
+    "in_git": true,
+    "note": "write_receipt / sha256_file / bench_block \u2014 used, not reimplemented",
+    "on_disk": true,
+    "path": "tools/future/_common.py"
+   },
+   {
+    "in_git": true,
+    "note": "ownership map; this module writes only inside the sidecar glob",
+    "on_disk": true,
+    "path": "tools/future/mutation_surface.py"
+   },
+   {
+    "in_git": true,
+    "note": "F015 is this lane: Codex receipts currently die where they land",
+    "on_disk": true,
+    "path": "tools/future/global_frontier.py"
+   },
+   {
+    "in_git": true,
+    "note": "scar representation: nine fields, three levels; not a watcher",
+    "on_disk": false,
+    "path": "tools/headless/negative_science.py"
+   },
+   {
+    "in_git": true,
+    "note": "closest existing watcher; watches grok worktrees, not receipt content",
+    "on_disk": false,
+    "path": "tools/headless/lane_watch.py"
+   },
+   {
+    "in_git": true,
+    "note": "training-corpus ingest; content-addressed but a different pipeline",
+    "on_disk": false,
+    "path": "tools/odyssey/ingest.py"
+   },
+   {
+    "in_git": true,
+    "note": "named in the contract; absent from HEAD",
+    "on_disk": false,
+    "path": "tools/odyssey/modellake_watch.py"
+   },
+   {
+    "in_git": true,
+    "note": "GPU-window watcher; takes locks/signals \u2014 we must not copy that",
+    "on_disk": false,
+    "path": "hcli/agentos/protected_benchmark_watcher.py"
+   },
+   {
+    "in_git": true,
+    "note": "PhysicalGraph plan schema; we emit candidate semantics only",
+    "on_disk": false,
+    "path": "hcli/physical_graph.py"
+   },
+   {
+    "in_git": true,
+    "note": "existing compiler; sidecar does not invoke it",
+    "on_disk": false,
+    "path": "tools/odyssey/physical_graph_compiler.py"
+   },
+   {
+    "in_git": false,
+    "note": "named in the contract; absent from HEAD",
+    "on_disk": false,
+    "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+   },
+   {
+    "in_git": false,
+    "note": "named in the contract; absent from HEAD",
+    "on_disk": false,
+    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   },
+   {
+    "in_git": true,
+    "note": "present representation scoreboard; not an ingest cursor",
+    "on_disk": false,
+    "path": "receipts/headless/NOETIC_SCOREBOARD.json"
+   },
+   {
+    "in_git": true,
+    "note": "AKB law store \u2014 shape reference for LAW entries",
+    "on_disk": false,
+    "path": "receipts/headless/ACCELERATOR_LAW_BASE.json"
+   },
+   {
+    "in_git": true,
+    "note": "scar corpus \u2014 shape reference for SCAR entries",
+    "on_disk": false,
+    "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+   },
+   {
+    "in_git": true,
+    "note": "organ-graph evidence the HWIR/PhysicalGraph deltas cite",
+    "on_disk": false,
+    "path": "receipts/headless/PHYSICAL_GRAPH_COMPILER.json"
+   },
+   {
+    "in_git": true,
+    "note": "arxiv/web ingest; unrelated to Codex receipts",
+    "on_disk": true,
+    "path": "crates/hawking-research/src/ingest.rs"
+   }
+  ],
+  "present": [
+   "tools/future/_common.py",
+   "tools/future/mutation_surface.py",
+   "tools/future/global_frontier.py",
+   "tools/headless/negative_science.py",
+   "tools/headless/lane_watch.py",
+   "tools/odyssey/ingest.py",
+   "tools/odyssey/modellake_watch.py",
+   "hcli/agentos/protected_benchmark_watcher.py",
+   "hcli/physical_graph.py",
+   "tools/odyssey/physical_graph_compiler.py",
+   "receipts/headless/NOETIC_SCOREBOARD.json",
+   "receipts/headless/ACCELERATOR_LAW_BASE.json",
+   "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "receipts/headless/PHYSICAL_GRAPH_COMPILER.json",
+   "crates/hawking-research/src/ingest.rs"
+  ],
+  "why_not_redundant": "lane_watch.py watches grok worktrees; odyssey ingest.py watches training corpora; protected_benchmark_watcher.py governs a GPU window. None of them hash receipts/headless and emit LAW/SCAR deltas. F015 still holds."
+ },
+ "root": "receipts/headless",
+ "scan": {
+  "by_class_cursor": {
+   "LAW": 0,
+   "NEUTRAL": 0,
+   "SCAR": 0
+  },
+  "by_class_this_scan": {
+   "LAW": 0,
+   "NEUTRAL": 0,
+   "SCAR": 0
+  },
+  "missing_from_disk": [],
+  "n_active_deltas": 0,
+  "n_changed": 0,
+  "n_deltas": 0,
+  "n_missing_from_disk": 0,
+  "n_new": 0,
+  "n_on_disk": 0,
+  "n_unchanged": 0,
+  "n_unreadable": 0,
+  "unreadable": []
+ },
+ "schema": "hawking.future.codex_ingest.v1",
+ "seal_sha256": "81250c6a18987befeaa410fd5770fbd7ca5a3c73b3daab5a859db8088fb94191",
+ "version": 1,
+ "vocabulary": {
+  "bench_state": "UNKNOWN",
+  "eras": [
+   "I",
+   "II",
+   "III",
+   "IV",
+   "V"
+  ],
+  "evidence_class_we_emit": "STATIC_ONLY",
+  "evidence_classes_we_do_not_emit": [
+   "DIAGNOSTIC_RELATIVE",
+   "PROTECTED_ABSOLUTE"
+  ],
+  "fpga_is": "part of Accelerator / Physical Compiler / Fusion, not its own civilization",
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ }
+}

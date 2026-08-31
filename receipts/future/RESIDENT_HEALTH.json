@@ -1,0 +1,174 @@
+{
+ "authorizes": "restart_decision_only",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:47:55Z",
+  "recorded_by": "tools/future/resident_health.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "SELF_MEASURED_DIRTY process telemetry. Authorizes a checkpoint-and-restart decision and nothing else. Never a model/kernel/representation ranking. Never DIAGNOSTIC_RELATIVE, never PROTECTED_ABSOLUTE, never a hardware field.",
+ "evidence_class": "STATIC_ONLY",
+ "executed": {
+  "prove_live_dead_pid": true,
+  "prove_synthetic": true,
+  "sample_self_pid": true,
+  "sample_undeclared": true,
+  "trend": true,
+  "verdict": true
+ },
+ "gaps_closed": [
+  "sample() / trend() / verdict() as a restart decision with evidence, not a guess",
+  "PATHOLOGICAL requires CLIMB_NO_PLATEAU across the window; a single spike cannot authorize restart",
+  "one sample refuses a trend verdict (HealthRefuse), never HEALTHY-by-default",
+  "dead/reused resident is ABSENT with rss_bytes null, never 0",
+  "undeclared pid is UNDECLARED, not invented from the largest RSS neighbour",
+  "missing queue/detached/context is UNOBSERVABLE with depth/n_jobs null, not an empty healthy queue",
+  "telemetry classed SELF_MEASURED_DIRTY; authorizes restart_decision_only; no hardware field"
+ ],
+ "gpu_authority": false,
+ "is_a_measurement": false,
+ "is_hardware_performance_claim": false,
+ "live_self_process": {
+  "children_status": "OK",
+  "note": "sidecar python pid, NOT the trial resident; proves RSS readout works",
+  "presence": "PRESENT",
+  "rss_bytes_is_int": true,
+  "rss_bytes_nonzero": true
+ },
+ "live_undeclared": {
+  "detached_status": "UNOBSERVABLE",
+  "memory_status": "OK",
+  "presence": "UNDECLARED",
+  "queue_depth": 26,
+  "queue_status": "OK",
+  "reason": "no resident pid declared (argument or HAWKING_RESIDENT_PID); will not invent one from the largest RSS neighbour (dirty_measure.identify_resident_loaded is a contamination envelope, not identity)",
+  "rss_bytes": null,
+  "uma_pressure_name": "warn"
+ },
+ "negative_findings": [
+  "this sidecar did not start a resident and did not take a GPU lease",
+  "queue depth is UNOBSERVABLE when receipts/future/HCLI_FUTURE_WORKUNITS.json is not on disk; HEAD is not the live queue",
+  "context growth is UNOBSERVABLE unless a context_path is declared; no conversation log is guessed",
+  "PID-level GPU working-set attribution still requires a protected lease this sidecar does not hold",
+  "a flat high RSS is HEALTHY (stable residency is not a leak); restarting it would thrash",
+  "orchestration BINDINGS / frontiers catalog were outside this lane's WRITE list, so this module is not glued into invoke() by this receipt"
+ ],
+ "proofs": {
+  "live_dead_pid": {
+   "coped": true,
+   "passed": true,
+   "pid": 39937,
+   "presence": "ABSENT",
+   "reason": "resident pid is not alive",
+   "rss_bytes": null
+  },
+  "synthetic": {
+   "absent_rejects_zero_rss": {
+    "passed": true,
+    "reason": "presence=ABSENT cannot carry rss_bytes=0; that is the healthy-with-zero-RSS fiction"
+   },
+   "all_passed": true,
+   "climb_is_pathological": {
+    "passed": true,
+    "signal": "rss_bytes",
+    "verdict": "PATHOLOGICAL"
+   },
+   "flat_is_healthy": {
+    "passed": true,
+    "signal": null,
+    "verdict": "HEALTHY"
+   },
+   "one_sample_refuses": {
+    "passed": true,
+    "reason": "one sample cannot produce a trend verdict (n=1); PATHOLOGICAL requires a window, not a moment"
+   },
+   "persistent_absent_is_pathological": {
+    "passed": true,
+    "signal": "resident_absent",
+    "verdict": "PATHOLOGICAL"
+   },
+   "plateau_not_pathological": {
+    "passed": true,
+    "signal": "rss_bytes",
+    "verdict": "DEGRADED"
+   },
+   "spike_not_pathological": {
+    "passed": true,
+    "signal": "rss_bytes",
+    "verdict": "DEGRADED"
+   },
+   "verdicts_reached": [
+    "DEGRADED",
+    "HEALTHY",
+    "PATHOLOGICAL"
+   ]
+  }
+ },
+ "purpose": "Observe resident process telemetry over time and turn a monotonic climb (not a spike) into a checkpoint-and-restart decision.",
+ "recovered_implementation": [
+  "tools/future/contamination.py probe_memory (UMA pressure, vm_stat pages including Swapins/Swapouts, available bytes); libproc RSS idea kept in bytes so small processes do not round to 0.00 GiB",
+  "tools/future/detached.py identity_status (match/dead/reused/unknown; pid is not identity)",
+  "hcli/resources.py pid_is_alive + process_start_token",
+  "tools/future/hardware_doctor.py metal_state \u2014 capability probe that is not a measurement (is_a_measurement false; this module's sample is the process-telemetry analogue)",
+  "tools/future/dirty_measure.py SELF_MEASURED_DIRTY class and identify_resident_loaded (explicitly NOT used as identity: largest RSS neighbour is not the resident)",
+  "tools/future/resident_install.py readiness_probe already names identity.resident_health.pid; this module is that pid's health, not a second install contract",
+  "tools/future/hbm_doctor.py ResidentCandidate.missing_inputs stay None, never 0-filled \u2014 same fail-closed for rss_bytes",
+  "tools/future/restart_supervisor.py LANDED"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.resident_health.sample() / trend() / verdict()",
+  "fails_closed": "HealthRefuse on n<2; ABSENT rss_bytes is null not 0; missing queue/detached/context is UNOBSERVABLE not empty; PATHOLOGICAL requires CLIMB_NO_PLATEAU; authorize_restart is false for a spike",
+  "frontier": "FT.HCLI_SELF.emit-workunits",
+  "receipt": "receipts/future/RESIDENT_HEALTH.json",
+  "workunit": "one CPU_ANALYSIS unit; sample the declared resident, trend the window, emit HEALTHY|DEGRADED|PATHOLOGICAL; write receipts/future/RESIDENT_HEALTH.json; never a GPU lease"
+ },
+ "restart_supervisor": {
+  "importable": true,
+  "landed": true,
+  "on_disk": true,
+  "path": "tools/future/restart_supervisor.py",
+  "reason": null
+ },
+ "schema": "hawking.future.resident_health.v1",
+ "seal_sha256": "05e84560dc2655a3c78aebf783fe2133e7f411bd72dc1fce85cf425f7feec448",
+ "telemetry_evidence_class": "SELF_MEASURED_DIRTY",
+ "version": 1,
+ "vocabulary": {
+  "directions": [
+   "FLAT",
+   "UP",
+   "DOWN",
+   "SPIKE",
+   "CLIMB_NO_PLATEAU",
+   "UNKNOWN"
+  ],
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "pathological_rule": "CLIMB_NO_PLATEAU on a pathology signal, or resident ABSENT on every sample in the window. One reading is a moment.",
+  "presence": [
+   "PRESENT",
+   "ABSENT",
+   "UNDECLARED",
+   "UNKNOWN"
+  ],
+  "restart_rule": "authorize_restart is true only for PATHOLOGICAL",
+  "verdicts": [
+   "HEALTHY",
+   "DEGRADED",
+   "PATHOLOGICAL"
+  ]
+ }
+}

@@ -1,0 +1,554 @@
+{
+ "backend_provider_contract": {
+  "availability": {
+   "ANE": {
+    "available": false,
+    "evidence": "ANE is a future Accelerator backend. This sidecar does not claim ANE execution."
+   },
+   "CUDA": {
+    "available": false,
+    "evidence": "CUDA is a future Accelerator backend. This host is Apple Silicon; this sidecar does not build a CUDA backend."
+   },
+   "FPGA": {
+    "available": false,
+    "evidence": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization. This sidecar does not build an FPGA backend and no board is claimed present."
+   },
+   "METAL": {
+    "available": true,
+    "evidence": "host is Darwin arm64; Metal is the Apple Silicon GPU API. This is platform presence, not a kernel measurement and not PROTECTED_ABSOLUTE."
+   }
+  },
+  "hcli_features": [
+   "response_format",
+   "grammar",
+   "chat_template_kwargs",
+   "prefix_cache",
+   "slots",
+   "vision",
+   "tool_calling",
+   "streaming"
+  ],
+  "metal": {
+   "availability": {
+    "ANE": {
+     "available": false,
+     "evidence": "ANE is a future Accelerator backend. This sidecar does not claim ANE execution."
+    },
+    "CUDA": {
+     "available": false,
+     "evidence": "CUDA is a future Accelerator backend. This host is Apple Silicon; this sidecar does not build a CUDA backend."
+    },
+    "FPGA": {
+     "available": false,
+     "evidence": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization. This sidecar does not build an FPGA backend and no board is claimed present."
+    },
+    "METAL": {
+     "available": true,
+     "evidence": "host is Darwin arm64; Metal is the Apple Silicon GPU API. This is platform presence, not a kernel measurement and not PROTECTED_ABSOLUTE."
+    }
+   },
+   "available": true,
+   "backend_id": "METAL",
+   "declared_features": [
+    "chat_template_kwargs",
+    "prefix_cache"
+   ],
+   "declares": [
+    "METAL"
+   ],
+   "gpu_authority": false,
+   "measurement_state": "STATIC_ONLY",
+   "not_an_fpga_backend": true,
+   "optional_methods": [
+    "generate",
+    "capabilities",
+    "health",
+    "profile"
+   ],
+   "provider_protocol_methods": [
+    "generate",
+    "capabilities",
+    "health",
+    "profile"
+   ],
+   "reason": "host is Darwin arm64; Metal is the Apple Silicon GPU API. This is platform presence, not a kernel measurement and not PROTECTED_ABSOLUTE.",
+   "required_methods": [
+    "identity",
+    "spawn",
+    "ready",
+    "endpoint",
+    "stop",
+    "complete",
+    "supports"
+   ],
+   "runtime_kinds": [
+    "mlx",
+    "noetic_native",
+    "llamacpp"
+   ],
+   "schema": "hawking.future.devplatform.backend_contract.v1",
+   "source_contracts": {
+    "features": "hcli.providers.FEATURES",
+    "model_provider_protocol": "hcli.providers.ModelProvider",
+    "runtime_backend_abc": "hcli.backends.RuntimeBackend",
+    "runtime_kinds": "hcli.runtime_iface.BACKEND_KINDS"
+   },
+   "unsupported_features": [
+    "response_format",
+    "grammar"
+   ],
+   "version": 1
+  },
+  "optional_methods": [
+   "generate",
+   "capabilities",
+   "health",
+   "profile"
+  ],
+  "physical_backends": [
+   "METAL",
+   "FPGA",
+   "CUDA",
+   "ANE"
+  ],
+  "provider_protocol_methods": [
+   "generate",
+   "capabilities",
+   "health",
+   "profile"
+  ],
+  "required_methods": [
+   "identity",
+   "spawn",
+   "ready",
+   "endpoint",
+   "stop",
+   "complete",
+   "supports"
+  ],
+  "runtime_kinds": [
+   "mlx",
+   "llamacpp",
+   "noetic_native",
+   "remote"
+  ],
+  "schema": "hawking.future.devplatform.backend_contract.v1",
+  "version": 1
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:46:28Z",
+  "recorded_by": "tools/future/devplatform.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "compatibility_suite": {
+  "clauses": [
+   "model.schema",
+   "machine.schema",
+   "backend.schema",
+   "model.required_backend.declared",
+   "model.required_backend.available",
+   "model.required_features.declared",
+   "machine.host.can_run.backend",
+   "receipt.schema.compatible",
+   "workunit.preferred_backend.available"
+  ],
+  "negative_control_clause": "model.required_features.declared",
+  "schema": "hawking.future.devplatform.compat.v1",
+  "version": 1
+ },
+ "gaps_closed": [
+  "Versioned byte-stable IR (hawking.future.devplatform.ir.v1) with an explicit v0->v1 migrator and refusal of unknown versions",
+  "Receipt read/validate/seal-verify surface over tools.future._common.write_receipt, naming clauses, not catching HardwareClaimError",
+  "Versioned model profiles with required/optional fields, a specimen catalog, and validation against hcli/hawking-native.sealed-3.14.json",
+  "Versioned machine profile of this host from hcli.machine.live_machine_identity, STATIC_ONLY, no bandwidth/tps",
+  "Backend provider contract wrapping RuntimeBackend + ModelProvider, with METAL present and FPGA/CUDA/ANE unavailable",
+  "Versioned WorkUnit envelope over hcli.workunit with matching content_identity",
+  "Compatibility suite that names the failing clause, including a negative control that refuses FPGA/hbm_resident on the Metal provider"
+ ],
+ "hcli_constants_recovered": {
+  "backend_kinds": [
+   "mlx",
+   "llamacpp",
+   "noetic_native",
+   "remote"
+  ],
+  "features": [
+   "response_format",
+   "grammar",
+   "chat_template_kwargs",
+   "prefix_cache",
+   "slots",
+   "vision",
+   "tool_calling",
+   "streaming"
+  ],
+  "live_machine_import": true,
+  "live_machine_keys": [
+   "cpu",
+   "hw_model",
+   "mem_bytes",
+   "ncpu"
+  ],
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "workunit_import": true
+ },
+ "ir": {
+  "encoding": "UTF-8 JSON, sort_keys=True, separators=(',', ':'), ensure_ascii=False; volatile keys stripped before hash",
+  "kinds": [
+   "document",
+   "model_profile",
+   "machine_profile",
+   "backend_contract",
+   "workunit",
+   "receipt_handle",
+   "compatibility_report"
+  ],
+  "migration": {
+   "current": 1,
+   "registered_from": [
+    0
+   ],
+   "rule": "Every version bump is explicit. encode_ir requires current ir_version. decode_ir migrates. Missing migrators refuse."
+  },
+  "schema": "hawking.future.devplatform.ir.v1",
+  "version": 1,
+  "volatile_keys_excluded_from_hash": [
+   "at",
+   "finished_at",
+   "generated_at",
+   "observed_at",
+   "ready_at",
+   "recorded_at",
+   "running_at",
+   "seal_sha256",
+   "started_at"
+  ]
+ },
+ "machine_profiles": {
+  "optional_fields": [
+   "cpu",
+   "ncpu",
+   "mem_bytes",
+   "host_kind",
+   "gpu_authority",
+   "measurement_state",
+   "notes"
+  ],
+  "required_fields": [
+   "schema",
+   "version",
+   "os",
+   "arch",
+   "hw_model"
+  ],
+  "schema": "hawking.future.devplatform.machine_profile.v1",
+  "this_machine": {
+   "arch": "arm64",
+   "cpu": "Apple M3 Ultra",
+   "gpu_authority": false,
+   "host_kind": "apple_silicon",
+   "hw_model": "Mac15,14",
+   "measurement_state": "STATIC_ONLY",
+   "mem_bytes": 103079215104,
+   "ncpu": 28,
+   "notes": "Identity from platform/sysctl via hcli.machine.live_machine_identity. Not a protected measurement. tps / token_ns / gpu_ns / joules_per_token / bandwidth_gbps are omitted and UNKNOWN.",
+   "os": "Darwin",
+   "schema": "hawking.future.devplatform.machine_profile.v1",
+   "version": 1
+  },
+  "version": 1
+ },
+ "model_profiles": {
+  "optional_fields": [
+   "runtime_kind",
+   "artifact_kind",
+   "quantization",
+   "context_length",
+   "representation",
+   "provider",
+   "source_paths",
+   "notes"
+  ],
+  "required_fields": [
+   "schema",
+   "version",
+   "specimen_id",
+   "family",
+   "architecture",
+   "required_backend",
+   "required_features"
+  ],
+  "schema": "hawking.future.devplatform.model_profile.v1",
+  "specimens": {
+   "flash": {
+    "architecture": "Flash",
+    "artifact_kind": "native",
+    "family": "flash",
+    "notes": "Frontier F001: FLASH_COMPLETE_V0.nx.json is sealed metadata only. This profile names the specimen; it does not claim a complete NX.",
+    "provider": "native",
+    "required_backend": "METAL",
+    "required_features": [
+     "chat_template_kwargs"
+    ],
+    "runtime_kind": "noetic_native",
+    "schema": "hawking.future.devplatform.model_profile.v1",
+    "source_paths": [
+     "receipts/headless/FLASH_COMPLETE_V0.nx.json"
+    ],
+    "specimen_id": "flash",
+    "version": 1
+   },
+   "qwen3.8-27b-mlx-4bit": {
+    "architecture": "Qwen3_5ForConditionalGeneration",
+    "artifact_kind": "mlx_dir",
+    "family": "qwen3.8",
+    "provider": "mlx",
+    "quantization": "4bit-affine-g64",
+    "required_backend": "METAL",
+    "required_features": [
+     "chat_template_kwargs",
+     "prefix_cache"
+    ],
+    "runtime_kind": "mlx",
+    "schema": "hawking.future.devplatform.model_profile.v1",
+    "source_paths": [
+     "receipts/headless/CONVENTIONAL_CONTROL_SET.json"
+    ],
+    "specimen_id": "qwen3.8-27b-mlx-4bit",
+    "version": 1
+   },
+   "qwen3.8-27b-sealed-3.14": {
+    "architecture": "Qwen3.8",
+    "artifact_kind": "native",
+    "family": "qwen3.8",
+    "provider": "native",
+    "required_backend": "METAL",
+    "required_features": [
+     "chat_template_kwargs"
+    ],
+    "runtime_kind": "noetic_native",
+    "schema": "hawking.future.devplatform.model_profile.v1",
+    "source_paths": [
+     "hcli/hawking-native.sealed-3.14.json"
+    ],
+    "specimen_id": "qwen3.8-27b-sealed-3.14",
+    "version": 1
+   }
+  },
+  "version": 1
+ },
+ "negative_findings": [
+  "hcli/genomes/ and tools/accelerator/machine_genome.py are in git but not materialized in this sparse checkout; recovered via git show, not imported",
+  "docs/HCLI_DELEGATION.md is in git but not on disk; recovered via git show",
+  "receipts/headless/CONVENTIONAL_CONTROL_SET.json and MACHINE_GENOME.json are in git but not on disk; specimen/machine identity taken from git show + live sysctl, not from those files",
+  "tools/accelerator/, tools/headless/, hcli/agentos/ exist in git (56 / 280 / 43 paths) but are not on disk in this sparse checkout",
+  "No existing tools/future/devplatform.py \u2014 this substrate was missing, not duplicated",
+  "Did not run cargo, GPU kernels, measure_bandwidth, or any PROTECTED_ABSOLUTE / DIAGNOSTIC_RELATIVE bench",
+  "Did not prove FPGA/CUDA/ANE execution; contract marks them unavailable",
+  "Did not copy complete_tps_* or physical_ebpw out of hawking-native.sealed-3.14.json",
+  "Live mlx_lm.server / llama-server supports() was not re-probed; Metal declared_features are the static comment table in hcli/backends.py",
+  "CLAUDE_GLOBAL_FRONTIER.json has no developer-platform entry; this lane is not a frontier row"
+ ],
+ "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+ "purpose": "Programmable developer-platform substrate for Era V: stable IR, receipt API, model/machine profiles, backend provider contract, WorkUnit API, compatibility suite. STATIC_ONLY. No hardware claim.",
+ "receipt_api": {
+  "does_not_catch": "HardwareClaimError",
+  "operations": [
+   "receipt_read",
+   "receipt_write",
+   "receipt_validate",
+   "receipt_seal_hex"
+  ],
+  "over": "tools.future._common.write_receipt / seal / HARDWARE_FIELDS",
+  "schema": "hawking.future.devplatform.receipt_api.v1",
+  "version": 1
+ },
+ "recovered_implementation": [
+  {
+   "adequate": "yes as the live runtime contract",
+   "gap": "not versioned as a round-trip IR; no physical METAL/FPGA/CUDA/ANE availability flags",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/backends.py",
+   "what": "RuntimeBackend ABC (identity/spawn/ready/endpoint/stop/complete/supports) plus LlamaServerBackend, MlxServerBackend, OpenAICompatibleBackend, NoeticNativeBackend"
+  },
+  {
+   "adequate": "yes as the AgentOS provider contract",
+   "gap": "ResidentProfile is a reproducibility closure, not a versioned specimen profile with required_backend / required_features checked by a compatibility suite",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/providers.py",
+   "what": "ModelProvider protocol, CapabilityContract, ResidentProfile, RuntimeGenome, FEATURES, profile schema hcli.provider.profile.v1"
+  },
+  {
+   "adequate": "yes as the one runtime interface",
+   "gap": "does not serialize a byte-stable IR or a physical-backend availability table",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/runtime_iface.py",
+   "what": "BACKEND_KINDS (mlx, llamacpp, noetic_native, remote), ModelSemantics, RuntimeInterface planes"
+  },
+  {
+   "adequate": "yes as the durable work shape",
+   "gap": "no schema/version envelope; no compatibility check against a backend contract",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/workunit.py",
+   "what": "WorkUnit dataclass, to_dict/from_dict, content_identity, admit/repair"
+  },
+  {
+   "adequate": "yes for mission results",
+   "gap": "not the sealed sidecar receipt format",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/result_envelope.py",
+   "what": "ResultEnvelope / hcli.agentos.result.v1"
+  },
+  {
+   "adequate": "yes for AgentOS tools",
+   "gap": "not a receipt read/write/validate API over receipts/future/",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/tool_registry.py",
+   "what": "typed tools, mutation classes, receipt-adjacent read tools"
+  },
+  {
+   "adequate": "yes as machine identity + admission prior",
+   "gap": "MachineGenome is an admission bag / prior; not a versioned STATIC_ONLY profile. Must not copy PUBLISHED_SLOT_C1_TPS_PRIOR into this sidecar.",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/machine.py",
+   "what": "live_machine_identity, MachineGenome compatibility bag, MemGate"
+  },
+  {
+   "adequate": "yes as vocabulary",
+   "gap": "NoeticIR is named, not implemented here; PhysicalGraph is a different IR",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/nomenclature.py",
+   "what": "HAWKING_NOMENCLATURE_V1, canonical pipeline including NoeticIR"
+  },
+  {
+   "adequate": "yes as a plan graph",
+   "gap": "not a general versioned round-trip substrate for profiles/receipts/workunits",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/physical_graph.py",
+   "what": "hcli.physical_graph.v1 plan IR (PLAN_ONLY)"
+  },
+  {
+   "adequate": "yes as a specimen identity document",
+   "gap": "contains complete_tps_* hardware numbers this sidecar must not copy",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/hawking-native.sealed-3.14.json",
+   "what": "sealed Qwen3.8-27B native specimen (family, protocol, profile_schema)"
+  },
+  {
+   "adequate": "yes as archived/live profile copy",
+   "gap": "not on disk in this sparse checkout; recovered via git show. Not a versioned model profile API.",
+   "in_git": true,
+   "on_disk": true,
+   "path": "hcli/genomes/runtime_genome.py",
+   "what": "RuntimeGenome from CONVENTIONAL_CONTROL_SET; does not re-measure"
+  },
+  {
+   "adequate": "yes as Codex's genome producer",
+   "gap": "not on disk in this sparse checkout; recovered via git show. Sidecar must not re-run measure_bandwidth (GPU).",
+   "in_git": true,
+   "on_disk": true,
+   "path": "tools/accelerator/machine_genome.py",
+   "what": "hawking.accelerator.machine_genome.v1 producer (sysctl + bandwidth measure)"
+  },
+  {
+   "adequate": "yes as Codex receipt schema",
+   "gap": "different schema than sidecar write_receipt; we wrap the sidecar sealer",
+   "in_git": true,
+   "on_disk": true,
+   "path": "tools/accelerator/receipt.py",
+   "what": "hawking.accelerator.receipt.v1 with eight identities + bench states"
+  },
+  {
+   "adequate": "yes \u2014 the sealer this receipt API is built over",
+   "gap": "no read/validate surface, no named clauses",
+   "in_git": true,
+   "on_disk": true,
+   "path": "tools/future/_common.py",
+   "what": "write_receipt / seal / bench_block / HARDWARE_FIELDS / HardwareClaimError"
+  },
+  {
+   "adequate": "yes as operator docs",
+   "gap": "not on disk in this sparse checkout; recovered via git show. Not a programmable API.",
+   "in_git": true,
+   "on_disk": true,
+   "path": "docs/HCLI_DELEGATION.md",
+   "what": "operator runbook for hcli run/status/steer/result/abort"
+  },
+  {
+   "adequate": "yes as the campaign board",
+   "gap": "no frontier entry for a developer-platform substrate; this lane still had to close it",
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "what": "live frontier F001\u2013F015"
+  }
+ ],
+ "schema": "hawking.future.devplatform.v1",
+ "seal_sha256": "06fa83db35a48c13a00d97009f4c08f49f69b6d5c78f7326aebf6dc26686d536",
+ "selftest": {
+  "compat_negative_clauses": [
+   "model.required_features.declared"
+  ],
+  "compat_negative_fired": true,
+  "compat_negative_named_feature_clause": "model.required_features.declared",
+  "compat_positive_ok": true,
+  "ir_roundtrip_byte_stable": true,
+  "ir_unknown_version_refuses": true,
+  "ir_v0_migrates_to_v1": true,
+  "machine_profile_matches_live": true,
+  "metal_available_fpga_cuda_ane_not": true,
+  "sealed_specimen_profile_ok": true,
+  "workunit_hash_matches_hcli": true
+ },
+ "version": 1,
+ "workunit_api": {
+  "content_identity": "sha256 of {role, description, dependencies, verifier} with sort_keys canonical JSON; same as hcli.workunit.content_identity",
+  "hcli_import": true,
+  "optional_fields": [
+   "dependencies",
+   "status",
+   "assigned_runtime",
+   "attempts",
+   "resource_class",
+   "repairs",
+   "failure_context",
+   "preferred_backend",
+   "assigned_backend",
+   "backend_task_id",
+   "verifier",
+   "effect_class",
+   "workspace",
+   "verification",
+   "repair_root",
+   "repair_depth",
+   "repair_reason",
+   "repair_exhausted",
+   "classification",
+   "provider",
+   "content_hash"
+  ],
+  "over": "hcli.workunit.WorkUnit",
+  "required_fields": [
+   "id",
+   "role",
+   "description"
+  ],
+  "schema": "hawking.future.devplatform.workunit.v1",
+  "version": 1
+ }
+}

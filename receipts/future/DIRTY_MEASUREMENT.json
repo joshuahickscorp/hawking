@@ -1,0 +1,803 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:51Z",
+  "recorded_by": "tools/future/dirty_measure.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "competing_workloads": [
+  {
+   "cpu_pct": 116.7,
+   "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+   "pid": 30545,
+   "rss_gib": 16.5
+  },
+  {
+   "cpu_pct": 33.5,
+   "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+   "pid": 180,
+   "rss_gib": 0.12
+  }
+ ],
+ "contamination_class": "HEAVY",
+ "contamination_fingerprint": "7289b91e52c22718960f4e67ccbb614ce440a7f2ca0ace95b8b0ad5899d447cf",
+ "direction_is_not_magnitude": {
+  "fixture_ab": {
+   "faster_arm": "B",
+   "median_ratio": 0.8,
+   "note": "dimensionless fixture pairs, not a hardware sample",
+   "reason": "n_kept=7 >= min_pairs=7; median of pairwise ratios with IQR",
+   "sufficient_for_decision": true
+  },
+  "refuses": [
+   "absolute_latency",
+   "absolute_tps",
+   "accepted_tps",
+   "bandwidth_gbps",
+   "complete_token_ns",
+   "dispatch_ns",
+   "duration_ms",
+   "duration_ns",
+   "gpu_ns",
+   "joules_per_token",
+   "latency",
+   "latency_ms",
+   "latency_ns",
+   "latency_us",
+   "ms_per_token",
+   "ns_per_token",
+   "time_ms",
+   "time_ns",
+   "token_ns",
+   "tokens_per_second",
+   "tps",
+   "wall_ms",
+   "wall_ns"
+  ],
+  "reports": [
+   "faster_arm",
+   "median_ratio",
+   "ratio_iqr",
+   "bootstrap_ci95"
+  ],
+  "write_receipt_backstop": [
+   "accepted_tps",
+   "bandwidth_gbps",
+   "complete_token_ns",
+   "dispatch_ns",
+   "gpu_ns",
+   "joules_per_token",
+   "token_ns",
+   "tps",
+   "wall_ns"
+  ]
+ },
+ "envelope": {
+  "bench_state": "UNKNOWN",
+  "benchmark_ordinal": null,
+  "classification_rule": "UNKNOWN when a required probe failed \u2014 never optimistic QUIESCENT. HEAVY evidence from a probe that succeeded still classifies HEAVY.",
+  "competing_workloads": [
+   {
+    "cpu_pct": 116.7,
+    "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 30545,
+    "rss_gib": 16.5
+   },
+   {
+    "cpu_pct": 33.5,
+    "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+    "pid": 180,
+    "rss_gib": 0.12
+   }
+  ],
+  "contamination_class": "HEAVY",
+  "contamination_evidence": [
+   {
+    "contributes": "HEAVY",
+    "finding": "max_rss_gib=16.5 >= 8.0",
+    "kind": "heavy",
+    "probe": "rss"
+   },
+   {
+    "contributes": "LIGHT",
+    "finding": "device_utilization_pct=11 > 0",
+    "kind": "light",
+    "probe": "gpu_occupancy"
+   },
+   {
+    "contributes": "LIGHT",
+    "finding": "pressure_level=1 (warn)",
+    "kind": "light",
+    "probe": "memory"
+   }
+  ],
+  "contamination_fingerprint": "7289b91e52c22718960f4e67ccbb614ce440a7f2ca0ace95b8b0ad5899d447cf",
+  "contamination_reason": "at least one HEAVY probe fired",
+  "dirty_binding": {
+   "contamination_fingerprint": "7289b91e52c22718960f4e67ccbb614ce440a7f2ca0ace95b8b0ad5899d447cf",
+   "evidence_class": "SELF_MEASURED_DIRTY",
+   "rule": "SELF_MEASURED_DIRTY values cannot be rebound as PROTECTED_ABSOLUTE; copying this object does not change its evidence class",
+   "token": "4fc4c88694eae794332c77e41db0802a6284ba92eb741cecd178147a464c54ce",
+   "use": "envelope"
+  },
+  "dirty_value_token": "4fc4c88694eae794332c77e41db0802a6284ba92eb741cecd178147a464c54ce",
+  "evidence_class": "SELF_MEASURED_DIRTY",
+  "gpu_authority": false,
+  "gpu_processes": {
+   "attribution": "enumerated by CPU% and/or RSS; PID-level GPU occupancy is not available without a protected lease. On Apple Silicon RSS is the Metal working-set dimension (ACCELERATOR_QUIESCENCE_INSTRUMENT).",
+   "cpu_pct_available": true,
+   "method": "ps_enumerate",
+   "n_enumerated": 632,
+   "n_over_threshold": 2,
+   "no_name_filter": true,
+   "processes": [
+    {
+     "cpu_pct": 116.7,
+     "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 30545
+    },
+    {
+     "cpu_pct": 33.5,
+     "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+     "pid": 180
+    }
+   ],
+   "reason": null,
+   "status": "OK",
+   "thresholds": {
+    "cpu_pct": 20.0,
+    "rss_gib": 2.0
+   }
+  },
+  "legitimate_uses": [
+   "rank",
+   "direction",
+   "cheap_paired_ab",
+   "prune_dominated"
+  ],
+  "machine_identity": {
+   "fields": {
+    "hw.memsize": "103079215104",
+    "hw.model": "Mac15,14",
+    "hw.ncpu": "28",
+    "hw.pagesize": "16384",
+    "machdep.cpu.brand_string": "Apple M3 Ultra",
+    "sysctl.proc_translated": "0"
+   },
+   "hash": "92ea5784fcc80420468a9b337504b8955c622998d362d25d42a22d3dc2adc297",
+   "note": "identity of the host, not a performance number; serial numbers are not stored"
+  },
+  "may_promote": false,
+  "measurement_class": "STATIC_ONLY",
+  "memory_pressure": {
+   "bytes": {
+    "active": 26305527808,
+    "compressor": 381304832,
+    "free": 29171023872,
+    "inactive": 39178977280,
+    "wired": 7112425472
+   },
+   "pages": {
+    "\"Translation faults\"": 15479320902,
+    "Anonymous pages": 1858049,
+    "Compressions": 1065421108,
+    "Decompressions": 419929807,
+    "File-backed pages": 2142085,
+    "Pageins": 522733051,
+    "Pageouts": 246705,
+    "Pages active": 1605562,
+    "Pages copy-on-write": 1287411715,
+    "Pages free": 1780458,
+    "Pages inactive": 2391295,
+    "Pages occupied by compressor": 23273,
+    "Pages purgeable": 88349,
+    "Pages purged": 42276865,
+    "Pages reactivated": 307325289,
+    "Pages speculative": 3277,
+    "Pages stored in compressor": 69314,
+    "Pages throttled": 0,
+    "Pages wired down": 434108,
+    "Pages zero filled": 30130784954,
+    "Swapins": 50143053,
+    "Swapouts": 77422219
+   },
+   "pressure_level": 1,
+   "pressure_name": "warn",
+   "ram_total_bytes": 103079215104,
+   "status": "OK"
+  },
+  "offered_as": null,
+  "promotable": false,
+  "purpose": "Envelope for measurements the resident takes of itself on a busy machine. The envelope is not a benchmark.",
+  "refuses": [
+   "PROTECTED_ABSOLUTE",
+   "absolute_latency",
+   "absolute_tps",
+   "accepted_tps",
+   "bandwidth_gbps",
+   "complete_token_ns",
+   "dispatch_ns",
+   "gpu_ns",
+   "joules_per_token",
+   "token_ns",
+   "tps",
+   "wall_ns"
+  ],
+  "required_probes": {
+   "loadavg": true,
+   "memory": true,
+   "processes_cpu_pct": true
+  },
+  "resident_loaded": {
+   "did_not_start_resident": true,
+   "model": "UNKNOWN",
+   "note": "this sidecar did not start a resident and did not take a GPU lease; process name is not a model identity; model stays UNKNOWN unless declared",
+   "pid": 30545,
+   "process_name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+   "source": "largest_rss_neighbour",
+   "status": "PARTIAL"
+  },
+  "snapshot": {
+   "benchmark_ordinal": null,
+   "competing_workloads": [
+    {
+     "cpu_pct": 116.7,
+     "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+     "pid": 30545,
+     "rss_gib": 16.5
+    },
+    {
+     "cpu_pct": 33.5,
+     "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+     "pid": 180,
+     "rss_gib": 0.12
+    }
+   ],
+   "gpu_processes": {
+    "attribution": "enumerated by CPU% and/or RSS; PID-level GPU occupancy is not available without a protected lease. On Apple Silicon RSS is the Metal working-set dimension (ACCELERATOR_QUIESCENCE_INSTRUMENT).",
+    "cpu_pct_available": true,
+    "method": "ps_enumerate",
+    "n_enumerated": 632,
+    "n_over_threshold": 2,
+    "no_name_filter": true,
+    "processes": [
+     {
+      "cpu_pct": 116.7,
+      "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+      "pid": 30545
+     },
+     {
+      "cpu_pct": 33.5,
+      "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+      "pid": 180
+     }
+    ],
+    "reason": null,
+    "status": "OK",
+    "thresholds": {
+     "cpu_pct": 20.0,
+     "rss_gib": 2.0
+    }
+   },
+   "machine_identity": {
+    "fields": {
+     "hw.memsize": "103079215104",
+     "hw.model": "Mac15,14",
+     "hw.ncpu": "28",
+     "hw.pagesize": "16384",
+     "machdep.cpu.brand_string": "Apple M3 Ultra",
+     "sysctl.proc_translated": "0"
+    },
+    "hash": "92ea5784fcc80420468a9b337504b8955c622998d362d25d42a22d3dc2adc297",
+    "note": "identity of the host, not a performance number; serial numbers are not stored"
+   },
+   "memory_pressure": {
+    "bytes": {
+     "active": 26305527808,
+     "compressor": 381304832,
+     "free": 29171023872,
+     "inactive": 39178977280,
+     "wired": 7112425472
+    },
+    "pages": {
+     "\"Translation faults\"": 15479320902,
+     "Anonymous pages": 1858049,
+     "Compressions": 1065421108,
+     "Decompressions": 419929807,
+     "File-backed pages": 2142085,
+     "Pageins": 522733051,
+     "Pageouts": 246705,
+     "Pages active": 1605562,
+     "Pages copy-on-write": 1287411715,
+     "Pages free": 1780458,
+     "Pages inactive": 2391295,
+     "Pages occupied by compressor": 23273,
+     "Pages purgeable": 88349,
+     "Pages purged": 42276865,
+     "Pages reactivated": 307325289,
+     "Pages speculative": 3277,
+     "Pages stored in compressor": 69314,
+     "Pages throttled": 0,
+     "Pages wired down": 434108,
+     "Pages zero filled": 30130784954,
+     "Swapins": 50143053,
+     "Swapouts": 77422219
+    },
+    "pressure_level": 1,
+    "pressure_name": "warn",
+    "ram_total_bytes": 103079215104,
+    "status": "OK"
+   },
+   "probes": {
+    "gpu_occupancy": {
+     "device_utilization_pct": 11,
+     "gpu_core_count": 60,
+     "method": "ioreg_IOGPU_PerformanceStatistics",
+     "no_gpu_lease": true,
+     "note": "device occupancy percent, not a kernel timing and not a throughput claim; PID-level GPU attribution is unavailable without a protected lease",
+     "renderer_utilization_pct": 10,
+     "status": "OK",
+     "tiler_utilization_pct": 11
+    },
+    "load": {
+     "load_15m": 4.56103515625,
+     "load_1m": 6.00927734375,
+     "load_5m": 4.8115234375,
+     "ncpu": 28,
+     "status": "OK"
+    },
+    "memory": {
+     "bytes": {
+      "active": 26305527808,
+      "compressor": 381304832,
+      "free": 29171023872,
+      "inactive": 39178977280,
+      "wired": 7112425472
+     },
+     "pages": {
+      "\"Translation faults\"": 15479320902,
+      "Anonymous pages": 1858049,
+      "Compressions": 1065421108,
+      "Decompressions": 419929807,
+      "File-backed pages": 2142085,
+      "Pageins": 522733051,
+      "Pageouts": 246705,
+      "Pages active": 1605562,
+      "Pages copy-on-write": 1287411715,
+      "Pages free": 1780458,
+      "Pages inactive": 2391295,
+      "Pages occupied by compressor": 23273,
+      "Pages purgeable": 88349,
+      "Pages purged": 42276865,
+      "Pages reactivated": 307325289,
+      "Pages speculative": 3277,
+      "Pages stored in compressor": 69314,
+      "Pages throttled": 0,
+      "Pages wired down": 434108,
+      "Pages zero filled": 30130784954,
+      "Swapins": 50143053,
+      "Swapouts": 77422219
+     },
+     "pressure_level": 1,
+     "pressure_name": "warn",
+     "ram_total_bytes": 103079215104,
+     "status": "OK"
+    },
+    "processes": {
+     "cpu_pct_available": true,
+     "method": "ps_enumerate",
+     "n_enumerated": 632,
+     "no_name_filter": true,
+     "status": "OK"
+    },
+    "thermal": {
+     "method": null,
+     "reason": "platform does not expose thermal without sudo (powermetrics: powermetrics must be invoked as the superuser; no sysctl thermal keys)",
+     "status": "UNKNOWN"
+    }
+   },
+   "resident_local_model": {
+    "cpu_pct": 116.7,
+    "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+    "note": "largest RSS neighbour over the quiet threshold; not a model-name guess",
+    "pid": 30545,
+    "rss_gib": 16.5
+   },
+   "thermal_state": "UNKNOWN"
+  },
+  "thermal_state": "UNKNOWN",
+  "use": "envelope"
+ },
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "frontier_entry": {
+  "classification": "WEAK",
+  "id": "F011",
+  "integration_target": "tools/future/contamination.py",
+  "present": true,
+  "title": "Contamination metadata is partial and not a promotion gate"
+ },
+ "gaps_closed": [
+  "Named evidence class SELF_MEASURED_DIRTY carrying resident_loaded (model, pid), gpu_processes, memory_pressure, thermal_state (UNKNOWN when unexposed), competing_workloads, and a contamination fingerprint stable for the same machine state.",
+  "Explicit APIs for the only legitimate uses: rank_candidates, effect_direction, cheap_paired_ab, prune_dominated.",
+  "Structural refusal: FrozenDirtyRecord, offer_for_promotion, as_protected_absolute, copy_value_as, ingest_as_protected, mint_protected_absolute. Field-copy of dirty ratios into a PROTECTED_ABSOLUTE shell is refused even when the landed contamination gate would accept it.",
+  "Direction is not magnitude: dirty A/B reports faster_arm and robust ratio with spread; absolute latency/TPS raise DirtyMagnitudeRefused and write_receipt still refuses HARDWARE_FIELDS.",
+  "Honest sufficiency: sufficient_for_decision with a reason; noisy dirty results are not used to rank."
+ ],
+ "gpu_authority": false,
+ "gpu_processes": {
+  "attribution": "enumerated by CPU% and/or RSS; PID-level GPU occupancy is not available without a protected lease. On Apple Silicon RSS is the Metal working-set dimension (ACCELERATOR_QUIESCENCE_INSTRUMENT).",
+  "cpu_pct_available": true,
+  "method": "ps_enumerate",
+  "n_enumerated": 632,
+  "n_over_threshold": 2,
+  "no_name_filter": true,
+  "processes": [
+   {
+    "cpu_pct": 116.7,
+    "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+    "pid": 30545
+   },
+   {
+    "cpu_pct": 33.5,
+    "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+    "pid": 180
+   }
+  ],
+  "reason": null,
+  "status": "OK",
+  "thresholds": {
+   "cpu_pct": 20.0,
+   "rss_gib": 2.0
+  }
+ },
+ "honest_sufficiency": {
+  "direction": "CI must exclude 1.0; otherwise UNDECIDED",
+  "min_pairs": 7,
+  "prune": "only clearly-dominated (CI excludes 1.0); never PROTECTED_REJECT",
+  "rank": "a dirty result with insufficient pairs is unranked; n_rankable<2 refuses the ranking"
+ },
+ "legitimate_uses": {
+  "cheap_paired_ab": "cheap_paired_ab(pairs, quantity_kind=, envelope=)",
+  "direction": "effect_direction(pairs, quantity_kind=, envelope=)",
+  "dispatcher": "use(kind, ...)",
+  "prune_dominated": "prune_dominated(comparisons, quantity_kind=, envelope=)",
+  "rank": "rank_candidates(candidates, quantity_kind=, envelope=)"
+ },
+ "measurement_class": "STATIC_ONLY",
+ "memory_pressure": {
+  "bytes": {
+   "active": 26305527808,
+   "compressor": 381304832,
+   "free": 29171023872,
+   "inactive": 39178977280,
+   "wired": 7112425472
+  },
+  "pages": {
+   "\"Translation faults\"": 15479320902,
+   "Anonymous pages": 1858049,
+   "Compressions": 1065421108,
+   "Decompressions": 419929807,
+   "File-backed pages": 2142085,
+   "Pageins": 522733051,
+   "Pageouts": 246705,
+   "Pages active": 1605562,
+   "Pages copy-on-write": 1287411715,
+   "Pages free": 1780458,
+   "Pages inactive": 2391295,
+   "Pages occupied by compressor": 23273,
+   "Pages purgeable": 88349,
+   "Pages purged": 42276865,
+   "Pages reactivated": 307325289,
+   "Pages speculative": 3277,
+   "Pages stored in compressor": 69314,
+   "Pages throttled": 0,
+   "Pages wired down": 434108,
+   "Pages zero filled": 30130784954,
+   "Swapins": 50143053,
+   "Swapouts": 77422219
+  },
+  "pressure_level": 1,
+  "pressure_name": "warn",
+  "ram_total_bytes": 103079215104,
+  "status": "OK"
+ },
+ "negative_findings": [
+  "contamination.assert_promotable does not close field-copy of dirty ratios into a QUIESCENT PROTECTED_ABSOLUTE shell; this module does.",
+  "PID-level GPU attribution is still unavailable without a protected lease (inherited from contamination.snapshot).",
+  "Thermal state is UNKNOWN on this host without sudo unless sysctl exposes it (inherited).",
+  "This sidecar does not source paired samples from hardware; fixture pairs in the receipt are dimensionless.",
+  "Resident model identity is UNKNOWN unless the caller declares it; process name is not a model guess. resident_identity.py is a this-wave sibling and was not imported.",
+  "lpc_dataset.contamination_class uses measurement-class vocabulary; SELF_MEASURED_DIRTY must never be stored there as PROTECTED_ABSOLUTE.",
+  "No Era VI, no Odyssey IV. FPGA remains Accelerator/Physical Compiler/Fusion."
+ ],
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "purpose": "Named evidence class SELF_MEASURED_DIRTY: the resident's own measurements on a contaminated machine. Good for rank, direction, cheap A/B and prune. Structurally unable to become PROTECTED_ABSOLUTE.",
+ "queue_policy": {
+  "diagnostic_results_do_not_promote": true,
+  "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+  "present": true,
+  "protected_start_requires_machine_quiescence": true
+ },
+ "recovered_implementation": [
+  {
+   "adequate_for_this_lane": false,
+   "on_disk_in_this_worktree": true,
+   "path": "hcli/agentos/benchmark_boundary.py",
+   "role": "QUALIFIED_PROTECTED vs DIAGNOSTIC_CONTAMINATED. Different vocabulary."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "on_disk_in_this_worktree": true,
+   "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "role": "queue_policy.protected_start_requires_machine_quiescence and diagnostic_results_do_not_promote."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "on_disk_in_this_worktree": true,
+   "path": "tools/accelerator/bench.py",
+   "role": "machine_quiescence; Codex surface. Not imported."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "gap": "No named SELF_MEASURED_DIRTY class, no stable contamination fingerprint, no legitimate-use APIs, no field-copy closure: a QUIESCENT PROTECTED_ABSOLUTE shell that copies dirty ab_stats numbers would pass contamination.assert_promotable.",
+   "on_disk_in_this_worktree": true,
+   "path": "tools/future/contamination.py",
+   "role": "LANDED machine-state snapshot, QUIESCENT/LIGHT/HEAVY/UNKNOWN class, paired A/B stats, assert_promotable -> PromotionRefused. This module imports it and does not fork it."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "on_disk_in_this_worktree": true,
+   "path": "tools/future/evidence_snapshot.py",
+   "role": "Pinned Codex receipts the sidecar is allowed to read."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "gap": "SELF_MEASURED_DIRTY must map to DIAGNOSTIC_RELATIVE/STATIC_ONLY, never PROTECTED_ABSOLUTE.",
+   "on_disk_in_this_worktree": true,
+   "path": "tools/future/lpc_dataset.py",
+   "role": "contamination_class is a required LPC field. Vocabulary there is PROTECTED_ABSOLUTE/DIAGNOSTIC_RELATIVE/STATIC_ONLY/UNKNOWN (measurement class), not QUIESCENT/LIGHT/HEAVY."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "on_disk_in_this_worktree": true,
+   "path": "tools/future/qualification_pipeline.py",
+   "role": "Sequences quiescence assessment; never seizes the GPU. Consumes contamination.snapshot."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "on_disk_in_this_worktree": true,
+   "path": "tools/verify/perfgate.py",
+   "role": "Paired ABAB, never mean alone, contamination_note on this machine."
+  }
+ ],
+ "resident_callable": {
+  "can_hcli_invoke": true,
+  "entry_point": "python3 tools/future/dirty_measure.py --snapshot",
+  "fail_closed": {
+   "field_copy": "dirty_binding travels with ab_stats; value digests are registered; is_dirty_sourced remains true after copying numbers into a PROTECTED_ABSOLUTE shell",
+   "magnitude": "absolute latency/TPS raise DirtyMagnitudeRefused; write_receipt raises HardwareClaimError on HARDWARE_FIELDS",
+   "noisy_rank": "insufficient dirty results are not used to rank",
+   "promotion": "offer_for_promotion / as_protected_absolute / copy_value_as / ingest_as_protected / mint_protected_absolute raise PromotionRefused",
+   "protected_followup": "SLEEPING WorkUnit until a QUIESCENT protected lease exists; never a synthetic PROTECTED_ABSOLUTE result"
+  },
+  "frontier_fed": {
+   "does_not_feed": "qualification funnel promotion rung",
+   "feeds": "candidate ranking and prune on a busy machine; a diagnostic input to resident-optimizer ranking",
+   "id": "DIRTY_RANKING",
+   "queue_policy": "diagnostic_results_do_not_promote",
+   "related_frontier_entry": "F011"
+  },
+  "functions": [
+   "dirty_snapshot",
+   "rank_candidates",
+   "effect_direction",
+   "cheap_paired_ab",
+   "prune_dominated",
+   "use"
+  ],
+  "integration_point": "emit_workunit is a local HCLI-shaped dict. Swap for tools.future.workunit_species.emit_hcli_workunit when resident_api.py lands. identify_resident_loaded(declared=...) is the swap for resident_identity.py.",
+  "module": "tools.future.dirty_measure",
+  "receipt": "receipts/future/DIRTY_MEASUREMENT.json",
+  "sleeping_protected_followup": {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": "SELF_MEASURED_DIRTY cannot become PROTECTED_ABSOLUTE. queue_policy.protected_start_requires_machine_quiescence. Sleeps until hardware qualifies. A synthetic protected result is refused.",
+   "claim_boundary": "Static sidecar artifact. SELF_MEASURED_DIRTY guides ranking, direction, cheap A/B and prune on a busy machine. It cannot promote, cannot become PROTECTED_ABSOLUTE, and cannot emit an absolute latency or TPS.",
+   "classification": "BLOCKED",
+   "command": null,
+   "content_hash": "2e4f4eb9682e94824fc78665ce1baa0025ca44af3e3d5fd961eefaca9fc1cd00",
+   "dependencies": [
+    "future.dirty-measure.self-snapshot"
+   ],
+   "description": "Wake when a QUIESCENT protected GPU lease exists and re-measure under PROTECTED_ABSOLUTE. SELF_MEASURED_DIRTY values are not inputs.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "SELF_MEASURED_DIRTY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.dirty-measure.protected-followup",
+   "may_promote": false,
+   "measurement_class": "STATIC_ONLY",
+   "output_receipt_path": null,
+   "preferred_backend": "metal",
+   "provider": "future.dirty_measure",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "role": "science",
+   "running_at": null,
+   "species": "dirty_self_measurement",
+   "status": "SLEEPING",
+   "verification": null,
+   "verifier": "accelerator.physical.protected_complete_token",
+   "workspace": "repo-root"
+  },
+  "workunit": {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. SELF_MEASURED_DIRTY guides ranking, direction, cheap A/B and prune on a busy machine. It cannot promote, cannot become PROTECTED_ABSOLUTE, and cannot emit an absolute latency or TPS.",
+   "classification": null,
+   "command": [
+    "python3",
+    "tools/future/dirty_measure.py",
+    "--snapshot"
+   ],
+   "content_hash": "9100b32cad1af523e3e834ee01303f06a385f9bcda2efc9fb6fceefb656cf513",
+   "dependencies": [],
+   "description": "Take a SELF_MEASURED_DIRTY envelope of the current machine and seal receipts/future/DIRTY_MEASUREMENT.json. Rank/direction/A/B/prune use the envelope. Promotion is refused.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "SELF_MEASURED_DIRTY",
+   "failure_context": null,
+   "finished_at": null,
+   "frontier_fed": "DIRTY_RANKING (never the qualification promotion rung)",
+   "id": "future.dirty-measure.self-snapshot",
+   "may_promote": false,
+   "measurement_class": "STATIC_ONLY",
+   "output_receipt_path": "receipts/future/DIRTY_MEASUREMENT.json",
+   "preferred_backend": null,
+   "provider": "future.dirty_measure",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "dirty_self_measurement",
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.dirty_measure.not_promotable",
+   "workspace": "repo-root"
+  }
+ },
+ "resident_loaded": {
+  "did_not_start_resident": true,
+  "model": "UNKNOWN",
+  "note": "this sidecar did not start a resident and did not take a GPU lease; process name is not a model identity; model stays UNKNOWN unless declared",
+  "pid": 30545,
+  "process_name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+  "source": "largest_rss_neighbour",
+  "status": "PARTIAL"
+ },
+ "schema": "hawking.future.dirty_measure.v1",
+ "seal_sha256": "4044bdf7aa51f7625feae84b7eb3377944ad66e0bb046a75b38761144d8f08a2",
+ "structural_refusal": {
+  "as_protected_absolute": "always raises; field copy is not a path",
+  "copy_value_as": "raises when target is PROTECTED_ABSOLUTE",
+  "frozen_record": "assignment of evidence_class raises PromotionRefused",
+  "ingest_as_protected": "raises on dirty_binding, registered token, value digest, flags, caveats",
+  "landed_gate_hole_closed": "contamination.assert_promotable accepts a QUIESCENT PROTECTED_ABSOLUTE shell that copies dirty ratios; dirty_measure.assert_promotable refuses that shell. selftest.landed_contamination_gate_would_accept_field_copy=True",
+  "mint_protected_absolute": "trap; always raises",
+  "offer_for_promotion": "always raises PromotionRefused",
+  "selftest": {
+   "as_protected_absolute_raises": {
+    "fired": true,
+    "message": "SELF_MEASURED_DIRTY cannot become PROTECTED_ABSOLUTE. no conversion from SELF_MEASURED_DIRTY; field copy is not a path (evidence_class='SELF_MEASURED_DIRTY', measurement_class='STATIC_ONLY')",
+    "type": "PromotionRefused"
+   },
+   "assert_promotable_closes_field_copy": {
+    "fired": true,
+    "message": "SELF_MEASURED_DIRTY cannot become PROTECTED_ABSOLUTE. dirty-sourced values cannot promote, including after field copy (evidence_class='PROTECTED_ABSOLUTE', measurement_class='PROTECTED_ABSOLUTE')",
+    "type": "PromotionRefused"
+   },
+   "contamination_classes": [
+    "QUIESCENT",
+    "LIGHT",
+    "HEAVY",
+    "UNKNOWN"
+   ],
+   "copy_value_as_raises": {
+    "fired": true,
+    "message": "SELF_MEASURED_DIRTY cannot become PROTECTED_ABSOLUTE. copying its value as PROTECTED_ABSOLUTE is refused (evidence_class='SELF_MEASURED_DIRTY', measurement_class='STATIC_ONLY')",
+    "type": "PromotionRefused"
+   },
+   "faster_arm_duration": "B",
+   "fingerprint_stable": true,
+   "flag_does_not_promote": {
+    "fired": true,
+    "message": "SELF_MEASURED_DIRTY cannot become PROTECTED_ABSOLUTE. SELF_MEASURED_DIRTY record (or a field-copy of its values) offered for promotion (evidence_class='SELF_MEASURED_DIRTY', measurement_class='STATIC_ONLY')",
+    "type": "PromotionRefused"
+   },
+   "frozen_rebind_raises": {
+    "fired": true,
+    "message": "SELF_MEASURED_DIRTY record is frozen; cannot set 'evidence_class' (evidence_class cannot be rebound to PROTECTED_ABSOLUTE)",
+    "type": "PromotionRefused"
+   },
+   "ingest_field_copy_raises": {
+    "fired": true,
+    "message": "SELF_MEASURED_DIRTY cannot become PROTECTED_ABSOLUTE. dimensionless values match a SELF_MEASURED_DIRTY emission; this sidecar has no GPU lease and cannot mint PROTECTED_ABSOLUTE; a promotable/may_promote flag does not raise evidence class; a caveat does not raise evidence class; ingest_as_protected is structurally closed (evidence_class='PROTECTED_ABSOLUTE', measurement_class='PROTECTED_ABSOLUTE')",
+    "type": "PromotionRefused"
+   },
+   "landed_contamination_gate_would_accept_field_copy": true,
+   "magnitude_refused": {
+    "fired": true,
+    "message": "accepted_tps = 0.8: SELF_MEASURED_DIRTY refuses absolute latency/TPS/hardware fields; direction is a ratio, not a magnitude",
+    "type": "DirtyMagnitudeRefused"
+   },
+   "mint_raises": {
+    "fired": true,
+    "message": "this sidecar cannot mint PROTECTED_ABSOLUTE; no GPU lease, no quiescence window, no field-copy constructor",
+    "type": "PromotionRefused"
+   },
+   "no_public_return_of_protected_absolute": true,
+   "noisy_insufficient": true,
+   "noisy_set_does_not_rank": true,
+   "offer_for_promotion_raises": {
+    "fired": true,
+    "message": "SELF_MEASURED_DIRTY cannot become PROTECTED_ABSOLUTE. SELF_MEASURED_DIRTY record (or a field-copy of its values) offered for promotion (evidence_class='SELF_MEASURED_DIRTY', measurement_class='STATIC_ONLY')",
+    "type": "PromotionRefused"
+   },
+   "prune_status": "PRUNED_SELF_MEASURED_DIRTY",
+   "rank_skips_noisy": true,
+   "sleeping_protected_followup": "SLEEPING",
+   "synthetic_pairs_are_fixtures_not_hardware": true
+  }
+ },
+ "thermal_state": "UNKNOWN",
+ "version": 1,
+ "vocabulary": {
+  "DIAGNOSTIC_RELATIVE": "landed sibling class; guides; never promotes",
+  "PROTECTED_ABSOLUTE": "protected-lease measurement. Decides. This sidecar cannot produce it.",
+  "SELF_MEASURED_DIRTY": "evidence the resident took while it was the contamination. Guides. Never promotes.",
+  "STATIC_ONLY": "everything this sidecar emits. Bench UNKNOWN.",
+  "contamination_classes": [
+   "QUIESCENT",
+   "LIGHT",
+   "HEAVY",
+   "UNKNOWN"
+  ],
+  "legitimate_uses": [
+   "rank",
+   "direction",
+   "cheap_paired_ab",
+   "prune_dominated"
+  ]
+ }
+}

@@ -1,0 +1,481 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T00:11:38Z",
+  "recorded_by": "tools/future/tps_gap.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. Citations and dimensionless clock shares only. SELF_MEASURED_DIRTY if a live reply is supplied; never PROTECTED_ABSOLUTE, never a qualified TPS, never a ranking, never a promotion input.",
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "complete-minus-decode attributed from the four resident clocks, with UNATTRIBUTED leftover",
+  "34.0 recovered as inverse median gpu step from QWEN_PERFORMANCE_QUALIFICATION, not as complete_tps",
+  "condition diff (quantity, binary, fusion dispatches, prompt, seq, contamination) without assuming regression",
+  "one PROFILE_HOST_CEREMONY WorkUnit; campaign refused"
+ ],
+ "gpu_authority": false,
+ "negative_findings": [
+  "24.4086 measurement conditions are not in a receipt; hardcoded in hcli/hawking_native.py",
+  "RESIDENT_LIVE_PROBE.json has no four clocks; ~35.5/~27.2 stay LANE_BRIEF citations",
+  "this module did not run the resident and did not take a dirty pair",
+  "batched prefill legality given DeltaNet is UNKNOWN",
+  "UNATTRIBUTED process-wall residue of hybrid_greedy (load/startup) is not generation"
+ ],
+ "purpose": "Attribute complete-minus-decode from the resident's own clocks, recover what the historical 34.0 was measured under, and emit one WorkUnit for the tallest removable host cost. Then stop.",
+ "question_1_complete_minus_decode": {
+  "first_token_accounting_rule": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs: decode_steps = n_new - 1; complete uses n_new",
+  "historical_generation_internal": {
+   "decomposition": {
+    "aliases_used": {
+     "decode_wall_ns": "decode_wall_ns",
+     "generation_wall_ns": "generation_wall_ns",
+     "prefill_wall_ns": "prefill_wall_ns",
+     "request_wall_ns": "wall_ns"
+    },
+    "buckets": [
+     {
+      "id": "prefill",
+      "label": "PREFILL",
+      "ns": 1223458417,
+      "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "why": "prompt walk, including the last prompt step that emits new-token[0]. Sequential session.step per prompt token."
+     },
+     {
+      "id": "decode",
+      "label": "DECODE",
+      "ns": 702391875,
+      "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "why": "new-tokens[1..] inside generate_greedy's decode Instant"
+     },
+     {
+      "id": "request_ceremony",
+      "label": "REQUEST_CEREMONY",
+      "ns": 0,
+      "source": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
+      "status": "HYPOTHESIS",
+      "why": "resident Instant includes generate_greedy's inner session.reset and step-vec allocation, which sit before generate_greedy's own wall Instant"
+     }
+    ],
+    "clock_state": "ARITHMETIC_CLOSED_WITH_UNATTRIBUTED",
+    "clocks": {
+     "complete_ns": null,
+     "decode_ns": 702391875,
+     "generation_ns": 1925850292,
+     "prefill_ns": 1223458417,
+     "request_ns": 1925850292
+    },
+    "decode_steps": 23,
+    "evidence_class": "SELF_MEASURED_DIRTY",
+    "generated_tokens": 24,
+    "not_a_qualified_tps": true,
+    "not_protected_absolute": true,
+    "post_generation": null,
+    "prompt_tokens": 34,
+    "shares_of_request": {
+     "decode": 0.36471779655861225,
+     "prefill": 0.6352822034413877,
+     "request_ceremony": 0.0,
+     "unattributed": 0.0
+    },
+    "unattributed": {
+     "folded_into_decode": false,
+     "folded_into_prefill": false,
+     "id": "generation_residue",
+     "label": "UNATTRIBUTED",
+     "ns": 0,
+     "source_hypothesis": {
+      "cause": "inter_phase_glue",
+      "does_not_establish_cause": true,
+      "status": "HYPOTHESIS"
+     },
+     "why": "generation_ns - prefill_ns - decode_ns is not a named field. Source hypothesis (HYPOTHESIS): tokens.push + IGNORE_EOS env lookup between the two Instants. A large value falsifies that hypothesis rather than getting a friendlier name."
+    }
+   },
+   "denominator_gap_is": [
+    {
+     "id": "prefill",
+     "ns": 1223458417
+    },
+    {
+     "id": "request_ceremony",
+     "ns": 0
+    },
+    {
+     "id": "unattributed",
+     "label": "UNATTRIBUTED",
+     "ns": 0
+    }
+   ],
+   "denominator_gap_ns": 1223458417,
+   "first_token_accounting": {
+    "decode_steps": 23,
+    "expected_decode_steps_from_source": 23,
+    "generated_tokens": 24,
+    "in_complete_numerator": 24,
+    "in_decode_numerator": 23,
+    "off_by_one": true,
+    "status": "MATCHES_SOURCE",
+    "why": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs: decode_steps = tokens.len() - prompt_len - 1; the first new token is emitted by the last prefill step"
+   },
+   "what_this_does_not_do": "does not convert these clocks into a field named tps / wall_ns / gpu_ns; a speedup claim is refused without a dirty pair"
+  },
+  "host_ceremony_from_source": [
+   "inner session.reset + step-vec alloc (request_ns - generation_ns)",
+   "inter-phase glue tokens.push + IGNORE_EOS env (UNATTRIBUTED leftover of generation)",
+   "post tokenizer.decode of the full string (not in complete_tps)"
+  ],
+  "live_resident_reply": {
+   "reason": "RESIDENT_LIVE_PROBE.json records generated_text and generated_tokens only; prefill_wall_ns / decode_wall_ns / generation_wall_ns / wall_ns are absent. The lane brief's ~35.5 / ~27.2 are a citation, not this receipt.",
+   "status": "UNKNOWN",
+   "this_module_did_not_run_the_resident": true,
+   "why_not": "a live Codex Accelerator campaign holds this host; starting ascension_qwen38_resident here would fight it. The probe receipt does not carry the four clocks. Fail closed."
+  }
+ },
+ "question_2_is_34_recoverable": {
+  "anchors": {
+   "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+   "current": {
+    "profile_field": "current_runtime.complete_tps_current_measured",
+    "recorded_tokens_per_second": 24.4086,
+    "role": "PROFILE_ANCHOR_NOT_A_PAIRED_AB"
+   },
+   "do_not_promote": true,
+   "evidence_class": "HISTORICAL_RECORD_NOT_A_SIDECAR_MEASUREMENT",
+   "executable_profile": "release-fast",
+   "fusion_env": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "historical": {
+    "profile_field": "current_runtime.complete_tps_historical_qualified",
+    "recorded_tokens_per_second": 34.0,
+    "role": "HISTORICAL_RECORD"
+   },
+   "loaded_from": "ON_DISK",
+   "max_seq_len": 8192,
+   "prompt_contract": {
+    "fallback_template": "qwen_closed_think",
+    "renderer": "qwen-chat-template-or-closed-think-fallback",
+    "token_count_authority": "native-resident"
+   },
+   "recovered": true,
+   "require_fusion_env": true,
+   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+   "source": "hcli/hawking-native.sealed-3.14.json"
+  },
+  "condition_diff": [
+   {
+    "axis": "quantity",
+    "differs": true,
+    "historical_34": "inverse_median_gpu_ns_per_step",
+    "plausibly_accounts_for_34_vs_24": "YES \u2014 different denominators are sufficient to produce 34 vs 24 with no kernel change. Not a regression until the same quantity is compared.",
+    "status": "HYPOTHESIS",
+    "today": "profile field labelled complete_tps_current_measured"
+   },
+   {
+    "axis": "binary",
+    "differs": true,
+    "historical_34": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+    "plausibly_accounts_for_34_vs_24": "UNKNOWN \u2014 hybrid_greedy vs resident. Process-wall of hybrid_greedy includes load; resident amortizes load. 34.0 did not use process-wall.",
+    "status": "HYPOTHESIS",
+    "today": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+   },
+   {
+    "axis": "fusion_dispatches_per_step",
+    "differs": true,
+    "historical_34": [
+     964
+    ],
+    "plausibly_accounts_for_34_vs_24": "UNKNOWN \u2014 964 vs 628. Campaign already measured that a dispatch is not a unit of cost. Decode-rate ~34 on both graphs is the expected shape, not a fusion regression.",
+    "status": "HYPOTHESIS",
+    "today": 628
+   },
+   {
+    "axis": "executable_profile",
+    "differs": false,
+    "historical_34": "release-fast",
+    "plausibly_accounts_for_34_vs_24": "NO \u2014 both release-fast.",
+    "status": "SAME",
+    "today": "release-fast"
+   },
+   {
+    "axis": "prompt_shape",
+    "differs": true,
+    "historical_34": {
+     "prompt_tokens_inferred": 34,
+     "text": "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code."
+    },
+    "plausibly_accounts_for_34_vs_24": "YES for complete_tps (prefill amortization), NO for 1/TPOT. The 34.0 quantity is 1/TPOT, so prompt length does not move it.",
+    "status": "HYPOTHESIS",
+    "today": {
+     "fallback_template": "qwen_closed_think",
+     "renderer": "qwen-chat-template-or-closed-think-fallback",
+     "token_count_authority": "native-resident"
+    }
+   },
+   {
+    "axis": "sequence_length_new_tokens",
+    "differs": true,
+    "historical_34": [
+     24
+    ],
+    "plausibly_accounts_for_34_vs_24": "YES for complete_tps, NO for 1/TPOT. Same as prompt_shape.",
+    "status": "HYPOTHESIS",
+    "today": "profile max_new_tokens 2048; live probe r2 generated_tokens=40"
+   },
+   {
+    "axis": "contamination",
+    "differs": true,
+    "historical_34": {
+     "floor_cpu_percent": 181.9,
+     "protected_window": true
+    },
+    "plausibly_accounts_for_34_vs_24": "UNKNOWN \u2014 34.0 already carried a standing floor (fileproviderd / WindowServer / avconferenced). Dirt today is not by itself a regression of a TPOT inverse.",
+    "status": "HYPOTHESIS",
+    "today": "this host is contaminated; this sidecar holds no lease"
+   },
+   {
+    "axis": "max_seq_len",
+    "differs": true,
+    "historical_34": "hybrid_greedy --max-seq-len = max_new+64 (performance_qualification.py)",
+    "plausibly_accounts_for_34_vs_24": "UNKNOWN \u2014 not shown to move TPOT on this body.",
+    "status": "HYPOTHESIS",
+    "today": 8192
+   }
+  ],
+  "fused_graph_identity": {
+   "baseline_source_derived": 964,
+   "loaded_from": "ON_DISK",
+   "selected_source_derived": 628,
+   "source": "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json"
+  },
+  "historical_34": {
+   "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
+   "contamination_floor_cpu_percent": 181.9,
+   "decode_steps_observed": [
+    23
+   ],
+   "dispatches_per_step_observed": [
+    964
+   ],
+   "executable_profile": "release-fast",
+   "fusion_graph": "UNFUSED_BASELINE_964",
+   "generated_at": "2026-08-25T06:34:03Z",
+   "generated_by": "tools/odyssey/performance_qualification.py",
+   "generation_clocks_from_runs": {
+    "decode_ns_by_run": [
+     703453291,
+     704587291,
+     702391875,
+     702265292,
+     702444125
+    ],
+    "note": "process wall_s of hybrid_greedy includes load and is not generation_ns. Residue of process wall minus prefill minus decode is UNATTRIBUTED (startup/load), not folded.",
+    "prefill_ns_by_run": [
+     2434445417,
+     1206154042,
+     1223458417,
+     1166898166,
+     1265032292
+    ]
+   },
+   "git_head": "509784d5d2f16df27048d5baed9dfd1c2ce36a90",
+   "loaded_from": "ON_DISK",
+   "matches_sealed_34": true,
+   "max_new_tokens_default": 24,
+   "n_new_tokens_observed": [
+    24
+   ],
+   "n_reps": 5,
+   "not_a_sidecar_measurement": true,
+   "not_complete_tps": true,
+   "prefill_ns_median": 1223458417,
+   "prompt": "Explain, in ordinary prose and at length, how a compiler turns a for-loop into basic blocks and then into machine code.",
+   "prompt_source": "tools/odyssey/performance_qualification.py PROMPT",
+   "prompt_tokens_inferred_from_step_count": 34,
+   "protected_window": true,
+   "quantity": "inverse_median_gpu_ns_per_step",
+   "quantity_formula": "1e9 / median(gpu_ns_per_step across warm runs)",
+   "quiesced_means": "no UNPAUSABLE work started by this campaign is running. It does NOT mean an idle machine: see standing_system_load, a floor every number here carries and not ours to remove, and pausable_io, which is suspended for the window rather than waited out.",
+   "recorded_single_stream_tokens_per_second": 34.1488,
+   "recovered": true,
+   "source": "receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json",
+   "tpot_ns_median": 29283625
+  },
+  "live_probe": {
+   "evidence_class": "SELF_MEASURED_DIRTY",
+   "has_four_clocks": false,
+   "lane_brief_citation": {
+    "complete_tokens_per_second_approx": 27.2,
+    "decode_tokens_per_second_approx": 35.5,
+    "generated_tokens_claimed": 40,
+    "in_probe_receipt": false,
+    "prompt_tokens_claimed": 13,
+    "provenance": "LANE_BRIEF",
+    "status": "HYPOTHESIS",
+    "this_module_did_not_remeasure": true
+   },
+   "lease_taken": false,
+   "loaded_from": "ON_DISK",
+   "r2_generated_tokens": 40,
+   "r2_prompt": "Name one reason a status label can be wrong. One sentence.",
+   "reason_if_no_clocks": "RESIDENT_LIVE_PROBE.json records generated_text and generated_tokens only; prefill_wall_ns / decode_wall_ns / generation_wall_ns / wall_ns are absent. The lane brief's ~35.5 / ~27.2 are a citation, not this receipt.",
+   "recovered": true,
+   "source": "receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
+   "verdict": "RESIDENT_STARTS_AND_GENERATES"
+  },
+  "native_smoke": {
+   "completion_tokens": 9,
+   "loaded_from": "ON_DISK",
+   "note": "native smoke recorded a complete_tokens_per_second on a 9-token completion; performance_claim=NONE. Not 24.4086 and not 34.0.",
+   "performance_claim": "NONE",
+   "prompt_tokens": 23,
+   "source": "receipts/headless/HCLI_ACCELERATOR_NATIVE_SMOKE.json"
+  },
+  "prior_gate": {
+   "finding": "the 24.4086-versus-34 anchor gap is recorded but not attributed; this gate refuses to call request overhead, representation, dispatch, or host wait the cause",
+   "source": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+   "this_module_closes": "attribution of the *quantities*: 34.0 is 1/TPOT, 24.4086 is a complete-labelled profile anchor. Cause of any remaining same-denominator gap is still refused."
+  },
+  "recoverability": {
+   "assumed_number_was_wrong": false,
+   "assumed_regression": false,
+   "plausible_accounts": [
+    "quantity",
+    "prompt_shape",
+    "sequence_length_new_tokens"
+   ],
+   "reason": "34.0 is 1/median(gpu_ns_per_step) from receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json (single_stream_tps=34.1488). 24.4086 is a profile field labelled complete. Comparing them as a TPS regression mixes denominators. Recoverability of 34.0 *complete* is UNKNOWN because 34.0 was not complete. Recoverability of 34.0 *as 1/TPOT* is a different question and is consistent with the lane-brief decode ~35.5, which this module did not remeasure.",
+   "same_denominator_remeasure": "not taken; this sidecar has no lease",
+   "verdict": "UNKNOWN"
+  }
+ },
+ "recovered_implementation": [
+  "hcli/hawking-native.sealed-3.14.json current_runtime.complete_tps_* anchors",
+  "receipts/headless/QWEN_PERFORMANCE_QUALIFICATION.json latency_vector.single_stream_tps = 1e9/median(gpu_ns_per_step)",
+  "crates/hawking-core/examples/ascension_qwen38_resident.rs four clocks per request",
+  "crates/hawking-core/src/model/qwen38_hybrid_decode.rs generate_greedy Instants and decode_steps = n_new-1",
+  "tools/future/qwen27_profile_schema.py load_authority / SEALED_REL / HISTORICAL_REL",
+  "tools/future/_common.py write_receipt HARDWARE_FIELDS (raises)",
+  "tools/future/dirty_measure.py SELF_MEASURED_DIRTY envelope (not forked)",
+  "tools/future/accelerator_workunits.py PROFILE_HOST_CEREMONY species",
+  "hcli/agentos/accelerator_regression.py H3-regression: gap recorded, cause refused",
+  "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json dispatch is not a unit of cost; bandwidth wall"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.tps_gap.decompose_reply(reply)",
+  "fails_closed": "GapRefuse on missing clocks; residue is UNATTRIBUTED; WouldImproveRefuse without a labelled dirty pair; HardwareClaimError on tps/wall_ns/gpu_ns keys; recoverability is UNKNOWN rather than a guessed regression",
+  "frontier": "FT.LATENCY.complete-token",
+  "orchestration_bound": false,
+  "receipt": "receipts/future/TPS_GAP.json",
+  "workunit": "WU.PROFILE_HOST_CEREMONY.tps_gap; one CPU_ANALYSIS unit; then stop"
+ },
+ "schema": "hawking.future.tps_gap.v1",
+ "seal_sha256": "771c03e1412c860f130ed9d0958cad91dbbcce2f7c857077bed31b50bb2d7c29",
+ "self_timing": {
+  "cited_generation_clocks": {
+   "complete_ns": null,
+   "decode_ns": 702391875,
+   "generation_ns": 1925850292,
+   "prefill_ns": 1223458417,
+   "request_ns": 1925850292
+  },
+  "cited_shares_of_request": {
+   "decode": 0.36471779655861225,
+   "prefill": 0.6352822034413877,
+   "request_ceremony": 0.0,
+   "unattributed": 0.0
+  },
+  "contamination": "host is contaminated by construction; a live campaign is running; no bench lock was flocked; no machine was quiesced",
+  "evidence_class": "SELF_MEASURED_DIRTY",
+  "numbers_decide_nothing": true,
+  "process_wall_residue": {
+   "folded_into_decode": false,
+   "folded_into_prefill": false,
+   "generation_named_sum_ns_by_run": [
+    3137898708,
+    1910741333,
+    1925850292,
+    1869163458,
+    1967476417
+   ],
+   "label": "UNATTRIBUTED",
+   "note": "process wall_s of hybrid_greedy includes load and is not generation_ns. Residue of process wall minus prefill minus decode is UNATTRIBUTED (startup/load), not folded."
+  },
+  "this_process_did_not_run_the_resident": true,
+  "what_this_block_is_not": [
+   "not PROTECTED_ABSOLUTE",
+   "not a qualified TPS",
+   "not a ranking",
+   "not a promotion input",
+   "not a measurement this sidecar took on the GPU"
+  ]
+ },
+ "tallest": {
+  "does_not_claim_would_improve": true,
+  "named": true,
+  "ns": 1223458417,
+  "ranking": [
+   {
+    "id": "prefill",
+    "kind": "named",
+    "label": "PREFILL",
+    "ns": 1223458417
+   },
+   {
+    "id": "decode",
+    "kind": "named",
+    "label": "DECODE",
+    "ns": 702391875
+   },
+   {
+    "id": "request_ceremony",
+    "kind": "named",
+    "label": "REQUEST_CEREMONY",
+    "ns": 0
+   }
+  ],
+  "removable": "UNKNOWN",
+  "status": "HYPOTHESIS",
+  "tallest_mass_in_complete_minus_decode": "prefill",
+  "tallest_removable_host_ceremony": "request_ceremony",
+  "why": "sequential session.step per prompt token is the mass of complete-minus-decode on short prompts. Whether a batched prefill is legal given DeltaNet recurrent state is not established here. A definition change (report decode-rate instead of complete) is not a speedup.",
+  "winner": "prefill"
+ },
+ "version": 1,
+ "workunit": {
+  "allowed_authority": [
+   "read_receipts",
+   "write_sidecar_receipt",
+   "emit_static_plan"
+  ],
+  "does_not_claim_would_improve": true,
+  "evidence_class": "STATIC_ONLY",
+  "frontier_item": "FT.LATENCY.complete-token",
+  "gpu_authority": false,
+  "handoff": "Phase I / PROFILE_HOST_CEREMONY on a dirty resident reply that actually carries the four clocks",
+  "hypothesis": "complete-minus-decode is sequential prefill (plus n_new vs n_new-1) sitting in the complete denominator; the tallest removable *host* cost the source names is the inner session.reset inside request_ns. 34.0 is 1/TPOT, not complete. Phase I: same-denominator dirty clocks, or batched-prefill legality given DeltaNet. The Odyssey does not wait on this.",
+  "id": "WU.PROFILE_HOST_CEREMONY.tps_gap",
+  "module": "tools/future/tps_gap.py",
+  "orchestration_bound": false,
+  "output_contract": "receipts/future/TPS_GAP.json",
+  "recoverability": "UNKNOWN",
+  "resource_class": "CPU_ANALYSIS",
+  "species": "PROFILE_HOST_CEREMONY",
+  "status": "HYPOTHESIS",
+  "stop_condition": "receipt sealed; one WorkUnit emitted; then stop; no GPU lease; no second experiment",
+  "tallest": {
+   "named": true,
+   "removable": "UNKNOWN",
+   "tallest_mass_in_complete_minus_decode": "prefill",
+   "tallest_removable_host_ceremony": "request_ceremony",
+   "winner": "prefill"
+  },
+  "verifier": "tools/future/test_tps_gap.py"
+ }
+}

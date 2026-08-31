@@ -1440,6 +1440,59 @@ CATALOG: list[dict] = [
         ),
         "reopen_today": {"predicate": "never", "if_true": None},
     },
+    {
+        "id": "NNS-032",
+        "seed": None,
+        "seed_status": "NEW",
+        "claim_refuted": (
+            "That a bounded low-bit Flash router study with one deterministic "
+            "vector can establish source-equivalent top-k routing, or that "
+            "router overlap alone qualifies a native representation."
+        ),
+        "kind": ARTIFACT,
+        "kind_reasoning": (
+            "The bounded layer-0 study compared the pinned BF16 router against "
+            "Q4/G64, Q4/G32, Q4/G16, and NF4/G64 candidates. None reproduced "
+            "the source top-10 exactly: the native-compatible Q4/G64 candidate "
+            "overlapped 8/10, while NF4/G64 reached 9/10 but has no native "
+            "kernel. This refuses source equivalence under a one-vector CPU "
+            "method; it does not kill low-bit router representations. The idea "
+            "reopens only with held-out routing vectors, a persisted descriptor "
+            "and body, native-kernel parity, and an explicit routing-quality "
+            "criterion."
+        ),
+        "scope": {
+            "model": "Qwen/Qwen3.8-Flash-Next, pinned layer-0 router",
+            "organ": "router matrix and FP32 softmax/top-k selection",
+            "regime": "one deterministic reference vector; source BF16 vs derived low-bit candidates",
+            "codec": "uniform Q4/G64, Q4/G32, Q4/G16, and NF4/G64",
+        },
+        "evidence": [
+            _e(
+                "receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json",
+                None,
+                "recommendation/source_top_k_exact_for_any_low_bit_candidate",
+                "exact top-k was false for every low-bit candidate; Q4/G64 overlap was 8/10 and NF4/G64 was 9/10",
+            ),
+            _e(
+                "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+                8,
+                "source_selection_parity/top_k_overlap_count",
+                "derived persisted-body selection is not exact source selection",
+            ),
+        ],
+        "reopen_condition": (
+            "A candidate must be evaluated on held-out real routing vectors from "
+            "the pinned source, persist its Noetic body and descriptor, run a "
+            "native kernel with output parity, and report exact or predeclared "
+            "top-k/weighted-routing quality. A single reference vector and a "
+            "primitive cosine are insufficient."
+        ),
+        "reopen_today": {
+            "predicate": "flash_router_exact_topk_unmeasured",
+            "if_true": "LIVE — exact low-bit Flash router top-k on held-out vectors remains unmeasured; do not call overlap source-equivalent.",
+        },
+    },
 ]
 
 
@@ -1816,6 +1869,10 @@ PREDICATES = {
         "current Gravity families remain the ones that failed generate",
     ),
     "never_on_q30_organ": lambda: (False, "Q30 [768,2048] rank-256 still pays more than 1-bit"),
+    "flash_router_exact_topk_unmeasured": lambda: (
+        True,
+        "the current Flash router evidence uses one deterministic vector and no held-out native selection set",
+    ),
 }
 
 

@@ -1,0 +1,566 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T01:25:19Z",
+  "recorded_by": "tools/future/tps_budget.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. Dispatch counts are re-derived from encode/dispatch call sites in crates/hawking-core (decode path), not copied from a receipt as the answer. Byte counts and GB/s roofs are copied from named prior receipts or from the lane's established facts; arithmetic over those copies is DERIVED, not a new experiment. UNKNOWN categories stay the string UNKNOWN and are never coerced to 0 to close the 28.17 ms sum. gpu_authority is false. evidence_class is STATIC_ONLY. This module refuses to emit a hardware measurement claim it did not derive.",
+ "decode_ms_decomposition": {
+  "atlas_q4_bytes_cited": 4520517800,
+  "categories": {
+   "attention_bytes": {
+    "bytes": 3845079040,
+    "coerced_to_number": false,
+    "id": "attention_bytes",
+    "implied_ms_at_clean_roof": 5.46564184790334,
+    "ms": "UNKNOWN",
+    "nested_inside": "necessary_weight_bytes",
+    "not_a_hardware_measurement": true,
+    "source": "receipts/future/CATALOG_ADDRESSING.json",
+    "status": "CITED_FROM_NAMED_RECEIPT",
+    "why": "DeltaNet + GQA organ payload_bytes_total from receipts/future/CATALOG_ADDRESSING.json (production shapes, uniform-Q4 catalog encoding). Matches the production q4 class minus lm_head. Not a stopwatch."
+   },
+   "command_encoder_cost": {
+    "cited_command_construction_median_ms": 0.7263885428571428,
+    "coerced_to_number": false,
+    "id": "command_encoder_cost",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "serial_encoder_separated": false,
+    "source": "receipts/future/DISPATCH_CEREMONY.json",
+    "status": "UNKNOWN",
+    "why": "GPU_IDLE_GAP classified command construction at 0.7263885428571428 ms/token of complete-wall; serial encoder 580\u21921 did not separate. That figure is complete-wall, not the 35.5 decode clock, and the ceremony attack did not isolate it. Not a 28.17 slice."
+   },
+   "cpu_submission": {
+    "coerced_to_number": false,
+    "id": "cpu_submission",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "status": "UNKNOWN",
+    "why": "generate_greedy records encode_ns / submit_ns per step; this sidecar has no sourced median of those clocks on the 35.5 run and did not start the resident."
+   },
+   "dispatch_cost": {
+    "attributed_to_decode_ms": false,
+    "cited_marginal_us": 15.0,
+    "coerced_to_number": false,
+    "id": "dispatch_cost",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "product_if_every_launch_ms": 9.42,
+    "product_status": "HYPOTHESIS",
+    "production_dispatch_count": 628,
+    "status": "UNKNOWN",
+    "why": "Marginal ~15 us is the catalog-vs-single-GEMV topology tax (CATALOG_ADDRESSING ns_per_extra_dispatch \u2248 15.48 us; lane established ~15 us). Product 628 \u00d7 15 us is a HYPOTHESIS if applied to every production launch, including non-GEMV kernels, and is not attributed to 28.17. Catalog addressing was FALSIFIED as the primary 703\u2192530 cause (host indirection on the GPU timestamp)."
+   },
+   "final_head_sampling": {
+    "argmax_two_pass_default": "off",
+    "bytes": 675430400,
+    "coerced_to_number": false,
+    "id": "final_head_sampling",
+    "implied_ms_at_clean_roof": 0.9601000710732054,
+    "ms": "UNKNOWN",
+    "nested_inside": "necessary_weight_bytes",
+    "not_a_hardware_measurement": true,
+    "source": "receipts/future/CATALOG_ADDRESSING.json",
+    "status": "CITED_FROM_NAMED_RECEIPT",
+    "why": "lm_head is one matvec + sample_argmax_f32_tcb (one dispatch, two-pass default Off). Isolated two-pass 0.3395\u21920.0131 ms is a cited comment in encode_argmax, not a 28.17 slice. End-to-end the same comment says the saving did not reach the token."
+   },
+   "low_bit_decode_cost": {
+    "catalog_only": "not_a_production_28p17_slice",
+    "coerced_to_number": false,
+    "id": "low_bit_decode_cost",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "status": "UNKNOWN",
+    "why": "Catalog addr vs full is a few percent on the synthetic all-q4 13.6 GB probe (KERNEL_GEOMETRY / ADDRESSING_GAP). That delta was not isolated on the 9.879 GB mixed production token or on the 35.5 clock. Not transferred."
+   },
+   "measured_remainder": {
+    "above_clean_roof_ms": 14.126510692893682,
+    "coerced_to_number": false,
+    "folded_into_named_categories": false,
+    "id": "measured_remainder",
+    "lower_bound_necessary_weight_at_clean_roof_ms": 14.042503391613362,
+    "ms": "UNATTRIBUTED",
+    "not_a_hardware_measurement": true,
+    "status": "UNATTRIBUTED",
+    "token_ms_derived_from_established_decode_rate": 28.169014084507044,
+    "why": "No named category is a stopwatch slice of 28.17. The 14.04 ms clean-roof byte bound is a lower bound, not a measured bucket. The leftover above that bound is UNATTRIBUTED: catalog addressing was FALSIFIED as the primary 703\u2192530 cause, tested kernel geometry was FALSIFIED as the primary 530\u2192337 cause, and the ~25% complete-vs-decode gap is prefill accounting P/(P+N-1), not runtime ceremony. UNKNOWN categories are not zeroed to make 14.04 + named extras = 28.17."
+   },
+   "mlp_bytes": {
+    "atlas_affine_bytes_cited": 5347795776,
+    "bytes": 5334606613,
+    "coerced_to_number": false,
+    "fraction_established": 0.54,
+    "id": "mlp_bytes",
+    "implied_ms_at_clean_roof": 7.582951830845771,
+    "ms": "UNKNOWN",
+    "nested_inside": "necessary_weight_bytes",
+    "not_a_hardware_measurement": true,
+    "status": "DERIVED_FROM_ESTABLISHED_ARITHMETIC",
+    "why": "MLP is ~54% of production bytes (established; KERNEL_GEOMETRY handoff / atlas affine pareto). Byte-fraction of the clean-roof bound, not a measured 28.17 slice."
+   },
+   "necessary_weight_bytes": {
+    "bytes": 9878901136,
+    "coerced_to_number": false,
+    "id": "necessary_weight_bytes",
+    "implied_ms_at_clean_roof": 14.042503391613362,
+    "ms": "UNKNOWN",
+    "nested_parent_of": [
+     "mlp_bytes",
+     "attention_bytes",
+     "other_model_bytes",
+     "final_head_sampling"
+    ],
+    "not_a_hardware_measurement": true,
+    "roof_gb_s": 703.5,
+    "source": "established active_weight_bytes_per_token and clean GEMV roof",
+    "status": "DERIVED_FROM_ESTABLISHED_ARITHMETIC",
+    "why": "active_weight_bytes_per_token / 703.5 GB/s is a lower bound on weight-move time IF those bytes must be read at the clean GEMV roof. It is not a stopwatch slice of the 35.5-clock token. `ms` stays UNKNOWN so this bound is not double-counted as a measured category of 28.17."
+   },
+   "other_model_bytes": {
+    "atlas_other_562_share": 0.0010717345840639547,
+    "bytes": 10587560,
+    "coerced_to_number": false,
+    "id": "other_model_bytes",
+    "implied_ms_at_clean_roof": 0.015049836531627576,
+    "ms": "UNKNOWN",
+    "nested_inside": "necessary_weight_bytes",
+    "not_a_hardware_measurement": true,
+    "source": "receipts/future/KERNEL_GEOMETRY.json",
+    "status": "CITED_FROM_NAMED_RECEIPT",
+    "why": "KERNEL_GEOMETRY quoted other-562 share of production bytes (rmsnorm/conv/A_log/swiglu scales, not packed GEMV)."
+   },
+   "state_bytes": {
+    "coerced_to_number": false,
+    "id": "state_bytes",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "status": "UNKNOWN",
+    "why": "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs theoretical_state_bytes(seq_len) exists (conv/rec RW + GQA KV). The 35.5 decode clock has no sourced seq_len in this sidecar (TPS_GAP live probe has no four clocks; prompt=13 / generated=40 is a LANE_BRIEF citation). Time is not inferred."
+   },
+   "state_transition": {
+    "coerced_to_number": false,
+    "id": "state_transition",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "status": "UNKNOWN",
+    "why": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs step_complete names position += 1 as state_update_ns. No sourced duration on the 35.5 clock. Host increment is not inferred as milliseconds."
+   },
+   "synchronization": {
+    "coerced_to_number": false,
+    "id": "synchronization",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "status": "UNKNOWN",
+    "why": "KERNEL_GEOMETRY / ADDRESSING_GAP rank synchronization_between_organs as UNATTRIBUTED. No isolating probe on the production token."
+   },
+   "useful_arithmetic": {
+    "coerced_to_number": false,
+    "id": "useful_arithmetic",
+    "ms": "UNKNOWN",
+    "not_a_hardware_measurement": true,
+    "status": "UNKNOWN",
+    "why": "No sourced FLOP or FMA duration of production decode is in hand. Not inferred."
+   }
+  },
+  "clocks_that_must_not_be_mixed": "35.5 decode rate vs 337.3 atlas effective vs 703.5 clean roof",
+  "effective_gb_s_is_a_different_clock": {
+   "established_effective_gb_s": 337.3,
+   "implied_ms_if_applied_to_same_bytes": 29.288174135784168,
+   "reading": "337.3 GB/s \u00d7 9.879e9 bytes is the atlas 34.14 raw-TPS clock (~29.29 ms), not 35.5 (~28.17 ms). Mixing them into one identity is refused. 337.3 is not used to slice 28.17.",
+   "used_to_slice_28p17": false
+  },
+  "established_decode_rate": 35.5,
+  "formula_token_ms": "1000 / 35.5",
+  "non_mlp_bytes_from_established_fraction": 4544294523,
+  "sum_known_ms": {
+   "included": [],
+   "skipped_unknown": [
+    "necessary_weight_bytes",
+    "mlp_bytes",
+    "attention_bytes",
+    "state_bytes",
+    "other_model_bytes",
+    "low_bit_decode_cost",
+    "useful_arithmetic",
+    "dispatch_cost",
+    "command_encoder_cost",
+    "synchronization",
+    "cpu_submission",
+    "state_transition",
+    "final_head_sampling",
+    "measured_remainder"
+   ],
+   "sum_ms": 0.0,
+   "treated_unknown_as_zero": false
+  },
+  "this_module_did_not_measure_the_token": true,
+  "token_ms_derived_from_established_decode_rate": 28.169014084507044
+ },
+ "decode_path_markers": {
+  "missing": [],
+  "ok": true,
+  "reading": "generate_greedy still calls session.step for every prompt and decode token; step always encode_full_token, which always runs lm_head + argmax. Prefill-skip-terminal described in receipts/future/DISPATCH_CEREMONY.json is not in this checkout's decode.rs.",
+  "required_present": {
+   "argmax_two_pass_default_off": true,
+   "encode_embed": true,
+   "encode_full_token": true,
+   "encode_layers": true,
+   "encode_terminal": true,
+   "generate_greedy_calls_step": true,
+   "mlp_from_env": true,
+   "serial_encoder_default_false": true,
+   "step_calls_full_token": true
+  },
+  "skip_terminal_in_this_tree": false,
+  "source": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+ },
+ "dispatch_count": {
+  "catalog_401_is_not_the_token_graph": "401 is GEMV organs (192 MLP + 144 DN + 64 GQA + 1 lm_head), not encode_full_token's launch count. Not used as the dispatch-per-token answer.",
+  "current_production_for_this_budget": 628,
+  "helpers_one_dispatch_each": [
+   "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_q4_matvec_kernel / encode_named_matvec / dispatch_affine",
+   "crates/hawking-core/src/kernels/mod.rs mha_decode_f32_tcb (one dispatch_threads)",
+   "crates/hawking-core/src/kernels/mod.rs qwen_next_add_residual_tcb (one dispatch_threads)",
+   "crates/hawking-core/src/kernels/mod.rs sample_argmax_f32_tcb (one dispatch_threads; two-pass Off)"
+  ],
+  "historical_756_rederived_not_current": {
+   "copied_as_the_answer": false,
+   "fusion": {
+    "add_rmsnorm": false,
+    "argmax_two_pass": false,
+    "ba_delta": false,
+    "dn_inproj": true,
+    "gqa_qkv": true,
+    "mlp": "swiglu"
+   },
+   "reading": "ADDRESSING_GAP cited BANDWIDTH_ASCENT production decode at 756 dispatches. Re-walked as swiglu+gqa+dn_inproj without add_rmsnorm. Not current sealed production.",
+   "total": 756
+  },
+  "not_copied_from_a_receipt": true,
+  "sealed_fusion_env_cited": {
+   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+   "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+   "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+  },
+  "sealed_fusion_env_source": "receipts/future/TPS_GAP.json",
+  "sealed_resident_fusion": {
+   "by_kind": {
+    "dn_mixer": 337,
+    "embed": 1,
+    "gqa_mixer": 96,
+    "mlp": 192,
+    "terminal": 2
+   },
+   "fusion": {
+    "add_rmsnorm": true,
+    "argmax_two_pass": false,
+    "ba_delta": false,
+    "dn_inproj": true,
+    "gqa_qkv": true,
+    "mlp": "swiglu"
+   },
+   "gpu_counter": false,
+   "n_dn_layers": 48,
+   "n_gqa_layers": 16,
+   "n_layers": 64,
+   "not_copied_from_a_receipt": true,
+   "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs generate_greedy -> Qwen38HybridDecodeSession::step -> encode_full_token (encode_embed + encode_layers + encode_terminal)",
+   "sites": [
+    {
+     "dispatches": 1,
+     "layers": 1,
+     "per_layer": 1,
+     "site": "embed",
+     "why": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_embed / encode_embed_mixed: one dispatch_threads (q4, hgravu, or hgravf lookup)"
+    },
+    {
+     "dispatches": 8,
+     "layers": 1,
+     "per_layer": 8,
+     "site": "dn_layer0",
+     "why": "encode_deltanet(_mixed) layer 0: input_rms always runs (fuse_add_rmsnorm skips only layer>0) + inproj + rearrange + ba/delta + gated_rmsnorm + out_proj + residual"
+    },
+    {
+     "dispatches": 329,
+     "layers": 47,
+     "per_layer": 7,
+     "site": "dn_later",
+     "why": "encode_deltanet(_mixed) layers 1..: input_rms skipped under fuse_add_rmsnorm; otherwise same multiplicity as layer 0"
+    },
+    {
+     "dispatches": 96,
+     "layers": 16,
+     "per_layer": 6,
+     "site": "gqa",
+     "why": "encode_gqa(_mixed): no GQA is layer 0, so input_rms follows fuse_add_rmsnorm; q/k/v or fused_qkv + rope + mha_decode_f32_tcb + sigmoid_gate + o_proj + residual"
+    },
+    {
+     "dispatches": 192,
+     "layers": 64,
+     "per_layer": 3,
+     "site": "mlp",
+     "why": "encode_dense_mlp(_mixed): post_attn_rms skipped under fuse_add_rmsnorm; gate/up/swiglu fusion=swiglu + down_proj + residual"
+    },
+    {
+     "dispatches": 2,
+     "layers": 1,
+     "per_layer": 2,
+     "site": "terminal",
+     "why": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_terminal(_mixed): final_rms? + lm_head matvec + sample_argmax_f32_tcb (one dispatch; two-pass is HAWKING_ARGMAX_TWO_PASS default Off)"
+    }
+   ],
+   "total": 628
+  },
+  "source_default_env_unset": {
+   "by_kind": {
+    "dn_mixer": 432,
+    "embed": 1,
+    "gqa_mixer": 144,
+    "mlp": 384,
+    "terminal": 3
+   },
+   "fusion": {
+    "add_rmsnorm": false,
+    "argmax_two_pass": false,
+    "ba_delta": false,
+    "dn_inproj": false,
+    "gqa_qkv": false,
+    "mlp": "off"
+   },
+   "gpu_counter": false,
+   "n_dn_layers": 48,
+   "n_gqa_layers": 16,
+   "n_layers": 64,
+   "not_copied_from_a_receipt": true,
+   "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs generate_greedy -> Qwen38HybridDecodeSession::step -> encode_full_token (encode_embed + encode_layers + encode_terminal)",
+   "sites": [
+    {
+     "dispatches": 1,
+     "layers": 1,
+     "per_layer": 1,
+     "site": "embed",
+     "why": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_embed / encode_embed_mixed: one dispatch_threads (q4, hgravu, or hgravf lookup)"
+    },
+    {
+     "dispatches": 9,
+     "layers": 1,
+     "per_layer": 9,
+     "site": "dn_layer0",
+     "why": "encode_deltanet(_mixed) layer 0: input_rms always runs (fuse_add_rmsnorm skips only layer>0) + inproj + rearrange + ba/delta + gated_rmsnorm + out_proj + residual"
+    },
+    {
+     "dispatches": 423,
+     "layers": 47,
+     "per_layer": 9,
+     "site": "dn_later",
+     "why": "encode_deltanet(_mixed) layers 1..: input_rms skipped under fuse_add_rmsnorm; otherwise same multiplicity as layer 0"
+    },
+    {
+     "dispatches": 144,
+     "layers": 16,
+     "per_layer": 9,
+     "site": "gqa",
+     "why": "encode_gqa(_mixed): no GQA is layer 0, so input_rms follows fuse_add_rmsnorm; q/k/v or fused_qkv + rope + mha_decode_f32_tcb + sigmoid_gate + o_proj + residual"
+    },
+    {
+     "dispatches": 384,
+     "layers": 64,
+     "per_layer": 6,
+     "site": "mlp",
+     "why": "encode_dense_mlp(_mixed): post_attn_rms skipped under fuse_add_rmsnorm; gate/up/swiglu fusion=off + down_proj + residual"
+    },
+    {
+     "dispatches": 3,
+     "layers": 1,
+     "per_layer": 3,
+     "site": "terminal",
+     "why": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_terminal(_mixed): final_rms? + lm_head matvec + sample_argmax_f32_tcb (one dispatch; two-pass is HAWKING_ARGMAX_TWO_PASS default Off)"
+    }
+   ],
+   "total": 964
+  },
+  "why_964_is_not_the_budget_headline": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs: mlp_fusion/gqa/dn/add_rmsnorm default Off 'keeps the 964-dispatch production graph'. That is the env-unset crate default, not the sealed resident the 35.5 clock was quoted against.",
+  "why_this_is_production": "The 35.5 decode clock and 337.3 effective-bandwidth citation belong to the sealed resident. TPS_GAP recovered require_fusion_env with FUSE_MLP=swiglu, FUSE_GQA_QKV=1, FUSE_DN_INPROJ=1, FUSE_ADD_RMSNORM=1. Session attach reads those env flags. This sidecar re-walked encode_full_token under that fusion set. It did not copy 628 from a receipt as the answer."
+ },
+ "established_citations": {
+  "active_weight_bytes_per_token": 9878901136,
+  "clean_gemv_addressing_gb_s": 703.5,
+  "falsified": [
+   "catalog addressing is NOT the primary 703->530 cause",
+   "tested kernel geometry is NOT the primary 530->337 cause",
+   "the ~25% complete-vs-decode gap is prefill P/(P+N-1), NOT runtime ceremony"
+  ],
+  "marginal_dispatch_us": 15.0,
+  "mlp_fraction": 0.54,
+  "production_decode_effective_gb_s": 337.3,
+  "published_peak_gb_s": 819.0,
+  "steady_decode_rate": 35.5,
+  "this_module_did_not_remeasure": true
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "production dispatches per decoded token re-derived from encode call sites \u00d7 layers \u00d7 multiplicity",
+  "28.17 ms categories that lack evidence stay UNKNOWN rather than padded",
+  "milestone ladder at 703.5 GB/s with non-MLP held at 46%, unreachable flagged not clipped"
+ ],
+ "geometry_from_source": {
+  "constants": {
+   "QWEN38_DELTANET_LAYERS": 48,
+   "QWEN38_FULL_ATTENTION_INTERVAL": 4,
+   "QWEN38_GQA_LAYERS": 16,
+   "QWEN38_HIDDEN": 5120,
+   "QWEN38_INTERMEDIATE": 17408,
+   "QWEN38_LAYERS": 64,
+   "QWEN38_VOCAB": 248320
+  },
+  "mixer_rule": "(layer + 1) % QWEN38_FULL_ATTENTION_INTERVAL == 0 \u2192 GQA",
+  "source": "crates/hawking-core/src/model/qwen38_geometry.rs"
+ },
+ "gpu_authority": false,
+ "loads": {
+  "addressing_gap": {
+   "rel": "receipts/future/ADDRESSING_GAP.json",
+   "status": "LOADED"
+  },
+  "catalog_addressing": {
+   "rel": "receipts/future/CATALOG_ADDRESSING.json",
+   "status": "LOADED"
+  },
+  "dispatch_ceremony": {
+   "rel": "receipts/future/DISPATCH_CEREMONY.json",
+   "status": "LOADED"
+  },
+  "kernel_geometry": {
+   "rel": "receipts/future/KERNEL_GEOMETRY.json",
+   "status": "LOADED"
+  },
+  "tps_gap": {
+   "rel": "receipts/future/TPS_GAP.json",
+   "status": "LOADED"
+  }
+ },
+ "milestone_ladder": {
+  "active_bytes": 9878901136,
+  "addressing_gap_note": "ADDRESSING_GAP refused 703.5 as the 13.6 GB addr-probe median (sourced median 699.57, max 703.61). The ladder still uses the lane-established ~703.5 clean roof; this sidecar does not re-measure it.",
+  "clean_roof_raw_tokens_per_second_at_current_bytes": 71.21237375646514,
+  "mlp_fraction": 0.54,
+  "non_mlp_fraction_held_fixed": 0.46,
+  "reading": "71 TPS is the clean-roof ceiling at current bytes (703.5e9 / 9.878901136e9 \u2248 71.21). 50 TPS needs no byte cut. 100/125/150 need remaining MLP fractions ~0.47 / ~0.20 / ~0.027. A milestone whose remaining_mlp_fraction is negative is ARITHMETICALLY_UNREACHABLE_BY_MLP_ALONE.",
+  "roof_gb_s": 703.5,
+  "roof_name": "lane_established_clean_gemv_addressing",
+  "rows": [
+   {
+    "active_bytes": 9878901136,
+    "formula": "required_total_byte_fraction = roof_gb_s * 1e9 / (milestone_tokens_per_second * active_weight_bytes_per_token); remaining_mlp_fraction = (required_total_byte_fraction - non_mlp_fraction) / mlp_fraction",
+    "milestone_tokens_per_second": 50.0,
+    "mlp_fraction": 0.54,
+    "non_mlp_fraction_held_fixed": 0.46,
+    "not_a_hardware_measurement": true,
+    "remaining_mlp_fraction": 1.7856434724616714,
+    "required_total_byte_fraction": 1.4242474751293026,
+    "roof_gb_s": 703.5,
+    "status": "REACHABLE_WITHOUT_MLP_REDUCTION",
+    "would_improve": false
+   },
+   {
+    "active_bytes": 9878901136,
+    "formula": "required_total_byte_fraction = roof_gb_s * 1e9 / (milestone_tokens_per_second * active_weight_bytes_per_token); remaining_mlp_fraction = (required_total_byte_fraction - non_mlp_fraction) / mlp_fraction",
+    "milestone_tokens_per_second": 71.0,
+    "mlp_fraction": 0.54,
+    "non_mlp_fraction_held_fixed": 0.46,
+    "not_a_hardware_measurement": true,
+    "remaining_mlp_fraction": 1.0055392216083758,
+    "required_total_byte_fraction": 1.002991179668523,
+    "roof_gb_s": 703.5,
+    "status": "REACHABLE_WITHOUT_MLP_REDUCTION",
+    "would_improve": false
+   },
+   {
+    "active_bytes": 9878901136,
+    "formula": "required_total_byte_fraction = roof_gb_s * 1e9 / (milestone_tokens_per_second * active_weight_bytes_per_token); remaining_mlp_fraction = (required_total_byte_fraction - non_mlp_fraction) / mlp_fraction",
+    "milestone_tokens_per_second": 100.0,
+    "mlp_fraction": 0.54,
+    "non_mlp_fraction_held_fixed": 0.46,
+    "not_a_hardware_measurement": true,
+    "remaining_mlp_fraction": 0.46689581030490973,
+    "required_total_byte_fraction": 0.7121237375646513,
+    "roof_gb_s": 703.5,
+    "status": "REQUIRES_MLP_REDUCTION",
+    "would_improve": false
+   },
+   {
+    "active_bytes": 9878901136,
+    "formula": "required_total_byte_fraction = roof_gb_s * 1e9 / (milestone_tokens_per_second * active_weight_bytes_per_token); remaining_mlp_fraction = (required_total_byte_fraction - non_mlp_fraction) / mlp_fraction",
+    "milestone_tokens_per_second": 125.0,
+    "mlp_fraction": 0.54,
+    "non_mlp_fraction_held_fixed": 0.46,
+    "not_a_hardware_measurement": true,
+    "remaining_mlp_fraction": 0.20314627787355752,
+    "required_total_byte_fraction": 0.5696989900517211,
+    "roof_gb_s": 703.5,
+    "status": "REQUIRES_MLP_REDUCTION",
+    "would_improve": false
+   },
+   {
+    "active_bytes": 9878901136,
+    "formula": "required_total_byte_fraction = roof_gb_s * 1e9 / (milestone_tokens_per_second * active_weight_bytes_per_token); remaining_mlp_fraction = (required_total_byte_fraction - non_mlp_fraction) / mlp_fraction",
+    "milestone_tokens_per_second": 150.0,
+    "mlp_fraction": 0.54,
+    "non_mlp_fraction_held_fixed": 0.46,
+    "not_a_hardware_measurement": true,
+    "remaining_mlp_fraction": 0.02731325625265593,
+    "required_total_byte_fraction": 0.4747491583764342,
+    "roof_gb_s": 703.5,
+    "status": "REQUIRES_MLP_REDUCTION",
+    "would_improve": false
+   }
+  ]
+ },
+ "negative_findings": [
+  "this module did not run a GPU benchmark and did not take a bench lock",
+  "703.5 is the lane-established clean roof used for the ladder; ADDRESSING_GAP refused it as the 13.6 GB addr-probe median",
+  "337.3 GB/s and 35.5 TPS are different clocks; 337.3 is not used to slice 28.17",
+  "DISPATCH_CEREMONY crate_change (prefill skip-terminal, serial encoder from env) is not in this checkout's decode.rs; generate_greedy still encode_full_token including lm_head+argmax",
+  "628 was not copied from TPS_GAP FUSED_DISPATCHES; it is the sealed-fusion walk. 964 is the env-unset walk. 756 is a historical re-walk",
+  "dispatch_cost 628 \u00d7 15 us is a HYPOTHESIS, not attributed",
+  "state_bytes, low-bit decode, useful arithmetic, command/encoder, synchronization, CPU submission, state transition have no 28.17 stopwatch"
+ ],
+ "purpose": "Re-derive production dispatches per decoded token from the current encode path, decompose 28.17 ms/token into evidenced categories with UNKNOWN left UNKNOWN, and compute the 50/71/100/125/150 byte-fraction ladder at the ~703 GB/s clean roof.",
+ "recovered_implementation": [
+  "crates/hawking-core/src/model/qwen38_hybrid_decode.rs encode_full_token / encode_layers / encode_deltanet / encode_gqa / encode_dense_mlp / encode_terminal",
+  "crates/hawking-core/src/model/qwen38_geometry.rs QWEN38_LAYERS / DELTANET / GQA / mixer_kind",
+  "crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs unfused 9+6 per layer (cross-check, not the answer)",
+  "crates/hawking-core/src/model/qwen38_token_ns_ledger.rs production_dispatches_per_token formula (re-walked, not copied)",
+  "crates/hawking-core/examples/ascension_qwen38_resident.rs generate_greedy via session.attach (fusion from env)",
+  "crates/hawking-core/src/kernels/mod.rs mha_decode_f32_tcb / qwen_next_add_residual_tcb / sample_argmax_f32_tcb",
+  "receipts/future/TPS_GAP.json sealed fusion_env citation",
+  "receipts/future/ADDRESSING_GAP.json 703.5-as-median refused; 337.3 cited",
+  "receipts/future/CATALOG_ADDRESSING.json organ payloads; ~15 us topology tax; catalog addressing FALSIFIED",
+  "receipts/future/KERNEL_GEOMETRY.json geometry FALSIFIED; atlas pareto; other-562 share",
+  "receipts/future/DISPATCH_CEREMONY.json complete-vs-decode is P/(P+N-1); serial encoder did not separate"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.tps_budget.build() / record()",
+  "evidence_class": "STATIC_ONLY",
+  "fails_closed": "UNKNOWN ms is never coerced to a number (BudgetRefuse); closing 28.17 by zeroing UNKNOWN raises; missing decode-path markers raise; HardwareClaimError on tps/wall_ns/gpu_ns keys; remaining_mlp_fraction < 0 is ARITHMETICALLY_UNREACHABLE_BY_MLP_ALONE rather than clipped to 0; this module emits no GPU measurement it did not derive",
+  "frontier": "FT.ACTIVE_BYTES",
+  "gpu_authority": false,
+  "orchestration_bound": false,
+  "receipt": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json"
+ },
+ "schema": "hawking.future.tps_budget.v1",
+ "seal_sha256": "8427a6ac3992a730ef5e3f45104def0b51ff73a61d9b1a7f33235bad503fde9f",
+ "self_timing": {
+  "class": "SELF_MEASURED_DIRTY",
+  "cpu_parse_s": 0.0016103750094771385,
+  "not": "a GPU measurement, a lease, a qualified TPS, a roof, or evidence the cited probes still hold on this host",
+  "numbers_decide_nothing": true
+ },
+ "version": 1
+}

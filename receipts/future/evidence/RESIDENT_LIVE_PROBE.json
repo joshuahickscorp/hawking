@@ -1,0 +1,68 @@
+{
+ "artifact_bytes_on_disk": "9.9G, 755 segment tensors plus catalog",
+ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+ "binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "gaps_closed": [
+  "nothing had ever attempted to start the resident from this sidecar"
+ ],
+ "gpu_authority": false,
+ "lease_taken": false,
+ "negative_findings": [
+  "the first probe exited immediately because nohup gave it /dev/null on stdin; a request-driven resident reaching EOF is not a resident that failed to start"
+ ],
+ "observed": {
+  "census": {
+   "affine": 192,
+   "dense_w_materialized": 0,
+   "expanded_to_q4": 0,
+   "f32": 353,
+   "q4": 210,
+   "refused": 0
+  },
+  "fallbacks": 0,
+  "load_to_ready_seconds_approx": 55,
+  "r1": {
+   "generated_text": "\n\nParis",
+   "generated_tokens": 3,
+   "prompt": "What is the capital of France? Answer in one word."
+  },
+  "r2": {
+   "generated_text": "\n\nA status label can be wrong because it is based on a snapshot of a system's state at a specific moment, which may not reflect the current or future state of the system. For example,",
+   "generated_tokens": 40,
+   "prompt": "Name one reason a status label can be wrong. One sentence."
+  },
+  "reached_ready": true,
+  "requests_served": 2,
+  "tensors_uploaded": 755
+ },
+ "protocol": "hawking.qwen38.resident.v1",
+ "purpose": "Establish whether the CURRENT_NONFINAL_HCLI_WORKER can actually start and generate on this host.",
+ "recovered_implementation": [
+  "hcli/hawking-native.sealed-3.14.json names artifact_root, tokenizer and resident_binary",
+  "crates/hawking-core/examples/ascension_qwen38_resident.rs serves correlated JSONL over stdin/stdout"
+ ],
+ "resident_callable": {
+  "entry_point": "ascension_qwen38_resident --artifact-root DIR --tokenizer PATH --max-seq-len N",
+  "fails_closed": "a resident that does not reach ready is recorded as not-ready, never assumed",
+  "frontier": "FT.CHILD_RESIDENT.install-dry-run",
+  "receipt": "receipts/future/evidence/RESIDENT_LIVE_PROBE.json",
+  "workunit": "one MODEL_SESSION unit; the model-bearing torture depends on it"
+ },
+ "resident_identity": "qwen3.8-27b-sealed-3.14",
+ "schema": "hawking.future.resident_live_probe.v1",
+ "verdict": "RESIDENT_STARTS_AND_GENERATES",
+ "version": 1,
+ "what_this_does_NOT_establish": [
+  "any qualified throughput number: this ran on a contaminated machine with no protected lease, so the rates it reported are SELF_MEASURED_DIRTY and rank nothing",
+  "that the resident can sustain an hour of load, which is what the model-bearing torture is for",
+  "that the resident reasons WELL enough to orchestrate; two prompts is not cognition evidence",
+  "anything about Flash, which remains a separate child artifact"
+ ],
+ "what_this_establishes": [
+  "the sealed-3.14 resident loads its packed artifact and reaches status ready",
+  "it serves the JSONL request protocol and returns coherent generated text",
+  "it does so with zero fallbacks and zero dense weight materialization"
+ ],
+ "why": "Every autonomy trial recorded resident_model_cognition UNAVAILABLE. That was accurate about what it checked -- the sidecar loop never attempted to start a resident -- and was being read as a statement about the machine. It is the fifth instance today of a narrow probe wearing a broad causal label, and this one gated the entire model-bearing path."
+}

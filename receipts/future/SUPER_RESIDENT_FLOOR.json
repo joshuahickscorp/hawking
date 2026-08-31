@@ -1,0 +1,1090 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:47:27Z",
+  "recorded_by": "tools/future/super_resident.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evaluations": {
+  "flash": {
+   "clauses": [
+    {
+     "citations": [
+      {
+       "field": "status",
+       "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "value": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION"
+      },
+      {
+       "field": "qualification.resident_promotion",
+       "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "value": false
+      },
+      {
+       "field": "status",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": "SCAFFOLD_ONLY"
+      },
+      {
+       "field": "native_loader.status",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": "NOT_IMPLEMENTED"
+      },
+      {
+       "field": "native_kernels.status",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": "PLAN_ONLY"
+      }
+     ],
+     "clause": "self_contained_executable_identity",
+     "state": "UNMET",
+     "why": "FLASH_COMPLETE_V0.nx.json is metadata-only; FLASH_NEXT_NOETIC_EXECUTABLE status='SCAFFOLD_ONLY'; native_loader.status='NOT_IMPLEMENTED'.",
+     "would_change": "A packed executable identity with native_loader implemented, NX status no longer SEALED_METADATA_ONLY_NOT_FOR_PROMOTION, and executable status no longer SCAFFOLD_ONLY."
+    },
+    {
+     "citations": [
+      {
+       "field": "current_flash_state.source_independent_nx.status",
+       "path": "CODEX_ACCELERATOR_HANDOFF.json",
+       "source": "CODEX_ACCELERATOR_HANDOFF.json",
+       "value": "SCAFFOLD_ONLY"
+      },
+      {
+       "field": "current_flash_state.source_independent_nx.qualification",
+       "path": "CODEX_ACCELERATOR_HANDOFF.json",
+       "source": "CODEX_ACCELERATOR_HANDOFF.json",
+       "value": false
+      },
+      {
+       "field": "status",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": "SCAFFOLD_ONLY"
+      },
+      {
+       "field": "qualification",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": false
+      },
+      {
+       "field": "seven_all_met",
+       "path": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "source": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "value": false
+      }
+     ],
+     "clause": "source_independent_runtime",
+     "state": "UNMET",
+     "why": "Codex current_flash_state.source_independent_nx.status is SCAFFOLD_ONLY (qualification=False); the executable receipt status is 'SCAFFOLD_ONLY'.",
+     "would_change": "source_independent_nx.status leaves SCAFFOLD_ONLY and qualification becomes true: serialized artifact, physical loader, and whole-model native kernel binding exist."
+    },
+    {
+     "citations": [
+      {
+       "field": "seven_all_met",
+       "path": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "source": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "value": false
+      },
+      {
+       "field": "promotion_gate.missing_or_refused",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": [
+        "MTP accounting",
+        "complete-system byte ledger",
+        "dense-versus-NF A/B receipt",
+        "ebpw_accounting.all_required_bytes_included=true",
+        "ebpw_accounting.bases.bytes",
+        "ebpw_accounting.dictionaries.bytes",
+        "ebpw_accounting.expert_indices.bytes",
+        "ebpw_accounting.generators.bytes",
+        "ebpw_accounting.lookup_structures.bytes",
+        "ebpw_accounting.mtp_representation.bytes",
+        "ebpw_accounting.ngram_representation.bytes",
+        "ebpw_accounting.required_executable_metadata.bytes",
+        "ebpw_accounting.residuals.bytes",
+        "ebpw_accounting.routing_metadata.bytes",
+        "ebpw_accounting.scales.bytes",
+        "ebpw_accounting.weight_codes.bytes",
+        "ebpw_accounting.zero_points.bytes",
+        "fallback_count disclosure",
+        "native executable",
+        "protected capability contract",
+        "reproducible protected receipt",
+        "runtime/kernel genome",
+        "whole-model reference comparison"
+       ]
+      },
+      {
+       "field": "dense_parent_execution_fallback",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": false
+      }
+     ],
+     "clause": "no_forbidden_fallback",
+     "state": "UNMET",
+     "why": "Flash NX audit seven_requirements.no_forbidden_fallback is NOT_MET; the executable lists fallback_count disclosure as missing_or_refused. The live path is still the source-oracle / exact-control dense BF16 path.",
+     "would_change": "no_forbidden_fallback MET on the NX checker, fallback_count disclosed, and production path no longer the source-oracle dense parent."
+    },
+    {
+     "citations": [
+      {
+       "field": "status",
+       "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "value": "BLOCKED_FIRST_PHYSICAL_BOUNDARY"
+      },
+      {
+       "field": "complete_stateful_session.accepted_generation_tokens",
+       "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "value": 1
+      },
+      {
+       "field": "complete_stateful_session.status",
+       "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "value": "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED"
+      },
+      {
+       "field": "first_physical_failure_boundary.status",
+       "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "value": "ONE_TOKEN_ACCEPTED"
+      },
+      {
+       "field": "complete_stateful_session.claim",
+       "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "value": "The pinned tokenizer prompt completed all 48 Flash layers in the dense exact stateful oracle, and the native terminal argmax produced token 2972 as the first generated token. This closes one accepted-token prediction without claiming that token's continuation state was advanced; repeated accepted decode, TPS, EBPW, capability and HCLI residency remain open."
+      }
+     ],
+     "clause": "stable_sessions",
+     "state": "UNMET",
+     "why": "The stateful gate accepted one generated token and explicitly does not claim continuation state was advanced. Repeated accepted decode remains open.",
+     "would_change": "A persistent executor that consumes the accepted token as the next session input and produces repeated accepted-token decode."
+    },
+    {
+     "citations": [
+      {
+       "field": "status",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": "SCAFFOLD_ONLY"
+      },
+      {
+       "field": "qualification.resident_promotion",
+       "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "value": false
+      }
+     ],
+     "clause": "restart",
+     "state": "UNMET",
+     "why": "No Flash resident process exists to restart. The executable is a scaffold; there is no loaded body under the HCLI resident protocol.",
+     "would_change": "A Flash body bound through the provider contract with stop/start under no-silent-restart policy."
+    },
+    {
+     "citations": [
+      {
+       "field": "capability_contract.status",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": "NOT_RUN"
+      },
+      {
+       "field": "seven_all_met",
+       "path": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "source": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "value": false
+      }
+     ],
+     "clause": "capability_for_hcli_research",
+     "state": "UNMET",
+     "why": "capability_contract.status='NOT_RUN' on the executable; the NX audit looked for a capability suite on Flash NX and found NOT_RUN.",
+     "would_change": "Capability suite run on a source-independent Flash NX, identity-bound."
+    },
+    {
+     "citations": [
+      {
+       "field": "complete_stateful_session.accepted_generation_tokens",
+       "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "value": 1
+      },
+      {
+       "field": "qualification.accepted_multitoken_tps",
+       "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "value": null
+      },
+      {
+       "field": "current_flash_state.stateful_gate.accepted_tokens",
+       "path": "CODEX_ACCELERATOR_HANDOFF.json",
+       "source": "CODEX_ACCELERATOR_HANDOFF.json",
+       "value": 1
+      },
+      {
+       "field": "current_flash_state.stateful_gate.status",
+       "path": "CODEX_ACCELERATOR_HANDOFF.json",
+       "source": "CODEX_ACCELERATOR_HANDOFF.json",
+       "value": "BLOCKED_FIRST_PHYSICAL_BOUNDARY"
+      },
+      {
+       "field": "first_physical_failure_boundary.status",
+       "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "source": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "value": "ONE_TOKEN_ACCEPTED"
+      }
+     ],
+     "clause": "sufficient_token_rate",
+     "state": "UNMET",
+     "why": "One accepted stateful token is not a token rate. accepted_multitoken_tps is null; stateful_gate.accepted_tps is null; Codex records one accepted token rather than repeated accepted-token decode.",
+     "would_change": "Repeated accepted-token decode with a named (PROTECTED_ABSOLUTE) rate receipt. accepted_generation_tokens > 1 and accepted_multitoken_tps no longer null. This sidecar will still not invent the number."
+    },
+    {
+     "citations": [
+      {
+       "field": "qualification.complete_system_ebpw",
+       "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "value": null
+      },
+      {
+       "field": "complete_system_ebpw",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": null
+      },
+      {
+       "field": "meta_measurement_state.physical_ebpw",
+       "path": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "source": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+       "value": "NULL_BY_RULE"
+      }
+     ],
+     "clause": "explicit_ebpw_evidence",
+     "state": "UNMET",
+     "why": "complete_system_ebpw is null on both the NX qualification and the executable receipt. Meta physical_ebpw is NULL_BY_RULE.",
+     "would_change": "A complete-system EBPW bound to the Flash NX body, not a prospective meta budget and not a null."
+    },
+    {
+     "citations": [
+      {
+       "field": "qualification.resident_promotion",
+       "path": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "source": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "value": false
+      },
+      {
+       "field": "promotion_allowed",
+       "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "source": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+       "value": false
+      }
+     ],
+     "clause": "rollback",
+     "state": "UNMET",
+     "why": "No Flash resident is loaded, so pause/unload cannot roll it back. resident_promotion is not true.",
+     "would_change": "A Flash body that implements the provider pause/unload slots and yields to protected-evidence eviction."
+    }
+   ],
+   "clears_sandbox_floor": false,
+   "clears_singularity": false,
+   "distinct_from_singularity": true,
+   "evidence_recovery": {
+    "audit": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+     "source": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+     "tracked_in_head": true
+    },
+    "executable": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+     "tracked_in_head": true
+    },
+    "handoff": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "CODEX_ACCELERATOR_HANDOFF.json",
+     "source": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+     "tracked_in_head": false
+    },
+    "nx": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "tracked_in_head": false
+    },
+    "stateful": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+     "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+     "tracked_in_head": false
+    }
+   },
+   "headline": "Flash does NOT clear SANDBOX_RESIDENT_FLOOR today: source-independent NX is SCAFFOLD_ONLY and the stateful gate has one accepted token, not repeated accepted-token decode.",
+   "id": "FLASH_SINGULARITY.NX",
+   "one_accepted_stateful_token": true,
+   "role": "CANDIDATE_NOT_SANDBOX_HOLDER",
+   "source_independent_nx": {
+    "path": "receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
+    "qualification": false,
+    "status": "SCAFFOLD_ONLY"
+   },
+   "stateful_gate": {
+    "accepted_tokens": 1,
+    "path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+    "status": "BLOCKED_FIRST_PHYSICAL_BOUNDARY"
+   },
+   "unmet_clauses": [
+    "self_contained_executable_identity",
+    "source_independent_runtime",
+    "no_forbidden_fallback",
+    "stable_sessions",
+    "restart",
+    "capability_for_hcli_research",
+    "sufficient_token_rate",
+    "explicit_ebpw_evidence",
+    "rollback"
+   ]
+  },
+  "qwen27": {
+   "capability_identity_sufficient": false,
+   "clauses": [
+    {
+     "citations": [
+      {
+       "field": "resident_identity",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "sealed-3.14"
+      },
+      {
+       "field": "protocol",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "hawking.qwen38.resident.v1"
+      },
+      {
+       "field": "runtime",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "hawking-native"
+      },
+      {
+       "field": "resident_binary",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+      },
+      {
+       "field": "artifact_root",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "/Users/scammermike/noetic/NOETIC_PARENT_A"
+      },
+      {
+       "field": "tokenizer",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      {
+       "field": "status",
+       "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+       "source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+       "value": "SEALED"
+      },
+      {
+       "field": "resident",
+       "path": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+       "source": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+       "value": "sealed-3.14"
+      }
+     ],
+     "clause": "self_contained_executable_identity",
+     "state": "MET",
+     "why": "Sealed identity names resident_binary, artifact_root, tokenizer, protocol='hawking.qwen38.resident.v1', resident_identity='sealed-3.14'."
+    },
+    {
+     "citations": [
+      {
+       "field": "runtime",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "hawking-native"
+      },
+      {
+       "field": "protocol",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "hawking.qwen38.resident.v1"
+      },
+      {
+       "field": "representation.kind",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "native-packed"
+      },
+      {
+       "field": "mode",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "auto"
+      }
+     ],
+     "clause": "source_independent_runtime",
+     "state": "MET",
+     "why": "hawking-native packed runtime with JSONL resident protocol. This is not a source-oracle walk and not SCAFFOLD_ONLY."
+    },
+    {
+     "citations": [
+      {
+       "field": "current_runtime.fallbacks",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": 0
+      },
+      {
+       "field": "fallbacks",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": [
+        "transformers tokenizer fallback when unavailable"
+       ]
+      }
+     ],
+     "clause": "no_forbidden_fallback",
+     "state": "MET_QUOTED",
+     "why": "current_runtime.fallbacks is 0. Declared fallbacks are prompt-side (transformers tokenizer when unavailable), not inference fallbacks."
+    },
+    {
+     "citations": [
+      {
+       "field": "protocol",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "hawking.qwen38.resident.v1"
+      },
+      {
+       "field": "representation.weights_loaded_once",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": true
+      },
+      {
+       "field": "schema",
+       "path": "hcli/agentos/resident_gate.py",
+       "source": "source",
+       "value": "hcli.agentos.resident_gate.v1"
+      }
+     ],
+     "clause": "stable_sessions",
+     "state": "MET",
+     "why": "hawking.qwen38.resident.v1 JSONL with correlated request ids, resident_gate sequential proof contract, and weights_loaded_once."
+    },
+    {
+     "citations": [
+      {
+       "field": "ResidentProcess.stop",
+       "path": "hcli/hawking_native.py",
+       "source": "source",
+       "value": "present"
+      },
+      {
+       "field": "schema",
+       "path": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+       "source": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+       "value": "hawking.future.resident_install.v1"
+      }
+     ],
+     "clause": "restart",
+     "state": "MET",
+     "why": "HawkingNativeConnector exposes stop and _restart_resident; resident_install restart slot is no_silent_restart. This lane does not start a process to re-prove it."
+    },
+    {
+     "citations": [
+      {
+       "field": "qualification",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "capability 30/43 historical sealed contract"
+      },
+      {
+       "field": "overall.passed",
+       "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "value": 30
+      },
+      {
+       "field": "overall.total",
+       "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "value": 43
+      },
+      {
+       "field": "identity_sufficient",
+       "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "value": false
+      },
+      {
+       "field": "identity_verdict",
+       "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+       "value": "UNIDENTIFIED (G073, amended 2026-08-26): this receipt records target='http://127.0.0.1:8080' and label='noetic-sealed-3.14' and carries NO artifact hash, NO executable-closure hash and NO chat-template field. The score stands as a MEASUREME"
+      }
+     ],
+     "clause": "capability_for_hcli_research",
+     "state": "MET_QUOTED",
+     "why": "Identity quotes a historical sealed capability contract. The capability receipt overall is 30/43 but identity_sufficient=False, so that row does not bind the score to this body. HCLI still uses this identity as the incumbent worker (native_mission_gate / resident_gate)."
+    },
+    {
+     "citations": [
+      {
+       "field": "current_runtime.complete_tps_current_measured",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "24.4086"
+      },
+      {
+       "field": "current_runtime.complete_tps_historical_qualified",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": "34.0"
+      },
+      {
+       "field": "current_qwen27_incumbent_control_identity.profile.qualified_physical",
+       "path": "CODEX_ACCELERATOR_HANDOFF.json",
+       "source": "CODEX_ACCELERATOR_HANDOFF.json",
+       "value": false
+      },
+      {
+       "field": "current_qwen27_incumbent_control_identity.control_receipt.promotion_allowed",
+       "path": "CODEX_ACCELERATOR_HANDOFF.json",
+       "source": "CODEX_ACCELERATOR_HANDOFF.json",
+       "value": false
+      }
+     ],
+     "clause": "sufficient_token_rate",
+     "state": "MET_QUOTED",
+     "why": "Identity quotes complete_tps_current_measured and historical qualified TPS as strings here. Codex records qualified_physical=False and control_receipt.promotion_allowed=False. This is incumbency evidence for bounded autonomy, not a live PROTECTED_ABSOLUTE measurement."
+    },
+    {
+     "citations": [
+      {
+       "field": "physical_ebpw",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": 3.1393
+      },
+      {
+       "field": "representation.physical_ebpw",
+       "path": "hcli/hawking-native.sealed-3.14.json",
+       "source": "hcli/hawking-native.sealed-3.14.json",
+       "value": 3.1393
+      }
+     ],
+     "clause": "explicit_ebpw_evidence",
+     "state": "MET_QUOTED",
+     "why": "Identity representation.physical_ebpw is the sealed artifact accounting figure. It is not a protected complete-system remeasurement."
+    },
+    {
+     "citations": [
+      {
+       "field": "HawkingNativeConnector.stop",
+       "path": "hcli/hawking_native.py",
+       "source": "source",
+       "value": "present"
+      },
+      {
+       "field": "stop_before_closing_quiescence",
+       "path": "hcli/agentos/protected_accelerator_benchmark.py",
+       "source": "source",
+       "value": true
+      },
+      {
+       "field": "phases",
+       "path": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+       "source": "receipts/future/RESIDENT_INSTALL_CONTRACT.json",
+       "value": [
+        "nx_identity",
+        "executable_identity",
+        "tokenizer_session",
+        "memory_requirements",
+        "launch_args",
+        "readiness_probe",
+        "shutdown",
+        "unload",
+        "protected_benchmark_evacuation",
+        "restart",
+        "crash_recovery",
+        "fallback_policy",
+        "capability_receipt",
+        "performance_receipt"
+       ]
+      }
+     ],
+     "clause": "rollback",
+     "state": "MET",
+     "why": "connector.stop unloads the resident; resident_install unload drops weights and releases the device; protected_accelerator_benchmark stops the resident before closing quiescence. Live RuntimeBackend names stop, not pause \u2014 the daemon contract below is the named slot."
+    }
+   ],
+   "clears_sandbox_floor": true,
+   "clears_singularity": false,
+   "distinct_from_singularity": true,
+   "evidence_recovery": {
+    "capability": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+     "source": "/Users/scammermike/Downloads/hawking/receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+     "tracked_in_head": true
+    },
+    "handoff": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "CODEX_ACCELERATOR_HANDOFF.json",
+     "source": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+     "tracked_in_head": false
+    },
+    "identity": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "hcli/hawking-native.sealed-3.14.json",
+     "source": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+     "tracked_in_head": true
+    },
+    "seal": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "receipts/headless/HCLI_RESIDENT_SEAL.json",
+     "source": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_RESIDENT_SEAL.json",
+     "tracked_in_head": true
+    },
+    "tournament": {
+     "present": true,
+     "recovery": "disk",
+     "rel": "receipts/future/TOURNAMENT_READINESS.json",
+     "source": "/Users/scammermike/Downloads/hawking/receipts/future/TOURNAMENT_READINESS.json",
+     "tracked_in_head": true
+    }
+   },
+   "headline": "Qwen27 sealed-3.14 is CURRENT_NONFINAL_HCLI_WORKER: it holds the sandbox role by sealed native identity, not as a Singularity, and not as a live protected remeasurement.",
+   "id": "qwen3.8-27b-sealed-3.14",
+   "protocol": "hawking.qwen38.resident.v1",
+   "qualified_physical": false,
+   "quoted_capability_overall": "30/43",
+   "resident_identity": "sealed-3.14",
+   "role": "CURRENT_NONFINAL_HCLI_WORKER",
+   "tournament_role": "CONTROL_INCUMBENT_RESIDENT_NOT_TOURNAMENT_NX",
+   "unmet_clauses": []
+  }
+ },
+ "floor": {
+  "clause_ids": [
+   "self_contained_executable_identity",
+   "source_independent_runtime",
+   "no_forbidden_fallback",
+   "stable_sessions",
+   "restart",
+   "capability_for_hcli_research",
+   "sufficient_token_rate",
+   "explicit_ebpw_evidence",
+   "rollback"
+  ],
+  "clauses": [
+   {
+    "id": "self_contained_executable_identity",
+    "means": "A named executable identity that closes over binary, artifact, tokenizer, and protocol without a source-oracle walk.",
+    "not_singularity": "An identity document is not an NX genome and not a promotion."
+   },
+   {
+    "id": "source_independent_runtime",
+    "means": "The runtime loads a packed/native body. Source-oracle or SCAFFOLD_ONLY executables do not count.",
+    "not_singularity": "Source independence is a sandbox entry condition, not NX completeness."
+   },
+   {
+    "id": "no_forbidden_fallback",
+    "means": "Inference does not silently reconstruct a dense parent or swap bodies. A declared prompt-side tokenizer fallback is not an inference fallback.",
+    "not_singularity": "Fallback policy is lifecycle, not a dominance axis."
+   },
+   {
+    "id": "stable_sessions",
+    "means": "Correlated sessions survive more than one accepted token: request ids, KV/recurrent state, and isolation across turns.",
+    "not_singularity": "A one-token probe is not a session and not a complete-token measurement."
+   },
+   {
+    "id": "restart",
+    "means": "The body can be stopped and started again under explicit owner policy. Silent restart during a gate is forbidden.",
+    "not_singularity": "Restart is a lifecycle slot, not a performance claim."
+   },
+   {
+    "id": "capability_for_hcli_research",
+    "means": "Enough capability to perform HCLI research tasks (facts, structured output, tools, verifier-owned acceptance). Historical identity-bound scores may MET_QUOTED; an unidentified score does not close the clause.",
+    "not_singularity": "HCLI-task capability is not the 43-item suite as a promotion gate."
+   },
+   {
+    "id": "sufficient_token_rate",
+    "means": "Repeated accepted-token decode at a rate that can sustain bounded autonomy. One accepted token is not a rate. Sidecar never invents TPS.",
+    "not_singularity": "Quoted historical TPS is not PROTECTED_ABSOLUTE and does not promote."
+   },
+   {
+    "id": "explicit_ebpw_evidence",
+    "means": "An explicit EBPW figure bound to the body (artifact accounting or a named receipt). Null complete_system_ebpw does not count.",
+    "not_singularity": "Quoted identity EBPW is not a protected complete-system measurement."
+   },
+   {
+    "id": "rollback",
+    "means": "Pause and unload exist so a body can be evicted and a prior body re-bound. Resident convenience never wins over protected eviction.",
+    "not_singularity": "Rollback is GPU-lease subordination, not tournament dominance."
+   }
+  ],
+  "distinct_from_singularity": true,
+  "name": "SANDBOX_RESIDENT_FLOOR",
+  "not_a_promotion": true,
+  "pass_rule": "every clause MET or MET_QUOTED; UNMET and UNKNOWN fail closed",
+  "schema": "hawking.future.super_resident.v1",
+  "singularity_bar": "Tournament NX completeness + PROTECTED_ABSOLUTE dominance. This floor does not run that bar and cannot promote anyone."
+ },
+ "gaps_closed": [
+  "SANDBOX_RESIDENT_FLOOR named as nine clauses, explicitly not Singularity",
+  "honest Flash rejection citing SCAFFOLD_ONLY NX and one accepted stateful token",
+  "Qwen27 evaluated separately as CURRENT_NONFINAL_HCLI_WORKER",
+  "provider-neutral daemon driven through two stub bodies",
+  "GPU lease subordination: protected eviction beats resident convenience",
+  "--status reports the sandbox holder from evidence without starting a model",
+  "SLEEPING Flash wakeup WorkUnit instead of a synthetic Flash result"
+ ],
+ "gpu_authority": false,
+ "gpu_lease_subordination": {
+  "generate_after_evict_refused": true,
+  "last_priority": "resident_convenience",
+  "prefer_keep_resident": true,
+  "priority": [
+   "protected_evidence_eviction",
+   "crash_unload",
+   "operator_unload",
+   "resident_convenience"
+  ],
+  "resident_convenience_wins": false,
+  "unloaded": true
+ },
+ "negative_findings": [
+  "hcli/agentos/resident.py is not a module; resident_gate.py is the live gate (recovery, not a test-asserted absence)",
+  "Live RuntimeBackend/HawkingNativeConnector expose stop, not named pause/resume/unload",
+  "Flash source-independent NX is SCAFFOLD_ONLY and not qualified",
+  "Flash stateful gate is one accepted token, not repeated accepted-token decode",
+  "Flash NX seven_all_met is False; resident_promotion is not true",
+  "Qwen27 capability receipt identity_sufficient is false (UNIDENTIFIED body on that row)",
+  "Qwen27 qualified_physical is false; control_receipt.promotion_allowed is false",
+  "Qwen27 is not QWEN27_SINGULARITY.NX; tournament can_run is False",
+  "this lane did not start a resident model process and did not take a GPU lease",
+  "sidecar produces STATIC_ONLY / bench UNKNOWN; never DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE"
+ ],
+ "provider_contract": {
+  "daemon": "tools.future.super_resident.SandboxDaemon",
+  "does_not_start_a_process": true,
+  "lease_priority": [
+   "protected_evidence_eviction",
+   "crash_unload",
+   "operator_unload",
+   "resident_convenience"
+  ],
+  "live_hcli_surface": {
+   "ModelProvider": "hcli.providers.ModelProvider (generate, capabilities, health, profile)",
+   "ResidentProvider": "hcli.providers.ResidentProvider (start, stop)",
+   "RuntimeBackend": "hcli.backends.RuntimeBackend (identity, spawn, ready, endpoint, stop, complete, supports)",
+   "gap": "Live RuntimeBackend exposes stop, not named pause/resume/unload. The daemon contract names those slots so a future body can be evicted for protected evidence. Integration point: map stop->unload, add pause/resume on the live ABC without hard-coding a model."
+  },
+  "no_silent_restart": true,
+  "ops": [
+   "load",
+   "health",
+   "session",
+   "generation",
+   "tool_calling",
+   "pause",
+   "resume",
+   "unload",
+   "capability_identity",
+   "resource_identity",
+   "crash_handling"
+  ],
+  "provider_neutral": true
+ },
+ "provider_neutral_proof": {
+  "alpha": {
+   "model_id": "body-A",
+   "ops": [
+    "load",
+    "health",
+    "session",
+    "generation",
+    "tool_calling",
+    "pause",
+    "resume",
+    "unload",
+    "capability_identity",
+    "resource_identity",
+    "crash_handling"
+   ],
+   "provider_id": "stub-alpha"
+  },
+  "beta": {
+   "model_id": "body-B",
+   "ops": [
+    "load",
+    "health",
+    "session",
+    "generation",
+    "tool_calling",
+    "pause",
+    "resume",
+    "unload",
+    "capability_identity",
+    "resource_identity",
+    "crash_handling"
+   ],
+   "provider_id": "stub-beta"
+  },
+  "bodies_differ": true,
+  "daemon_source_names_no_body": true,
+  "identical_ops": true,
+  "started_model_process": false
+ },
+ "purpose": "SANDBOX_RESIDENT_FLOOR \u2014 the bar a body must clear to enter the orchestrator sandbox, deliberately distinct from Singularity promotion \u2014 plus the provider-neutral daemon contract that must survive a change of body.",
+ "recovered_implementation": [
+  {
+   "path": "hcli/providers.py",
+   "role": "ModelProvider / ResidentProvider / ResidentProfile contract"
+  },
+  {
+   "path": "hcli/runtime_iface.py",
+   "role": "RuntimeInterface planes; does not schedule or admit GPU memory"
+  },
+  {
+   "path": "hcli/backends.py",
+   "role": "RuntimeBackend ABC: identity/spawn/ready/stop/complete/supports"
+  },
+  {
+   "path": "hcli/hawking_native.py",
+   "role": "profile-driven native connector; ResidentProcess.stop; no pause() named"
+  },
+  {
+   "path": "hcli/hawking-native.sealed-3.14.json",
+   "role": "incumbent Qwen27 sealed identity"
+  },
+  {
+   "path": "hcli/agentos/resident_gate.py",
+   "role": "live residency proof; resident.py does not exist as a module"
+  },
+  {
+   "path": "hcli/agentos/native_gate.py",
+   "role": "native identity/fusion gate"
+  },
+  {
+   "path": "hcli/agentos/native_mission_gate.py",
+   "role": "HCLI tool/fact/verifier mission"
+  },
+  {
+   "path": "hcli/agentos/recovery.py",
+   "role": "fail-closed fixture recovery; production recovery is Codex-owned"
+  },
+  {
+   "path": "hcli/agentos/protected_accelerator_benchmark.py",
+   "role": "stop resident before closing quiescence"
+  },
+  {
+   "path": "hcli/agentos/autonomy_gate.py",
+   "role": "A3 restart / A4 process resume; not this floor"
+  },
+  {
+   "path": "tools/future/resident_install.py",
+   "role": "14-phase generic install contract the winner binds into"
+  },
+  {
+   "path": "tools/future/tournament.py",
+   "role": "NX-vs-NX; can_run() is False today; different bar from this floor"
+  },
+  {
+   "path": "tools/future/flash_nx_audit.py",
+   "role": "seven NX requirements; seven_all_met is False"
+  },
+  {
+   "path": "tools/future/workunit_species.py",
+   "role": "WorkUnit emission into the recovered HCLI field set"
+  }
+ ],
+ "resident_callable": {
+  "can_hcli_invoke": true,
+  "entry_point": "python3 tools/future/super_resident.py --status",
+  "fail_closed": [
+   "UNMET or UNKNOWN clause => body does not clear the floor",
+   "HardwareClaimError on numeric hardware fields",
+   "generate after protected eviction raises ProviderEvicted",
+   "silent restart after crash is refused",
+   "resident convenience cannot outrank protected_evidence_eviction",
+   "missing evidence is recorded as unresolved, never invented",
+   "this module never starts a model process and never takes a GPU lease"
+  ],
+  "frontier_fed": {
+   "feeds": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "id": "SANDBOX_RESIDENT_FLOOR",
+   "integration": "tools/future/global_frontier.py should grow a probe on SUPER_RESIDENT_FLOOR.json holder/clears fields. This lane does not edit global_frontier.py.",
+   "payload": "holder, Flash rejection, Qwen27 CURRENT_NONFINAL_HCLI_WORKER"
+  },
+  "holder": "qwen3.8-27b-sealed-3.14",
+  "module": "tools.future.super_resident",
+  "receipt": "receipts/future/SUPER_RESIDENT_FLOOR.json",
+  "started_model_process": false,
+  "workunits_emitted": [
+   "future.super_resident.sandbox_floor",
+   "future.super_resident.flash_floor_wakeup"
+  ]
+ },
+ "schema": "hawking.future.super_resident.v1",
+ "seal_sha256": "b23c4428b471db8de0fe47c94a25836f2256e60bab286a06b813df8a6841ec9c",
+ "started_model_process": false,
+ "status": {
+  "flash": {
+   "clears_sandbox_floor": false,
+   "clears_singularity": false,
+   "headline": "Flash does NOT clear SANDBOX_RESIDENT_FLOOR today: source-independent NX is SCAFFOLD_ONLY and the stateful gate has one accepted token, not repeated accepted-token decode.",
+   "id": "FLASH_SINGULARITY.NX",
+   "unmet_clauses": [
+    "self_contained_executable_identity",
+    "source_independent_runtime",
+    "no_forbidden_fallback",
+    "stable_sessions",
+    "restart",
+    "capability_for_hcli_research",
+    "sufficient_token_rate",
+    "explicit_ebpw_evidence",
+    "rollback"
+   ]
+  },
+  "floor_is_not_singularity": true,
+  "gpu_authority": false,
+  "holder": "qwen3.8-27b-sealed-3.14",
+  "holder_role": "CURRENT_NONFINAL_HCLI_WORKER",
+  "measurement_state": "STATIC_ONLY",
+  "qwen27": {
+   "clears_sandbox_floor": true,
+   "clears_singularity": false,
+   "headline": "Qwen27 sealed-3.14 is CURRENT_NONFINAL_HCLI_WORKER: it holds the sandbox role by sealed native identity, not as a Singularity, and not as a live protected remeasurement.",
+   "id": "qwen3.8-27b-sealed-3.14",
+   "role": "CURRENT_NONFINAL_HCLI_WORKER",
+   "unmet_clauses": []
+  },
+  "schema": "hawking.future.super_resident.status.v1",
+  "started_model_process": false,
+  "took_gpu_lease": false,
+  "why": "Qwen27 sealed-3.14 is the only body with a sealed hawking-native resident identity and protocol. Flash source-independent NX is SCAFFOLD_ONLY and the stateful gate has one accepted token, not repeated accepted-token decode. Holding the sandbox is not Singularity."
+ },
+ "version": 1,
+ "workunits": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "claim_boundary": "WorkUnit is a proposal; receipt remains authoritative; this unit cannot promote a body or take a GPU lease.",
+   "classification": "STATIC_ONLY",
+   "command": "python3 tools/future/super_resident.py --status",
+   "content_hash": "a9bb1c314da62f5f127235e40f76bccb072bd27689a673a9c77a52732f616d43",
+   "dependencies": [],
+   "description": "Evaluate SANDBOX_RESIDENT_FLOOR from disk evidence and seal SUPER_RESIDENT_FLOOR.json. Do not start a model process.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "id": "future.super_resident.sandbox_floor",
+   "output_receipt_path": "receipts/future/SUPER_RESIDENT_FLOOR.json",
+   "preferred_backend": null,
+   "provider": "sidecar-static",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "LIGHT_CONTROL",
+   "role": "sandbox_resident_floor",
+   "running_at": null,
+   "status": "pending",
+   "verification": null,
+   "verifier": "future.super_resident.floor_contract",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "blocked_reason": "Flash source-independent NX is SCAFFOLD_ONLY; stateful_gate is one accepted token, not repeated accepted-token decode.",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "4b0802dc8903174aac34a26e6ac72dc96bbbcca2f179322357feeae4c7ecce81",
+   "dependencies": [
+    "future.super_resident.sandbox_floor"
+   ],
+   "description": "Re-evaluate Flash against SANDBOX_RESIDENT_FLOOR when source_independent_nx leaves SCAFFOLD_ONLY and the stateful gate shows repeated accepted-token decode. Sleeps until then. Never a synthetic Flash result.",
+   "effect_class": "READ_ONLY",
+   "failure_context": null,
+   "finished_at": null,
+   "holder_at_emission": "qwen3.8-27b-sealed-3.14",
+   "id": "future.super_resident.flash_floor_wakeup",
+   "preferred_backend": null,
+   "provider": "sidecar-static",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_quiescence": false,
+   "resource_class": "LIGHT_CONTROL",
+   "role": "sandbox_resident_floor",
+   "running_at": null,
+   "status": "sleeping",
+   "unmet_clauses": [
+    "self_contained_executable_identity",
+    "source_independent_runtime",
+    "no_forbidden_fallback",
+    "stable_sessions",
+    "restart",
+    "capability_for_hcli_research",
+    "sufficient_token_rate",
+    "explicit_ebpw_evidence",
+    "rollback"
+   ],
+   "verification": null,
+   "verifier": "future.super_resident.floor_contract",
+   "wake_when": [
+    "current_flash_state.source_independent_nx.status != SCAFFOLD_ONLY",
+    "stateful_gate.accepted_tokens > 1 with repeated accepted-token decode"
+   ],
+   "workspace": "repo-root"
+  }
+ ]
+}

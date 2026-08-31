@@ -1,0 +1,597 @@
+{
+  "claim_boundary": "Candidate FPGA mapping only. [D] denotes a derived hypothesis and [S] denotes executable link/partition simulation. No physical board, bitstream, hardware timing, or U50 performance is claimed.",
+  "device_genome": {
+    "device_id": "unselected-fpga-device",
+    "family": "unselected",
+    "hbm_channels": 0,
+    "label": "[D]",
+    "pcie_generation": "unselected",
+    "physical_board_present": false,
+    "schema": "hcli.fpga.device_genome.v1",
+    "status": "[D] TARGET_UNSELECTED",
+    "vendor": "unselected"
+  },
+  "driverkit_bridge_design": {
+    "label": "[D]",
+    "notes": [
+      "user-space bridge owns explicit device identity",
+      "DMA buffers are bounded and receipt-addressable",
+      "no kernel extension or hardware permission is claimed"
+    ],
+    "status": "DESIGN_NOT_IMPLEMENTED"
+  },
+  "experiment_dag": {
+    "nodes": [
+      {
+        "dependencies": [],
+        "id": "metadata_identity",
+        "label": "[D]",
+        "status": "READY"
+      },
+      {
+        "dependencies": [
+          "metadata_identity"
+        ],
+        "id": "hwir_compile",
+        "label": "[D]",
+        "status": "READY"
+      },
+      {
+        "dependencies": [
+          "hwir_compile"
+        ],
+        "id": "link_sensitivity",
+        "label": "[S]",
+        "status": "SIMULATED"
+      },
+      {
+        "dependencies": [
+          "hwir_compile"
+        ],
+        "id": "native_parity",
+        "label": "[D]",
+        "status": "WAITING_FOR_PHYSICAL_OR_NATIVE_BACKEND"
+      },
+      {
+        "dependencies": [
+          "native_parity",
+          "link_sensitivity"
+        ],
+        "id": "hardware_receipt",
+        "label": "[D]",
+        "status": "BLOCKED_NO_BOARD"
+      }
+    ],
+    "schema": "hcli.fpga.experiment_dag.v1"
+  },
+  "hbm_genome": {
+    "bandwidth_gbps": null,
+    "capacity_bytes": null,
+    "channels": 0,
+    "label": "[D]",
+    "schema": "hcli.fpga.hbm_genome.v1",
+    "status": "[D] TARGET_UNSELECTED"
+  },
+  "hwir": {
+    "buffers": [
+      {
+        "id": "resident_weight_shards",
+        "label": "[D]",
+        "lifetime": "persistent",
+        "per_token_transfer": false
+      },
+      {
+        "id": "activations",
+        "label": "[D]",
+        "lifetime": "token",
+        "per_token_transfer": true
+      },
+      {
+        "id": "partial_reductions",
+        "label": "[D]",
+        "lifetime": "token",
+        "per_token_transfer": true
+      },
+      {
+        "id": "persistent_state",
+        "label": "[D]",
+        "lifetime": "sequence",
+        "per_token_transfer": false
+      }
+    ],
+    "dependencies": [
+      {
+        "from": "mlp_gate_up_down",
+        "kind": "token_dependency",
+        "label": "[D]",
+        "to": "gqa_qkv_and_output"
+      },
+      {
+        "from": "gqa_qkv_and_output",
+        "kind": "token_dependency",
+        "label": "[D]",
+        "to": "deltanet_state_and_input_projection"
+      },
+      {
+        "from": "deltanet_state_and_input_projection",
+        "kind": "token_dependency",
+        "label": "[D]",
+        "to": "norm_add_epilogues"
+      },
+      {
+        "from": "norm_add_epilogues",
+        "kind": "token_dependency",
+        "label": "[D]",
+        "to": "lm_head_and_sampling"
+      },
+      {
+        "from": "lm_head_and_sampling",
+        "kind": "token_dependency",
+        "label": "[D]",
+        "to": "command_buffer_graph"
+      }
+    ],
+    "fingerprint": "5238d7c90bbf73611e363c6c8fc3d727e17ac67298356836034aea808e060bbd",
+    "label": "[D]",
+    "model": "qwen27",
+    "nodes": [
+      {
+        "id": "mlp_gate_up_down",
+        "kind": "organ_operator",
+        "label": "[D]",
+        "mapping": "within-organ tensor parallel low-bit GEMV + epilogue"
+      },
+      {
+        "id": "gqa_qkv_and_output",
+        "kind": "organ_operator",
+        "label": "[D]",
+        "mapping": "projection shards with activation/partial-reduction transport"
+      },
+      {
+        "id": "deltanet_state_and_input_projection",
+        "kind": "organ_operator",
+        "label": "[D]",
+        "mapping": "persistent state machine with resident state"
+      },
+      {
+        "id": "norm_add_epilogues",
+        "kind": "organ_operator",
+        "label": "[D]",
+        "mapping": "fused epilogue near producer"
+      },
+      {
+        "id": "lm_head_and_sampling",
+        "kind": "organ_operator",
+        "label": "[D]",
+        "mapping": "partitioned vocabulary reduction and selection"
+      },
+      {
+        "id": "command_buffer_graph",
+        "kind": "organ_operator",
+        "label": "[D]",
+        "mapping": "persistent scheduling and reduced synchronization"
+      }
+    ],
+    "placements": [
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "mlp_gate_up_down",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "gqa_qkv_and_output",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "deltanet_state_and_input_projection",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "norm_add_epilogues",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "lm_head_and_sampling",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "command_buffer_graph",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      }
+    ],
+    "schema": "hcli.fpga.hwir.v1",
+    "synchronization": [
+      {
+        "boundary": "mlp_gate_up_down",
+        "label": "[D]",
+        "policy": "minimize_command_buffer_and_cross_device_sync"
+      },
+      {
+        "boundary": "gqa_qkv_and_output",
+        "label": "[D]",
+        "policy": "minimize_command_buffer_and_cross_device_sync"
+      },
+      {
+        "boundary": "deltanet_state_and_input_projection",
+        "label": "[D]",
+        "policy": "minimize_command_buffer_and_cross_device_sync"
+      },
+      {
+        "boundary": "norm_add_epilogues",
+        "label": "[D]",
+        "policy": "minimize_command_buffer_and_cross_device_sync"
+      },
+      {
+        "boundary": "lm_head_and_sampling",
+        "label": "[D]",
+        "policy": "minimize_command_buffer_and_cross_device_sync"
+      },
+      {
+        "boundary": "command_buffer_graph",
+        "label": "[D]",
+        "policy": "minimize_command_buffer_and_cross_device_sync"
+      }
+    ]
+  },
+  "label": "[D]",
+  "model": "qwen27",
+  "model_identity": {
+    "artifact_identity": "NOETIC_PARENT_A",
+    "label": "Qwen3.8-27B sealed resident / NOETIC_PARENT_A",
+    "profile": "hcli/hawking-native.sealed-3.14.json"
+  },
+  "module_cache": {
+    "candidate_key": "c1737b6e7738bf289a0ebeedf8e0283a7b5d4b09ebea3c2711e58ddf06e8fa4a",
+    "key_algorithm": "sha256(canonical HWIR + device genome + HBM genome + toolchain identity)",
+    "label": "[D]",
+    "schema": "hcli.fpga.module_cache.v1",
+    "status": "SCHEMA_ONLY"
+  },
+  "organs": [
+    {
+      "mapping": "within-organ tensor parallel low-bit GEMV + epilogue",
+      "organ": "mlp_gate_up_down",
+      "priority": "P0"
+    },
+    {
+      "mapping": "projection shards with activation/partial-reduction transport",
+      "organ": "gqa_qkv_and_output",
+      "priority": "P0"
+    },
+    {
+      "mapping": "persistent state machine with resident state",
+      "organ": "deltanet_state_and_input_projection",
+      "priority": "P0"
+    },
+    {
+      "mapping": "fused epilogue near producer",
+      "organ": "norm_add_epilogues",
+      "priority": "P1"
+    },
+    {
+      "mapping": "partitioned vocabulary reduction and selection",
+      "organ": "lm_head_and_sampling",
+      "priority": "P1"
+    },
+    {
+      "mapping": "persistent scheduling and reduced synchronization",
+      "organ": "command_buffer_graph",
+      "priority": "P1"
+    }
+  ],
+  "partition_simulation": {
+    "claim_boundary": "[S] executable scenario model only; source and device parameters must be revalidated on a selected board before any hardware claim",
+    "label": "[S]",
+    "link": {
+      "bandwidth_gbps": 64.0,
+      "label": "[S]",
+      "latency_ns": 900.0
+    },
+    "model": "qwen27",
+    "performance_claim": false,
+    "physical_execution": false,
+    "scenarios": [
+      {
+        "apple_only_ns": 5000000,
+        "claim_boundary": "[S] deterministic link/partition sensitivity only; not FPGA hardware timing",
+        "decision": "MIXED_CANDIDATE",
+        "fpga_only_ns": 3520000,
+        "inputs": {
+          "activation_bytes": 81920,
+          "apple_compute_ns": 5000000,
+          "basis": "Qwen27 routed/shared MLP source-payload and within-organ split hypothesis",
+          "fpga_compute_ns": 3500000,
+          "hbm_resident_bytes": 241591910400,
+          "partial_reduction_bytes": 32768,
+          "synchronization_ns": 20000
+        },
+        "label": "[S]",
+        "mixed_beats_apple_only": true,
+        "mixed_ns": 3550472,
+        "organ": "mlp_gate_up_down",
+        "performance_claim": false,
+        "physical_execution": false,
+        "predicted_critical_path": "mixed_transport_or_fpga_compute",
+        "scenario": "within_ffn_split",
+        "transport": {
+          "activation_bytes": 81920,
+          "bandwidth_gbps": 64.0,
+          "bytes": 114688,
+          "estimated_transfer_ns": 30472.0,
+          "hops": 2,
+          "label": "[S]",
+          "latency_ns": 900.0,
+          "partial_reduction_bytes": 32768,
+          "pcie_bytes": 114688,
+          "status": "SENSITIVITY_ONLY"
+        }
+      },
+      {
+        "apple_only_ns": 2800000,
+        "claim_boundary": "[S] deterministic link/partition sensitivity only; not FPGA hardware timing",
+        "decision": "MIXED_CANDIDATE",
+        "fpga_only_ns": 2115000,
+        "inputs": {
+          "activation_bytes": 65536,
+          "apple_compute_ns": 2800000,
+          "basis": "Qwen27 recurrent-state read/modify/write structural ledger",
+          "fpga_compute_ns": 2100000,
+          "hbm_resident_bytes": 235339776,
+          "partial_reduction_bytes": 0,
+          "synchronization_ns": 15000
+        },
+        "label": "[S]",
+        "mixed_beats_apple_only": true,
+        "mixed_ns": 2124092,
+        "organ": "deltanet_state_and_input_projection",
+        "performance_claim": false,
+        "physical_execution": false,
+        "predicted_critical_path": "mixed_transport_or_fpga_compute",
+        "scenario": "deltanet_state",
+        "transport": {
+          "activation_bytes": 65536,
+          "bandwidth_gbps": 64.0,
+          "bytes": 65536,
+          "estimated_transfer_ns": 9092.0,
+          "hops": 1,
+          "label": "[S]",
+          "latency_ns": 900.0,
+          "partial_reduction_bytes": 0,
+          "pcie_bytes": 65536,
+          "status": "SENSITIVITY_ONLY"
+        }
+      },
+      {
+        "apple_only_ns": 1600000,
+        "claim_boundary": "[S] deterministic link/partition sensitivity only; not FPGA hardware timing",
+        "decision": "MIXED_CANDIDATE",
+        "fpga_only_ns": 1225000,
+        "inputs": {
+          "activation_bytes": 10240,
+          "apple_compute_ns": 1600000,
+          "basis": "Qwen27 packed low-bit GEMV transfer sensitivity hypothesis",
+          "fpga_compute_ns": 1200000,
+          "hbm_resident_bytes": 1000000000,
+          "partial_reduction_bytes": 40960,
+          "synchronization_ns": 25000
+        },
+        "label": "[S]",
+        "mixed_beats_apple_only": true,
+        "mixed_ns": 1239600,
+        "organ": "mlp_gate_up_down",
+        "performance_claim": false,
+        "physical_execution": false,
+        "predicted_critical_path": "mixed_transport_or_fpga_compute",
+        "scenario": "low_bit_gemv",
+        "transport": {
+          "activation_bytes": 10240,
+          "bandwidth_gbps": 64.0,
+          "bytes": 51200,
+          "estimated_transfer_ns": 14600.0,
+          "hops": 2,
+          "label": "[S]",
+          "latency_ns": 900.0,
+          "partial_reduction_bytes": 40960,
+          "pcie_bytes": 51200,
+          "status": "SENSITIVITY_ONLY"
+        }
+      }
+    ],
+    "schema": "hcli.fpga.partition_simulation.v1",
+    "status": "SIMULATION_ONLY"
+  },
+  "partitioner": {
+    "model": "qwen27",
+    "partitions": [
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "mlp_gate_up_down",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "gqa_qkv_and_output",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "deltanet_state_and_input_projection",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "norm_add_epilogues",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "lm_head_and_sampling",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      },
+      {
+        "device_assignment": "APPLE_UMA_PLUS_FPGA_HBM_HYPOTHESIS",
+        "label": "[D]",
+        "organ": "command_buffer_graph",
+        "partition_axis": "within_organ_tensor_parallel",
+        "resident_weight_policy": "resident_shards_no_weight_body_per_token_transfer",
+        "transport_policy": "activations_and_partial_reductions_only"
+      }
+    ],
+    "schema": "hcli.fpga.partitioner.v1",
+    "status": "CANDIDATE_ONLY"
+  },
+  "provider": {
+    "label": "[S]",
+    "physical_board": false,
+    "provider": "mock-fpga",
+    "status": "SIMULATOR_ONLY"
+  },
+  "provider_capabilities": {
+    "cycle_simulation": false,
+    "hwir": true,
+    "link_simulation": true,
+    "physical_execution": false
+  },
+  "reproducible_vivado_vitis_harness": {
+    "commands": [
+      [
+        "vivado",
+        "-mode",
+        "batch",
+        "-source",
+        "build.tcl"
+      ],
+      [
+        "vitis",
+        "--workspace",
+        "workspace"
+      ],
+      [
+        "v++",
+        "--link",
+        "--config",
+        "link.cfg"
+      ],
+      [
+        "xsim",
+        "hwir_tb"
+      ]
+    ],
+    "inputs": [
+      "HWIR fingerprint",
+      "kernel genome",
+      "target/device identity",
+      "reference vectors"
+    ],
+    "label": "[D]",
+    "schema": "hcli.fpga.harness.v1",
+    "status": "CONTRACT_ONLY"
+  },
+  "rtl_hls_verifier_surface": {
+    "checks": [
+      "bitstream/module hash",
+      "HWIR fingerprint",
+      "input/reference parity",
+      "resource bounds",
+      "transport trace",
+      "capability contract"
+    ],
+    "label": "[D]",
+    "status": "CONTRACT_ONLY"
+  },
+  "schema": "hcli.fpga.organ_map.v1",
+  "simulation_receipt": {
+    "claim_boundary": "mock provider executes no FPGA hardware",
+    "hwir_fingerprint": "5238d7c90bbf73611e363c6c8fc3d727e17ac67298356836034aea808e060bbd",
+    "label": "[S]",
+    "performance_claim": false,
+    "physical_execution": false,
+    "schema": "hcli.fpga.receipt.v1",
+    "status": "SIMULATED"
+  },
+  "transport_link_simulator": {
+    "label": "[S]",
+    "parameters": {
+      "bandwidth_gbps": 64.0,
+      "latency_ns": 900.0
+    },
+    "rows": [
+      {
+        "bandwidth_gbps": 64.0,
+        "bytes": 1048576,
+        "estimated_transfer_ns": 131972.0,
+        "hops": 1,
+        "label": "[S]",
+        "latency_ns": 900.0,
+        "status": "SENSITIVITY_ONLY"
+      },
+      {
+        "bandwidth_gbps": 64.0,
+        "bytes": 16777216,
+        "estimated_transfer_ns": 2098052.0,
+        "hops": 1,
+        "label": "[S]",
+        "latency_ns": 900.0,
+        "status": "SENSITIVITY_ONLY"
+      },
+      {
+        "bandwidth_gbps": 64.0,
+        "bytes": 67108864,
+        "estimated_transfer_ns": 16779016.0,
+        "hops": 2,
+        "label": "[S]",
+        "latency_ns": 900.0,
+        "status": "SENSITIVITY_ONLY"
+      }
+    ],
+    "schema": "hcli.fpga.link.v1",
+    "status": "SIMULATION_ONLY"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

@@ -1,0 +1,1453 @@
+{
+ "anti_pattern": {
+  "flash_census": {
+   "budget_bytes": 8589934592,
+   "counterexamples": [
+    {
+     "active_bytes_per_token": 5120,
+     "bytes": 1271398400,
+     "id": "flash.embeddings",
+     "point": "embeddings occupy ~1.18 GB of source payload for a 5120-byte gathered row per token. Size packing after taking other large fitters still treats this table as a serious HBM resident; a bandwidth shard does not."
+    },
+    {
+     "active_bytes_per_token": 4173020928,
+     "bytes": 4173020928,
+     "fpga_map_priority": "P0",
+     "id": "flash.deltanet",
+     "point": "deltanet streams essentially its whole stored payload every token and is FPGA-map P0 via persistent state. It loses a size race to larger cold or conditional organs that happen to fit."
+    },
+    {
+     "active_bytes_per_token": 65680600,
+     "bytes": 102466171160,
+     "id": "flash.ngram_engine",
+     "point": "ngram_engine is ~95 GB stored and ~66 MB active per token. Size ranking never considers it (does not fit as a whole) and cannot consider a hot-row subset because the census has no hot-row byte vector."
+    },
+    {
+     "active_bytes_per_token": 4718592000,
+     "bytes": 241591910400,
+     "fpga_map_priority": "P0",
+     "id": "flash.routed_experts",
+     "point": "routed_experts is ~225 GB stored, 10/512 experts active per token, FPGA-map P0 as 'HBM-resident selected expert subsets'. The whole bank cannot live in 8 GiB. The census grain cannot name the subset. Size ranking therefore either skips the organ or would stuff the board with the wrong blob."
+    }
+   ],
+   "intensities": [
+    {
+     "active_over_stored": 1.0,
+     "bytes": 4173020928,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": "P0",
+     "id": "flash.deltanet",
+     "source_active_bytes_per_token": 4173020928
+    },
+    {
+     "active_over_stored": 4.027061855670103e-06,
+     "bytes": 1271398400,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": null,
+     "id": "flash.embeddings",
+     "source_active_bytes_per_token": 5120
+    },
+    {
+     "active_over_stored": 1.0,
+     "bytes": 1271398400,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": null,
+     "id": "flash.lm_head",
+     "source_active_bytes_per_token": 1271398400
+    },
+    {
+     "active_over_stored": 1.0,
+     "bytes": 5214301696,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": "P1",
+     "id": "flash.mtp",
+     "source_active_bytes_per_token": 5214301696
+    },
+    {
+     "active_over_stored": 0.0006409978947826628,
+     "bytes": 102466171160,
+     "fits_whole_in_budget": false,
+     "fpga_map_priority": "P1",
+     "id": "flash.ngram_engine",
+     "source_active_bytes_per_token": 65680600
+    },
+    {
+     "active_over_stored": 1.0,
+     "bytes": 2417664,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": null,
+     "id": "flash.norms",
+     "source_active_bytes_per_token": 2417664
+    },
+    {
+     "active_over_stored": 2.0,
+     "bytes": 117669888,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": "P0",
+     "id": "flash.recurrent_state",
+     "source_active_bytes_per_token": 235339776
+    },
+    {
+     "active_over_stored": 1.0,
+     "bytes": 1281249280,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": null,
+     "id": "flash.residual_hyperconnections",
+     "source_active_bytes_per_token": 1281249280
+    },
+    {
+     "active_over_stored": 0.01953125,
+     "bytes": 241591910400,
+     "fits_whole_in_budget": false,
+     "fpga_map_priority": "P0",
+     "id": "flash.routed_experts",
+     "source_active_bytes_per_token": 4718592000
+    },
+    {
+     "active_over_stored": 1.0,
+     "bytes": 125829120,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": "P0",
+     "id": "flash.router",
+     "source_active_bytes_per_token": 125829120
+    },
+    {
+     "active_over_stored": 1.0,
+     "bytes": 472104960,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": "P0",
+     "id": "flash.shared_expert",
+     "source_active_bytes_per_token": 472104960
+    },
+    {
+     "active_over_stored": 1.0000199041614626,
+     "bytes": 1234716672,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": "P1",
+     "id": "flash.sparse_attention",
+     "source_active_bytes_per_token": 1234741248
+    },
+    {
+     "active_over_stored": 0.0,
+     "bytes": 897862112,
+     "fits_whole_in_budget": true,
+     "fpga_map_priority": null,
+     "id": "flash.vision_backbone",
+     "source_active_bytes_per_token": 0
+    }
+   ],
+   "size_greedy_bytes": 8484971008,
+   "size_greedy_ids": [
+    "flash.mtp",
+    "flash.residual_hyperconnections",
+    "flash.embeddings",
+    "flash.shared_expert",
+    "flash.router",
+    "flash.recurrent_state",
+    "flash.norms"
+   ],
+   "too_large_to_reside_as_a_whole": [
+    "flash.ngram_engine",
+    "flash.routed_experts"
+   ]
+  },
+  "noetic_census": {
+   "by_stored_byte": [
+    {
+     "active_bytes_per_token": 2720,
+     "bytes": 675430440,
+     "function_lost": 1.0,
+     "function_lost_per_stored_byte": 1.4805373592578978e-09,
+     "organ": "embedding",
+     "rank_by_function_per_stored_byte": 1
+    },
+    {
+     "active_bytes_per_token": 675430400,
+     "bytes": 675450928,
+     "function_lost": 1.0,
+     "function_lost_per_stored_byte": 1.4804924511111191e-09,
+     "organ": "output",
+     "rank_by_function_per_stored_byte": 2
+    },
+    {
+     "active_bytes_per_token": 891289600,
+     "bytes": 891652992,
+     "function_lost": 0.6070411601515365,
+     "function_lost_per_stored_byte": 6.808042653341273e-10,
+     "organ": "attention_gqa",
+     "rank_by_function_per_stored_byte": 3
+    },
+    {
+     "active_bytes_per_token": 2953789440,
+     "bytes": 2962687488,
+     "function_lost": 0.8556759274497626,
+     "function_lost_per_stored_byte": 2.888174776838841e-10,
+     "organ": "deltanet",
+     "rank_by_function_per_stored_byte": 4
+    },
+    {
+     "active_bytes_per_token": 9091153920,
+     "bytes": 9092472832,
+     "function_lost": 0.9153984562611263,
+     "function_lost_per_stored_byte": 1.0067651266875143e-10,
+     "organ": "mlp",
+     "rank_by_function_per_stored_byte": 5
+    }
+   ],
+   "counterexample": {
+    "highest_preciousness_per_byte": {
+     "active_bytes_per_token": 2720,
+     "bytes": 675430440,
+     "function_lost": 1.0,
+     "function_lost_per_stored_byte": 1.4805373592578978e-09,
+     "organ": "embedding",
+     "rank_by_function_per_stored_byte": 1
+    },
+    "largest_organ": {
+     "active_bytes_per_token": 9091153920,
+     "bytes": 9092472832,
+     "function_lost": 0.9153984562611263,
+     "function_lost_per_stored_byte": 1.0067651266875143e-10,
+     "organ": "mlp",
+     "rank_by_function_per_stored_byte": 5
+    },
+    "reading": "mlp is the largest organ and the lowest function-lost per stored byte; embedding is among the smallest and the highest. Filling HBM by size would prefer mlp (9092472832 bytes, which already exceeds the 8 GiB budget of 8589934592). Size ranking is the wrong objective even before FPGA enters."
+   },
+   "model": "Qwen3.8-27B hybrid (NOT Flash). Cited as the measured organ census.",
+   "orders_disagree": true,
+   "path": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "preciousness_order": [
+    "embedding",
+    "output",
+    "attention_gqa",
+    "deltanet",
+    "mlp"
+   ],
+   "present": true,
+   "ranking_definition": "marginal functional survival per marginal physical byte, estimated from the NULL representation: function_lost = 1 - survival(logits_base, logits_organ_zeroed); preciousness = function_lost / bytes. Higher = an allocator should keep these bytes. An organ that can be zeroed with little loss ranks last even if it 'compresses well'.",
+   "size_order": [
+    "mlp",
+    "deltanet",
+    "attention_gqa",
+    "output",
+    "embedding"
+   ]
+  },
+  "numeric_guard_on_flash_decidable_subset": {
+   "fired": false,
+   "objective_ids": [],
+   "objective_value": 0.0,
+   "reason": "no_decidable_items",
+   "size_ranked_ids": [],
+   "size_ranked_value": 0.0,
+   "vacuous": true
+  },
+  "refused_policy": "fill_HBM_with_the_largest_items",
+  "why": "Occupancy is not the objective. The board's only real advantage is HBM bandwidth on the complete-token critical path. Size ranking selects cold tables that fit and skips hot sparse structures that do not fit as wholes."
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:52Z",
+  "recorded_by": "tools/future/hbm_doctor.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "odyssey-i",
+ "bytes_atlas_consumed": {
+  "active_weight_bytes_per_token": 9878901136,
+  "catalog_total_bytes": 10554328856,
+  "claim_boundary": "Byte counts and dimensionless shares only. Atlas TPS / GB/s figures are not copied: this sidecar has no GPU authority.",
+  "consumed": true,
+  "matvec_share_of_bytes": 0.998928265415936,
+  "matvec_share_of_count": 0.41597510373443985,
+  "module_path": "tools/accelerator/bytes_atlas.py",
+  "module_role": "measures per-dispatch weight bytes against the sealed catalog; does not solve HBM residency (frontier F005 duplication_check)",
+  "pareto_by_bytes": [
+   {
+    "bytes_per_dispatch": 27853103,
+    "dispatches": 192,
+    "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "weight_bytes": 5347795776
+   },
+   {
+    "bytes_per_dispatch": 21629271,
+    "dispatches": 209,
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "weight_bytes": 4520517800
+   },
+   {
+    "bytes_per_dispatch": 163848,
+    "dispatches": 48,
+    "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+    "weight_bytes": 7864704
+   },
+   {
+    "bytes_per_dispatch": 20488,
+    "dispatches": 129,
+    "kernel": "qwen80_residual_rmsnorm_tg",
+    "weight_bytes": 2642952
+   },
+   {
+    "bytes_per_dispatch": 2064,
+    "dispatches": 16,
+    "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+    "weight_bytes": 33024
+   },
+   {
+    "bytes_per_dispatch": 520,
+    "dispatches": 48,
+    "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+    "weight_bytes": 24960
+   },
+   {
+    "bytes_per_dispatch": 400,
+    "dispatches": 48,
+    "kernel": "qwen80_ba_to_decay_beta_f32",
+    "weight_bytes": 19200
+   },
+   {
+    "bytes_per_dispatch": 2720,
+    "dispatches": 1,
+    "kernel": "qwen_uniform_q4_embedding_lookup",
+    "weight_bytes": 2720
+   },
+   {
+    "bytes_per_dispatch": 0,
+    "dispatches": 16,
+    "kernel": "qwen38_attention_apply_sigmoid_gate",
+    "weight_bytes": 0
+   },
+   {
+    "bytes_per_dispatch": 0,
+    "dispatches": 128,
+    "kernel": "qwen_next_add_residual",
+    "weight_bytes": 0
+   },
+   {
+    "bytes_per_dispatch": 0,
+    "dispatches": 64,
+    "kernel": "gk_swiglu_f32",
+    "weight_bytes": 0
+   },
+   {
+    "bytes_per_dispatch": 0,
+    "dispatches": 48,
+    "kernel": "qwen38_gated_delta_decode_vi_simd",
+    "weight_bytes": 0
+   },
+   {
+    "bytes_per_dispatch": 0,
+    "dispatches": 16,
+    "kernel": "mha_decode_f32",
+    "weight_bytes": 0
+   },
+   {
+    "bytes_per_dispatch": 0,
+    "dispatches": 1,
+    "kernel": "sample_argmax_f32",
+    "weight_bytes": 0
+   }
+  ],
+  "path": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+  "reading": "402 of 964 dispatches -- 41.6% of the COUNT -- carry 99.893% of the weight bytes. The remaining 562 carry 0.107%. A ladder that counts dispatches treats these as interchangeable and they differ by three orders of magnitude."
+ },
+ "candidates": [
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 4173020928,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P0",
+   "id": "flash.deltanet",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 4173020928,
+   "state_lifetime": "SEQUENCE_STATE",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 1271398400,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": null,
+   "id": "flash.embeddings",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [
+    "hot-row / lookup organ: access_probability of the whole blob is unstated; active/stored is intensity, not a probability, and is not substituted."
+   ],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 5120,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 1271398400,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": null,
+   "id": "flash.lm_head",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 1271398400,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 5214301696,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P1",
+   "id": "flash.mtp",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [
+    "active_bytes_per_token is CONDITIONAL on the draft/verify path; access_probability left UNKNOWN."
+   ],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 5214301696,
+   "state_lifetime": "CONDITIONAL",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 102466171160,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P1",
+   "id": "flash.ngram_engine",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [
+    "hot-row / lookup organ: access_probability of the whole blob is unstated; active/stored is intensity, not a probability, and is not substituted."
+   ],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 65680600,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 2417664,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": null,
+   "id": "flash.norms",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality",
+    "representation_format"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": null,
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 2417664,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 117669888,
+   "bytes_kind": "organ_graph.recurrent_state.state_bytes.resident_bytes",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P0",
+   "id": "flash.recurrent_state",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "resident sequence-isolated state with explicit read/modify/write accounting",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 235339776,
+   "state_lifetime": "SEQUENCE_STATE",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 1281249280,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": null,
+   "id": "flash.residual_hyperconnections",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 1281249280,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": 0.01953125,
+   "access_probability_source": "HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.active_compute_bounds.expert_activation_fraction.routed",
+   "bytes": 241591910400,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P0",
+   "id": "flash.routed_experts",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [
+    "whole-organ grain is 241 GB; FPGA P0 mapping is selected expert subsets. Census has no per-expert stored-byte vector, so shards are not invented."
+   ],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 4718592000,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 125829120,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P0",
+   "id": "flash.router",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 125829120,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 472104960,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P0",
+   "id": "flash.shared_expert",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 472104960,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 1234716672,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": "P1",
+   "id": "flash.sparse_attention",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "state_lifetime",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 1234741248,
+   "state_lifetime": null,
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": null,
+   "bytes_kind": null,
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": null,
+   "id": "flash.support_misc",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "bytes",
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 0,
+   "state_lifetime": "STATIC_WEIGHTS",
+   "transport_cost_class": null
+  },
+  {
+   "access_probability": null,
+   "access_probability_source": null,
+   "bytes": 897862112,
+   "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+   "cited_weighted_latency": null,
+   "corpus": "flash-next",
+   "decidable": false,
+   "dependency_criticality": null,
+   "fpga_map_priority": null,
+   "id": "flash.vision_backbone",
+   "mac_latency_ns": null,
+   "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+   "missing_inputs": [
+    "access_probability",
+    "reuse_count",
+    "transport_cost_class",
+    "mac_latency_ns",
+    "projected_fpga_latency",
+    "dependency_criticality"
+   ],
+   "notes": [],
+   "projected_fpga_latency": null,
+   "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+   "reuse_count": null,
+   "score": "UNKNOWN",
+   "source_active_bytes_per_token": 0,
+   "state_lifetime": "CONDITIONAL",
+   "transport_cost_class": null
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "field_absences_in_flash_census": {
+  "access_probability": "stated only for routed_experts (expert_activation_fraction.routed = 10/512). UNKNOWN for every other organ; active/stored is not substituted as a probability",
+  "bytes": "present as stored_bytes / resident_bytes on the science organ_graph",
+  "dependency_criticality": "ABSENT (layer critical-path receipts are missing)",
+  "mac_latency_ns": "ABSENT (FLASH_TOKEN_NS_BUDGET actuals are null; no FPGA MAC receipt)",
+  "projected_fpga_latency": "ABSENT as a class; FPGA map has P0/P1 priority, which is not a latency",
+  "representation_format": "plan string from FLASH_EBPW; actual_representation_bytes is null",
+  "reuse_count": "ABSENT",
+  "state_lifetime": "DERIVED from science state_bytes.status where that field exists",
+  "transport_cost_class": "ABSENT (no board, no PCIe measurement)"
+ },
+ "frontier_lane": {
+  "classification": "MISSING",
+  "duplication_check": "bytes_atlas.py measures bytes; it does not solve residency",
+  "id": "F005",
+  "integration_target": "tools/future/hbm_doctor.py",
+  "prerequisite": "organ census (exists) + a criticality model",
+  "title": "No HBM Doctor"
+ },
+ "gaps_closed": [
+  "ResidentCandidate record with the nine contract fields, None-preserving.",
+  "Score is UNKNOWN when any required input is missing; never 0-filled.",
+  "Exact 0/1 knapsack over decidable items against a configurable 8 GiB budget.",
+  "Undecidable items are a headline output and cannot enter the selected set.",
+  "Anti-pattern guard: size-ranking vs criticality-per-byte, with Flash and NOETIC census counterexamples.",
+  "Flash candidates joined from science organ_graph + EBPW + FPGA map without inventing latency.",
+  "bytes_atlas consumed as byte ranking, not forked and not re-emitted as a TPS claim."
+ ],
+ "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "headline": {
+  "budget_bytes": 8589934592,
+  "candidate_count": 14,
+  "decidable_count": 0,
+  "known_resident_bytes": 360120050680,
+  "reading": "The size of the undecidable bucket is the headline: every Flash organ is missing at least one input the objective requires (mac_latency_ns, a critical-path receipt, an FPGA latency CLASS, reuse_count, transport_cost_class). Reporting UNKNOWN is the correct residency answer until those receipts exist. A filled 8 GiB set would be an invention.",
+  "selected_bytes": 0,
+  "selected_count": 0,
+  "undecidable_bytes": 360120050680,
+  "undecidable_count": 14,
+  "undecidable_is_the_decision": true
+ },
+ "inputs_consulted": {
+  "bytes_atlas_module": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "tools/accelerator/bytes_atlas.py",
+   "present": true
+  },
+  "bytes_atlas_receipt": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "present": true
+  },
+  "flash_ebpw_budget": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
+   "present": true
+  },
+  "flash_fpga_organ_map": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "present": true
+  },
+  "flash_layer10_critical_path": {
+   "in_git": false,
+   "on_disk": true,
+   "path": "receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+   "present": true
+  },
+  "flash_layer30_critical_path": {
+   "in_git": false,
+   "on_disk": true,
+   "path": "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+   "present": true
+  },
+  "flash_organ_census": {
+   "in_git": false,
+   "on_disk": true,
+   "path": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+   "present": true
+  },
+  "flash_science": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+   "present": true
+  },
+  "flash_token_ns_budget": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+   "present": true
+  },
+  "global_frontier": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "present": true
+  },
+  "noetic_organ_census": {
+   "in_git": true,
+   "on_disk": true,
+   "path": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "present": true
+  },
+  "qwen27_token_ns_budget": {
+   "in_git": false,
+   "on_disk": true,
+   "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+   "present": true
+  }
+ },
+ "negative_findings": [
+  "FLASH_TOKEN_NS_BUDGET.organs.*.actual_gpu_ns_per_token is null for every organ (WAITING_FOR_NATIVE_EXECUTION). mac_latency_ns therefore cannot be filled from a receipt.",
+  "FLASH_NEXT_FPGA_ORGAN_MAP.hbm_genome.capacity_bytes is null (TARGET_UNSELECTED). 8 GiB is the workunit default, not a measured board capacity.",
+  "No receipt states reuse_count, transport_cost_class, projected_fpga_latency as LOW/MEDIUM/HIGH, or dependency_criticality for Flash organs. Those absences are not filled with defaults.",
+  "Census grain is whole-organ. FPGA P0 mapping is selected expert subsets and n-gram lookup rows. Per-expert / hot-row byte vectors are not in the census and are not invented."
+ ],
+ "objective": {
+  "budget_bytes": 8589934592,
+  "budget_bytes_default": 8589934592,
+  "budget_source": "workunit default 8 GiB (8 * 1024**3). FPGA hbm_genome.capacity_bytes is null.",
+  "knapsack": "exact 0/1 over decidable items, maximising cited_weighted_latency subject to sum(bytes) <= budget_bytes",
+  "name": "marginal_complete_token_critical_path_reduction_per_resident_byte",
+  "score_rule": "cited_weighted_latency / bytes, where cited_weighted_latency = mac_latency_ns * access_probability * reuse_count * dependency_criticality. mac_latency_ns is copied from a real receipt or is None; it is never estimated. projected_fpga_latency is a CLASS and is never converted into nanoseconds. The product is a ranking key, not an FPGA measurement.",
+  "unknown_policy": "Any missing required input => score UNKNOWN, bucket undecidable. Unknown is not zero. Unknown is not an estimate."
+ },
+ "purpose": "Decide what should live in 8 GiB of HBM by maximising cited complete-token critical-path reduction per resident byte. HBM is a bandwidth shard. FPGA is Accelerator / Physical Compiler / Fusion.",
+ "recovered_implementation": [
+  {
+   "path": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+   "role": "contract-named Flash organ census",
+   "status": "ABSENT"
+  },
+  {
+   "path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
+   "role": "real Flash organ inventory: stored_bytes, active_bytes_per_token, state_bytes, expert fraction",
+   "status": "PRESENT"
+  },
+  {
+   "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
+   "role": "source_bytes per organ + chosen_representation plan strings; actual_representation_bytes is null",
+   "status": "PRESENT"
+  },
+  {
+   "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
+   "role": "per-organ token budget with every actual_* null",
+   "status": "PRESENT"
+  },
+  {
+   "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "role": "P0/P1 HBM-residency hypotheses; hbm_genome.capacity_bytes is null",
+   "status": "PRESENT"
+  },
+  {
+   "path": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+   "role": "measured Qwen3.8 organ bytes + function-lost-per-byte ranking (size-ranking counterexample)",
+   "status": "PRESENT"
+  },
+  {
+   "path": "tools/accelerator/bytes_atlas.py",
+   "role": "byte accounting; consumed via its sealed receipt, not forked",
+   "status": "PRESENT_IN_GIT"
+  },
+  {
+   "path": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "role": "sealed per-dispatch weight bytes; count column \u2260 bytes column",
+   "status": "PRESENT"
+  },
+  {
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "role": "F005 No HBM Doctor; duplication_check: bytes_atlas measures bytes, does not solve residency",
+   "status": "PRESENT"
+  },
+  {
+   "path": "hcli/agentos/fpga_preboard.py",
+   "role": "HBMGenome.capacity_bytes Optional, default None; TARGET_UNSELECTED",
+   "status": "PRESENT_IN_GIT"
+  },
+  {
+   "path": "tools/headless/noetic_organ_census.py",
+   "role": "producer of NOETIC_ORGAN_CENSUS; Qwen3.8, not Flash",
+   "status": "PRESENT_IN_GIT"
+  },
+  {
+   "path": "tools/headless/doctor_diagnosis.py",
+   "role": "representation Doctor; not a hardware-axis / HBM residency solver",
+   "status": "PRESENT_IN_GIT"
+  }
+ ],
+ "schema": "hawking.future.hbm_doctor.v1",
+ "seal_sha256": "0d4bf2ffbe820edc1c07c64348934ced0d35896255edc76686b37f900203b102",
+ "solution": {
+  "budget_bytes": 8589934592,
+  "counts": {
+   "decidable": 0,
+   "rejected": 0,
+   "selected": 0,
+   "undecidable": 14
+  },
+  "rejected": [],
+  "selected": [],
+  "selected_bytes": 0,
+  "selected_cited_weighted_latency": 0.0,
+  "selected_ids": [],
+  "undecidable": [
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 4173020928,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P0",
+    "id": "flash.deltanet",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 4173020928,
+    "state_lifetime": "SEQUENCE_STATE",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 1271398400,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": null,
+    "id": "flash.embeddings",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [
+     "hot-row / lookup organ: access_probability of the whole blob is unstated; active/stored is intensity, not a probability, and is not substituted."
+    ],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 5120,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 1271398400,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": null,
+    "id": "flash.lm_head",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 1271398400,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 5214301696,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P1",
+    "id": "flash.mtp",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [
+     "active_bytes_per_token is CONDITIONAL on the draft/verify path; access_probability left UNKNOWN."
+    ],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 5214301696,
+    "state_lifetime": "CONDITIONAL",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 102466171160,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P1",
+    "id": "flash.ngram_engine",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [
+     "hot-row / lookup organ: access_probability of the whole blob is unstated; active/stored is intensity, not a probability, and is not substituted."
+    ],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 65680600,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 2417664,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": null,
+    "id": "flash.norms",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality",
+     "representation_format"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": null,
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 2417664,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 117669888,
+    "bytes_kind": "organ_graph.recurrent_state.state_bytes.resident_bytes",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P0",
+    "id": "flash.recurrent_state",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "resident sequence-isolated state with explicit read/modify/write accounting",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 235339776,
+    "state_lifetime": "SEQUENCE_STATE",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 1281249280,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": null,
+    "id": "flash.residual_hyperconnections",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 1281249280,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": 0.01953125,
+    "access_probability_source": "HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.active_compute_bounds.expert_activation_fraction.routed",
+    "bytes": 241591910400,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P0",
+    "id": "flash.routed_experts",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [
+     "whole-organ grain is 241 GB; FPGA P0 mapping is selected expert subsets. Census has no per-expert stored-byte vector, so shards are not invented."
+    ],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 4718592000,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 125829120,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P0",
+    "id": "flash.router",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 125829120,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 472104960,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P0",
+    "id": "flash.shared_expert",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 472104960,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 1234716672,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": "P1",
+    "id": "flash.sparse_attention",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "state_lifetime",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 1234741248,
+    "state_lifetime": null,
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": null,
+    "bytes_kind": null,
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": null,
+    "id": "flash.support_misc",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "bytes",
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 0,
+    "state_lifetime": "STATIC_WEIGHTS",
+    "transport_cost_class": null
+   },
+   {
+    "access_probability": null,
+    "access_probability_source": null,
+    "bytes": 897862112,
+    "bytes_kind": "organ_graph.stored_bytes.value (pinned safetensors header payload)",
+    "cited_weighted_latency": null,
+    "corpus": "flash-next",
+    "decidable": false,
+    "dependency_criticality": null,
+    "fpga_map_priority": null,
+    "id": "flash.vision_backbone",
+    "mac_latency_ns": null,
+    "mac_latency_ns_source": "FLASH_TOKEN_NS_BUDGET.actual_gpu_ns_per_token is null; no FPGA MAC latency receipt exists",
+    "missing_inputs": [
+     "access_probability",
+     "reuse_count",
+     "transport_cost_class",
+     "mac_latency_ns",
+     "projected_fpga_latency",
+     "dependency_criticality"
+    ],
+    "notes": [],
+    "projected_fpga_latency": null,
+    "representation_format": "shared-basis-plus-NF-residual for expert/routed paths; organ-native representation for state, sparse, n-gram, MTP, and vision paths",
+    "reuse_count": null,
+    "score": "UNKNOWN",
+    "source_active_bytes_per_token": 0,
+    "state_lifetime": "CONDITIONAL",
+    "transport_cost_class": null
+   }
+  ]
+ },
+ "version": 1,
+ "vocabulary": {
+  "eras": [
+   "I",
+   "II",
+   "III",
+   "IV",
+   "V"
+  ],
+  "evidence_classes": [
+   "STATIC_ONLY",
+   "DIAGNOSTIC_RELATIVE",
+   "PROTECTED_ABSOLUTE"
+  ],
+  "fpga_home": "Accelerator / Physical Compiler / Fusion",
+  "not_an_fpga_backend": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "this_receipt": "STATIC_ONLY"
+ }
+}

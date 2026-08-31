@@ -1,0 +1,1095 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:37:44Z",
+  "recorded_by": "tools/future/accelerator_workunits.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "contamination": {
+  "class": "HEAVY",
+  "protected_ab_runnable": false,
+  "rule": "PROTECTED_AB is never runnable under LIGHT/HEAVY/UNKNOWN, and is never runnable on this sidecar even if QUIESCENT.",
+  "source": "at least one HEAVY probe fired"
+ },
+ "emitted": {
+  "n_emitted": 22,
+  "n_gpu_sleeping": 9,
+  "n_pending": 13,
+  "n_refused": 0,
+  "n_sleeping": 9,
+  "refusals": [],
+  "units": [
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.PROFILE_COMPLETE_TOKEN",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json"
+    ],
+    "lane": "metal_gpu",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "PROFILE_COMPLETE_TOKEN",
+    "status": "sleeping",
+    "verifier": "future.codex.profile_complete_token",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.PROFILE_REGION",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json"
+    ],
+    "lane": "metal_gpu",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "PROFILE_REGION",
+    "status": "sleeping",
+    "verifier": "future.codex.profile_region",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.PROFILE_HOST_CEREMONY",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json"
+    ],
+    "lane": "metal_gpu",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "PROFILE_HOST_CEREMONY",
+    "status": "sleeping",
+    "verifier": "future.codex.profile_host_ceremony",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.PROFILE_ACTIVE_BYTES",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json"
+    ],
+    "lane": "metal_gpu",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "PROFILE_ACTIVE_BYTES",
+    "status": "sleeping",
+    "verifier": "future.codex.profile_active_bytes",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.PROFILE_DISPATCH",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json"
+    ],
+    "lane": "metal_gpu",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "PROFILE_DISPATCH",
+    "status": "sleeping",
+    "verifier": "future.codex.profile_dispatch",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.PROFILE_SYNC",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json"
+    ],
+    "lane": "metal_gpu",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "PROFILE_SYNC",
+    "status": "sleeping",
+    "verifier": "future.codex.profile_sync",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.FIND_TALLEST_COST",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": true,
+    "species": "FIND_TALLEST_COST",
+    "status": "pending",
+    "verifier": "future.codex.find_tallest_cost",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.GENERATE_KERNEL_CANDIDATE",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": true,
+    "species": "GENERATE_KERNEL_CANDIDATE",
+    "status": "pending",
+    "verifier": "future.codex.generate_kernel_candidate",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.GENERATE_FUSION_CANDIDATE",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": true,
+    "species": "GENERATE_FUSION_CANDIDATE",
+    "status": "pending",
+    "verifier": "future.codex.generate_fusion_candidate",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.GENERATE_LAYOUT_CANDIDATE",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": true,
+    "species": "GENERATE_LAYOUT_CANDIDATE",
+    "status": "pending",
+    "verifier": "future.codex.generate_layout_candidate",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.GENERATE_PIPELINE_PERSISTENCE_CANDIDATE",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": true,
+    "species": "GENERATE_PIPELINE_PERSISTENCE_CANDIDATE",
+    "status": "pending",
+    "verifier": "future.codex.generate_pipeline_persistence_candidate",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/future/CANDIDATE_STAGED_PLAN.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.STATIC_KERNEL_VERIFY",
+    "input_receipts": [
+     "receipts/future/CANDIDATE_STAGED_PLAN.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
+    "runnable": true,
+    "species": "STATIC_KERNEL_VERIFY",
+    "status": "pending",
+    "verifier": "future.codex.static_kernel_verify",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/future/STATIC_KERNEL_PREFLIGHT.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.HOST_SHADER_ABI_VERIFY",
+    "input_receipts": [
+     "receipts/future/STATIC_KERNEL_PREFLIGHT.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+    "runnable": true,
+    "species": "HOST_SHADER_ABI_VERIFY",
+    "status": "pending",
+    "verifier": "future.codex.host_shader_abi_verify",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json, receipts/future/CANDIDATE_STAGED_PLAN.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.STRUCTURAL_COST_COMPARE",
+    "input_receipts": [
+     "CODEX_ACCELERATOR_HANDOFF.json",
+     "receipts/future/CANDIDATE_STAGED_PLAN.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": true,
+    "species": "STRUCTURAL_COST_COMPARE",
+    "status": "pending",
+    "verifier": "future.codex.structural_cost_compare",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.DIAGNOSTIC_AB",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "lane": "diagnostic_ab",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "DIAGNOSTIC_AB",
+    "status": "sleeping",
+    "verifier": "future.codex.diagnostic_ab",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json is absent (named); never pending under LIGHT/HEAVY/UNKNOWN contamination; never pending on this sidecar even if QUIESCENT; acquire_lease raises rather than flock",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.PROTECTED_AB",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "lane": "protected_lease",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "PROTECTED_AB",
+    "status": "sleeping",
+    "verifier": "future.codex.protected_ab",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: an actual HCLI protected lease is present with a proven holder pid, the machine is QUIESCENT, and no protected lock is seized. Armed by: the protected-accelerator-bench and qwen-protected-bench lock files exist; holder pids are unproven and flock would be a seizure; qualification pipeline classifies the machine HEAVY and will not quiesce standing workers PROTECTED_AB is not runnable under contamination_class=HEAVY (LIGHT or worse); wake also requires QUIESCENT."
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+    "gpu_authority_required": true,
+    "id": "codex.metabolism.0.REPROFILE_AFTER_WIN",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    ],
+    "lane": "metal_gpu",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": false,
+    "species": "REPROFILE_AFTER_WIN",
+    "status": "sleeping",
+    "verifier": "future.codex.reprofile_after_win",
+    "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused. SLEEPING until: MetalContext reports a Metal-capable GPU for the current execution host. Armed by: MetalContext reports no Metal-capable GPU for the current execution host"
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_SCOREBOARD.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.UPDATE_SCOREBOARD",
+    "input_receipts": [
+     "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+    "runnable": true,
+    "species": "UPDATE_SCOREBOARD",
+    "status": "pending",
+    "verifier": "future.codex.update_scoreboard",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/future/ODYSSEY2_LAW_STORE.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.UPDATE_LAW",
+    "input_receipts": [
+     "receipts/future/ODYSSEY2_LAW_STORE.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "runnable": true,
+    "species": "UPDATE_LAW",
+    "status": "pending",
+    "verifier": "future.codex.update_law",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/future/NEGATIVE_SCIENCE_INDEX.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.UPDATE_SCAR",
+    "input_receipts": [
+     "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+    "runnable": true,
+    "species": "UPDATE_SCAR",
+    "status": "pending",
+    "verifier": "future.codex.update_scar",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/future/ODYSSEY2_LAW_STORE.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.TRANSFER_LAW",
+    "input_receipts": [
+     "receipts/future/ODYSSEY2_LAW_STORE.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "runnable": true,
+    "species": "TRANSFER_LAW",
+    "status": "pending",
+    "verifier": "future.codex.transfer_law",
+    "wake_condition": null
+   },
+   {
+    "contamination_class": "HEAVY",
+    "fails_closed": "refuses if an input receipt is absent (named: receipts/future/ODYSSEY3_ADVERSARY.json); does not invent a hardware number; does not promote",
+    "gpu_authority_required": false,
+    "id": "codex.metabolism.0.ATTACK_LAW",
+    "input_receipts": [
+     "receipts/future/ODYSSEY3_ADVERSARY.json"
+    ],
+    "lane": "static",
+    "output_receipt": "receipts/future/ODYSSEY3_ADVERSARY.json",
+    "runnable": true,
+    "species": "ATTACK_LAW",
+    "status": "pending",
+    "verifier": "future.codex.attack_law",
+    "wake_condition": null
+   }
+  ]
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "next_species() answers the Accelerator cursor from real queue state and returns a reason when nothing is runnable (never an empty list)",
+  "GPU-authority species are emitted SLEEPING on this sidecar even if the handoff blocker list is empty (codex_behaviors derives sleep from blockers)",
+  "a species whose input receipt is absent refuses, naming the receipt",
+  "PROTECTED_AB is never emitted runnable under LIGHT or worse contamination"
+ ],
+ "gpu_authority": false,
+ "gpu_species": [
+  "PROFILE_COMPLETE_TOKEN",
+  "PROFILE_REGION",
+  "PROFILE_HOST_CEREMONY",
+  "PROFILE_ACTIVE_BYTES",
+  "PROFILE_DISPATCH",
+  "PROFILE_SYNC",
+  "DIAGNOSTIC_AB",
+  "PROTECTED_AB",
+  "REPROFILE_AFTER_WIN"
+ ],
+ "handoff": {
+  "loaded_from": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+  "path": "CODEX_ACCELERATOR_HANDOFF.json",
+  "present": true
+ },
+ "loop": {
+  "profile_columns": [
+   "total_nx_bytes",
+   "resident_bytes",
+   "active_representation_bytes_per_token",
+   "actual_read_bytes_per_token",
+   "transient_bytes_per_token",
+   "gpu_ns_per_token",
+   "complete_wall_ns_per_accepted_token",
+   "dispatches_per_token",
+   "sync_ns_per_token",
+   "accepted_tps",
+   "fallback_count"
+  ],
+  "protected_window_stages": [
+   "estimate_qualification_value",
+   "decide_eviction",
+   "checkpoint_resident",
+   "freeze_safe_work",
+   "pause_unload_resident",
+   "establish_protected_lease",
+   "run_staged_qualification",
+   "record_protected_receipts",
+   "restore_resident",
+   "resume_mission"
+  ],
+  "required_species": [
+   "PROFILE_COMPLETE_TOKEN",
+   "PROFILE_REGION",
+   "PROFILE_HOST_CEREMONY",
+   "PROFILE_ACTIVE_BYTES",
+   "PROFILE_DISPATCH",
+   "PROFILE_SYNC",
+   "FIND_TALLEST_COST",
+   "GENERATE_KERNEL_CANDIDATE",
+   "GENERATE_FUSION_CANDIDATE",
+   "GENERATE_LAYOUT_CANDIDATE",
+   "GENERATE_PIPELINE_PERSISTENCE_CANDIDATE",
+   "STATIC_KERNEL_VERIFY",
+   "HOST_SHADER_ABI_VERIFY",
+   "STRUCTURAL_COST_COMPARE",
+   "DIAGNOSTIC_AB",
+   "PROTECTED_AB",
+   "REPROFILE_AFTER_WIN",
+   "UPDATE_SCOREBOARD",
+   "UPDATE_LAW",
+   "UPDATE_SCAR",
+   "TRANSFER_LAW",
+   "ATTACK_LAW"
+  ],
+  "rule": "profile, rank the tallest denominator, ask why the cost exists, generate a candidate that eliminates work, verify statically, AB, ledger, transfer, attack; a PHYSICAL_WIN enqueues REPROFILE_AFTER_WIN. GPU stages sleep on this sidecar.",
+  "waves": [
+   [
+    "PROFILE_COMPLETE_TOKEN",
+    "PROFILE_REGION",
+    "PROFILE_HOST_CEREMONY",
+    "PROFILE_ACTIVE_BYTES",
+    "PROFILE_DISPATCH",
+    "PROFILE_SYNC"
+   ],
+   [
+    "FIND_TALLEST_COST"
+   ],
+   [
+    "GENERATE_KERNEL_CANDIDATE",
+    "GENERATE_FUSION_CANDIDATE",
+    "GENERATE_LAYOUT_CANDIDATE",
+    "GENERATE_PIPELINE_PERSISTENCE_CANDIDATE"
+   ],
+   [
+    "STATIC_KERNEL_VERIFY",
+    "HOST_SHADER_ABI_VERIFY",
+    "STRUCTURAL_COST_COMPARE"
+   ],
+   [
+    "DIAGNOSTIC_AB"
+   ],
+   [
+    "PROTECTED_AB"
+   ],
+   [
+    "REPROFILE_AFTER_WIN"
+   ],
+   [
+    "UPDATE_SCOREBOARD",
+    "UPDATE_LAW",
+    "UPDATE_SCAR"
+   ],
+   [
+    "TRANSFER_LAW"
+   ],
+   [
+    "ATTACK_LAW"
+   ]
+  ]
+ },
+ "negative_findings": [
+  "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE",
+  "READY_PROTECTED candidates wait on a GPU window this partition must not seize",
+  "contamination_class=HEAVY (at least one HEAVY probe fired); PROTECTED_AB stays SLEEPING",
+  "codex_behaviors.UPDATE_SCOREBOARD and ATTACK_LAW remain UNGROUNDED_FROM_HANDOFF; this module still emits them as species with their input-receipt gate",
+  "orchestration.py BINDINGS is not writable from this lane; the module is resident-callable via --build/--next regardless"
+ ],
+ "next_species": {
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. GPU-authority species are emitted SLEEPING; this partition cannot take a lease or write a protected result. A missing input is a named refusal, never a pass.",
+  "contamination_class": "HEAVY",
+  "contamination_source": "injected",
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "gpu_authority_required": true,
+  "queue": {
+   "blocked_ids": [
+    "flash-attention-gate-fusion",
+    "flash-compact-moe-bf16-vec4",
+    "flash-compact-moe-epilogue",
+    "flash-device-mhc-state",
+    "flash-encoder-label-elision",
+    "flash-fullseq-catalog-cache",
+    "flash-fullseq-ordered-encoder",
+    "flash-hc-staged-threadgroup",
+    "flash-meta-sub1-coherent",
+    "flash-p6-act-quant-simdgroup",
+    "flash-p6-batched-down-qat",
+    "flash-p6-fused-down-shared-combine",
+    "flash-p6-fused-epilogue-stack",
+    "flash-p6-hash-single-command-buffer",
+    "flash-p6-learned-expert-cache-reuse",
+    "flash-p6-learned-reader-reuse",
+    "flash-p6-prefix-concurrent-wave",
+    "flash-p6-routed-fp4-down-bf16-fused",
+    "flash-p6-routed-fp4-down-bf16-simd",
+    "flash-p6-routed-fp4-gate-up-swiglu-fused",
+    "flash-p6-routed-fp4-gate-up-swiglu-simd",
+    "flash-p6-routed-fp4-simdgroup",
+    "flash-p6-shared-fp8-simdgroup",
+    "flash-p7-mhc-pre-simdgroup",
+    "flash-pipeline-cache-reuse",
+    "flash-pipeline-id-resolution",
+    "flash-qkv-gqa-rope-fusion",
+    "flash-routed-fp4-gate-up-swiglu-fused",
+    "flash-router-topk-fusion",
+    "flash-shared-fp8-down-combine-fused",
+    "flash-shared-fp8-gate-up-swiglu-fused",
+    "flash-source-bf16-simd"
+   ],
+   "loaded_from": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "n_blocked": 32,
+   "n_candidates": 49,
+   "n_ready_diagnostic": 0,
+   "n_ready_protected": 13,
+   "n_static_only": 4,
+   "n_wins": 0,
+   "ready_diagnostic_ids": [],
+   "ready_protected_ids": [
+    "qwen27-affine2-splitk4",
+    "qwen27-attention-gate-fusion",
+    "qwen27-ba-delta-fusion",
+    "qwen27-commit-timing-elision",
+    "qwen27-deltanet-inproj-fusion",
+    "qwen27-encoder-label-elision",
+    "qwen27-fast-profile",
+    "qwen27-gqa-qkv-fusion",
+    "qwen27-pipeline-cache-reuse",
+    "qwen27-pipeline-id-resolution",
+    "qwen27-pipeline-state-elision",
+    "qwen27-q2f-splitk4",
+    "qwen27-q4-vecgroup-x64"
+   ],
+   "static_only_ids": [
+    "flash-hc-router-topk-fusion",
+    "qwen27-affine2-splitk4-vec",
+    "qwen27-q2f-splitk4-vec",
+    "qwen27-resident-untimed-decode"
+   ],
+   "status_counts": {
+    "BLOCKED": 32,
+    "READY_PROTECTED": 13,
+    "STATIC_ONLY": 4
+   },
+   "win_ids": []
+  },
+  "reason": "13 READY_PROTECTED candidate(s) wait on a protected complete-token AB. PROTECTED_AB is the Accelerator next step and is not runnable here (gpu_authority=false, contamination_class=HEAVY is LIGHT or worse).",
+  "runnable": false,
+  "species": "PROTECTED_AB",
+  "status": "sleeping",
+  "wake_condition": "SLEEPING until a distinct HCLI GPU_PROTECTED lane (not this sidecar) holds a proven lease on a Metal-capable GPU with the Metal compiler present. This sidecar partition has no GPU authority and never will. protected_window.acquire_lease raises rather than flock. A synthetic complete-token result is refused."
+ },
+ "purpose": "Make Codex's profile \u2192 tallest cost \u2192 why \u2192 remove (information / bytes / FLOPs / intermediate / dispatch / sync / copy / ceremony) \u2192 A/B \u2192 integrate \u2192 reprofile loop schedulable by HCLI, so the next latency seam is found without a human asking for it.",
+ "recovered_implementation": [
+  "tools/future/codex_behaviors.py \u2014 thirty grounded species, emit_species_unit, emit_cycle, wake_condition_for; this module does not fork the catalog",
+  "tools/future/workunit_species.py \u2014 HCLI field set, define_species, emit_hcli_workunit",
+  "tools/future/candidate_planner.py \u2014 live qualification queue + staged factorial plan",
+  "tools/future/contamination.py \u2014 QUIESCENT/LIGHT/HEAVY/UNKNOWN; assert_promotable",
+  "tools/future/protected_window.py \u2014 eviction envelope; acquire_lease raises",
+  "tools/future/qwen27_profile_schema.py \u2014 REQUIRED_METRICS columns FIND_TALLEST ranks",
+  "CODEX_ACCELERATOR_HANDOFF.json \u2014 training trace loaded from /Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.accelerator_workunits.next_species()",
+  "fails_closed": "InputRefused names the missing receipt; GPU units cannot be pending; next_species on an empty or absent queue returns a reason, not []",
+  "frontier": "FT.HCLI_SELF.emit-workunits",
+  "receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+  "workunit": "one CPU_ANALYSIS unit for next_species / emit_loop; GPU species are emitted SLEEPING and are not a work source on this host"
+ },
+ "schema": "hawking.future.accelerator_workunits.v1",
+ "seal_sha256": "e73de9c4232c1d8027f1a216ed1b0b8f5b2454c18a95054e095b72c616d05602",
+ "species": {
+  "ATTACK_LAW": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "odyssey_iii_adversarial_experiment",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/future/ODYSSEY3_ADVERSARY.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "ATTACK_LAW",
+   "input_receipts": [
+    "receipts/future/ODYSSEY3_ADVERSARY.json"
+   ],
+   "lane": "static",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ODYSSEY3_ADVERSARY.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Adversarially attack a claimed law",
+   "verifier": "future.codex.attack_law"
+  },
+  "DIAGNOSTIC_AB": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "DIAGNOSTIC_AB",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "lane": "diagnostic_ab",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "GPU_DIRTY_OK",
+   "title": "Diagnostic relative AB",
+   "verifier": "future.codex.diagnostic_ab"
+  },
+  "FIND_TALLEST_COST": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "hardware_doctor_experiment",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "FIND_TALLEST_COST",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "lane": "static",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Rank the tallest denominator",
+   "verifier": "future.codex.find_tallest_cost"
+  },
+  "GENERATE_FUSION_CANDIDATE": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "fusion_simulation",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "GENERATE_FUSION_CANDIDATE",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "lane": "static",
+   "loose_parent": "fusion search",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Generate a fusion candidate",
+   "verifier": "future.codex.generate_fusion_candidate"
+  },
+  "GENERATE_KERNEL_CANDIDATE": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "GENERATE_KERNEL_CANDIDATE",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "lane": "static",
+   "loose_parent": "GPU kernel optimization",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Generate a GPU kernel candidate",
+   "verifier": "future.codex.generate_kernel_candidate"
+  },
+  "GENERATE_LAYOUT_CANDIDATE": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "learned_compiler_experiment",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "GENERATE_LAYOUT_CANDIDATE",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "lane": "static",
+   "loose_parent": "layout search",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Generate a layout candidate",
+   "verifier": "future.codex.generate_layout_candidate"
+  },
+  "GENERATE_PIPELINE_PERSISTENCE_CANDIDATE": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "GENERATE_PIPELINE_PERSISTENCE_CANDIDATE",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "lane": "static",
+   "loose_parent": "pipeline persistence",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Generate a pipeline-persistence candidate",
+   "verifier": "future.codex.generate_pipeline_persistence_candidate"
+  },
+  "HOST_SHADER_ABI_VERIFY": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "independent_reproduction",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/future/STATIC_KERNEL_PREFLIGHT.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "HOST_SHADER_ABI_VERIFY",
+   "input_receipts": [
+    "receipts/future/STATIC_KERNEL_PREFLIGHT.json"
+   ],
+   "lane": "static",
+   "loose_parent": "GPU kernel optimization",
+   "output_receipt": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Host/shader ABI verify",
+   "verifier": "future.codex.host_shader_abi_verify"
+  },
+  "PROFILE_ACTIVE_BYTES": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "PROFILE_ACTIVE_BYTES",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "lane": "metal_gpu",
+   "loose_parent": "active-byte reduction",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Profile active representation bytes",
+   "verifier": "future.codex.profile_active_bytes"
+  },
+  "PROFILE_COMPLETE_TOKEN": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "PROFILE_COMPLETE_TOKEN",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "lane": "metal_gpu",
+   "loose_parent": "GPU kernel optimization",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Profile a complete accepted token",
+   "verifier": "future.codex.profile_complete_token"
+  },
+  "PROFILE_DISPATCH": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "PROFILE_DISPATCH",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "lane": "metal_gpu",
+   "loose_parent": "dispatch/sync elimination",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Profile dispatches per token",
+   "verifier": "future.codex.profile_dispatch"
+  },
+  "PROFILE_HOST_CEREMONY": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "PROFILE_HOST_CEREMONY",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "lane": "metal_gpu",
+   "loose_parent": "source ceremony elimination",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Profile host ceremony",
+   "verifier": "future.codex.profile_host_ceremony"
+  },
+  "PROFILE_REGION": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "PROFILE_REGION",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "lane": "metal_gpu",
+   "loose_parent": "GPU kernel optimization",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Profile an affected physical region",
+   "verifier": "future.codex.profile_region"
+  },
+  "PROFILE_SYNC": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "PROFILE_SYNC",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json"
+   ],
+   "lane": "metal_gpu",
+   "loose_parent": "dispatch/sync elimination",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Profile synchronization cost",
+   "verifier": "future.codex.profile_sync"
+  },
+  "PROTECTED_AB": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json is absent (named); never pending under LIGHT/HEAVY/UNKNOWN contamination; never pending on this sidecar even if QUIESCENT; acquire_lease raises rather than flock",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "PROTECTED_AB",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "lane": "protected_lease",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Protected absolute AB",
+   "verifier": "future.codex.protected_ab"
+  },
+  "REPROFILE_AFTER_WIN": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json); emitted SLEEPING with a wake condition, never pending, never FAILED",
+   "gpu_authority": false,
+   "gpu_authority_required": true,
+   "id": "REPROFILE_AFTER_WIN",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+   ],
+   "lane": "metal_gpu",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "GPU_EXCLUSIVE",
+   "title": "Reprofile after a physical win",
+   "verifier": "future.codex.reprofile_after_win"
+  },
+  "STATIC_KERNEL_VERIFY": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "independent_reproduction",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/future/CANDIDATE_STAGED_PLAN.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "STATIC_KERNEL_VERIFY",
+   "input_receipts": [
+    "receipts/future/CANDIDATE_STAGED_PLAN.json"
+   ],
+   "lane": "static",
+   "loose_parent": "GPU kernel optimization",
+   "output_receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Static kernel verify",
+   "verifier": "future.codex.static_kernel_verify"
+  },
+  "STRUCTURAL_COST_COMPARE": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "hardware_doctor_experiment",
+   "fails_closed": "refuses if an input receipt is absent (named: CODEX_ACCELERATOR_HANDOFF.json, receipts/future/CANDIDATE_STAGED_PLAN.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "STRUCTURAL_COST_COMPARE",
+   "input_receipts": [
+    "CODEX_ACCELERATOR_HANDOFF.json",
+    "receipts/future/CANDIDATE_STAGED_PLAN.json"
+   ],
+   "lane": "static",
+   "loose_parent": "dispatch/sync elimination",
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Structural cost compare",
+   "verifier": "future.codex.structural_cost_compare"
+  },
+  "TRANSFER_LAW": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "odyssey_ii_transfer_experiment",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/future/ODYSSEY2_LAW_STORE.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "TRANSFER_LAW",
+   "input_receipts": [
+    "receipts/future/ODYSSEY2_LAW_STORE.json"
+   ],
+   "lane": "static",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Transfer a law within declared scope",
+   "verifier": "future.codex.transfer_law"
+  },
+  "UPDATE_LAW": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "odyssey_ii_transfer_experiment",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/future/ODYSSEY2_LAW_STORE.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "UPDATE_LAW",
+   "input_receipts": [
+    "receipts/future/ODYSSEY2_LAW_STORE.json"
+   ],
+   "lane": "static",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Update the AKB law store",
+   "verifier": "future.codex.update_law"
+  },
+  "UPDATE_SCAR": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "odyssey_iii_adversarial_experiment",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/future/NEGATIVE_SCIENCE_INDEX.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "UPDATE_SCAR",
+   "input_receipts": [
+    "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
+   ],
+   "lane": "static",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Update the scar register",
+   "verifier": "future.codex.update_scar"
+  },
+  "UPDATE_SCOREBOARD": {
+   "evidence_class": "STATIC_ONLY",
+   "extends": "accelerator_candidate_qualification",
+   "fails_closed": "refuses if an input receipt is absent (named: receipts/headless/ACCELERATOR_SCOREBOARD.json); does not invent a hardware number; does not promote",
+   "gpu_authority": false,
+   "gpu_authority_required": false,
+   "id": "UPDATE_SCOREBOARD",
+   "input_receipts": [
+    "receipts/headless/ACCELERATOR_SCOREBOARD.json"
+   ],
+   "lane": "static",
+   "loose_parent": null,
+   "output_receipt": "receipts/future/ACCELERATOR_WORKUNITS.json",
+   "profile_columns": [],
+   "resource_class": "STATIC_ANALYSIS",
+   "title": "Update the accelerator scoreboard",
+   "verifier": "future.codex.update_scoreboard"
+  }
+ },
+ "version": 1
+}

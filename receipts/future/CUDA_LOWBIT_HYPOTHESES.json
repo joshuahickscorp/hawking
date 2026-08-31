@@ -1,0 +1,2165 @@
+{
+ "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+ "atlas_primitives": [
+  "PersistentPhysicalRegion",
+  "StationaryRepresentation",
+  "AsyncPrefetch",
+  "DoubleBufferedTile",
+  "SpatialPipeline",
+  "FusedDecodeCompute",
+  "DirectRoutedAccumulate",
+  "LocalStateMachine",
+  "SemanticTransportEdge",
+  "TiledProjection",
+  "LayoutTransform",
+  "SparseSkip",
+  "ConditionalPhysicalProgram",
+  "GraphReplay",
+  "CollectiveRegion",
+  "MoveOrRecompute",
+  "MemoryTierIdentity"
+ ],
+ "atlas_schema": "hawking.accelerator.architecture_atlas.v1",
+ "avoid_families": [
+  {
+   "family": "assume_lower_storage_bpw_is_faster_per_token_density_is_velocity",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-006",
+   "sample_source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+  },
+  {
+   "family": "binary_quantization",
+   "n_query_hits": 103,
+   "n_refuse_eligible": 103,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-152172d233408f922a42cc2779f4419e",
+   "sample_source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl"
+  },
+  {
+   "family": "cross_expert_structure",
+   "n_query_hits": 11,
+   "n_refuse_eligible": 10,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
+   "sample_source_path": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json"
+  },
+  {
+   "family": "expert_wave",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json#hawking_expert_wave_negative",
+   "sample_source_path": "workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json"
+  },
+  {
+   "family": "gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
+   "sample_source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
+  },
+  {
+   "family": "gemv_kernel_micro_opt_axis_on_qwen3_8",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#gemv_kernel_micro_opt_axis_on_qwen3_8",
+   "sample_source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
+  },
+  {
+   "family": "large_expert_cache",
+   "n_query_hits": 2,
+   "n_refuse_eligible": 0,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#large_expert_cache",
+   "sample_source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json"
+  },
+  {
+   "family": "learned_codebook",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "workspace/docs/guides/dead_levers.md#learned_codebook",
+   "sample_source_path": "workspace/docs/guides/dead_levers.md"
+  },
+  {
+   "family": "low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
+   "sample_source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
+  },
+  {
+   "family": "megakernel",
+   "n_query_hits": 2,
+   "n_refuse_eligible": 2,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#full_layer_moe_megakernel_as_the_tps_lever",
+   "sample_source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
+  },
+  {
+   "family": "mla_phase_4_simdgroup_attn",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "workspace/docs/guides/dead_levers.md#mla_phase_4_simdgroup_attn",
+   "sample_source_path": "workspace/docs/guides/dead_levers.md"
+  },
+  {
+   "family": "persistent_8_gib_expert_arena_previous_token_route_prefetch",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#persistent_8_gib_expert_arena_previous_token_route_prefetch",
+   "sample_source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
+  },
+  {
+   "family": "q5_0_simd_shuffle",
+   "n_query_hits": 1,
+   "n_refuse_eligible": 1,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "workspace/docs/guides/dead_levers.md#q5_0_simd_shuffle",
+   "sample_source_path": "workspace/docs/guides/dead_levers.md"
+  },
+  {
+   "family": "raw_weight_pq_vq",
+   "n_query_hits": 3,
+   "n_refuse_eligible": 3,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#raw_weight_pq_vq_at_one_bit",
+   "sample_source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json"
+  },
+  {
+   "family": "residual_codebook",
+   "n_query_hits": 20,
+   "n_refuse_eligible": 20,
+   "sample_level": "MODEL_SPECIFIC",
+   "sample_scar_id": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-1706ad3b92f294234bee4723169edf40",
+   "sample_source_path": "workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl"
+  }
+ ],
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:17:55Z",
+  "recorded_by": "tools/future/cuda_lowbit_hypotheses.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. No CUDA device on this Apple host. These are physical-law hypotheses, not vendor copies and not benchmarks. Neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
+ "cost_classes": [
+  "ACTIVE_BYTES",
+  "HOST_CEREMONY",
+  "STATE_MOVEMENT",
+  "SYNCHRONIZATION",
+  "REDUCTION_TRAFFIC",
+  "LAUNCH_CEREMONY",
+  "DENSE_INTERMEDIATE",
+  "RANDOM_ACCESS_TAX",
+  "LAYOUT_TRANSFORM_BYTES",
+  "UNPACK_ISSUE"
+ ],
+ "evidence_resolution": {
+  "ACCELERATOR_ARCHITECTURE_ATLAS.json": {
+   "live_headless": {
+    "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "resolved_via": "unresolved"
+   },
+   "pinned": {
+    "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "resolved_via": "git"
+   },
+   "source": "pinned_snapshot",
+   "used": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+  },
+  "ACCELERATOR_REPATRIATION_QUEUE.json": {
+   "live_headless": {
+    "path": "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+    "resolved_via": "unresolved"
+   },
+   "pinned": {
+    "path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
+    "resolved_via": "git"
+   },
+   "source": "pinned_snapshot",
+   "used": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json"
+  }
+ },
+ "evidence_source": {
+  "ACCELERATOR_ARCHITECTURE_ATLAS.json": "pinned_snapshot",
+  "ACCELERATOR_REPATRIATION_QUEUE.json": "pinned_snapshot"
+ },
+ "experiment_spec_schema": "hawking.accelerator.experiment_spec.v1",
+ "gap_analysis": {
+  "already_covered": [
+   {
+    "behavior_id": "layout_algebra",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "CUTLASS/CUTE",
+    "source_technique": "logical/physical/tile/lane layout algebra"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "asynchronous memory staging"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "double buffering"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "shared-memory staging"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "stream overlap"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "MoE expert sorting/grouping"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "direct expert accumulation"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "expert batching"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "fused routing/gating"
+   },
+   {
+    "behavior_id": "fused_decode_compute",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "FusedDecodeCompute",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "fused dequant + compute"
+   },
+   {
+    "behavior_id": "fused_decode_compute",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "FusedDecodeCompute",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "quantized expert execution"
+   },
+   {
+    "behavior_id": "graph_replay",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "GraphReplay",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "graph capture / graph replay"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "kernel autotuning"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "low-bit layouts"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "memory swizzling"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "register blocking"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "tiled GEMV/GEMM"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "warp/subgroup specialization"
+   },
+   {
+    "behavior_id": "local_state_machine",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "LocalStateMachine",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "paged KV/state"
+   },
+   {
+    "behavior_id": "persistent_physical_region",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "PersistentPhysicalRegion",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "persistent kernels"
+   },
+   {
+    "behavior_id": "spatial_local_pipeline",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "SpatialPipeline",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "FlashAttention-style IO-aware attention"
+   },
+   {
+    "behavior_id": "static_dynamic_skeleton",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "ConditionalPhysicalProgram",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "continuous batching"
+   },
+   {
+    "behavior_id": "static_dynamic_skeleton",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "ConditionalPhysicalProgram",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "graph-level scheduling"
+   },
+   {
+    "behavior_id": "static_dynamic_skeleton",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "ConditionalPhysicalProgram",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "speculative decoding"
+   },
+   {
+    "behavior_id": "stationary_representation",
+    "disposition": "RESTATED_IN_ATLAS_DO_NOT_EMIT",
+    "mapped_primitive": "StationaryRepresentation",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "prefix/cache reuse"
+   }
+  ],
+  "atlas_entries_with_cuda_or_cutlass": [
+   {
+    "architecture_independent_invariant": "a transfer can be hidden only inside a real overlap window with explicit producer/consumer ownership",
+    "behavior_id": "async_double_buffer",
+    "hawking_primitive": "DoubleBufferedTile",
+    "source_architecture_ecosystem": [
+     "NVIDIA CUDA",
+     "AMD ROCm",
+     "FPGA",
+     "reconfigurable dataflow"
+    ],
+    "status": "MAPPED"
+   },
+   {
+    "architecture_independent_invariant": "synchronized work is paced by its slowest required link and cannot hide an unmodeled transfer",
+    "behavior_id": "collective_region",
+    "hawking_primitive": "CollectiveRegion",
+    "source_architecture_ecosystem": [
+     "fabric-first accelerator",
+     "packetized NoC",
+     "AMD ROCm",
+     "NVIDIA CUDA"
+    ],
+    "status": "IMPLEMENTED"
+   },
+   {
+    "architecture_independent_invariant": "for few active tokens, route metadata and selected payload locality matter more than nominal expert throughput",
+    "behavior_id": "direct_routed_accumulate",
+    "hawking_primitive": "DirectRoutedAccumulate",
+    "source_architecture_ecosystem": [
+     "NVIDIA CUDA",
+     "fabric-first accelerator",
+     "packetized NoC"
+    ],
+    "status": "DIAGNOSTIC"
+   },
+   {
+    "architecture_independent_invariant": "a representation-native consumer may remove an intermediate only when its numerical contract is preserved",
+    "behavior_id": "fused_decode_compute",
+    "hawking_primitive": "FusedDecodeCompute",
+    "source_architecture_ecosystem": [
+     "NVIDIA CUDA",
+     "FPGA",
+     "published inference ASIC",
+     "Apple/other NPU"
+    ],
+    "status": "PHYSICALLY_MEASURED"
+   },
+   {
+    "architecture_independent_invariant": "a stable dependency graph can be reused if dynamic values do not alter topology",
+    "behavior_id": "graph_replay",
+    "hawking_primitive": "GraphReplay",
+    "source_architecture_ecosystem": [
+     "NVIDIA CUDA",
+     "TPU/systolic",
+     "Apple/other NPU",
+     "FPGA"
+    ],
+    "status": "DIAGNOSTIC"
+   },
+   {
+    "architecture_independent_invariant": "the same logical operation may have materially different movement and reduction costs under different legal layouts",
+    "behavior_id": "layout_algebra",
+    "hawking_primitive": "LayoutTransform",
+    "source_architecture_ecosystem": [
+     "CUTLASS/CUTE",
+     "AMD ROCm",
+     "TPU/systolic",
+     "FPGA"
+    ],
+    "status": "DIAGNOSTIC"
+   },
+   {
+    "architecture_independent_invariant": "when state and bindings remain valid, repeated host entry is not semantically required",
+    "behavior_id": "persistent_physical_region",
+    "hawking_primitive": "PersistentPhysicalRegion",
+    "source_architecture_ecosystem": [
+     "NVIDIA CUDA",
+     "deterministic dataflow",
+     "FPGA",
+     "Apple/other NPU"
+    ],
+    "status": "IMPLEMENTED"
+   },
+   {
+    "architecture_independent_invariant": "skipping is legal only when the omitted contribution is proven zero or outside the selected computation",
+    "behavior_id": "sparse_conditional_execution",
+    "hawking_primitive": "SparseSkip",
+    "source_architecture_ecosystem": [
+     "NVIDIA CUDA",
+     "AMD ROCm",
+     "published inference ASIC",
+     "packetized NoC"
+    ],
+    "status": "DIAGNOSTIC"
+   },
+   {
+    "architecture_independent_invariant": "static structure and dynamic control can coexist when dynamic choices do not change buffer ownership unsafely",
+    "behavior_id": "static_dynamic_skeleton",
+    "hawking_primitive": "ConditionalPhysicalProgram",
+    "source_architecture_ecosystem": [
+     "deterministic dataflow",
+     "TPU/systolic",
+     "FPGA",
+     "NVIDIA CUDA"
+    ],
+    "status": "IMPLEMENTED"
+   },
+   {
+    "architecture_independent_invariant": "the best stationary operand is the one whose reuse exceeds the cost of retaining it",
+    "behavior_id": "stationary_representation",
+    "hawking_primitive": "StationaryRepresentation",
+    "source_architecture_ecosystem": [
+     "TPU/systolic",
+     "wafer-scale locality",
+     "tile-local dataflow",
+     "published inference ASIC",
+     "NVIDIA CUDA"
+    ],
+    "status": "IMPLEMENTED"
+   }
+  ],
+  "covered_behavior_slugs": [
+   "async_double_buffer",
+   "collective_region",
+   "direct_routed_accumulate",
+   "fused_decode_compute",
+   "graph_replay",
+   "layout_algebra",
+   "local_state_machine",
+   "persistent_physical_region",
+   "sparse_conditional_execution",
+   "spatial_local_pipeline",
+   "static_dynamic_skeleton",
+   "stationary_representation"
+  ],
+  "covered_technique_slugs": [
+   "asynchronous_memory_staging",
+   "continuous_batching",
+   "direct_expert_accumulation",
+   "double_buffering",
+   "expert_batching",
+   "flashattention_style_io_aware_attention",
+   "fused_dequant_compute",
+   "fused_routing_gating",
+   "graph_capture_graph_replay",
+   "graph_level_scheduling",
+   "kernel_autotuning",
+   "logical_physical_tile_lane_layout_algebra",
+   "low_bit_layouts",
+   "memory_swizzling",
+   "moe_expert_sorting_grouping",
+   "paged_kv_state",
+   "persistent_kernels",
+   "prefix_cache_reuse",
+   "quantized_expert_execution",
+   "register_blocking",
+   "shared_memory_staging",
+   "speculative_decoding",
+   "stream_overlap",
+   "tiled_gemv_gemm",
+   "warp_subgroup_specialization"
+  ],
+  "cuda_and_cutlass_already_in_schools": true,
+  "cuda_cutlass_coverage": [
+   {
+    "behavior_id": "layout_algebra",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "CUTLASS/CUTE",
+    "source_technique": "logical/physical/tile/lane layout algebra"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "asynchronous memory staging"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "double buffering"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "shared-memory staging"
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "mapped_primitive": "DoubleBufferedTile",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "stream overlap"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "MoE expert sorting/grouping"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "direct expert accumulation"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "expert batching"
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "mapped_primitive": "DirectRoutedAccumulate",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "fused routing/gating"
+   },
+   {
+    "behavior_id": "fused_decode_compute",
+    "mapped_primitive": "FusedDecodeCompute",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "fused dequant + compute"
+   },
+   {
+    "behavior_id": "fused_decode_compute",
+    "mapped_primitive": "FusedDecodeCompute",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "quantized expert execution"
+   },
+   {
+    "behavior_id": "graph_replay",
+    "mapped_primitive": "GraphReplay",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "graph capture / graph replay"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "kernel autotuning"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "low-bit layouts"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "memory swizzling"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "register blocking"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "tiled GEMV/GEMM"
+   },
+   {
+    "behavior_id": "layout_algebra",
+    "mapped_primitive": "LayoutTransform",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "warp/subgroup specialization"
+   },
+   {
+    "behavior_id": "local_state_machine",
+    "mapped_primitive": "LocalStateMachine",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "paged KV/state"
+   },
+   {
+    "behavior_id": "persistent_physical_region",
+    "mapped_primitive": "PersistentPhysicalRegion",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "persistent kernels"
+   },
+   {
+    "behavior_id": "spatial_local_pipeline",
+    "mapped_primitive": "SpatialPipeline",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "FlashAttention-style IO-aware attention"
+   },
+   {
+    "behavior_id": "static_dynamic_skeleton",
+    "mapped_primitive": "ConditionalPhysicalProgram",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "continuous batching"
+   },
+   {
+    "behavior_id": "static_dynamic_skeleton",
+    "mapped_primitive": "ConditionalPhysicalProgram",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "graph-level scheduling"
+   },
+   {
+    "behavior_id": "static_dynamic_skeleton",
+    "mapped_primitive": "ConditionalPhysicalProgram",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "speculative decoding"
+   },
+   {
+    "behavior_id": "stationary_representation",
+    "mapped_primitive": "StationaryRepresentation",
+    "source_school": "NVIDIA CUDA",
+    "source_technique": "prefix/cache reuse"
+   }
+  ],
+  "genuine_gaps": [
+   {
+    "hypothesis_family": "dequant_site_tier",
+    "id": "H-CLB-001",
+    "why_not_a_restatement": "Atlas maps 'fused dequant + compute' and 'shared-memory staging' as separate techniques. It does not state the unpack-site as a MemoryTierIdentity choice between REGISTER and THREADGROUP."
+   },
+   {
+    "hypothesis_family": "decode_gemv_stationarity_choice",
+    "id": "H-CLB-002",
+    "why_not_a_restatement": "CUDA school maps stationarity only to prefix/cache reuse. The existing repatriation spec qwen27-stationary-packed-weight keeps packed W resident. Neither states stationarity as a function of live M (decode vs prefill)."
+   },
+   {
+    "hypothesis_family": "occupancy_unit_cooperative_simd",
+    "id": "H-CLB-003",
+    "why_not_a_restatement": "Atlas lists 'warp/subgroup specialization' under layout_algebra. It does not state that cooperative SIMD width is the occupancy unit of executable identity, nor the Metal simdgroup analogue as the same LayoutTransform law. Dead levers q5_0_simd_shuffle and mla_phase_4_simdgroup_attn are codec/attention specifics; this is not those families."
+   },
+   {
+    "hypothesis_family": "n_stage_software_pipeline",
+    "id": "H-CLB-004",
+    "why_not_a_restatement": "Atlas maps asynchronous staging, double buffering, stream overlap and shared-memory staging, all as the N=2 special case. It does not treat pipeline depth N as a compiler object derived from the movement/compute ratio."
+   },
+   {
+    "hypothesis_family": "persist_vs_replay_decode_loop",
+    "id": "H-CLB-005",
+    "why_not_a_restatement": "Atlas already maps persistent kernels and graph capture/replay as separate entries. It does not state the XOR choice for the decode token loop, nor forbid stacking them without a remaining tax. Family megakernel (full-layer MoE megakernel) is a recorded scar and is not this hypothesis."
+   },
+   {
+    "hypothesis_family": "split_reduction_dimension",
+    "id": "H-CLB-006",
+    "why_not_a_restatement": "Split-K and its reduction cost do not appear in CUDA/CUTLASS source_technique_coverage. FlashAttention-style IO-aware attention is mapped as SpatialPipeline (prefill tiling). Decode split of the reduction dimension is not that technique."
+   },
+   {
+    "hypothesis_family": "selection_density_sparse_vs_dense",
+    "id": "H-CLB-007",
+    "why_not_a_restatement": "Atlas DirectRoutedAccumulate already says few active tokens make route metadata and selected-payload locality dominate. SparseSkip says skip is legal when omitted work is proven zero. Neither states the density threshold that prefers dense-with-mask."
+   },
+   {
+    "hypothesis_family": "lut_working_set_tier",
+    "id": "H-CLB-008",
+    "why_not_a_restatement": "Atlas organs already include codebook on fused_decode_compute and stationary_representation. NR vocabulary already has CODEBOOK_LOOKUP. Neither states that spilling the LUT working set to a slower tier converts lookup into gather."
+   },
+   {
+    "hypothesis_family": "arithmetic_unit_fragment_constraint",
+    "id": "H-CLB-009",
+    "why_not_a_restatement": "CUTLASS coverage is 'logical/physical/tile/lane layout algebra'; CUDA coverage includes low-bit layouts, swizzling, register blocking. All of those are cost differences among legal layouts. None states that an illegal fragment forces a transform whose bytes can erase the packing win."
+   }
+  ],
+  "n_atlas_entries": 15,
+  "n_atlas_entries_with_cuda_or_cutlass": 10,
+  "n_cuda_cutlass_technique_rows": 25,
+  "n_source_schools": 14,
+  "n_source_technique_coverage": 48,
+  "overlap_rule": "A hypothesis whose family slugs to an already-mapped CUDA/CUTLASS source_technique or atlas behavior_id is an OverlapRefusal. Persistent kernels, fused dequant+compute, double buffering, warp/subgroup specialization, MoE sort/group/accumulate, and CUTLASS layout algebra are already mapped; this module does not restate them.",
+  "source_schools": [
+   "NVIDIA CUDA",
+   "CUTLASS/CUTE",
+   "AMD ROCm",
+   "TPU/systolic",
+   "deterministic dataflow",
+   "wafer-scale locality",
+   "tile-local dataflow",
+   "packetized NoC",
+   "reconfigurable dataflow",
+   "Apple/other NPU",
+   "fabric-first accelerator",
+   "CPU matrix engine",
+   "FPGA",
+   "published inference ASIC"
+  ]
+ },
+ "gaps_closed": [
+  "9 CUDA-lowbit hypotheses that are not restatements of atlas CUDA/CUTLASS techniques (dequant site tier, M-dependent stationarity, occupancy-unit SIMD, N-stage pipeline, persist-XOR-replay, split reduction, selection-density sparse-vs-dense, LUT working-set tier, arithmetic-unit fragment constraint)",
+  "admit() refuses numeric speedup/latency/hardware claims (NumericClaimError / HardwareClaimError)",
+  "admit() refuses hypotheses matching refuse_if_dead scars (ScarRefusal)",
+  "admit() refuses families that slug to mapped CUDA/CUTLASS techniques (OverlapRefusal)",
+  "restatement probes refused: 2 (persistent kernels, fused dequant+compute)",
+  "each admitted hypothesis is also a repatriation-queue-shaped spec with status HYPOTHESIS, not READY",
+  "evidence loaded from pinned snapshot when present, else live headless; path recorded per input",
+  "no CUDA performance number, no claimed speedup, no benchmark; bench UNKNOWN, STATIC_ONLY"
+ ],
+ "hypotheses": [
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "fused_decode_compute",
+   "bench_state": "UNKNOWN",
+   "candidate": "unpack packed weights at REGISTER vs THREADGROUP; never write a dense intermediate to a slower tier",
+   "cheapest_falsifier": "STATIC: unpack-at-REGISTER and unpack-at-THREADGROUP instances that share a semantic program id must not hash to the same physical identity. If they do, MemoryTierIdentity is already false and this site-choice is undefined. DIAGNOSTIC (non-promoting): if billed unpacked working-set bytes do not differ by site after fence cost, the site-choice law is false. Promotion still requires a protected complete-wall A/B under a GPU lease this sidecar does not have.",
+   "compared_primitives": [
+    "FusedDecodeCompute"
+   ],
+   "control": "fused dequant that materializes unpacked values into a slower tier than the arithmetic unit (the dead expand-to-generic-GEMV path is a different, already-refuted family)",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "DENSE_INTERMEDIATE",
+    "direction": "REDUCE",
+    "measurement": "unmeasured",
+    "mechanism": "avoid writing unpacked values to a slower tier than the consumer"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "MemoryTierIdentity",
+   "hypothesis_family": "dequant_site_tier",
+   "id": "H-CLB-001",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "Unpacked values occupy more bytes than packed ones. The legal dequant site is the highest-bandwidth, lowest-capacity memory tier that still feeds the arithmetic unit without writing a dense intermediate to a slower tier. Unpack-at-REGISTER and unpack-at-THREADGROUP are two executables of the same semantic program (MemoryTierIdentity). Global dense rematerialization is already forbidden by FusedDecodeCompute; this law names the LOCAL tier of the unpack, not the fusion itself.",
+   "source_schools": [
+    "NVIDIA CUDA"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "mlp",
+   "transfer_scope": "CUDA register vs shared-memory dequant site -> Metal thread vs threadgroup; FPGA ACCEL_SRAM is an Accelerator analogue, not a backend this module builds. Vendor cp.async/TMA is not the law.",
+   "why_not_a_restatement": "Atlas maps 'fused dequant + compute' and 'shared-memory staging' as separate techniques. It does not state the unpack-site as a MemoryTierIdentity choice between REGISTER and THREADGROUP."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "stationary_representation",
+   "bench_state": "UNKNOWN",
+   "candidate": "choose the stationary operand of a packed GEMV from live M; weight-stationary at decode, reconsider at prefill",
+   "cheapest_falsifier": "STATIC: a plan that declares W stationary at decode and X stationary at prefill must carry two distinct stationarity contracts (two PhysicalGraph identities). If one contract is reused across M, the choice law is already false. DIAGNOSTIC: an activation-stationary decode GEMV that bills more weight movement than the weight-stationary twin falsifies the M-near-1 side. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [],
+   "control": "packed-weight residency with a single stationarity contract for all M",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "ACTIVE_BYTES",
+    "direction": "REDUCE",
+    "measurement": "unmeasured",
+    "mechanism": "stop moving the dominant operand every token; stream the other"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "StationaryRepresentation",
+   "hypothesis_family": "decode_gemv_stationarity_choice",
+   "id": "H-CLB-002",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "For a packed projection Y = X W, the cheaper stationary operand is the one whose bytes times reuse exceed the other's. At decode (M near 1) W dominates and must be stationary while X streams. At prefill (M large) X can dominate and the stationarity contract flips. Stationarity is a function of live M, not a kernel-style constant and not 'keep packed weights resident' as a slogan.",
+   "source_schools": [
+    "NVIDIA CUDA",
+    "TPU/systolic"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "mlp",
+   "transfer_scope": "TPU weight/activation/output stationarity as kinds; CUDA decode GEMV as the missing M-dependent choice. Metal keeps packed W resident at decode; FPGA BRAM/URAM residency is the same law at ACCEL_SRAM, not an FPGA backend.",
+   "why_not_a_restatement": "CUDA school maps stationarity only to prefix/cache reuse. The existing repatriation spec qwen27-stationary-packed-weight keeps packed W resident. Neither states stationarity as a function of live M (decode vs prefill)."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "layout_algebra",
+   "bench_state": "UNKNOWN",
+   "candidate": "name cooperative SIMD width as the occupancy unit of the packed GEMV LayoutTransform (Metal simdgroup analogue of a CUDA warp)",
+   "cheapest_falsifier": "STATIC: a PhysicalGraph that names thread as the occupancy unit and also names a warp/simdgroup MMA/simdgroup_matrix consumer without a LayoutTransform between them is invalid. DIAGNOSTIC: if a thread-granularity kernel and a simdgroup-width kernel of the same numerical contract bill identical shuffle/sync edges, the occupancy-unit law is false. C2M refusing __syncwarp/__shfl is a frontend gap, not a physical counterexample. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [
+    "TiledProjection"
+   ],
+   "control": "thread-granularity kernel that reconstructs SIMD width with shuffle/barrier",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "SYNCHRONIZATION",
+    "direction": "REDUCE",
+    "measurement": "unmeasured",
+    "mechanism": "remove shuffle/barrier tax paid to reconstruct the unit the ALU already is"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "LayoutTransform",
+   "hypothesis_family": "occupancy_unit_cooperative_simd",
+   "id": "H-CLB-003",
+   "knowledge_source": "KNOWN_FROM_REPO",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "Occupancy and reduction identity are defined at the cooperative SIMD width (CUDA warp / Metal simdgroup), not at the scalar thread. A kernel written at thread granularity pays a shuffle or barrier tax to reconstruct the width the arithmetic unit already is. The occupancy unit is a LayoutTransform object, not a vendor intrinsic. This is not a megakernel and not a simd-shuffle codec.",
+   "source_schools": [
+    "NVIDIA CUDA"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "mlp",
+   "transfer_scope": "CUDA warp / MMA fragment as occupancy unit -> Metal simdgroup / simdgroup_matrix. tools/accelerator/c2m.py currently refuses __syncwarp and __shfl by name; that is recovered inventory, not a claimed Metal timing.",
+   "why_not_a_restatement": "Atlas lists 'warp/subgroup specialization' under layout_algebra. It does not state that cooperative SIMD width is the occupancy unit of executable identity, nor the Metal simdgroup analogue as the same LayoutTransform law. Dead levers q5_0_simd_shuffle and mla_phase_4_simdgroup_attn are codec/attention specifics; this is not those families."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "async_double_buffer",
+   "bench_state": "UNKNOWN",
+   "candidate": "choose in-flight tile count N from movement/compute ratio; N=2 is double buffering; N>2 only when occupancy cost < uncovered movement",
+   "cheapest_falsifier": "STATIC: a plan with N>2 that does not name N distinct ownership-safe buffers, or that treats overlap as assumed rather than a window, is invalid under AsyncPrefetch/DoubleBufferedTile preconditions. DIAGNOSTIC: if billed overlap is zero after fence cost, extra stages cannot hide movement and the N>2 law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [
+    "DoubleBufferedTile",
+    "SpatialPipeline"
+   ],
+   "control": "N=2 double-buffered tile with overlap assumed rather than owned",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "STATE_MOVEMENT",
+    "direction": "TRADE",
+    "measurement": "unmeasured",
+    "mechanism": "hide movement behind compute; extra stages cost occupancy"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "AsyncPrefetch",
+   "hypothesis_family": "n_stage_software_pipeline",
+   "id": "H-CLB-004",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "The number of in-flight tiles N is set by the ratio of movement latency to compute latency, occupancy-capped. N=2 is double buffering (already mapped). N>2 is legal only when the extra buffers' occupancy cost is less than the uncovered movement. Overlap is a measured window with explicit producer/consumer ownership, never an assumed one. Vendor cp.async/TMA is a mechanism, not the law. The Metal analogue is explicit multi-buffer threadgroup staging plus barriers, not a TMA copy.",
+   "source_schools": [
+    "NVIDIA CUDA",
+    "CUTLASS/CUTE"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "mlp",
+   "transfer_scope": "CUDA multi-stage cp.async / software pipeline -> Metal explicit multi-buffer threadgroup staging with barriers. Apple has no TMA in this inventory (cuda_runtime.py refuses cudaMemcpyAsync and streams). FPGA spatial pipeline depth is the same N-choice at ACCEL_SRAM, not an FPGA backend.",
+   "why_not_a_restatement": "Atlas maps asynchronous staging, double buffering, stream overlap and shared-memory staging, all as the N=2 special case. It does not treat pipeline depth N as a compiler object derived from the movement/compute ratio."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "persistent_physical_region",
+   "bench_state": "UNKNOWN",
+   "candidate": "choose persist XOR replay for a stable decode token loop; do not stack without a named remaining tax",
+   "cheapest_falsifier": "STATIC: a plan that both persists the token loop and replays a per-token graph without naming which remaining tax each removes is invalid (double-counted ceremony). DIAGNOSTIC: if persist and replay bill the same host-ceremony edges, they are not two organizations and the choice law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [
+    "GraphReplay",
+    "MoveOrRecompute"
+   ],
+   "control": "per-token host relaunch of a stable topology with neither persist nor replay",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "LAUNCH_CEREMONY",
+    "direction": "REDUCE",
+    "measurement": "unmeasured",
+    "mechanism": "pay either persist or replay for the remaining host tax, not both"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "PersistentPhysicalRegion",
+   "hypothesis_family": "persist_vs_replay_decode_loop",
+   "id": "H-CLB-005",
+   "knowledge_source": "KNOWN_FROM_REPO",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "A decode step whose topology is stable may persist the executable (amortize launch and binding) or replay a captured graph (amortize topology rebuild). These are two organizations of the same static skeleton, not stacked by default. Persist wins when per-token host entry dominates; replay wins when occupancy wants a fresh grid and topology rebuild is the remaining tax. Stacking them without a measured remaining tax is ceremony. This is not a megakernel: the layer graph stays a graph.",
+   "source_schools": [
+    "NVIDIA CUDA"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "decode",
+   "transfer_scope": "CUDA persistent kernel vs CUDA graph replay as decode-loop organizations -> Metal long-lived encoder/pipeline vs captured command-buffer replay. cuda_runtime.py refuses cudaGraphLaunch; that is a T1 frontend gap, not a physical counterexample.",
+   "why_not_a_restatement": "Atlas already maps persistent kernels and graph capture/replay as separate entries. It does not state the XOR choice for the decode token loop, nor forbid stacking them without a remaining tax. Family megakernel (full-layer MoE megakernel) is a recorded scar and is not this hypothesis."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "collective_region",
+   "bench_state": "UNKNOWN",
+   "candidate": "partition K (or decode-KV) across tiles for occupancy; account the partial-sum reduction as a CollectiveRegion / semantic edge",
+   "cheapest_falsifier": "STATIC: a split-K / split-KV plan whose partial-sum edge is missing from the PhysicalGraph is invalid (unmodeled CollectiveRegion). DIAGNOSTIC: if billed reduction traffic is zero while K (or KV) was partitioned, the law is already false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [
+    "CollectiveRegion",
+    "SemanticTransportEdge"
+   ],
+   "control": "unsplit reduction with no partial-sum edge and no occupancy claim",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "REDUCTION_TRAFFIC",
+    "direction": "TRADE",
+    "measurement": "unmeasured",
+    "mechanism": "buy occupancy by partitioning K; pay a modeled partial-sum reduction"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "TiledProjection",
+   "hypothesis_family": "split_reduction_dimension",
+   "id": "H-CLB-006",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "Partitioning the reduction dimension (K of a decode GEMV, or the KV sequence of decode attention) creates occupancy at the cost of a subsequent partial-sum reduction. The split is legal iff the recovered occupancy exceeds the reduction traffic plus fence. An unmodeled reduction is a hidden CollectiveRegion. Decode attention split-KV is the same law at organ attention, not a separate FlashAttention restatement.",
+   "source_schools": [
+    "NVIDIA CUDA"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "mlp",
+   "transfer_scope": "CUDA split-K GEMM / FlashDecoding split-KV -> Metal tiled projection plus an explicit reduction edge. No CUDA occupancy number is claimed. FPGA reduction trees are the same law on Accelerator, not an FPGA backend.",
+   "why_not_a_restatement": "Split-K and its reduction cost do not appear in CUDA/CUTLASS source_technique_coverage. FlashAttention-style IO-aware attention is mapped as SpatialPipeline (prefill tiling). Decode split of the reduction dimension is not that technique."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "sparse_conditional_execution",
+   "bench_state": "UNKNOWN",
+   "candidate": "choose MoE gather/scatter vs dense-with-mask from selection density; gather is not unconditionally cheaper",
+   "cheapest_falsifier": "STATIC: a MoE plan that gathers selected tokens and also claims dense-with-mask occupancy without naming selection density is invalid (two organizations, no predicate). DIAGNOSTIC: if a high-density route still prefers gather after billing the random-access tax, or a low-density route prefers dense after billing omitted work, the threshold law is false. This is not 'gather vs sequential explains Q80 bandwidth' (a recorded model-specific scar). Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [
+    "DirectRoutedAccumulate"
+   ],
+   "control": "unconditional gather/scatter of selected experts regardless of density",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "RANDOM_ACCESS_TAX",
+    "direction": "TRADE",
+    "measurement": "unmeasured",
+    "mechanism": "pay gather only while selection density keeps it cheaper than masked dense"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "SparseSkip",
+   "hypothesis_family": "selection_density_sparse_vs_dense",
+   "id": "H-CLB-007",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "Gather/scatter of selected tokens is cheaper than dense-with-mask iff selection density is low enough that the gather's random-access tax plus the sparse kernel stays below the dense kernel that would compute the omitted work. At high selection density, dense-with-mask dominates because gather is a random-access tax on bytes the dense path would have streamed sequentially. Atlas DirectRoutedAccumulate states the few-active-tokens side; this law names the density threshold that flips the choice.",
+   "source_schools": [
+    "NVIDIA CUDA"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "moe",
+   "transfer_scope": "CUDA grouped-GEMM gather/scatter vs masked dense MoE -> Metal DirectRoutedAccumulate vs SparseSkip-as-dense-mask. Model is unspecified so MODEL_SPECIFIC Q80 gather scars do not attach.",
+   "why_not_a_restatement": "Atlas DirectRoutedAccumulate already says few active tokens make route metadata and selected-payload locality dominate. SparseSkip says skip is legal when omitted work is proven zero. Neither states the density threshold that prefers dense-with-mask."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "stationary_representation",
+   "bench_state": "UNKNOWN",
+   "candidate": "give the LUT/scale table its own stationarity contract and a named memory tier; spill converts lookup to gather",
+   "cheapest_falsifier": "STATIC: a plan that names a codebook organ without a memory-tier identity for the LUT working set is invalid. DIAGNOSTIC: if a LUT that does not fit its declared tier still bills as a broadcast (not a gather), the spill-to-gather law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [
+    "MemoryTierIdentity",
+    "FusedDecodeCompute"
+   ],
+   "control": "LUT treated as metadata with no tier identity and no working-set bound",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "RANDOM_ACCESS_TAX",
+    "direction": "REDUCE",
+    "measurement": "unmeasured",
+    "mechanism": "keep the LUT working set in a tier that preserves broadcast/lookup"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "StationaryRepresentation",
+   "hypothesis_family": "lut_working_set_tier",
+   "id": "H-CLB-008",
+   "knowledge_source": "KNOWN_FROM_REPO",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "A codebook, scale table, or LUT of an already-chosen representation is a StationaryRepresentation whose working set must fit in a named memory tier. Spilling it to a slower tier converts a broadcast or lookup into a gather. The LUT is not the weight body; it is a distinct resident operand with its own stationarity contract. This is not a learned-codebook or residual-codebook codec (both recorded dead).",
+   "source_schools": [
+    "NVIDIA CUDA"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "codebook",
+   "transfer_scope": "CUDA constant-memory / shared-memory LUT residency -> Metal threadgroup or resident buffer for scale tables of a packed representation already in the graph (NR CODEBOOK_LOOKUP). FPGA BRAM/URAM codebook residency is the same law, not an FPGA backend.",
+   "why_not_a_restatement": "Atlas organs already include codebook on fused_decode_compute and stationary_representation. NR vocabulary already has CODEBOOK_LOOKUP. Neither states that spilling the LUT working set to a slower tier converts lookup into gather."
+  },
+  {
+   "backend_candidate": "METAL",
+   "behavior_id": "layout_algebra",
+   "bench_state": "UNKNOWN",
+   "candidate": "treat arithmetic-unit fragment layout as a hard LayoutTransform constraint; compact packing that cannot be consumed is not compact",
+   "cheapest_falsifier": "STATIC: a packed layout that is not a legal fragment of the named arithmetic unit and that has no LayoutTransform edge before the consumer is an invalid graph. DIAGNOSTIC: if billed LayoutTransform bytes for an illegal packing are zero, the constraint was not enforced and the law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "compared_primitives": [],
+   "control": "packed storage layout consumed directly by an MMA/simdgroup unit without a named transform",
+   "cuda_is": "a source school and a future physical oracle, not an execution backend on this Apple host",
+   "era": "II Compounding Civilization",
+   "evidence_class": "STATIC_ONLY",
+   "expected_removed_cost": {
+    "class": "LAYOUT_TRANSFORM_BYTES",
+    "direction": "TRADE",
+    "measurement": "unmeasured",
+    "mechanism": "packing wins only after the forced fragment transform is billed"
+   },
+   "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+   "gpu_authority": false,
+   "hawking_primitive": "LayoutTransform",
+   "hypothesis_family": "arithmetic_unit_fragment_constraint",
+   "id": "H-CLB-009",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "odyssey": "I WHAT IS TRUE?",
+   "physical_invariant": "An arithmetic unit consumes operands only in a named fragment layout (MMA fragment, simdgroup matrix, tensor-core K-major vs MN-major). A packing that is compact in storage but illegal at the unit FORCES a LayoutTransform; those transform bytes are part of the kernel cost. Compact-in-memory is not compact-at-the-unit. Atlas layout_algebra already says legal layouts have different costs; this law names the illegal-at-unit constraint that can erase a packing win.",
+   "source_schools": [
+    "CUTLASS/CUTE",
+    "NVIDIA CUDA"
+   ],
+   "status": "HYPOTHESIS",
+   "target_organ": "mlp",
+   "transfer_scope": "CUTLASS logical/physical/tile/lane algebra plus tensor-core fragment shapes -> Metal simdgroup matrix operand layout. Fragment shapes themselves are MODEL_KNOWLEDGE; the atlas has the legal-layout cost law, not the illegal-at-unit force.",
+   "why_not_a_restatement": "CUTLASS coverage is 'logical/physical/tile/lane layout algebra'; CUDA coverage includes low-bit layouts, swizzling, register blocking. All of those are cost differences among legal layouts. None states that an illegal fragment forces a transform whose bytes can erase the packing win."
+  }
+ ],
+ "integration": {
+  "admit": "admit(raw, *, atlas=None, slugs=None) -> dict  # raises MissingFieldError | UnknownPrimitiveError | NumericClaimError | ScarRefusal | OverlapRefusal",
+  "analyze_gaps": "analyze_gaps(atlas) -> dict",
+  "as_repatriation_spec": "as_repatriation_spec(h, atlas_fingerprint) -> dict",
+  "build": "build() -> Path  # receipts/future/CUDA_LOWBIT_HYPOTHESES.json",
+  "load_evidence": "load_evidence(name) -> {doc, evidence_source, path_used, ...}"
+ },
+ "knowledge_sources": [
+  "KNOWN_FROM_REPO",
+  "MODEL_KNOWLEDGE"
+ ],
+ "n_hypotheses": 9,
+ "n_repatriation_specs": 9,
+ "negative_findings": [
+  "No NVIDIA CUDA device on this Apple host; CUDA is a source school, not an execution backend here.",
+  "This lane produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; every hardware field is unmeasured.",
+  "Tensor-core fragment shapes (mma.sync / wgmma K-major vs MN-major) are not encoded in the atlas; labelled MODEL_KNOWLEDGE.",
+  "Metal async-copy / TMA analogue is not a named ISA in tools/accelerator (cuda_runtime refuses cudaMemcpyAsync); labelled as explicit multi-buffer staging.",
+  "Split-K and N-stage pipeline depth are absent from CUDA/CUTLASS source_technique_coverage.",
+  "FPGA is part of Accelerator / Physical Compiler / Fusion; this module does not build an FPGA backend.",
+  "C2M is T0/T1/T2 subset recognition, not CUDA support; warp shuffle, shared memory, graphs, streams are refused by name.",
+  "Pinned snapshot is preferred; live receipts/headless may exist in another worktree and is not treated as absence.",
+  "Odyssey II scar live for family assume_lower_storage_bpw_is_faster_per_token_density_is_velocity: n_refuse_eligible=1 sample=receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-006",
+  "Odyssey II scar live for family binary_quantization: n_refuse_eligible=103 sample=workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-152172d233408f922a42cc2779f4419e",
+  "Odyssey II scar live for family cross_expert_structure: n_refuse_eligible=10 sample=receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
+  "Odyssey II scar live for family expert_wave: n_refuse_eligible=1 sample=workspace/campaign/evidence/systems/hawking/HAWKING_EXPERT_WAVE_NEGATIVE.json#hawking_expert_wave_negative",
+  "Odyssey II scar live for family gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation: n_refuse_eligible=1 sample=hawking-experiments/superwave/g1/g1-arch-negative.md#gather_vs_sequential_as_the_q80_qwen3_8_bandwidth_explanation",
+  "Odyssey II scar live for family gemv_kernel_micro_opt_axis_on_qwen3_8: n_refuse_eligible=1 sample=hawking-experiments/superwave/g1/g1-arch-negative.md#gemv_kernel_micro_opt_axis_on_qwen3_8",
+  "Looked up AVOID family large_expert_cache: no refuse-eligible hit (n_query_hits=2); still refused by AVOID list",
+  "Odyssey II scar live for family learned_codebook: n_refuse_eligible=1 sample=workspace/docs/guides/dead_levers.md#learned_codebook",
+  "Odyssey II scar live for family low_bpw_materialize_w_expand_to_q4_float_generic_gemv: n_refuse_eligible=1 sample=hawking-experiments/superwave/g1/g1-arch-negative.md#low_bpw_materialize_w_expand_to_q4_float_generic_gemv",
+  "Odyssey II scar live for family megakernel: n_refuse_eligible=2 sample=hawking-experiments/superwave/g1/g1-arch-negative.md#full_layer_moe_megakernel_as_the_tps_lever",
+  "Odyssey II scar live for family mla_phase_4_simdgroup_attn: n_refuse_eligible=1 sample=workspace/docs/guides/dead_levers.md#mla_phase_4_simdgroup_attn",
+  "Odyssey II scar live for family persistent_8_gib_expert_arena_previous_token_route_prefetch: n_refuse_eligible=1 sample=hawking-experiments/superwave/g1/g1-arch-negative.md#persistent_8_gib_expert_arena_previous_token_route_prefetch",
+  "Odyssey II scar live for family q5_0_simd_shuffle: n_refuse_eligible=1 sample=workspace/docs/guides/dead_levers.md#q5_0_simd_shuffle",
+  "Odyssey II scar live for family raw_weight_pq_vq: n_refuse_eligible=3 sample=tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#raw_weight_pq_vq_at_one_bit",
+  "Odyssey II scar live for family residual_codebook: n_refuse_eligible=20 sample=workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-1706ad3b92f294234bee4723169edf40",
+  "CUDA_CAPABILITY_CENSUS.json resolution=git; cited by physical_primitives as Metal-via-MLX / transport ABSENT"
+ ],
+ "primitive_contracts_recovered": {
+  "AsyncPrefetch": {
+   "behavior_ids": [
+    "async_prefetch"
+   ],
+   "invariant": "a prefetch is legal only when the destination is not in use by the consumer and the source remains valid until the copy completes"
+  },
+  "CollectiveRegion": {
+   "behavior_ids": [
+    "collective_region"
+   ],
+   "invariant": "synchronized work is paced by its slowest required link and cannot hide an unmodeled transfer"
+  },
+  "ConditionalPhysicalProgram": {
+   "behavior_ids": [
+    "static_dynamic_skeleton",
+    "npu_regular_island"
+   ],
+   "invariant": "static structure and dynamic control can coexist when dynamic choices do not change buffer ownership unsafely"
+  },
+  "DirectRoutedAccumulate": {
+   "behavior_ids": [
+    "direct_routed_accumulate"
+   ],
+   "invariant": "for few active tokens, route metadata and selected payload locality matter more than nominal expert throughput"
+  },
+  "DoubleBufferedTile": {
+   "behavior_ids": [
+    "async_double_buffer"
+   ],
+   "invariant": "a transfer can be hidden only inside a real overlap window with explicit producer/consumer ownership"
+  },
+  "FusedDecodeCompute": {
+   "behavior_ids": [
+    "fused_decode_compute"
+   ],
+   "invariant": "a representation-native consumer may remove an intermediate only when its numerical contract is preserved"
+  },
+  "GraphReplay": {
+   "behavior_ids": [
+    "graph_replay"
+   ],
+   "invariant": "a stable dependency graph can be reused if dynamic values do not alter topology"
+  },
+  "LayoutTransform": {
+   "behavior_ids": [
+    "layout_algebra"
+   ],
+   "invariant": "the same logical operation may have materially different movement and reduction costs under different legal layouts"
+  },
+  "LocalStateMachine": {
+   "behavior_ids": [
+    "local_state_machine"
+   ],
+   "invariant": "mutable state has one authoritative owner and its update ordering is part of the executable identity"
+  },
+  "MemoryTierIdentity": {
+   "behavior_ids": [
+    "memory_tier_identity"
+   ],
+   "invariant": "memory tier is a component of executable identity; the same semantic program at two tiers is two physical executables"
+  },
+  "MoveOrRecompute": {
+   "behavior_ids": [
+    "move_or_recompute"
+   ],
+   "invariant": "the cheapest legal way to satisfy a dependency is a physical scheduling decision"
+  },
+  "PersistentPhysicalRegion": {
+   "behavior_ids": [
+    "persistent_physical_region"
+   ],
+   "invariant": "when state and bindings remain valid, repeated host entry is not semantically required"
+  },
+  "SemanticTransportEdge": {
+   "behavior_ids": [
+    "semantic_transport"
+   ],
+   "invariant": "a transfer is optimizable only when its payload, owner, ordering, and reduction semantics are explicit"
+  },
+  "SparseSkip": {
+   "behavior_ids": [
+    "sparse_conditional_execution"
+   ],
+   "invariant": "skipping is legal only when the omitted contribution is proven zero or outside the selected computation"
+  },
+  "SpatialPipeline": {
+   "behavior_ids": [
+    "spatial_local_pipeline"
+   ],
+   "invariant": "if an intermediate is not externally observable, its global materialization is optional"
+  },
+  "StationaryRepresentation": {
+   "behavior_ids": [
+    "stationary_representation"
+   ],
+   "invariant": "the best stationary operand is the one whose reuse exceeds the cost of retaining it"
+  },
+  "TiledProjection": {
+   "behavior_ids": [
+    "tiled_projection"
+   ],
+   "invariant": "a projection may be factored into tiles only when tile ownership covers the logical result without changing the numerical contract"
+  }
+ },
+ "purpose": "Convert publicly known CUDA/CUTLASS low-bit decode and MoE kernel design into Hawking hypotheses. Extract laws; do not copy vendors. No local CUDA performance claim on Apple hardware.",
+ "recovered_implementation": [
+  {
+   "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "resolved_via": "disk",
+   "what": "Sibling scar index; consulted, not forked"
+  },
+  {
+   "path": "receipts/future/PHYSICAL_PRIMITIVES.json",
+   "resolved_via": "git",
+   "what": "CUDA lowering seam UNAVAILABLE on this Apple host; local CUDA claims forbidden"
+  },
+  {
+   "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "resolved_via": "git",
+   "what": "Architecture Atlas: CUDA and CUTLASS already represented; this module maps the holes"
+  },
+  {
+   "path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
+   "resolved_via": "git",
+   "what": "Repatriation queue vocabulary this module emits into (status HYPOTHESIS, not READY)"
+  },
+  {
+   "path": "tools/accelerator/c2m.py",
+   "resolved_via": "git",
+   "what": "C2M-T0 CUDA-to-Metal frontend; refuses __syncwarp, __shfl, __shared__, loops"
+  },
+  {
+   "path": "tools/accelerator/c2m_idiom.py",
+   "resolved_via": "git",
+   "what": "C2M-T2 idiom recognition (tiled GEMM, block reduce); not a C compiler"
+  },
+  {
+   "path": "tools/accelerator/cuda_runtime.py",
+   "resolved_via": "git",
+   "what": "C2M-T1 host runtime on Metal; refuses cudaGraphLaunch, streams, cudaMemcpyAsync"
+  },
+  {
+   "path": "tools/accelerator/gemm.py",
+   "resolved_via": "git",
+   "what": "Tiled Metal GEMM exercising shared memory and barriers (Codex-owned; read-only)"
+  },
+  {
+   "path": "tools/future/negative_index.py",
+   "resolved_via": "disk",
+   "what": "Scar query / refuse_if_dead; catalog families must not match recorded scars"
+  },
+  {
+   "path": "tools/future/physical_primitives.py",
+   "resolved_via": "disk",
+   "what": "Seventeen atlas primitives; hypotheses map onto these names only"
+  }
+ ],
+ "repatriation_queue_schema": "hawking.accelerator.repatriation_queue_compiled.v1",
+ "repatriation_specs": [
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "layout_algebra",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "treat arithmetic-unit fragment layout as a hard LayoutTransform constraint; compact packing that cannot be consumed is not compact",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "packed storage layout consumed directly by an MMA/simdgroup unit without a named transform",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "TRADE",
+     "measurement": "unmeasured",
+     "mechanism": "packing wins only after the forced fragment transform is billed"
+    }
+   },
+   "experiment_id": "cuda-lowbit-arithmetic_unit_fragment_constraint",
+   "falsifier": "STATIC: a packed layout that is not a legal fragment of the named arithmetic unit and that has no LayoutTransform edge before the consumer is an invalid graph. DIAGNOSTIC: if billed LayoutTransform bytes for an illegal packing are zero, the constraint was not enforced and the law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-009",
+   "kernel_lowering": "LayoutTransform",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:arithmetic_unit_fragment_constraint",
+   "nx_identity": "UNKNOWN",
+   "organ": "mlp",
+   "organ_range": {
+    "organ": "mlp",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-arithmetic_unit_fragment_constraint.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:arithmetic_unit_fragment_constraint",
+    "nx_identity": "UNKNOWN",
+    "organ": "mlp",
+    "organ_range": {
+     "organ": "mlp",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "stationary_representation",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "choose the stationary operand of a packed GEMV from live M; weight-stationary at decode, reconsider at prefill",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "packed-weight residency with a single stationarity contract for all M",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "unmeasured",
+     "mechanism": "stop moving the dominant operand every token; stream the other"
+    }
+   },
+   "experiment_id": "cuda-lowbit-decode_gemv_stationarity_choice",
+   "falsifier": "STATIC: a plan that declares W stationary at decode and X stationary at prefill must carry two distinct stationarity contracts (two PhysicalGraph identities). If one contract is reused across M, the choice law is already false. DIAGNOSTIC: an activation-stationary decode GEMV that bills more weight movement than the weight-stationary twin falsifies the M-near-1 side. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-002",
+   "kernel_lowering": "StationaryRepresentation",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:decode_gemv_stationarity_choice",
+   "nx_identity": "UNKNOWN",
+   "organ": "mlp",
+   "organ_range": {
+    "organ": "mlp",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-decode_gemv_stationarity_choice.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:decode_gemv_stationarity_choice",
+    "nx_identity": "UNKNOWN",
+    "organ": "mlp",
+    "organ_range": {
+     "organ": "mlp",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "fused_decode_compute",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "unpack packed weights at REGISTER vs THREADGROUP; never write a dense intermediate to a slower tier",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "fused dequant that materializes unpacked values into a slower tier than the arithmetic unit (the dead expand-to-generic-GEMV path is a different, already-refuted family)",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "unmeasured",
+     "mechanism": "avoid writing unpacked values to a slower tier than the consumer"
+    }
+   },
+   "experiment_id": "cuda-lowbit-dequant_site_tier",
+   "falsifier": "STATIC: unpack-at-REGISTER and unpack-at-THREADGROUP instances that share a semantic program id must not hash to the same physical identity. If they do, MemoryTierIdentity is already false and this site-choice is undefined. DIAGNOSTIC (non-promoting): if billed unpacked working-set bytes do not differ by site after fence cost, the site-choice law is false. Promotion still requires a protected complete-wall A/B under a GPU lease this sidecar does not have.",
+   "hypothesis_id": "H-CLB-001",
+   "kernel_lowering": "MemoryTierIdentity",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:dequant_site_tier",
+   "nx_identity": "UNKNOWN",
+   "organ": "mlp",
+   "organ_range": {
+    "organ": "mlp",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-dequant_site_tier.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:dequant_site_tier",
+    "nx_identity": "UNKNOWN",
+    "organ": "mlp",
+    "organ_range": {
+     "organ": "mlp",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "stationary_representation",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "give the LUT/scale table its own stationarity contract and a named memory tier; spill converts lookup to gather",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "LUT treated as metadata with no tier identity and no working-set bound",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "unmeasured",
+     "mechanism": "keep the LUT working set in a tier that preserves broadcast/lookup"
+    }
+   },
+   "experiment_id": "cuda-lowbit-lut_working_set_tier",
+   "falsifier": "STATIC: a plan that names a codebook organ without a memory-tier identity for the LUT working set is invalid. DIAGNOSTIC: if a LUT that does not fit its declared tier still bills as a broadcast (not a gather), the spill-to-gather law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-008",
+   "kernel_lowering": "StationaryRepresentation",
+   "knowledge_source": "KNOWN_FROM_REPO",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:lut_working_set_tier",
+   "nx_identity": "UNKNOWN",
+   "organ": "codebook",
+   "organ_range": {
+    "organ": "codebook",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-lut_working_set_tier.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:lut_working_set_tier",
+    "nx_identity": "UNKNOWN",
+    "organ": "codebook",
+    "organ_range": {
+     "organ": "codebook",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "async_double_buffer",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "choose in-flight tile count N from movement/compute ratio; N=2 is double buffering; N>2 only when occupancy cost < uncovered movement",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "N=2 double-buffered tile with overlap assumed rather than owned",
+   "expected_effect": {
+    "state_movement": {
+     "direction": "TRADE",
+     "measurement": "unmeasured",
+     "mechanism": "hide movement behind compute; extra stages cost occupancy"
+    }
+   },
+   "experiment_id": "cuda-lowbit-n_stage_software_pipeline",
+   "falsifier": "STATIC: a plan with N>2 that does not name N distinct ownership-safe buffers, or that treats overlap as assumed rather than a window, is invalid under AsyncPrefetch/DoubleBufferedTile preconditions. DIAGNOSTIC: if billed overlap is zero after fence cost, extra stages cannot hide movement and the N>2 law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-004",
+   "kernel_lowering": "AsyncPrefetch",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:n_stage_software_pipeline",
+   "nx_identity": "UNKNOWN",
+   "organ": "mlp",
+   "organ_range": {
+    "organ": "mlp",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-n_stage_software_pipeline.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:n_stage_software_pipeline",
+    "nx_identity": "UNKNOWN",
+    "organ": "mlp",
+    "organ_range": {
+     "organ": "mlp",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "layout_algebra",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "name cooperative SIMD width as the occupancy unit of the packed GEMV LayoutTransform (Metal simdgroup analogue of a CUDA warp)",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "thread-granularity kernel that reconstructs SIMD width with shuffle/barrier",
+   "expected_effect": {
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "unmeasured",
+     "mechanism": "remove shuffle/barrier tax paid to reconstruct the unit the ALU already is"
+    }
+   },
+   "experiment_id": "cuda-lowbit-occupancy_unit_cooperative_simd",
+   "falsifier": "STATIC: a PhysicalGraph that names thread as the occupancy unit and also names a warp/simdgroup MMA/simdgroup_matrix consumer without a LayoutTransform between them is invalid. DIAGNOSTIC: if a thread-granularity kernel and a simdgroup-width kernel of the same numerical contract bill identical shuffle/sync edges, the occupancy-unit law is false. C2M refusing __syncwarp/__shfl is a frontend gap, not a physical counterexample. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-003",
+   "kernel_lowering": "LayoutTransform",
+   "knowledge_source": "KNOWN_FROM_REPO",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:occupancy_unit_cooperative_simd",
+   "nx_identity": "UNKNOWN",
+   "organ": "mlp",
+   "organ_range": {
+    "organ": "mlp",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-occupancy_unit_cooperative_simd.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:occupancy_unit_cooperative_simd",
+    "nx_identity": "UNKNOWN",
+    "organ": "mlp",
+    "organ_range": {
+     "organ": "mlp",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "persistent_physical_region",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "choose persist XOR replay for a stable decode token loop; do not stack without a named remaining tax",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "per-token host relaunch of a stable topology with neither persist nor replay",
+   "expected_effect": {
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "unmeasured",
+     "mechanism": "pay either persist or replay for the remaining host tax, not both"
+    }
+   },
+   "experiment_id": "cuda-lowbit-persist_vs_replay_decode_loop",
+   "falsifier": "STATIC: a plan that both persists the token loop and replays a per-token graph without naming which remaining tax each removes is invalid (double-counted ceremony). DIAGNOSTIC: if persist and replay bill the same host-ceremony edges, they are not two organizations and the choice law is false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-005",
+   "kernel_lowering": "PersistentPhysicalRegion",
+   "knowledge_source": "KNOWN_FROM_REPO",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:persist_vs_replay_decode_loop",
+   "nx_identity": "UNKNOWN",
+   "organ": "decode",
+   "organ_range": {
+    "organ": "decode",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-persist_vs_replay_decode_loop.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:persist_vs_replay_decode_loop",
+    "nx_identity": "UNKNOWN",
+    "organ": "decode",
+    "organ_range": {
+     "organ": "decode",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "sparse_conditional_execution",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "choose MoE gather/scatter vs dense-with-mask from selection density; gather is not unconditionally cheaper",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "unconditional gather/scatter of selected experts regardless of density",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "TRADE",
+     "measurement": "unmeasured",
+     "mechanism": "pay gather only while selection density keeps it cheaper than masked dense"
+    }
+   },
+   "experiment_id": "cuda-lowbit-selection_density_sparse_vs_dense",
+   "falsifier": "STATIC: a MoE plan that gathers selected tokens and also claims dense-with-mask occupancy without naming selection density is invalid (two organizations, no predicate). DIAGNOSTIC: if a high-density route still prefers gather after billing the random-access tax, or a low-density route prefers dense after billing omitted work, the threshold law is false. This is not 'gather vs sequential explains Q80 bandwidth' (a recorded model-specific scar). Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-007",
+   "kernel_lowering": "SparseSkip",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:selection_density_sparse_vs_dense",
+   "nx_identity": "UNKNOWN",
+   "organ": "moe",
+   "organ_range": {
+    "organ": "moe",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-selection_density_sparse_vs_dense.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:selection_density_sparse_vs_dense",
+    "nx_identity": "UNKNOWN",
+    "organ": "moe",
+    "organ_range": {
+     "organ": "moe",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  },
+  {
+   "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+   "backend": "metal",
+   "behavior_id": "collective_region",
+   "bench_state": "UNKNOWN",
+   "benchmark_mode": "complete_useful_wall_ns_authority",
+   "candidate": "partition K (or decode-KV) across tiles for occupancy; account the partial-sum reduction as a CollectiveRegion / semantic edge",
+   "claim_boundary": "Executable hypothesis specification for repatriation ingest. Not a performance result, capability result, or source-product claim. STATIC_ONLY; no CUDA device on this Apple host.",
+   "command": [
+    "PLAN_ONLY",
+    "sidecar-has-no-gpu-authority",
+    "not-an-executable-protected-accelerator-bench"
+   ],
+   "control": "unsplit reduction with no partial-sum edge and no occupancy claim",
+   "expected_effect": {
+    "state_movement": {
+     "direction": "TRADE",
+     "measurement": "unmeasured",
+     "mechanism": "buy occupancy by partitioning K; pay a modeled partial-sum reduction"
+    }
+   },
+   "experiment_id": "cuda-lowbit-split_reduction_dimension",
+   "falsifier": "STATIC: a split-K / split-KV plan whose partial-sum edge is missing from the PhysicalGraph is invalid (unmodeled CollectiveRegion). DIAGNOSTIC: if billed reduction traffic is zero while K (or KV) was partitioned, the law is already false. Promotion requires a protected complete-wall A/B this sidecar cannot take.",
+   "hypothesis_id": "H-CLB-006",
+   "kernel_lowering": "TiledProjection",
+   "knowledge_source": "MODEL_KNOWLEDGE",
+   "measurement_class": "STATIC_ONLY",
+   "metrics": [
+    "complete_useful_wall",
+    "active_bytes_per_token",
+    "dispatches",
+    "synchronization",
+    "host_ceremony",
+    "fallback_count",
+    "capability_verified"
+   ],
+   "model_identity": "unspecified-decode-lowbit",
+   "nr_identity": "NR_CUDA_LOWBIT:split_reduction_dimension",
+   "nx_identity": "UNKNOWN",
+   "organ": "mlp",
+   "organ_range": {
+    "organ": "mlp",
+    "range": "candidate-defined",
+    "selection": "candidate-defined; no implicit full-model claim"
+   },
+   "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/cuda-lowbit-split_reduction_dimension.json",
+   "promotion": {
+    "required_benchmark_class": "QUALIFIED_PROTECTED",
+    "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+    "requires_complete_active_bytes_or_explicit_absence": true,
+    "requires_independent_capability": true,
+    "requires_zero_fallback": true,
+    "sidecar_cannot_promote": true
+   },
+   "runner": {
+    "detached": false,
+    "executable_here": false,
+    "lease": null,
+    "protected_window": false,
+    "reason": "STATIC_ONLY sidecar; no GPU authority",
+    "requires_quiescence": true,
+    "resumable": false,
+    "shell": false
+   },
+   "schema": "hawking.accelerator.experiment_spec.v1",
+   "source_evidence": [
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "tools/future/physical_primitives.py",
+    "tools/future/negative_index.py"
+   ],
+   "state_session_inputs": {
+    "blocked_reason": "HYPOTHESIS_PLAN_ONLY_NO_GPU",
+    "memory_tier_is_executable_identity": true,
+    "session": "not_started"
+   },
+   "status": "HYPOTHESIS",
+   "target": {
+    "backend": "metal",
+    "model_identity": "unspecified-decode-lowbit",
+    "nr_identity": "NR_CUDA_LOWBIT:split_reduction_dimension",
+    "nx_identity": "UNKNOWN",
+    "organ": "mlp",
+    "organ_range": {
+     "organ": "mlp",
+     "range": "candidate-defined",
+     "selection": "candidate-defined; no implicit full-model claim"
+    }
+   },
+   "verification_mode": "structural_then_diagnostic_then_protected"
+  }
+ ],
+ "required_fields": [
+  "id",
+  "physical_invariant",
+  "hawking_primitive",
+  "target_organ",
+  "cheapest_falsifier",
+  "expected_removed_cost",
+  "backend_candidate",
+  "transfer_scope",
+  "knowledge_source",
+  "hypothesis_family",
+  "behavior_id",
+  "candidate"
+ ],
+ "restatement_refusals": [
+  {
+   "disposition": "OVERLAP_REFUSAL",
+   "hypothesis_family": "fused_dequant_compute",
+   "id": "PROBE-restatement-fused-dequant",
+   "reason": "PROBE-restatement-fused-dequant: family 'fused_dequant_compute' slugs to mapped CUDA/CUTLASS source_technique",
+   "refused": true
+  },
+  {
+   "disposition": "OVERLAP_REFUSAL",
+   "hypothesis_family": "persistent_kernels",
+   "id": "PROBE-restatement-persistent-kernels",
+   "reason": "PROBE-restatement-persistent-kernels: family 'persistent_kernels' slugs to mapped CUDA/CUTLASS source_technique",
+   "refused": true
+  }
+ ],
+ "schema": "hawking.future.cuda_lowbit.v1",
+ "seal_sha256": "256bfa907fe7b2541fcfe0118eef33ac15a3947029756ca1edc22d7e70b636a3",
+ "version": 1,
+ "vocabulary": {
+  "cuda_is": "textbook now, physical oracle later; source school, not an execution backend on this Apple host",
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "evidence": {
+   "DIAGNOSTIC_RELATIVE": "contaminated A/B; guides; never promotes; this lane does not produce it",
+   "PROTECTED_ABSOLUTE": "protected GPU lease; decides; this lane does not produce it",
+   "STATIC_ONLY": "the only evidence class this lane may emit"
+  },
+  "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 never its own civilization; this module does not build an FPGA backend",
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ }
+}

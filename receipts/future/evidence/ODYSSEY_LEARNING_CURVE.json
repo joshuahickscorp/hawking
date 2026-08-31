@@ -1,0 +1,355 @@
+{
+ "schema": "hawking.headless.odyssey_learning_curve.v1",
+ "generated_at": "2026-08-25T04:12:41Z",
+ "generated_by": "tools/headless/learning_curve.py",
+ "obligation": "G010 \u2014 TRANSFER_EFFICIENCY + LEARNING_CURVE (directive \u00a782, \u00a783)",
+ "git_head": "eb1494112b61953122262e311cc9243dbd44952e",
+ "hand_authored": false,
+ "n_specimens": 3,
+ "honest_scope": "three rows, and the third is a DIFFERENT ARCHITECTURE FAMILY. Specimen 1 taught; specimen 2 tested transfer inside the family; specimen 3 tested whether the method survives leaving it, and promoted a law to ARCHITECTURE_GENERAL. What these rows do NOT yet show is a falling cost per specimen in wall-clock terms, because specimen 3 was given a narrower question -- one law test -- rather than a full campaign.",
+ "marginal_transfer_specimen_2_to_3": {
+  "organs_recognized": "6 -> 7",
+  "organs_KNOWN_with_measured_science": "2 -> 4",
+  "architecture_analysis_wall_s": "0.037 -> 0.009",
+  "prior_failures_that_shaped_the_search": "41 -> 42",
+  "architecture_family": "qwen -> falcon_h1 (first specimen outside the family)",
+  "what_it_bought": "LAW-FITTED-AFFINE-BEATS-RTN promoted from FAMILY_TRANSFERRED to ARCHITECTURE_GENERAL, the campaign's first law to reach that level",
+  "why_more_organs_are_KNOWN": "Falcon-H1 has a dense MLP, which specimen 1 measured; Qwen3-30B-A3B is all-MoE and had none"
+ },
+ "marginal_transfer_specimen_1_to_2": {
+  "organs_recognized_automatically": "0 -> 6",
+  "kernels_offered_from_library": "0 -> 6",
+  "prior_failures_that_shaped_the_search": "0 -> 41",
+  "evaluations_to_beat_the_generic_baseline": "9 (cold) -> 5 (transfer), 4 avoided",
+  "architecture_analysis": "hand-read organ set -> 0.037 s automatic recognition"
+ },
+ "rows": [
+  {
+   "specimen_index": 1,
+   "model": "qwen3.8-27b-abliterated",
+   "architecture_class": "dense_hybrid_transformer",
+   "architecture_novelty": {
+    "value": "baseline",
+    "cite": "first specimen; nothing to inherit from"
+   },
+   "parameter_scale": {
+    "value": 26895998464,
+    "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#parent_params"
+   },
+   "best_complete_ebpw": {
+    "value": 2.5969567265364937,
+    "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#compile.complete_ebpw"
+   },
+   "best_active_ebpw_per_token": {
+    "value": 2.4492357186951987,
+    "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#compile.active_ebpw_per_token"
+   },
+   "median_gpu_ns_per_token": {
+    "value": 30171291,
+    "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#decode.median_gpu_ns_per_token"
+   },
+   "dispatches_per_token": {
+    "value": 964,
+    "cite": "receipts/headless/WHOLE_MODEL_NATIVE.json#decode.dispatches_per_token"
+   },
+   "organs_recognized_automatically": {
+    "value": 0,
+    "cite": "no recognizer existed; the organ set was read by hand"
+   },
+   "kernels_reused_from_library": {
+    "value": 0,
+    "cite": "the library was built FROM this specimen"
+   },
+   "prior_failures_that_shaped_the_search": {
+    "value": 0,
+    "cite": "the negative store was built FROM this specimen"
+   },
+   "experiments_avoided": {
+    "value": 0,
+    "cite": "baseline"
+   },
+   "time_to_first_coherent": {
+    "value": 1291.0,
+    "cite": "receipts/headless/QWEN_CLEAN_REBUILD.json#rebuild.wall_s"
+   },
+   "reproducible_from_canonical_inputs": {
+    "value": true,
+    "cite": "receipts/headless/QWEN_CLEAN_REBUILD.json#pass"
+   }
+  },
+  {
+   "specimen_index": 2,
+   "model": "Qwen/Qwen3-30B-A3B",
+   "architecture_class": "qwen3_moe",
+   "architecture_novelty": {
+    "value": [
+     "routing"
+    ],
+    "cite": "receipts/headless/MODEL_2_SELECTION.json#recommendation.novelty_axes"
+   },
+   "parameter_scale": {
+    "value": "30B total / ~3B active per token",
+    "cite": "receipts/headless/MODEL_2_SELECTION.json#recommendation.download_gib (57 GiB bf16)"
+   },
+   "best_complete_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "no whole-model executable has been compiled for this specimen; the runtime has no qwen3_moe reader"
+   },
+   "best_active_ebpw_per_token": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "same"
+   },
+   "median_gpu_ns_per_token": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "no native execution path for qwen3_moe yet"
+   },
+   "dispatches_per_token": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "same"
+   },
+   "organs_recognized_automatically": {
+    "value": 6,
+    "cite": "receipts/headless/QWEN_TRANSFER_REHEARSAL.json#plan.n_organs_recognized"
+   },
+   "kernels_reused_from_library": {
+    "value": 7,
+    "cite": "receipts/headless/MODEL_2_COMPOUNDING.json#demonstrations.1.measured.n_distinct_kernels_offered"
+   },
+   "prior_failures_that_shaped_the_search": {
+    "value": 41,
+    "cite": "receipts/headless/QWEN_TRANSFER_REHEARSAL.json#plan.n_prior_failures_applied"
+   },
+   "experiments_avoided": {
+    "value": 4,
+    "cite": "receipts/headless/MODEL_2_COMPOUNDING.json#demonstrations.4.measured.evaluations_avoided"
+   },
+   "time_to_first_coherent": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "coherence is defined on generated text and requires a runtime for this architecture; the organ-level reconstruction frontier is measured instead, in ODYSSEY_TRANSFER_PROVEN.json"
+   },
+   "architecture_analysis_wall_s": {
+    "value": 0.037,
+    "cite": "receipts/headless/QWEN_TRANSFER_REHEARSAL.json#plan.recognition_wall_s"
+   },
+   "organ_frontier_measured": {
+    "value": [
+     {
+      "candidate": "binary_g64",
+      "bpw": 1.25,
+      "rel_fro": 0.836417
+     },
+     {
+      "candidate": "ternary_g64",
+      "bpw": 1.835,
+      "rel_fro": 0.624037
+     },
+     {
+      "candidate": "affine_q2_g128",
+      "bpw": 2.25,
+      "rel_fro": 0.498769
+     },
+     {
+      "candidate": "affine_q2_g64",
+      "bpw": 2.5,
+      "rel_fro": 0.469259
+     },
+     {
+      "candidate": "uniform_q3_g128",
+      "bpw": 3.125,
+      "rel_fro": 0.395019
+     },
+     {
+      "candidate": "uniform_q3_g64",
+      "bpw": 3.25,
+      "rel_fro": 0.358701
+     },
+     {
+      "candidate": "affine_q3_g128",
+      "bpw": 3.25,
+      "rel_fro": 0.26904
+     },
+     {
+      "candidate": "affine_q3_g64",
+      "bpw": 3.5,
+      "rel_fro": 0.238596
+     },
+     {
+      "candidate": "uniform_q4_g128",
+      "bpw": 4.125,
+      "rel_fro": 0.163679
+     },
+     {
+      "candidate": "uniform_q4_g64",
+      "bpw": 4.25,
+      "rel_fro": 0.149519
+     },
+     {
+      "candidate": "affine_q4_g128",
+      "bpw": 4.25,
+      "rel_fro": 0.131346
+     },
+     {
+      "candidate": "affine_q4_g64",
+      "bpw": 4.5,
+      "rel_fro": 0.115191
+     }
+    ],
+    "cite": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json#pareto_frontier"
+   }
+  },
+  {
+   "specimen_index": 3,
+   "model": "tiiuae/Falcon-H1-7B-Instruct",
+   "architecture_class": "falcon_h1",
+   "architecture_novelty": {
+    "value": [
+     "state"
+    ],
+    "cite": "receipts/headless/MODEL_2_SELECTION.json#candidates (O001 novelty_axes)"
+   },
+   "parameter_scale": {
+    "value": "7B dense hybrid (mamba + attention)",
+    "cite": "receipts/headless/MATCHED_BITS_FALCON_H1.json#specimen.architecture_family"
+   },
+   "best_complete_ebpw": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "no whole-model executable compiled; the runtime has no falcon_h1 reader"
+   },
+   "best_active_ebpw_per_token": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "same"
+   },
+   "median_gpu_ns_per_token": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "same"
+   },
+   "dispatches_per_token": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "same"
+   },
+   "organs_recognized_automatically": {
+    "value": 7,
+    "cite": "receipts/headless/TRANSFER_REHEARSAL_O001.json#plan.n_organs_recognized"
+   },
+   "organs_KNOWN_with_measured_science": {
+    "value": 4,
+    "cite": "receipts/headless/TRANSFER_REHEARSAL_O001.json#plan.n_organs_known"
+   },
+   "kernels_reused_from_library": {
+    "value": 6,
+    "cite": "receipts/headless/TRANSFER_REHEARSAL_O001.json#plan.organ_plan (reusable_kernels per organ)"
+   },
+   "prior_failures_that_shaped_the_search": {
+    "value": 42,
+    "cite": "receipts/headless/TRANSFER_REHEARSAL_O001.json#plan.n_prior_failures_applied"
+   },
+   "experiments_avoided": {
+    "value": null,
+    "status": "UNMEASURED",
+    "reason": "no cold control was run for this specimen; the measurement taken here was the matched-bits law test, not a cold-versus-transfer race"
+   },
+   "architecture_analysis_wall_s": {
+    "value": 0.009,
+    "cite": "receipts/headless/TRANSFER_REHEARSAL_O001.json#plan.recognition_wall_s"
+   },
+   "organ_frontier_measured": {
+    "value": [
+     {
+      "bpw": 2.25,
+      "seeded_family_candidate": "affine_q2_g128",
+      "seeded_family_rel_fro": 0.436429,
+      "generic_candidate": "uniform_q2_g64",
+      "generic_rel_fro": 0.797759,
+      "seeded_is_better": true,
+      "error_ratio_generic_over_seeded": 1.828
+     },
+     {
+      "bpw": 3.25,
+      "seeded_family_candidate": "affine_q3_g128",
+      "seeded_family_rel_fro": 0.22911,
+      "generic_candidate": "uniform_q3_g64",
+      "generic_rel_fro": 0.303963,
+      "seeded_is_better": true,
+      "error_ratio_generic_over_seeded": 1.327
+     },
+     {
+      "bpw": 4.25,
+      "seeded_family_candidate": "affine_q4_g128",
+      "seeded_family_rel_fro": 0.117203,
+      "generic_candidate": "uniform_q4_g64",
+      "generic_rel_fro": 0.131545,
+      "seeded_is_better": true,
+      "error_ratio_generic_over_seeded": 1.122
+     }
+    ],
+    "cite": "receipts/headless/MATCHED_BITS_FALCON_H1.json#matched_bits_tiers"
+   },
+   "law_promoted_by_this_specimen": {
+    "value": "LAW-FITTED-AFFINE-BEATS-RTN -> ARCHITECTURE_GENERAL",
+    "cite": "receipts/headless/CROSS_MODEL_LAWS.json#counts"
+   }
+  }
+ ],
+ "n_unmeasured_cells": 10,
+ "unmeasured_cells": [
+  {
+   "model": "Qwen/Qwen3-30B-A3B",
+   "field": "best_complete_ebpw"
+  },
+  {
+   "model": "Qwen/Qwen3-30B-A3B",
+   "field": "best_active_ebpw_per_token"
+  },
+  {
+   "model": "Qwen/Qwen3-30B-A3B",
+   "field": "median_gpu_ns_per_token"
+  },
+  {
+   "model": "Qwen/Qwen3-30B-A3B",
+   "field": "dispatches_per_token"
+  },
+  {
+   "model": "Qwen/Qwen3-30B-A3B",
+   "field": "time_to_first_coherent"
+  },
+  {
+   "model": "tiiuae/Falcon-H1-7B-Instruct",
+   "field": "best_complete_ebpw"
+  },
+  {
+   "model": "tiiuae/Falcon-H1-7B-Instruct",
+   "field": "best_active_ebpw_per_token"
+  },
+  {
+   "model": "tiiuae/Falcon-H1-7B-Instruct",
+   "field": "median_gpu_ns_per_token"
+  },
+  {
+   "model": "tiiuae/Falcon-H1-7B-Instruct",
+   "field": "dispatches_per_token"
+  },
+  {
+   "model": "tiiuae/Falcon-H1-7B-Instruct",
+   "field": "experiments_avoided"
+  }
+ ],
+ "pass": true,
+ "bench": {
+  "state": "UNKNOWN",
+  "recorded_at": "2026-08-26T00:00:00Z",
+  "recorded_by": "S032 \u00a73 backfill, tools/accelerator/receipt.py::_check_bench",
+  "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+  "quiescence": null,
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "provenance": "this receipt was written before quiescence was a benchmark input and recorded none. UNKNOWN is what it measured under, not a claim that the machine was busy"
+ }
+}

@@ -1,0 +1,1138 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T23:33:50Z",
+  "recorded_by": "tools/future/workgraph.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bench_state": "UNKNOWN",
+ "branch": "odyssey-i",
+ "claim_boundary": "Static sidecar artifact. WorkGraph emits a schedule. It does not execute, does not take a GPU lease, does not promote, and does not raise evidence class above STATIC_ONLY. SLEEPING hardware work is not a result.",
+ "concurrent_tick_proof": {
+  "fired": true,
+  "fpga_also": true,
+  "scheduled": [
+   "cpu-1",
+   "fpga-1",
+   "gpu-a",
+   "research-1"
+  ]
+ },
+ "current_schedule": {
+  "concurrent_non_gpu": [
+   "CPU_ANALYSIS",
+   "CPU_REPRESENTATION",
+   "CPU_VERIFY",
+   "FPGA_SIM"
+  ],
+  "durable_resumed": true,
+  "running_ids": [
+   "accelerator.flash-semantic-transport-hwir",
+   "future.fusion.simulate-isa-graph",
+   "future.green-machine.energy-contract",
+   "future.hardware-doctor.rank-atlas-hypotheses",
+   "future.lpc.dataset-contract",
+   "future.odyssey-ii.seed-law-store",
+   "future.odyssey-iii.attack-claimed-law",
+   "future.repro.replication-bundle"
+  ],
+  "running_lanes": [
+   "CPU_ANALYSIS",
+   "CPU_REPRESENTATION",
+   "CPU_VERIFY",
+   "FPGA_SIM"
+  ],
+  "sleeping_count": 57
+ },
+ "durability_proof": {
+  "after_reload_completed": "completed",
+  "after_reload_running": "running",
+  "fired": true,
+  "tick1_scheduled": [
+   "dur-a",
+   "dur-b"
+  ],
+  "tick2_scheduled": [
+   "dur-c"
+  ]
+ },
+ "durable_path": "receipts/future/workgraph_workspace/workgraph.json",
+ "emitted_hcli_workunits": [
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "WorkUnit is a proposal; verifier and protected receipt remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "e7d5672f6003cedb60c3b739e737681d6ffafe7bfd2eb17789a8ed8197cf415e",
+   "cost_units": 3,
+   "dependencies": [],
+   "description": "Run typed route metadata/activation/partial-reduction edges in HWIR on Qwen3.8-Flash-Next/fpga for route_and_state. Control: untyped partition boundary. Falsifier: no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+   "effect_class": "REVERSIBLE",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "accelerator.flash-semantic-transport-hwir",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [
+    "receipt:receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json"
+   ],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "COMPILE",
+   "resource_lane": "FPGA_SIM",
+   "role": "accelerator_repatriation",
+   "running_at": null,
+   "species": "fpga_simulation",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "accelerator.repatriation.flash-semantic-transport-hwir",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "f645f876679ecc9bd0987d98629bdf1b612d57b5da8474f22d7ad4acb251b531",
+   "cost_units": 3,
+   "dependencies": [],
+   "description": "CPU simulation of fusion_planner / fusion_isa graphs. Graph shape only; no complete-token measurement.",
+   "effect_class": "REVERSIBLE",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "future.fusion.simulate-isa-graph",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "COMPILE",
+   "resource_lane": "FPGA_SIM",
+   "role": "science",
+   "running_at": null,
+   "species": "fusion_simulation",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "future.fusion.simulate",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "e2f7046cd880307b5b8decfbc438bf63f709df639e842a84e5c2ba322cd94e58",
+   "cost_units": 1,
+   "dependencies": [],
+   "description": "Seal the Green Machine energy-accounting contract. joules_per_token and related meter fields remain UNKNOWN.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "future.green-machine.energy-contract",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "resource_lane": "CPU_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "green_machine_measurement",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "future.green_machine.contract",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "083101ec7b7eaf756f40c89eab1cc87189813b88b1a182dc800959aeaaf429f1",
+   "cost_units": 1,
+   "dependencies": [],
+   "description": "Rank atlas hwir_hypotheses into falsifiable Hardware Doctor experiments. Does not invent an FPGA backend and does not run a GPU.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "future.hardware-doctor.rank-atlas-hypotheses",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "resource_lane": "CPU_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "hardware_doctor_experiment",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "future.hardware_doctor.rank",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "6595faedc5173898666b4a5117d7089544fafe1d22cbe9d0ab941881988431ff",
+   "cost_units": 2,
+   "dependencies": [],
+   "description": "Write the learned-physical-compiler dataset contract with contamination metadata as a required field. No training.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "future.lpc.dataset-contract",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "MEMORY_HEAVY",
+   "resource_lane": "CPU_REPRESENTATION",
+   "role": "science",
+   "running_at": null,
+   "species": "learned_compiler_experiment",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "future.lpc.dataset_contract",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "cc5f52e17e697c41802fb2ae1284e70b3ab586fe35882f895afb24dbc44554a7",
+   "cost_units": 1,
+   "dependencies": [],
+   "description": "Seed a scoped Odyssey II law store from ODYSSEY_TRANSFER_PROVEN, ACCELERATOR_TRANSFER_VERIFIED and QWEN38_ACCELERATOR_TRANSFER_MAP. Refuse unevidenced MODEL_LOCAL -> GENERIC_VERIFIED promotion.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "future.odyssey-ii.seed-law-store",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "resource_lane": "CPU_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "odyssey_ii_transfer_experiment",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "future.odyssey_ii.law_scope",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "bee6e5b8c3cee4d102225a9351385471ea252432c8b6a83816bdd89554c2e156",
+   "cost_units": 1,
+   "dependencies": [],
+   "description": "Adversarially attack a claimed transfer law using the existing headless adversary and negative-science corpus. A hit is a scar.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "future.odyssey-iii.attack-claimed-law",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "resource_lane": "CPU_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "species": "odyssey_iii_adversarial_experiment",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "future.odyssey_iii.adversary",
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+   "classification": "STATIC_ONLY",
+   "content_hash": "9da7b671b912b66de96f44795fe8d1114a3cf0c68142db2328fd432ce30b4e38",
+   "cost_units": 2,
+   "dependencies": [],
+   "description": "Independent reproduction bundle for a sealed Codex receipt, with fault injection. The replica does not become the source.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "expected_information_gain": 2,
+   "failure_context": null,
+   "finished_at": null,
+   "gpu_authority": false,
+   "graph_status": "running",
+   "id": "future.repro.replication-bundle",
+   "may_modify_verifier": false,
+   "may_promote": false,
+   "mutation_scope": [],
+   "preferred_backend": null,
+   "provider": "future.workgraph",
+   "ready_at": null,
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "requires_hardware": false,
+   "requires_quiescence": false,
+   "resource_class": "TEST",
+   "resource_lane": "CPU_VERIFY",
+   "role": "science",
+   "running_at": null,
+   "species": "independent_reproduction",
+   "status": "running",
+   "verification": null,
+   "verification_depends_on": [],
+   "verifier": "future.repro.bundle",
+   "workspace": "repo-root"
+  }
+ ],
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "executes": false,
+ "fpga": "FPGA is part of Accelerator / Physical Compiler / Fusion. FPGA_SIM is a CPU lane. This module does not build an FPGA backend.",
+ "frontier_fed": {
+  "mechanism": "tick() emits the next ready set; completed units are the refill input. This module does not write CLAUDE_GLOBAL_FRONTIER.json (global_frontier.py is frozen for this lane). Disk authority is receipts/future/WORKGRAPH_STATE.json plus the durable workgraph.json.",
+  "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+  "related_entries": [
+   "F002"
+  ]
+ },
+ "frontier_receipt_present": true,
+ "gaps_closed": [
+  "graph, not list: nodes are WorkUnits, edges are dependency + verification; ready set is computed",
+  "fourteen resource lanes with declared exclusivity and capacity; GPU_PROTECTED exclusive, CPU_ANALYSIS not",
+  "exclusive-lane, shared-physical, and intersecting mutation_scope never co-schedule",
+  "independent lanes (GPU probe, CPU_ANALYSIS, NETWORK_RESEARCH, FPGA_SIM) schedule in one tick",
+  "admission REJECTS a unit missing any required field; the guard is watched to fail",
+  "durable workgraph.json survives process restart; completed stays completed, running stays running, dependents resume",
+  "selection is expected information gain per unit cost (hardware_doctor integer key) with deterministic ties",
+  "starvation aging + reports so a low-info unit on an exclusive lane is not skipped indefinitely",
+  "physical GPU/ANE recovered units SLEEP until hardware qualifies; record_result on them raises",
+  "execute() does not exist as a capability \u2014 ExecutionRefused is the API",
+  "HCLI WorkUnit projection so the resident can submit the schedule without this module dispatching"
+ ],
+ "gpu_authority": false,
+ "graph": {
+  "completed_ids": [],
+  "edge_count": 30,
+  "edges": [
+   {
+    "from": "accelerator.physical.flash-hc-staged-threadgroup",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-hc-router-topk-fusion"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-batched-down-qat",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-epilogue-stack"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-fused-down-shared-combine",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-epilogue-stack"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-hash-single-command-buffer",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-epilogue-stack"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-learned-reader-reuse",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-learned-expert-cache-reuse"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-prefix-concurrent-wave",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-epilogue-stack"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-routed-fp4-down-bf16-fused",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-down-shared-combine"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-routed-fp4-down-bf16-fused",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-routed-fp4-down-bf16-simd"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-routed-fp4-gate-up-swiglu-fused",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-epilogue-stack"
+   },
+   {
+    "from": "accelerator.physical.flash-p6-routed-fp4-gate-up-swiglu-fused",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-routed-fp4-gate-up-swiglu-simd"
+   },
+   {
+    "from": "accelerator.physical.flash-p7-mhc-pre-simdgroup",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-device-mhc-state"
+   },
+   {
+    "from": "accelerator.physical.flash-pipeline-cache-reuse",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-pipeline-id-resolution"
+   },
+   {
+    "from": "accelerator.physical.flash-router-topk-fusion",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-hc-router-topk-fusion"
+   },
+   {
+    "from": "accelerator.physical.flash-shared-fp8-down-combine-fused",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-down-shared-combine"
+   },
+   {
+    "from": "accelerator.physical.flash-shared-fp8-gate-up-swiglu-fused",
+    "kind": "dependency",
+    "to": "accelerator.physical.flash-p6-fused-epilogue-stack"
+   },
+   {
+    "from": "accelerator.physical.qwen27-affine2-splitk4",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-affine2-splitk4-vec"
+   },
+   {
+    "from": "accelerator.physical.qwen27-commit-timing-elision",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-resident-untimed-decode"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-affine2-splitk4"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-attention-gate-fusion"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-ba-delta-fusion"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-commit-timing-elision"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-deltanet-inproj-fusion"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-encoder-label-elision"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-gqa-qkv-fusion"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-pipeline-cache-reuse"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-pipeline-state-elision"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-q2f-splitk4"
+   },
+   {
+    "from": "accelerator.physical.qwen27-fast-profile",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-q4-vecgroup-x64"
+   },
+   {
+    "from": "accelerator.physical.qwen27-pipeline-cache-reuse",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-pipeline-id-resolution"
+   },
+   {
+    "from": "accelerator.physical.qwen27-q2f-splitk4",
+    "kind": "dependency",
+    "to": "accelerator.physical.qwen27-q2f-splitk4-vec"
+   }
+  ],
+  "node_count": 65,
+  "note": "ready set is computed; the lists here are a snapshot. edge_count is derived from units, not a fixed bound. sleeping_ids may be truncated in the receipt; the durable document holds the full graph.",
+  "ready_ids": [
+   "future.green-machine.energy-contract",
+   "future.hardware-doctor.rank-atlas-hypotheses",
+   "future.odyssey-ii.seed-law-store",
+   "future.odyssey-iii.attack-claimed-law",
+   "future.lpc.dataset-contract",
+   "future.repro.replication-bundle",
+   "accelerator.flash-semantic-transport-hwir",
+   "future.fusion.simulate-isa-graph"
+  ],
+  "running_ids": [
+   "accelerator.flash-semantic-transport-hwir",
+   "future.fusion.simulate-isa-graph",
+   "future.green-machine.energy-contract",
+   "future.hardware-doctor.rank-atlas-hypotheses",
+   "future.lpc.dataset-contract",
+   "future.odyssey-ii.seed-law-store",
+   "future.odyssey-iii.attack-claimed-law",
+   "future.repro.replication-bundle"
+  ],
+  "sleeping_ids": [
+   "accelerator.ane-regular-island-probe",
+   "accelerator.flash-direct-routed-accumulate",
+   "accelerator.flash-local-state-machine",
+   "accelerator.physical.flash-attention-gate-fusion",
+   "accelerator.physical.flash-compact-moe-bf16-vec4",
+   "accelerator.physical.flash-compact-moe-epilogue",
+   "accelerator.physical.flash-device-mhc-state",
+   "accelerator.physical.flash-encoder-label-elision",
+   "accelerator.physical.flash-fullseq-catalog-cache",
+   "accelerator.physical.flash-fullseq-ordered-encoder",
+   "accelerator.physical.flash-hc-router-topk-fusion",
+   "accelerator.physical.flash-hc-staged-threadgroup",
+   "accelerator.physical.flash-meta-sub1-coherent",
+   "accelerator.physical.flash-p6-act-quant-simdgroup",
+   "accelerator.physical.flash-p6-batched-down-qat",
+   "accelerator.physical.flash-p6-fused-down-shared-combine",
+   "accelerator.physical.flash-p6-fused-epilogue-stack",
+   "accelerator.physical.flash-p6-hash-single-command-buffer",
+   "accelerator.physical.flash-p6-learned-expert-cache-reuse",
+   "accelerator.physical.flash-p6-learned-reader-reuse",
+   "accelerator.physical.flash-p6-prefix-concurrent-wave",
+   "accelerator.physical.flash-p6-routed-fp4-down-bf16-fused",
+   "accelerator.physical.flash-p6-routed-fp4-down-bf16-simd",
+   "accelerator.physical.flash-p6-routed-fp4-gate-up-swiglu-fused",
+   "accelerator.physical.flash-p6-routed-fp4-gate-up-swiglu-simd",
+   "accelerator.physical.flash-p6-routed-fp4-simdgroup",
+   "accelerator.physical.flash-p6-shared-fp8-simdgroup",
+   "accelerator.physical.flash-p7-mhc-pre-simdgroup",
+   "accelerator.physical.flash-pipeline-cache-reuse",
+   "accelerator.physical.flash-pipeline-id-resolution",
+   "accelerator.physical.flash-qkv-gqa-rope-fusion",
+   "accelerator.physical.flash-routed-fp4-gate-up-swiglu-fused",
+   "accelerator.physical.flash-router-topk-fusion",
+   "accelerator.physical.flash-shared-fp8-down-combine-fused",
+   "accelerator.physical.flash-shared-fp8-gate-up-swiglu-fused",
+   "accelerator.physical.flash-source-bf16-simd",
+   "accelerator.physical.qwen27-affine2-splitk4",
+   "accelerator.physical.qwen27-affine2-splitk4-vec",
+   "accelerator.physical.qwen27-attention-gate-fusion",
+   "accelerator.physical.qwen27-ba-delta-fusion"
+  ]
+ },
+ "hardware_qualification": {
+  "contamination_class": "HEAVY",
+  "gpu_authority": false,
+  "lease_present": false,
+  "pipeline_receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
+  "pipeline_receipt_present": true,
+  "qualified": false,
+  "reasons": [
+   "MetalContext reports NO Metal-capable GPU on this host",
+   "xcrun cannot locate the Metal compiler under CommandLineTools",
+   "protected bench lock files exist; holder pids unproven; flock would be a seizure",
+   "qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
+   "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
+   "teacher capture is 0/256",
+   "QUALIFICATION_PIPELINE.json pipeline.contamination_class='HEAVY'",
+   "lease_present=False from receipts/future/QUALIFICATION_PIPELINE.json"
+  ],
+  "rule": "blocked physical work becomes a SLEEPING WorkUnit; it never becomes a synthetic result. UNKNOWN is the correct hardware answer."
+ },
+ "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "integration_points": [
+  "hcli.scheduler.Scheduler.submit \u2014 consume emit_hcli_workunit() rows (hcli frozen)",
+  "tools.future.wakeup \u2014 wake_sleeping(hardware_qualified=True) when Codex qualifies (sibling, not imported)",
+  "tools.future.sandbox / resident_api \u2014 record_result after a real verifier (siblings, not imported)",
+  "tools.future.frontiers / super_resident \u2014 refill CLAUDE_GLOBAL_FRONTIER from completed units (siblings, not imported)",
+  "tools.future.candidate_planner.conflict_reasons \u2014 mutation_scope is the graph form of those conflict edges"
+ ],
+ "lane_ids": [
+  "GPU_PROTECTED",
+  "GPU_DIAGNOSTIC",
+  "CPU_BUILD",
+  "CPU_REPRESENTATION",
+  "CPU_ANALYSIS",
+  "CPU_VERIFY",
+  "DISK_IO",
+  "NETWORK_RESEARCH",
+  "MODELLAKE",
+  "FPGA_SIM",
+  "ANE",
+  "LOCAL_MODEL",
+  "STRONG_MODEL",
+  "GROK_SWARM"
+ ],
+ "lane_to_hcli": {
+  "ANE": "GPU_EXCLUSIVE",
+  "CPU_ANALYSIS": "STATIC_ANALYSIS",
+  "CPU_BUILD": "COMPILE",
+  "CPU_REPRESENTATION": "MEMORY_HEAVY",
+  "CPU_VERIFY": "TEST",
+  "DISK_IO": "IO_HEAVY",
+  "FPGA_SIM": "COMPILE",
+  "GPU_DIAGNOSTIC": "GPU_DECODE",
+  "GPU_PROTECTED": "GPU_EXCLUSIVE",
+  "GROK_SWARM": "GROK",
+  "LOCAL_MODEL": "CPU_HEAVY",
+  "MODELLAKE": "IO_HEAVY",
+  "NETWORK_RESEARCH": "TOOL_WAIT",
+  "STRONG_MODEL": "LIGHT_CONTROL"
+ },
+ "lanes": [
+  {
+   "capacity": 1,
+   "exclusive": true,
+   "hcli_resource_class": "GPU_EXCLUSIVE",
+   "id": "GPU_PROTECTED",
+   "note": "exclusive protected GPU window; Codex-owned execution; sidecar schedules only",
+   "physical": "metal_gpu"
+  },
+  {
+   "capacity": 1,
+   "exclusive": true,
+   "hcli_resource_class": "GPU_DECODE",
+   "id": "GPU_DIAGNOSTIC",
+   "note": "exclusive diagnostic GPU; mutually exclusive with GPU_PROTECTED via physical=metal_gpu",
+   "physical": "metal_gpu"
+  },
+  {
+   "capacity": 28,
+   "exclusive": false,
+   "hcli_resource_class": "COMPILE",
+   "id": "CPU_BUILD",
+   "note": "compile / build; not exclusive",
+   "physical": null
+  },
+  {
+   "capacity": 28,
+   "exclusive": false,
+   "hcli_resource_class": "MEMORY_HEAVY",
+   "id": "CPU_REPRESENTATION",
+   "note": "representation / LPC contract work; not exclusive",
+   "physical": null
+  },
+  {
+   "capacity": 28,
+   "exclusive": false,
+   "hcli_resource_class": "STATIC_ANALYSIS",
+   "id": "CPU_ANALYSIS",
+   "note": "static analysis; explicitly not exclusive",
+   "physical": null
+  },
+  {
+   "capacity": 28,
+   "exclusive": false,
+   "hcli_resource_class": "TEST",
+   "id": "CPU_VERIFY",
+   "note": "independent reproduction / tests; not exclusive",
+   "physical": null
+  },
+  {
+   "capacity": 28,
+   "exclusive": false,
+   "hcli_resource_class": "IO_HEAVY",
+   "id": "DISK_IO",
+   "note": "receipt and corpus IO; not exclusive",
+   "physical": null
+  },
+  {
+   "capacity": 28,
+   "exclusive": false,
+   "hcli_resource_class": "TOOL_WAIT",
+   "id": "NETWORK_RESEARCH",
+   "note": "read-only research; not exclusive; this sidecar itself never opens a socket",
+   "physical": null
+  },
+  {
+   "capacity": 1,
+   "exclusive": true,
+   "hcli_resource_class": "IO_HEAVY",
+   "id": "MODELLAKE",
+   "note": "single lake operator",
+   "physical": null
+  },
+  {
+   "capacity": 28,
+   "exclusive": false,
+   "hcli_resource_class": "COMPILE",
+   "id": "FPGA_SIM",
+   "note": "CPU FPGA simulation; FPGA belongs to Accelerator/Physical Compiler/Fusion",
+   "physical": null
+  },
+  {
+   "capacity": 1,
+   "exclusive": true,
+   "hcli_resource_class": "GPU_EXCLUSIVE",
+   "id": "ANE",
+   "note": "exclusive ANE; sleeping until a public Core ML path exists",
+   "physical": "ane"
+  },
+  {
+   "capacity": 1,
+   "exclusive": true,
+   "hcli_resource_class": "CPU_HEAVY",
+   "id": "LOCAL_MODEL",
+   "note": "single local-resident slot",
+   "physical": null
+  },
+  {
+   "capacity": 1,
+   "exclusive": true,
+   "hcli_resource_class": "LIGHT_CONTROL",
+   "id": "STRONG_MODEL",
+   "note": "single strong-model slot",
+   "physical": null
+  },
+  {
+   "capacity": 2,
+   "exclusive": false,
+   "hcli_resource_class": "GROK",
+   "id": "GROK_SWARM",
+   "note": "HCLI ResourceLimits.grok fallback capacity=2; not a measurement",
+   "physical": null
+  }
+ ],
+ "measurement_class": "STATIC_ONLY",
+ "negative_controls": {
+  "cpu_and_research_co_scheduled": {
+   "fired": true,
+   "scheduled": [
+    "cpu-1",
+    "fpga-1",
+    "gpu-a",
+    "research-1"
+   ]
+  },
+  "execute_refused": {
+   "fired": true
+  },
+  "gpu_cpu_research_one_tick": {
+   "fired": true,
+   "fpga_also": true,
+   "scheduled": [
+    "cpu-1",
+    "fpga-1",
+    "gpu-a",
+    "research-1"
+   ]
+  },
+  "gpu_protected_exclusive": {
+   "fired": true,
+   "lanes": [
+    "CPU_ANALYSIS",
+    "FPGA_SIM",
+    "GPU_PROTECTED",
+    "NETWORK_RESEARCH"
+   ],
+   "note": "two GPU_PROTECTED units must never share a tick",
+   "scheduled": [
+    "cpu-1",
+    "fpga-1",
+    "gpu-a",
+    "research-1"
+   ]
+  },
+  "info_per_cost_wins": {
+   "fired": true,
+   "scheduled": [
+    "sel-high"
+   ]
+  },
+  "missing_field_rejected": {
+   "fired": true,
+   "missing": [
+    "verifier"
+   ],
+   "not_in_graph": true,
+   "reason": "'missing-verifier': missing required field(s) ['verifier']"
+  },
+  "mutation_scope_blocks": {
+   "fired": true,
+   "scheduled": [
+    "mut-a",
+    "mut-c"
+   ],
+   "skip_reasons": {
+    "mut-b": "mutation_scope"
+   }
+  },
+  "sleeping_not_synthetic": {
+   "fired": true,
+   "status": "sleeping"
+  },
+  "verification_dependency_waits": {
+   "fired": true,
+   "tick1": [
+    "parent"
+   ],
+   "tick2": [
+    "child"
+   ]
+  }
+ },
+ "negative_findings": [
+  "HCLI Scheduler.dispatch is FIFO, not information-per-cost; WorkGraph does not monkey-patch it",
+  "HCLI ResourceClass names are not the fourteen lanes; a mapping layer is required and is an integration point",
+  "this sidecar has no GPU authority; every GPU_PROTECTED recovered unit is SLEEPING, not scheduled, not completed",
+  "protected bench lock holder pids are unproven; this module does not flock (flock would be a seizure)",
+  "qualification pipeline classifies the machine HEAVY; WorkGraph does not quiesce anyone",
+  "Flash NX remains SCAFFOLD_ONLY; Flash candidates stay SLEEPING with that reason on disk",
+  "teacher capture 0/256 is recorded as a blocker, not turned into a synthetic corpus",
+  "cannot import this-wave siblings (wakeup, resident_api, sandbox, super_resident, frontiers, \u2026); local interfaces defined here",
+  "cannot write hcli/**; the resident must call WorkGraph and then Scheduler.submit itself",
+  "cannot write CLAUDE_GLOBAL_FRONTIER.json; frontier feed is by receipt, not by mutating that module",
+  "DagStore interrupt-on-crash semantics are for execution; WorkGraph running means claimed, so reload keeps running",
+  "NETWORK_RESEARCH is a lane declaration; this process never opens a socket",
+  "GROK_SWARM capacity is the HCLI grok fallback (2), not a live GrokBridge census",
+  "no Era VI and no Odyssey IV; FPGA is not its own civilization"
+ ],
+ "next_workunits": [
+  {
+   "blocked_on": "resident_api.py (this-wave sibling, not imported)",
+   "description": "Sibling resident_api / super_resident submits emit_hcli_workunit() rows into hcli.scheduler.Scheduler.submit. Not done here: hcli is frozen.",
+   "id": "future.workgraph.wire-scheduler-submit",
+   "resource_lane": "CPU_ANALYSIS"
+  },
+  {
+   "blocked_on": "wakeup.py (this-wave sibling) + Codex hardware qualification",
+   "description": "Sibling wakeup.py calls WorkGraph.wake_sleeping(hardware_qualified=True) when Codex's qualification queue reports a real GPU window. Until then SLEEPING stays SLEEPING.",
+   "id": "future.workgraph.wakeup-sleeping-on-qualify",
+   "resource_lane": "CPU_ANALYSIS"
+  },
+  {
+   "blocked_on": "sandbox.py (this-wave sibling)",
+   "description": "Sibling sandbox/executor calls record_result(id, ok=...) after a real verifier outcome. WorkGraph will not complete unexecuted work.",
+   "id": "future.workgraph.executor-record-result",
+   "resource_lane": "CPU_VERIFY"
+  }
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "purpose": "Graph scheduler for the HCLI super-resident: fourteen resource lanes, computed ready set, mutation and exclusive-lane conflicts, information-per-cost selection, durable resume, SLEEPING unqualified hardware. Emits a schedule. Does not execute.",
+ "recovered_graph": {
+  "by_lane": {
+   "ANE": 1,
+   "CPU_ANALYSIS": 4,
+   "CPU_REPRESENTATION": 1,
+   "CPU_VERIFY": 1,
+   "FPGA_SIM": 2,
+   "GPU_PROTECTED": 56
+  },
+  "by_status": {
+   "running": 8,
+   "sleeping": 57
+  },
+  "inserted": 65,
+  "resumed": false,
+  "source": "receipts/future/HCLI_FUTURE_WORKUNITS.json",
+  "source_rows": 65,
+  "units": 65
+ },
+ "recovered_implementation": {
+  "gap_that_existed": "HCLI Scheduler is a list dispatcher on ResourceClass occupancy. It does not name the fourteen lanes, does not rank by information per cost, does not carry mutation_scope, does not report starvation, and does not SLEEP unqualified physical work as a first-class state. WorkGraph closes that gap around the recovered dispatcher rather than replacing it.",
+  "hcli.agentos.runtime.AgentOS": "composition facade; Mission/Scheduler remain authorities. WorkGraph is a planner the facade can call; it does not wrap AgentOS.",
+  "hcli.agentos.states.AgentState": "READY/RUNNING/WAITING_RESOURCE/BLOCKED vocabulary; SLEEPING is a WorkGraph status projected to HCLI blocked+SLEEPING",
+  "hcli.dag_store.DagStore": "disk is authority (<workspace>/.hcli/dag.json); running-at-crash becomes interrupted (not a verifier failure). WorkGraph does not execute, so running is a claimed schedule slot and is restored as running on reload, not interrupted.",
+  "hcli.physical_graph.PhysicalGraph": "placement/dataflow plan, PLAN_ONLY; not a work scheduler. Not forked.",
+  "hcli.resources.ResourceClass": "fourteen HCLI classes exist (GPU_DECODE, GPU_EXCLUSIVE, ...) but they are not the fourteen WorkGraph lanes. LANE_TO_HCLI is the projection.",
+  "hcli.scheduler.Scheduler": "hcli/scheduler.py \u2014 admits WorkUnits, identify_ready + assign_ready, FIFO by ready_at (critical-path remaining_depth was retired; hops are not time and starved). GPU_EXCLUSIVE exclusive vs GPU_DECODE. MutationLock. DagStore durability. Does not invent work. complete() requires a passing verifier. from_workspace recovers running Grok.",
+  "hcli.workunit.WorkUnit": "canonical unit; identify_ready computes the ready set from dependencies; assign_ready is occupancy, not a graph selector",
+  "tools.future.candidate_planner.conflict_reasons": "same-region incompatible mutation and env-key collision. WorkGraph stores mutation_scope on each unit and refuses intersecting scopes at co-schedule time \u2014 the same refusal, on the live graph.",
+  "tools.future.hardware_doctor.rank_queue": "integer key -(info*60//cost); reused, not rivalled",
+  "tools.future.qualification_pipeline": "contamination_class HEAVY, lease_present fail-closed false; read as a receipt, never imported (importing would pull lease inspection)",
+  "tools.future.resident_optimizer.rank_hypotheses": "same integer rule; reused for WorkGraph selection",
+  "tools.future.workunit_species": "ten species, HCLI field set, starting queue. Ingested as DATA / via build_starting_queue; species authority constructor is not reimplemented."
+ },
+ "recovered_tick": {
+  "executes": false,
+  "note": "Fresh recovered-graph tick (not the resumed durable occupancy). Independent non-GPU lanes claim together; GPU_PROTECTED recovered work stays SLEEPING.",
+  "ready": 8,
+  "running_ids": [
+   "accelerator.flash-semantic-transport-hwir",
+   "future.fusion.simulate-isa-graph",
+   "future.green-machine.energy-contract",
+   "future.hardware-doctor.rank-atlas-hypotheses",
+   "future.lpc.dataset-contract",
+   "future.odyssey-ii.seed-law-store",
+   "future.odyssey-iii.attack-claimed-law",
+   "future.repro.replication-bundle"
+  ],
+  "running_lanes": [
+   "CPU_ANALYSIS",
+   "CPU_REPRESENTATION",
+   "CPU_VERIFY",
+   "FPGA_SIM"
+  ],
+  "scheduled_ids": [
+   "future.green-machine.energy-contract",
+   "future.hardware-doctor.rank-atlas-hypotheses",
+   "future.odyssey-ii.seed-law-store",
+   "future.odyssey-iii.attack-claimed-law",
+   "future.lpc.dataset-contract",
+   "future.repro.replication-bundle",
+   "accelerator.flash-semantic-transport-hwir",
+   "future.fusion.simulate-isa-graph"
+  ],
+  "scheduled_lanes": [
+   "CPU_ANALYSIS",
+   "CPU_REPRESENTATION",
+   "CPU_VERIFY",
+   "FPGA_SIM"
+  ],
+  "sleeping": 57,
+  "tick": 1
+ },
+ "required_fields": [
+  "id",
+  "role",
+  "description",
+  "dependencies",
+  "resource_lane",
+  "mutation_scope",
+  "verifier",
+  "expected_information_gain",
+  "cost_units"
+ ],
+ "resident_callable": {
+  "durable_graph": "/Users/scammermike/Downloads/hawking/receipts/future/workgraph_workspace/workgraph.json",
+  "entry_point": "python3 tools/future/workgraph.py --tick   # or: from tools.future.workgraph import open_resident_graph; open_resident_graph().tick()",
+  "fail_closed": [
+   "admit() REJECTS a unit missing any required field (does not insert)",
+   "unknown resource_lane is REJECTED",
+   "dependency/verification cycle is REJECTED",
+   "execute() raises ExecutionRefused",
+   "record_result on SLEEPING raises SyntheticResultError",
+   "record_result on never-scheduled raises SyntheticResultError",
+   "record_result on requires_hardware while unqualified raises SyntheticResultError",
+   "HardwareClaimError from write_receipt if a numeric hardware field appears",
+   "durable document with the wrong schema raises DurableCorruptError",
+   "GPU_PROTECTED physical work stays SLEEPING until hardware_qualified is true"
+  ],
+  "frontier_fed": {
+   "mechanism": "tick() emits the next ready set; completed units are the refill input. This module does not write CLAUDE_GLOBAL_FRONTIER.json (global_frontier.py is frozen for this lane). Disk authority is receipts/future/WORKGRAPH_STATE.json plus the durable workgraph.json.",
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "related_entries": [
+    "F002"
+   ]
+  },
+  "functions": {
+   "admit": "WorkGraph.admit(unit|**fields) -> inserted|idempotent|rejected",
+   "emit_hcli_workunit": "WorkGraph.emit_hcli_workunit(id) -> HCLI WorkUnit dict",
+   "execute": "raises ExecutionRefused",
+   "open_resident_graph": "open_resident_graph(workspace=None) -> WorkGraph",
+   "record_result": "WorkGraph.record_result(id, ok=bool)  # executor sibling",
+   "tick": "WorkGraph.tick() -> schedule dict (does not execute)",
+   "wake_sleeping": "WorkGraph.wake_sleeping(hardware_qualified=bool)"
+  },
+  "hcli_can_invoke": true,
+  "module": "tools.future.workgraph",
+  "note": "HCLI Scheduler remains the execution dispatcher. WorkGraph is the graph planner the resident calls to decide WHAT is co-safe this tick. Sibling lanes (resident_api, sandbox, wakeup \u2014 not imported) consume the schedule.",
+  "receipt_written": "receipts/future/WORKGRAPH_STATE.json",
+  "workunit_emitted": {
+   "constructor": "hcli.workunit.WorkUnit",
+   "projection": "tools.future.workgraph.graph_unit_to_hcli",
+   "resource_class": "mapped through LANE_TO_HCLI onto recovered HCLI ResourceClass",
+   "status_sleeping": "HCLI status=blocked, classification=SLEEPING",
+   "submit_target": "hcli.scheduler.Scheduler.submit \u2014 integration point; this module does not construct a Scheduler (that would pull runtimes / Grok liveness)"
+  }
+ },
+ "schema": "hawking.future.workgraph.v1",
+ "seal_sha256": "02c83a7dbdf764bd2e3e3f2d6d42bab02addde9a132315a6be1fca37a703ec81",
+ "selection_rule": {
+  "info_domain": [
+   1,
+   2,
+   3
+  ],
+  "key": "(-starvation_boost, -(info * 60 // cost), cost, id)",
+  "never_a_hardware_measurement": true,
+  "source": "tools/future/hardware_doctor.py::rank_queue and tools/future/resident_optimizer.py::rank_hypotheses",
+  "starvation_threshold_ticks": 8
+ },
+ "starvation_proof": {
+  "fired": true,
+  "reports": [
+   {
+    "reason": "exclusive_lane",
+    "resource_lane": "GPU_PROTECTED",
+    "skipped_ticks": 8,
+    "threshold": 8,
+    "tick": 8,
+    "unit_id": "starve-low"
+   }
+  ],
+  "scheduled_low_at_tick": 9,
+  "threshold": 8
+ },
+ "statuses": [
+  "completed",
+  "failed",
+  "pending",
+  "ready",
+  "running",
+  "sleeping"
+ ],
+ "version": 1
+}

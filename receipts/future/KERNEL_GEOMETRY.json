@@ -1,0 +1,567 @@
+{
+ "angle": "530_to_337_is_kernel_geometry_occupancy_coalescing",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T00:06:23Z",
+  "recorded_by": "tools/future/kernel_geometry.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "body": {
+  "QWEN38_BA_ROWS": 96,
+  "QWEN38_DELTANET_LAYERS": 48,
+  "QWEN38_GQA_LAYERS": 16,
+  "QWEN38_HIDDEN": 5120,
+  "QWEN38_INTERMEDIATE": 17408,
+  "QWEN38_KV_PROJ_ROWS": 1024,
+  "QWEN38_LAYERS": 64,
+  "QWEN38_O_PROJ_COLS": 6144,
+  "QWEN38_O_PROJ_ROWS": 5120,
+  "QWEN38_QKVZ_ROWS": 16384,
+  "QWEN38_Q_PROJ_ROWS": 12288,
+  "QWEN38_VOCAB": 248320
+ },
+ "census": {
+  "affine": 192,
+  "f32_tensors_quoted": 353,
+  "gemv_organs": 401,
+  "note": "192 affine + 210 q4 + 353 f32 = 755 tensors in the brief; atlas GEMV count is 401 (192+209) plus embedding lookup.",
+  "q4": 209
+ },
+ "claim_boundary": "Static sidecar artifact. Numbers under quoted_from_committed_receipts are copied from named committed receipts, not measured here. No hardware measurement. No qualified TPS.",
+ "coalescing": {
+  "affine_q2_group32": "4 consecutive threads each load a ushort (2 B) covering one 8-byte group. Coalesced.",
+  "packed_q4_group64": "8 consecutive threads each load a uint (4 B) at +0,+4,...,+28 inside one 32-byte group. That is a coalesced 32 B transaction.",
+  "verdict": "Packed layout already coalesces across the tpr64 map. Not the 530->337 step.",
+  "x_vector": "Each thread loads 8 consecutive f32 (32 B). A simdgroup of 32 covers 256 consecutive floats = 1024 B contiguous."
+ },
+ "crate_change": {
+  "bit_identical_for_production_k": true,
+  "what": [
+   "q4 geo_tpr64 loops use col+8<=cols (no over-read on a tail)",
+   "assert_tpr64_tg128_threadgroup refuses TG != 128 on that occupancy class",
+   "executable organ table + coverage + occupancy for this body"
+  ],
+  "why_not_a_tpr_retarget": "Changing TPR changes the simd_sum reduction tree and is a representation change. Production K already has zero tail and the large organs are bandwidth-saturated, not occupancy-starved."
+ },
+ "evidence_class": "STATIC_ONLY",
+ "flock": false,
+ "gpu_authority": false,
+ "measurement_class": "STATIC_ONLY",
+ "negative_controls": {
+  "a_checker_never_seen_to_fail_is_not_a_checker": true,
+  "metal_tg_guard_present": true,
+  "token_id_parity_refuses_dropped_tail": true,
+  "token_id_parity_refuses_perturbation": true,
+  "write_receipt_refuses_hardware_tps": true
+ },
+ "occupancy_class": {
+  "col_stride": 512,
+  "col_tile": 8,
+  "gpu_cores": 60,
+  "rows_per_tg": 2,
+  "threadgroup": 128,
+  "threads_per_row": 64
+ },
+ "organs": [
+  {
+   "cols": 5120,
+   "count": 64,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "affine2",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 17408,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads": 1114112
+   },
+   "occupancy_starved": false,
+   "role": "mlp.gate_proj",
+   "rows": 17408,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 5120,
+   "count": 64,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "affine2",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 17408,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads": 1114112
+   },
+   "occupancy_starved": false,
+   "role": "mlp.up_proj",
+   "rows": 17408,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 17408,
+   "count": 64,
+   "coverage": {
+    "cols": 17408,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 34
+   },
+   "kernel_class": "affine2",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 5120,
+    "threadgroups": 2560,
+    "threadgroups_per_core": 42.666666666666664,
+    "threads": 327680
+   },
+   "occupancy_starved": false,
+   "role": "mlp.down_proj",
+   "rows": 5120,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 5120,
+   "count": 48,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 16384,
+    "threadgroups": 8192,
+    "threadgroups_per_core": 136.53333333333333,
+    "threads": 1048576
+   },
+   "occupancy_starved": false,
+   "role": "linear_attn.in_proj_qkvz",
+   "rows": 16384,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 5120,
+   "count": 48,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 96,
+    "threadgroups": 48,
+    "threadgroups_per_core": 0.8,
+    "threads": 6144
+   },
+   "occupancy_starved": true,
+   "role": "linear_attn.in_proj_ba",
+   "rows": 96,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 6144,
+   "count": 48,
+   "coverage": {
+    "cols": 6144,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 12
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 5120,
+    "threadgroups": 2560,
+    "threadgroups_per_core": 42.666666666666664,
+    "threads": 327680
+   },
+   "occupancy_starved": false,
+   "role": "linear_attn.out_proj",
+   "rows": 5120,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 5120,
+   "count": 16,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 12288,
+    "threadgroups": 6144,
+    "threadgroups_per_core": 102.4,
+    "threads": 786432
+   },
+   "occupancy_starved": false,
+   "role": "self_attn.q_proj",
+   "rows": 12288,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 5120,
+   "count": 16,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 1024,
+    "threadgroups": 512,
+    "threadgroups_per_core": 8.533333333333333,
+    "threads": 65536
+   },
+   "occupancy_starved": false,
+   "role": "self_attn.k_proj",
+   "rows": 1024,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 5120,
+   "count": 16,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 1024,
+    "threadgroups": 512,
+    "threadgroups_per_core": 8.533333333333333,
+    "threads": 65536
+   },
+   "occupancy_starved": false,
+   "role": "self_attn.v_proj",
+   "rows": 1024,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 6144,
+   "count": 16,
+   "coverage": {
+    "cols": 6144,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 12
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 5120,
+    "threadgroups": 2560,
+    "threadgroups_per_core": 42.666666666666664,
+    "threads": 327680
+   },
+   "occupancy_starved": false,
+   "role": "self_attn.o_proj",
+   "rows": 5120,
+   "simd_bytes_tile_complete": true
+  },
+  {
+   "cols": 5120,
+   "count": 1,
+   "coverage": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "kernel_class": "q4",
+   "occupancy": {
+    "gpu_cores": 60,
+    "note": "Derived from launch geometry vs 60 M3 Ultra cores. Not a hardware occupancy counter.",
+    "rows": 248320,
+    "threadgroups": 124160,
+    "threadgroups_per_core": 2069.3333333333335,
+    "threads": 15892480
+   },
+   "occupancy_starved": false,
+   "role": "lm_head",
+   "rows": 248320,
+   "simd_bytes_tile_complete": true
+  }
+ ],
+ "production_k": {
+  "coverage": {
+   "17408": {
+    "cols": 17408,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 34
+   },
+   "5120": {
+    "cols": 5120,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 10
+   },
+   "6144": {
+    "cols": 6144,
+    "dropped": 0,
+    "idle_lanes_last_trip": 0,
+    "overread_if_col_lt_cols": false,
+    "trips": 12
+   }
+  },
+  "divides_256_col_tile": true,
+  "divides_512_col_stride": true,
+  "values": [
+   5120,
+   6144,
+   17408
+  ]
+ },
+ "quoted_from_committed_receipts": {
+  "active_weight_bytes_per_token": 9878901136,
+  "atlas_pareto_top2": [
+   {
+    "dispatches": 192,
+    "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+    "weight_bytes": 5347795776
+   },
+   {
+    "dispatches": 209,
+    "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+    "weight_bytes": 4520517800
+   }
+  ],
+  "byte_free_dispatch_us": 1.042,
+  "catalog_addr": {
+   "dispatches": 401,
+   "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_addr_probe",
+   "max_gb_s": 539.0312878731118,
+   "median_gb_s": 530.6544688491846,
+   "median_ns": 25650709,
+   "min_gb_s": 509.2708275107332,
+   "note": "401 GEMVs of the production organ mix (192 MLP + 144 DN + 64 GQA + 1 lm_head) on unique synthetic Q4 bytes. Same kernel and launch geometry as decode. Not a model-quality run.",
+   "payload_bytes": 13611663360
+  },
+  "catalog_decode": {
+   "max_gb_s": 513.0233342441745,
+   "median_gb_s": 454.9232458460072,
+   "min_gb_s": 293.99317181163843
+  },
+  "catalog_full": {
+   "max_gb_s": 511.0514362413588,
+   "median_gb_s": 505.8100047843556,
+   "min_gb_s": 499.6916629420753
+  },
+  "g044_bandwidth_ceiling_gb_s": 594.3492381201206,
+  "g044_knee_flop_per_byte": 15.107980661178622,
+  "matvec_share_of_bytes": 0.998928265415936,
+  "other_562_share_of_bytes": 0.0010717345840639547,
+  "production_effective_gb_s": 337.26568478304,
+  "published_peak_gb_s": 819.0,
+  "sealed_raw_tokens_per_second": 34.14,
+  "single_gemv_13p6gb_addr_gb_s": 699.5736545106142,
+  "sources": {
+   "atlas": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "dispatch": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_PRICE.json",
+   "g044": "receipts/ascent-2026-08-16/G044_ROOFLINE_KNEE.json",
+   "honest_roof": "receipts/ascent-2026-08-16/HONEST_ROOF_WEIGHT_ADDRESSING.json"
+  },
+  "weight_free_dispatches_at_most_ms": 0.585604,
+  "weight_reading_dispatch_us": 70.708
+ },
+ "schema": "hawking.future.kernel_geometry.v1",
+ "seal_sha256": "a3229dfed34d8aa6e17e8b813ea7d8d7f215604d4a00e9cb3e52e44bd14f5f6d",
+ "self_timing": {
+  "evidence_class": "SELF_MEASURED_DIRTY",
+  "median_ms": null,
+  "not_protected_absolute": true,
+  "numbers_decide_nothing": true,
+  "ran_resident": false,
+  "reason": "Default --build is STATIC_ONLY. Dirty resident timings are --probe only and still qualify nothing.",
+  "samples_ms": null
+ },
+ "shaders": {
+  "all_bound_kernels_present": true,
+  "bound_kernels_present": {
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128": true,
+   "qwen_q2f_group64_matvec_geo_tpr64_tg128": true,
+   "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128": true,
+   "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128": true,
+   "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128": true
+  },
+  "decode_occupancy_class": true,
+  "launch_helper": true,
+  "metal_tg_guard": true,
+  "mixed_k_split": true,
+  "mixed_red4": true,
+  "mixed_tail_safe_loops": 25,
+  "q4_k_split": true,
+  "q4_overread_loops": 0,
+  "q4_red4": true,
+  "q4_tail_safe_loops": 12
+ },
+ "token_id_parity": {
+  "dense_w_materialized_must_stay": 0,
+  "fallbacks_must_stay": 0,
+  "gate": "assert_token_id_parity",
+  "geometry_decode": {
+   "dense_w_materialized": 0,
+   "drop_last_tile_diverges": true,
+   "drop_last_tile_token_ids": {
+    "k17408": [
+     1
+    ],
+    "k5120": [
+     1
+    ],
+    "k6144": [
+     1
+    ]
+   },
+   "fallbacks": 0,
+   "identical_to_serial": true,
+   "prompts": [
+    "k5120",
+    "k6144",
+    "k17408"
+   ],
+   "serial_token_ids": {
+    "k17408": [
+     1
+    ],
+    "k5120": [
+     0
+    ],
+    "k6144": [
+     0
+    ]
+   },
+   "token_ids": {
+    "k17408": [
+     1
+    ],
+    "k5120": [
+     0
+    ],
+    "k6144": [
+     0
+    ]
+   }
+  },
+  "prompts": [
+   "short",
+   "medium",
+   "long"
+  ],
+  "resident_fixture_ids": {
+   "long": [
+    151643,
+    10950,
+    264,
+    17847
+   ],
+   "medium": [
+    151643,
+    77091,
+    220,
+    13
+   ],
+   "short": [
+    151643,
+    8948,
+    198
+   ]
+  }
+ },
+ "took_gpu_lease": false,
+ "verdict": {
+  "angle": "530_to_337_is_kernel_geometry_occupancy_coalescing",
+  "decomposition": {
+   "bytes_ratio_active_over_catalog": 0.7257673713141257,
+   "catalog_addr_implied_ms": 25.650709000000003,
+   "catalog_addr_median_gb_s": 530.6544688491846,
+   "catalog_addr_median_ns_quoted": 25650709,
+   "catalog_full_implied_ms": 26.910625,
+   "catalog_full_median_gb_s": 505.8100047843556,
+   "catalog_payload_bytes": 13611663360,
+   "extra_ms_vs_catalog_addr": 3.6404450714704133,
+   "extra_ms_vs_catalog_full": 2.3805290714704164,
+   "gb_s_ratio_production_over_catalog_addr": 0.6355655225413603,
+   "identity": "gb_s_ratio == bytes_ratio / time_ratio",
+   "identity_holds": true,
+   "production_active_bytes": 9878901136,
+   "production_effective_gb_s": 337.26568478304,
+   "production_implied_ms": 29.291154071470416,
+   "reading": "The catalog probe ran 401 production-SHAPE GEMVs as synthetic Q4 (13611663360 bytes) at 530.654 GB/s. Production moves 9878901136 mixed affine+q4 bytes at 337.266 GB/s. Bytes drop 27.4% because affine MLP is denser than the all-q4 catalog; time rises only 14.2%. GB/s is bytes/time, so it falls 36.4%. The tpr64 map is already in the catalog measurement. Decode ALU on that map is catalog-full vs catalog-addr (a few percent). Weight-free dispatches are at most 0.585604 ms. Geometry/occupancy/tails are not the 193 GB/s.",
+   "status": "COMPUTED_FROM_COMMITTED_RECEIPTS",
+   "time_ratio_production_over_catalog_addr": 1.1419237601374064,
+   "weight_free_dispatches_at_most_ms": 0.585604
+  },
+  "f32_dragging_packed_gemv": false,
+  "f32_note": "353 f32 tensors; atlas other-562 share of bytes is 0.107%; expanded_to_float_gemv stays 0. f32 is rmsnorm/conv/A_log/swiglu, not a packed GEMV path.",
+  "geometry_is_the_530_to_337_loss": false,
+  "handoff": {
+   "ba_occupancy": "BA is the only occupancy-starved organ (96 rows -> 48 TGs / 60 cores). Its bytes are a rounding error; split-K would change the reduction tree.",
+   "next_lane_owns": [
+    "affine2 ALU vs q4 for the same (rows, cols) \u2014 MLP is 54% of production bytes at 3.0 bpw",
+    "non-GEMV serial work in the one-CB graph (deltanet, GQA, rmsnorm, swiglu)",
+    "dispatch count, synchronization, host ceremony"
+   ],
+   "not_this_lane": "tpr64 / tg128 / 512-col stride / 256-col tiles / f32-as-packed-GEMV"
+  },
+  "occupancy_starved_organs": [
+   "linear_attn.in_proj_ba"
+  ],
+  "organs_with_dropped_columns": [],
+  "organs_with_incomplete_256_col_tile": [],
+  "verdict": "FALSIFIED",
+  "why": "tpr64 covers every production organ with dropped=0 and, except BA, dozens to thousands of threadgroups per core. The 530->337 GB/s drop is the byte numerator (affine MLP vs all-q4 catalog of the same shapes) plus a few milliseconds of non-GEMV work. Catalog addressing already used this occupancy class."
+ },
+ "version": 1
+}

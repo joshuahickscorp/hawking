@@ -1,0 +1,2845 @@
+{
+ "asic_candidate_ledger": {
+  "entries": [
+   {
+    "asic_candidate": false,
+    "candidate_id": "fused_decode_compute",
+    "candidate_physical_law": "compact representation decode + projection",
+    "claim_boundary": "interesting cross-architecture behavior is not an ASIC recommendation",
+    "cross_generation_hardware_survival": false,
+    "cross_model_survival": "NOT_ESTABLISHED",
+    "fpga_stable": false,
+    "primitive": "FusedDecodeCompute",
+    "promotion_gate": [
+     "survives Qwen27 and Flash protected measurements",
+     "survives multiple representations and machines",
+     "software cannot remove the primitive",
+     "FPGA simulation and hardware repeatedly prove a stable spatial form",
+     "reconfigurability no longer earns its cost"
+    ],
+    "software_optimization_exhausted": false,
+    "source_school_count": 4,
+    "status": "WATCHLIST"
+   },
+   {
+    "asic_candidate": false,
+    "candidate_id": "local_state_machine",
+    "candidate_physical_law": "persistent recurrent state transition",
+    "claim_boundary": "interesting cross-architecture behavior is not an ASIC recommendation",
+    "cross_generation_hardware_survival": false,
+    "cross_model_survival": "NOT_ESTABLISHED",
+    "fpga_stable": false,
+    "primitive": "LocalStateMachine",
+    "promotion_gate": [
+     "survives Qwen27 and Flash protected measurements",
+     "survives multiple representations and machines",
+     "software cannot remove the primitive",
+     "FPGA simulation and hardware repeatedly prove a stable spatial form",
+     "reconfigurability no longer earns its cost"
+    ],
+    "software_optimization_exhausted": false,
+    "source_school_count": 4,
+    "status": "WATCHLIST"
+   },
+   {
+    "asic_candidate": false,
+    "candidate_id": "stationary_representation",
+    "candidate_physical_law": "representation/data stationarity",
+    "claim_boundary": "interesting cross-architecture behavior is not an ASIC recommendation",
+    "cross_generation_hardware_survival": false,
+    "cross_model_survival": "NOT_ESTABLISHED",
+    "fpga_stable": false,
+    "primitive": "StationaryRepresentation",
+    "promotion_gate": [
+     "survives Qwen27 and Flash protected measurements",
+     "survives multiple representations and machines",
+     "software cannot remove the primitive",
+     "FPGA simulation and hardware repeatedly prove a stable spatial form",
+     "reconfigurability no longer earns its cost"
+    ],
+    "software_optimization_exhausted": false,
+    "source_school_count": 5,
+    "status": "WATCHLIST"
+   },
+   {
+    "asic_candidate": false,
+    "candidate_id": "semantic_transport",
+    "candidate_physical_law": "typed data movement/reduction edge",
+    "claim_boundary": "interesting cross-architecture behavior is not an ASIC recommendation",
+    "cross_generation_hardware_survival": false,
+    "cross_model_survival": "NOT_ESTABLISHED",
+    "fpga_stable": false,
+    "primitive": "SemanticTransportEdge",
+    "promotion_gate": [
+     "survives Qwen27 and Flash protected measurements",
+     "survives multiple representations and machines",
+     "software cannot remove the primitive",
+     "FPGA simulation and hardware repeatedly prove a stable spatial form",
+     "reconfigurability no longer earns its cost"
+    ],
+    "software_optimization_exhausted": false,
+    "source_school_count": 3,
+    "status": "WATCHLIST"
+   },
+   {
+    "asic_candidate": false,
+    "candidate_id": "direct_routed_accumulate",
+    "candidate_physical_law": "route-aware selected payload and accumulation",
+    "claim_boundary": "interesting cross-architecture behavior is not an ASIC recommendation",
+    "cross_generation_hardware_survival": false,
+    "cross_model_survival": "NOT_ESTABLISHED",
+    "fpga_stable": false,
+    "primitive": "DirectRoutedAccumulate",
+    "promotion_gate": [
+     "survives Qwen27 and Flash protected measurements",
+     "survives multiple representations and machines",
+     "software cannot remove the primitive",
+     "FPGA simulation and hardware repeatedly prove a stable spatial form",
+     "reconfigurability no longer earns its cost"
+    ],
+    "software_optimization_exhausted": false,
+    "source_school_count": 3,
+    "status": "WATCHLIST"
+   }
+  ],
+  "promotion_rule": "no candidate is ASIC-worthy until cross-model, cross-representation, FPGA, and cross-generation evidence survives",
+  "schema": "hawking.accelerator.asic_candidate_ledger.v1"
+ },
+ "backend_neutral_primitives": [
+  "PersistentPhysicalRegion",
+  "StationaryRepresentation",
+  "AsyncPrefetch",
+  "DoubleBufferedTile",
+  "SpatialPipeline",
+  "FusedDecodeCompute",
+  "DirectRoutedAccumulate",
+  "LocalStateMachine",
+  "SemanticTransportEdge",
+  "TiledProjection",
+  "LayoutTransform",
+  "SparseSkip",
+  "ConditionalPhysicalProgram",
+  "GraphReplay",
+  "CollectiveRegion",
+  "MoveOrRecompute",
+  "MemoryTierIdentity"
+ ],
+ "behavior_taxonomy": [
+  "DATA_STATIONARITY",
+  "STREAMING",
+  "SPATIAL_EXECUTION",
+  "PERSISTENT_EXECUTION",
+  "STATIC_SCHEDULING",
+  "DYNAMIC_SCHEDULING",
+  "LOCAL_MEMORY",
+  "GLOBAL_MEMORY",
+  "ASYNC_PREFETCH",
+  "DOUBLE_BUFFERING",
+  "TILING",
+  "LAYOUT_TRANSFORMATION",
+  "LOW_BIT_ARITHMETIC",
+  "SPARSITY_SKIPPING",
+  "CONDITIONAL_EXECUTION",
+  "ROUTE_AWARE_EXECUTION",
+  "COMPUTE_IN_TRANSIT",
+  "FUSED_REPRESENTATION_DECODE",
+  "STATE_RESIDENCY",
+  "CROSS_DEVICE_OVERLAP",
+  "GRAPH_REPLAY"
+ ],
+ "bench": {
+  "machine": "planning artifact; no physical benchmark was executed",
+  "provenance": "This artifact contains hypotheses and schema metadata, not a benchmark result",
+  "quiescence": null,
+  "recorded_at": "2026-08-29T00:00:00Z",
+  "recorded_by": "architecture-atlas planning artifact",
+  "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+  "state": "UNKNOWN"
+ },
+ "canonicalization_policy": {
+  "asic": "watchlist only until the repeated-survivor gates are all true",
+  "cross_model": "a law must re-earn transfer on Qwen27 and Flash before generic status",
+  "diagnostic": "may rank a hypothesis, never promote it",
+  "fpga": "HWIR and link/cycle simulations remain [D]/[S] until hardware receipts exist",
+  "protected": "requires complete useful wall, independent capability, zero fallback, and explicit metric scope"
+ },
+ "claim_boundary": "Architecture schools are textbooks. This artifact records Hawking hypotheses and existing implementation surfaces; it does not convert source claims into Hawking performance claims.",
+ "entries": [
+  {
+   "applicable_backends": [
+    "metal",
+    "ane",
+    "fpga",
+    "cuda",
+    "cpu",
+    "remote"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "all"
+   ],
+   "architecture_independent_invariant": "the cheapest legal way to satisfy a dependency is a physical scheduling decision",
+   "behavior_id": "move_or_recompute",
+   "behavior_taxonomy": [
+    "LOCAL_MEMORY",
+    "GLOBAL_MEMORY",
+    "CROSS_DEVICE_OVERLAP"
+   ],
+   "cheapest_falsifier": "the costed plan disagrees with a protected end-to-end A/B or chooses a path with missing capability evidence",
+   "ev_inputs": {
+    "future_hardware_value": 4,
+    "information_gain": 5,
+    "model_applicability": 5,
+    "token_ns_reduction": 4,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_IMPLEMENTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "select the lowest complete dependency cost"
+    }
+   },
+   "expected_value_score": 1000.0,
+   "fundamental_physical_idea": "do not move an operand merely because the source framework would",
+   "hawking_primitive": "MoveOrRecompute",
+   "implementation_difficulty": 2,
+   "physical_graph_mapping": {
+    "dependencies": "costed_dependency_queries",
+    "device_placement": "topology_aware",
+    "execution_policy": "measured_complete_wall"
+   },
+   "source_architecture_ecosystem": [
+    "CPU matrix engine",
+    "tile-local dataflow",
+    "fabric-first accelerator",
+    "FPGA"
+   ],
+   "source_behavior": "choose movement, recomputation, replication, prefetch, or local execution from measured costs",
+   "source_evidence": [
+    "tools/accelerator/fusion_planner.py",
+    "hcli/physical_graph.py"
+   ],
+   "status": "IMPLEMENTED",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "NUMA/cache and accelerator links are different cost surfaces"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "ane",
+    "fpga",
+    "cuda"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "decode",
+    "deltanet",
+    "moe",
+    "attention",
+    "sampling"
+   ],
+   "architecture_independent_invariant": "when state and bindings remain valid, repeated host entry is not semantically required",
+   "behavior_id": "persistent_physical_region",
+   "behavior_taxonomy": [
+    "PERSISTENT_EXECUTION",
+    "STATE_RESIDENCY",
+    "LOCAL_MEMORY"
+   ],
+   "cheapest_falsifier": "protected complete useful wall time does not improve against the same resident control, with identical output and zero fallback",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 3,
+    "model_applicability": 5,
+    "token_ns_reduction": 5,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_IMPLEMENTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "amortize launch and binding ceremony"
+    }
+   },
+   "expected_value_score": 937.5,
+   "fundamental_physical_idea": "keep executable state and reusable bindings alive across token steps",
+   "hawking_primitive": "PersistentPhysicalRegion",
+   "implementation_difficulty": 2,
+   "physical_graph_mapping": {
+    "execution_policy.process": "long_lived_executor",
+    "residency.state": "sequence",
+    "residency.weights": "resident"
+   },
+   "source_architecture_ecosystem": [
+    "NVIDIA CUDA",
+    "deterministic dataflow",
+    "FPGA",
+    "Apple/other NPU"
+   ],
+   "source_behavior": "persistent kernels, compiled graph execution, and resident pipelines amortize repeated entry",
+   "source_evidence": [
+    "hcli/physical_graph.py",
+    "hcli/hawking_native.py",
+    "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json"
+   ],
+   "status": "IMPLEMENTED",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "cooperative CUDA launch, NPU graph lifetime, or FPGA fabric are not assumed by Hawking"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "fpga",
+    "cuda",
+    "ane"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "mlp",
+    "moe",
+    "lm_head",
+    "codebook"
+   ],
+   "architecture_independent_invariant": "a representation-native consumer may remove an intermediate only when its numerical contract is preserved",
+   "behavior_id": "fused_decode_compute",
+   "behavior_taxonomy": [
+    "FUSED_REPRESENTATION_DECODE",
+    "LOW_BIT_ARITHMETIC",
+    "COMPUTE_IN_TRANSIT"
+   ],
+   "cheapest_falsifier": "parity, fallback, or protected complete-wall gate fails against the same-source dense/control path",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 4,
+    "model_applicability": 5,
+    "token_ns_reduction": 5,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_MEASURED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    },
+    "flops": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    },
+    "host_ceremony": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    },
+    "synchronization": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "remove dense rematerialization and its write/read"
+    }
+   },
+   "expected_value_score": 833.333,
+   "fundamental_physical_idea": "fuse representation decode with arithmetic at the consumer",
+   "hawking_primitive": "FusedDecodeCompute",
+   "implementation_difficulty": 3,
+   "physical_graph_mapping": {
+    "computation": "projection_plus_decode",
+    "memory": "no_dense_rematerialization",
+    "representation": "native_decode"
+   },
+   "source_architecture_ecosystem": [
+    "NVIDIA CUDA",
+    "FPGA",
+    "published inference ASIC",
+    "Apple/other NPU"
+   ],
+   "source_behavior": "decode compressed operands inside the projection/epilogue instead of materializing a dense intermediate",
+   "source_evidence": [
+    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+    "receipts/headless/AFFINE2_NATIVE_MLP.json",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "status": "PHYSICALLY_MEASURED",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "tensor-core instruction shapes and fixed-function units are not portable"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "ane",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "deltanet",
+    "kv",
+    "routing",
+    "ngram",
+    "mtp"
+   ],
+   "architecture_independent_invariant": "mutable state has one authoritative owner and its update ordering is part of the executable identity",
+   "behavior_id": "local_state_machine",
+   "behavior_taxonomy": [
+    "STATE_RESIDENCY",
+    "PERSISTENT_EXECUTION",
+    "LOCAL_MEMORY"
+   ],
+   "cheapest_falsifier": "device-resident state does not improve protected complete wall or fails checkpoint/bisection parity",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 5,
+    "model_applicability": 5,
+    "token_ns_reduction": 4,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_IMPLEMENTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "keep mutable sequence state resident and ordered"
+    }
+   },
+   "expected_value_score": 833.333,
+   "fundamental_physical_idea": "model decode as a state machine rather than reconstructing stateless operators every step",
+   "hawking_primitive": "LocalStateMachine",
+   "implementation_difficulty": 3,
+   "physical_graph_mapping": {
+    "execution_policy": "fixed_state_transitions",
+    "state": "authoritative_resident_owner",
+    "synchronization": "state_update_edges"
+   },
+   "source_architecture_ecosystem": [
+    "FPGA",
+    "deterministic dataflow",
+    "Apple/other NPU",
+    "published inference ASIC"
+   ],
+   "source_behavior": "keep recurrent state alive and update it in a persistent local pipeline",
+   "source_evidence": [
+    "receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM.json",
+    "hcli/physical_graph.py",
+    "hcli/agentos/fpga_preboard.py"
+   ],
+   "status": "IMPLEMENTED",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "FPGA registers/BRAM and NPU state APIs do not define Metal semantics"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "ane",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "decode",
+    "regular_mlp",
+    "attention",
+    "moe"
+   ],
+   "architecture_independent_invariant": "a stable dependency graph can be reused if dynamic values do not alter topology",
+   "behavior_id": "graph_replay",
+   "behavior_taxonomy": [
+    "GRAPH_REPLAY",
+    "STATIC_SCHEDULING",
+    "CONDITIONAL_EXECUTION"
+   ],
+   "cheapest_falsifier": "replay adds no protected complete-wall improvement or changes a dynamic route/state result",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 5,
+    "model_applicability": 4,
+    "token_ns_reduction": 5,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "DERIVED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    },
+    "state_movement": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reuse command topology and reduce rebuilds"
+    }
+   },
+   "expected_value_score": 625.0,
+   "fundamental_physical_idea": "compile the static skeleton once and expose only dynamic slots",
+   "hawking_primitive": "GraphReplay",
+   "implementation_difficulty": 4,
+   "physical_graph_mapping": {
+    "execution_policy.dynamic_slots": [
+     "token",
+     "position",
+     "route",
+     "sampling"
+    ],
+    "execution_policy.pipeline_state": "compile_once_reuse"
+   },
+   "source_architecture_ecosystem": [
+    "NVIDIA CUDA",
+    "TPU/systolic",
+    "Apple/other NPU",
+    "FPGA"
+   ],
+   "source_behavior": "capture a stable graph and replay it with small parameter/control updates",
+   "source_evidence": [
+    "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json",
+    "hcli/physical_graph.py"
+   ],
+   "status": "DIAGNOSTIC",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "CUDA graph APIs and NPU executable formats are vendor-specific"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "fpga",
+    "cuda",
+    "cpu",
+    "ane"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "mlp",
+    "moe",
+    "attention",
+    "deltanet"
+   ],
+   "architecture_independent_invariant": "the same logical operation may have materially different movement and reduction costs under different legal layouts",
+   "behavior_id": "layout_algebra",
+   "behavior_taxonomy": [
+    "LAYOUT_TRANSFORMATION",
+    "TILING",
+    "LOW_BIT_ARITHMETIC"
+   ],
+   "cheapest_falsifier": "same-source protected A/B at the chosen organ shows no complete-wall or active-byte benefit",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 5,
+    "model_applicability": 5,
+    "token_ns_reduction": 5,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "OPEN-SOURCE-INSPECTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    },
+    "host_ceremony": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    },
+    "state_movement": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "reduce strided movement and tails through shape-aware mapping"
+    }
+   },
+   "expected_value_score": 625.0,
+   "fundamental_physical_idea": "choose layout and thread/tile ownership as compiler objects rather than kernel folklore",
+   "hawking_primitive": "LayoutTransform",
+   "implementation_difficulty": 5,
+   "physical_graph_mapping": {
+    "computation": "tile_and_lane_mapping",
+    "precision": "representation_grouping",
+    "representation": "layout_algebra"
+   },
+   "source_architecture_ecosystem": [
+    "CUTLASS/CUTE",
+    "AMD ROCm",
+    "TPU/systolic",
+    "FPGA"
+   ],
+   "source_behavior": "separate logical tensors from physical packing, tile mapping, lane mapping, and arithmetic mapping",
+   "source_evidence": [
+    "tools/accelerator/air.py",
+    "tools/accelerator/kernel_forge.py",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+   ],
+   "status": "DIAGNOSTIC",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "warp, wave, systolic-array, and BRAM banking dimensions are not portable constants"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "ane",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "decode",
+    "deltanet",
+    "moe",
+    "kv",
+    "sampling"
+   ],
+   "architecture_independent_invariant": "static structure and dynamic control can coexist when dynamic choices do not change buffer ownership unsafely",
+   "behavior_id": "static_dynamic_skeleton",
+   "behavior_taxonomy": [
+    "STATIC_SCHEDULING",
+    "DYNAMIC_SCHEDULING",
+    "CONDITIONAL_EXECUTION"
+   ],
+   "cheapest_falsifier": "a bounded dynamic slot requires topology rebuild or changes output/capability under a protected replay",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 5,
+    "model_applicability": 5,
+    "token_ns_reduction": 4,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_IMPLEMENTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    },
+    "state_movement": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "precompute safe scheduling and retain dynamic controls"
+    }
+   },
+   "expected_value_score": 625.0,
+   "fundamental_physical_idea": "remove runtime scheduling decisions from the critical path without pretending dynamic MoE is static",
+   "hawking_primitive": "ConditionalPhysicalProgram",
+   "implementation_difficulty": 4,
+   "physical_graph_mapping": {
+    "dependencies": "precomputed",
+    "execution_policy": "static_skeleton_plus_dynamic_slots",
+    "synchronization": "precomputed_where_safe"
+   },
+   "source_architecture_ecosystem": [
+    "deterministic dataflow",
+    "TPU/systolic",
+    "FPGA",
+    "NVIDIA CUDA"
+   ],
+   "source_behavior": "compile a mostly static schedule and leave only bounded route/position/state slots dynamic",
+   "source_evidence": [
+    "hcli/physical_graph.py",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "hcli/agentos/fpga_preboard.py"
+   ],
+   "status": "IMPLEMENTED",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "fully static placement is not valid for arbitrary routes or variable-length requests"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "ane",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "mlp",
+    "moe",
+    "embedding",
+    "lm_head",
+    "codebook"
+   ],
+   "architecture_independent_invariant": "the best stationary operand is the one whose reuse exceeds the cost of retaining it",
+   "behavior_id": "stationary_representation",
+   "behavior_taxonomy": [
+    "DATA_STATIONARITY",
+    "LOCAL_MEMORY",
+    "LOW_BIT_ARITHMETIC"
+   ],
+   "cheapest_falsifier": "packed resident A/B has no protected complete-wall benefit or violates the no-dense-rematerialization/capability gate",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 3,
+    "model_applicability": 5,
+    "token_ns_reduction": 5,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_IMPLEMENTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    },
+    "synchronization": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid repeated operand movement"
+    }
+   },
+   "expected_value_score": 625.0,
+   "fundamental_physical_idea": "spend residency and local storage to avoid repeatedly moving the dominant operand",
+   "hawking_primitive": "StationaryRepresentation",
+   "implementation_difficulty": 3,
+   "physical_graph_mapping": {
+    "memory": "tier_is_executable_identity",
+    "representation": "packed_native",
+    "residency": "stationarity_contract"
+   },
+   "source_architecture_ecosystem": [
+    "TPU/systolic",
+    "wafer-scale locality",
+    "tile-local dataflow",
+    "published inference ASIC",
+    "NVIDIA CUDA"
+   ],
+   "source_behavior": "keep weights, activations, outputs, or compressed operands stationary near reuse",
+   "source_evidence": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json",
+    "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json"
+   ],
+   "status": "IMPLEMENTED",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "systolic arrays, SRAM sizes, and wafer-scale placement are not assumed"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "moe",
+    "attention",
+    "deltanet",
+    "fpga_partition"
+   ],
+   "architecture_independent_invariant": "a transfer is optimizable only when its payload, owner, ordering, and reduction semantics are explicit",
+   "behavior_id": "semantic_transport",
+   "behavior_taxonomy": [
+    "GLOBAL_MEMORY",
+    "CROSS_DEVICE_OVERLAP",
+    "COMPUTE_IN_TRANSIT"
+   ],
+   "cheapest_falsifier": "semantic edge accounting cannot reproduce the reference output or link cost erases the proposed benefit",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 5,
+    "model_applicability": 5,
+    "token_ns_reduction": 3,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_IMPLEMENTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    },
+    "host_ceremony": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid untyped copies and choose topology-aware movement"
+    }
+   },
+   "expected_value_score": 468.75,
+   "fundamental_physical_idea": "make data movement a semantic graph edge instead of an opaque memory copy",
+   "hawking_primitive": "SemanticTransportEdge",
+   "implementation_difficulty": 4,
+   "physical_graph_mapping": {
+    "dependencies": "typed_transport_edges",
+    "device_placement": "topology_aware",
+    "synchronization": "edge_ownership_and_order"
+   },
+   "source_architecture_ecosystem": [
+    "packetized NoC",
+    "fabric-first accelerator",
+    "FPGA"
+   ],
+   "source_behavior": "move typed activations, state, route metadata, or partial reductions through explicit links",
+   "source_evidence": [
+    "tools/accelerator/fusion_planner.py",
+    "hcli/agentos/fpga_preboard.py",
+    "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json"
+   ],
+   "status": "IMPLEMENTED",
+   "transfer_confidence": "MEDIUM",
+   "vendor_specific_assumptions": "NoC packet formats and collective fabrics differ; the edge contract is Hawking-owned"
+  },
+  {
+   "applicable_backends": [
+    "cuda",
+    "fpga",
+    "cpu",
+    "metal"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "moe",
+    "attention",
+    "multi_device"
+   ],
+   "architecture_independent_invariant": "synchronized work is paced by its slowest required link and cannot hide an unmodeled transfer",
+   "behavior_id": "collective_region",
+   "behavior_taxonomy": [
+    "CROSS_DEVICE_OVERLAP",
+    "GLOBAL_MEMORY",
+    "STATIC_SCHEDULING"
+   ],
+   "cheapest_falsifier": "a protected multi-domain or simulated-link A/B does not match the cost ordering after complete transfer accounting",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 5,
+    "model_applicability": 4,
+    "token_ns_reduction": 2,
+    "transfer_breadth": 5
+   },
+   "evidence_class": "HAWKING_IMPLEMENTED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    },
+    "host_ceremony": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "choose topology-aware collective execution"
+    }
+   },
+   "expected_value_score": 333.333,
+   "fundamental_physical_idea": "choose ring/tree/direct movement from measured alpha/beta and message size",
+   "hawking_primitive": "CollectiveRegion",
+   "implementation_difficulty": 3,
+   "physical_graph_mapping": {
+    "dependencies": "semantic_transport",
+    "device_placement": "topology_aware",
+    "synchronization": "collective_algorithm"
+   },
+   "source_architecture_ecosystem": [
+    "fabric-first accelerator",
+    "packetized NoC",
+    "AMD ROCm",
+    "NVIDIA CUDA"
+   ],
+   "source_behavior": "schedule collectives and communication topology as part of the executable graph",
+   "source_evidence": [
+    "tools/accelerator/fusion_planner.py",
+    "hcli/agentos/fpga_preboard.py"
+   ],
+   "status": "IMPLEMENTED",
+   "transfer_confidence": "HIGH",
+   "vendor_specific_assumptions": "NCCL/RCCL and proprietary fabrics are not portable implementations"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "mlp",
+    "moe",
+    "deltanet",
+    "kv"
+   ],
+   "architecture_independent_invariant": "a transfer can be hidden only inside a real overlap window with explicit producer/consumer ownership",
+   "behavior_id": "async_double_buffer",
+   "behavior_taxonomy": [
+    "ASYNC_PREFETCH",
+    "DOUBLE_BUFFERING",
+    "STREAMING"
+   ],
+   "cheapest_falsifier": "measured overlap window is zero or protected complete wall is not lower after fence costs",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 4,
+    "model_applicability": 4,
+    "token_ns_reduction": 4,
+    "transfer_breadth": 4
+   },
+   "evidence_class": "DERIVED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    },
+    "host_ceremony": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "hide movement behind independent work"
+    }
+   },
+   "expected_value_score": 320.0,
+   "fundamental_physical_idea": "overlap independent movement and compute with two ownership-safe buffers",
+   "hawking_primitive": "DoubleBufferedTile",
+   "implementation_difficulty": 4,
+   "physical_graph_mapping": {
+    "execution_policy": "overlap_when_measured",
+    "memory": "double_buffered_tiles",
+    "synchronization": "producer_consumer_fences"
+   },
+   "source_architecture_ecosystem": [
+    "NVIDIA CUDA",
+    "AMD ROCm",
+    "FPGA",
+    "reconfigurable dataflow"
+   ],
+   "source_behavior": "stage the next tile asynchronously while the current tile computes",
+   "source_evidence": [
+    "tools/accelerator/fusion_planner.py",
+    "hcli/agentos/fpga_preboard.py"
+   ],
+   "status": "MAPPED",
+   "transfer_confidence": "MEDIUM",
+   "vendor_specific_assumptions": "warp/wave async copies and hardware DMA differ across devices"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "fpga",
+    "cuda"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "mlp",
+    "deltanet",
+    "moe",
+    "attention"
+   ],
+   "architecture_independent_invariant": "if an intermediate is not externally observable, its global materialization is optional",
+   "behavior_id": "spatial_local_pipeline",
+   "behavior_taxonomy": [
+    "SPATIAL_EXECUTION",
+    "STREAMING",
+    "COMPUTE_IN_TRANSIT"
+   ],
+   "cheapest_falsifier": "fused region fails numerical parity or protected complete wall increases after local-storage/fence cost",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 4,
+    "model_applicability": 4,
+    "token_ns_reduction": 5,
+    "transfer_breadth": 4
+   },
+   "evidence_class": "DERIVED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    },
+    "synchronization": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "fuse producer-consumer regions and keep intermediates local"
+    }
+   },
+   "expected_value_score": 320.0,
+   "fundamental_physical_idea": "make locality and pipeline ownership explicit in the graph",
+   "hawking_primitive": "SpatialPipeline",
+   "implementation_difficulty": 5,
+   "physical_graph_mapping": {
+    "computation": "spatial_regions",
+    "data": "semantic_edges",
+    "memory": "local_intermediates"
+   },
+   "source_architecture_ecosystem": [
+    "wafer-scale locality",
+    "tile-local dataflow",
+    "reconfigurable dataflow",
+    "FPGA"
+   ],
+   "source_behavior": "place a producer-consumer chain spatially so intermediates do not round-trip through global memory",
+   "source_evidence": [
+    "receipts/headless/PHYSICAL_GRAPH_COMPILER.json",
+    "hcli/agentos/fpga_preboard.py"
+   ],
+   "status": "MAPPED",
+   "transfer_confidence": "MEDIUM",
+   "vendor_specific_assumptions": "wafer-scale links, tile SRAM, and FPGA BRAM/URAM are implementation-specific"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Flash"
+   ],
+   "applicable_organs": [
+    "moe",
+    "router",
+    "shared_expert",
+    "expert_cache"
+   ],
+   "architecture_independent_invariant": "for few active tokens, route metadata and selected payload locality matter more than nominal expert throughput",
+   "behavior_id": "direct_routed_accumulate",
+   "behavior_taxonomy": [
+    "ROUTE_AWARE_EXECUTION",
+    "DYNAMIC_SCHEDULING",
+    "SPARSITY_SKIPPING"
+   ],
+   "cheapest_falsifier": "selected-route protected complete wall does not beat current Flash control after route/gather/accumulate costs",
+   "ev_inputs": {
+    "future_hardware_value": 5,
+    "information_gain": 5,
+    "model_applicability": 4,
+    "token_ns_reduction": 5,
+    "transfer_breadth": 3
+   },
+   "evidence_class": "HAWKING_MEASURED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    },
+    "flops": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    },
+    "host_ceremony": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    },
+    "state_movement": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    },
+    "synchronization": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "skip inactive experts and eliminate staging copies"
+    }
+   },
+   "expected_value_score": 300.0,
+   "fundamental_physical_idea": "treat routing and accumulation as one physical region around selected payloads",
+   "hawking_primitive": "DirectRoutedAccumulate",
+   "implementation_difficulty": 5,
+   "physical_graph_mapping": {
+    "computation": "route_then_native_expert",
+    "data": "selected_payload_only",
+    "state": "route_metadata_resident"
+   },
+   "source_architecture_ecosystem": [
+    "NVIDIA CUDA",
+    "fabric-first accelerator",
+    "packetized NoC"
+   ],
+   "source_behavior": "sort/group routes, execute selected experts, and accumulate weighted outputs without avoidable staging",
+   "source_evidence": [
+    "receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+    "hcli/agentos/flash_executable.py"
+   ],
+   "status": "DIAGNOSTIC",
+   "transfer_confidence": "MEDIUM",
+   "vendor_specific_assumptions": "large-batch grouped GEMM and datacenter interconnect assumptions do not automatically fit local decode"
+  },
+  {
+   "applicable_backends": [
+    "metal",
+    "fpga",
+    "cuda",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "sparse_attention",
+    "moe",
+    "residual",
+    "router"
+   ],
+   "architecture_independent_invariant": "skipping is legal only when the omitted contribution is proven zero or outside the selected computation",
+   "behavior_id": "sparse_conditional_execution",
+   "behavior_taxonomy": [
+    "SPARSITY_SKIPPING",
+    "CONDITIONAL_EXECUTION",
+    "ROUTE_AWARE_EXECUTION"
+   ],
+   "cheapest_falsifier": "sparse control does not preserve output or its index/branch overhead exceeds the omitted work in protected complete wall",
+   "ev_inputs": {
+    "future_hardware_value": 4,
+    "information_gain": 4,
+    "model_applicability": 4,
+    "token_ns_reduction": 3,
+    "transfer_breadth": 4
+   },
+   "evidence_class": "HAWKING_MEASURED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    },
+    "flops": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    },
+    "host_ceremony": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    },
+    "state_movement": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    },
+    "synchronization": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "avoid provably inactive work"
+    }
+   },
+   "expected_value_score": 192.0,
+   "fundamental_physical_idea": "make conditional work explicit in the physical program and pay only for selected operands",
+   "hawking_primitive": "SparseSkip",
+   "implementation_difficulty": 4,
+   "physical_graph_mapping": {
+    "computation": "conditional_regions",
+    "data": "sparse_indices_and_payloads",
+    "qualification": "parity_required"
+   },
+   "source_architecture_ecosystem": [
+    "NVIDIA CUDA",
+    "AMD ROCm",
+    "published inference ASIC",
+    "packetized NoC"
+   ],
+   "source_behavior": "skip zero, inactive, or unselected work while preserving ordering and numerical semantics",
+   "source_evidence": [
+    "receipts/headless/ACCELERATOR_SPARSE.json",
+    "tools/accelerator/air.py"
+   ],
+   "status": "DIAGNOSTIC",
+   "transfer_confidence": "MEDIUM",
+   "vendor_specific_assumptions": "structured sparsity instructions and sparse hardware support are not assumed"
+  },
+  {
+   "applicable_backends": [
+    "ane",
+    "metal",
+    "cpu"
+   ],
+   "applicable_models": [
+    "Qwen27",
+    "Flash"
+   ],
+   "applicable_organs": [
+    "normalization",
+    "silu",
+    "regular_mlp",
+    "sampling"
+   ],
+   "architecture_independent_invariant": "a backend is useful only when its transfer, compile, synchronization, and residency costs fit the graph",
+   "behavior_id": "npu_regular_island",
+   "behavior_taxonomy": [
+    "CONDITIONAL_EXECUTION",
+    "GRAPH_REPLAY",
+    "DATA_STATIONARITY"
+   ],
+   "cheapest_falsifier": "public ANE plan or protected complete-wall measurement fails after all transfer/compile/residency costs",
+   "ev_inputs": {
+    "future_hardware_value": 3,
+    "information_gain": 5,
+    "model_applicability": 3,
+    "token_ns_reduction": 3,
+    "transfer_breadth": 3
+   },
+   "evidence_class": "DERIVED",
+   "expected_effect": {
+    "active_bytes": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    },
+    "dispatches": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    },
+    "experiment_turnaround_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    },
+    "flops": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    },
+    "host_ceremony": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    },
+    "state_movement": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    },
+    "synchronization": {
+     "direction": "INCREASE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    },
+    "token_ns": {
+     "direction": "REDUCE",
+     "measurement": "measure",
+     "mechanism": "offload regular islands only when the boundary wins"
+    }
+   },
+   "expected_value_score": 101.25,
+   "fundamental_physical_idea": "choose a backend per organ based on complete latency and boundary cost, not device prestige",
+   "hawking_primitive": "ConditionalPhysicalProgram",
+   "implementation_difficulty": 4,
+   "physical_graph_mapping": {
+    "dependencies": "explicit_transfer_edges",
+    "device_placement": "organ_level_choice",
+    "qualification": "public_api_and_measurement"
+   },
+   "source_architecture_ecosystem": [
+    "Apple/other NPU",
+    "TPU/systolic",
+    "published inference ASIC"
+   ],
+   "source_behavior": "give regular, compiler-friendly islands to a fixed/semi-fixed neural engine",
+   "source_evidence": [
+    "receipts/headless/APPLE_ANE_ATLAS.json",
+    "hcli/ane_provider.py"
+   ],
+   "status": "MAPPED",
+   "transfer_confidence": "MEDIUM",
+   "vendor_specific_assumptions": "public Core ML/ML Program/MLComputePlan is the only Apple authority here"
+  }
+ ],
+ "evidence_inputs": [
+  {
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/CUDA_CAPABILITY_LEDGER.json",
+   "present": true
+  },
+  {
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_ATLAS.json",
+   "present": true
+  },
+  {
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/PHYSICAL_GRAPH_COMPILER.json",
+   "present": true
+  },
+  {
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+   "present": true
+  },
+  {
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+   "present": true
+  },
+  {
+   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+   "present": true
+  }
+ ],
+ "experiment_queue": {
+  "claim_boundary": "queue records are hypotheses until a protected complete-token receipt satisfies the promotion contract",
+  "experiments": [
+   {
+    "behavior_id": "layout_algebra",
+    "blocked_reason": null,
+    "candidate": "parameterized packed GEMV layout/tile/lane mapping",
+    "control": "sealed resident Qwen27 GeoTpr64Tg128 path",
+    "experiment_id": "qwen27-layout-algebra-mlp",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "parameterized packed GEMV layout/tile/lane mapping reduces complete useful work for Qwen27 mlp without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "protected-accelerator-bench",
+      "--profile",
+      "hcli/hawking-native.sealed-3.14.json",
+      "--max-new-tokens",
+      "32"
+     ],
+     "detached": true,
+     "kind": "hcli_protected_accelerator_bench",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "READY",
+    "target": {
+     "backend": "metal",
+     "model": "Qwen27",
+     "organ": "mlp"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "graph_replay",
+    "blocked_reason": null,
+    "candidate": "replay static token graph with dynamic token/position slots",
+    "control": "current persistent executor with per-step command encoding",
+    "experiment_id": "qwen27-graph-replay-token-skeleton",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "replay static token graph with dynamic token/position slots reduces complete useful work for Qwen27 decode without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "protected-accelerator-bench",
+      "--profile",
+      "hcli/hawking-native.sealed-3.14.json",
+      "--max-new-tokens",
+      "32"
+     ],
+     "detached": true,
+     "kind": "hcli_protected_accelerator_bench",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "READY",
+    "target": {
+     "backend": "metal",
+     "model": "Qwen27",
+     "organ": "decode"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "stationary_representation",
+    "blocked_reason": null,
+    "candidate": "keep packed representation resident and expose runtime active bytes separately",
+    "control": "same-source packed path with no active-byte instrumentation",
+    "experiment_id": "qwen27-stationary-packed-weight",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "keep packed representation resident and expose runtime active bytes separately reduces complete useful work for Qwen27 mlp without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "protected-accelerator-bench",
+      "--profile",
+      "hcli/hawking-native.sealed-3.14.json",
+      "--max-new-tokens",
+      "32"
+     ],
+     "detached": true,
+     "kind": "hcli_protected_accelerator_bench",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "READY",
+    "target": {
+     "backend": "metal",
+     "model": "Qwen27",
+     "organ": "mlp"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "async_double_buffer",
+    "blocked_reason": null,
+    "candidate": "overlap next packed tile staging with current projection when ownership permits",
+    "control": "current serial projection and command-buffer boundary",
+    "experiment_id": "qwen27-async-double-buffer",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "overlap next packed tile staging with current projection when ownership permits reduces complete useful work for Qwen27 mlp without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "protected-accelerator-bench",
+      "--profile",
+      "hcli/hawking-native.sealed-3.14.json",
+      "--max-new-tokens",
+      "32"
+     ],
+     "detached": true,
+     "kind": "hcli_protected_accelerator_bench",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "READY",
+    "target": {
+     "backend": "metal",
+     "model": "Qwen27",
+     "organ": "mlp"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "direct_routed_accumulate",
+    "blocked_reason": "Flash native full-model executable/weights are not available in the current protected lane; retain as detached queue work",
+    "candidate": "route-before-payload with selected-expert direct weighted accumulation",
+    "control": "current Flash routed-expert component graph",
+    "experiment_id": "flash-direct-routed-accumulate",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "route-before-payload with selected-expert direct weighted accumulation reduces complete useful work for Flash moe without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "fpga-preboard"
+     ],
+     "detached": true,
+     "kind": "bounded_native_or_simulation",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "BLOCKED",
+    "target": {
+     "backend": "metal",
+     "model": "Flash",
+     "organ": "moe"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "local_state_machine",
+    "blocked_reason": "requires the Flash protected complete-token runtime lane",
+    "candidate": "persistent DeltaNet state machine with checkpoint-bisection verifier",
+    "control": "current Flash stateful seam",
+    "experiment_id": "flash-local-state-machine",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "persistent DeltaNet state machine with checkpoint-bisection verifier reduces complete useful work for Flash deltanet without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "fpga-preboard"
+     ],
+     "detached": true,
+     "kind": "bounded_native_or_simulation",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "BLOCKED",
+    "target": {
+     "backend": "metal",
+     "model": "Flash",
+     "organ": "deltanet"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "semantic_transport",
+    "blocked_reason": null,
+    "candidate": "typed route metadata/activation/partial-reduction edges in HWIR",
+    "control": "untyped partition boundary",
+    "experiment_id": "flash-semantic-transport-hwir",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "typed route metadata/activation/partial-reduction edges in HWIR reduces complete useful work for Flash route_and_state without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "fpga-preboard"
+     ],
+     "detached": true,
+     "kind": "bounded_native_or_simulation",
+     "protected_window": false,
+     "requires_quiescence": false
+    },
+    "status": "READY",
+    "target": {
+     "backend": "fpga",
+     "model": "Flash",
+     "organ": "route_and_state"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "move_or_recompute",
+    "blocked_reason": null,
+    "candidate": "costed dependency planner chooses resident/recompute/prefetch by complete boundary cost",
+    "control": "framework-prescribed movement",
+    "experiment_id": "qwen27-move-or-recompute-boundary",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "costed dependency planner chooses resident/recompute/prefetch by complete boundary cost reduces complete useful work for Qwen27 all without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "protected-accelerator-bench",
+      "--profile",
+      "hcli/hawking-native.sealed-3.14.json",
+      "--max-new-tokens",
+      "32"
+     ],
+     "detached": true,
+     "kind": "hcli_protected_accelerator_bench",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "READY",
+    "target": {
+     "backend": "metal",
+     "model": "Qwen27",
+     "organ": "all"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   },
+   {
+    "behavior_id": "npu_regular_island",
+    "blocked_reason": "public ANE compile/runtime measurement is not available in this process; plan-only until the public path is executable",
+    "candidate": "public Core ML/ML Program regular island with explicit transfer accounting",
+    "control": "Metal normalization path",
+    "experiment_id": "ane-regular-island-probe",
+    "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+    "hypothesis": "public Core ML/ML Program regular island with explicit transfer accounting reduces complete useful work for Qwen27 normalization without changing the accepted output",
+    "metrics": [
+     "complete_useful_wall_ns",
+     "gpu_ns",
+     "active_bytes_per_token",
+     "dispatches",
+     "synchronization_ns",
+     "host_ceremony_ns",
+     "fallback_count",
+     "capability_verified"
+    ],
+    "promotion": {
+     "required_benchmark_class": "QUALIFIED_PROTECTED",
+     "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+     "requires_complete_active_bytes_or_explicit_absence": true,
+     "requires_independent_capability": true,
+     "requires_zero_fallback": true
+    },
+    "runner": {
+     "command": [
+      "python3",
+      "-m",
+      "hcli",
+      "agentos",
+      "fpga-preboard"
+     ],
+     "detached": true,
+     "kind": "bounded_native_or_simulation",
+     "protected_window": true,
+     "requires_quiescence": true
+    },
+    "status": "BLOCKED",
+    "target": {
+     "backend": "ane",
+     "model": "Qwen27",
+     "organ": "normalization"
+    },
+    "verification_ladder": [
+     "structural_compile_and_negative_controls",
+     "diagnostic_relative_interleaved_ab",
+     "protected_absolute_complete_wall_with_capability_gate"
+    ]
+   }
+  ],
+  "schema": "hawking.accelerator.repatriation_queue.v1",
+  "selection_rule": "expected token_ns reduction \u00d7 transfer breadth \u00d7 model applicability \u00d7 future hardware value \u00d7 information gain / implementation cost"
+ },
+ "fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+ "hwir_hypotheses": [
+  {
+   "behavior_id": "move_or_recompute",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "costed_dependency_queries",
+    "device_placement": "topology_aware",
+    "execution_policy": "measured_complete_wall"
+   },
+   "primitive": "MoveOrRecompute",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "persistent_physical_region",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy.process": "long_lived_executor",
+    "residency.state": "sequence",
+    "residency.weights": "resident"
+   },
+   "primitive": "PersistentPhysicalRegion",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "fused_decode_compute",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "spatial_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "projection_plus_decode",
+    "memory": "no_dense_rematerialization",
+    "representation": "native_decode"
+   },
+   "primitive": "FusedDecodeCompute",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "local_state_machine",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "spatial_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy": "fixed_state_transitions",
+    "state": "authoritative_resident_owner",
+    "synchronization": "state_update_edges"
+   },
+   "primitive": "LocalStateMachine",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "graph_replay",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy.dynamic_slots": [
+     "token",
+     "position",
+     "route",
+     "sampling"
+    ],
+    "execution_policy.pipeline_state": "compile_once_reuse"
+   },
+   "primitive": "GraphReplay",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "tile_and_lane_mapping",
+    "precision": "representation_grouping",
+    "representation": "layout_algebra"
+   },
+   "primitive": "LayoutTransform",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "static_dynamic_skeleton",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "precomputed",
+    "execution_policy": "static_skeleton_plus_dynamic_slots",
+    "synchronization": "precomputed_where_safe"
+   },
+   "primitive": "ConditionalPhysicalProgram",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "stationary_representation",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "memory": "tier_is_executable_identity",
+    "representation": "packed_native",
+    "residency": "stationarity_contract"
+   },
+   "primitive": "StationaryRepresentation",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "semantic_transport",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "typed_transport_edges",
+    "device_placement": "topology_aware",
+    "synchronization": "edge_ownership_and_order"
+   },
+   "primitive": "SemanticTransportEdge",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "collective_region",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "semantic_transport",
+    "device_placement": "topology_aware",
+    "synchronization": "collective_algorithm"
+   },
+   "primitive": "CollectiveRegion",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "async_double_buffer",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "execution_policy": "overlap_when_measured",
+    "memory": "double_buffered_tiles",
+    "synchronization": "producer_consumer_fences"
+   },
+   "primitive": "DoubleBufferedTile",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "spatial_local_pipeline",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "spatial_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "spatial_regions",
+    "data": "semantic_edges",
+    "memory": "local_intermediates"
+   },
+   "primitive": "SpatialPipeline",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "direct_routed_accumulate",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "route_then_native_expert",
+    "data": "selected_payload_only",
+    "state": "route_metadata_resident"
+   },
+   "primitive": "DirectRoutedAccumulate",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "sparse_conditional_execution",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "computation": "conditional_regions",
+    "data": "sparse_indices_and_payloads",
+    "qualification": "parity_required"
+   },
+   "primitive": "SparseSkip",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  },
+  {
+   "behavior_id": "npu_regular_island",
+   "buffers": [
+    "resident_representation",
+    "token_activation",
+    "partial_reduction",
+    "persistent_state"
+   ],
+   "hwir_node_kind": "dataflow_region",
+   "label": "[D] hypothesis; no board or hardware timing claim",
+   "placement_constraint": {
+    "dependencies": "explicit_transfer_edges",
+    "device_placement": "organ_level_choice",
+    "qualification": "public_api_and_measurement"
+   },
+   "primitive": "ConditionalPhysicalProgram",
+   "semantic_edges": [
+    "activation",
+    "state",
+    "compact_representation",
+    "partial_reduction"
+   ],
+   "status": "CANDIDATE"
+  }
+ ],
+ "schema": "hawking.accelerator.architecture_atlas.v1",
+ "source_schools": [
+  "NVIDIA CUDA",
+  "CUTLASS/CUTE",
+  "AMD ROCm",
+  "TPU/systolic",
+  "deterministic dataflow",
+  "wafer-scale locality",
+  "tile-local dataflow",
+  "packetized NoC",
+  "reconfigurable dataflow",
+  "Apple/other NPU",
+  "fabric-first accelerator",
+  "CPU matrix engine",
+  "FPGA",
+  "published inference ASIC"
+ ],
+ "source_technique_coverage": [
+  {
+   "behavior_id": "persistent_physical_region",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "persistent kernels"
+  },
+  {
+   "behavior_id": "graph_replay",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "graph capture / graph replay"
+  },
+  {
+   "behavior_id": "async_double_buffer",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "asynchronous memory staging"
+  },
+  {
+   "behavior_id": "async_double_buffer",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "double buffering"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "warp/subgroup specialization"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "tiled GEMV/GEMM"
+  },
+  {
+   "behavior_id": "fused_decode_compute",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "fused dequant + compute"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "low-bit layouts"
+  },
+  {
+   "behavior_id": "spatial_local_pipeline",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "FlashAttention-style IO-aware attention"
+  },
+  {
+   "behavior_id": "local_state_machine",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "paged KV/state"
+  },
+  {
+   "behavior_id": "direct_routed_accumulate",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "MoE expert sorting/grouping"
+  },
+  {
+   "behavior_id": "direct_routed_accumulate",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "expert batching"
+  },
+  {
+   "behavior_id": "direct_routed_accumulate",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "fused routing/gating"
+  },
+  {
+   "behavior_id": "direct_routed_accumulate",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "direct expert accumulation"
+  },
+  {
+   "behavior_id": "fused_decode_compute",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "quantized expert execution"
+  },
+  {
+   "behavior_id": "stationary_representation",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "prefix/cache reuse"
+  },
+  {
+   "behavior_id": "static_dynamic_skeleton",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "speculative decoding"
+  },
+  {
+   "behavior_id": "static_dynamic_skeleton",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "continuous batching"
+  },
+  {
+   "behavior_id": "async_double_buffer",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "stream overlap"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "kernel autotuning"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "memory swizzling"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "register blocking"
+  },
+  {
+   "behavior_id": "async_double_buffer",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "shared-memory staging"
+  },
+  {
+   "behavior_id": "static_dynamic_skeleton",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "NVIDIA CUDA",
+   "source_technique": "graph-level scheduling"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "CUTLASS/CUTE",
+   "source_technique": "logical/physical/tile/lane layout algebra"
+  },
+  {
+   "behavior_id": "spatial_local_pipeline",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "AMD ROCm",
+   "source_technique": "wave-oriented execution"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "AMD ROCm",
+   "source_technique": "occupancy-vs-register tradeoff"
+  },
+  {
+   "behavior_id": "move_or_recompute",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "AMD ROCm",
+   "source_technique": "large-HBM scheduling"
+  },
+  {
+   "behavior_id": "collective_region",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "AMD ROCm",
+   "source_technique": "multi-GPU data movement"
+  },
+  {
+   "behavior_id": "stationary_representation",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "TPU/systolic",
+   "source_technique": "systolic dataflow"
+  },
+  {
+   "behavior_id": "static_dynamic_skeleton",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "TPU/systolic",
+   "source_technique": "compile-time operation placement"
+  },
+  {
+   "behavior_id": "stationary_representation",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "TPU/systolic",
+   "source_technique": "weight/activation/output stationarity"
+  },
+  {
+   "behavior_id": "collective_region",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "TPU/systolic",
+   "source_technique": "explicit collective topology"
+  },
+  {
+   "behavior_id": "static_dynamic_skeleton",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "deterministic dataflow",
+   "source_technique": "deterministic static schedule"
+  },
+  {
+   "behavior_id": "spatial_local_pipeline",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "wafer-scale locality",
+   "source_technique": "spatial placement and local ownership"
+  },
+  {
+   "behavior_id": "stationary_representation",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "tile-local dataflow",
+   "source_technique": "tile-local compute-near-data"
+  },
+  {
+   "behavior_id": "semantic_transport",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "packetized NoC",
+   "source_technique": "packetized data movement"
+  },
+  {
+   "behavior_id": "graph_replay",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "reconfigurable dataflow",
+   "source_technique": "runtime parameters without full rebuild"
+  },
+  {
+   "behavior_id": "npu_regular_island",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "Apple/other NPU",
+   "source_technique": "low launch overhead and regular graph islands"
+  },
+  {
+   "behavior_id": "collective_region",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "fabric-first accelerator",
+   "source_technique": "communication-aware graph placement"
+  },
+  {
+   "behavior_id": "layout_algebra",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "CPU matrix engine",
+   "source_technique": "cache blocking and small-matrix execution"
+  },
+  {
+   "behavior_id": "move_or_recompute",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "CPU matrix engine",
+   "source_technique": "NUMA-aware placement and prefetch"
+  },
+  {
+   "behavior_id": "spatial_local_pipeline",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "FPGA",
+   "source_technique": "spatial pipelines and dataflow execution"
+  },
+  {
+   "behavior_id": "fused_decode_compute",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "FPGA",
+   "source_technique": "bit-serial and arbitrary-precision arithmetic"
+  },
+  {
+   "behavior_id": "stationary_representation",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "FPGA",
+   "source_technique": "BRAM/URAM/HBM residency"
+  },
+  {
+   "behavior_id": "direct_routed_accumulate",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "FPGA",
+   "source_technique": "route-specific hardware and custom transport"
+  },
+  {
+   "behavior_id": "fused_decode_compute",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "published inference ASIC",
+   "source_technique": "compression-aware arithmetic and operand reuse"
+  },
+  {
+   "behavior_id": "persistent_physical_region",
+   "claim_boundary": "source behavior is a mapped hypothesis, not a Hawking speed claim",
+   "source_school": "published inference ASIC",
+   "source_technique": "on-chip SRAM hierarchy and deterministic pipelines"
+  }
+ ],
+ "version": 1
+}

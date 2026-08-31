@@ -1,0 +1,353 @@
+{
+ "authority_boundary": {
+  "acquires_lease": false,
+  "executes_benchmark": false,
+  "gpu_authority": false,
+  "quiesces_worker": false,
+  "signals_process": false
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:57:11Z",
+  "recorded_by": "tools/future/protected_scheduler.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "capability": {
+  "PROTECTED_SCHEDULER_CAPABLE": true,
+  "PROTECTED_WINDOW_AVAILABLE": false,
+  "contamination_class": "HEAVY",
+  "continue_with_n": 32,
+  "lease_present": false,
+  "live_reason": "protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing",
+  "live_verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+  "parked": true
+ },
+ "category_error_refused": "PROTECTED_SCHEDULER_CAPABLE is not derived from PROTECTED_WINDOW_AVAILABLE. A busy window is BLOCKED_ON_PROTECTED_WINDOW, not scheduler-incapable",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "did_not_fabricate_lease": true,
+ "did_not_flock": true,
+ "did_not_touch_lock_file": true,
+ "drive": {
+  "acquires_lease": false,
+  "contamination": {
+   "contamination_class": "HEAVY",
+   "contamination_reason": "at least one HEAVY probe fired",
+   "injected_input": false,
+   "live": true,
+   "source": "/Users/scammermike/Downloads/hawking/receipts/future/CONTAMINATION_SCIENCE.json"
+  },
+  "continue_with": {
+   "failed_closed": false,
+   "n": 32,
+   "n_dropped_protected": 0,
+   "reason": "protected unit is parked; resident continues with CPU-class work that does not need a protected window",
+   "unit_ids": [
+    "FT.ACTIVE_BYTES.hbm-rank",
+    "FT.CHILD_RESIDENT.install-dry-run",
+    "FT.CONTEXT.disk-authority",
+    "FT.DECODING.cost-model",
+    "FT.FPGA.engine-sim",
+    "FT.GPU_KERNELS.static-warnings",
+    "FT.HCLI_SELF.emit-workunits",
+    "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+    "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+    "FT.ODYSSEY_ADVERSARY.attacks",
+    "FT.ODYSSEY_TRANSFER.re-earn",
+    "FT.PHYSICAL_GRAPH.p6-projection",
+    "FT.STATE.coverage-audit",
+    "FT.TOOLS.freshness",
+    "FT.TOOLS.propagate-skips",
+    "FT.TPS.accepted-token-cost",
+    "FT.VERIFICATION.negative-index",
+    "FT.VERIFICATION.repro",
+    "FT.ANE.preboard",
+    "FT.ARCHITECTURE_REPATRIATION.compile-specs",
+    "FT.CHILD_RESIDENT.optimizer",
+    "FT.EXPERIMENT_TURNAROUND.refresh",
+    "FT.FPGA.hardware-doctor",
+    "FT.LATENCY.cpu-turnaround",
+    "FT.MEMORY.hbm",
+    "FT.MEMORY.hmf",
+    "FT.MODEL_CAPABILITY.tournament-refuse",
+    "FT.MODEL_EXECUTION.fusion-sim",
+    "FT.MODEL_EXECUTION.static-skeleton",
+    "FT.MODEL_REPRESENTATION.ngram-school",
+    "FT.PHYSICAL_GRAPH.hwir-lower",
+    "FT.TOOLS.frontiers-refill"
+   ]
+  },
+  "decide": {
+   "acquires_lease": false,
+   "contamination_class": "HEAVY",
+   "executes_benchmark": false,
+   "gpu_authority": false,
+   "inputs_simulated": false,
+   "kind": "DECISION",
+   "lease_present": false,
+   "protected_required": true,
+   "quiesces_worker": false,
+   "reason": "protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing",
+   "recognized": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "scheduler_capable": true,
+   "signals_process": false,
+   "unit_id": "future.protected-scheduler.probe",
+   "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+   "wake_condition": {
+    "all_of": [
+     "contamination_class == QUIESCENT (CONTAMINATION_SCIENCE receipt, never coerced)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)"
+    ],
+    "never": [
+     "fabricated or simulated lease presented as live",
+     "fcntl.flock / lockf / os.O_EXCL on a bench lock",
+     "quiesce standing workers to forge a quiet machine",
+     "synthetic QUIESCENT",
+     "mark the scheduler incapable because the window is busy"
+    ]
+   },
+   "window_available": false
+  },
+  "executes_benchmark": false,
+  "gpu_authority": false,
+  "kind": "DRIVE",
+  "lease": {
+   "acquired": false,
+   "fabricated": false,
+   "holders": {
+    "pids": [],
+    "status": "OK"
+   },
+   "injected_input": false,
+   "live": true,
+   "lock_file_exists": true,
+   "present": false,
+   "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+   "touched_lock_file": false,
+   "would_flock": false
+  },
+  "park": {
+   "acquires_lease": false,
+   "executes_benchmark": false,
+   "gpu_authority": false,
+   "kind": "PARK",
+   "parked": true,
+   "protected_required": true,
+   "quiesces_worker": false,
+   "reason": "protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing",
+   "scheduler_capable": true,
+   "signals_process": false,
+   "unit": {
+    "blocked_reason": "protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing",
+    "claim_boundary": "Static sidecar artifact. No hardware measurement. Cannot promote, weaken a verifier, choose the Singularity, or perform a destructive mutation.",
+    "classification": "SLEEPING",
+    "id": "future.protected-scheduler.probe",
+    "requires_quiescence": true,
+    "resource_class": "GPU_EXCLUSIVE",
+    "status": "blocked",
+    "wake_condition": {
+     "all_of": [
+      "contamination_class == QUIESCENT (CONTAMINATION_SCIENCE receipt, never coerced)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)"
+     ],
+     "never": [
+      "fabricated or simulated lease presented as live",
+      "fcntl.flock / lockf / os.O_EXCL on a bench lock",
+      "quiesce standing workers to forge a quiet machine",
+      "synthetic QUIESCENT",
+      "mark the scheduler incapable because the window is busy"
+     ]
+    }
+   },
+   "unit_id": "future.protected-scheduler.probe",
+   "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+   "wake_condition": {
+    "all_of": [
+     "contamination_class == QUIESCENT (CONTAMINATION_SCIENCE receipt, never coerced)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)"
+    ],
+    "never": [
+     "fabricated or simulated lease presented as live",
+     "fcntl.flock / lockf / os.O_EXCL on a bench lock",
+     "quiesce standing workers to forge a quiet machine",
+     "synthetic QUIESCENT",
+     "mark the scheduler incapable because the window is busy"
+    ]
+   },
+   "window_available": false
+  },
+  "quiesces_worker": false,
+  "recognize": {
+   "acquires_lease": false,
+   "executes_benchmark": false,
+   "gpu_authority": false,
+   "guessed": false,
+   "kind": "RECOGNIZE",
+   "protected_required": true,
+   "quiesces_worker": false,
+   "reason": "declared resource_class='GPU_EXCLUSIVE' and requires_quiescence=True; protection is a declaration, not a name match",
+   "recognized": true,
+   "requires_quiescence": true,
+   "resource_class": "GPU_EXCLUSIVE",
+   "signals_process": false,
+   "unit_id": "future.protected-scheduler.probe"
+  },
+  "signals_process": false
+ },
+ "eras": [
+  "I Genesis of the Laboratory",
+  "II Compounding Civilization",
+  "III Autonomous Science Civilization",
+  "IV Synthetic Machine Civilization",
+  "V Released Hawking Civilization"
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gaps_closed": [
+  "PROTECTED_SCHEDULER_CAPABLE and PROTECTED_WINDOW_AVAILABLE are separate fields",
+  "decide() returns BLOCKED_ON_PROTECTED_WINDOW on a HEAVY / no-lease host without marking the scheduler incapable",
+  "decide() returns RUNNABLE when contamination QUIESCENT and a proven holder are supplied as INPUTS, without writing a lease file",
+  "recognize() uses declared resource_class only; a unit named 'protected-*' with STATIC_ANALYSIS is not protected-required",
+  "park() refuses to park a unit that does not need protection",
+  "continue_with() is frontiers.next_work(THIS_HOST_LANES), not idle and not a GPU_EXCLUSIVE substitute",
+  "inspect_lease composes protected_window.read_protected_locks; flock / lockf / O_EXCL / _try_lock are never called",
+  "capability_report() is the shape _eval_protected_scheduling would need to read; odyssey_launch.py is not edited"
+ ],
+ "gpu_authority": false,
+ "live_decision_today": {
+  "contamination_class": "HEAVY",
+  "lease_present": false,
+  "scheduler_capable": true,
+  "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
+  "window_available": false
+ },
+ "measurement_class": "STATIC_ONLY",
+ "negative_findings": [
+  "this sidecar has no GPU authority and cannot produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE even when decide() returns RUNNABLE",
+  "odyssey_launch.py is not in this lane's WRITE list; _eval_protected_scheduling still ANDs lease_ok into invoke/schedule/frontier/refill",
+  "orchestration.py BINDINGS is not in the WRITE list; this module is unbound there until a later lane adds it",
+  "inspect_contamination does not re-snapshot the machine; a stale receipt would be believed. Staleness is a recorded source, not a coerced class",
+  "an empty .hcli/locks/*.lock file is lock_file_exists=true and present=false; lsof without a pid is not a lease",
+  "tools/odyssey/protected_window.py's /tmp lease is a downloader SIGSTOP record, not the HCLI bench lock; this scheduler does not heal or write it",
+  "RUNNABLE does not mean this process will execute the unit; it means the scheduler would allow it given window inputs",
+  "normalize_resource_class maps unknown classes to LIGHT_CONTROL; recognize() refuses unknown classes instead of inheriting that default"
+ ],
+ "never": [
+  "fabricate or simulate a live lease to make anything pass",
+  "flock, lockf, O_EXCL, or otherwise contend for a bench lock",
+  "report the scheduler incapable merely because the window is unavailable",
+  "park a unit that does not need protection",
+  "guess protected-required from the unit id or title"
+ ],
+ "no_era_vi": true,
+ "no_odyssey_iv": true,
+ "odyssey_launch_read_plan": {
+  "current_conflation": "lease_ok = (contamination_class == QUIESCENT) and gpu_auth; invoke/schedule/frontier/refill are all ANDed with lease_ok, so a HEAVY machine with no proven holder makes the scheduler look non-operational",
+  "current_criterion": "_eval_protected_scheduling",
+  "do_not_edit": "tools/future/odyssey_launch.py",
+  "honest_values_today": {
+   "PROTECTED_SCHEDULER_CAPABLE": true,
+   "PROTECTED_WINDOW_AVAILABLE": false,
+   "contamination_class": "HEAVY",
+   "gpu_authority": false,
+   "lease_present": false,
+   "live_verdict": "BLOCKED_ON_PROTECTED_WINDOW"
+  },
+  "how_to_use": "discover/invoke/schedule/verify/frontier/persist/refill for 'can the resident HANDLE protected work' AND with CAPABLE, never with AVAILABLE. Record AVAILABLE as its own field. 'can protected work START right now' is CAPABLE and AVAILABLE",
+  "should_read": {
+   "PROTECTED_SCHEDULER_CAPABLE": "tools.future.protected_scheduler.capability_report()['PROTECTED_SCHEDULER_CAPABLE']",
+   "PROTECTED_WINDOW_AVAILABLE": "tools.future.protected_scheduler.capability_report()['PROTECTED_WINDOW_AVAILABLE']"
+  }
+ },
+ "odysseys": [
+  "I WHAT IS TRUE?",
+  "II WHAT DID HAWKING ALREADY LEARN?",
+  "III WHERE IS HAWKING WRONG?"
+ ],
+ "purpose": "Separate protected-scheduler capability from protected-window availability so a busy GPU cannot be misread as 'the resident cannot handle protected work'.",
+ "recovered_implementation": [
+  {
+   "adequate_for": "observing an existing HCLI lock without flocking it; planning a window this sidecar will not open",
+   "composed_as": "inspect_lease delegates to read_protected_locks; load_visible_json finds the contamination receipt across checkout roots",
+   "extended_not_forked": true,
+   "not_adequate_for": "separating scheduler capability from window availability; decide/park/continue_with",
+   "path": "tools/future/protected_window.py",
+   "role": "eviction envelope; read_protected_locks / load_visible_json / refuse_flock / acquire_lease raise rather than seize"
+  },
+  {
+   "composed_as": "inspect_lease consumes the primary_hcli_lock field already attached by read_protected_locks; refuse_* guards are reused",
+   "extended_not_forked": true,
+   "path": "tools/future/qualification_pipeline.py",
+   "role": "read_hcli_lease_state; AUTHORITY_REFUSAL; ExecuteRefused / AuthorityBoundaryError"
+  },
+  {
+   "composed_as": "inspect_contamination reads that receipt; it does not re-probe and does not coerce QUIESCENT",
+   "extended_not_forked": true,
+   "path": "tools/future/contamination.py",
+   "role": "QUIESCENT/LIGHT/HEAVY/UNKNOWN taxonomy; CONTAMINATION_SCIENCE.json"
+  },
+  {
+   "composed_as": "continue_with() is next_work(THIS_HOST_LANES) with GPU_EXCLUSIVE dropped",
+   "extended_not_forked": true,
+   "path": "tools/future/frontiers.py",
+   "role": "THIS_HOST_LANES / next_work \u2014 CPU work while GPU_PROTECTED sleeps"
+  },
+  {
+   "composed_as": "recognize() matches against KNOWN_RESOURCE exactly; it does not call normalize_resource_class because that maps unknown -> LIGHT_CONTROL",
+   "path": "tools/future/workunit_species.py",
+   "role": "HCLI resource_class set; requires_quiescence derived from GPU_EXCLUSIVE"
+  },
+  {
+   "composed_as": "cited, not imported, not edited (not in WRITE list). capability_report() is the shape it would need to read",
+   "path": "tools/future/odyssey_launch.py",
+   "role": "_eval_protected_scheduling \u2014 the criterion this lane must satisfy honestly"
+  },
+  {
+   "composed_as": "READ ONLY. Different lease (SIGSTOP of downloaders) than the HCLI bench lock. Not taken, not healed, not written",
+   "on_disk_in_this_worktree": true,
+   "path": "tools/odyssey/protected_window.py",
+   "role": "G013 crash-safe pause/resume lease at /tmp/hawking_protected_window.lease"
+  },
+  {
+   "composed_as": "declared-class vocabulary; MUTATION refused",
+   "path": "hcli/resources.py",
+   "role": "ResourceClass including GPU_EXCLUSIVE / GPU_DIRTY_OK / GPU_DECODE"
+  }
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.protected_scheduler.capability_report()",
+  "fails_closed": "absent contamination receipt -> UNKNOWN, never QUIESCENT; lock file without proven holder -> present=false; unknown resource_class -> REFUSED, not LIGHT_CONTROL; acquire_lease/refuse_flock raise rather than flock",
+  "frontier": "FT.GPU_KERNELS.ready-protected",
+  "functions": {
+   "capability_report": "capability_report() -> dict  # live inputs only",
+   "continue_with": "continue_with(*, excluding=None) -> dict",
+   "decide": "decide(unit, *, contamination=None, lease=None) -> dict",
+   "inspect_contamination": "inspect_contamination(*, injected=None) -> dict",
+   "inspect_lease": "inspect_lease(*, injected=None) -> dict  # READ; never flock",
+   "park": "park(unit, *, contamination=None, lease=None) -> dict",
+   "recognize": "recognize(unit) -> dict"
+  },
+  "receipt": "receipts/future/PROTECTED_SCHEDULER.json",
+  "workunit": "one CPU_ANALYSIS unit; recognize/decide/park/continue_with against declared GPU_EXCLUSIVE without opening a window"
+ },
+ "schema": "hawking.future.protected_scheduler.v1",
+ "seal_sha256": "82b70b47733c44ed8f40c5579985a6184aa518305a6de5d4364959016ef7c426",
+ "version": 1,
+ "vocabulary": {
+  "BLOCKED_ON_PROTECTED_WINDOW": "protected-required, and the window is not available",
+  "PROTECTED_SCHEDULER_CAPABLE": "the resident can recognize, inspect, decide, park, and continue; proven by driving that path against real contamination and real lease state",
+  "PROTECTED_WINDOW_AVAILABLE": "contamination_class == QUIESCENT AND a proven HCLI holder pid, observed read-only. This sidecar's gpu_authority is not an input",
+  "REFUSED": "undeclared or forbidden resource_class; no guess from the unit name",
+  "RUNNABLE": "the scheduler would allow the unit given current (or injected) window inputs"
+ },
+ "workunit": {
+  "classification": "STATIC_ONLY",
+  "id": "future.protected-scheduler.capability",
+  "requires_quiescence": false,
+  "resource_class": "STATIC_ANALYSIS",
+  "status": "pending",
+  "verifier": "future.protected_scheduler.capability_report"
+ }
+}

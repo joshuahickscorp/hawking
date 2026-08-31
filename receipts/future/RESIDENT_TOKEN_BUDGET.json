@@ -1,0 +1,226 @@
+{
+ "ab": {
+  "fast_switch": {
+   "env": {
+    "HAWKING_QWEN38_FAST": "1"
+   },
+   "is_production": false,
+   "note": "produced no parseable response in this probe; recorded so it is not assumed to be an equivalent way to enable fusion",
+   "result": "NO_VALID_RESPONSE"
+  },
+  "sealed_fusion": {
+   "active_bytes_per_token": 9878901136,
+   "decode_gpu_ms_per_token": 27.64,
+   "decode_tps": 35.158,
+   "decode_wall_ms_per_token": 28.44,
+   "dispatches_per_decode_step": 628.0,
+   "env": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "fallbacks": 0,
+   "is_production": true
+  },
+  "unfused": {
+   "active_bytes_per_token": 9878901136,
+   "decode_gpu_ms_per_token": 29.57,
+   "decode_tps": 32.745,
+   "decode_wall_ms_per_token": 30.54,
+   "dispatches_per_decode_step": 964.0,
+   "env": {},
+   "fallbacks": 0,
+   "is_production": false
+  }
+ },
+ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+ "binary": "workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
+ "budget": {
+  "additivity_warning": "dispatch_cost and weight_bytes_time both sit INSIDE gpu_time_total. They must not be summed with it. Only gpu_time_total and host_gap_total partition the token.",
+  "categories": {
+   "attention_bytes_time": {
+    "status": "UNKNOWN"
+   },
+   "dispatch_cost": {
+    "caveat": "the marginal cost is measured over the 336 dispatches fusion removed; extrapolating it to all 628 assumes the remaining ones cost the same, which is not proven",
+    "count_per_token": 628.0,
+    "marginal_us": 6.25,
+    "ms": 3.925,
+    "overlaps": "sits inside gpu_time_total, not beside it",
+    "share": 0.138,
+    "status": "MEASURED_BY_PAIRED_AB"
+   },
+   "final_head_and_sampling": {
+    "note": "lm_head + argmax run every decode token; skip-terminal is not in this tree",
+    "status": "UNKNOWN"
+   },
+   "gpu_time_total": {
+    "ms": 27.64,
+    "share": 0.9719,
+    "status": "MEASURED"
+   },
+   "host_gap_total": {
+    "bounds": [
+     "cpu_submission",
+     "command_encoder_cost",
+     "synchronization not covered by GPU time"
+    ],
+    "ms": 0.8,
+    "share": 0.0281,
+    "status": "MEASURED"
+   },
+   "low_bit_decode_cost": {
+    "status": "UNKNOWN",
+    "why": "inside gpu_time_total, not separable without per-kernel timing"
+   },
+   "mlp_bytes_time": {
+    "status": "UNKNOWN",
+    "why": "needs the per-organ census re-derived against 10.7278 GB"
+   },
+   "other_model_bytes_time": {
+    "status": "UNKNOWN"
+   },
+   "state_bytes_time": {
+    "status": "UNKNOWN"
+   },
+   "state_transition": {
+    "status": "UNKNOWN"
+   },
+   "useful_arithmetic": {
+    "same_reason": true,
+    "status": "UNKNOWN"
+   },
+   "weight_bytes_time": {
+    "overlaps": "sits inside gpu_time_total",
+    "status": "BOUNDED_NOT_MEASURED",
+    "upper_bound_ms": 14.043,
+    "upper_bound_share": 0.4938,
+    "why_not_measured": "actual_read_bytes_per_token is NOT_MEASURED_NO_METAL_MEMORY_COUNTER; active_bytes_per_token is the catalog sum, not what the GPU read"
+   }
+  },
+  "configuration": "sealed-3.14, fusion env set",
+  "honest_remainder": "Two categories partition the token: GPU time (97%) and host gap (3%). Inside GPU time, dispatch is measured at 13.8% and bytes are bounded above at 49.4%. Those two do not partition GPU time either \u2014 they overlap and neither is exact. Everything else stays UNKNOWN. Padding the gap into invented categories would make the receipt worse.",
+  "total_decode_ms_per_token": 28.44,
+  "what_would_close_it": [
+   "per-kernel GPU timestamps, which separate byte time from arithmetic",
+   "a counted-read instrumented kernel, which turns actual_read_bytes_per_token from null into a number",
+   "the per-organ byte census, which splits byte time by organ"
+  ]
+ },
+ "claim_boundary": "Three runs of one build on a CPU-contended box. Dispatch counts and byte ledgers are exact and contention-independent. Absolute ns figures are DIAGNOSTIC_RELATIVE and must not be quoted as protected measurements; the A/B delta is a paired comparison and is the stronger of the two. The budget attributes only what these runs separated and marks overlapping terms as overlapping.",
+ "corrects": {
+  "also": "the 35.5 TPS anchor was right; it was measured with fusion. The 32.7 figure from the first probe was the unfused arm.",
+  "claim": "an earlier commit in this campaign reported 964 dispatches per token as the production figure",
+  "correction": "964 is the UNFUSED default graph. Production sealed-3.14 runs the fusion env and issues 628. The first probe omitted the fusion env."
+ },
+ "corrects_again": {
+  "caught_by": "receipts/future/MLP_BYTE_CENSUS.json \u2014 an independent per-tensor sum over the HQ38M20 catalog that reconciled to 9,878,901,136 and disagreed with the resident",
+  "claim": "v2 of this receipt reported active bytes per token as 10,727,793,881.75 and therefore a clean-GEMV roof of 65.58 TPS, with 71 TPS moved above the roof",
+  "class": "receipts/future/PER_GENERATED_TOKEN_INFLATION.json",
+  "correction": "That figure is the resident's active_bytes_per_token, which divides prefill+decode totals by generated tokens and is inflated by (P+N)/G = 139/128. The true per-forward-pass value is 9,878,901,136, the roof is 71.21 TPS, and 71 is back below it.",
+  "lesson": "The same prefill-over-generated-tokens arithmetic L42 found in TPS is present in the byte and dispatch ledgers. Finding it once should have triggered a search for the same denominator elsewhere; it did not, and an inflated anchor moved the whole milestone ladder for two commits."
+ },
+ "derived": {
+  "active_gb_per_token": 9.8789,
+  "byte_ms_at_clean_gemv": 14.043,
+  "byte_share_at_clean_gemv": 0.4938,
+  "dispatches_removed_by_fusion": 336.0,
+  "effective_bandwidth_during_gpu_time_gb_s": 357.4,
+  "host_gap_ms_per_token": 0.8,
+  "host_gap_share": 0.0281,
+  "measured_marginal_dispatch_us": 6.25,
+  "ms_if_all_dispatch_overhead_vanished": 24.515,
+  "ms_saved_by_fusion": 2.1,
+  "production_decode_tps": 35.158,
+  "production_dispatches_per_token": 628.0,
+  "production_gpu_ms_per_token": 27.64,
+  "production_ms_per_token": 28.44,
+  "remaining_dispatch_ms_per_token": 3.925,
+  "remaining_dispatch_share": 0.138,
+  "roof_tps_at_clean_gemv": 71.21,
+  "roof_tps_at_published_peak": 82.9,
+  "tps_gained_by_fusion": 2.413,
+  "tps_if_all_dispatch_overhead_vanished": 40.79
+ },
+ "evidence_class": "DIAGNOSTIC_RELATIVE",
+ "findings": [
+  {
+   "id": "STATIC_WALK_AND_LIVE_PROBE_AGREE_EXACTLY",
+   "what": "tools/future/tps_budget.py walked the encode path and predicted 964 dispatches unfused, 628 fused. The live probe returned 964.00 and 628.00.",
+   "why_it_matters": "Two independent methods, one static and one dynamic, landing on the same integers. The dispatch count is now known rather than estimated, and S017 \u00a75's demand for a re-derived count is met twice over."
+  },
+  {
+   "id": "MARGINAL_DISPATCH_COST_IS_6.25_US_NOT_15",
+   "supersedes": "the L40 host/catalog ceremony figure of 15.0 us, which was measured on a different class and is 2.4x too high for this one",
+   "what": "Fusion removes 336 dispatches and 2.1 ms, which is 6.25 us per dispatch.",
+   "why_this_one_is_better": "It is a paired A/B on the same binary and box, differing only in the fusion env. Contention affects both arms equally, so the delta survives a contended box in a way an absolute figure does not."
+  },
+  {
+   "conclusion": "Dispatch elimination is real and worth pursuing, but it cannot reach even M1 (50 TPS) on its own. It is a contributor to a composed route, not the route.",
+   "id": "DISPATCH_IS_WORTH_AT_MOST_5.6_MORE_TPS",
+   "what": "628.0 remaining dispatches at 6.25 us is 3.925 ms, 13.8% of the 28.44 ms token. Removing ALL of it \u2014 not achievable, taken as a bound \u2014 gives 40.79 TPS."
+  },
+  {
+   "and_it_cannot_be_measured_here": "receipts/future/MEMORY_TRAFFIC_PROBE.json enumerated every counter surface on this M3 Ultra: MTLDevice.counterSets is ['timestamp'] alone, stageutilization and statistic are absent from the device, dispatch-boundary sampling resolves to [0,0], and GPURawCounter fails to instantiate without the Instruments entitlement. No surface reports DRAM bytes to an ordinary Metal process. So this assumption cannot be confirmed OR refuted from inside the process, and the byte term stays a bound rather than becoming a measurement.",
+   "caveat": "This charges every active byte as one read. It is an upper bound on byte time under a perfect-locality assumption, not a measurement.",
+   "conclusion": "Byte traffic is the largest single identified term and the roof it implies is 71.21 TPS. This is why the campaign moves to representation.",
+   "id": "BYTES_ARE_THE_MAJORITY_OF_THE_TOKEN",
+   "what": "9.8789 GB at the clean-GEMV 703.5 GB/s would take 14.043 ms, 49.4% of the token. Actual effective bandwidth during GPU time is 357.4 GB/s."
+  },
+  {
+   "conclusion": "CPU submission, command buffer construction and host-side ceremony together cannot exceed ~3% of the token. The 6.25 us marginal dispatch cost is therefore mostly ON-DEVICE launch and teardown, not host submission \u2014 which is why fusing kernels helps and why faster host codegen did not.",
+   "id": "THE_TOKEN_IS_GPU_BOUND",
+   "what": "27.64 ms of the 28.44 ms token is GPU time; host gap is 0.8 ms (2.8%)."
+  },
+  {
+   "conclusion": "The conflict is real but harmless: at 97% GPU time there is almost nothing for host codegen quality to work on. Benchmark on release as policy; do not expect TPS from it.",
+   "id": "BUILD_PROFILE_IS_NOT_THE_TPS_LEVER",
+   "what": "release (lto=fat, cgu=1) and release-fast (lto=false, cgu=16) decoded within noise of each other on the same box. The sealed config pins release-fast while Cargo.toml says never to benchmark on it."
+  }
+ ],
+ "gpu_authority": false,
+ "recorded_by": "tools/future/resident_token_budget.py",
+ "schema": "hawking.future.resident_token_budget.v3",
+ "took_gpu_lease": false,
+ "unexplained_residual": {
+  "candidates_not_yet_falsified": [
+   {
+    "named_by": "L41's own handoff, which falsified geometry and pointed here instead",
+    "what": "low-bit decode ALU cost, affine2 vs q4"
+   },
+   {
+    "named_by": "L40's redirect after catalog addressing was falsified",
+    "what": "mixed organ sizes failing to amortise bandwidth equally"
+   },
+   {
+    "note": "attention is 39.0% of catalogued active bytes",
+    "what": "attention and DeltaNet arithmetic, which is not GEMV-shaped and should not be expected to hit a GEMV roof"
+   },
+   {
+    "what": "LM head, 675,430,440 bytes (6.8%), one large GEMV that may already run near the clean rate and therefore is NOT here"
+   },
+   {
+    "note": "MLP_BYTE_CENSUS marks KV cache, DeltaNet recurrent state and activations UNKNOWN \u2014 they are real bytes the roof denominator does not include",
+    "what": "state and KV traffic absent from the catalog census"
+   },
+   {
+    "note": "the marginal cost was measured over the 336 fusion removed; the survivors may not be identical",
+    "what": "per-dispatch launch cost above the 6.25 us marginal figure for the 628 that remain"
+   }
+  ],
+  "caveat": "The byte term assumes every catalogued active byte is read exactly once at the clean rate. If real traffic exceeds the catalog \u2014 KV, state, activations, re-reads \u2014 then part of this residual is byte time that the roof denominator simply does not count, and the executor is closer to the roof than this makes it look.",
+  "chain_ms": {
+   "UNEXPLAINED": 9.672,
+   "bytes_at_clean_gemv_roof": 14.043,
+   "dispatch_628_at_measured_6_25us": 3.925,
+   "host_gap": 0.8,
+   "total": 28.44
+  },
+  "cheapest_falsifier": "per-kernel GPU timestamps for one decode step. That splits the residual by kernel in a single run and settles which candidate owns it, without any representation work.",
+  "tps_if_only_unexplained_were_removed": 53.28,
+  "unexplained_share": 0.3401,
+  "why_this_is_the_executor_recovery_target": "Removing dispatch and host gap entirely reaches only 42.2 TPS. The roof is 71.21. The difference lives in this residual, so it is what 'recover the addressing bandwidth' actually means now."
+ },
+ "version": 3
+}

@@ -1,0 +1,1669 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:44:41Z",
+  "recorded_by": "tools/future/git_lock_doctor.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_inputs": [
+  {
+   "kind": "live_git_dir",
+   "path": "/Users/scammermike/Downloads/hawking/.git",
+   "used_for": "index.lock, stale catalog, worktree list via .git/worktrees"
+  },
+  {
+   "kind": "sidecar_receipt",
+   "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
+   "used_for": "system inventory; git-lock doctor was not listed"
+  },
+  {
+   "kind": "sidecar_receipt",
+   "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+   "used_for": "confirm compounding sidecar context; not a lock source"
+  }
+ ],
+ "evidence_source": "pinned_snapshot",
+ "frontier": {
+  "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
+  "present": true
+ },
+ "fsck": {
+  "command": "git -C /Users/scammermike/Downloads/hawking fsck --no-progress",
+  "corrupt": false,
+  "dangling": {
+   "blob": 68,
+   "commit": 2,
+   "tree": 10
+  },
+  "dangling_commits": [
+   {
+    "commit_date": "2026-08-26T06:10:55-04:00",
+    "interpretation": "git stash WIP merge; not a campaign commit that failed to land",
+    "oid": "e3b6175ca2762b55d9fe4f4426432d3396645c2e",
+    "subject": "WIP on odyssey-i: 665110c71 odyssey-i resident: autonomous cycle 2026-08-26T06:10:25-0400"
+   },
+   {
+    "commit_date": "2026-08-25T18:08:45-04:00",
+    "interpretation": "git stash WIP merge; not a campaign commit that failed to land",
+    "oid": "ebfd9b5493c66ad5018feb321daf362fbf3c591b",
+    "subject": "WIP on odyssey-i: 70d65357f The middle of the control spectrum is not where I looked"
+   }
+  ],
+  "exit_code": 0,
+  "intended_commit_missing": false,
+  "missing_objects": false,
+  "note": "fsck exit 0. Campaign commits on 2026-08-27 (58) and 2026-08-29 (11+) are on odyssey-i reflog; they landed after operators renamed the lock aside. No unreachable campaign commit from those windows."
+ },
+ "gaps_closed": [
+  "Sealed GIT_LOCK_DURABILITY_REPORT with caller inventory, arrival-time distribution, fsck record, and ranked hypotheses.",
+  "Bounded recovery primitive: --report default; --rename-aside only when all four guards hold; rename to index.lock.stale-<epoch>-<tag>, never delete.",
+  "Fail-closed on unknown lsof or unknown git-process list.",
+  "Negative-control tests: each of the four guards watched to refuse.",
+  "Did not fork hardware_doctor/hbm_doctor; did not invent a new stale-file convention."
+ ],
+ "git_callers": [
+  {
+   "cwd": "PRIMARY repo root",
+   "invokes": [
+    "git add -- receipts/odyssey-i ...",
+    "git commit -q"
+   ],
+   "path": "tools/odyssey_driver.sh",
+   "signal_handling": "trap 'rm -rf .resident.lock' EXIT INT TERM; trap does not clear index.lock; SIGKILL skips the trap. `git commit ... || true` swallows failure. launchd com.hawking.odyssey KeepAlive=true, AbandonProcessGroup=true, ThrottleInterval=20. Loops: odyssey_ctl cycle WINDOW_SECS=300 then commit_data.",
+   "takes_index_lock": true,
+   "timeout": null
+  },
+  {
+   "cwd": "rev-parse/log: PRIMARY; status: lane worktree",
+   "invokes": [
+    "git rev-parse HEAD",
+    "git log -1 --format=%cI",
+    "git -C <worktree> status --porcelain"
+   ],
+   "path": "tools/odyssey_ctl.py",
+   "signal_handling": "kill_process_group: os.killpg(pid, SIGTERM) then on FAILED zombies SIGKILL. start_new_session=True so killpg hits the lane session. A git child of a timed-out lane dies without atexit.",
+   "takes_index_lock": "status --porcelain refreshes the WORKTREE index, not the primary",
+   "timeout": "none on git; lane timeout_s default 30 min"
+  },
+  {
+   "cwd": "worktree add/remove against PRIMARY; add/status against the lane worktree",
+   "invokes": [
+    "git worktree add [--no-checkout]",
+    "git sparse-checkout set / git checkout",
+    "git -C <worktree> add -A -N",
+    "git -C <worktree> status --porcelain",
+    "git worktree remove --force / worktree prune"
+   ],
+   "path": "~/.claude-grok/bin/grok-run",
+   "signal_handling": "perl alarm: kill TERM $pid; sleep 5; kill KILL $pid \u2014 the grok PID, not the process group. Git children may orphan. The Grok tool runner separately kills a timed-out bash process GROUP (TERM then KILL ~1s later), which WILL kill an in-flight git.",
+   "takes_index_lock": "worktree index.lock for add/status; not primary index.lock",
+   "timeout": "limits.timeout_secs=43200 (12h) wrapping grok, not git"
+  },
+  {
+   "invokes": [
+    "git worktree remove",
+    "git rev-parse --git-common-dir"
+   ],
+   "path": "tools/grok_worktree_reaper.py",
+   "signal_handling": "none; default dry-run, --apply required; never force-deletes",
+   "takes_index_lock": false,
+   "timeout": null
+  },
+  {
+   "cwd": "caller cwd / tool path; often PRIMARY",
+   "invokes": [
+    "git status --short --branch (timeout=30)",
+    "git log",
+    "git diff"
+   ],
+   "path": "hcli/tool_registry.py",
+   "signal_handling": "TimeoutExpired is not handled inside _run_readonly; Python kills the child with SIGKILL then the dispatcher catches TimeoutExpired and returns failure_class=TIMEOUT. The presence-lock remains.",
+   "takes_index_lock": "git status refreshes index (PRIMARY if cwd is primary)",
+   "timeout": "subprocess.run timeout=30.0 in _run_readonly"
+  },
+  {
+   "invokes": [
+    "git *args via subprocess.run, cwd=REPO, no timeout"
+   ],
+   "path": "tools/future/_common.py",
+   "signal_handling": "none",
+   "takes_index_lock": "only if a caller passes status/add/commit; mutation_surface.py does git status --porcelain",
+   "timeout": null
+  },
+  {
+   "invokes": [
+    "git status --porcelain (via _common.git)"
+   ],
+   "path": "tools/future/mutation_surface.py",
+   "signal_handling": "none",
+   "takes_index_lock": "yes, of REPO (worktree index if run from a worktree)",
+   "timeout": null
+  },
+  {
+   "invokes": [
+    "git rev-parse HEAD",
+    "git show / git log (read-only)"
+   ],
+   "path": "hcli/agentos/checkpoint.py, hcli/workspace.py, lab/receipts.py, tools/branch_skew_guard.py, tools/odyssey/*.py",
+   "signal_handling": "none observed",
+   "takes_index_lock": false,
+   "timeout": "usually none"
+  },
+  {
+   "invokes": [
+    "git add -A"
+   ],
+   "path": "tools/headless/director_epoch_replay.py",
+   "signal_handling": "UNKNOWN",
+   "takes_index_lock": true,
+   "timeout": "not inspected beyond the add line (tools/headless is sparse here)"
+  },
+  {
+   "invokes": [
+    "git -C <wt> status --porcelain",
+    "git merge-base --is-ancestor"
+   ],
+   "path": "tools/agentos/agentos.py",
+   "signal_handling": "none observed",
+   "takes_index_lock": "worktree status",
+   "timeout": null
+  },
+  {
+   "invokes": [
+    "tools/odyssey_driver.sh (which git add/commits)"
+   ],
+   "path": "launchd: com.hawking.odyssey",
+   "signal_handling": "AbandonProcessGroup=true: launchd will not kill the process group on job stop. SIGKILL of the driver skips the EXIT trap.",
+   "takes_index_lock": true,
+   "timeout": "KeepAlive restart; ThrottleInterval=20; no ExitTimeOut set"
+  },
+  {
+   "invokes": [
+    "genesis_forever.sh (GPU lock, not git index.lock)",
+    "doctor_campaign_supervisor.py every 60s",
+    "overnight_tick.sh every 60s"
+   ],
+   "path": "launchd: com.hawking.genesis / doctor.campaign.supervisor / overnight.handoff",
+   "signal_handling": "genesis KeepAlive on unsuccessful exit; ThrottleInterval 60",
+   "takes_index_lock": "overnight/doctor not shown to git add in the lines we could read; genesis comments are about a GPU pid lock",
+   "timeout": "StartInterval 60"
+  }
+ ],
+ "handoff": {
+  "n_active_processes_listed": 5,
+  "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json",
+  "present": true
+ },
+ "hypotheses": {
+  "evidence_against": [
+   "Concurrent worktrees do NOT share the primary index. Each linked worktree has `.git/worktrees/<name>/index`. A find of worktree index.lock / index.lock.stale-* during this lane returned none. 36 concurrent lanes cannot *directly* drop files named `.git/index.lock.stale-*` on the primary.",
+   "grok-run's git add -A -N and status run with `git -C $workdir`, so they lock the worktree index. Its 12h perl KILL targets the grok PID, not git on primary.",
+   "Only 6 of the inter-arrival gaps sit in 240\u2013360s (the driver window) and 4 in 50\u201370s (launchd 60s). A pure cron/KeepAlive pulse is rejected.",
+   "Seatbelt EPERM (`Unable to create index.lock: Operation not permitted`) is a different failure recorded in receipts/headless/CONSOLIDATION.json: the lock is never created, so it cannot become a leftover file."
+  ],
+  "evidence_for": [
+   "61+ forensic files next to the PRIMARY index, 48\u201349 of them 0 bytes; nonzero sizes sit at 524288/786432/1048576/1441792/1703936/1966080/2047499/2049159 \u2014 block-aligned or near the live index size (~2.0 MiB).",
+   "No code in the repo creates the `.stale-*` name; git grep finds zero hits. Names (`campaign-commit`, `handoff`, `plansize`, `qualauto`, `214656-resync`) are operator tags matching primary commits.",
+   "Live capture this lane: 0-byte lock at 21:08 with no lsof holder; renamed aside as index.lock.stale-20260829-214656-resync for commit bb8c0f386 (21:46:56); a NEW 0-byte lock appeared at 21:47, again with no lsof holder. The cycle is still happening.",
+   "Arrival times cluster on 2026-08-27 (all-day Codex/Flash campaign, peak 03:00 and 05:00 UTC-4) and 2026-08-29 18\u201321 (sidecar campaign). Gap median is minutes, not 20s/60s/300s.",
+   "odyssey_driver.sh `commit_data` git-adds and commits on the PRIMARY every ~300s with no timeout and `|| true`. launchd KeepAlive keeps it running during campaigns that also commit on primary.",
+   "hcli `_run_readonly(..., timeout=30)` SIGKILLs `git status` on expiry. `git status` takes the index lock. A 30s timeout on this tree is tight.",
+   "git fsck exit 0: leftover locks are not object-store corruption."
+  ],
+  "most_probable": "H1_plus_H2",
+  "rejected_as_direct_cause": [
+   "H4 concurrent worktrees sharing the object store producing primary index.lock",
+   "H5 launchd StartInterval/ThrottleInterval as the arrival process",
+   "H6 Seatbelt EPERM (does not leave a file)"
+  ],
+  "remaining_hypotheses": [
+   {
+    "claim": "SIGKILL of a git process holding the primary presence-lock",
+    "id": "H1",
+    "would_distinguish": "Catch the next incident with `lsof` + `ps -p` at creation time (fs_events / GIT_TRACE2). Parent PID in {hcli tool, agent bash, odyssey_driver} decides among H1 sub-causes."
+   },
+   {
+    "claim": "odyssey_driver commit_data racing campaign commits on the same index",
+    "id": "H2",
+    "would_distinguish": "Stop commit_data for one campaign window, or point it at a separate worktree. If leftover primary locks drop to zero while campaigns still commit, H2 is sufficient."
+   },
+   {
+    "claim": "IDE/editor `git status --porcelain=v1 --untracked-files=no` polling primary",
+    "id": "H3",
+    "would_distinguish": "A live CommandLineTools git status with those flags was observed (pid 35555) during this lane but exited before parent/cwd could be read. `lsof` on the next leftover lock would show that binary if H3 is the creator."
+   }
+  ],
+  "statement": "PRIMARY `.git/index.lock` is a presence file created with O_CREAT|O_EXCL. A git process that dies after creating it and before rename(lock \u2192 index) \u2014 SIGKILL from a 30s hcli git.status timeout, an agent tool-runner process-group kill, or a collided odyssey_driver `commit_data` \u2014 leaves the file behind. Operators then rename it to index.lock.stale-* so the next commit can proceed. Zero-byte files died before the new index was written; 512KiB\u20132MiB files died after write, before the rename onto `index`.",
+  "worktrees_vs_index_lock": "Shared object store CAN produce other lock files (packed-refs.lock, worktree add locks) and CAN make `git status` on primary slower. It does not alias worktree indexes onto `.git/index`. The forensic pile is the primary index."
+ },
+ "lock_forensics_source": "live_git_dir",
+ "negative_findings": [
+  "No in-tree creator of the index.lock.stale-* name (git grep index.lock.stale \u2192 empty).",
+  "No worktree-local index.lock or index.lock.stale-* files were present under .git/worktrees during this lane.",
+  "git fsck found no missing or corrupt objects; the two dangling commits are stash WIP merges from 2026-08-25/26, not missing campaign commits.",
+  "Could not attribute each historical stale file to a PID/argv: no GIT_TRACE2 log of past incidents.",
+  "Could not read parent/cwd of the transient CommandLineTools `git status` pid 35555 (it exited).",
+  "One `ps aux` invocation in this sandbox returned 'operation not permitted'; process inventory therefore uses pgrep -x git and fails closed if that fails.",
+  "Did not inspect every one of the 62 Python files that mention the string git; classified the ones that take the index lock versus rev-parse/log/show.",
+  "Did not run cargo build/test or anything touching the GPU.",
+  "Did not delete or move any pre-existing .stale-* file.",
+  "Did not read live receipts/headless for this question; lock forensics are the live primary .git directory. FUTURE_SUBSTRATE_HANDOFF.json and CLAUDE_GLOBAL_FRONTIER.json were read from receipts/future.",
+  "Cannot prove a commit was composed in an editor buffer and never written as an object \u2014 only that fsck did not find unreachable campaign commits from the lock windows."
+ ],
+ "policy": {
+  "age_threshold_s": 300.0,
+  "conditions": [
+   "age_exceeds_threshold",
+   "zero_bytes",
+   "no_lsof_holder",
+   "no_git_process"
+  ],
+  "default_mode": "report",
+  "git_process_unknown_refuses": true,
+  "lsof_unknown_refuses": true,
+  "mutation_flag": "--rename-aside",
+  "never_deletes_lock": true,
+  "never_deletes_stale": true,
+  "nonzero_lock_is_not_a_candidate": true,
+  "rename_convention": "index.lock.stale-<epoch>-<tag>",
+  "zero_bytes_required": true
+ },
+ "purpose": "Explain abandoned PRIMARY .git/index.lock files and, when every guard holds, rename the current lock aside rather than delete it.",
+ "recovered_implementation": {
+  "adjacent": [
+   {
+    "path": "tools/grok_worktree_reaper.py",
+    "what": "dry-run default, --apply required, git worktree remove only, never deletes forensic index.lock.stale-*"
+   },
+   {
+    "path": "tools/odyssey_driver.sh",
+    "what": "stale *directory* recovery for workspace/campaign/odyssey/.resident.lock via pid liveness; does not touch index.lock"
+   },
+   {
+    "path": "tools/genesis_forever.sh",
+    "what": "GPU lease lock pid-liveness; comments mention 'stale lock left by a killed run'; not git"
+   },
+   {
+    "path": "tools/future/hardware_doctor.py",
+    "what": "hardware-axis experiment proposer; different 'doctor'; not a lock recovery primitive"
+   },
+   {
+    "path": "tools/future/hbm_doctor.py",
+    "what": "HBM residency ranking; different 'doctor'"
+   },
+   {
+    "path": "tools/future/_common.py",
+    "what": "write_receipt / HardwareClaimError / git() without timeout"
+   },
+   {
+    "path": ".git/index.lock.stale-*",
+    "what": "manual rename-aside convention; git grep finds no creator in-tree"
+   }
+  ],
+  "git_lock_doctor_existed": false,
+  "handoff_inventory": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json (sidecar systems; no git-lock doctor listed)"
+ },
+ "scan": {
+  "age_threshold_s": 300.0,
+  "apply": false,
+  "arrival_distribution": {
+   "by_day": {
+    "2026-08-27": 53,
+    "2026-08-29": 5,
+    "2026-08-30": 16
+   },
+   "by_hour_utc": {
+    "2026-08-27T04": 1,
+    "2026-08-27T05": 6,
+    "2026-08-27T06": 1,
+    "2026-08-27T07": 10,
+    "2026-08-27T08": 6,
+    "2026-08-27T09": 11,
+    "2026-08-27T10": 4,
+    "2026-08-27T11": 5,
+    "2026-08-27T12": 3,
+    "2026-08-27T13": 1,
+    "2026-08-27T14": 2,
+    "2026-08-27T15": 1,
+    "2026-08-27T18": 1,
+    "2026-08-27T19": 1,
+    "2026-08-29T22": 1,
+    "2026-08-29T23": 4,
+    "2026-08-30T00": 3,
+    "2026-08-30T01": 3,
+    "2026-08-30T03": 1,
+    "2026-08-30T05": 1,
+    "2026-08-30T11": 5,
+    "2026-08-30T12": 1,
+    "2026-08-30T13": 1,
+    "2026-08-30T14": 1
+   },
+   "cluster_verdict": "campaign-clustered: arrivals bunch in the same hours as primary-repo commits, not on a cron/KeepAlive grid",
+   "gap_seconds": {
+    "max": 185584,
+    "median": 607,
+    "min": 25,
+    "n": 73,
+    "n_240_360s": 6,
+    "n_30_120s": 14,
+    "n_50_70s": 4,
+    "n_gt_3600s": 8,
+    "n_lt_30s": 1
+   },
+   "n": 74,
+   "nonzero_bytes": 13,
+   "size_histogram": {
+    "0": 61,
+    "1048576": 1,
+    "1441792": 2,
+    "1703936": 1,
+    "1966080": 3,
+    "2047499": 1,
+    "2049159": 1,
+    "524288": 3,
+    "786432": 1
+   },
+   "zero_bytes": 61
+  },
+  "layout": {
+   "common_dir": "/Users/scammermike/Downloads/hawking/.git",
+   "error": null,
+   "git_dir": "/Users/scammermike/Downloads/hawking/.git",
+   "how": "git-directory",
+   "is_worktree": false,
+   "repo": "/Users/scammermike/Downloads/hawking",
+   "repo_root": "/Users/scammermike/Downloads/hawking",
+   "worktree_paths": [
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/gravity",
+    "/Users/scammermike/Downloads/forge/projects/hawking",
+    "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel",
+    "/Users/scammermike/.claude-grok/worktrees/l23-protected-capability-20260830-152210",
+    "/Users/scammermike/.claude-grok/worktrees/l24-nr-nx-generic-20260830-152224",
+    "/Users/scammermike/.claude-grok/worktrees/l25-status-causality-20260830-152239",
+    "/Users/scammermike/.claude-grok/worktrees/l26-no-wait-subagents-20260830-152347",
+    "/Users/scammermike/.claude-grok/worktrees/l27-concurrency-doctor-20260830-152402",
+    "/Users/scammermike/.claude-grok/worktrees/l28-flash-organ-pivot-20260830-152415",
+    "/Users/scammermike/.claude-grok/worktrees/l29-abliteration-science-20260830-161118",
+    "/Users/scammermike/.claude-grok/worktrees/l30-mutation-engine-20260830-161129",
+    "/Users/scammermike/.claude-grok/worktrees/l31-gate-rewire-20260830-164013",
+    "/Users/scammermike/.claude-grok/worktrees/l32-nr-nx-parameterize-20260830-171151",
+    "/Users/scammermike/.claude-grok/worktrees/l33-power-torture-20260830-171240"
+   ]
+  },
+  "observation_now_epoch": 1788126281,
+  "stale_catalog": [
+   {
+    "mtime_epoch": 1788088904,
+    "mtime_utc": "2026-08-30T11:21:44Z",
+    "name": "index.lock.stale-073550",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-073550",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788089839,
+    "mtime_utc": "2026-08-30T11:37:19Z",
+    "name": "index.lock.stale-074244",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-074244",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788090239,
+    "mtime_utc": "2026-08-30T11:43:59Z",
+    "name": "index.lock.stale-074604",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-074604",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788090401,
+    "mtime_utc": "2026-08-30T11:46:41Z",
+    "name": "index.lock.stale-075419",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-075419",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788091247,
+    "mtime_utc": "2026-08-30T12:00:47Z",
+    "name": "index.lock.stale-085702",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-085702",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788095195,
+    "mtime_utc": "2026-08-30T13:06:35Z",
+    "name": "index.lock.stale-101706",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-101706",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788099867,
+    "mtime_utc": "2026-08-30T14:24:27Z",
+    "name": "index.lock.stale-102538",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-102538",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788043622,
+    "mtime_utc": "2026-08-29T22:47:02Z",
+    "name": "index.lock.stale-1788043815-w1",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788043815-w1",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788045003,
+    "mtime_utc": "2026-08-29T23:10:03Z",
+    "name": "index.lock.stale-1788045784-w2",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788045784-w2",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788046292,
+    "mtime_utc": "2026-08-29T23:31:32Z",
+    "name": "index.lock.stale-1788046511-w3",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788046511-w3",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788046666,
+    "mtime_utc": "2026-08-29T23:37:46Z",
+    "name": "index.lock.stale-1788047131-final",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788047131-final",
+    "size_bytes": 524288,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1788047183,
+    "mtime_utc": "2026-08-29T23:46:23Z",
+    "name": "index.lock.stale-1788048405-e",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788048405-e",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787805080,
+    "mtime_utc": "2026-08-27T04:31:20Z",
+    "name": "index.lock.stale-20260827",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787808246,
+    "mtime_utc": "2026-08-27T05:24:06Z",
+    "name": "index.lock.stale-20260827-0124",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0124",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787808315,
+    "mtime_utc": "2026-08-27T05:25:15Z",
+    "name": "index.lock.stale-20260827-0125",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0125",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787811038,
+    "mtime_utc": "2026-08-27T06:10:38Z",
+    "name": "index.lock.stale-20260827-0210",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0210",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787814378,
+    "mtime_utc": "2026-08-27T07:06:18Z",
+    "name": "index.lock.stale-20260827-0306",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0306",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787814435,
+    "mtime_utc": "2026-08-27T07:07:15Z",
+    "name": "index.lock.stale-20260827-0307",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0307",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787814465,
+    "mtime_utc": "2026-08-27T07:07:45Z",
+    "name": "index.lock.stale-20260827-0307b",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0307b",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787814522,
+    "mtime_utc": "2026-08-27T07:08:42Z",
+    "name": "index.lock.stale-20260827-0308",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0308",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787814615,
+    "mtime_utc": "2026-08-27T07:10:15Z",
+    "name": "index.lock.stale-20260827-0310",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0310",
+    "size_bytes": 524288,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787815249,
+    "mtime_utc": "2026-08-27T07:20:49Z",
+    "name": "index.lock.stale-20260827-0334-graph",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0334-graph",
+    "size_bytes": 1966080,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787816331,
+    "mtime_utc": "2026-08-27T07:38:51Z",
+    "name": "index.lock.stale-20260827-0357-body",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0357-body",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787817447,
+    "mtime_utc": "2026-08-27T07:57:27Z",
+    "name": "index.lock.stale-20260827-0358-body",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0358-body",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787817482,
+    "mtime_utc": "2026-08-27T07:58:02Z",
+    "name": "index.lock.stale-20260827-0400-evidence",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0400-evidence",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787817585,
+    "mtime_utc": "2026-08-27T07:59:45Z",
+    "name": "index.lock.stale-20260827-0403-ir",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0403-ir",
+    "size_bytes": 1441792,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787818921,
+    "mtime_utc": "2026-08-27T08:22:01Z",
+    "name": "index.lock.stale-20260827-0427-campaign",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0427-campaign",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787819263,
+    "mtime_utc": "2026-08-27T08:27:43Z",
+    "name": "index.lock.stale-20260827-0427-campaign-commit",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0427-campaign-commit",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787819294,
+    "mtime_utc": "2026-08-27T08:28:14Z",
+    "name": "index.lock.stale-20260827-0428-handoff",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0428-handoff",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787819465,
+    "mtime_utc": "2026-08-27T08:31:05Z",
+    "name": "index.lock.stale-20260827-0431",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0431",
+    "size_bytes": 1966080,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787820980,
+    "mtime_utc": "2026-08-27T08:56:20Z",
+    "name": "index.lock.stale-20260827-045620",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-045620",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787822080,
+    "mtime_utc": "2026-08-27T09:14:40Z",
+    "name": "index.lock.stale-20260827-051440-selection",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-051440-selection",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787822334,
+    "mtime_utc": "2026-08-27T09:18:54Z",
+    "name": "index.lock.stale-20260827-051854-postcommit",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-051854-postcommit",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787822533,
+    "mtime_utc": "2026-08-27T09:22:13Z",
+    "name": "index.lock.stale-20260827-052213-representation",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-052213-representation",
+    "size_bytes": 786432,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787823454,
+    "mtime_utc": "2026-08-27T09:37:34Z",
+    "name": "index.lock.stale-20260827-0541-receipt-refresh",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0541-receipt-refresh",
+    "size_bytes": 1703936,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787823716,
+    "mtime_utc": "2026-08-27T09:41:56Z",
+    "name": "index.lock.stale-20260827-0544-flash-body",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0544-flash-body",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787823898,
+    "mtime_utc": "2026-08-27T09:44:58Z",
+    "name": "index.lock.stale-20260827-0546-receipt-refresh",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0546-receipt-refresh",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787824157,
+    "mtime_utc": "2026-08-27T09:49:17Z",
+    "name": "index.lock.stale-20260827-0551-queue-refresh",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0551-queue-refresh",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787824375,
+    "mtime_utc": "2026-08-27T09:52:55Z",
+    "name": "index.lock.stale-20260827-055630-2215",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-055630-2215",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787824265,
+    "mtime_utc": "2026-08-27T09:51:05Z",
+    "name": "index.lock.stale-20260827-0558-negative-science",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0558-negative-science",
+    "size_bytes": 524288,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787824334,
+    "mtime_utc": "2026-08-27T09:52:14Z",
+    "name": "index.lock.stale-20260827-0601-negative-refresh",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0601-negative-refresh",
+    "size_bytes": 1966080,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787824683,
+    "mtime_utc": "2026-08-27T09:58:03Z",
+    "name": "index.lock.stale-20260827-060125-7488",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-060125-7488",
+    "size_bytes": 2047499,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787825235,
+    "mtime_utc": "2026-08-27T10:07:15Z",
+    "name": "index.lock.stale-20260827-060804-15622",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-060804-15622",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787825430,
+    "mtime_utc": "2026-08-27T10:10:30Z",
+    "name": "index.lock.stale-20260827-062200-34772",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-062200-34772",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787826316,
+    "mtime_utc": "2026-08-27T10:25:16Z",
+    "name": "index.lock.stale-20260827-062800-39255",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-062800-39255",
+    "size_bytes": 1441792,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787831818,
+    "mtime_utc": "2026-08-27T11:56:58Z",
+    "name": "index.lock.stale-20260827-080550-fusion-override",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-080550-fusion-override",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787832425,
+    "mtime_utc": "2026-08-27T12:07:05Z",
+    "name": "index.lock.stale-20260827-081047-mtp-lane",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-081047-mtp-lane",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787832649,
+    "mtime_utc": "2026-08-27T12:10:49Z",
+    "name": "index.lock.stale-20260827-0811-mtp-lane",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0811-mtp-lane",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787832687,
+    "mtime_utc": "2026-08-27T12:11:27Z",
+    "name": "index.lock.stale-20260827-095554",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-095554",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787844040,
+    "mtime_utc": "2026-08-27T15:20:40Z",
+    "name": "index.lock.stale-20260827-after-check",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-after-check",
+    "size_bytes": 1048576,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787817674,
+    "mtime_utc": "2026-08-27T08:01:14Z",
+    "name": "index.lock.stale-20260827-campaign",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-campaign",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787809472,
+    "mtime_utc": "2026-08-27T05:44:32Z",
+    "name": "index.lock.stale-20260827-checkpoint",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-checkpoint",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787839951,
+    "mtime_utc": "2026-08-27T14:12:31Z",
+    "name": "index.lock.stale-20260827-composition",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-composition",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787830590,
+    "mtime_utc": "2026-08-27T11:36:30Z",
+    "name": "index.lock.stale-20260827-deltanet-executable",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-deltanet-executable",
+    "size_bytes": 2049159,
+    "zero_bytes": false
+   },
+   {
+    "mtime_epoch": 1787808541,
+    "mtime_utc": "2026-08-27T05:29:01Z",
+    "name": "index.lock.stale-20260827-final",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-final",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787856789,
+    "mtime_utc": "2026-08-27T18:53:09Z",
+    "name": "index.lock.stale-20260827-flash-source",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-flash-source",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787839049,
+    "mtime_utc": "2026-08-27T13:57:29Z",
+    "name": "index.lock.stale-20260827-gate-up-101021",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-gate-up-101021",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787808566,
+    "mtime_utc": "2026-08-27T05:29:26Z",
+    "name": "index.lock.stale-20260827-probe",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-probe",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787829734,
+    "mtime_utc": "2026-08-27T11:22:14Z",
+    "name": "index.lock.stale-20260827-protected-benchmark-8961",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-protected-benchmark-8961",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787830404,
+    "mtime_utc": "2026-08-27T11:33:24Z",
+    "name": "index.lock.stale-20260827-protected-benchmark-fix-11594",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-protected-benchmark-fix-11594",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787809561,
+    "mtime_utc": "2026-08-27T05:46:01Z",
+    "name": "index.lock.stale-20260827-representation",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-representation",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787840950,
+    "mtime_utc": "2026-08-27T14:29:10Z",
+    "name": "index.lock.stale-20260827-residual-1029",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-residual-1029",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787826590,
+    "mtime_utc": "2026-08-27T10:29:50Z",
+    "name": "index.lock.stale-20260827-shared-exec",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-shared-exec",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787831361,
+    "mtime_utc": "2026-08-27T11:49:21Z",
+    "name": "index.lock.stale-20260827-sparse-manifest",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-sparse-manifest",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1787858038,
+    "mtime_utc": "2026-08-27T19:13:58Z",
+    "name": "index.lock.stale-20260829-1819-future-sidecar",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-1819-future-sidecar",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788048424,
+    "mtime_utc": "2026-08-30T00:07:04Z",
+    "name": "index.lock.stale-20260829-2029-qualauto",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-2029-qualauto",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788050311,
+    "mtime_utc": "2026-08-30T00:38:31Z",
+    "name": "index.lock.stale-20260829-204559-plansize",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-204559-plansize",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788050879,
+    "mtime_utc": "2026-08-30T00:47:59Z",
+    "name": "index.lock.stale-20260829-210422-handoff",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-210422-handoff",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788052117,
+    "mtime_utc": "2026-08-30T01:08:37Z",
+    "name": "index.lock.stale-20260829-214656-resync",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-214656-resync",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788054430,
+    "mtime_utc": "2026-08-30T01:47:10Z",
+    "name": "index.lock.stale-20260829-215220-frontier",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-215220-frontier",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788054803,
+    "mtime_utc": "2026-08-30T01:53:23Z",
+    "name": "index.lock.stale-20260829-225233-compound",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-225233-compound",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788059071,
+    "mtime_utc": "2026-08-30T03:04:31Z",
+    "name": "index.lock.stale-20260830-013058-phase",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260830-013058-phase",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788069081,
+    "mtime_utc": "2026-08-30T05:51:21Z",
+    "name": "index.lock.stale-20260830-015624-wave",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260830-015624-wave",
+    "size_bytes": 0,
+    "zero_bytes": true
+   },
+   {
+    "mtime_epoch": 1788088144,
+    "mtime_utc": "2026-08-30T11:09:04Z",
+    "name": "index.lock.stale-20260830-071514-specver",
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260830-071514-specver",
+    "size_bytes": 0,
+    "zero_bytes": true
+   }
+  ],
+  "tag": "doctor",
+  "targets": [
+   {
+    "action": {
+     "attempted": false,
+     "mode": "report",
+     "renamed": false
+    },
+    "age_seconds": null,
+    "age_threshold_s": 300.0,
+    "conditions": [
+     {
+      "detail": "index.lock not present; nothing to rename",
+      "holds": false,
+      "name": "age_exceeds_threshold"
+     },
+     {
+      "detail": "index.lock not present; nothing to rename",
+      "holds": false,
+      "name": "zero_bytes"
+     },
+     {
+      "detail": "index.lock not present; nothing to rename",
+      "holds": false,
+      "name": "no_lsof_holder"
+     },
+     {
+      "detail": "index.lock not present; nothing to rename",
+      "holds": false,
+      "name": "no_git_process"
+     }
+    ],
+    "failing_conditions": [
+     "age_exceeds_threshold",
+     "zero_bytes",
+     "no_lsof_holder",
+     "no_git_process"
+    ],
+    "git_dir": "/Users/scammermike/Downloads/hawking/.git",
+    "git_processes_scanned": 1,
+    "holders": null,
+    "is_regular_file": false,
+    "matching_git_processes": [
+     {
+      "comm": "/Library/Develop",
+      "command": "/Library/Developer/CommandLineTools/usr/bin/git -c core.quotepath=false -c safe.directory=* -c core.fsmonitor=false -c branch.autoSetupMerge=false status --porcelain=v2 --branch -z",
+      "cwd": "/Users/scammermike/Downloads/hawking",
+      "pid": 436
+     }
+    ],
+    "may_rename": false,
+    "mtime_epoch": null,
+    "path": "/Users/scammermike/Downloads/hawking/.git/index.lock",
+    "present": false,
+    "role": "primary",
+    "size_bytes": null,
+    "stale_siblings": [
+     {
+      "mtime_epoch": 1788088904,
+      "mtime_utc": "2026-08-30T11:21:44Z",
+      "name": "index.lock.stale-073550",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-073550",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788089839,
+      "mtime_utc": "2026-08-30T11:37:19Z",
+      "name": "index.lock.stale-074244",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-074244",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788090239,
+      "mtime_utc": "2026-08-30T11:43:59Z",
+      "name": "index.lock.stale-074604",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-074604",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788090401,
+      "mtime_utc": "2026-08-30T11:46:41Z",
+      "name": "index.lock.stale-075419",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-075419",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788091247,
+      "mtime_utc": "2026-08-30T12:00:47Z",
+      "name": "index.lock.stale-085702",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-085702",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788095195,
+      "mtime_utc": "2026-08-30T13:06:35Z",
+      "name": "index.lock.stale-101706",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-101706",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788099867,
+      "mtime_utc": "2026-08-30T14:24:27Z",
+      "name": "index.lock.stale-102538",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-102538",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788043622,
+      "mtime_utc": "2026-08-29T22:47:02Z",
+      "name": "index.lock.stale-1788043815-w1",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788043815-w1",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788045003,
+      "mtime_utc": "2026-08-29T23:10:03Z",
+      "name": "index.lock.stale-1788045784-w2",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788045784-w2",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788046292,
+      "mtime_utc": "2026-08-29T23:31:32Z",
+      "name": "index.lock.stale-1788046511-w3",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788046511-w3",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788046666,
+      "mtime_utc": "2026-08-29T23:37:46Z",
+      "name": "index.lock.stale-1788047131-final",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788047131-final",
+      "size_bytes": 524288,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1788047183,
+      "mtime_utc": "2026-08-29T23:46:23Z",
+      "name": "index.lock.stale-1788048405-e",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-1788048405-e",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787805080,
+      "mtime_utc": "2026-08-27T04:31:20Z",
+      "name": "index.lock.stale-20260827",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787808246,
+      "mtime_utc": "2026-08-27T05:24:06Z",
+      "name": "index.lock.stale-20260827-0124",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0124",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787808315,
+      "mtime_utc": "2026-08-27T05:25:15Z",
+      "name": "index.lock.stale-20260827-0125",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0125",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787811038,
+      "mtime_utc": "2026-08-27T06:10:38Z",
+      "name": "index.lock.stale-20260827-0210",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0210",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787814378,
+      "mtime_utc": "2026-08-27T07:06:18Z",
+      "name": "index.lock.stale-20260827-0306",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0306",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787814435,
+      "mtime_utc": "2026-08-27T07:07:15Z",
+      "name": "index.lock.stale-20260827-0307",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0307",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787814465,
+      "mtime_utc": "2026-08-27T07:07:45Z",
+      "name": "index.lock.stale-20260827-0307b",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0307b",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787814522,
+      "mtime_utc": "2026-08-27T07:08:42Z",
+      "name": "index.lock.stale-20260827-0308",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0308",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787814615,
+      "mtime_utc": "2026-08-27T07:10:15Z",
+      "name": "index.lock.stale-20260827-0310",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0310",
+      "size_bytes": 524288,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787815249,
+      "mtime_utc": "2026-08-27T07:20:49Z",
+      "name": "index.lock.stale-20260827-0334-graph",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0334-graph",
+      "size_bytes": 1966080,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787816331,
+      "mtime_utc": "2026-08-27T07:38:51Z",
+      "name": "index.lock.stale-20260827-0357-body",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0357-body",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787817447,
+      "mtime_utc": "2026-08-27T07:57:27Z",
+      "name": "index.lock.stale-20260827-0358-body",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0358-body",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787817482,
+      "mtime_utc": "2026-08-27T07:58:02Z",
+      "name": "index.lock.stale-20260827-0400-evidence",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0400-evidence",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787817585,
+      "mtime_utc": "2026-08-27T07:59:45Z",
+      "name": "index.lock.stale-20260827-0403-ir",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0403-ir",
+      "size_bytes": 1441792,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787818921,
+      "mtime_utc": "2026-08-27T08:22:01Z",
+      "name": "index.lock.stale-20260827-0427-campaign",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0427-campaign",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787819263,
+      "mtime_utc": "2026-08-27T08:27:43Z",
+      "name": "index.lock.stale-20260827-0427-campaign-commit",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0427-campaign-commit",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787819294,
+      "mtime_utc": "2026-08-27T08:28:14Z",
+      "name": "index.lock.stale-20260827-0428-handoff",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0428-handoff",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787819465,
+      "mtime_utc": "2026-08-27T08:31:05Z",
+      "name": "index.lock.stale-20260827-0431",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0431",
+      "size_bytes": 1966080,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787820980,
+      "mtime_utc": "2026-08-27T08:56:20Z",
+      "name": "index.lock.stale-20260827-045620",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-045620",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787822080,
+      "mtime_utc": "2026-08-27T09:14:40Z",
+      "name": "index.lock.stale-20260827-051440-selection",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-051440-selection",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787822334,
+      "mtime_utc": "2026-08-27T09:18:54Z",
+      "name": "index.lock.stale-20260827-051854-postcommit",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-051854-postcommit",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787822533,
+      "mtime_utc": "2026-08-27T09:22:13Z",
+      "name": "index.lock.stale-20260827-052213-representation",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-052213-representation",
+      "size_bytes": 786432,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787823454,
+      "mtime_utc": "2026-08-27T09:37:34Z",
+      "name": "index.lock.stale-20260827-0541-receipt-refresh",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0541-receipt-refresh",
+      "size_bytes": 1703936,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787823716,
+      "mtime_utc": "2026-08-27T09:41:56Z",
+      "name": "index.lock.stale-20260827-0544-flash-body",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0544-flash-body",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787823898,
+      "mtime_utc": "2026-08-27T09:44:58Z",
+      "name": "index.lock.stale-20260827-0546-receipt-refresh",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0546-receipt-refresh",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787824157,
+      "mtime_utc": "2026-08-27T09:49:17Z",
+      "name": "index.lock.stale-20260827-0551-queue-refresh",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0551-queue-refresh",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787824375,
+      "mtime_utc": "2026-08-27T09:52:55Z",
+      "name": "index.lock.stale-20260827-055630-2215",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-055630-2215",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787824265,
+      "mtime_utc": "2026-08-27T09:51:05Z",
+      "name": "index.lock.stale-20260827-0558-negative-science",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0558-negative-science",
+      "size_bytes": 524288,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787824334,
+      "mtime_utc": "2026-08-27T09:52:14Z",
+      "name": "index.lock.stale-20260827-0601-negative-refresh",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0601-negative-refresh",
+      "size_bytes": 1966080,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787824683,
+      "mtime_utc": "2026-08-27T09:58:03Z",
+      "name": "index.lock.stale-20260827-060125-7488",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-060125-7488",
+      "size_bytes": 2047499,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787825235,
+      "mtime_utc": "2026-08-27T10:07:15Z",
+      "name": "index.lock.stale-20260827-060804-15622",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-060804-15622",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787825430,
+      "mtime_utc": "2026-08-27T10:10:30Z",
+      "name": "index.lock.stale-20260827-062200-34772",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-062200-34772",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787826316,
+      "mtime_utc": "2026-08-27T10:25:16Z",
+      "name": "index.lock.stale-20260827-062800-39255",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-062800-39255",
+      "size_bytes": 1441792,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787831818,
+      "mtime_utc": "2026-08-27T11:56:58Z",
+      "name": "index.lock.stale-20260827-080550-fusion-override",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-080550-fusion-override",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787832425,
+      "mtime_utc": "2026-08-27T12:07:05Z",
+      "name": "index.lock.stale-20260827-081047-mtp-lane",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-081047-mtp-lane",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787832649,
+      "mtime_utc": "2026-08-27T12:10:49Z",
+      "name": "index.lock.stale-20260827-0811-mtp-lane",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-0811-mtp-lane",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787832687,
+      "mtime_utc": "2026-08-27T12:11:27Z",
+      "name": "index.lock.stale-20260827-095554",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-095554",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787844040,
+      "mtime_utc": "2026-08-27T15:20:40Z",
+      "name": "index.lock.stale-20260827-after-check",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-after-check",
+      "size_bytes": 1048576,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787817674,
+      "mtime_utc": "2026-08-27T08:01:14Z",
+      "name": "index.lock.stale-20260827-campaign",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-campaign",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787809472,
+      "mtime_utc": "2026-08-27T05:44:32Z",
+      "name": "index.lock.stale-20260827-checkpoint",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-checkpoint",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787839951,
+      "mtime_utc": "2026-08-27T14:12:31Z",
+      "name": "index.lock.stale-20260827-composition",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-composition",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787830590,
+      "mtime_utc": "2026-08-27T11:36:30Z",
+      "name": "index.lock.stale-20260827-deltanet-executable",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-deltanet-executable",
+      "size_bytes": 2049159,
+      "zero_bytes": false
+     },
+     {
+      "mtime_epoch": 1787808541,
+      "mtime_utc": "2026-08-27T05:29:01Z",
+      "name": "index.lock.stale-20260827-final",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-final",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787856789,
+      "mtime_utc": "2026-08-27T18:53:09Z",
+      "name": "index.lock.stale-20260827-flash-source",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-flash-source",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787839049,
+      "mtime_utc": "2026-08-27T13:57:29Z",
+      "name": "index.lock.stale-20260827-gate-up-101021",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-gate-up-101021",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787808566,
+      "mtime_utc": "2026-08-27T05:29:26Z",
+      "name": "index.lock.stale-20260827-probe",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-probe",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787829734,
+      "mtime_utc": "2026-08-27T11:22:14Z",
+      "name": "index.lock.stale-20260827-protected-benchmark-8961",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-protected-benchmark-8961",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787830404,
+      "mtime_utc": "2026-08-27T11:33:24Z",
+      "name": "index.lock.stale-20260827-protected-benchmark-fix-11594",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-protected-benchmark-fix-11594",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787809561,
+      "mtime_utc": "2026-08-27T05:46:01Z",
+      "name": "index.lock.stale-20260827-representation",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-representation",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787840950,
+      "mtime_utc": "2026-08-27T14:29:10Z",
+      "name": "index.lock.stale-20260827-residual-1029",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-residual-1029",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787826590,
+      "mtime_utc": "2026-08-27T10:29:50Z",
+      "name": "index.lock.stale-20260827-shared-exec",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-shared-exec",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787831361,
+      "mtime_utc": "2026-08-27T11:49:21Z",
+      "name": "index.lock.stale-20260827-sparse-manifest",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260827-sparse-manifest",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1787858038,
+      "mtime_utc": "2026-08-27T19:13:58Z",
+      "name": "index.lock.stale-20260829-1819-future-sidecar",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-1819-future-sidecar",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788048424,
+      "mtime_utc": "2026-08-30T00:07:04Z",
+      "name": "index.lock.stale-20260829-2029-qualauto",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-2029-qualauto",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788050311,
+      "mtime_utc": "2026-08-30T00:38:31Z",
+      "name": "index.lock.stale-20260829-204559-plansize",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-204559-plansize",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788050879,
+      "mtime_utc": "2026-08-30T00:47:59Z",
+      "name": "index.lock.stale-20260829-210422-handoff",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-210422-handoff",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788052117,
+      "mtime_utc": "2026-08-30T01:08:37Z",
+      "name": "index.lock.stale-20260829-214656-resync",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-214656-resync",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788054430,
+      "mtime_utc": "2026-08-30T01:47:10Z",
+      "name": "index.lock.stale-20260829-215220-frontier",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-215220-frontier",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788054803,
+      "mtime_utc": "2026-08-30T01:53:23Z",
+      "name": "index.lock.stale-20260829-225233-compound",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260829-225233-compound",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788059071,
+      "mtime_utc": "2026-08-30T03:04:31Z",
+      "name": "index.lock.stale-20260830-013058-phase",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260830-013058-phase",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788069081,
+      "mtime_utc": "2026-08-30T05:51:21Z",
+      "name": "index.lock.stale-20260830-015624-wave",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260830-015624-wave",
+      "size_bytes": 0,
+      "zero_bytes": true
+     },
+     {
+      "mtime_epoch": 1788088144,
+      "mtime_utc": "2026-08-30T11:09:04Z",
+      "name": "index.lock.stale-20260830-071514-specver",
+      "path": "/Users/scammermike/Downloads/hawking/.git/index.lock.stale-20260830-071514-specver",
+      "size_bytes": 0,
+      "zero_bytes": true
+     }
+    ]
+   }
+  ]
+ },
+ "schema": "hawking.future.git_lock_durability.v1",
+ "seal_sha256": "7c9d612e450d3367c0c960b6b7f1a2318c8186c1fe107ce4e16df168106b076b",
+ "version": 1,
+ "vocabulary": {
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "evidence": {
+   "DIAGNOSTIC_RELATIVE": "contaminated A/B; guides; never promotes; this lane does not produce it",
+   "PROTECTED_ABSOLUTE": "protected GPU lease; decides; this lane does not produce it",
+   "STATIC_ONLY": "the only evidence class this lane may emit"
+  },
+  "fpga_is": "Accelerator / Physical Compiler / Fusion \u2014 not its own civilization",
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ]
+ }
+}

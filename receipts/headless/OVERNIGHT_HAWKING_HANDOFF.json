@@ -5,23 +5,13 @@
       "9d373ecc4863b244fc74761c99fc837f7705f3db"
     ],
     "branch": "odyssey-i",
-    "git_revision": "16dc5863bcde86014bc0b7ffe8d2658b13bc6e29",
+    "git_revision": "31f34173aee3e9b1735eb6492f9a8bc6ac02ed9f",
     "unrelated_preserved_edit": "tools/odyssey_ctl.py",
     "working_tree_status": [
-      "M hcli/agentos/__init__.py",
-      " M hcli/agentos/checkpoint.py",
-      " M hcli/agentos/flash_executable.py",
-      " M hcli/agentos/handoff.py",
-      " M hcli/agentos_cli.py",
-      " M receipts/headless/FLASH_NEXT_NOETIC_EXECUTABLE.json",
-      " M receipts/headless/HCLI_AGENTOS_CHECKPOINT.json",
-      " M tools/haider/test_hcli_science_boundaries.py",
-      " M tools/odyssey_ctl.py",
+      "M tools/odyssey_ctl.py",
       "?? .hcli/flash-kernel-build/",
       "?? .hcli/locks/",
-      "?? .hcli/unattended-qwen-long/",
-      "?? hcli/agentos/flash_router_representation_ab.py",
-      "?? receipts/headless/FLASH_NOETIC_ROUTER_REPRESENTATION_AB.json"
+      "?? .hcli/unattended-qwen-long/"
     ]
   },
   "blockers": [
@@ -4171,7 +4161,7 @@
       "telemetry/receipt verifier"
     ]
   },
-  "generated_at": 1787823117.173104,
+  "generated_at": 1787825200.9122581,
   "hcli": {
     "background_jobs": [
       {
@@ -4205,6 +4195,24 @@
         "returncode": null,
         "started_at": 1787798298.559073,
         "state": "CANCELLED"
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "import json, subprocess, sys, time\nfrom pathlib import Path\nroot = Path(\"/Users/scammermike/Downloads/hawking\")\njob_path = root / \".hcli/background/jobs/job-b9987aa6-541f-4690-8fd4-7b91fdb2380e.json\"\nparity_path = root / \"receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json\"\ndeadline = time.time() + 14000\nwhile time.time() < deadline:\n    try:\n        state = json.loads(job_path.read_text()).get(\"state\")\n    except Exception:\n        state = None\n    if state in {\"COMPLETED\", \"FAILED\", \"CANCELLED\", \"TIMED_OUT\"}:\n        break\n    time.sleep(30)\ntry:\n    parity = json.loads(parity_path.read_text())\nexcept Exception:\n    parity = {}\nif state != \"COMPLETED\" or parity.get(\"status\") != \"PASSED\":\n    subprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"handoff\", \"--repo-root\", str(root), \"--emit\", str(root / \"receipts/headless/OVERNIGHT_HAWKING_HANDOFF.json\")], cwd=root, check=False)\n    raise SystemExit(3)\ncomponents = [\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E0_R128_256_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E1_R0_128_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E32_R0_128_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json\"),\n]\ncampaign = [sys.executable, \"-m\", \"hcli\", \"agentos\", \"flash-component-campaign\", \"--repo-root\", str(root)]\nfor body, kernel in components:\n    campaign.extend([\"--component\", body + \",\" + kernel])\ncampaign.extend([\"--emit\", str(root / \"receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json\")])\nsubprocess.run(campaign, cwd=root, check=True)\nsubprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"flash-executable\", \"--repo-root\", str(root)], cwd=root, check=True)\nsubprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"checkpoint\", \"--repo-root\", str(root), \"--workspace\", str(root / \".hcli/unattended-qwen-long\"), \"--emit\", str(root / \"receipts/headless/HCLI_AGENTOS_CHECKPOINT.json\")], cwd=root, check=True)\nsubprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"handoff\", \"--repo-root\", str(root), \"--emit\", str(root / \"receipts/headless/OVERNIGHT_HAWKING_HANDOFF.json\")], cwd=root, check=True)\nraise SystemExit(0)"
+        ],
+        "cwd": "/Users/scammermike/Downloads/hawking",
+        "error": null,
+        "finished_at": null,
+        "job_id": "job-10ab7f2c-52a1-4084-8d6d-3e949643284d",
+        "label": "flash-post-parity-composition",
+        "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-10ab7f2c-52a1-4084-8d6d-3e949643284d.log",
+        "pid": 4345,
+        "resumable": true,
+        "returncode": null,
+        "started_at": 1787824693.326821,
+        "state": "RUNNING"
       },
       {
         "argv": [
@@ -4258,6 +4266,42 @@
         "resumable": true,
         "returncode": null,
         "started_at": 1787811548.417113,
+        "state": "RUNNING"
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "import json, subprocess, sys, time\nfrom pathlib import Path\nroot = Path(\"/Users/scammermike/Downloads/hawking\")\nwait_jobs = [\n    root / \".hcli/background/jobs/job-b9987aa6-541f-4690-8fd4-7b91fdb2380e.json\",\n    root / \".hcli/background/jobs/job-10ab7f2c-52a1-4084-8d6d-3e949643284d.json\",\n]\ndeadline = time.time() + 14000\nstates = {}\nwhile time.time() < deadline:\n    for path in wait_jobs:\n        try:\n            states[str(path)] = json.loads(path.read_text()).get(\"state\")\n        except Exception:\n            states[str(path)] = None\n    if all(state in {\"COMPLETED\", \"FAILED\", \"CANCELLED\", \"TIMED_OUT\"} for state in states.values()):\n        break\n    time.sleep(30)\nexperts = [309, 455, 374, 151, 93, 500, 149, 220]\nspecimen = \"/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc\"\ndescriptor = str(root / \"receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json\")\nall_passed = True\nfor expert in experts:\n    body = root / f\".hcli/flash-component/flash-routed-expert-independent-q4-g64-e{expert}-r0-128.bin\"\n    body_receipt = root / f\"receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E{expert}_R0_128.json\"\n    out = root / f\"receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E{expert}_R0_128_PARITY.json\"\n    cmd = [\n        str(root / \".hcli/flash-kernel-build/release-fast/release/examples/flash_noetic_q4_kernel_parity\"),\n        \"--root\", specimen, \"--descriptor\", descriptor, \"--candidate-body\", str(body),\n        \"--body-receipt\", str(body_receipt), \"--expert-index\", str(expert),\n        \"--row-start\", \"0\", \"--row-count\", \"128\", \"--reps\", \"7\", \"--warmup\", \"2\",\n        \"--out\", str(out),\n    ]\n    result = subprocess.run(cmd, cwd=root)\n    if result.returncode != 0:\n        all_passed = False\nif not all_passed:\n    subprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"handoff\", \"--repo-root\", str(root), \"--emit\", str(root / \"receipts/headless/OVERNIGHT_HAWKING_HANDOFF.json\")], cwd=root, check=False)\n    raise SystemExit(4)\ncomponents = [\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E0_R128_256_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E1_R0_128_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E32_R0_128_PARITY.json\"),\n    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json\"),\n]\ncomponents.extend(\n    (f\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E{expert}_R0_128.json\", f\"FLASH_NOETIC_Q4_BODY_KERNEL_E{expert}_R0_128_PARITY.json\")\n    for expert in experts\n)\ncampaign = [sys.executable, \"-m\", \"hcli\", \"agentos\", \"flash-component-campaign\", \"--repo-root\", str(root)]\nfor body, kernel in components:\n    campaign.extend([\"--component\", body + \",\" + kernel])\ncampaign.extend([\"--emit\", str(root / \"receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json\")])\nsubprocess.run(campaign, cwd=root, check=True)\nsubprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"flash-executable\", \"--repo-root\", str(root)], cwd=root, check=True)\nsubprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"checkpoint\", \"--repo-root\", str(root), \"--workspace\", str(root / \".hcli/unattended-qwen-long\"), \"--emit\", str(root / \"receipts/headless/HCLI_AGENTOS_CHECKPOINT.json\")], cwd=root, check=True)\nsubprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"handoff\", \"--repo-root\", str(root), \"--emit\", str(root / \"receipts/headless/OVERNIGHT_HAWKING_HANDOFF.json\")], cwd=root, check=True)\nraise SystemExit(0)"
+        ],
+        "cwd": "/Users/scammermike/Downloads/hawking",
+        "error": null,
+        "finished_at": null,
+        "job_id": "job-ab137305-4095-4197-b5b4-fb9d8a11431d",
+        "label": "flash-top-routed-expert-parity",
+        "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-ab137305-4095-4197-b5b4-fb9d8a11431d.log",
+        "pid": 7213,
+        "resumable": true,
+        "returncode": null,
+        "started_at": 1787824865.650767,
+        "state": "RUNNING"
+      },
+      {
+        "argv": [
+          "python3",
+          "-c",
+          "import os, subprocess, sys, time\nfor pid in (53733, 53735):\n    while True:\n        try:\n            os.kill(pid, 0)\n        except (ProcessLookupError, PermissionError):\n            break\n        time.sleep(30)\ntime.sleep(30)\ncmd = [\n    '/Users/scammermike/Downloads/hawking/.hcli/flash-kernel-build/release-fast/release/examples/flash_noetic_q4_kernel_parity',\n    '--root', '/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc',\n    '--descriptor', '/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json',\n    '--candidate-body', '/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-routed-expert-independent-q4-g64-e29-r256-384.bin',\n    '--body-receipt', '/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json',\n    '--expert-index', '29', '--row-start', '256', '--row-count', '128',\n    '--reps', '7', '--warmup', '2',\n    '--out', '/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json',\n]\nraise SystemExit(subprocess.run(cmd).returncode)"
+        ],
+        "cwd": "/Users/scammermike/Downloads/hawking",
+        "error": null,
+        "finished_at": null,
+        "job_id": "job-b9987aa6-541f-4690-8fd4-7b91fdb2380e",
+        "label": "flash-e29-q4-parity-after-resident",
+        "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-b9987aa6-541f-4690-8fd4-7b91fdb2380e.log",
+        "pid": 95093,
+        "resumable": true,
+        "returncode": null,
+        "started_at": 1787824197.837526,
         "state": "RUNNING"
       },
       {
@@ -4618,18 +4662,18 @@
         },
         {
           "checks": {},
-          "cycles": 187,
+          "cycles": 221,
           "deadline": 1787833148.5820968,
           "metrics": {
-            "accepted": 186,
-            "attempted": 187,
+            "accepted": 220,
+            "attempted": 221,
             "human_interventions": 0,
             "inconclusive": 1,
-            "model_calls": 187,
+            "model_calls": 221,
             "rejected": 0,
             "retries": 1,
-            "typed_tool_calls": 374,
-            "verifier_calls": 186
+            "typed_tool_calls": 442,
+            "verifier_calls": 220
           },
           "path": "/Users/scammermike/Downloads/hawking/.hcli/unattended-qwen-long/window-progress.json",
           "started_at": 1787811548.5820968,

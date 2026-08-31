@@ -1,0 +1,1610 @@
+{
+ "authority_sources": {
+  "atlas": "ON_DISK",
+  "budget": "ON_DISK",
+  "capability": "ON_DISK",
+  "sealed": "ON_DISK"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T21:45:39Z",
+  "recorded_by": "tools/future/qwen27_profile_schema.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_classes": [
+  "STATIC_ONLY",
+  "DIAGNOSTIC_RELATIVE",
+  "PROTECTED_ABSOLUTE"
+ ],
+ "control_profile": {
+  "active_byte_model": {
+   "activations_included": false,
+   "active_representation_bytes_per_token": "UNKNOWN",
+   "active_weight_bytes_per_token": 9878901136,
+   "actual_read_bytes_per_token": "UNKNOWN",
+   "claim_boundary": "Catalog-derived WEIGHT traffic only. Activations, KV cache, and DeltaNet recurrent state are not in the HQ38M20 catalog and are not counted. actual_read_bytes_per_token and transient_bytes_per_token remain UNKNOWN until a protected complete-token receipt.",
+   "kv_cache_included": false,
+   "recurrent_state_included": false,
+   "regions": [
+    {
+     "bytes_per_dispatch": 27853103,
+     "catalog_dispatches_per_token": 192,
+     "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.mlp.gate_proj.weight",
+      "language_model.model.layers.N.mlp.up_proj.weight",
+      "language_model.model.layers.N.mlp.down_proj.weight"
+     ],
+     "weight_bytes_per_token": 5347795776
+    },
+    {
+     "bytes_per_dispatch": 21629271,
+     "catalog_dispatches_per_token": 209,
+     "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.in_proj_qkvz.weight",
+      "language_model.model.layers.N.linear_attn.in_proj_ba.weight",
+      "language_model.model.layers.N.linear_attn.out_proj.weight",
+      "language_model.model.layers.N.self_attn.q_proj.weight",
+      "language_model.model.layers.N.self_attn.k_proj.weight",
+      "language_model.model.layers.N.self_attn.v_proj.weight",
+      "language_model.model.layers.N.self_attn.o_proj.weight",
+      "language_model.lm_head.weight"
+     ],
+     "weight_bytes_per_token": 4520517800
+    },
+    {
+     "bytes_per_dispatch": 163848,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.conv1d.weight"
+     ],
+     "weight_bytes_per_token": 7864704
+    },
+    {
+     "bytes_per_dispatch": 20488,
+     "catalog_dispatches_per_token": 129,
+     "kernel": "qwen80_residual_rmsnorm_tg",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.input_layernorm.weight",
+      "language_model.model.layers.N.post_attention_layernorm.weight",
+      "language_model.model.norm.weight"
+     ],
+     "weight_bytes_per_token": 2642952
+    },
+    {
+     "bytes_per_dispatch": 2064,
+     "catalog_dispatches_per_token": 16,
+     "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.self_attn.q_norm.weight",
+      "language_model.model.layers.N.self_attn.k_norm.weight"
+     ],
+     "weight_bytes_per_token": 33024
+    },
+    {
+     "bytes_per_dispatch": 520,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.norm.weight"
+     ],
+     "weight_bytes_per_token": 24960
+    },
+    {
+     "bytes_per_dispatch": 400,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen80_ba_to_decay_beta_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.A_log",
+      "language_model.model.layers.N.linear_attn.dt_bias"
+     ],
+     "weight_bytes_per_token": 19200
+    },
+    {
+     "bytes_per_dispatch": 2720,
+     "catalog_dispatches_per_token": 1,
+     "kernel": "qwen_uniform_q4_embedding_lookup",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.embed_tokens.weight"
+     ],
+     "weight_bytes_per_token": 2720
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 16,
+     "kernel": "qwen38_attention_apply_sigmoid_gate",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 128,
+     "kernel": "qwen_next_add_residual",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 64,
+     "kernel": "gk_swiglu_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen38_gated_delta_decode_vi_simd",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 16,
+     "kernel": "mha_decode_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 1,
+     "kernel": "sample_argmax_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    }
+   ],
+   "transient_bytes_per_token": "UNKNOWN"
+  },
+  "candidate_geometry": {
+   "affine2_geo": "tpr64",
+   "fusion_env": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "q2_group": "group32",
+   "q2f_geo": "tpr64",
+   "q4_group": "group64",
+   "source": "kernel names in ACCELERATOR_TOKEN_BYTES_ATLAS.json (geo_tpr64_tg128) plus sealed fusion_env",
+   "threadgroup_width": 128,
+   "threads_per_row": 64
+  },
+  "capability_workload_design": {
+   "axes": [
+    "coding",
+    "hygiene",
+    "knowledge",
+    "mutation",
+    "reasoning",
+    "self_correction",
+    "structured_output"
+   ],
+   "complete_accepted_token_required": true,
+   "incumbent_capability_record": {
+    "label": "historical sealed contract 30/43",
+    "not_a_ceiling": true,
+    "not_a_target": true,
+    "passed": 30,
+    "role": "CONTROL",
+    "source": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "total": 43
+   },
+   "item_count": 43,
+   "suite": "QWEN_CAPABILITY_QUALIFICATION",
+   "threshold_rule": {
+    "basis": "incumbent llama.cpp Q5_K production artifact",
+    "rule": "per-axis rate >= incumbent rate - 0.1",
+    "why_not_self_referential": "a threshold read off the candidate cannot fail"
+   },
+   "zero_fallback_required": true
+  },
+  "cold_warm_lifecycle": {
+   "buckets": {
+    "accepted_complete_token_ns": "UNKNOWN",
+    "cold_load_ns": "UNKNOWN",
+    "first_token_ns": "UNKNOWN",
+    "steady_state_decode_token_ns": "UNKNOWN",
+    "warm_decode_token_ns": "UNKNOWN",
+    "warm_start_ns": "UNKNOWN"
+   },
+   "claim_boundary": "lifecycle timings require a protected complete-token receipt"
+  },
+  "dispatch_topology": {
+   "command_buffers": "UNKNOWN",
+   "fusion_env": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+    "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+    "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+   },
+   "kernels": [
+    {
+     "bytes_per_dispatch": 27853103,
+     "catalog_dispatches_per_token": 192,
+     "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.mlp.gate_proj.weight",
+      "language_model.model.layers.N.mlp.up_proj.weight",
+      "language_model.model.layers.N.mlp.down_proj.weight"
+     ],
+     "weight_bytes_per_token": 5347795776
+    },
+    {
+     "bytes_per_dispatch": 21629271,
+     "catalog_dispatches_per_token": 209,
+     "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.in_proj_qkvz.weight",
+      "language_model.model.layers.N.linear_attn.in_proj_ba.weight",
+      "language_model.model.layers.N.linear_attn.out_proj.weight",
+      "language_model.model.layers.N.self_attn.q_proj.weight",
+      "language_model.model.layers.N.self_attn.k_proj.weight",
+      "language_model.model.layers.N.self_attn.v_proj.weight",
+      "language_model.model.layers.N.self_attn.o_proj.weight",
+      "language_model.lm_head.weight"
+     ],
+     "weight_bytes_per_token": 4520517800
+    },
+    {
+     "bytes_per_dispatch": 163848,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.conv1d.weight"
+     ],
+     "weight_bytes_per_token": 7864704
+    },
+    {
+     "bytes_per_dispatch": 20488,
+     "catalog_dispatches_per_token": 129,
+     "kernel": "qwen80_residual_rmsnorm_tg",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.input_layernorm.weight",
+      "language_model.model.layers.N.post_attention_layernorm.weight",
+      "language_model.model.norm.weight"
+     ],
+     "weight_bytes_per_token": 2642952
+    },
+    {
+     "bytes_per_dispatch": 2064,
+     "catalog_dispatches_per_token": 16,
+     "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.self_attn.q_norm.weight",
+      "language_model.model.layers.N.self_attn.k_norm.weight"
+     ],
+     "weight_bytes_per_token": 33024
+    },
+    {
+     "bytes_per_dispatch": 520,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.norm.weight"
+     ],
+     "weight_bytes_per_token": 24960
+    },
+    {
+     "bytes_per_dispatch": 400,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen80_ba_to_decay_beta_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.layers.N.linear_attn.A_log",
+      "language_model.model.layers.N.linear_attn.dt_bias"
+     ],
+     "weight_bytes_per_token": 19200
+    },
+    {
+     "bytes_per_dispatch": 2720,
+     "catalog_dispatches_per_token": 1,
+     "kernel": "qwen_uniform_q4_embedding_lookup",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [
+      "language_model.model.embed_tokens.weight"
+     ],
+     "weight_bytes_per_token": 2720
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 16,
+     "kernel": "qwen38_attention_apply_sigmoid_gate",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 128,
+     "kernel": "qwen_next_add_residual",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 64,
+     "kernel": "gk_swiglu_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 48,
+     "kernel": "qwen38_gated_delta_decode_vi_simd",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 16,
+     "kernel": "mha_decode_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    },
+    {
+     "bytes_per_dispatch": 0,
+     "catalog_dispatches_per_token": 1,
+     "kernel": "sample_argmax_f32",
+     "label": "STATIC_DERIVATION_FROM_CATALOG",
+     "roles": [],
+     "weight_bytes_per_token": 0
+    }
+   ],
+   "total_catalog_dispatches_per_token": 964
+  },
+  "identity": {
+   "baseline_profile_path": "hcli/hawking-native.sealed-3.14.json",
+   "claim_class": "STATIC_ONLY",
+   "model_family": "qwen3.8",
+   "model_id": "qwen3.8-27b-sealed-3.14",
+   "optimization_id": "qwen27-incumbent-sealed-3.14-CONTROL",
+   "resident_identity": "sealed-3.14",
+   "role": "CONTROL"
+  },
+  "layout_search_space": {
+   "axes": [
+    {
+     "control": 64,
+     "evidence": "tools/accelerator/test_native_geometry.py",
+     "illegal_values": [],
+     "invariant": "arithmetic must match the float64 oracle; tpr is occupancy, not a new function",
+     "legal_values": [
+      64
+     ],
+     "name": "threads_per_row"
+    },
+    {
+     "control": 128,
+     "evidence": "tools/accelerator/test_threadgroup_width.py",
+     "illegal_values": [
+      32,
+      96
+     ],
+     "invariant": "tg must be a whole number of rows; padded grids are refused",
+     "legal_values": [
+      64,
+      128,
+      256,
+      512
+     ],
+     "name": "threadgroup_width"
+    },
+    {
+     "control": "tpr64",
+     "evidence": "recovered qualification-queue candidate qwen27-affine2-splitk4; kernel name geo_tpr64_tg128",
+     "illegal_values": [],
+     "invariant": "packed Q2 bytes unchanged; split-K is concurrency, not representation",
+     "legal_values": [
+      "tpr64",
+      "splitk4"
+     ],
+     "name": "affine2_geo"
+    },
+    {
+     "control": "tpr64",
+     "evidence": "recovered qualification-queue candidate qwen27-q2f-splitk4",
+     "illegal_values": [],
+     "invariant": "same as affine2_geo for the Q2 family kernel",
+     "legal_values": [
+      "tpr64",
+      "splitk4"
+     ],
+     "name": "q2f_geo"
+    },
+    {
+     "control": "default",
+     "evidence": "recovered qualification-queue candidate qwen27-q4-vecgroup-x64",
+     "illegal_values": [],
+     "invariant": "group-64 Q4 packing stays group-64",
+     "legal_values": [
+      "default",
+      "x64"
+     ],
+     "name": "q4_vecgroup"
+    },
+    {
+     "control": "swiglu",
+     "evidence": "hcli/agentos/qwen27_mlp_diagnostic.py (DIAGNOSTIC_RELATIVE, not for promotion)",
+     "illegal_values": [],
+     "invariant": "HAWKING_QWEN38_FUSE_MLP=1 is an alias for the strongest swiglu graph, not unfused",
+     "legal_values": [
+      "swiglu",
+      "1"
+     ],
+     "name": "fuse_mlp"
+    },
+    {
+     "control": "1",
+     "evidence": "hcli/hawking-native.sealed-3.14.json fusion_env",
+     "illegal_values": [],
+     "invariant": "source-approved fusion flag; output-id parity required",
+     "legal_values": [
+      "0",
+      "1"
+     ],
+     "name": "fuse_gqa_qkv"
+    },
+    {
+     "control": "1",
+     "evidence": "hcli/hawking-native.sealed-3.14.json fusion_env",
+     "illegal_values": [],
+     "invariant": "source-approved fusion flag; output-id parity required",
+     "legal_values": [
+      "0",
+      "1"
+     ],
+     "name": "fuse_dn_inproj"
+    },
+    {
+     "control": "1",
+     "evidence": "hcli/hawking-native.sealed-3.14.json fusion_env",
+     "illegal_values": [],
+     "invariant": "source-approved fusion flag; output-id parity required",
+     "legal_values": [
+      "0",
+      "1"
+     ],
+     "name": "fuse_add_rmsnorm"
+    }
+   ]
+  },
+  "regression_fixtures": {
+   "fixtures": [
+    {
+     "id": "native_geometry_tpr64_oracle",
+     "path": "tools/accelerator/test_native_geometry.py",
+     "what_it_pins": "tpr64 matches one-thread-per-row oracle; illegal geometry is refused"
+    },
+    {
+     "id": "threadgroup_width_refusals",
+     "path": "tools/accelerator/test_threadgroup_width.py",
+     "what_it_pins": "tg not a whole number of rows is refused; per-row run count does not move with tg"
+    },
+    {
+     "id": "bytes_atlas_reconciliation",
+     "path": "tools/accelerator/test_bytes_atlas.py",
+     "what_it_pins": "per-dispatch bytes sum to catalog; catalog equals disk; 8*bytes/params = sealed EBPW"
+    },
+    {
+     "id": "qwen27_mlp_selector",
+     "path": "hcli/agentos/qwen27_mlp_diagnostic.py",
+     "what_it_pins": "swiglu vs 1 is graph identity, DIAGNOSTIC_RELATIVE, NOT_FOR_PROMOTION"
+    },
+    {
+     "id": "capability_incumbent_threshold",
+     "path": "tools/headless/capability_contract.py",
+     "what_it_pins": "threshold is incumbent-relative, never the candidate's own score"
+    },
+    {
+     "id": "token_ns_budget_slots",
+     "path": "tools/accelerator/qwen27_token_budget.py",
+     "what_it_pins": "physical metrics stay null until a protected complete-token receipt"
+    },
+    {
+     "id": "output_id_parity",
+     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "what_it_pins": "parity_contract: identical tokenizer-bound output ids; any divergence rejects"
+    }
+   ]
+  },
+  "representation_census": {
+   "catalog_total_bytes": 10554328856,
+   "complete_ebpw": 3.139300850311054,
+   "kind": "native-packed",
+   "packing": [
+    {
+     "family": "q2_group32",
+     "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+     "roles": [
+      "mlp.gate_proj",
+      "mlp.up_proj",
+      "mlp.down_proj"
+     ]
+    },
+    {
+     "family": "q4_group64",
+     "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+     "roles": [
+      "linear_attn in/out",
+      "self_attn qkvo",
+      "lm_head"
+     ]
+    },
+    {
+     "family": "embedding_q4_row",
+     "kernel": "qwen_uniform_q4_embedding_lookup",
+     "roles": [
+      "embed_tokens one row per token, not the table"
+     ]
+    }
+   ],
+   "parent_params": 26895998464,
+   "tensor_count": 755,
+   "weights_loaded_once": true
+  },
+  "resident_resource_model": {
+   "claim_boundary": "Persistent-state names recovered from QWEN27_FPGA_ORGAN_MAP.json as [D] hypotheses. FPGA is Accelerator/Physical Compiler/Fusion, not its own civilization. No board, bitstream, or HBM number is claimed.",
+   "persistent_state": [
+    {
+     "id": "resident_weight_shards",
+     "lifetime": "persistent",
+     "per_token_transfer": false
+    },
+    {
+     "id": "activations",
+     "lifetime": "token",
+     "per_token_transfer": true
+    },
+    {
+     "id": "partial_reductions",
+     "lifetime": "token",
+     "per_token_transfer": true
+    },
+    {
+     "id": "persistent_state",
+     "lifetime": "sequence",
+     "per_token_transfer": false
+    }
+   ],
+   "resident_bytes": "UNKNOWN",
+   "total_nx_bytes": "UNKNOWN",
+   "weights_loaded_once": true
+  },
+  "token_ns_receipt_decomposition": {
+   "actual_values": {
+    "accepted_tps": "UNKNOWN",
+    "active_representation_bytes_per_token": "UNKNOWN",
+    "actual_read_bytes_per_token": "UNKNOWN",
+    "complete_wall_ns_per_accepted_token": "UNKNOWN",
+    "dispatches_per_token": "UNKNOWN",
+    "fallback_count": "UNKNOWN",
+    "gpu_ns_per_token": "UNKNOWN",
+    "resident_bytes": "UNKNOWN",
+    "sync_ns_per_token": "UNKNOWN",
+    "total_nx_bytes": "UNKNOWN",
+    "transient_bytes_per_token": "UNKNOWN"
+   },
+   "measurement_protocol": {
+    "active_bytes_include_actual_read_and_transient_fields": true,
+    "cold_warm_first_warm_steady_state_separated": true,
+    "complete_accepted_token_denominator": true,
+    "diagnostic_relative_runs_cannot_promote": true,
+    "native_kernel_genome_and_dispatch_trace": true,
+    "protected_quiescent_before_and_after": true,
+    "same_tokenizer_and_output_contract": true
+   },
+   "organs": [
+    "representation_access",
+    "qkv_and_projection",
+    "attention",
+    "deltanet_and_recurrent_state",
+    "mlp",
+    "lm_head_and_sampling",
+    "dispatch_encode",
+    "command_wait_and_synchronization",
+    "host_ceremony"
+   ],
+   "status": "SLOTS_DECLARED_VALUES_UNKNOWN",
+   "system_ledger_fields": [
+    "total_nx_bytes",
+    "resident_bytes",
+    "active_representation_bytes_per_token",
+    "actual_read_bytes_per_token",
+    "transient_bytes_per_token",
+    "gpu_ns_per_token",
+    "complete_wall_ns_per_accepted_token",
+    "dispatches_per_token",
+    "sync_ns_per_token",
+    "accepted_tps",
+    "fallback_count"
+   ]
+  },
+  "transfer_law_tagging": {
+   "allowed_scopes": [
+    "MODEL_LOCAL",
+    "ARCHITECTURE_FAMILY",
+    "BACKEND_FAMILY",
+    "MACHINE_LOCAL"
+   ],
+   "by_section": {
+    "active_byte_model": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "Which tensors are active is model-local; packing is backend-family; actual_read_bytes_per_token is machine-local (cache, contention).",
+     "scope": "MODEL_LOCAL",
+     "secondary_scopes": [
+      "BACKEND_FAMILY",
+      "MACHINE_LOCAL"
+     ]
+    },
+    "candidate_geometry": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "Geo flags are Metal; which organs they bind to is model-local.",
+     "scope": "BACKEND_FAMILY",
+     "secondary_scopes": [
+      "MODEL_LOCAL"
+     ]
+    },
+    "capability_workload_design": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "Prompts and the sealed 30/43 record are this body; axis taxonomy is family-level.",
+     "scope": "MODEL_LOCAL",
+     "secondary_scopes": [
+      "ARCHITECTURE_FAMILY"
+     ]
+    },
+    "cold_warm_lifecycle": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "Cold load, warm start, first token vs steady-state are machine-local.",
+     "scope": "MACHINE_LOCAL",
+     "secondary_scopes": [
+      "BACKEND_FAMILY"
+     ]
+    },
+    "dispatch_topology": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "Metal dispatch graph is backend-family; the kernel mix is model-local.",
+     "scope": "BACKEND_FAMILY",
+     "secondary_scopes": [
+      "MODEL_LOCAL"
+     ]
+    },
+    "identity": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "resident_identity and model_id are this Qwen27 body; family qwen3.8 is architecture-family.",
+     "scope": "MODEL_LOCAL",
+     "secondary_scopes": [
+      "ARCHITECTURE_FAMILY"
+     ]
+    },
+    "layout_search_space": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "Threadgroup/tpr/split-K legality is Metal geometry.",
+     "scope": "BACKEND_FAMILY",
+     "secondary_scopes": []
+    },
+    "regression_fixtures": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "Geometry oracles are family-level; the Qwen27 MLP selector is model-local.",
+     "scope": "ARCHITECTURE_FAMILY",
+     "secondary_scopes": [
+      "MODEL_LOCAL"
+     ]
+    },
+    "representation_census": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "This mix and complete EBPW are this artifact; the packing scheme is Qwen3.8-family.",
+     "scope": "MODEL_LOCAL",
+     "secondary_scopes": [
+      "ARCHITECTURE_FAMILY"
+     ]
+    },
+    "resident_resource_model": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "What fits is machine-local; what must stay resident is model-local.",
+     "scope": "MACHINE_LOCAL",
+     "secondary_scopes": [
+      "MODEL_LOCAL"
+     ]
+    },
+    "token_ns_receipt_decomposition": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "organ/ledger closure is the token-ns law (Odyssey II seed); which organs fire is Qwen27-local.",
+     "scope": "ARCHITECTURE_FAMILY",
+     "secondary_scopes": [
+      "MODEL_LOCAL"
+     ]
+    },
+    "transfer_law_tagging": {
+     "odyssey": "II",
+     "promotion_rule": "Odyssey II law store must evidence a scope promotion; unevidenced promotion is refused. There is no Odyssey IV.",
+     "rationale": "The tagging contract is the Odyssey II input shape. Unevidenced promotion between scopes is refused.",
+     "scope": "ARCHITECTURE_FAMILY",
+     "secondary_scopes": []
+    }
+   },
+   "eras": [
+    "I Genesis of the Laboratory",
+    "II Compounding Civilization",
+    "III Autonomous Science Civilization",
+    "IV Synthetic Machine Civilization",
+    "V Released Hawking Civilization"
+   ],
+   "no_era_vi": true,
+   "no_odyssey_iv": true,
+   "odysseys": [
+    "I WHAT IS TRUE?",
+    "II WHAT DID HAWKING ALREADY LEARN?",
+    "III WHERE IS HAWKING WRONG?"
+   ]
+  }
+ },
+ "control_profile_validation": {
+  "missing_fields": [],
+  "named_refusal": null,
+  "status": "ACCEPTED"
+ },
+ "downstream": {
+  "accept_profile": "accept_profile(profile) -> result or raise ProfileRejectedError",
+  "assess_token_ns_budget": "assess_token_ns_budget(budget) -> section coverage",
+  "control_profile": "control_profile() -> complete CONTROL instance",
+  "profiles_comparable": "profiles_comparable(a, b) -> bool",
+  "validate_profile": "validate_profile(profile) -> {status, missing_fields, named_refusal}"
+ },
+ "gaps_closed": [
+  "one comparable Qwen27 optimization profile with every section required",
+  "hard REJECTED (field named) when a required field is missing; no partial credit",
+  "negative control: missing active_byte_model is refused by name",
+  "transfer-law tagging MODEL_LOCAL / ARCHITECTURE_FAMILY / BACKEND_FAMILY / MACHINE_LOCAL on every section",
+  "incumbent sealed-3.14 recorded as CONTROL with provenance, not as a target or ceiling",
+  "projection of hawking.accelerator.qwen27_token_ns_budget.v1 onto the profile sections"
+ ],
+ "incumbent_control": {
+  "hardware_field_policy": "These numbers are not written under tps / accepted_tps / token_ns / gpu_ns / wall_ns. They are historical record with provenance.",
+  "historical_accepted_tokens_per_second_record": {
+   "approx_label": "~25",
+   "contamination": "unknown; sidecar did not remeasure; not DIAGNOSTIC_RELATIVE and not PROTECTED_ABSOLUTE",
+   "do_not_promote": true,
+   "evidence_class": "HISTORICAL_RECORD_NOT_A_SIDECAR_MEASUREMENT",
+   "recorded_complete_tokens_per_second": 24.4086,
+   "role": "CONTROL",
+   "source_field": "current_runtime.complete_tps_current_measured",
+   "source_path": "hcli/hawking-native.sealed-3.14.json"
+  },
+  "historical_physical_ebpw": {
+   "approx_label": "~3.14",
+   "evidence_class": "STATIC_CATALOG_IDENTITY",
+   "recorded_complete_ebpw": 3.1393,
+   "role": "CONTROL",
+   "source_field": "physical_ebpw / representation.physical_ebpw / artifact.complete_ebpw"
+  },
+  "label": "historical sealed-3.14 resident",
+  "not_a_ceiling": true,
+  "not_a_target": true,
+  "provenance": {
+   "byte_atlas": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+   "profile": "hcli/hawking-native.sealed-3.14.json",
+   "profile_schema": "hcli.provider.profile.v1",
+   "qualification_record": "capability 30/43 historical sealed contract",
+   "resident_identity": "sealed-3.14"
+  },
+  "related_historical_records": [
+   {
+    "do_not_promote": true,
+    "label": "complete_tps_historical_qualified",
+    "recorded_complete_tokens_per_second": 34.0,
+    "role": "HISTORICAL_RECORD",
+    "source_field": "current_runtime.complete_tps_historical_qualified",
+    "source_path": "hcli/hawking-native.sealed-3.14.json"
+   },
+   {
+    "label": "capability_noetic_sealed_3_14",
+    "not_a_target": true,
+    "passed": 30,
+    "role": "CONTROL",
+    "source_path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "total": 43
+   }
+  ],
+  "role": "CONTROL"
+ },
+ "lifecycle_buckets": [
+  "cold_load_ns",
+  "warm_start_ns",
+  "first_token_ns",
+  "warm_decode_token_ns",
+  "steady_state_decode_token_ns",
+  "accepted_complete_token_ns"
+ ],
+ "negative_control": {
+  "fires": true,
+  "removed_field": "active_byte_model",
+  "result": {
+   "missing_fields": [
+    "active_byte_model"
+   ],
+   "named_refusal": "REJECTED: missing required field(s): active_byte_model",
+   "status": "REJECTED"
+  }
+ },
+ "negative_findings": [
+  "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json is ABSENT from this worktree disk and from git HEAD (load=ON_DISK). It exists untracked in the campaign working tree. Coverage below is from live load when present, else RECEIPT_ABSENT. Structural gaps were also inspected during recover-before-build.",
+  "tools/accelerator/qwen27_token_budget.py is not in git HEAD of this worktree (untracked in the campaign tree).",
+  "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json is not in git HEAD (untracked in the campaign tree).",
+  "hcli/agentos is not materialized in this sparse checkout; identity/mlp modules were read via git show.",
+  "This sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE measurements.",
+  "Catalog active-byte model excludes activations, KV, and recurrent state (stated on the budget claim_boundary).",
+  "Budget organs do not carry per-organ source_weight_bytes_per_token; attribution stays on atlas regions.",
+  "No pre-existing tools/future qwen27 profile schema module \u2014 this file is the first.",
+  "FPGA organ map is a [D] hypothesis; FPGA is not a civilization and no FPGA backend was built."
+ ],
+ "nomenclature": {
+  "diagnostic_relative": "contaminated A/B on a busy machine. Guides. Never promotes.",
+  "eras": [
+   "I Genesis of the Laboratory",
+   "II Compounding Civilization",
+   "III Autonomous Science Civilization",
+   "IV Synthetic Machine Civilization",
+   "V Released Hawking Civilization"
+  ],
+  "fpga": "part of Accelerator / Physical Compiler / Fusion; not its own civilization",
+  "no_era_vi": true,
+  "no_odyssey_iv": true,
+  "odysseys": [
+   "I WHAT IS TRUE?",
+   "II WHAT DID HAWKING ALREADY LEARN?",
+   "III WHERE IS HAWKING WRONG?"
+  ],
+  "protected_absolute": "measurement under a real protected GPU lease. Decides.",
+  "static_only": "this sidecar. Models propose; protected deterministic evidence decides."
+ },
+ "purpose": "Single contract under which every Qwen27 optimization, past and future, is comparable. A profile missing a required field is REJECTED.",
+ "queued_qwen27_ready_protected": {
+  "count": 12,
+  "ids": [
+   "qwen27-affine2-splitk4",
+   "qwen27-attention-gate-fusion",
+   "qwen27-ba-delta-fusion",
+   "qwen27-commit-timing-elision",
+   "qwen27-deltanet-inproj-fusion",
+   "qwen27-encoder-label-elision",
+   "qwen27-fast-profile",
+   "qwen27-gqa-qkv-fusion",
+   "qwen27-pipeline-cache-reuse",
+   "qwen27-pipeline-state-elision",
+   "qwen27-q2f-splitk4",
+   "qwen27-q4-vecgroup-x64"
+  ],
+  "note": "12 READY_PROTECTED candidates recovered from the untracked qualification queue. This schema exists so those candidates become comparable rather than informally ranked.",
+  "presence": {
+   "in_git_head": false,
+   "on_disk": true,
+   "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "source": "ON_DISK"
+  },
+  "source": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+ },
+ "recovered_implementation": {
+  "paths": [
+   {
+    "in_git_head": false,
+    "on_disk": true,
+    "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+    "role": "token_ns_budget",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": false,
+    "on_disk": true,
+    "path": "tools/accelerator/qwen27_token_budget.py",
+    "role": "token_budget_tool",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": false,
+    "on_disk": true,
+    "path": "tools/accelerator/test_qwen27_token_budget.py",
+    "role": "token_budget_test",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+    "role": "byte_atlas",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "hcli/hawking-native.sealed-3.14.json",
+    "role": "sealed_profile",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": false,
+    "on_disk": true,
+    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "role": "qualification_queue",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "hcli/agentos/qwen27_runtime_identity.py",
+    "role": "runtime_identity_py",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "hcli/agentos/qwen27_mlp_diagnostic.py",
+    "role": "mlp_diagnostic_py",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json",
+    "role": "historical_identity",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+    "role": "fpga_organ_map",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+    "role": "capability_sealed",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "receipts/headless/QWEN_CAPABILITY_QUALIFICATION.json",
+    "role": "capability_contract",
+    "source": "ON_DISK"
+   },
+   {
+    "in_git_head": true,
+    "on_disk": true,
+    "path": "receipts/headless/TOKEN_EXECUTION_ATLAS.json",
+    "role": "token_execution_atlas",
+    "source": "ON_DISK"
+   }
+  ],
+  "summary": "No Qwen27 accelerator profile schema existed. tools/accelerator/qwen27_token_budget.py (untracked in HEAD) already emits the token-ns ledger scaffold; this module consumes that shape as one required section instead of forking it. Byte atlas, sealed-3.14 identity, capability 30/43, MLP diagnostic, and the qualification queue are recovered inputs. The gap closed is the comparable-profile contract around them: hard rejection, transfer-law tags, incumbent-as-control."
+ },
+ "rejection_rule": "A profile missing a required field is REJECTED with the field named. No partial credit, no warning-and-continue.",
+ "required_metrics": [
+  "total_nx_bytes",
+  "resident_bytes",
+  "active_representation_bytes_per_token",
+  "actual_read_bytes_per_token",
+  "transient_bytes_per_token",
+  "gpu_ns_per_token",
+  "complete_wall_ns_per_accepted_token",
+  "dispatches_per_token",
+  "sync_ns_per_token",
+  "accepted_tps",
+  "fallback_count"
+ ],
+ "required_organs": [
+  "representation_access",
+  "qkv_and_projection",
+  "attention",
+  "deltanet_and_recurrent_state",
+  "mlp",
+  "lm_head_and_sampling",
+  "dispatch_encode",
+  "command_wait_and_synchronization",
+  "host_ceremony"
+ ],
+ "required_sections": [
+  "identity",
+  "token_ns_receipt_decomposition",
+  "dispatch_topology",
+  "active_byte_model",
+  "layout_search_space",
+  "candidate_geometry",
+  "representation_census",
+  "cold_warm_lifecycle",
+  "resident_resource_model",
+  "regression_fixtures",
+  "capability_workload_design",
+  "transfer_law_tagging"
+ ],
+ "roles": [
+  "CONTROL",
+  "CANDIDATE",
+  "EXPERIMENT"
+ ],
+ "schema": "hawking.future.qwen27_profile.v1",
+ "seal_sha256": "1c5509f9a2cb7316ac196e7e16ed41e5721ed8586b0f744fa30ac4d322fadaea",
+ "section_fields": {
+  "active_byte_model": [
+   "active_weight_bytes_per_token",
+   "active_representation_bytes_per_token",
+   "actual_read_bytes_per_token",
+   "transient_bytes_per_token",
+   "activations_included",
+   "kv_cache_included",
+   "recurrent_state_included",
+   "regions",
+   "claim_boundary"
+  ],
+  "candidate_geometry": [
+   "affine2_geo",
+   "q2f_geo",
+   "threadgroup_width",
+   "threads_per_row",
+   "q4_group",
+   "q2_group",
+   "fusion_env"
+  ],
+  "capability_workload_design": [
+   "suite",
+   "axes",
+   "item_count",
+   "threshold_rule",
+   "zero_fallback_required",
+   "complete_accepted_token_required",
+   "incumbent_capability_record"
+  ],
+  "cold_warm_lifecycle": [
+   "buckets"
+  ],
+  "dispatch_topology": [
+   "kernels",
+   "fusion_env",
+   "total_catalog_dispatches_per_token",
+   "command_buffers"
+  ],
+  "identity": [
+   "model_family",
+   "model_id",
+   "resident_identity",
+   "baseline_profile_path",
+   "optimization_id",
+   "role",
+   "claim_class"
+  ],
+  "layout_search_space": [
+   "axes"
+  ],
+  "regression_fixtures": [
+   "fixtures"
+  ],
+  "representation_census": [
+   "kind",
+   "complete_ebpw",
+   "parent_params",
+   "catalog_total_bytes",
+   "tensor_count",
+   "packing",
+   "weights_loaded_once"
+  ],
+  "resident_resource_model": [
+   "total_nx_bytes",
+   "resident_bytes",
+   "persistent_state",
+   "weights_loaded_once",
+   "claim_boundary"
+  ],
+  "token_ns_receipt_decomposition": [
+   "organs",
+   "system_ledger_fields",
+   "measurement_protocol",
+   "status"
+  ],
+  "transfer_law_tagging": [
+   "by_section"
+  ]
+ },
+ "token_ns_budget": {
+  "assessment": {
+   "budget_status": "PLANNED_UNTIL_NATIVE_PROTECTED_EXECUTION",
+   "by_section": {
+    "active_byte_model": {
+     "missing_coverage_paths": [],
+     "present_paths": [
+      "source_byte_denominator.active_weight_bytes_per_token",
+      "source_byte_denominator.regions",
+      "source_byte_denominator.claim_boundary"
+     ],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "activations_included",
+      "kv_cache_included",
+      "recurrent_state_included",
+      "actual_read_bytes_per_token as a catalog field (ledger slot is null)",
+      "transient_bytes_per_token as a catalog field (ledger slot is null)"
+     ]
+    },
+    "candidate_geometry": {
+     "missing_coverage_paths": [],
+     "present_paths": [],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "affine2_geo",
+      "q2f_geo",
+      "threadgroup_width",
+      "threads_per_row"
+     ]
+    },
+    "capability_workload_design": {
+     "missing_coverage_paths": [],
+     "present_paths": [],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "suite",
+      "axes",
+      "threshold_rule"
+     ]
+    },
+    "cold_warm_lifecycle": {
+     "missing_coverage_paths": [],
+     "present_paths": [
+      "lifecycle_buckets.cold_load_ns",
+      "lifecycle_buckets.warm_start_ns",
+      "lifecycle_buckets.first_token_ns",
+      "lifecycle_buckets.warm_decode_token_ns",
+      "lifecycle_buckets.steady_state_decode_token_ns",
+      "lifecycle_buckets.accepted_complete_token_ns"
+     ],
+     "status": "SATISFIED",
+     "still_missing": []
+    },
+    "dispatch_topology": {
+     "missing_coverage_paths": [],
+     "present_paths": [
+      "source_byte_denominator.regions"
+     ],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "fusion_env",
+      "command_buffers",
+      "topology edges"
+     ]
+    },
+    "identity": {
+     "missing_coverage_paths": [],
+     "present_paths": [
+      "model",
+      "baseline.profile"
+     ],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "optimization_id",
+      "role",
+      "claim_class",
+      "resident_identity as a first-class field"
+     ]
+    },
+    "layout_search_space": {
+     "missing_coverage_paths": [],
+     "present_paths": [],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "axes"
+     ]
+    },
+    "regression_fixtures": {
+     "missing_coverage_paths": [],
+     "present_paths": [],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "fixtures"
+     ]
+    },
+    "representation_census": {
+     "missing_coverage_paths": [],
+     "present_paths": [
+      "baseline.representation",
+      "source_byte_denominator.complete_ebpw"
+     ],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "parent_params",
+      "catalog_total_bytes",
+      "tensor_count",
+      "packing"
+     ]
+    },
+    "resident_resource_model": {
+     "missing_coverage_paths": [],
+     "present_paths": [
+      "system_ledger.resident_bytes",
+      "system_ledger.total_nx_bytes"
+     ],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "persistent_state",
+      "weights_loaded_once",
+      "a resource model"
+     ]
+    },
+    "token_ns_receipt_decomposition": {
+     "missing_coverage_paths": [],
+     "present_paths": [
+      "organs",
+      "system_ledger",
+      "measurement_protocol",
+      "status"
+     ],
+     "status": "SATISFIED",
+     "still_missing": []
+    },
+    "transfer_law_tagging": {
+     "missing_coverage_paths": [],
+     "present_paths": [],
+     "status": "NOT_SATISFIED",
+     "still_missing": [
+      "by_section"
+     ]
+    }
+   },
+   "findings": [
+    "organs[].source_weight_bytes_per_token is null on every organ; byte attribution lives under source_byte_denominator.regions, not mapped onto the token-ns organs",
+    "source_byte_denominator claim_boundary excludes activations, KV, and recurrent state \u2014 the active-byte MODEL is not complete",
+    "source_byte_denominator.regions has 14 catalog rows (STATIC_DERIVATION_FROM_CATALOG)",
+    "promotion_allowed is false (correct; budget is not a protected measurement)",
+    "lifecycle_buckets keys exist and every value is null (slots, not measurements)",
+    "section identity is NOT_SATISFIED against the profile schema",
+    "section dispatch_topology is NOT_SATISFIED against the profile schema",
+    "section active_byte_model is NOT_SATISFIED against the profile schema",
+    "section layout_search_space is NOT_SATISFIED against the profile schema",
+    "section candidate_geometry is NOT_SATISFIED against the profile schema",
+    "section representation_census is NOT_SATISFIED against the profile schema",
+    "section resident_resource_model is NOT_SATISFIED against the profile schema",
+    "section regression_fixtures is NOT_SATISFIED against the profile schema",
+    "section capability_workload_design is NOT_SATISFIED against the profile schema",
+    "section transfer_law_tagging is NOT_SATISFIED against the profile schema"
+   ],
+   "model": "qwen3.8-27b-sealed-3.14",
+   "satisfied_sections": [
+    "token_ns_receipt_decomposition",
+    "cold_warm_lifecycle"
+   ],
+   "schema": "hawking.accelerator.qwen27_token_ns_budget.v1",
+   "status": "ASSESSED",
+   "unsatisfied_sections": [
+    "identity",
+    "dispatch_topology",
+    "active_byte_model",
+    "layout_search_space",
+    "candidate_geometry",
+    "representation_census",
+    "resident_resource_model",
+    "regression_fixtures",
+    "capability_workload_design",
+    "transfer_law_tagging"
+   ]
+  },
+  "load": "ON_DISK",
+  "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+  "presence": {
+   "in_git_head": false,
+   "on_disk": true,
+   "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+   "source": "ON_DISK"
+  },
+  "recovered_campaign_working_tree": {
+   "assessment": {
+    "budget_status": "PLANNED_UNTIL_NATIVE_PROTECTED_EXECUTION",
+    "by_section": {
+     "active_byte_model": {
+      "missing_coverage_paths": [],
+      "present_paths": [
+       "source_byte_denominator.active_weight_bytes_per_token",
+       "source_byte_denominator.regions",
+       "source_byte_denominator.claim_boundary"
+      ],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "activations_included",
+       "kv_cache_included",
+       "recurrent_state_included",
+       "actual_read_bytes_per_token as a catalog field (ledger slot is null)",
+       "transient_bytes_per_token as a catalog field (ledger slot is null)"
+      ]
+     },
+     "candidate_geometry": {
+      "missing_coverage_paths": [],
+      "present_paths": [],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "affine2_geo",
+       "q2f_geo",
+       "threadgroup_width",
+       "threads_per_row"
+      ]
+     },
+     "capability_workload_design": {
+      "missing_coverage_paths": [],
+      "present_paths": [],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "suite",
+       "axes",
+       "threshold_rule"
+      ]
+     },
+     "cold_warm_lifecycle": {
+      "missing_coverage_paths": [],
+      "present_paths": [
+       "lifecycle_buckets.cold_load_ns",
+       "lifecycle_buckets.warm_start_ns",
+       "lifecycle_buckets.first_token_ns",
+       "lifecycle_buckets.warm_decode_token_ns",
+       "lifecycle_buckets.steady_state_decode_token_ns",
+       "lifecycle_buckets.accepted_complete_token_ns"
+      ],
+      "status": "SATISFIED",
+      "still_missing": []
+     },
+     "dispatch_topology": {
+      "missing_coverage_paths": [],
+      "present_paths": [
+       "source_byte_denominator.regions"
+      ],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "fusion_env",
+       "command_buffers",
+       "topology edges"
+      ]
+     },
+     "identity": {
+      "missing_coverage_paths": [],
+      "present_paths": [
+       "model",
+       "baseline.profile"
+      ],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "optimization_id",
+       "role",
+       "claim_class",
+       "resident_identity as a first-class field"
+      ]
+     },
+     "layout_search_space": {
+      "missing_coverage_paths": [],
+      "present_paths": [],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "axes"
+      ]
+     },
+     "regression_fixtures": {
+      "missing_coverage_paths": [],
+      "present_paths": [],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "fixtures"
+      ]
+     },
+     "representation_census": {
+      "missing_coverage_paths": [],
+      "present_paths": [
+       "baseline.representation",
+       "source_byte_denominator.complete_ebpw"
+      ],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "parent_params",
+       "catalog_total_bytes",
+       "tensor_count",
+       "packing"
+      ]
+     },
+     "resident_resource_model": {
+      "missing_coverage_paths": [],
+      "present_paths": [
+       "system_ledger.resident_bytes",
+       "system_ledger.total_nx_bytes"
+      ],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "persistent_state",
+       "weights_loaded_once",
+       "a resource model"
+      ]
+     },
+     "token_ns_receipt_decomposition": {
+      "missing_coverage_paths": [],
+      "present_paths": [
+       "organs",
+       "system_ledger",
+       "measurement_protocol",
+       "status"
+      ],
+      "status": "SATISFIED",
+      "still_missing": []
+     },
+     "transfer_law_tagging": {
+      "missing_coverage_paths": [],
+      "present_paths": [],
+      "status": "NOT_SATISFIED",
+      "still_missing": [
+       "by_section"
+      ]
+     }
+    },
+    "findings": [
+     "organs[].source_weight_bytes_per_token is null on every organ; byte attribution lives under source_byte_denominator.regions, not mapped onto the token-ns organs",
+     "source_byte_denominator claim_boundary excludes activations, KV, and recurrent state \u2014 the active-byte MODEL is not complete",
+     "source_byte_denominator.regions has 14 catalog rows (STATIC_DERIVATION_FROM_CATALOG)",
+     "promotion_allowed is false (correct; budget is not a protected measurement)",
+     "lifecycle_buckets keys exist and every value is null (slots, not measurements)",
+     "section identity is NOT_SATISFIED against the profile schema",
+     "section dispatch_topology is NOT_SATISFIED against the profile schema",
+     "section active_byte_model is NOT_SATISFIED against the profile schema",
+     "section layout_search_space is NOT_SATISFIED against the profile schema",
+     "section candidate_geometry is NOT_SATISFIED against the profile schema",
+     "section representation_census is NOT_SATISFIED against the profile schema",
+     "section resident_resource_model is NOT_SATISFIED against the profile schema",
+     "section regression_fixtures is NOT_SATISFIED against the profile schema",
+     "section capability_workload_design is NOT_SATISFIED against the profile schema",
+     "section transfer_law_tagging is NOT_SATISFIED against the profile schema"
+    ],
+    "model": "qwen3.8-27b-sealed-3.14",
+    "satisfied_sections": [
+     "token_ns_receipt_decomposition",
+     "cold_warm_lifecycle"
+    ],
+    "schema": "hawking.accelerator.qwen27_token_ns_budget.v1",
+    "status": "ASSESSED",
+    "unsatisfied_sections": [
+     "identity",
+     "dispatch_topology",
+     "active_byte_model",
+     "layout_search_space",
+     "candidate_geometry",
+     "representation_census",
+     "resident_resource_model",
+     "regression_fixtures",
+     "capability_workload_design",
+     "transfer_law_tagging"
+    ]
+   },
+   "note": "The live receipt is untracked in the campaign working tree and absent from this worktree's git HEAD. Shape below is reconstructed from recover-before-build plus the git-authoritative byte atlas. Physical actuals and control_observation metrics were not copied."
+  }
+ },
+ "transfer_laws": {
+  "active_byte_model": {
+   "rationale": "Which tensors are active is model-local; packing is backend-family; actual_read_bytes_per_token is machine-local (cache, contention).",
+   "scope": "MODEL_LOCAL",
+   "secondary_scopes": [
+    "BACKEND_FAMILY",
+    "MACHINE_LOCAL"
+   ]
+  },
+  "candidate_geometry": {
+   "rationale": "Geo flags are Metal; which organs they bind to is model-local.",
+   "scope": "BACKEND_FAMILY",
+   "secondary_scopes": [
+    "MODEL_LOCAL"
+   ]
+  },
+  "capability_workload_design": {
+   "rationale": "Prompts and the sealed 30/43 record are this body; axis taxonomy is family-level.",
+   "scope": "MODEL_LOCAL",
+   "secondary_scopes": [
+    "ARCHITECTURE_FAMILY"
+   ]
+  },
+  "cold_warm_lifecycle": {
+   "rationale": "Cold load, warm start, first token vs steady-state are machine-local.",
+   "scope": "MACHINE_LOCAL",
+   "secondary_scopes": [
+    "BACKEND_FAMILY"
+   ]
+  },
+  "dispatch_topology": {
+   "rationale": "Metal dispatch graph is backend-family; the kernel mix is model-local.",
+   "scope": "BACKEND_FAMILY",
+   "secondary_scopes": [
+    "MODEL_LOCAL"
+   ]
+  },
+  "identity": {
+   "rationale": "resident_identity and model_id are this Qwen27 body; family qwen3.8 is architecture-family.",
+   "scope": "MODEL_LOCAL",
+   "secondary_scopes": [
+    "ARCHITECTURE_FAMILY"
+   ]
+  },
+  "layout_search_space": {
+   "rationale": "Threadgroup/tpr/split-K legality is Metal geometry.",
+   "scope": "BACKEND_FAMILY",
+   "secondary_scopes": []
+  },
+  "regression_fixtures": {
+   "rationale": "Geometry oracles are family-level; the Qwen27 MLP selector is model-local.",
+   "scope": "ARCHITECTURE_FAMILY",
+   "secondary_scopes": [
+    "MODEL_LOCAL"
+   ]
+  },
+  "representation_census": {
+   "rationale": "This mix and complete EBPW are this artifact; the packing scheme is Qwen3.8-family.",
+   "scope": "MODEL_LOCAL",
+   "secondary_scopes": [
+    "ARCHITECTURE_FAMILY"
+   ]
+  },
+  "resident_resource_model": {
+   "rationale": "What fits is machine-local; what must stay resident is model-local.",
+   "scope": "MACHINE_LOCAL",
+   "secondary_scopes": [
+    "MODEL_LOCAL"
+   ]
+  },
+  "token_ns_receipt_decomposition": {
+   "rationale": "organ/ledger closure is the token-ns law (Odyssey II seed); which organs fire is Qwen27-local.",
+   "scope": "ARCHITECTURE_FAMILY",
+   "secondary_scopes": [
+    "MODEL_LOCAL"
+   ]
+  },
+  "transfer_law_tagging": {
+   "rationale": "The tagging contract is the Odyssey II input shape. Unevidenced promotion between scopes is refused.",
+   "scope": "ARCHITECTURE_FAMILY",
+   "secondary_scopes": []
+  }
+ },
+ "transfer_scopes": [
+  "MODEL_LOCAL",
+  "ARCHITECTURE_FAMILY",
+  "BACKEND_FAMILY",
+  "MACHINE_LOCAL"
+ ],
+ "version": 1
+}

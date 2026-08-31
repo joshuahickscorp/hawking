@@ -1,0 +1,824 @@
+{
+ "at_least_one_family_untouched": true,
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-30T15:44:29Z",
+  "recorded_by": "tools/future/flash_meta_replan.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "cited_inputs": {
+  "negative_index": {
+   "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "present": true,
+   "schema": "hawking.future.negative_index.v1",
+   "seal_sha256": "a957568be295edb4beb64c979f23c9fa072bb444983c07654394c49c18989c9e",
+   "status": null
+  },
+  "screen": {
+   "path": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+   "present": true,
+   "schema": "hawking.flash.meta_coherence_screen.v1",
+   "seal_sha256": "49833dce3f0768715e02a4e8657b7eb2059cd8d9ac177431603cd5d45b9f3ced",
+   "status": "OFFLINE_META_SURFACE_GATE_FAILED"
+  },
+  "sub1": {
+   "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "present": true,
+   "schema": "hawking.flash.meta_representation.v1",
+   "seal_sha256": "c215fe3964ee677b82ad67ec469e899958f56091fb11c6d953874ddde5781cd5",
+   "status": "PROSPECTIVE_META_ONLY"
+  },
+  "teacher": {
+   "path": "receipts/future/evidence/FLASH_META_TEACHER_L4_REAL256.json",
+   "present": true,
+   "schema": "hawking.flash.meta_teacher_trace.v1",
+   "seal_sha256": "9b76db59ee9bb50af96b1663c943d95587709746d5f2775db334bedea5fb9671",
+   "status": "CAPTURED_SOURCE_MLP_INPUT_NOT_CAPABILITY_PROVEN"
+  }
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "contract": {
+  "fit_holdout_required": true,
+  "max_heldout_relative_fro_error": 0.05,
+  "min_heldout_cosine": 0.999,
+  "must_beat_per_expert_q4": true,
+  "ok": true,
+  "raw_keys": [
+   "fit_holdout_required",
+   "generated_token_capability",
+   "max_heldout_relative_fro_error",
+   "min_heldout_cosine",
+   "must_beat_per_expert_q4",
+   "recurrent_and_kv_state",
+   "router_topk_membership_and_order"
+  ],
+  "reason": "read from screen.coherence_contract; not redefined",
+  "source": "coherence_contract"
+ },
+ "contract_not_redefined_here": {
+  "hits": [],
+  "ok": true,
+  "rule": "coherence contract is read from the screen receipt, never assigned here"
+ },
+ "corpus_comparison": {
+  "corpora": {
+   "1024": {
+    "any_rank_passed": false,
+    "extrapolation": {
+     "best_model": {
+      "decreasing": true,
+      "exponent": -0.061951549599060955,
+      "form": "err = A * rank^B",
+      "limit_as_rank_inf": 0.0,
+      "log_intercept": -0.31791426567024966,
+      "name": "power",
+      "physical_limit_nonnegative": true,
+      "r_squared": 0.9969951465279878
+     },
+     "bpw_model": {
+      "bpw_per_rank": 0.006289808917197453,
+      "n": 5,
+      "note": "diagnostic factor-equivalent bpw cited from the screen; not physical EBPW",
+      "ok": true,
+      "ols": {
+       "intercept": -2.7755575615628914e-17,
+       "n": 5,
+       "r_squared": 1.0,
+       "slope": 0.006289808917197453,
+       "ss_res": 3.0814879110195774e-33
+      }
+     },
+     "diagnostic_bpw_at_rank": 3.721791001986202e+16,
+     "dominated_by_construction": true,
+     "models": [
+      {
+       "decreasing": true,
+       "floor": 0.5743718434291817,
+       "form": "err = a + b/rank",
+       "limit_as_rank_inf": 0.5743718434291817,
+       "name": "floor_inv",
+       "physical_limit_nonnegative": true,
+       "r_squared": 0.874680507756433,
+       "slope": 0.4085950520567393
+      },
+      {
+       "decreasing": true,
+       "floor": 0.5372443178182215,
+       "form": "err = a + b/sqrt(rank)",
+       "limit_as_rank_inf": 0.5372443178182215,
+       "name": "floor_inv_sqrt",
+       "physical_limit_nonnegative": true,
+       "r_squared": 0.9602217823473176,
+       "slope": 0.2729258131209116
+      },
+      {
+       "decreasing": true,
+       "form": "err = a + b ln(rank)",
+       "intercept": 0.7191714626133019,
+       "limit_as_rank_inf": -Infinity,
+       "name": "log_linear",
+       "physical_limit_nonnegative": false,
+       "r_squared": 0.9978652230498131,
+       "slope": -0.03794900147726423,
+       "why_unphysical": "error is driven through zero and below at finite rank"
+      },
+      {
+       "decreasing": true,
+       "exponent": -0.061951549599060955,
+       "form": "err = A * rank^B",
+       "limit_as_rank_inf": 0.0,
+       "log_intercept": -0.31791426567024966,
+       "name": "power",
+       "physical_limit_nonnegative": true,
+       "r_squared": 0.9969951465279878
+      }
+     ],
+     "n_points": 5,
+     "q4_bpw": 0.10143323614929661,
+     "rank_required": 5.917176580372998e+18,
+     "reason": "best admissible model power reaches the contract error at rank 5.917176580372998e+18",
+     "target_heldout_error": 0.05,
+     "uncertainty": "5 measured ranks. Extrapolation beyond the last measured rank is a curve, not a new screen. Dominated-by-construction is a comparison of diagnostic factor-equivalent bpw to the cited Q4 component bpw, not a physical EBPW claim.",
+     "verdict": "EXTRAPOLATED"
+    },
+    "fit_rows": 819,
+    "heldout_cosine_by_rank": {
+     "16": 0.7889320451362857,
+     "32": 0.8076599078874188,
+     "4": 0.7444498406100204,
+     "64": 0.8284366690392401,
+     "8": 0.7704677226824408
+    },
+    "heldout_error_by_rank": {
+     "16": 0.6145600102669622,
+     "32": 0.5897263219606106,
+     "4": 0.6677643943246043,
+     "64": 0.5601605839440013,
+     "8": 0.6375611349897135
+    },
+    "heldout_rows": 205,
+    "per_expert_q4_heldout_relative_fro_error": 0.10143323614929661,
+    "present": true,
+    "source": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL1024.json"
+   },
+   "256": {
+    "any_rank_passed": false,
+    "extrapolation": {
+     "best_model": {
+      "decreasing": true,
+      "floor": 0.34616979031797035,
+      "form": "err = a + b/sqrt(rank)",
+      "limit_as_rank_inf": 0.34616979031797035,
+      "name": "floor_inv_sqrt",
+      "physical_limit_nonnegative": true,
+      "r_squared": 0.9990372635290488,
+      "slope": 0.36220249820597544
+     },
+     "diagnostic_bpw_at_rank": null,
+     "dominated_by_construction": null,
+     "implied_floor": 0.34616979031797035,
+     "models": [
+      {
+       "decreasing": true,
+       "floor": 0.3936188289602272,
+       "form": "err = a + b/rank",
+       "limit_as_rank_inf": 0.3936188289602272,
+       "name": "floor_inv",
+       "physical_limit_nonnegative": true,
+       "r_squared": 0.9743067499384422,
+       "slope": 0.5610712251913477
+      },
+      {
+       "decreasing": true,
+       "floor": 0.34616979031797035,
+       "form": "err = a + b/sqrt(rank)",
+       "limit_as_rank_inf": 0.34616979031797035,
+       "name": "floor_inv_sqrt",
+       "physical_limit_nonnegative": true,
+       "r_squared": 0.9990372635290488,
+       "slope": 0.36220249820597544
+      },
+      {
+       "decreasing": true,
+       "form": "err = a + b ln(rank)",
+       "intercept": 0.5820914241408892,
+       "limit_as_rank_inf": -Infinity,
+       "name": "log_linear",
+       "physical_limit_nonnegative": false,
+       "r_squared": 0.9578030198537986,
+       "slope": -0.04837313921262181,
+       "why_unphysical": "error is driven through zero and below at finite rank"
+      },
+      {
+       "decreasing": true,
+       "exponent": -0.10670011952165873,
+       "form": "err = A * rank^B",
+       "limit_as_rank_inf": 0.0,
+       "log_intercept": -0.512878681758983,
+       "name": "power",
+       "physical_limit_nonnegative": true,
+       "r_squared": 0.9740095213457164
+      }
+     ],
+     "n_points": 5,
+     "rank_required": null,
+     "reason": "best admissible model floor_inv_sqrt (r_squared=0.9990372635290488) has limit 0.34616979031797035 as rank -> inf, which is above the contract held-out error; rank cannot buy the gate on this organ",
+     "target_heldout_error": 0.05,
+     "uncertainty": "5 measured ranks. A 2-parameter floor model can fit them tightly and still be wrong outside the window. The refusal is that the supported curve never reaches the contract, not that a larger capture was run.",
+     "verdict": "REFUSED"
+    },
+    "fit_rows": 204,
+    "heldout_cosine_by_rank": {
+     "16": 0.8995033430429653,
+     "32": 0.9111575272633261,
+     "4": 0.8489876521675802,
+     "64": 0.9205496797081691,
+     "8": 0.8816982273299019
+    },
+    "heldout_error_by_rank": {
+     "16": 0.4369212893244014,
+     "32": 0.4120684182905161,
+     "4": 0.5284149054408503,
+     "64": 0.3906409161459955,
+     "8": 0.4718174903014318
+    },
+    "heldout_rows": 52,
+    "per_expert_q4_heldout_relative_fro_error": 0.10018642118793038,
+    "present": true,
+    "source": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json"
+   }
+  },
+  "every_rank_degraded_with_more_data": true,
+  "heldout_error_delta_by_rank": {
+   "16": 0.177639,
+   "32": 0.177658,
+   "4": 0.139349,
+   "64": 0.16952,
+   "8": 0.165744
+  },
+  "q4_baseline_shift": 0.001247,
+  "still_bounded": "one organ, one surface, five ranks, two corpora. This does not falsify sub-1 in general nor the other eight families.",
+  "verdict": "OVERFIT_ON_THE_SMALLER_CORPUS",
+  "why": "every rank degraded when the fit set quadrupled while the comparator it must beat did not move. A codec whose held-out error grows with more fitting data was fitting the sample, not the function."
+ },
+ "evidence_class": "STATIC_ONLY",
+ "falsification": {
+  "contract": {
+   "fit_holdout_required": true,
+   "max_heldout_relative_fro_error": 0.05,
+   "min_heldout_cosine": 0.999,
+   "must_beat_per_expert_q4": true,
+   "ok": true,
+   "raw_keys": [
+    "fit_holdout_required",
+    "generated_token_capability",
+    "max_heldout_relative_fro_error",
+    "min_heldout_cosine",
+    "must_beat_per_expert_q4",
+    "recurrent_and_kv_state",
+    "router_topk_membership_and_order"
+   ],
+   "reason": "read from screen.coherence_contract; not redefined",
+   "source": "coherence_contract"
+  },
+  "dead": [
+   {
+    "beats_per_expert_q4_on_heldout": [
+     false,
+     false,
+     false,
+     false,
+     false
+    ],
+    "first_surface_failures": [
+     "held-out function error",
+     "held-out function error",
+     "held-out function error",
+     "held-out function error",
+     "held-out function error"
+    ],
+    "ranks": [
+     4,
+     8,
+     16,
+     32,
+     64
+    ],
+    "reopen": "A new measurement of this codec on this organ that meets the screen's own coherence_contract (cosine, held-out error, beat Q4). A lower gate is not a reopen.",
+    "split": "204/52",
+    "what": "shared_input_latent_plus_expert_local_output_readout",
+    "where": "layer_4.routed_experts.gate_up_proj"
+   }
+  ],
+  "gate_stands": true,
+  "not_dead": [
+   "sub-1 meta_bpw as a description budget (still prospective; still not physical EBPW)",
+   "the other eight SUB1 census families (different organs / programs)",
+   "other codecs on the same organ (dictionary, sparse residual, generated-tile that is not this latent+readout)",
+   "other routed-expert tensors (down_proj was not this screen)",
+   "other layers",
+   "router / hidden / routed-output / terminal-logit surfaces named by the screen and not fitted here"
+  ],
+  "promotion_allowed": false,
+  "rank_rows": [
+   {
+    "beats_per_expert_q4_on_heldout": false,
+    "diagnostic_factor_equivalent_bpw": 0.025427350427350427,
+    "first_surface_failure": "held-out function error",
+    "fit_relative_fro_error": 0.5169732278451957,
+    "fit_rows": 204,
+    "heldout_cosine": 0.8489876521675802,
+    "heldout_relative_fro_error": 0.5284149054408503,
+    "heldout_rows": 52,
+    "per_expert_q4_heldout_relative_fro_error": 0.10018642118793038,
+    "rank": 4,
+    "surface_failure_gates": [
+     "held-out function error",
+     "held-out function cosine",
+     "does not beat per-expert Q4"
+    ],
+    "surface_gate_pass": false
+   },
+   {
+    "beats_per_expert_q4_on_heldout": false,
+    "diagnostic_factor_equivalent_bpw": 0.050854700854700854,
+    "first_surface_failure": "held-out function error",
+    "fit_relative_fro_error": 0.45340608108849373,
+    "fit_rows": 204,
+    "heldout_cosine": 0.8816982273299019,
+    "heldout_relative_fro_error": 0.4718174903014318,
+    "heldout_rows": 52,
+    "per_expert_q4_heldout_relative_fro_error": 0.10018642118793038,
+    "rank": 8,
+    "surface_failure_gates": [
+     "held-out function error",
+     "held-out function cosine",
+     "does not beat per-expert Q4"
+    ],
+    "surface_gate_pass": false
+   },
+   {
+    "beats_per_expert_q4_on_heldout": false,
+    "diagnostic_factor_equivalent_bpw": 0.10170940170940171,
+    "first_surface_failure": "held-out function error",
+    "fit_relative_fro_error": 0.39922668294455543,
+    "fit_rows": 204,
+    "heldout_cosine": 0.8995033430429653,
+    "heldout_relative_fro_error": 0.4369212893244014,
+    "heldout_rows": 52,
+    "per_expert_q4_heldout_relative_fro_error": 0.10018642118793038,
+    "rank": 16,
+    "surface_failure_gates": [
+     "held-out function error",
+     "held-out function cosine",
+     "does not beat per-expert Q4"
+    ],
+    "surface_gate_pass": false
+   },
+   {
+    "beats_per_expert_q4_on_heldout": false,
+    "diagnostic_factor_equivalent_bpw": 0.20341880341880342,
+    "first_surface_failure": "held-out function error",
+    "fit_relative_fro_error": 0.33595140469118007,
+    "fit_rows": 204,
+    "heldout_cosine": 0.9111575272633261,
+    "heldout_relative_fro_error": 0.4120684182905161,
+    "heldout_rows": 52,
+    "per_expert_q4_heldout_relative_fro_error": 0.10018642118793038,
+    "rank": 32,
+    "surface_failure_gates": [
+     "held-out function error",
+     "held-out function cosine",
+     "does not beat per-expert Q4"
+    ],
+    "surface_gate_pass": false
+   },
+   {
+    "beats_per_expert_q4_on_heldout": false,
+    "diagnostic_factor_equivalent_bpw": 0.40683760683760684,
+    "first_surface_failure": "held-out function error",
+    "fit_relative_fro_error": 0.25138021481888445,
+    "fit_rows": 204,
+    "heldout_cosine": 0.9205496797081691,
+    "heldout_relative_fro_error": 0.3906409161459955,
+    "heldout_rows": 52,
+    "per_expert_q4_heldout_relative_fro_error": 0.10018642118793038,
+    "rank": 64,
+    "surface_failure_gates": [
+     "held-out function error",
+     "held-out function cosine",
+     "does not beat per-expert Q4"
+    ],
+    "surface_gate_pass": false
+   }
+  ],
+  "rank_span": {
+   "heldout_error_relative_drop": 0.2607307020984043,
+   "note": "drop is arithmetic on the cited held-out errors; it is not a new measurement and it is not a reason to lower the gate",
+   "rank_ratio": 16.0
+  },
+  "reason": "every measured rank fails the screen's own coherence_contract; first_surface_failure is cited from the screen, not re-diagnosed here",
+  "scope": {
+   "fit_rows": 204,
+   "heldout_rows": 52,
+   "kind": "shared_input_latent_plus_expert_local_output_readout",
+   "n_ranks": 5,
+   "organ": "layer_4.routed_experts.gate_up_proj",
+   "ranks": [
+    4,
+    8,
+    16,
+    32,
+    64
+   ],
+   "screen_status": "OFFLINE_META_SURFACE_GATE_FAILED",
+   "teacher_status": "CAPTURED_SOURCE_MLP_INPUT_NOT_CAPABILITY_PROVEN",
+   "teacher_surface": "model.language_model.layers.4.mlp_input"
+  },
+  "verdict": "FALSIFIED_ON_STATED_SCOPE"
+ },
+ "families": {
+  "families": [
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "ngram_embedding",
+    "meta_bpw_target": 0.7,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "frequency-tiered n-gram generator + hot exact islands + residual symbols",
+    "shares_failing_mechanism": false,
+    "source_fraction": 0.2844458389113527,
+    "why": "family 'ngram_embedding' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "linear_attention_hyperconnection",
+    "meta_bpw_target": 2.5,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "protected mixed-precision executable island",
+    "shares_failing_mechanism": false,
+    "source_fraction": 0.013389699504736112,
+    "why": "family 'linear_attention_hyperconnection' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "embedding_lm_head",
+    "meta_bpw_target": 3.5,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "higher-precision vocabulary and terminal-logit island",
+    "shares_failing_mechanism": false,
+    "source_fraction": 0.007124331463023194,
+    "why": "family 'embedding_lm_head' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "full_attention",
+    "meta_bpw_target": 3.0,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "KV-sensitive protected attention island",
+    "shares_failing_mechanism": false,
+    "source_fraction": 0.0037155829583360414,
+    "why": "family 'full_attention' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "mlp_hyperconnection",
+    "meta_bpw_target": 2.5,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "protected HyperConnection coefficient island",
+    "shares_failing_mechanism": false,
+    "source_fraction": 0.003643061617574911,
+    "why": "family 'mlp_hyperconnection' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "shared_expert",
+    "meta_bpw_target": 2.5,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "protected shared-expert island until direct generator parity",
+    "shares_failing_mechanism": false,
+    "source_fraction": 0.0013387236926706112,
+    "why": "family 'shared_expert' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "other",
+    "meta_bpw_target": 2.5,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "protected miscellaneous island",
+    "shares_failing_mechanism": false,
+    "source_fraction": 0.0012719930191692405,
+    "why": "family 'other' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "UNTOUCHED",
+    "family": "norm",
+    "meta_bpw_target": 16.0,
+    "next_action": "leave standing; this screen is not evidence against it",
+    "program": "exact norm island",
+    "shares_failing_mechanism": false,
+    "source_fraction": 1.0453334403987072e-06,
+    "why": "family 'norm' is not the census family that hosts the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   },
+   {
+    "evidence_effect": "INHERITS_AGAINST",
+    "family": "routed_experts",
+    "meta_bpw_target": 0.88,
+    "next_action": "do not spend the next teacher rows on more ranks of this codec on this organ; the gate stands and the curve did not buy it",
+    "program": "expert-local latent code + shared tile decoder + route-margin repair",
+    "shares_failing_mechanism": true,
+    "source_fraction": 0.6850697234996967,
+    "why": "family routed_experts program 'expert-local latent code + shared tile decoder + route-margin repair' is the measured codec 'shared_input_latent_plus_expert_local_output_readout' on 'layer_4.routed_experts.gate_up_proj'"
+   }
+  ],
+  "inherits_against": [
+   "routed_experts"
+  ],
+  "n_families": 9,
+  "ok": true,
+  "rule": "A family that does not host the measured codec is UNTOUCHED by this screen. UNTOUCHED is not a pass of that family; it is the absence of this evidence against it.",
+  "unresolved": [],
+  "untouched": [
+   "ngram_embedding",
+   "linear_attention_hyperconnection",
+   "embedding_lm_head",
+   "full_attention",
+   "mlp_hyperconnection",
+   "shared_expert",
+   "other",
+   "norm"
+  ]
+ },
+ "gaps_closed": [
+  "No sidecar module turned the real-256 L4 failure into a scoped falsification plus a capture re-plan that keeps the gate.",
+  "Rank-vs-error extrapolation that refuses a rank when the supported curve has a floor above the contract, rather than inventing a fantasy rank.",
+  "NS-014 applied to the 204-row / five-rank split instead of assumed thin or assumed enough.",
+  "Nine SUB1 families re-ranked by mechanism sharing, with at least the n-gram family left UNTOUCHED."
+ ],
+ "gate_stands": true,
+ "gpu_authority": false,
+ "negative_findings": [
+  "This sidecar did not re-fit the codec and did not re-read the 256-row f32 state file.",
+  "Per-expert routed-row underdetermination was not the NS-014 predicate and was not applied as a kill.",
+  "down_proj, other layers, and the four named unmeasured surfaces have no function screen in this receipt.",
+  "diagnostic_factor_equivalent_bpw is a factor description, not physical EBPW; domination-by-construction is the same class of comparison.",
+  "orchestration.BINDINGS is outside this lane's WRITE list; the frontier named below is declared, not wired."
+ ],
+ "next_capture": {
+  "do_not": [
+   "lower min_heldout_cosine / max_heldout_relative_fro_error / must_beat_per_expert_q4",
+   "treat the failure as a discovery of a new codec",
+   "spend the next capture on more ranks of the failing latent+readout on this organ"
+  ],
+  "next_gate": "collect broader teacher traces, distill router/hidden/routed-output/terminal-logit surfaces, then build a serializer and direct generated-tile consumer",
+  "ok": true,
+  "reason": "extracted from screen.next_gate",
+  "spend": "the next teacher rows go to surfaces that have never been measured, not to another rank sweep of layer_4.routed_experts.gate_up_proj",
+  "surfaces": [
+   "router",
+   "hidden",
+   "routed-output",
+   "terminal-logit"
+  ]
+ },
+ "purpose": "Re-plan the Flash meta funnel from the real-256 L4 coherence screen without lowering the gate and without treating the failure as a discovery.",
+ "q4_component_bpw": {
+  "ok": true,
+  "reason": "read from SUB1.current_evidence.bounded_routed_q4_component_bpw",
+  "status": "PASSED",
+  "value": 4.25
+ },
+ "rank_extrapolation": {
+  "best_model": {
+   "decreasing": true,
+   "floor": 0.34616979031797035,
+   "form": "err = a + b/sqrt(rank)",
+   "limit_as_rank_inf": 0.34616979031797035,
+   "name": "floor_inv_sqrt",
+   "physical_limit_nonnegative": true,
+   "r_squared": 0.9990372635290488,
+   "slope": 0.36220249820597544
+  },
+  "diagnostic_bpw_at_rank": null,
+  "dominated_by_construction": null,
+  "implied_floor": 0.34616979031797035,
+  "models": [
+   {
+    "decreasing": true,
+    "floor": 0.3936188289602272,
+    "form": "err = a + b/rank",
+    "limit_as_rank_inf": 0.3936188289602272,
+    "name": "floor_inv",
+    "physical_limit_nonnegative": true,
+    "r_squared": 0.9743067499384422,
+    "slope": 0.5610712251913477
+   },
+   {
+    "decreasing": true,
+    "floor": 0.34616979031797035,
+    "form": "err = a + b/sqrt(rank)",
+    "limit_as_rank_inf": 0.34616979031797035,
+    "name": "floor_inv_sqrt",
+    "physical_limit_nonnegative": true,
+    "r_squared": 0.9990372635290488,
+    "slope": 0.36220249820597544
+   },
+   {
+    "decreasing": true,
+    "form": "err = a + b ln(rank)",
+    "intercept": 0.5820914241408892,
+    "limit_as_rank_inf": -Infinity,
+    "name": "log_linear",
+    "physical_limit_nonnegative": false,
+    "r_squared": 0.9578030198537986,
+    "slope": -0.04837313921262181,
+    "why_unphysical": "error is driven through zero and below at finite rank"
+   },
+   {
+    "decreasing": true,
+    "exponent": -0.10670011952165873,
+    "form": "err = A * rank^B",
+    "limit_as_rank_inf": 0.0,
+    "log_intercept": -0.512878681758983,
+    "name": "power",
+    "physical_limit_nonnegative": true,
+    "r_squared": 0.9740095213457164
+   }
+  ],
+  "n_points": 5,
+  "rank_required": null,
+  "reason": "best admissible model floor_inv_sqrt (r_squared=0.9990372635290488) has limit 0.34616979031797035 as rank -> inf, which is above the contract held-out error; rank cannot buy the gate on this organ",
+  "target_heldout_error": 0.05,
+  "uncertainty": "5 measured ranks. A 2-parameter floor model can fit them tightly and still be wrong outside the window. The refusal is that the supported curve never reaches the contract, not that a larger capture was run.",
+  "verdict": "REFUSED"
+ },
+ "recovered_implementation": [
+  {
+   "path": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
+   "role": "the real-256 L4 screen this re-plan cites; not re-run"
+  },
+  {
+   "path": "receipts/future/evidence/FLASH_META_TEACHER_L4_REAL256.json",
+   "role": "256 unique source-BF16 layer-4 mlp_input rows the screen fitted"
+  },
+  {
+   "path": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+   "role": "nine census families, prospective sub-1 budget, Q4 component bpw"
+  },
+  {
+   "path": "tools/flash_meta_coherence_screen.py",
+   "role": "shared-input-latent + expert-local readout fitter; DEFAULT_RANKS; heldout_split % 5"
+  },
+  {
+   "path": "tools/future/meta_funnel.py",
+   "role": "nine-gate funnel + load_receipt (disk then HEAD); gate 3 is held-out numerical"
+  },
+  {
+   "path": "tools/future/flash_schools.py",
+   "role": "ROUTED_EXPERTS school already forbids trivial global sharing; not this codec kill"
+  },
+  {
+   "path": "tools/future/negative_index.py",
+   "role": "NS-014 / NNS-007 underdetermined rank-r fit scar"
+  },
+  {
+   "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "role": "keyed scar store this module consults instead of re-ingesting the corpus"
+  },
+  {
+   "path": "tools/future/ebpw_categories.py",
+   "role": "diagnostic factor bpw is not complete_physical_ebpw; domination is a description comparison"
+  },
+  {
+   "path": "tools/future/meta_ready.py",
+   "role": "already reads the (unsafe 4-row) coherence contract; this module reads the real-256 screen"
+  },
+  {
+   "path": "docs/FLASH_META_REPRESENTATION.md",
+   "role": "frontier registration of the prospective sub-1 budget and the hard admission gates"
+  }
+ ],
+ "resident_callable": {
+  "discoverable": true,
+  "entry_point": "tools.future.flash_meta_replan.build()",
+  "fails_closed": "absent screen/teacher/SUB1 is a recorded refusal; the coherence contract is never defaulted; a poor or floored curve reports no rank; an unrelated family is not marked down",
+  "frontier": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+  "receipt": "receipts/future/FLASH_META_REPLAN.json",
+  "workunit": "one CPU_ANALYSIS unit; cite the real-256 screen, apply NS-014, extrapolate or refuse a rank, re-rank nine SUB1 families; no GPU"
+ },
+ "schema": "hawking.future.flash_meta_replan.v1",
+ "seal_sha256": "a9d90b682b30b8309f7e97da4cf4831491fbf88c8a1f813cc906d68010f68161",
+ "underdetermination": {
+  "claimed_full_dim": false,
+  "index_consulted": true,
+  "index_present": true,
+  "input_width": 2560,
+  "n_fit": 204,
+  "not_applied": [
+   "per-expert routed-row counts (the screen lstsq uses all fit rows for every selected expert)",
+   "a new scar; this is NS-014 applied to this split"
+  ],
+  "predicate": "NS-014 / NNS-007: n_fit >= claimed rank for a rank-r score; n_fit >= dim for a full-dim score; rank not clamped to n_fit",
+  "ranks": [
+   {
+    "claimed_full_dim": false,
+    "criterion": "n_fit >= claimed rank (rank-r)",
+    "input_width": 2560,
+    "n_fit": 204,
+    "rank": 4,
+    "rank_clamped_to_n_fit": false,
+    "thin": false,
+    "trustworthy": true
+   },
+   {
+    "claimed_full_dim": false,
+    "criterion": "n_fit >= claimed rank (rank-r)",
+    "input_width": 2560,
+    "n_fit": 204,
+    "rank": 8,
+    "rank_clamped_to_n_fit": false,
+    "thin": false,
+    "trustworthy": true
+   },
+   {
+    "claimed_full_dim": false,
+    "criterion": "n_fit >= claimed rank (rank-r)",
+    "input_width": 2560,
+    "n_fit": 204,
+    "rank": 16,
+    "rank_clamped_to_n_fit": false,
+    "thin": false,
+    "trustworthy": true
+   },
+   {
+    "claimed_full_dim": false,
+    "criterion": "n_fit >= claimed rank (rank-r)",
+    "input_width": 2560,
+    "n_fit": 204,
+    "rank": 32,
+    "rank_clamped_to_n_fit": false,
+    "thin": false,
+    "trustworthy": true
+   },
+   {
+    "claimed_full_dim": false,
+    "criterion": "n_fit >= claimed rank (rank-r)",
+    "input_width": 2560,
+    "n_fit": 204,
+    "rank": 64,
+    "rank_clamped_to_n_fit": false,
+    "thin": false,
+    "trustworthy": true
+   }
+  ],
+  "reason": "every requested rank satisfies the NS-014 rank-r predicate",
+  "scars_cited": [
+   {
+    "hypothesis_family": "underdetermined_fit_rows_rank_or_rows_dim",
+    "original_id": "underdetermined_fit_rows_rank_or_rows_dim",
+    "refuse_eligible": true,
+    "reopen_condition": "Re-score only when `n_fit \u2265 claimed rank` (full-dim: `n_fit \u2265 dim`), rank not clamped to `n_fit`.",
+    "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#underdetermined_fit_rows_rank_or_rows_dim",
+    "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md"
+   },
+   {
+    "hypothesis_family": "fit_a_rank_r_or_full_dim_codec_on_fewer_captured_rows_than_the_fitted_dimension_then_trust_the_score",
+    "original_id": "NS-014",
+    "refuse_eligible": true,
+    "reopen_condition": "never trust a score from an underdetermined fit. Re-score only when n_fit >= the claimed rank (and, for a full-dim claim, n_fit >= dim), with rank not clamped.",
+    "scar_id": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-014",
+    "source_path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json"
+   },
+   {
+    "hypothesis_family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
+    "original_id": "NNS-007",
+    "refuse_eligible": false,
+    "reopen_condition": "Re-score only when n_fit \u2265 claimed rank (and for a full-dim claim, n_fit \u2265 dim), with rank not clamped to n_fit. Corpus width is a legitimate lever only above a per-expert retention floor.",
+    "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-007",
+    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+   }
+  ],
+  "thin_ranks": [],
+  "trustworthy_ranks": [
+   4,
+   8,
+   16,
+   32,
+   64
+  ],
+  "verdict": "TRUSTWORTHY"
+ },
+ "untouched_families": [
+  "ngram_embedding",
+  "linear_attention_hyperconnection",
+  "embedding_lm_head",
+  "full_attention",
+  "mlp_hyperconnection",
+  "shared_expert",
+  "other",
+  "norm"
+ ],
+ "version": 1
+}
