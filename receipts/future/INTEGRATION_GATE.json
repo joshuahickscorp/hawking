@@ -8,10 +8,30 @@
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "last_check": {
+  "alternatives": [
+   {
+    "consistent_with_claim": true,
+    "consistent_with_observation": true,
+    "hypothetical": "the named flags were measured and have these values"
+   }
+  ],
+  "causality_verdict": "SUPPORTED",
+  "claim_kind": "measured_unmet",
+  "confidence": {
+   "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+   "level": "HIGH",
+   "would_lower": "a demonstration that the observation is consistent with the claim being false",
+   "would_raise": "independent replication of the same probe"
+  },
+  "direct_observation": "pytest.ran=True pytest.green=False returncode=1 why='pytest failed' tail=['=========================== short test summary info ============================', 'FAILED tools/future/test__gate_probe_red2.py::test_red - assert False', '1 failed in 0.04s'] receipts.green=True malformed=[]",
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "green": false,
+  "interpretation": "RED: tests.why='pytest failed' receipts.green=True",
   "paths": [
    "tools/future/_gate_probe_red2.py"
   ],
+  "probe_kind": "measured_flags",
+  "probe_performed": "subprocess.run ['/opt/homebrew/opt/python@3.14/bin/python3.14', '-m', 'pytest', 'tools/future/test__gate_probe_red2.py', '-q', '-p', 'no:cacheprovider'] cwd=REPO timeout=1200s; json.loads each .json path in ['tools/future/_gate_probe_red2.py']",
   "receipts": {
    "green": true,
    "malformed": []
@@ -23,7 +43,7 @@
    "tail": [
     "=========================== short test summary info ============================",
     "FAILED tools/future/test__gate_probe_red2.py::test_red - assert False",
-    "1 failed in 0.03s"
+    "1 failed in 0.04s"
    ],
    "tests": [
     "tools/future/test__gate_probe_red2.py"

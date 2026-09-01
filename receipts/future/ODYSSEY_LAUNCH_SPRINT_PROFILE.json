@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:48:13Z",
+  "recorded_at": "2026-09-01T05:57:46Z",
   "recorded_by": "tools/future/sprint_profile.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -122,7 +122,7 @@
    "derivation": "measured",
    "evidence": [
     {
-     "commit": "d6eb11c79f401d2d45080cfb3d4032296851250a",
+     "commit": "078e81788a36e8ab7d2cd9dd787be1957f91e1f4",
      "derivation": "measured",
      "duration_s": 3600,
      "elapsed_is_not_a_pass": true,
@@ -131,7 +131,7 @@
      "judge": "tools.future.autonomy_trial.verify('1h', timeline)",
      "measurement": "timeline.elapsed_s judged FAIL by autonomy_trial.verify; not a commit subject",
      "n_events": 614,
-     "path_taken": "git:d6eb11c79f401d2d45080cfb3d4032296851250a:receipts/future/AUTONOMY_TIMELINE_1h.json",
+     "path_taken": "git:078e81788a36e8ab7d2cd9dd787be1957f91e1f4:receipts/future/AUTONOMY_TIMELINE_1h.json",
      "reason": "unmet: ingest_completed_result, refill_work (duration elapsed is not a pass)",
      "source": "receipts/future/AUTONOMY_TIMELINE_1h.json",
      "unmet": [
@@ -254,10 +254,10 @@
  ],
  "recovery": {
   "failed_1h": {
-   "commit": "d6eb11c79f401d2d45080cfb3d4032296851250a",
+   "commit": "078e81788a36e8ab7d2cd9dd787be1957f91e1f4",
    "elapsed_s": 3629,
    "judge": "tools.future.autonomy_trial.verify('1h', timeline)",
-   "path_taken": "git:d6eb11c79f401d2d45080cfb3d4032296851250a:receipts/future/AUTONOMY_TIMELINE_1h.json",
+   "path_taken": "git:078e81788a36e8ab7d2cd9dd787be1957f91e1f4:receipts/future/AUTONOMY_TIMELINE_1h.json",
    "reason": "unmet: ingest_completed_result, refill_work (duration elapsed is not a pass)",
    "unmet": [
     "ingest_completed_result",
@@ -268,7 +268,7 @@
   "invalidated_from": "tools.future.autonomy_run.INVALIDATED_RUNS + disk:/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_RUN.json",
   "live_1h": {
    "commit": null,
-   "elapsed_s": 3600,
+   "elapsed_s": 3629,
    "judge": "tools.future.autonomy_trial.verify('1h', timeline)",
    "path_taken": "disk:/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_TIMELINE_1h.json",
    "reason": "all 10 required conditions met on timeline evidence",
@@ -277,7 +277,7 @@
   },
   "n_invalidated": 1,
   "n_scars": 4,
-  "n_snapshots": 3,
+  "n_snapshots": 5,
   "scars_from": "tools.future.autonomy_scars.scars()",
   "snapshots_from": "git log + load_optional receipts/future/AUTONOMY_TIMELINE_1h.json",
   "timeline_rel": "receipts/future/AUTONOMY_TIMELINE_1h.json"
@@ -290,7 +290,7 @@
   "workunit": "one CPU_ANALYSIS unit; recover 1h timeline history, invoke autonomy_trial.verify, subtract invalidated timestamps, cite scars"
  },
  "schema": "hawking.future.sprint_profile.v1",
- "seal_sha256": "8aa31e50b4107d9f6f0acfa52b169529f404275adfbabf454b0e529ac92cd046",
+ "seal_sha256": "0961cf2e115fc751219f1bced5c258135e9da8c047e85918c05657ccdda60518",
  "sprint": {
   "elapsed_derivation": "unknown",
   "elapsed_s": null,

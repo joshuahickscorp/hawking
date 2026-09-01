@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T17:28:13Z",
+  "recorded_at": "2026-09-01T03:52:13Z",
   "recorded_by": "tools/future/terminal_speed_artifact.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -92,62 +92,62 @@
  },
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "dominant_remaining_costs": {
-  "host_gap_ms": 0.6953,
-  "measured_on": "widen_f4, release profile, ModelLake stopped, lane lock held",
+  "host_gap_ms": 0.956,
+  "measured_on": "sealed default, protected lease, supervisor stopped first, lane lock held",
   "reading": "MLP is still the prey: gate_up plus down is 15.647 ms of a 26.594 ms GPU token. DeltaNet is second at 5.597. Nothing else clears 8%.",
   "rows": [
    {
     "dispatches": 128,
-    "gpu_ms": 9.9154,
+    "gpu_ms": 7.1706,
     "organ": "mlp_gate_up",
-    "share_of_gpu": 0.3728
-   },
-   {
-    "dispatches": 128,
-    "gpu_ms": 5.7319,
-    "organ": "mlp_down",
-    "share_of_gpu": 0.2155
+    "share_of_gpu": 0.3267
    },
    {
     "dispatches": 288,
-    "gpu_ms": 5.5971,
+    "gpu_ms": 5.2064,
     "organ": "deltanet",
-    "share_of_gpu": 0.2105
+    "share_of_gpu": 0.2372
+   },
+   {
+    "dispatches": 128,
+    "gpu_ms": 4.5854,
+    "organ": "mlp_down",
+    "share_of_gpu": 0.2089
    },
    {
     "dispatches": 64,
-    "gpu_ms": 2.0596,
+    "gpu_ms": 1.8808,
     "organ": "q4_remainder",
-    "share_of_gpu": 0.0774
+    "share_of_gpu": 0.0857
    },
    {
     "dispatches": 96,
-    "gpu_ms": 2.0356,
+    "gpu_ms": 1.7661,
     "organ": "gqa_attention",
-    "share_of_gpu": 0.0765
+    "share_of_gpu": 0.0805
    },
    {
     "dispatches": 2,
-    "gpu_ms": 1.0204,
+    "gpu_ms": 0.8912,
     "organ": "lm_head",
-    "share_of_gpu": 0.0384
+    "share_of_gpu": 0.0406
    },
    {
     "dispatches": 1,
-    "gpu_ms": 0.334,
+    "gpu_ms": 0.3341,
     "organ": "sampling",
-    "share_of_gpu": 0.0126
+    "share_of_gpu": 0.0152
    },
    {
     "dispatches": 1,
-    "gpu_ms": 0.0073,
+    "gpu_ms": 0.0088,
     "organ": "embedding",
-    "share_of_gpu": 0.0003
+    "share_of_gpu": 0.0004
    }
   ],
-  "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
-  "token_gpu_ms": 26.5943,
-  "token_wall_ms": 27.2896
+  "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json",
+  "token_gpu_ms": 21.9464,
+  "token_wall_ms": 22.9024
  },
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
@@ -258,7 +258,7 @@
  ],
  "recorded_by": "tools/future/terminal_speed_artifact.py",
  "schema": "hawking.future.terminal_speed_artifact.v1",
- "seal_sha256": "b15bee7e908524d6160b23168072722b0bc295879cb34f5d69cbd60b0a950834",
+ "seal_sha256": "1b50f956db8009e8f413c48af29626c9974b736e1e7a6cb4d29f433c5e3e75b9",
  "target": {
   "current_body_ms": 27.2896,
   "measured_tps": 34.43,

@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.flash.complete_token_measurement.v1",
+  "status": "MEASURED_SINGLE_TERMINAL_TOKEN",
+  "model": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "source_chain": "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json",
+  "terminal_receipt": "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/terminal.json",
+  "profile_receipt": "receipts/headless/FLASH_HOT_CHAIN_PROFILE_DEVICE_L0_L47_COMPLETE_V1.json",
+  "representation": "source_bf16_exact_mixed_compact_linear_and_dense_full_attention_expert_banks",
+  "execution": {
+    "process_boundary": "single_os_process",
+    "device_resident": true,
+    "deep_verification": true,
+    "host_activation_roundtrips": 0,
+    "source_bytes_read": 9111506688,
+    "forward_wall_ns": 3236115154291,
+    "forward_gpu_ns": 2282470974,
+    "terminal_wall_ns": 11529852000,
+    "terminal_gpu_ns": 7335666,
+    "complete_forward_plus_terminal_wall_ns": 3247645006291,
+    "complete_forward_plus_terminal_gpu_ns": 2289806640,
+    "timing_unit": "integer nanoseconds"
+  },
+  "terminal_token": {
+    "status": "PHYSICALLY_RECEIVED",
+    "token_id": 17,
+    "sampling": "sample_argmax_f32",
+    "accepted_generation_tokens": null,
+    "classification": "single terminal argmax probe; not multi-token accepted generation"
+  },
+  "flash_tps": null,
+  "accepted_tps": null,
+  "complete_system_ebpw": null,
+  "promotion_allowed": false,
+  "claim_boundary": "Measured complete 48-layer source-BF16 forward plus one native terminal token receipt. This does not establish accepted multi-token generation TPS, EBPW, capability parity, or HCLI residency.",
+  "next": "Run a stateful multi-token decode with accepted-token accounting before populating TPS or EBPW.",
+  "seal_sha256": "8c7cf9b333e4b2247c3ae385ec4c9e3a2df5850759e7c188d77e2203c511d594",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

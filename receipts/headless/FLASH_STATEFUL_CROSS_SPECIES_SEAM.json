@@ -1,0 +1,54 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "attention": {
+    "distinct_kv_slots": true,
+    "first_step_query_parity": {
+      "cosine": 0.9999999999999669,
+      "finite": true,
+      "max_abs_error": 1.430511474609375e-6,
+      "rmse": 2.7689673389752766e-7,
+      "within_tolerance": true
+    },
+    "layer": 3,
+    "receipt": "receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_ATTN.json",
+    "status": "PASSED_STATEFUL_KV_ORGAN"
+  },
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787951262908",
+    "recorded_by": "flash_stateful_cross_species_seam",
+    "rule": "S032 §3 -- seam timing is diagnostic; quiescence unknown",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "This proves the first cross-species stateful seam: a two-step layers-0..2 DeltaNet prefix feeds a two-position full-attention KV organ. It does not prove the full-attention MLP, device-only cross-module handoff, 48-layer state integration, accepted generation, TPS, EBPW, or residency.",
+  "complete_system_ebpw": null,
+  "execution": {
+    "device_inter_layer_handoff": "host diagnostic copy between the independently exposed module seams",
+    "process_boundary": "one native process",
+    "stateful_attention_kv": true,
+    "stateful_linear_recurrence": true
+  },
+  "linear_prefix": {
+    "layer2_state_sha256": [
+      "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "4ce3e5369d50fc08be627f17cb9b35c32d4792b5a722af9cf343b5744eacf7d7"
+    ],
+    "layer_range": [
+      0,
+      2
+    ],
+    "state_count": 2
+  },
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Move the full-attention MLP and KV arena into the same 48-layer session, then remove the diagnostic host seam.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_cross_species_seam.v1",
+  "seal_sha256": "e6929966ca4ab967ecddd1f796f5f92e8d431bb2f07262c654d4d49e27153f8a",
+  "status": "PASSED_CROSS_SPECIES_STATEFUL_SEAM",
+  "token_ids": [
+    248044,
+    248044
+  ]
+}

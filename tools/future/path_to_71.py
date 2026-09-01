@@ -30,20 +30,49 @@ RECEIPT = REPO / "receipts" / "future" / "PATH_TO_71.json"
 # over 48 decode steps. 28.722 was the pre-widen_f4 anchor and is now history.
 # S025 §14 and §15: every verified speedup becomes the new parent, and widen_f4
 # stays. A rebase is not editing one constant - every row recomputes from here.
+# G131/G132 REBASED IT AGAIN, and changed the UNIT. The three levers - widen_f4,
+# affine2 bitcast, q4 bitcast - are the SEALED DEFAULT now, measured in a
+# protected window at 21.9464 ms GPU / 45.566 TPS with the levers UNSET. And the
+# ladder is denominated in GPU ms: every rung below is a GPU-time lever, while
+# 27.2896 was a WALL figure. G125 showed the host gap spans 4.7x across windows
+# while GPU moves under 0.3%, so subtracting GPU levers from a wall number was
+# comparing two different quantities.
+ABSOLUTE_REL = "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+
+# ALREADY INSIDE THE BASELINE. G126 promoted these three to sealed defaults and
+# G131 measured the result at 21.9464 ms, so their saving is spent - subtracting
+# them again would count it twice. This is the same double-count
+# LEVER_PROMOTION_GATE refuses when it checks that the bitcast lease control was
+# widen_f4: once a lever is in the parent, it is not a rung.
+PROMOTED_INTO_BASELINE = {
+    "deltanet_widen_f4": "G126: HAWKING_QWEN38_DN_STATE=widen_f4 is the default",
+    "ba_delta_fusion": "G126: folded by the widen_f4 kernel on the sealed graph",
+    "mlp_affine2_bitcast": "G126: HAWKING_AFFINE2_GEO=bitcast is the default",
+    "mlp_q4_bitcast": "G126: HAWKING_Q4_UNPACK=bitcast is the default",
+}
+FALLBACK_REL = "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
+
+
 def _current_token_ms() -> float:
-    rel = "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
-    path = REPO / rel
+    p = REPO / ABSOLUTE_REL
+    if p.is_file():
+        return float(json.loads(p.read_text())["measured"]["gpu_ms_per_token"])
+    path = REPO / FALLBACK_REL
     if not path.is_file():
         raise RuntimeError(
-            f"{rel} is not on disk; the ladder refuses to compute against a "
-            "remembered baseline. Run tools/future/resident_reprofile.py --build."
+            f"neither {ABSOLUTE_REL} nor {FALLBACK_REL} is on disk; the ladder "
+            "refuses to compute against a remembered baseline. Run "
+            "tools/future/sealed_default_absolute.py --build."
         )
     return float(json.loads(path.read_text())["decode_wall_ms_per_token"])
 
 
 HISTORICAL_TOKEN_MS = 28.722   # pre-widen_f4, kept so the move is auditable
+PREVIOUS_TOKEN_MS = 27.2896    # post-widen_f4 WALL, superseded by G131
 TOKEN_MS = _current_token_ms()
-HOST_MS = 0.989
+# Measured in the same protected window as TOKEN_MS rather than carried from a
+# window three rebases ago.
+HOST_MS = 0.956
 ACTIVE_GB = 9.878901136
 MLP_GB = 5.347795776
 MLP_MS = 15.541
@@ -272,6 +301,10 @@ def compose(ids: list[str]) -> dict[str, Any]:
     skipped: list[str] = []
     for cid in ids:
         c = COMPONENTS[cid]
+        if cid in PROMOTED_INTO_BASELINE:
+            skipped.append(f"{cid}: ALREADY IN THE BASELINE - "
+                           f"{PROMOTED_INTO_BASELINE[cid]}")
+            continue
         if c["evidence"] == "REFUTED":
             skipped.append(f"{cid}: REFUTED")
             continue
@@ -382,8 +415,16 @@ def record() -> Path:
 
 
 if __name__ == "__main__":
+    # AN UNKNOWN FLAG IS A REFUSAL, NOT A NO-OP. This CLI took --record and
+    # silently ignored everything else, so `--build` - the verb every other
+    # module in tools/future uses - printed the new table, exited 0, and wrote
+    # NOTHING. The receipt stayed stale while the terminal showed fresh numbers.
+    # A tool that reports success without doing the work is the exact failure
+    # this campaign keeps finding in its own checks.
+    from _common import require_known_flags
+    require_known_flags(["--build", "--record"])
     d = build()
-    if "--record" in sys.argv:
+    if "--record" in sys.argv or "--build" in sys.argv:
         print(f"wrote {record()}")
     for r in d["paths"]:
         print(f"  {r['path']}  {r['tps']:6.2f} TPS  {r['token_ms']:7.3f} ms  "

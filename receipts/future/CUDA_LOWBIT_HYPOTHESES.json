@@ -146,7 +146,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:17:55Z",
+  "recorded_at": "2026-09-01T05:22:42Z",
   "recorded_by": "tools/future/cuda_lowbit_hypotheses.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -168,11 +168,11 @@
   "ACCELERATOR_ARCHITECTURE_ATLAS.json": {
    "live_headless": {
     "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-    "resolved_via": "unresolved"
+    "resolved_via": "disk"
    },
    "pinned": {
     "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-    "resolved_via": "git"
+    "resolved_via": "disk"
    },
    "source": "pinned_snapshot",
    "used": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json"
@@ -180,11 +180,11 @@
   "ACCELERATOR_REPATRIATION_QUEUE.json": {
    "live_headless": {
     "path": "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
-    "resolved_via": "unresolved"
+    "resolved_via": "disk"
    },
    "pinned": {
     "path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
-    "resolved_via": "git"
+    "resolved_via": "disk"
    },
    "source": "pinned_snapshot",
    "used": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json"
@@ -1135,7 +1135,7 @@
   "Odyssey II scar live for family q5_0_simd_shuffle: n_refuse_eligible=1 sample=workspace/docs/guides/dead_levers.md#q5_0_simd_shuffle",
   "Odyssey II scar live for family raw_weight_pq_vq: n_refuse_eligible=3 sample=tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#raw_weight_pq_vq_at_one_bit",
   "Odyssey II scar live for family residual_codebook: n_refuse_eligible=20 sample=workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-1706ad3b92f294234bee4723169edf40",
-  "CUDA_CAPABILITY_CENSUS.json resolution=git; cited by physical_primitives as Metal-via-MLX / transport ABSENT"
+  "CUDA_CAPABILITY_CENSUS.json resolution=disk; cited by physical_primitives as Metal-via-MLX / transport ABSENT"
  ],
  "primitive_contracts_recovered": {
   "AsyncPrefetch": {
@@ -1251,37 +1251,37 @@
   },
   {
    "path": "receipts/future/PHYSICAL_PRIMITIVES.json",
-   "resolved_via": "git",
+   "resolved_via": "disk",
    "what": "CUDA lowering seam UNAVAILABLE on this Apple host; local CUDA claims forbidden"
   },
   {
    "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-   "resolved_via": "git",
+   "resolved_via": "disk",
    "what": "Architecture Atlas: CUDA and CUTLASS already represented; this module maps the holes"
   },
   {
    "path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
-   "resolved_via": "git",
+   "resolved_via": "disk",
    "what": "Repatriation queue vocabulary this module emits into (status HYPOTHESIS, not READY)"
   },
   {
    "path": "tools/accelerator/c2m.py",
-   "resolved_via": "git",
+   "resolved_via": "disk",
    "what": "C2M-T0 CUDA-to-Metal frontend; refuses __syncwarp, __shfl, __shared__, loops"
   },
   {
    "path": "tools/accelerator/c2m_idiom.py",
-   "resolved_via": "git",
+   "resolved_via": "disk",
    "what": "C2M-T2 idiom recognition (tiled GEMM, block reduce); not a C compiler"
   },
   {
    "path": "tools/accelerator/cuda_runtime.py",
-   "resolved_via": "git",
+   "resolved_via": "disk",
    "what": "C2M-T1 host runtime on Metal; refuses cudaGraphLaunch, streams, cudaMemcpyAsync"
   },
   {
    "path": "tools/accelerator/gemm.py",
-   "resolved_via": "git",
+   "resolved_via": "disk",
    "what": "Tiled Metal GEMM exercising shared memory and barriers (Codex-owned; read-only)"
   },
   {
@@ -2139,7 +2139,7 @@
   }
  ],
  "schema": "hawking.future.cuda_lowbit.v1",
- "seal_sha256": "256bfa907fe7b2541fcfe0118eef33ac15a3947029756ca1edc22d7e70b636a3",
+ "seal_sha256": "c13434846afb348ebb299016fc244e174258104c80f311f64ea7c442451f9560",
  "version": 1,
  "vocabulary": {
   "cuda_is": "textbook now, physical oracle later; source school, not an execution backend on this Apple host",

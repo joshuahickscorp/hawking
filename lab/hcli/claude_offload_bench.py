@@ -48,7 +48,7 @@ G003_GAP = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G003_GAP_AFTER_ALL_ID
 G013_V1 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G013_FS_EFFICIENCY_CLOSURE.json"
 G013_V2 = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "G013_FS_EFFICIENCY_CLOSURE_V2.json"
 ASCENT_STATE = REPO_ROOT / "receipts" / "ascent-2026-08-16" / "ASCENT_STATE.json"
-SUPERWAVE_STATE = REPO_ROOT / "SUPERWAVE_STATE.md"
+SUPERWAVE_STATE = REPO_ROOT / "docs" / "archive" / "SUPERWAVE_STATE.md"
 GOAL_MD = REPO_ROOT / "GOAL.md"
 MERGE_GUARD = REPO_ROOT / "tools" / "merge_guard.py"
 TOKEN_NS_GROK_REPORT = (
@@ -628,7 +628,7 @@ def _t_superwave_names_g013_v2(tmp: Path) -> tuple[bool, str, str | None]:
         return False, f"SKIP missing {SUPERWAVE_STATE}", None
     result, skip, produced = _act_or_skip(
         tmp,
-        "Read SUPERWAVE_STATE.md (limit 80 lines) and report which receipt it "
+        "Read docs/archive/SUPERWAVE_STATE.md (limit 80 lines) and report which receipt it "
         "says supersedes G013_FS_EFFICIENCY_CLOSURE.json.",
         known_tools=["read"],
     )
@@ -643,8 +643,8 @@ def _t_superwave_names_g013_v2(tmp: Path) -> tuple[bool, str, str | None]:
         return False, f"model read the wrong path: {path!r}", produced
     blob = _joined_tool_output(result, "read")
     if "G013_FS_EFFICIENCY_CLOSURE_V2.json" not in blob:
-        return False, "SUPERWAVE_STATE.md did not name G013 v2", produced
-    return True, "SUPERWAVE_STATE names G013_FS_EFFICIENCY_CLOSURE_V2.json", produced
+        return False, "docs/archive/SUPERWAVE_STATE.md did not name G013 v2", produced
+    return True, "docs/archive/SUPERWAVE_STATE.md names G013_FS_EFFICIENCY_CLOSURE_V2.json", produced
 
 
 def _t_classify_storage_vs_active_bpw(tmp: Path) -> tuple[bool, str, str | None]:
@@ -971,8 +971,8 @@ TASKS: list[OffloadTask] = [
     ),
     OffloadTask(
         "superwave_names_g013_v2",
-        "Read SUPERWAVE_STATE.md and name the receipt that superseded G013 v1",
-        "SUPERWAVE_STATE.md (live obligation ledger; GOAL.md is not in this repo)",
+        "Read docs/archive/SUPERWAVE_STATE.md and name the receipt that superseded G013 v1",
+        "docs/archive/SUPERWAVE_STATE.md (live obligation ledger; GOAL.md is not in this repo)",
         True,
         _t_superwave_names_g013_v2,
         PRODUCER_MODEL,

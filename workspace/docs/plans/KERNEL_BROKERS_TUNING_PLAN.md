@@ -130,6 +130,20 @@ Costs are **current authority / receipt numbers**, not targets.
 | Tuning levers | Split-K + SIMDgroup v4 candidate (already in `matmul.metal`); packed FP8 loads; dual-issue with act_quant fusion; keep concurrent group with FP4 wave where deps allow. |
 | Parity gate | NumericParity V2.1 op-local bounds vs FP64; storage exact on QAT inputs. |
 
+The reusable P6 graph now exposes that existing source-order candidate through
+`HAWKING_DSV4F_P6_FP8_SIMD=1`; `=0` retains the serial authority. The opt-in
+path uses one 256-threadgroup per output-row wave and remains a candidate until
+NumericParity/coherence and protected latency evidence qualify the shared W1/W3
+and W2 shapes. This is a reusable Terra/Flash-family law candidate, not a
+measured speed result.
+
+P6 also uses the shared `HAWKING_FLASH_PIPELINE_CACHE_REUSE` switch. When it
+is enabled, warmed pipeline handles survive the four adjacent P6 command
+buffers in a reusable executor; `=0` restores a fresh per-batch cache for the
+matched control. Kernel selection, dispatch topology, buffer identity, and
+arithmetic are unchanged, so this is host lookup/lock elimination only and
+still requires a protected complete-token A/B before any promotion.
+
 ### 5. mHC control path — **P1 (Terra/Frankenstein; not Qwen)**
 
 | Field | Value |

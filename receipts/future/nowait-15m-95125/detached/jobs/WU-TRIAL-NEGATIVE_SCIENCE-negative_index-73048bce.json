@@ -1,0 +1,62 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.NEGATIVE_SCIENCE.negative_index.receipt.json",
+    "negative_index.py"
+  ],
+  "attempts": 0,
+  "cancel_requested": false,
+  "crash_reason": null,
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.NEGATIVE_SCIENCE.negative_index.receipt.json",
+  "finished_at": 1788140246.805119,
+  "identity_status": "dead",
+  "job_id": "WU-TRIAL-NEGATIVE_SCIENCE-negative_index-73048bce",
+  "launch_refused": false,
+  "log_paths": {
+    "stderr": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/detached/logs/WU-TRIAL-NEGATIVE_SCIENCE-negative_index-73048bce.stderr.log",
+    "stdout": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/detached/logs/WU-TRIAL-NEGATIVE_SCIENCE-negative_index-73048bce.stdout.log"
+  },
+  "pgid": 95172,
+  "pid": 95172,
+  "resource_class": "STATIC_ANALYSIS",
+  "resource_lease": {
+    "held": false,
+    "kind": null,
+    "reason": "this lane never takes a GPU or bench lease; flock of the protected lock would be a seizure",
+    "refused": true
+  },
+  "result_location": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.NEGATIVE_SCIENCE.negative_index.receipt.json",
+  "retry_policy": {
+    "max_attempts": 3,
+    "never_resume_mid_execution": true,
+    "never_retry_on": [
+      "cancelled",
+      "completed-with-receipt",
+      "completed-without-receipt",
+      "timed_out",
+      "unknown"
+    ],
+    "policy": "rerun",
+    "retry_on": [
+      "crashed"
+    ],
+    "source": "hcli/workunit.py RESUME_POLICY + DEFAULT_RETRY_BUDGET"
+  },
+  "returncode": 0,
+  "running_at": 1788140246.6540759,
+  "schema": "hawking.future.detached.supervision.v1",
+  "start_token": "1788140246.645897",
+  "started_at": 1788140246.597364,
+  "state": "TERMINAL",
+  "supervisor_pid": 95170,
+  "supervisor_start_token": "1788140246.597905",
+  "terminal": "completed-with-receipt",
+  "timeout_s": 24.36357808113098,
+  "workunit_id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+  "workunit_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/detached/units/WU-TRIAL-NEGATIVE_SCIENCE-negative_index-73048bce.workunit.json",
+  "workunit_seal_sha256": "987c6d3ad39ec0175ddf86e7279e3ee4f6d26658335cb47e12d02c14a07ae343"
+}

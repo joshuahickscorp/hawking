@@ -129,8 +129,8 @@
     "cosine": 0.9999999999999728,
     "count": 128,
     "finite": true,
-    "max_abs_error": 2.384185791015625e-7,
-    "rmse": 7.272206036371456e-8,
+    "max_abs_error": 2.384185791015625e-07,
+    "rmse": 7.272206036371456e-08,
     "tolerance": 0.0020000000949949026,
     "within_tolerance": true
   },
@@ -163,5 +163,14 @@
     ],
     "tensor_name": "model.language_model.layers.0.mlp.gate.weight"
   },
-  "status": "PASSED"
+  "status": "PASSED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
 }

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T01:29:56Z",
+  "recorded_at": "2026-09-01T06:00:22Z",
   "recorded_by": "tools/future/mlp_byte_census.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -6349,6 +6349,17 @@
      "verdict": "NEGATIVE"
     },
     {
+     "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "hypothesis_family": "kronecker",
+     "organ": "mlp",
+     "queried_organ": "mlp",
+     "queried_slug": "kronecker",
+     "reopen_condition": "unrecorded",
+     "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#KRONECKER",
+     "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
      "claim_refuted": "Qwen3.8 dense low-rank failure (legacy, retired patient)",
      "hypothesis_family": "global_dense_lowrank",
      "organ": "unrecorded",
@@ -6847,7 +6858,7 @@
   "sealed_profile": "hcli/hawking-native.sealed-3.14.json"
  },
  "schema": "hawking.future.mlp_byte_census.v1",
- "seal_sha256": "1d219e742e8f729c036774b26ba6eebe4a362959c0b2414e9a0959f072dd4773",
+ "seal_sha256": "07b18f00cdfd1a0d5bd9c8ea9e0357b40956b5cd9fbbe0d6dc656649d2bcbc37",
  "version": 1,
  "what_this_does_not_prove": [
   "physical EBPW of a different packing",

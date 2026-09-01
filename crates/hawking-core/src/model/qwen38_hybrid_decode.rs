@@ -360,12 +360,14 @@ impl Qwen38DeltaNetStateKernel {
                 "tg32" | "coalesce" | "coalesce_tg32" => Self::CoalesceTg32,
                 _ => Self::Baseline,
             },
+            // G126: PROMOTED. widen_f4 is the sealed default, not a fast-profile
+            // opt-in. It is the CONTROL arm of the protected bitcast lease
+            // (580 dispatches, token-identical), so the sealed graph and the
+            // measured graph are the same graph. `fast` no longer selects it
+            // because it is already on.
             Err(_) => {
-                if fast {
-                    Self::WidenF4
-                } else {
-                    Self::Baseline
-                }
+                let _ = fast;
+                Self::WidenF4
             }
         }
     }
@@ -448,6 +450,49 @@ pub const QWEN38_Q4_PAIR_CONCAT_KERNEL: &str =
     "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128";
 pub const QWEN38_Q4_QKV_GEO_KERNEL: &str =
     "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128";
+
+/// bitcast siblings of the three uniform-q4 matvecs the resident dispatches.
+/// Same binds, same geometry; the nibble is unpacked straight into an f32
+/// mantissa so neither the int-to-float convert nor the -8 zero point runs.
+/// MEASURED BIT-IDENTICAL on a real qkvz projection at 1.1444x
+/// (receipts/future/Q4_BITCAST_AB.json). Default is OFF; opt in with
+/// HAWKING_Q4_UNPACK=bitcast.
+pub const QWEN38_Q4_MATVEC_BITCAST: &str =
+    "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast";
+pub const QWEN38_Q4_QKV_GEO_BITCAST: &str =
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast";
+pub const QWEN38_Q4_PAIR_CONCAT_BITCAST: &str =
+    "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast";
+
+/// Whether the q4 bitcast unpack is selected. Read once per call rather than
+/// cached, matching how HAWKING_AFFINE2_GEO is read: a lever that cannot be
+/// turned off inside one process is a lever that cannot be A/B'd.
+/// G126: PROMOTED. Bitcast is the sealed default; the env var now turns it OFF
+/// rather than on. An unset var must return the MEASURED arm, or the sealed
+/// default reports the old number under a new label.
+pub fn qwen38_q4_bitcast_on() -> bool {
+    match std::env::var("HAWKING_Q4_UNPACK").as_deref() {
+        Ok("bitcast") | Ok("mantissa") => true,
+        Ok(_) => false,
+        Err(_) => true,
+    }
+}
+
+/// Production name, or its bitcast sibling when the lever is on. Any q4 matvec
+/// name that has no bitcast sibling is returned unchanged rather than having
+/// "_bitcast" appended, because naming a kernel that does not exist binds a
+/// pipeline that fails at launch - the defect SplitK4Vec still carries.
+pub fn qwen38_q4_kernel(name: &'static str) -> &'static str {
+    if !qwen38_q4_bitcast_on() {
+        return name;
+    }
+    match name {
+        QWEN38_Q4_MATVEC_KERNEL => QWEN38_Q4_MATVEC_BITCAST,
+        QWEN38_Q4_QKV_GEO_KERNEL => QWEN38_Q4_QKV_GEO_BITCAST,
+        QWEN38_Q4_PAIR_CONCAT_KERNEL => QWEN38_Q4_PAIR_CONCAT_BITCAST,
+        other => other,
+    }
+}
 pub const QWEN38_AFFINE_GATE_UP_KERNEL: &str =
     "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128";
 pub const QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL: &str =
@@ -506,6 +551,17 @@ pub const QWEN38_AFFINE_GATE_UP_FOLD_ADDQX: &str =
     "qwen_affine_q2_group64_matvec_gate_up_geo_tpr64_tg128_fold_addqx";
 pub const QWEN38_AFFINE_GATE_UP_SWIGLU_FOLD_ADDQX: &str =
     "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_fold_addqx";
+/// bitcast sibling of production geo_tpr64. Same occupancy and binds; the
+/// 2-bit code is unpacked straight into an f32 mantissa so no int-to-float
+/// convert runs, and the affine is refolded per group. The op-class ablation
+/// put that convert at 44% of this kernel's arithmetic
+/// (receipts/future/OP_CLASS_ABLATION.json). Default production stays Tpr64;
+/// opt-in via HAWKING_AFFINE2_GEO=bitcast. Reversible: unset the lever.
+pub const QWEN38_AFFINE_Q2_BITCAST: &str =
+    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast";
+pub const QWEN38_AFFINE_GATE_UP_SWIGLU_BITCAST: &str =
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast";
+
 pub const QWEN38_AFFINE_GATE_UP_BIASPREP: &str =
     "qwen_affine_q2_group64_matvec_gate_up_biasprep_tpr64_tg128";
 pub const QWEN38_AFFINE_GATE_UP_SWIGLU_BIASPREP: &str =
@@ -541,6 +597,8 @@ pub enum Affine2Geo {
     /// fold_addqx unpack on the production tpr64 map. Same occupancy.
     /// Default stays Tpr64. Empirically bit-identical on sealed-3.14 MLP.
     FoldAddqx,
+    /// bitcast unpack on the production tpr64 map. Same occupancy.
+    Bitcast,
     /// N030: deferred group-64 bias via RMSNorm-produced x-sums. Same tpr64
     /// occupancy. Gate_up_swiglu only; single GEMVs stay tpr64.
     BiasPrep,
@@ -565,6 +623,7 @@ impl Affine2Geo {
             "splitk4_vec" | "splitk_vec" | "splitk4_vector" => Self::SplitK4Vec,
             "accfuse" | "acc_fuse" => Self::AccFuse,
             "fold_addqx" | "addqx" => Self::FoldAddqx,
+            "bitcast" | "mantissa" => Self::Bitcast,
             "biasprep" | "xsum" | "bias_prep" => Self::BiasPrep,
             "biasprep_drop" | "dropbias" | "drop_bias" => Self::BiasPrepDrop,
             _ => Self::Tpr64,
@@ -574,12 +633,12 @@ impl Affine2Geo {
     fn from_env_with_fast(fast: bool) -> Self {
         match std::env::var("HAWKING_AFFINE2_GEO") {
             Ok(v) => Self::from_value(&v),
+            // G126: PROMOTED. The fast profile used to select SplitK4, which was
+            // never the measured arm. Bitcast is what the protected lease timed
+            // at 22.0100 ms GPU, token-identical, 0 fallbacks.
             Err(_) => {
-                if fast {
-                    Self::SplitK4
-                } else {
-                    Self::Tpr64
-                }
+                let _ = fast;
+                Self::Bitcast
             }
         }
     }
@@ -597,6 +656,7 @@ impl Affine2Geo {
             Self::SplitK4Vec => "splitk4_vec",
             Self::AccFuse => "accfuse",
             Self::FoldAddqx => "fold_addqx",
+            Self::Bitcast => "bitcast",
             Self::BiasPrep => "biasprep",
             Self::BiasPrepDrop => "biasprep_drop",
         }
@@ -1370,6 +1430,11 @@ fn qwen38_affine_q2_launch_with_recon_fuse(
             let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
             Some((QWEN38_AFFINE_Q2_FOLD_ADDQX, (grid, 1, 1), (tg, 1, 1)))
         }
+        Affine2Geo::Bitcast => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            Some((QWEN38_AFFINE_Q2_BITCAST, (grid, 1, 1), (tg, 1, 1)))
+        }
         Affine2Geo::BiasPrep | Affine2Geo::BiasPrepDrop => {
             // mlp_down and other single GEMVs stay on tpr64. BiasPrep is
             // a fused gate_up_swiglu organ cut (N031 owns down).
@@ -1475,6 +1540,19 @@ fn qwen38_affine_gate_up_launch(
             };
             (name, (grid, 1, 1), (tg, 1, 1))
         }
+        Affine2Geo::Bitcast => {
+            let tg = 128u32;
+            let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
+            // Only the swiglu-fused form is written, because that is the one the
+            // resident dispatches. The unfused form falls back to production
+            // rather than naming a kernel that does not exist.
+            let name = if with_swiglu {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_BITCAST
+            } else {
+                QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL
+            };
+            (name, (grid, 1, 1), (tg, 1, 1))
+        }
         Affine2Geo::BiasPrep => {
             let tg = 128u32;
             let grid = rows.div_ceil(2).saturating_mul(tg).max(tg);
@@ -1563,7 +1641,7 @@ pub fn qwen38_uniform_q4_geo_tpr64_launch(
         return None;
     }
     let name = match group_size {
-        64 => QWEN38_Q4_MATVEC_KERNEL,
+        64 => qwen38_q4_kernel(QWEN38_Q4_MATVEC_KERNEL),
         128 => QWEN38_Q4_GROUP128_MATVEC_KERNEL,
         _ => return None,
     };
@@ -3265,7 +3343,15 @@ mod device {
             input: &PinnedBuffer,
             output: &PinnedBuffer,
         ) -> Result<()> {
-            self.encode_q4_matvec_kernel(tcb, name, input, output, self.matvec_kernel.as_str())
+            // The geo enum's as_str is a const fn, so the bitcast swap happens
+            // here at the dispatch rather than inside it.
+            self.encode_q4_matvec_kernel(
+                tcb,
+                name,
+                input,
+                output,
+                qwen38_q4_kernel(self.matvec_kernel.as_str()),
+            )
         }
 
         fn encode_named_matvec(
@@ -3292,7 +3378,7 @@ mod device {
                         weight,
                         input,
                         output,
-                        self.matvec_kernel.as_str(),
+                        qwen38_q4_kernel(self.matvec_kernel.as_str()),
                     );
                 }
             } else if let Some(weight) = self.weights.q4.get(name) {
@@ -3302,7 +3388,7 @@ mod device {
                     weight,
                     input,
                     output,
-                    self.matvec_kernel.as_str(),
+                    qwen38_q4_kernel(self.matvec_kernel.as_str()),
                 );
             }
             Err(mixed_error(format!(
@@ -4073,7 +4159,7 @@ mod device {
             let gpr = (a.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
             let total = a_rows.saturating_add(b_rows);
             let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
-            tcb.dispatch_threads(QWEN38_Q4_PAIR_CONCAT_KERNEL, grid, tg, |enc| {
+            tcb.dispatch_threads(qwen38_q4_kernel(QWEN38_Q4_PAIR_CONCAT_KERNEL), grid, tg, |enc| {
                 enc.set_buffer(0, Some(&a.codes), 0);
                 enc.set_buffer(1, Some(&a.scales), 0);
                 enc.set_buffer(2, Some(&b.codes), 0);
@@ -4116,7 +4202,7 @@ mod device {
             let gpr = (q.cols / UNIFORM_Q4_GROUP_SIZE) as u32;
             let total = q_rows.saturating_add(k_rows).saturating_add(v_rows);
             let (grid, tg) = Qwen38MatvecKernel::GeoTpr64Tg128.launch(total);
-            tcb.dispatch_threads(QWEN38_Q4_QKV_GEO_KERNEL, grid, tg, |enc| {
+            tcb.dispatch_threads(qwen38_q4_kernel(QWEN38_Q4_QKV_GEO_KERNEL), grid, tg, |enc| {
                 enc.set_buffer(0, Some(&q.codes), 0);
                 enc.set_buffer(1, Some(&q.scales), 0);
                 enc.set_buffer(2, Some(&k.codes), 0);
@@ -7990,8 +8076,11 @@ mod mlp_fusion_env_tests {
         assert_eq!(qwen38_fuse_add_rmsnorm_from_env(), (true, false));
         assert_eq!(qwen38_fuse_ba_delta_from_env(), (true, false));
         assert_eq!(Qwen38DeltaNetStateKernel::from_env(), Qwen38DeltaNetStateKernel::WidenF4);
-        assert_eq!(Affine2Geo::from_env(), Affine2Geo::SplitK4);
-        assert_eq!(qwen38_q2f_geo_from_env(), Affine2Geo::SplitK4);
+        // G126 PROMOTED: the fast profile used to select SplitK4, which no
+        // protected lease ever timed. Bitcast is the measured arm and is now the
+        // default everywhere, so fast composes with it instead of overriding it.
+        assert_eq!(Affine2Geo::from_env(), Affine2Geo::Bitcast);
+        assert_eq!(qwen38_q2f_geo_from_env(), Affine2Geo::Bitcast);
         assert_eq!(Qwen38MatvecKernel::from_env(), Qwen38MatvecKernel::GeoTpr64Tg128);
         assert!(qwen38_serial_token_encoder_enabled());
         assert!(qwen38_fuse_attention_gate_enabled());
@@ -8094,9 +8183,12 @@ mod dn_state_kernel_tests {
         const K: &str = "HAWKING_QWEN38_DN_STATE";
         let restore = std::env::var(K).ok();
         std::env::remove_var(K);
+        // G126 PROMOTED: unset is the MEASURED arm. If this ever reads Baseline
+        // again the sealed graph has silently diverged from the graph the
+        // protected lease timed, and every downstream absolute is stale.
         assert_eq!(
             Qwen38DeltaNetStateKernel::from_env(),
-            Qwen38DeltaNetStateKernel::Baseline
+            Qwen38DeltaNetStateKernel::WidenF4
         );
         std::env::set_var(K, "widen_f4");
         assert_eq!(
@@ -8589,7 +8681,10 @@ mod mixed_catalog_contract_tests {
         // HQ30UQ4 supported set is exactly {64, 128}. An unsupported group
         // size still refuses — a gate that stops refusing is not a fixed gate.
         let hq64 = qwen38_uniform_q4_geo_tpr64_launch(64, 248320, 5120).expect("hq64");
-        assert_eq!(hq64.0, QWEN38_Q4_MATVEC_KERNEL);
+        // The bind under test is the FAMILY, not the unpack arm: G126 flipped
+        // the q4 default to bitcast, and a bare const here would be asserting
+        // the ambient default rather than the catalog contract.
+        assert_eq!(hq64.0, qwen38_q4_kernel(QWEN38_Q4_MATVEC_KERNEL));
         assert_eq!(hq64.1, (248320u32.div_ceil(2) * 128, 1, 1));
         assert_eq!(hq64.2, (128, 1, 1));
         let hq128 = qwen38_uniform_q4_geo_tpr64_launch(128, 248320, 5120).expect("hq128");
@@ -8739,6 +8834,43 @@ mod mixed_catalog_contract_tests {
             qwen38_affine_gate_up_launch(Affine2Geo::FoldAddqx, false, 17408).0,
             QWEN38_AFFINE_GATE_UP_FOLD_ADDQX
         );
+        // bitcast: the convert-free unpack. Selected only when asked for, and
+        // the unfused gate_up form falls back to production because that kernel
+        // was deliberately not written - the resident never dispatches it.
+        assert_eq!(
+            Affine2Geo::from_value("bitcast"),
+            Affine2Geo::Bitcast
+        );
+        assert_eq!(Affine2Geo::Bitcast.as_str(), "bitcast");
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::Bitcast, 64, 17408, 5120).map(|l| l.0),
+            Some(QWEN38_AFFINE_Q2_BITCAST)
+        );
+        assert_eq!(
+            qwen38_affine_q2_launch(Affine2Geo::Bitcast, 32, 17408, 5120).map(|l| l.0),
+            Some(QWEN38_AFFINE_Q2_BITCAST)
+        );
+        assert_eq!(
+            qwen38_affine_gate_up_launch(Affine2Geo::Bitcast, true, 17408).0,
+            QWEN38_AFFINE_GATE_UP_SWIGLU_BITCAST
+        );
+        assert_eq!(
+            qwen38_affine_gate_up_launch(Affine2Geo::Bitcast, false, 17408).0,
+            QWEN38_AFFINE_GATE_UP_SWIGLU_KERNEL,
+            "the unfused bitcast kernel does not exist; naming it would bind a \
+             pipeline that fails to compile at launch"
+        );
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
+            "kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast("
+        ));
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
+            "kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast("
+        ));
+        // The refold is only correct if the mantissa step is 0.5 per code.
+        // A 0.25 step compiles, runs 1.2x, and returns garbage.
+        assert!(crate::metal::SHADER_Q80_MIXED_DECODE
+            .contains("w = (2*scale)*f + (bias - 4*scale)"));
+
         assert!(crate::metal::SHADER_Q80_MIXED_DECODE.contains(
             "kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_fold_addqx("
         ));
@@ -9237,7 +9369,7 @@ mod mixed_catalog_contract_tests {
         assert_eq!(
             qwen38_uniform_q4_geo_tpr64_launch(64, 248320, 5120)
                 .map(|(name, _, _)| name),
-            Some(QWEN38_Q4_MATVEC_KERNEL)
+            Some(qwen38_q4_kernel(QWEN38_Q4_MATVEC_KERNEL))
         );
     }
 
@@ -9369,7 +9501,7 @@ mod mixed_catalog_contract_tests {
         let x = ramp_x(COLS);
         let (name, grid, tg) =
             qwen38_uniform_q4_geo_tpr64_launch(64, ROWS as u32, COLS as u32).expect("g64 bind");
-        assert_eq!(name, QWEN38_Q4_MATVEC_KERNEL);
+        assert_eq!(name, qwen38_q4_kernel(QWEN38_Q4_MATVEC_KERNEL));
         let geo = dispatch_hq30uq4_geo(
             &context,
             name,
@@ -9546,7 +9678,7 @@ mod mixed_catalog_contract_tests {
         let x = ramp_x(cols);
         let (name, grid, tg) =
             qwen38_uniform_q4_geo_tpr64_launch(64, rows_n as u32, cols as u32).expect("g0 bind");
-        assert_eq!(name, QWEN38_Q4_MATVEC_KERNEL);
+        assert_eq!(name, qwen38_q4_kernel(QWEN38_Q4_MATVEC_KERNEL));
         let geo = dispatch_hq30uq4_geo(
             &context,
             name,

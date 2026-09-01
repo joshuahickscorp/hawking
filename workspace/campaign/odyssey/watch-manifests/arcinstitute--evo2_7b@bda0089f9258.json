@@ -1,0 +1,19 @@
+{
+  "expected": 13766624059,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "evo2_7b.pt"
+  ],
+  "mode": "all",
+  "repo": "arcinstitute/evo2_7b",
+  "resolved_sha": "bda0089f92582d5baabf0f22d9fc85f3588f6b58",
+  "revision": "bda0089f92582d5baabf0f22d9fc85f3588f6b58",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 1253,
+    "config.json": 87,
+    "evo2_7b.pt": 13766621200
+  }
+}

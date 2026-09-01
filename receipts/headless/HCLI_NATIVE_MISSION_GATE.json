@@ -1,4 +1,12 @@
 {
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "fact_hash_present": true,
     "mission_completed": true,
@@ -11,6 +19,13 @@
     "unit_completed": true,
     "verifier_passed": true
   },
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
   "deterministic_fact": {
     "bytes": 22,
     "content": "native-mission-marker\n",
@@ -18,7 +33,10 @@
     "sha256": "7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7",
     "source": "AgentOS.invoke_tool(fs.read)"
   },
+  "direct_observation": "checks={fact_hash_present=True, mission_completed=True, model_not_acceptance_authority=True, native_cognition_called=True, receipt_exists=True, result_verdict_accept=True, typed_read_ok=True, typed_write_ok=True, unit_completed=True, verifier_passed=True}; unmet=[]; verifier.outcome_ok={'acceptance_source': 'workunit_verifier', 'command': 'test -f /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-native-mission-ruml6bd_/verified-marker.txt && shasum -a 256 /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-native-mission-ruml6bd_/verified-marker.txt | grep -q 7805381a7ae1ba1f6d9897d290198f8c272d13ce909c0dbdef801c0f846b6ae7', 'exit_code': 0, 'ok': True, 'output': ''}; acceptance_source='workunit_verifier'; native_call_count=1; envelope.verdict='ACCEPT'; error=None",
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "finished_at": 1787793065.858028,
+  "interpretation": "typed tools, native cognition call, verifier, and result envelope all held",
   "mission": {
     "goal": "Use native cognition to report the already-read marker; the deterministic verifier must decide acceptance.",
     "id": "13587e19-1a12-467e-ab09-6a4aeb837bbb",
@@ -507,6 +525,8 @@
       }
     }
   },
+  "probe_kind": "measured_flags",
+  "probe_performed": "one live native mission: AgentOS.invoke_tool filesystem.write + fs.read, WorkUnit with shasum -a 256 verifier, AgentOS.start_mission/run, acceptance from persisted WorkUnit.verification not model prose",
   "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
   "qualification": "LIVE_NATIVE_TOOL_VERIFIER_RECEIPT",
   "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_NATIVE_MISSION_GATE.json",

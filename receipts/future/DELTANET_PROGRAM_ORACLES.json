@@ -1,0 +1,2421 @@
+{
+ "answers": {
+  "any_blocked": false,
+  "any_permits_investigation": false,
+  "closable_as_oracle_negative": true,
+  "verdicts": {
+   "conditional_recurrence": "ORACLE_NEGATIVE",
+   "generated_coefficients": "ORACLE_NEGATIVE",
+   "learned_recurrence": "ORACLE_NEGATIVE"
+  }
+ },
+ "bar": {
+  "capability": "UNMEASURED",
+  "opportunity_bound_kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+  "rates_used": {
+   "activation": 2.906132,
+   "broadcast_aux": 0.0,
+   "weight_codes": 0.547282
+  },
+  "residual_gap_ms_cited": 1.813,
+  "residual_source": "receipts/future/DELTANET_STATE_MACHINE_ECONOMICS.json",
+  "transition_relative_l2": 0.01
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T05:23:37Z",
+  "recorded_by": "tools/future/deltanet_program_oracles.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Milliseconds are CITED: catalog / state bytes billed at the MEASURED per-stream rates from ECONOMICS_CALIBRATION (weight_codes 0.547282 ms/GB, broadcast_aux 0.000, activation 2.906132), never the organ average. Recurrent state S is resident ACTIVATION. This is an OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS, not a measured speedup. Capability is UNMEASURED for every family. Coefficients are the same seeded STATIC map of real residual-stream X the multi-step judge used; that map is not W_qkvz and the trained q/k/v trajectory is UNMEASURED. Held-out is by prompt_id (code:14, code:15). A train figure cannot be reported as held-out. A missing corpus raises rather than synthesising X (NNS-001). An absent family is a refuse, not a pass.",
+ "corpus_error": null,
+ "evidence_class": "STATIC_ONLY",
+ "families": {
+  "conditional_recurrence": {
+   "capability": "UNMEASURED",
+   "family": "conditional_recurrence",
+   "fit_on_train_prompt_ids": [
+    "code:04",
+    "code:00",
+    "code:01",
+    "code:02"
+   ],
+   "operating_points": [
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 0,
+       "generator": 7938048,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 0,
+       "state": 0,
+       "total": 7939968
+      },
+      "bytes_per_rule": 1984512,
+      "bytes_removed": {
+       "catalog_weights": 2151632640,
+       "other": 0,
+       "state": 0,
+       "total": 2151632640
+      },
+      "n_regimes": 4,
+      "net_bytes": 2143692672,
+      "router_bytes": 0,
+      "router_cited_ms": 0.0
+     },
+     "clears_transition_bar": false,
+     "n_regimes": 4,
+     "one_step_state_relative_l2_max": 1.071330150373463,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 7939968,
+        "weight_codes": 7939968
+       },
+       "net_removed": 2143692672,
+       "removed": {
+        "activation": 0,
+        "total": 2151632640,
+        "weight_codes": 2151632640
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0043,
+       "weight_codes": 0.0043
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1775,
+       "weight_codes": 1.1775
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1732,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 4,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 1.0669076038271919,
+       "one_step_state_relative_l2_mean": 0.3249578629126421,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.1875933729686678,
+         "state_relative_l2": 1.0669076038271919
+        },
+        "16": {
+         "output_h_relative_l2": 0.9079097432154767,
+         "state_relative_l2": 0.8800978727882303
+        },
+        "256": {
+         "output_h_relative_l2": 0.8643213788318324,
+         "state_relative_l2": 0.7502271851142014
+        },
+        "526": {
+         "output_h_relative_l2": 0.8323536798329119,
+         "state_relative_l2": 0.7670466007712219
+        },
+        "64": {
+         "output_h_relative_l2": 0.746220640629275,
+         "state_relative_l2": 0.8072923745598805
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 4,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 1.071330150373463,
+       "one_step_state_relative_l2_mean": 0.3221023329545526,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.2196909736268524,
+         "state_relative_l2": 1.071330150373463
+        },
+        "16": {
+         "output_h_relative_l2": 1.041409156657153,
+         "state_relative_l2": 0.8853039682883556
+        },
+        "256": {
+         "output_h_relative_l2": 0.663096571961501,
+         "state_relative_l2": 0.7203453096429104
+        },
+        "496": {
+         "output_h_relative_l2": 0.7530144000736054,
+         "state_relative_l2": 0.7105410022091248
+        },
+        "64": {
+         "output_h_relative_l2": 0.8095359112313911,
+         "state_relative_l2": 0.7756460900923389
+        }
+       }
+      }
+     ]
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 0,
+       "generator": 15876096,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 0,
+       "state": 0,
+       "total": 15878016
+      },
+      "bytes_per_rule": 1984512,
+      "bytes_removed": {
+       "catalog_weights": 2151632640,
+       "other": 0,
+       "state": 0,
+       "total": 2151632640
+      },
+      "n_regimes": 8,
+      "net_bytes": 2135754624,
+      "router_bytes": 0,
+      "router_cited_ms": 0.0
+     },
+     "clears_transition_bar": false,
+     "n_regimes": 8,
+     "one_step_state_relative_l2_max": 1.0704604944829101,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 15878016,
+        "weight_codes": 15878016
+       },
+       "net_removed": 2135754624,
+       "removed": {
+        "activation": 0,
+        "total": 2151632640,
+        "weight_codes": 2151632640
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0087,
+       "weight_codes": 0.0087
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1775,
+       "weight_codes": 1.1775
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1689,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 8,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 1.0665730436551342,
+       "one_step_state_relative_l2_mean": 0.3205381315151089,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.1624593317909253,
+         "state_relative_l2": 1.0665730436551342
+        },
+        "16": {
+         "output_h_relative_l2": 0.8283730019243518,
+         "state_relative_l2": 0.8465447760494978
+        },
+        "256": {
+         "output_h_relative_l2": 0.8164291237219147,
+         "state_relative_l2": 0.7167846123543444
+        },
+        "526": {
+         "output_h_relative_l2": 0.8252612476496823,
+         "state_relative_l2": 0.7602785589489056
+        },
+        "64": {
+         "output_h_relative_l2": 0.69359415322671,
+         "state_relative_l2": 0.7425151284921042
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 8,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 1.0704604944829101,
+       "one_step_state_relative_l2_mean": 0.31960406061568924,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.2976073627643716,
+         "state_relative_l2": 1.0704604944829101
+        },
+        "16": {
+         "output_h_relative_l2": 1.0488254986136825,
+         "state_relative_l2": 0.8776141542352377
+        },
+        "256": {
+         "output_h_relative_l2": 0.6036322188958148,
+         "state_relative_l2": 0.6655004700429973
+        },
+        "496": {
+         "output_h_relative_l2": 0.7748495852750453,
+         "state_relative_l2": 0.717260496306179
+        },
+        "64": {
+         "output_h_relative_l2": 0.78677377809413,
+         "state_relative_l2": 0.7824845560272968
+        }
+       }
+      }
+     ]
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 0,
+       "generator": 31752192,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 0,
+       "state": 0,
+       "total": 31754112
+      },
+      "bytes_per_rule": 1984512,
+      "bytes_removed": {
+       "catalog_weights": 2151632640,
+       "other": 0,
+       "state": 0,
+       "total": 2151632640
+      },
+      "n_regimes": 16,
+      "net_bytes": 2119878528,
+      "router_bytes": 0,
+      "router_cited_ms": 0.0
+     },
+     "clears_transition_bar": false,
+     "n_regimes": 16,
+     "one_step_state_relative_l2_max": 1.0786741056188838,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 31754112,
+        "weight_codes": 31754112
+       },
+       "net_removed": 2119878528,
+       "removed": {
+        "activation": 0,
+        "total": 2151632640,
+        "weight_codes": 2151632640
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0174,
+       "weight_codes": 0.0174
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1775,
+       "weight_codes": 1.1775
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1602,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 16,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 1.0675179288400494,
+       "one_step_state_relative_l2_mean": 0.31408603835764287,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.1586994071684935,
+         "state_relative_l2": 1.0675179288400494
+        },
+        "16": {
+         "output_h_relative_l2": 0.7896964834487028,
+         "state_relative_l2": 0.8304660014084526
+        },
+        "256": {
+         "output_h_relative_l2": 0.8090855443491844,
+         "state_relative_l2": 0.6837069111807115
+        },
+        "526": {
+         "output_h_relative_l2": 0.8434057050196824,
+         "state_relative_l2": 0.7150971734730684
+        },
+        "64": {
+         "output_h_relative_l2": 0.6662690121332706,
+         "state_relative_l2": 0.7228501128355918
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 16,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 1.0786741056188838,
+       "one_step_state_relative_l2_mean": 0.31151870955553496,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.2241351508874956,
+         "state_relative_l2": 1.0786741056188838
+        },
+        "16": {
+         "output_h_relative_l2": 1.0316438528279634,
+         "state_relative_l2": 0.8851538971982496
+        },
+        "256": {
+         "output_h_relative_l2": 0.6023753454750537,
+         "state_relative_l2": 0.6418143108560828
+        },
+        "496": {
+         "output_h_relative_l2": 0.7438494534102545,
+         "state_relative_l2": 0.6975733431846218
+        },
+        "64": {
+         "output_h_relative_l2": 0.7611493836795518,
+         "state_relative_l2": 0.7589221681890654
+        }
+       }
+      }
+     ]
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 0,
+       "generator": 63504384,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 0,
+       "state": 0,
+       "total": 63506304
+      },
+      "bytes_per_rule": 1984512,
+      "bytes_removed": {
+       "catalog_weights": 2151632640,
+       "other": 0,
+       "state": 0,
+       "total": 2151632640
+      },
+      "n_regimes": 32,
+      "net_bytes": 2088126336,
+      "router_bytes": 0,
+      "router_cited_ms": 0.0
+     },
+     "clears_transition_bar": false,
+     "n_regimes": 32,
+     "one_step_state_relative_l2_max": 1.0859090804601812,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 63506304,
+        "weight_codes": 63506304
+       },
+       "net_removed": 2088126336,
+       "removed": {
+        "activation": 0,
+        "total": 2151632640,
+        "weight_codes": 2151632640
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0348,
+       "weight_codes": 0.0348
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1775,
+       "weight_codes": 1.1775
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1428,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 32,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 1.0859090804601812,
+       "one_step_state_relative_l2_mean": 0.30437053038377393,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.2072075927219201,
+         "state_relative_l2": 1.0859090804601812
+        },
+        "16": {
+         "output_h_relative_l2": 0.6683457125476785,
+         "state_relative_l2": 0.7336648583695032
+        },
+        "256": {
+         "output_h_relative_l2": 0.7496230955152108,
+         "state_relative_l2": 0.6315452672999786
+        },
+        "526": {
+         "output_h_relative_l2": 0.8222888787622671,
+         "state_relative_l2": 0.6737034557989572
+        },
+        "64": {
+         "output_h_relative_l2": 0.5541426864887631,
+         "state_relative_l2": 0.6059272061505354
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 32,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 1.082681799760943,
+       "one_step_state_relative_l2_mean": 0.3019400927181238,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.312846750000119,
+         "state_relative_l2": 1.082681799760943
+        },
+        "16": {
+         "output_h_relative_l2": 0.8040617235239802,
+         "state_relative_l2": 0.7324386445664508
+        },
+        "256": {
+         "output_h_relative_l2": 0.5445069599525286,
+         "state_relative_l2": 0.6179183601795155
+        },
+        "496": {
+         "output_h_relative_l2": 0.6588701197036878,
+         "state_relative_l2": 0.6121735004307927
+        },
+        "64": {
+         "output_h_relative_l2": 0.7079857893272453,
+         "state_relative_l2": 0.6857803315781961
+        }
+       }
+      }
+     ]
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 0,
+       "generator": 127008768,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 0,
+       "state": 0,
+       "total": 127010688
+      },
+      "bytes_per_rule": 1984512,
+      "bytes_removed": {
+       "catalog_weights": 2151632640,
+       "other": 0,
+       "state": 0,
+       "total": 2151632640
+      },
+      "n_regimes": 64,
+      "net_bytes": 2024621952,
+      "router_bytes": 0,
+      "router_cited_ms": 0.0
+     },
+     "clears_transition_bar": false,
+     "n_regimes": 64,
+     "one_step_state_relative_l2_max": 1.0916169139690137,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 127010688,
+        "weight_codes": 127010688
+       },
+       "net_removed": 2024621952,
+       "removed": {
+        "activation": 0,
+        "total": 2151632640,
+        "weight_codes": 2151632640
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0695,
+       "weight_codes": 0.0695
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1775,
+       "weight_codes": 1.1775
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.108,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 64,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 1.0916169139690137,
+       "one_step_state_relative_l2_mean": 0.28856234185744345,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.2496893977371215,
+         "state_relative_l2": 1.0916169139690137
+        },
+        "16": {
+         "output_h_relative_l2": 0.6374252680206752,
+         "state_relative_l2": 0.6631681808174127
+        },
+        "256": {
+         "output_h_relative_l2": 0.730708398287051,
+         "state_relative_l2": 0.6054927404862616
+        },
+        "526": {
+         "output_h_relative_l2": 0.7720853431288399,
+         "state_relative_l2": 0.6030142846622103
+        },
+        "64": {
+         "output_h_relative_l2": 0.4992863121542484,
+         "state_relative_l2": 0.5583116745077403
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 64,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 1.0574007571872168,
+       "one_step_state_relative_l2_mean": 0.28519087707660423,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.3004286532497769,
+         "state_relative_l2": 1.0574007571872168
+        },
+        "16": {
+         "output_h_relative_l2": 0.712175729417345,
+         "state_relative_l2": 0.6642766219133673
+        },
+        "256": {
+         "output_h_relative_l2": 0.5615722156152657,
+         "state_relative_l2": 0.6208750660404514
+        },
+        "496": {
+         "output_h_relative_l2": 0.52088183688068,
+         "state_relative_l2": 0.5090119848889422
+        },
+        "64": {
+         "output_h_relative_l2": 0.5640731851083169,
+         "state_relative_l2": 0.5172172657908871
+        }
+       }
+      }
+     ]
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 0,
+       "generator": 254017536,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 0,
+       "state": 0,
+       "total": 254019456
+      },
+      "bytes_per_rule": 1984512,
+      "bytes_removed": {
+       "catalog_weights": 2151632640,
+       "other": 0,
+       "state": 0,
+       "total": 2151632640
+      },
+      "n_regimes": 128,
+      "net_bytes": 1897613184,
+      "router_bytes": 0,
+      "router_cited_ms": 0.0
+     },
+     "clears_transition_bar": false,
+     "n_regimes": 128,
+     "one_step_state_relative_l2_max": 0.6503915793112971,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 254019456,
+        "weight_codes": 254019456
+       },
+       "net_removed": 1897613184,
+       "removed": {
+        "activation": 0,
+        "total": 2151632640,
+        "weight_codes": 2151632640
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.139,
+       "weight_codes": 0.139
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1775,
+       "weight_codes": 1.1775
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.0385,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 128,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.6503915793112971,
+       "one_step_state_relative_l2_mean": 0.2541763401841917,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "16": {
+         "output_h_relative_l2": 0.5769153306409118,
+         "state_relative_l2": 0.5909636017748677
+        },
+        "256": {
+         "output_h_relative_l2": 0.6455968392457244,
+         "state_relative_l2": 0.5526184474183954
+        },
+        "526": {
+         "output_h_relative_l2": 0.6828440653981708,
+         "state_relative_l2": 0.5617031436432225
+        },
+        "64": {
+         "output_h_relative_l2": 0.4635523616837352,
+         "state_relative_l2": 0.5244219742467895
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_regimes_used": 128,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.5837516419505582,
+       "one_step_state_relative_l2_mean": 0.24983122150482118,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "16": {
+         "output_h_relative_l2": 0.5519744246374655,
+         "state_relative_l2": 0.5236864112011598
+        },
+        "256": {
+         "output_h_relative_l2": 0.4636742564605617,
+         "state_relative_l2": 0.519338901968481
+        },
+        "496": {
+         "output_h_relative_l2": 0.5558278654715386,
+         "state_relative_l2": 0.5302708288989473
+        },
+        "64": {
+         "output_h_relative_l2": 0.5429050302825646,
+         "state_relative_l2": 0.5155076538961487
+        }
+       }
+      }
+     ]
+    }
+   ],
+   "oracle_bound": {
+    "bytes": {
+     "added": {
+      "activation": 0,
+      "total": 254019456,
+      "weight_codes": 254019456
+     },
+     "net_removed": 1897613184,
+     "removed": {
+      "activation": 0,
+      "total": 2151632640,
+      "weight_codes": 2151632640
+     }
+    },
+    "capability": "UNMEASURED",
+    "cited_ms_added": {
+     "activation": 0.0,
+     "total": 0.139,
+     "weight_codes": 0.139
+    },
+    "cited_ms_removed": {
+     "activation": 0.0,
+     "total": 1.1775,
+     "weight_codes": 1.1775
+    },
+    "clears_residual_gap": false,
+    "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+    "ms_are_cited_not_measured": true,
+    "not_a_speedup": true,
+    "opportunity_bound_ms": 1.0385,
+    "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+    "rates_used": {
+     "activation": 2.906132,
+     "broadcast_aux": 0.0,
+     "weight_codes": 0.547282
+    },
+    "residual_gap_ms_cited": 1.813,
+    "state_billed_as": "activation",
+    "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+   },
+   "reconstruction": {
+    "bar": 0.01,
+    "best_n_regimes": 128,
+    "best_one_step_state_relative_l2_max": 0.6503915793112971,
+    "clears_bar": false,
+    "of": "one-step gated-delta under centroid (k,v,decay,beta) per regime"
+   },
+   "scored_on": {
+    "held_out_unit": "prompt_id",
+    "layer": 38,
+    "n_tokens": [
+     526,
+     496
+    ],
+    "prompt_ids": [
+     "code:14",
+     "code:15"
+    ],
+    "split": "hold"
+   },
+   "unfairness": "k-means on the scored hold (k,v,decay,beta). Perfect assignment to the true cluster (oracle router, cannot exist at runtime, billed at broadcast_aux = 0.000 ms/GB). True q is kept as the readout. ALL K rules are billed.",
+   "verdict": "ORACLE_NEGATIVE",
+   "why": "Perfect routing into 128 regimes still leaves one-step state relative L2 0.650 against bar 0.01. Billing all 128 rules is 1.0385 ms cited (1.1775 removed \u2212 0.139 added) against a 1.813 ms residual. A real router is strictly weaker than this oracle, and the named beta-skip candidate removes zero catalog bytes."
+  },
+  "generated_coefficients": {
+   "capability": "UNMEASURED",
+   "family": "generated_coefficients",
+   "fit_on_train_prompt_ids": [
+    "code:04",
+    "code:00",
+    "code:01",
+    "code:02"
+   ],
+   "named_rank_bound": {
+    "bytes": {
+     "added": {
+      "activation": 0,
+      "total": 4548560,
+      "weight_codes": 4548560
+     },
+     "net_removed": 2134548400,
+     "removed": {
+      "activation": 0,
+      "total": 2139096960,
+      "weight_codes": 2139096960
+     }
+    },
+    "capability": "UNMEASURED",
+    "cited_ms_added": {
+     "activation": 0.0,
+     "total": 0.0025,
+     "weight_codes": 0.0025
+    },
+    "cited_ms_removed": {
+     "activation": 0.0,
+     "total": 1.1707,
+     "weight_codes": 1.1707
+    },
+    "clears_residual_gap": false,
+    "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+    "ms_are_cited_not_measured": true,
+    "not_a_speedup": true,
+    "opportunity_bound_ms": 1.1682,
+    "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+    "rates_used": {
+     "activation": 2.906132,
+     "broadcast_aux": 0.0,
+     "weight_codes": 0.547282
+    },
+    "residual_gap_ms_cited": 1.813,
+    "state_billed_as": "activation",
+    "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+   },
+   "operating_points": [
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 12288,
+       "generator": 731216,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 2318288
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2136778672,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 64,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 174120,
+      "t2_bytes": 557096
+     },
+     "clears_transition_bar": false,
+     "coefficient_relative_l2": 0.5491188731928405,
+     "fit_on": "hold_interpolating",
+     "one_step_state_relative_l2_max": 0.9927412684171092,
+     "one_step_state_relative_l2_mean": 0.27767623545281617,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 2318288,
+        "weight_codes": 2318288
+       },
+       "net_removed": 2136778672,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0013,
+       "weight_codes": 0.0013
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1694,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.9927412684171092,
+       "one_step_state_relative_l2_mean": 0.2772241097505327,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.992129983786652,
+         "state_relative_l2": 0.9927412684171092
+        },
+        "16": {
+         "output_h_relative_l2": 0.6742284725873601,
+         "state_relative_l2": 0.6158106096842815
+        },
+        "256": {
+         "output_h_relative_l2": 0.8676713502049304,
+         "state_relative_l2": 0.5572712803795424
+        },
+        "526": {
+         "output_h_relative_l2": 0.9780232394813282,
+         "state_relative_l2": 0.5970535060997259
+        },
+        "64": {
+         "output_h_relative_l2": 0.7003662605805709,
+         "state_relative_l2": 0.630221269117804
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.9927011989723681,
+       "one_step_state_relative_l2_mean": 0.27812836115509965,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.9922918217450244,
+         "state_relative_l2": 0.9927011989723681
+        },
+        "16": {
+         "output_h_relative_l2": 0.8288412440124893,
+         "state_relative_l2": 0.6599690110185931
+        },
+        "256": {
+         "output_h_relative_l2": 0.5851704097606043,
+         "state_relative_l2": 0.5462012445602485
+        },
+        "496": {
+         "output_h_relative_l2": 0.6599733214916116,
+         "state_relative_l2": 0.5779243126012541
+        },
+        "64": {
+         "output_h_relative_l2": 0.6897362983211291,
+         "state_relative_l2": 0.6188393415359358
+        }
+       }
+      }
+     ],
+     "rank": 64,
+     "rank_used": 64
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 24576,
+       "generator": 1462352,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 3061712
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2136035248,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 128,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 348200,
+      "t2_bytes": 1114152
+     },
+     "clears_transition_bar": false,
+     "coefficient_relative_l2": 0.46869518543561206,
+     "fit_on": "hold_interpolating",
+     "one_step_state_relative_l2_max": 0.4849321131897956,
+     "one_step_state_relative_l2_mean": 0.2465648076034256,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 3061712,
+        "weight_codes": 3061712
+       },
+       "net_removed": 2136035248,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0017,
+       "weight_codes": 0.0017
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.169,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.4849321131897956,
+       "one_step_state_relative_l2_mean": 0.2442896450962281,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.8785300920814143,
+         "state_relative_l2": 0.4849321131897956
+        },
+        "16": {
+         "output_h_relative_l2": 0.6890630731381093,
+         "state_relative_l2": 0.513501679666424
+        },
+        "256": {
+         "output_h_relative_l2": 0.751673416092101,
+         "state_relative_l2": 0.48434533561625426
+        },
+        "526": {
+         "output_h_relative_l2": 0.8169981672954992,
+         "state_relative_l2": 0.5303204528795425
+        },
+        "64": {
+         "output_h_relative_l2": 0.5448561533898725,
+         "state_relative_l2": 0.540828409075091
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.4849115475460002,
+       "one_step_state_relative_l2_mean": 0.24883997011062312,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.8774395310293276,
+         "state_relative_l2": 0.4849115475460002
+        },
+        "16": {
+         "output_h_relative_l2": 0.7285015198206019,
+         "state_relative_l2": 0.5318085135361847
+        },
+        "256": {
+         "output_h_relative_l2": 0.5032037226233226,
+         "state_relative_l2": 0.4762982041659456
+        },
+        "496": {
+         "output_h_relative_l2": 0.6666287618287882,
+         "state_relative_l2": 0.48640333820146203
+        },
+        "64": {
+         "output_h_relative_l2": 0.6463980306167336,
+         "state_relative_l2": 0.5582191442762398
+        }
+       }
+      }
+     ],
+     "rank": 128,
+     "rank_used": 128
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 49152,
+       "generator": 2924624,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 4548560
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2134548400,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 256,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 696360,
+      "t2_bytes": 2228264
+     },
+     "clears_transition_bar": false,
+     "coefficient_relative_l2": 0.3641212403067363,
+     "fit_on": "hold_interpolating",
+     "one_step_state_relative_l2_max": 0.3199694947954102,
+     "one_step_state_relative_l2_mean": 0.19885155206126137,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 4548560,
+        "weight_codes": 4548560
+       },
+       "net_removed": 2134548400,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0025,
+       "weight_codes": 0.0025
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1682,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.3199694947954102,
+       "one_step_state_relative_l2_mean": 0.19616966343838424,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.17530183194418683,
+         "state_relative_l2": 0.14694859669590118
+        },
+        "16": {
+         "output_h_relative_l2": 0.4894029576523085,
+         "state_relative_l2": 0.36895736958656994
+        },
+        "256": {
+         "output_h_relative_l2": 0.7492211417844801,
+         "state_relative_l2": 0.40070802372777586
+        },
+        "526": {
+         "output_h_relative_l2": 0.7113394335797809,
+         "state_relative_l2": 0.4051292121458076
+        },
+        "64": {
+         "output_h_relative_l2": 0.44267071748410813,
+         "state_relative_l2": 0.42014093291327054
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.3192380321477319,
+       "one_step_state_relative_l2_mean": 0.20153344068413853,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.17447008530176722,
+         "state_relative_l2": 0.14701762821490283
+        },
+        "16": {
+         "output_h_relative_l2": 0.5887787715610586,
+         "state_relative_l2": 0.3786506020433781
+        },
+        "256": {
+         "output_h_relative_l2": 0.40204208283927095,
+         "state_relative_l2": 0.38004337083205714
+        },
+        "496": {
+         "output_h_relative_l2": 0.5099189905861113,
+         "state_relative_l2": 0.3931564955056177
+        },
+        "64": {
+         "output_h_relative_l2": 0.6219737481078792,
+         "state_relative_l2": 0.44528860549636035
+        }
+       }
+      }
+     ],
+     "rank": 256,
+     "rank_used": 256
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 196608,
+       "generator": 11698256,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 13469648
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2125627312,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 1024,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 2785320,
+      "t2_bytes": 8912936
+     },
+     "clears_transition_bar": true,
+     "coefficient_relative_l2": 4.217187155783241e-15,
+     "fit_on": "hold_interpolating",
+     "one_step_state_relative_l2_max": 0.0,
+     "one_step_state_relative_l2_mean": 0.0,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 13469648,
+        "weight_codes": 13469648
+       },
+       "net_removed": 2125627312,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0074,
+       "weight_codes": 0.0074
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1633,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": true,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.0,
+       "one_step_state_relative_l2_mean": 0.0,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "16": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "256": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "526": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "64": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        }
+       }
+      },
+      {
+       "clears_transition_bar": true,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.0,
+       "one_step_state_relative_l2_mean": 0.0,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "16": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "256": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "496": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "64": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        }
+       }
+      }
+     ],
+     "rank": 1024,
+     "rank_used": 1022
+    }
+   ],
+   "oracle_bound": {
+    "bytes": {
+     "added": {
+      "activation": 0,
+      "total": 13469648,
+      "weight_codes": 13469648
+     },
+     "net_removed": 2125627312,
+     "removed": {
+      "activation": 0,
+      "total": 2139096960,
+      "weight_codes": 2139096960
+     }
+    },
+    "capability": "UNMEASURED",
+    "cited_ms_added": {
+     "activation": 0.0,
+     "total": 0.0074,
+     "weight_codes": 0.0074
+    },
+    "cited_ms_removed": {
+     "activation": 0.0,
+     "total": 1.1707,
+     "weight_codes": 1.1707
+    },
+    "clears_residual_gap": false,
+    "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+    "ms_are_cited_not_measured": true,
+    "not_a_speedup": true,
+    "opportunity_bound_ms": 1.1633,
+    "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+    "rates_used": {
+     "activation": 2.906132,
+     "broadcast_aux": 0.0,
+     "weight_codes": 0.547282
+    },
+    "residual_gap_ms_cited": 1.813,
+    "state_billed_as": "activation",
+    "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+   },
+   "reconstruction": {
+    "bar": 0.01,
+    "clears_bar": true,
+    "interpolating": {
+     "clears_transition_bar": true,
+     "coefficient_relative_l2": 4.217187155783241e-15,
+     "one_step_state_relative_l2_max": 0.0
+    },
+    "interpolating_rank": 1024,
+    "named_rank": 256,
+    "named_rank_hold_interpolating": {
+     "clears_transition_bar": false,
+     "coefficient_relative_l2": 0.3641212403067363,
+     "one_step_state_relative_l2_max": 0.3199694947954102
+    },
+    "of": "transition coefficients (q,k,v,z,decay,beta) and one-step gated-delta"
+   },
+   "scored_on": {
+    "held_out_unit": "prompt_id",
+    "layer": 38,
+    "n_tokens": [
+     526,
+     496
+    ],
+    "prompt_ids": [
+     "code:14",
+     "code:15"
+    ],
+    "split": "hold"
+   },
+   "train_generator_hold_codes": [
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 12288,
+       "generator": 731216,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 2318288
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2136778672,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 64,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 174120,
+      "t2_bytes": 557096
+     },
+     "clears_transition_bar": false,
+     "coefficient_relative_l2": 0.5981208888575829,
+     "fit_on": "train_generator_hold_codes",
+     "one_step_state_relative_l2_max": 0.9568246690075322,
+     "one_step_state_relative_l2_mean": 0.29251388695705993,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 2318288,
+        "weight_codes": 2318288
+       },
+       "net_removed": 2136778672,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0013,
+       "weight_codes": 0.0013
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1694,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.9568166876919927,
+       "one_step_state_relative_l2_mean": 0.290607776990439,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.0584989425044034,
+         "state_relative_l2": 0.9568166876919927
+        },
+        "16": {
+         "output_h_relative_l2": 0.8290340552081579,
+         "state_relative_l2": 0.6905044573501028
+        },
+        "256": {
+         "output_h_relative_l2": 0.7887664170336331,
+         "state_relative_l2": 0.599252705504271
+        },
+        "526": {
+         "output_h_relative_l2": 0.9811613718033919,
+         "state_relative_l2": 0.641461580595936
+        },
+        "64": {
+         "output_h_relative_l2": 0.7020937994626322,
+         "state_relative_l2": 0.68858956257057
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.9568246690075322,
+       "one_step_state_relative_l2_mean": 0.29441999692368087,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 1.0586856310776123,
+         "state_relative_l2": 0.9568246690075322
+        },
+        "16": {
+         "output_h_relative_l2": 0.89739909811418,
+         "state_relative_l2": 0.7092951818045579
+        },
+        "256": {
+         "output_h_relative_l2": 0.6246189031429752,
+         "state_relative_l2": 0.5774836249866351
+        },
+        "496": {
+         "output_h_relative_l2": 0.7908135164942416,
+         "state_relative_l2": 0.6440824033937905
+        },
+        "64": {
+         "output_h_relative_l2": 0.8051055817479048,
+         "state_relative_l2": 0.6745585350487313
+        }
+       }
+      }
+     ],
+     "rank": 64,
+     "rank_used": 64
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 24576,
+       "generator": 1462352,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 3061712
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2136035248,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 128,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 348200,
+      "t2_bytes": 1114152
+     },
+     "clears_transition_bar": false,
+     "coefficient_relative_l2": 0.5308291159629542,
+     "fit_on": "train_generator_hold_codes",
+     "one_step_state_relative_l2_max": 0.5143605452007459,
+     "one_step_state_relative_l2_mean": 0.269927301066551,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 3061712,
+        "weight_codes": 3061712
+       },
+       "net_removed": 2136035248,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0017,
+       "weight_codes": 0.0017
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.169,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.5143605452007459,
+       "one_step_state_relative_l2_mean": 0.2671800292319368,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.6407720635005593,
+         "state_relative_l2": 0.42074339865531246
+        },
+        "16": {
+         "output_h_relative_l2": 0.7031602187564854,
+         "state_relative_l2": 0.6068562473685871
+        },
+        "256": {
+         "output_h_relative_l2": 0.8154665966525404,
+         "state_relative_l2": 0.5371271389105361
+        },
+        "526": {
+         "output_h_relative_l2": 0.9014978150945068,
+         "state_relative_l2": 0.5665707251398663
+        },
+        "64": {
+         "output_h_relative_l2": 0.6711778389737796,
+         "state_relative_l2": 0.6166919396238769
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.5142393543384732,
+       "one_step_state_relative_l2_mean": 0.2726745729011652,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.6404734622477586,
+         "state_relative_l2": 0.4208537849268186
+        },
+        "16": {
+         "output_h_relative_l2": 0.8157932357713937,
+         "state_relative_l2": 0.6249861337975287
+        },
+        "256": {
+         "output_h_relative_l2": 0.5791126450131322,
+         "state_relative_l2": 0.5187901400444274
+        },
+        "496": {
+         "output_h_relative_l2": 0.6997708004812873,
+         "state_relative_l2": 0.5827286661782637
+        },
+        "64": {
+         "output_h_relative_l2": 0.7772792647486283,
+         "state_relative_l2": 0.6152897654344551
+        }
+       }
+      }
+     ],
+     "rank": 128,
+     "rank_used": 128
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 49152,
+       "generator": 2924624,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 4548560
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2134548400,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 256,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 696360,
+      "t2_bytes": 2228264
+     },
+     "clears_transition_bar": false,
+     "coefficient_relative_l2": 0.43771430757237817,
+     "fit_on": "train_generator_hold_codes",
+     "one_step_state_relative_l2_max": 0.4039863752459822,
+     "one_step_state_relative_l2_mean": 0.23313826202256774,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 4548560,
+        "weight_codes": 4548560
+       },
+       "net_removed": 2134548400,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0025,
+       "weight_codes": 0.0025
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1682,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.40390512516270993,
+       "one_step_state_relative_l2_mean": 0.22926495780655837,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.4137890358957356,
+         "state_relative_l2": 0.21919909641353028
+        },
+        "16": {
+         "output_h_relative_l2": 0.630238824939125,
+         "state_relative_l2": 0.504828000956859
+        },
+        "256": {
+         "output_h_relative_l2": 0.7377375314009219,
+         "state_relative_l2": 0.46163286694805766
+        },
+        "526": {
+         "output_h_relative_l2": 0.9207663307154936,
+         "state_relative_l2": 0.4696977334446834
+        },
+        "64": {
+         "output_h_relative_l2": 0.5609934951727479,
+         "state_relative_l2": 0.5307254320343208
+        }
+       }
+      },
+      {
+       "clears_transition_bar": false,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.4039863752459822,
+       "one_step_state_relative_l2_mean": 0.2370115662385771,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.41143757933241476,
+         "state_relative_l2": 0.21927037611263833
+        },
+        "16": {
+         "output_h_relative_l2": 0.7099778975573788,
+         "state_relative_l2": 0.5207723684975551
+        },
+        "256": {
+         "output_h_relative_l2": 0.46613268191763596,
+         "state_relative_l2": 0.44377367240136284
+        },
+        "496": {
+         "output_h_relative_l2": 0.6155198857865913,
+         "state_relative_l2": 0.4813392455735112
+        },
+        "64": {
+         "output_h_relative_l2": 0.7562757041044588,
+         "state_relative_l2": 0.5215350425943973
+        }
+       }
+      }
+     ],
+     "rank": 256,
+     "rank_used": 256
+    },
+    {
+     "byte_model": {
+      "bytes_added": {
+       "embeddings": 196608,
+       "generator": 11698256,
+       "metadata": 1920,
+       "other": 0,
+       "residuals": 1572864,
+       "state": 0,
+       "total": 13469648
+      },
+      "bytes_removed": {
+       "catalog_weights": 2139096960,
+       "other": 0,
+       "state": 0,
+       "total": 2139096960
+      },
+      "net_bytes": 2125627312,
+      "packing": "hq30uq4_uniform_q4_group64",
+      "rank": 1024,
+      "scope": "model (48 DN layers; T1/T2 shared; diagonals and embeddings per-layer)",
+      "t1_bytes": 2785320,
+      "t2_bytes": 8912936
+     },
+     "clears_transition_bar": true,
+     "coefficient_relative_l2": 6.167784285820343e-14,
+     "fit_on": "train_generator_hold_codes",
+     "one_step_state_relative_l2_max": 0.0,
+     "one_step_state_relative_l2_mean": 0.0,
+     "oracle_bound": {
+      "bytes": {
+       "added": {
+        "activation": 0,
+        "total": 13469648,
+        "weight_codes": 13469648
+       },
+       "net_removed": 2125627312,
+       "removed": {
+        "activation": 0,
+        "total": 2139096960,
+        "weight_codes": 2139096960
+       }
+      },
+      "capability": "UNMEASURED",
+      "cited_ms_added": {
+       "activation": 0.0,
+       "total": 0.0074,
+       "weight_codes": 0.0074
+      },
+      "cited_ms_removed": {
+       "activation": 0.0,
+       "total": 1.1707,
+       "weight_codes": 1.1707
+      },
+      "clears_residual_gap": false,
+      "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+      "ms_are_cited_not_measured": true,
+      "not_a_speedup": true,
+      "opportunity_bound_ms": 1.1633,
+      "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+      "rates_used": {
+       "activation": 2.906132,
+       "broadcast_aux": 0.0,
+       "weight_codes": 0.547282
+      },
+      "residual_gap_ms_cited": 1.813,
+      "state_billed_as": "activation",
+      "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+     },
+     "per_prompt": [
+      {
+       "clears_transition_bar": true,
+       "n_tokens": 526,
+       "one_step_state_relative_l2_max": 0.0,
+       "one_step_state_relative_l2_mean": 0.0,
+       "prompt_id": "code:14",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "16": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "256": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "526": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "64": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        }
+       }
+      },
+      {
+       "clears_transition_bar": true,
+       "n_tokens": 496,
+       "one_step_state_relative_l2_max": 0.0,
+       "one_step_state_relative_l2_mean": 0.0,
+       "prompt_id": "code:15",
+       "rolled_by_horizon": {
+        "1": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "16": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "256": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "496": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        },
+        "64": {
+         "output_h_relative_l2": 0.0,
+         "state_relative_l2": 0.0
+        }
+       }
+      }
+     ],
+     "rank": 1024,
+     "rank_used": 1024
+    }
+   ],
+   "unfairness": "Shared generator is PCA of residual-stream X. Codes are a least-squares map fitted on the scored hold tokens (perfect per-block codes, no runtime constraint). The interpolating operating point uses a generator fitted on the hold X itself.",
+   "verdict": "ORACLE_NEGATIVE",
+   "why": "Even a hold-interpolating generator whose rank equals the scored token count (r=1024) only removes qkvz weight_codes (1.1707 ms cited) and does not clear the 1.813 ms residual. At the claimed rank 256 the transition is not reconstructed (coeff relative L2 0.364, one-step state 0.320, bar 0.01). A fair runtime generator is strictly weaker."
+  },
+  "learned_recurrence": {
+   "budget_actually_needed": {
+    "d_state_for_store_bar": 520,
+    "named_d_state": 16,
+    "note": "d_state_for_store_bar is a LOWER BOUND on the dimension of a store of this trajectory (relative L2 <= 0.01). A recurrence that has to GENERATE the trajectory cannot be smaller. The linear SSM at every swept d_state fails the transition bar.",
+    "store_bar": 0.01
+   },
+   "byte_model_at_needed_d_state": {
+    "a_diag_bytes": 4792320,
+    "bytes_added": {
+     "embeddings": 0,
+     "generator": 9781187520,
+     "metadata": 1920,
+     "other": 0,
+     "residuals": 0,
+     "state": 4792320,
+     "total": 9785981760
+    },
+    "bytes_removed": {
+     "catalog_weights": 1357353984,
+     "other": 0,
+     "state": 156893184,
+     "total": 1514247168
+    },
+    "d_state": 520,
+    "in_proj_bytes": 9776395200,
+    "net_bytes": -8271734592
+   },
+   "capability": "UNMEASURED",
+   "family": "learned_recurrence",
+   "fit_on_train_prompt_ids": [
+    "code:04",
+    "code:00",
+    "code:01",
+    "code:02"
+   ],
+   "named_d_state_bound": {
+    "bytes": {
+     "added": {
+      "activation": 147456,
+      "total": 301108992,
+      "weight_codes": 300961536
+     },
+     "net_removed": 1213138176,
+     "removed": {
+      "activation": 156893184,
+      "total": 1514247168,
+      "weight_codes": 1357353984
+     }
+    },
+    "capability": "UNMEASURED",
+    "cited_ms_added": {
+     "activation": 0.0004,
+     "total": 0.1651,
+     "weight_codes": 0.1647
+    },
+    "cited_ms_removed": {
+     "activation": 0.456,
+     "total": 1.1988,
+     "weight_codes": 0.7429
+    },
+    "clears_residual_gap": false,
+    "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+    "ms_are_cited_not_measured": true,
+    "not_a_speedup": true,
+    "opportunity_bound_ms": 1.0337,
+    "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+    "rates_used": {
+     "activation": 2.906132,
+     "broadcast_aux": 0.0,
+     "weight_codes": 0.547282
+    },
+    "residual_gap_ms_cited": 1.813,
+    "state_billed_as": "activation",
+    "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+   },
+   "oracle_bound": {
+    "bytes": {
+     "added": {
+      "activation": 4792320,
+      "total": 9785981760,
+      "weight_codes": 9781189440
+     },
+     "net_removed": -8271734592,
+     "removed": {
+      "activation": 156893184,
+      "total": 1514247168,
+      "weight_codes": 1357353984
+     }
+    },
+    "capability": "UNMEASURED",
+    "cited_ms_added": {
+     "activation": 0.0139,
+     "total": 5.367,
+     "weight_codes": 5.3531
+    },
+    "cited_ms_removed": {
+     "activation": 0.456,
+     "total": 1.1988,
+     "weight_codes": 0.7429
+    },
+    "clears_residual_gap": false,
+    "kind": "OPPORTUNITY_BOUND_ON_PERFECT_SUCCESS",
+    "ms_are_cited_not_measured": true,
+    "not_a_speedup": true,
+    "opportunity_bound_ms": -4.1682,
+    "rates_source": "ECONOMICS_CALIBRATION via causal_budget_71.STREAM_MS_PER_GB",
+    "rates_used": {
+     "activation": 2.906132,
+     "broadcast_aux": 0.0,
+     "weight_codes": 0.547282
+    },
+    "residual_gap_ms_cited": 1.813,
+    "state_billed_as": "activation",
+    "why_state_is_activation": "Recurrent state S is resident activation, read and written every token. Billing it at the weight_codes rate is a whole-organ error."
+   },
+   "per_prompt": [
+    {
+     "head0_dynamics": [
+      {
+       "clears_transition_bar": false,
+       "d_state": 8,
+       "one_step_state_relative_l2": 0.5564028331694469,
+       "one_step_z_relative_l2": 4.320165122813141e-15,
+       "rank_used": 8,
+       "store_relative_l2": 0.5570462574970647,
+       "unroll_state_relative_l2": 0.5570462574970647
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 16,
+       "one_step_state_relative_l2": 0.4581480533547659,
+       "one_step_z_relative_l2": 5.956943340273043e-15,
+       "rank_used": 16,
+       "store_relative_l2": 0.45880913456970035,
+       "unroll_state_relative_l2": 0.45880913456970035
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 32,
+       "one_step_state_relative_l2": 0.3425960834018388,
+       "one_step_z_relative_l2": 6.608708225431963e-15,
+       "rank_used": 32,
+       "store_relative_l2": 0.3433487844704438,
+       "unroll_state_relative_l2": 0.3433487844704438
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 64,
+       "one_step_state_relative_l2": 0.23285139980446634,
+       "one_step_z_relative_l2": 6.744609354682613e-15,
+       "rank_used": 64,
+       "store_relative_l2": 0.23333909613054307,
+       "unroll_state_relative_l2": 0.23333909613054307
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 128,
+       "one_step_state_relative_l2": 0.14444819453323318,
+       "one_step_z_relative_l2": 6.535199209577617e-15,
+       "rank_used": 128,
+       "store_relative_l2": 0.14453299218114227,
+       "unroll_state_relative_l2": 0.14453299218114227
+      }
+     ],
+     "head0_energy": {
+      "energy": {
+       "128": 0.9650443547294079,
+       "16": 0.6477528826632482,
+       "256": 0.9904920822045016,
+       "32": 0.8027330342622505,
+       "64": 0.9088916128621731,
+       "8": 0.4807627302930795
+      },
+      "n": 526,
+      "rank_at_0.99": 251,
+      "rank_at_store_bar": 507
+     },
+     "n_tokens": 526,
+     "prompt_id": "code:14",
+     "rank_at_0.99_max": 342,
+     "rank_at_store_bar_max": 520
+    },
+    {
+     "head0_dynamics": [
+      {
+       "clears_transition_bar": false,
+       "d_state": 8,
+       "one_step_state_relative_l2": 0.5461836834715499,
+       "one_step_z_relative_l2": 5.843899792456266e-15,
+       "rank_used": 8,
+       "store_relative_l2": 0.5469269988494623,
+       "unroll_state_relative_l2": 0.5469269988494623
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 16,
+       "one_step_state_relative_l2": 0.43914292567089824,
+       "one_step_z_relative_l2": 7.155048412510051e-15,
+       "rank_used": 16,
+       "store_relative_l2": 0.43992010726843805,
+       "unroll_state_relative_l2": 0.43992010726843805
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 32,
+       "one_step_state_relative_l2": 0.3249111245108253,
+       "one_step_z_relative_l2": 6.814480388629819e-15,
+       "rank_used": 32,
+       "store_relative_l2": 0.32580467781906397,
+       "unroll_state_relative_l2": 0.32580467781906397
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 64,
+       "one_step_state_relative_l2": 0.22064016202731676,
+       "one_step_z_relative_l2": 7.48646388391872e-15,
+       "rank_used": 64,
+       "store_relative_l2": 0.2210522466111862,
+       "unroll_state_relative_l2": 0.2210522466111862
+      },
+      {
+       "clears_transition_bar": false,
+       "d_state": 128,
+       "one_step_state_relative_l2": 0.13580630584332465,
+       "one_step_z_relative_l2": 7.469233758407568e-15,
+       "rank_used": 128,
+       "store_relative_l2": 0.13589897493177006,
+       "unroll_state_relative_l2": 0.13589897493177006
+      }
+     ],
+     "head0_energy": {
+      "energy": {
+       "128": 0.9686909507782074,
+       "16": 0.6719159309185825,
+       "256": 0.9921062452766839,
+       "32": 0.8200498767081844,
+       "64": 0.9171624236737119,
+       "8": 0.492896926330969
+      },
+      "n": 496,
+      "rank_at_0.99": 233,
+      "rank_at_store_bar": 480
+     },
+     "n_tokens": 496,
+     "prompt_id": "code:15",
+     "rank_at_0.99_max": 326,
+     "rank_at_store_bar_max": 490
+    }
+   ],
+   "reconstruction": {
+    "any_d_state_clears": false,
+    "bar": 0.01,
+    "clears_bar": false,
+    "named_clears_transition_bar": false,
+    "named_d_state": 16,
+    "named_one_step_state_relative_l2_max": 0.5472422293808189,
+    "named_unroll_state_relative_l2_max": 0.5477122699830574,
+    "of": "recorded S trajectory under a linear SSM in the PCA subspace"
+   },
+   "scored_on": {
+    "held_out_unit": "prompt_id",
+    "layer": 38,
+    "n_tokens": [
+     526,
+     496
+    ],
+    "prompt_ids": [
+     "code:14",
+     "code:15"
+    ],
+    "split": "hold"
+   },
+   "unfairness": "PCA basis of vec(S) is fitted on the scored hold trajectory (sequence-specific, cannot exist as a runtime basis without storing it). Linear A,B are least-squares on that same trajectory. No parameter-budget cap was applied.",
+   "verdict": "ORACLE_NEGATIVE",
+   "why": "The recorded S trajectory on hold fills rank (store-bar d_state 520 vs named 16). A linear SSM at d_state=16 has one-step state relative L2 0.5472422293808189 and unroll 0.5477122699830574 against bar 0.01. Scaling in_proj to d_state=520 bills 5.367 ms cited added against 1.1988 ms cited removed; the bound -4.1682 ms does not clear the 1.813 ms residual. A fair recurrence is strictly weaker than this oracle."
+  }
+ },
+ "gpu_authority": false,
+ "input": {
+  "coefficients": "seeded STATIC map of X, shader L2 on q/k; not W_qkvz. Same map as DELTANET_MULTISTEP.",
+  "dim": 128,
+  "held_out_unit": "prompt_id",
+  "kind": "held_out_prompt_teacher_corpus_L38_post_attn_norm",
+  "layer": 38,
+  "n_heads": 8,
+  "n_sequences": 2,
+  "n_tokens": [
+   526,
+   496
+  ],
+  "payload": "/Users/scammermike/Downloads/hawking/workspace/ops/local/scratch/mlp_teacher_corpus",
+  "prompt_ids": [
+   "code:14",
+   "code:15"
+  ],
+  "report_as": "held_out",
+  "same_corpus_as": "receipts/future/DELTANET_MULTISTEP.json",
+  "train_prompt_ids_used_for_generator": [
+   "code:04",
+   "code:00",
+   "code:01",
+   "code:02"
+  ],
+  "trained_qkv_trajectory": "UNMEASURED",
+  "x_is_mixer_input": false,
+  "x_is_post_attn_norm": true
+ },
+ "predecessor": {
+  "calibration": "receipts/future/ECONOMICS_CALIBRATION.json",
+  "economics": "receipts/future/DELTANET_STATE_MACHINE_ECONOMICS.json",
+  "multistep": "receipts/future/DELTANET_MULTISTEP.json",
+  "state_function": "receipts/future/DELTANET_STATE_FUNCTION.json"
+ },
+ "price_context": {
+  "basis": "GPU_SEALED_DEFAULT",
+  "gap_to_71_raw_ms_cited": 7.8619,
+  "gap_to_71_residual_ms_cited": 1.813,
+  "halved_ms_cited": 1.0384,
+  "note": "Cited from DELTANET_STATE_MACHINE_ECONOMICS, not re-measured. The residual is the gap a NEW lever has to close.",
+  "token_ms_cited": 21.9464,
+  "upper_bound_ms_cited": 2.0768
+ },
+ "prior": {
+  "already_judged": {
+   "smaller_state": {
+    "shape": "ONSET_THEN_PLATEAU",
+    "source": "receipts/future/DELTANET_MULTISTEP.json",
+    "verdict": "MEASURED_NEGATIVE"
+   },
+   "structured_transitions": {
+    "shape": "PLATEAU",
+    "source": "receipts/future/DELTANET_MULTISTEP.json",
+    "verdict": "MEASURED_NEGATIVE"
+   }
+  },
+  "expect": "Two of six are already MEASURED_NEGATIVE. The prior on these three is not neutral. A well-supported ORACLE_NEGATIVE is the deliverable: it closes S020 \u00a716 and stops the campaign returning.",
+  "fused_update_and_consume": "NOT_A_TRAJECTORY_QUESTION",
+  "not_neutral": true
+ },
+ "purpose": "Oracle-first bounds for generated_coefficients, learned_recurrence and conditional_recurrence. If an unfair oracle cannot make the economics work, do not build the real version.",
+ "schema": "hawking.future.deltanet_program_oracles.v1",
+ "seal_sha256": "c374a2d08dce90bb6630efae2cae801190f79b2af85175dee73e3392a812869b",
+ "version": 1,
+ "what_this_does_not_prove": [
+  "Capability. Every family's capability is UNMEASURED.",
+  "A generate-identity gate on the sealed residual stream.",
+  "That X equals the sealed mixer input (capture_diverse2 is post_attn_norm).",
+  "That the seeded STATIC coefficient map is W_qkvz.",
+  "A measured speedup. Every millisecond is cited and pro-rated.",
+  "A hardware number. gpu_authority is false."
+ ]
+}

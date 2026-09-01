@@ -8,7 +8,13 @@
    "graph_replay": "ANE compiles a static graph segment. Slots that are not expressible as tensor indices become host round-trips between segments.",
    "module": null,
    "path_hits_named_ane": [
+    "hcli/ane_provider.py",
+    "hcli/test_ane_provider.py",
+    "tools/accelerator/ane_micrograph_author.py",
+    "tools/accelerator/ane_probe.swift",
+    "tools/accelerator/run_ane_lane.sh",
     "tools/future/ane_preboard.py",
+    "tools/future/ane_probe_lab.py",
     "tools/future/test_ane_preboard.py"
    ],
    "physical_device_authority": false,
@@ -99,7 +105,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:17:57Z",
+  "recorded_at": "2026-09-01T05:58:04Z",
   "recorded_by": "tools/future/static_skeleton.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1437,23 +1443,18 @@
   "static_fraction": "static_fraction(skeleton) -> dict",
   "validate": "validate(skeleton: Skeleton | Mapping) -> ValidationResult"
  },
- "negative_findings": [
-  "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json is not in git HEAD and not on this sparse disk; could not read the 'static skeleton + dynamic slots' taxonomy entry",
-  "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json does not exist; used receipts/headless/DISPATCH_LEDGER.json layer 46 instead",
-  "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json does not exist; compile-time critical path is computed from the layer DAG (node count, not ns)",
-  "hcli/physical_graph.py has no static_skeleton token; the existing object is PhysicalGraph (PLAN_ONLY), which this module extends rather than forks"
- ],
+ "negative_findings": [],
  "purpose": "Static physical skeleton with typed dynamic slots, plus a validator that refuses data-dependent topology so graph replay / CUDA graphs / TPU compiled graphs / FPGA spatial pipelines are the same idea.",
  "recovered_implementation": {
   "hcli/physical_graph.py": {
    "decision": "extend, do not fork: this module wraps PhysicalGraph lists as STATIC nodes/edges and adds slots + the refusal. hcli/ is not written.",
    "in_git": true,
-   "mentions_static_skeleton": false,
+   "mentions_static_skeleton": true,
    "schema_line": "SCHEMA = \"hcli.physical_graph.v1\"",
    "what_it_is": "Provider-neutral PhysicalGraph planning boundary: computation, data, representation, memory, residency, state, precision, dependencies, device_placement, synchronization. qualification=PLAN_ONLY. It does not distinguish STATIC topology from dynamic control and has no validator against data-dependent edges."
   },
   "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json": {
-   "in_git_or_disk": false,
+   "in_git_or_disk": true,
    "note": "Frontier F012 probes this path as present on a full checkout. It is not in git HEAD of this worktree and not on the sparse disk, so the 'static skeleton + dynamic slots' taxonomy entry could not be consumed. Slot kinds are taken from this lane's contract."
   },
   "receipts/headless/DISPATCH_LEDGER.json": {
@@ -1463,10 +1464,10 @@
    "used_as": "the real layer topology source (layer 46 and, as a check, layer 30)"
   },
   "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json": {
-   "in_git_or_disk": false
+   "in_git_or_disk": true
   },
   "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json": {
-   "in_git_or_disk": false
+   "in_git_or_disk": true
   },
   "receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_GRAPH.json": {
    "component_window": {
@@ -1497,12 +1498,12 @@
  "relationship_to_physical_graph": {
   "decision": "extend, do not fork: this module wraps PhysicalGraph lists as STATIC nodes/edges and adds slots + the refusal. hcli/ is not written.",
   "in_git": true,
-  "mentions_static_skeleton": false,
+  "mentions_static_skeleton": true,
   "schema_line": "SCHEMA = \"hcli.physical_graph.v1\"",
   "what_it_is": "Provider-neutral PhysicalGraph planning boundary: computation, data, representation, memory, residency, state, precision, dependencies, device_placement, synchronization. qualification=PLAN_ONLY. It does not distinguish STATIC topology from dynamic control and has no validator against data-dependent edges."
  },
  "schema": "hawking.future.static_skeleton.v1",
- "seal_sha256": "546a99443dbdd64d79be1abcc9f388d112c9da1fa8702b5a38e76b0e554ba75a",
+ "seal_sha256": "a3a4c408d7b22e01007f1c7dc1d9669211cf2d6a470a7285e37c65e7ec54d632",
  "slot_kinds": [
   "EXPERT_ID",
   "TOKEN_POSITION",

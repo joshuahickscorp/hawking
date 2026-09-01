@@ -1,0 +1,33 @@
+{
+  "schema": "hawking.flash.detached_result.v1",
+  "status": "COMPLETE",
+  "summary": "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json",
+  "receipts": [
+    "group-0-2/receipt.json",
+    "group-12-14/receipt.json",
+    "group-16-18/receipt.json",
+    "group-20-22/receipt.json",
+    "group-24-26/receipt.json",
+    "group-28-30/receipt.json",
+    "group-32-34/receipt.json",
+    "group-36-38/receipt.json",
+    "group-4-6/receipt.json",
+    "group-40-42/receipt.json",
+    "group-44-46/receipt.json",
+    "group-8-10/receipt.json",
+    "layer-11/receipt.json",
+    "layer-15/receipt.json",
+    "layer-19/receipt.json",
+    "layer-23/receipt.json",
+    "layer-27/receipt.json",
+    "layer-3/receipt.json",
+    "layer-31/receipt.json",
+    "layer-35/receipt.json",
+    "layer-39/receipt.json",
+    "layer-43/receipt.json",
+    "layer-47/receipt.json",
+    "layer-7/receipt.json",
+    "terminal.json"
+  ],
+  "completed_unix_ns": 1787946745242730000
+}

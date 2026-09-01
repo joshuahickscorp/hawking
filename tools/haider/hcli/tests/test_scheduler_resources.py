@@ -365,14 +365,19 @@ class TestVerifierGatedComplete(unittest.TestCase):
         self.assertEqual(units["a"].status, "completed")
 
     def test_dispatch_records_requested_admitted_overhead(self):
+        # Inject the decode limit instead of letting ResourceLimits.resolve()
+        # read it off the host. Ambient resolution returns (1, "fallback") on a
+        # box with no decode genome, so the hardcoded 2 below asserted this
+        # machine's configuration rather than the bookkeeping under test.
         units = {f"g{i}": _wu(f"g{i}", "GPU_DECODE") for i in range(4)}
-        sched = Scheduler(units, runtime_count=8)
+        limits = ResourceLimits(gpu_decode=2, gpu_decode_source="test")
+        sched = Scheduler(units, runtime_count=8, limits=limits)
         assigned = sched.dispatch()
-        self.assertEqual(len(assigned), 2)
+        self.assertEqual(len(assigned), limits.gpu_decode)
         rec = sched.last_dispatch
         self.assertIsNotNone(rec)
         self.assertEqual(rec["requested"].get("GPU_DECODE"), 4)
-        self.assertEqual(rec["admitted"].get("GPU_DECODE"), 2)
+        self.assertEqual(rec["admitted"].get("GPU_DECODE"), limits.gpu_decode)
         self.assertIn("overhead_s", rec)
         self.assertGreaterEqual(rec["overhead_s"], 0)
         self.assertEqual(rec["occupancy"].get("GPU_DECODE"), 2)

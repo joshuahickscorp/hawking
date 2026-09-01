@@ -1,0 +1,22 @@
+{
+  "schema": "hawking.flash.terminal_executor_compile.v1",
+  "status": "COMPILE_PASSED",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "command": "cargo check -p hawking-core --example flash_stateful_complete_token_session",
+  "source_files": [
+    "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
+    "crates/hawking-core/examples/flash_stateful_complete_token_session.rs"
+  ],
+  "architecture": {
+    "executor": "TerminalExecutor",
+    "source_index_lifetime": "one native session",
+    "metal_context_lifetime": "one native session",
+    "readout_weights": "cached immutable payloads",
+    "lm_head": "cached reusable buffer",
+    "state_buffers": "reused ping-pong workspace"
+  },
+  "physical_execution": false,
+  "warnings_present": true,
+  "claim_boundary": "The reusable terminal executor compiles without errors and is ready for a bounded native continuation. This receipt proves build integrity only; it does not claim physical execution, accepted multi-token TPS, EBPW, capability, residency, or promotion."
+}

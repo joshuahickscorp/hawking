@@ -1,0 +1,1 @@
+{"module": "static_kernel_verify.py", "entry_point": "build", "receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json", "routed_to_frontier": "FT.GPU_KERNELS.static-warnings", "species": "STATIC_KERNEL_VERIFY", "wall_seconds": 16.511, "evidence_class": "STATIC_ONLY"}

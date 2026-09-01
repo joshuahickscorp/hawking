@@ -1,0 +1,1 @@
+{"module": "evidence_snapshot.py", "entry_point": "build", "receipt": "receipts/future/EVIDENCE_SNAPSHOT.json", "routed_to_frontier": "FT.CONTEXT.disk-authority", "species": "EVIDENCE_PIN", "wall_seconds": 0.02, "evidence_class": "STATIC_ONLY"}

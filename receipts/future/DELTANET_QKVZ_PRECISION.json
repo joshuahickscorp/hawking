@@ -447,7 +447,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T06:13:19Z",
+  "recorded_at": "2026-09-01T05:23:55Z",
   "recorded_by": "tools/future/deltanet_qkvz_precision.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1472,7 +1472,7 @@
   "z_binding": "gated RMSNorm only; not gated-delta; not conv"
  },
  "schema": "hawking.future.deltanet_qkvz_precision.v1",
- "seal_sha256": "9326b23b2eb3cfa956a7abd33ffabbcc744a58f8bc1f38754769313b30671c1a",
+ "seal_sha256": "95aa589bce6bfb14a5447bcf6cdbb025d8c266cd241c91c50a543b140daee893",
  "sensitivity": {
   "by_subblock": {
    "k": {

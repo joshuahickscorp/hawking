@@ -1,0 +1,73 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T01:48:21Z",
+  "recorded_by": "tools/future/harness_reconciliation.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "decomposition": {
+  "gap_is_host_borne": true,
+  "gpu_component_ms": 0.0533,
+  "gpu_halves_agree": true,
+  "gpu_relative_difference": 0.00201,
+  "host_component_ms": 0.4916,
+  "host_gap_ratio": 3.413,
+  "host_share_of_wall_gap": 0.9022,
+  "reading": "the wall numbers differ by 0.5449 ms and 90.2% of that is host gap. The GPU halves differ by 0.0533 ms, which is 0.20%. These instruments agree about the resident and disagree about the machine.",
+  "wall_disagreement_ms": 0.5449
+ },
+ "evidence_class": "DERIVED_FROM_SEALED_RECEIPTS",
+ "harnesses": {
+  "canonical": {
+   "gpu_ms": 26.5943,
+   "host_ms": 0.6953,
+   "recorded_by": "tools/future/resident_reprofile.py",
+   "timing_label": "DIRTY_ENGINEERING",
+   "timing_label_reason": "GPU lane lock held and ModelLake SIGSTOPped for each window, but the crate source is dirty (DIRTY_SOURCE_SEAL) and other system lanes were live. Not offered as BASE_TRUE_TPS.",
+   "wall_ms": 27.2896
+  },
+  "lease": {
+   "gpu_ms": 26.541,
+   "host_ms": 0.2037,
+   "recorded_by": "tools/future/protected_bitcast_absolute.py",
+   "timing_label": "PROTECTED_WINDOW",
+   "timing_label_reason": "ModelLake supervisor SIGSTOPped first, then both workers, then measured, then resumed in reverse order",
+   "wall_ms": 26.7447
+  }
+ },
+ "inputs": [
+  "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+  "receipts/future/PROTECTED_BITCAST_ABSOLUTE.json"
+ ],
+ "no_new_measurement": "this is arithmetic over two receipts already on disk. No GPU lease was taken and no hardware number is claimed here that was not measured by one of the two cited harnesses.",
+ "obligation": "G125",
+ "question": "PROTECTED_BITCAST_ABSOLUTE refused to promote an absolute because two harnesses reported controls 0.545 ms apart. Is that an instrument conflict?",
+ "rule": {
+  "cost_of_not_applying_it": "an unpromoted GPU absolute that two independent harnesses had already corroborated to 0.20%",
+  "id": "DIFFERENCE_THE_GPU_HALVES_BEFORE_CALLING_IT_AN_INSTRUMENT_CONFLICT",
+  "statement": "a wall-time disagreement between two harnesses is not an instrument conflict until their GPU components have been differenced. Wall = GPU + host. If the GPU halves agree, the argument is about host contention and belongs in a range with the host gap named, not in a reconciliation that tries to make one harness wrong.",
+  "who_it_would_have_helped": "the 0.545 ms blocker sat open as 'the two harnesses should be reconciled' when the reconciliation was one subtraction over two sealed receipts. Nothing had to be re-measured."
+ },
+ "seal_sha256": "96104c066fe0580bdf516499529388ee65f4427baa72473192a3f2334fd97d52",
+ "verdict": "NO_CONFLICT_THE_GPU_HALVES_AGREE_TO_0_20_PERCENT",
+ "what_is_promotable": {
+  "corroborated_by": [
+   "tools/future/resident_reprofile.py",
+   "tools/future/protected_bitcast_absolute.py"
+  ],
+  "decode_gpu_ms_per_token": 26.5677,
+  "gpu_absolute": "PROMOTABLE",
+  "gpu_agreement_ms": 0.0533,
+  "the_original_refusal_was_right": "PROTECTED_BITCAST_ABSOLUTE refused to pick one of two wall numbers and called that choosing the flattering number. That still holds - this receipt does not pick one. It shows the choice was never between two measurements of the resident.",
+  "wall_tps": "RANGE_ONLY",
+  "wall_tps_range": [
+   36.644,
+   37.391
+  ],
+  "wall_tps_range_reason": "wall = gpu + host, and host moved 3.413x between these windows (0.6953 ms noisy vs 0.2037 ms protected). A single wall TPS is a joint claim about the resident AND the machine's other tenants. The range is the honest form."
+ }
+}

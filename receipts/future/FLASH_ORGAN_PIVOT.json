@@ -451,7 +451,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:57:12Z",
+  "recorded_at": "2026-09-01T05:26:59Z",
   "recorded_by": "tools/future/flash_organ_pivot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1632,7 +1632,7 @@
    2560
   ]
  },
- "seal_sha256": "b39c8942d10646caf64fc17d6db150ea8fa3f528a21267f74ee435aa9b5eb10c",
+ "seal_sha256": "b87b7fa24bc16a7a038993168af8775f681fc3d41a1f3c5faf350f91795175b1",
  "status": "STATIC_PIVOT_RANKING",
  "status_is_not_a_causal_claim": true,
  "unrankable_schools": [

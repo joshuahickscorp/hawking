@@ -75,8 +75,19 @@ def price() -> dict[str, Any]:
     w_ms = b["weights"] / 1e9 * rates["weight_codes"]
     s_ms = b["state"] / 1e9 * rates["activation"]
     upper = w_ms + s_ms
-    body = json.loads((REPO / BODY_REL).read_text())
-    gap = float(body["decode_wall_ms_per_token"]) - TARGET_MS
+    # G131/G132 REBASED THE BODY AND CHANGED THE UNIT. The three levers are the
+    # sealed default now, measured at 21.9464 ms GPU, and this ladder prices
+    # BYTES at GPU stream rates - so a gap denominated in the old WALL figure
+    # was comparing two quantities and was 5.3 ms stale besides.
+    absolute = REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+    if absolute.is_file():
+        token_ms = float(json.loads(absolute.read_text())["measured"]["gpu_ms_per_token"])
+        basis = "GPU_SEALED_DEFAULT"
+    else:
+        body = json.loads((REPO / BODY_REL).read_text())
+        token_ms = float(body["decode_wall_ms_per_token"])
+        basis = "WALL_PRE_PROMOTION_FALLBACK"
+    gap = token_ms - TARGET_MS
     # TWO GAPS, and reporting only one would be picking the flattering number.
     # The RAW gap is from the body that runs today to 71. The RESIDUAL gap is
     # what is left after every path already on record composes, which is the gap
@@ -90,6 +101,8 @@ def price() -> dict[str, Any]:
         "state_ms_if_all_removed": round(s_ms, 4),
         "upper_bound_ms": round(upper, 4),
         "halved_ms": round(upper / 2.0, 4),
+        "token_ms": round(token_ms, 4),
+        "basis": basis,
         "gap_to_71_raw_ms": round(gap, 4),
         "gap_to_71_residual_after_everything_on_record_ms": round(residual, 4),
         "upper_bound_share_of_raw_gap": round(upper / gap, 4),
@@ -102,15 +115,33 @@ def price() -> dict[str, Any]:
         ),
         "rates_used": dict(rates),
         "material_bar_ms": MATERIAL_MS,
-        "verdict": "MATERIAL_NOT_DECISIVE" if upper > MATERIAL_MS else "IMMATERIAL",
+        # The verdict is COMPUTED against both gaps, not frozen prose. When the
+        # baseline moved from 27.2896 wall to 21.9464 GPU the residual fell to
+        # 1.813 ms and this share crossed 1.0 - a hand-written
+        # "nowhere near enough" would have survived that and been wrong.
+        "verdict": (
+            "IMMATERIAL" if upper <= MATERIAL_MS else
+            "COVERS_THE_RESIDUAL_GAP" if upper >= residual else
+            "MATERIAL_NOT_DECISIVE"
+        ),
+        "covers_residual": upper >= residual,
+        "halving_covers_residual": (upper / 2.0) >= residual,
         "why": (
             f"removing the ENTIRE DeltaNet representation - every code and every "
             f"byte of recurrent state - is {upper:.4f} ms against a {gap:.4f} ms "
             f"raw gap - {upper / gap:.1%} of it, and {upper / residual:.1%} of "
             f"the {residual:.4f} ms residual after everything on record. "
-            f"The halving the landed candidates actually "
-            f"propose is {upper / 2:.4f} ms. Above the {MATERIAL_MS} ms bar, so "
-            "worth doing; nowhere near enough to close 71 on its own."
+            f"The halving the landed candidates actually propose is "
+            f"{upper / 2:.4f} ms, which is {upper / 2 / residual:.1%} of the "
+            f"residual. "
+            + ("The upper bound now EXCEEDS the residual gap: a perfect DeltaNet "
+               "state machine would close what everything on record leaves. It "
+               "is still an upper bound on PERFECT removal of code and state "
+               "together, which no candidate proposes, and capability is "
+               "UNMEASURED for every family."
+               if upper >= residual else
+               "Above the bar, so worth doing; nowhere near enough to close 71 "
+               "on its own.")
         ),
     }
 

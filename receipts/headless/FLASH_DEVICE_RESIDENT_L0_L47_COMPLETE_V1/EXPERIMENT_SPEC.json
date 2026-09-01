@@ -1,0 +1,20 @@
+{
+  "schema": "hawking.flash.detached_experiment.v1",
+  "command": [
+    "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/debug/examples/flash_fast_chain",
+    "--root",
+    "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "--start-layer",
+    "0",
+    "--end-layer",
+    "47",
+    "--out-dir",
+    "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1",
+    "--compact-experts",
+    "--device-resident",
+    "--deep-verification"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "mode": "PROTECTED_FAST",
+  "created_unix_ns": 1787943508743923000
+}

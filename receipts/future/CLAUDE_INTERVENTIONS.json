@@ -1,0 +1,70 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T02:46:47Z",
+  "recorded_by": "tools/future/claude_interventions.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "DERIVED_FROM_RECORDED_EVENTS",
+ "frontier_moves": {
+  "distinct_obligations": 53,
+  "first_unix": 1788171749,
+  "last_unix": 1788230651,
+  "n": 68,
+  "per_hour": 4.156,
+  "span_hours": 16.362
+ },
+ "inputs": [
+  "receipts/future/RECURRING_OPERATIONS.json",
+  "receipts/future/_HCLI_SOVEREIGN_log.jsonl",
+  "git log"
+ ],
+ "is_it_falling": {
+  "verdict": "NOT_YET_ANSWERABLE",
+  "what_would_make_it_falling": "resident-decided experiments driving landings - the coding-tool path from G112 exercised by the resident rather than by Claude - so resident_decided rises against frontier_moves",
+  "why": "G114 asks for a metric that is MEASURED AND FALLING. This is the first computation, so there is nothing to compare it against. A trend needs a second reading from a later window; claiming a direction from one point would be the assertion this obligation exists to replace."
+ },
+ "metric": {
+  "claude_interventions": 47,
+  "frontier_moves": 68,
+  "interventions_per_frontier_move": 0.6912,
+  "interventions_per_hour": 2.873,
+  "measurement_window_hours": 16.362,
+  "reading": "68 frontier moves landed in 16.4 hours and 21 resident-decided experiments ran in the same campaign, so at most 21 of those moves had a resident decision behind them. 69.1% of frontier moves are Claude interventions. The register says 73.7% of recurring OPERATIONS are handed off, which is a different and more optimistic question: an operation can have an owner on disk and still be exercised by Claude on the day.",
+  "register_fraction_handed_off": 0.7368,
+  "resident_decided": 21,
+  "this_is_an_upper_bound_on_resident_credit": "every executed resident experiment is credited as if it drove a landing. Several drove none. The true intervention share is higher than this figure, not lower."
+ },
+ "obligation": "G114",
+ "producer_fix": "hcli_sovereign._log now stamps an absolute unix time on every entry. The first 83 entries carry only t_s and are reported as UNCLOCKED rather than back-dated.",
+ "question": "how often does Claude decide something S030 says the resident should decide?",
+ "register": {
+  "fraction_handed_off": 0.7368,
+  "n_claude_owned": 5,
+  "n_handed_off": 14,
+  "n_operations": 19,
+  "source": "receipts/future/RECURRING_OPERATIONS.json",
+  "still_claude_owned": [
+   "decide that an obligation is met",
+   "design the next kernel candidate once a ladder names the class",
+   "notice that a measurement instrument is defective",
+   "reconcile two harnesses that disagree",
+   "write the receipt prose that states a claim boundary"
+  ]
+ },
+ "resident_decisions": {
+  "n_clocked": 0,
+  "n_executed": 21,
+  "n_iterations": 85,
+  "n_parsed": 21,
+  "n_unclocked": 21,
+  "per_hour": null,
+  "per_hour_status": "UNCLOCKED_ENTRIES_PRESENT",
+  "why_no_rate": "21 executed iterations predate the absolute clock in hcli_sovereign._log and carry only t_s, seconds since their run's start. Back-dating them to complete a rate would be fabricating a measurement, so the rate is withheld until the log has run long enough with a clock."
+ },
+ "seal_sha256": "1d4f74486cd6b3669ded1905cd23cc4d2f42665da9f911472981c8132d22ffc4"
+}

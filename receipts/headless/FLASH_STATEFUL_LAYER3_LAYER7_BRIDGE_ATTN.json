@@ -1,0 +1,88 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787955203499",
+    "recorded_by": "flash_stateful_attention_probe",
+    "rule": "S032 §3 -- stateful organ timing; quiescence unknown",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "This proves a cross-species seam from stateful linear-prefix outputs through a persistent full-attention KV organ and its HyperConnection/routed/shared-MoE MLP epilogue, with distinct KV slots and first-step final-state parity. It does not prove device-only cross-module handoff, 48-layer token acceptance, complete-model TPS, EBPW, or resident promotion.",
+  "complete_system_ebpw": null,
+  "distinct_kv_slots": true,
+  "execution": {
+    "context_reused": true,
+    "device": "Apple M3 Ultra",
+    "first_input_bytes": 40960,
+    "first_input_sha256": "a813ba5af87a5f13f8d7ca847cf7217ed80e01bac3c2bb12d780d0b91dbaf617",
+    "full_attention_mlp_epilogue": true,
+    "input_kind": "layer2_stateful_linear_prefix_output",
+    "kv_cache_reused": true,
+    "kv_cache_slots": 2,
+    "process_boundary": "one native process",
+    "provider": "apple_metal",
+    "source_payload_bytes_read": 5171656704,
+    "weights_reused": true
+  },
+  "layer": 7,
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Feed this final state through the next qualified Flash layer in the persistent 48-layer session, then remove the diagnostic host seam.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_attention_organ_probe.v1",
+  "seal_sha256": "8254ed32ef2316dda086cf4af4e5f54ec77391978c4be51c2254e146fdeb21e1",
+  "stateful_final_state": true,
+  "status": "PASSED_STATEFUL_KV_ORGAN",
+  "steps": [
+    {
+      "attention_sha256": "5821acb5316996bdb6bc7d833a34752619cc72a68a7fb6a7beab6ae3e1a5e4d2",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "a813ba5af87a5f13f8d7ca847cf7217ed80e01bac3c2bb12d780d0b91dbaf617",
+      "final_state_sha256": "a14f7db1fd0fc0762d41dde15579c322b96ad90ea53864fc3ad16e1c5188d15a",
+      "finite": true,
+      "first_step_parity": {
+        "final_state": {
+          "cosine": 0.9999999999999779,
+          "finite": true,
+          "max_abs_error": 2.384185791015625e-7,
+          "rmse": 6.808502480729308e-9,
+          "within_tolerance": true
+        },
+        "query": {
+          "cosine": 0.9999999999999729,
+          "finite": true,
+          "max_abs_error": 1.9073486328125e-6,
+          "rmse": 2.586645303693524e-7,
+          "within_tolerance": true
+        }
+      },
+      "gpu_ns": 9759624,
+      "key_slot_sha256": "efc473906f496fd93ba0bcdabad8b026500a982c49e470d88d73ce58771d0791",
+      "sequence_length": 1,
+      "step": 0,
+      "token_id": 248044,
+      "wall_ns": 208908584
+    },
+    {
+      "attention_sha256": "51b9bfc104b77ba7e23a2d6ed3b25725957edc85fc1af3ee3889e14544374fde",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "fcdf67ac94d23e629122147d942b1b5bf206fc64021b25d8db5f87c1d99ec42f",
+      "final_state_sha256": "9820c6731db1967f5145bea0ea689fe99b9ef5536767f7b3aaeadb3dc904d252",
+      "finite": true,
+      "first_step_parity": null,
+      "gpu_ns": 6089374,
+      "key_slot_sha256": "4da35d4ff5e7c921d4457f294d861270b046da125320214f3934025ed7eb11ca",
+      "sequence_length": 2,
+      "step": 1,
+      "token_id": 248044,
+      "wall_ns": 6418709
+    }
+  ],
+  "token_ids": [
+    248044,
+    248044
+  ]
+}

@@ -411,6 +411,91 @@ class TestWorkerPacketCompiler(unittest.TestCase):
         self.assertNotIn("status=failed", packet.prompt)
         self.assertNotIn("status=completed", packet.prompt)
 
+    def test_scars_surface_causal_reason_across_dag_siblings(self):
+        """A resident restarting mid-mission must know WHY things died, not
+        just a receipt pointer, and must see same-role dead ends even when
+        they are not a direct DAG dependency of the unit about to run."""
+        from hcli.goal import compile_worker_context
+
+        wu = WorkUnit(
+            id="child",
+            role="work",
+            description="touch target.py",
+            dependencies=["dep0"],
+        )
+        dep0 = WorkUnit(
+            id="dep0",
+            role="work",
+            description="d0",
+            status="failed",
+            failure_context={"validation": {"reason": "assertion mismatch on shape"}},
+        )
+        # Same-role dead end that is NOT a dependency of `wu` at all — the
+        # exact gap this closes: a mission-sibling scar outside the DAG edge.
+        scar = WorkUnit(
+            id="sibling_attempt",
+            role="work",
+            description="tried a different approach",
+            status="failed",
+            failure_context={
+                "reason": "wrong file targeted",
+                "failure_signature": "deadbeefcafefeed",
+            },
+        )
+        # A failed unit of a different role is noise here, not signal.
+        other_role_failure = WorkUnit(
+            id="unrelated_role_failure",
+            role="research",
+            description="looked at something else",
+            status="failed",
+            failure_context={"reason": "irrelevant to this role"},
+        )
+        units = {
+            "child": wu,
+            "dep0": dep0,
+            "sibling_attempt": scar,
+            "unrelated_role_failure": other_role_failure,
+        }
+        compiled = {"invariants": [], "acceptance_criteria": [], "referenced_files": []}
+        packet = compile_worker_context(
+            wu, compiled, phase="running", units=units, steering=[]
+        )
+        # Direct dependency: the causal reason must survive, not just an id
+        # and a receipt pointer.
+        self.assertIn("dep0", packet.prompt)
+        self.assertIn("assertion mismatch on shape", packet.prompt)
+        # Cross-sibling scar: `sibling_attempt` is not a dependency of `wu`
+        # at all, yet its id and WHY it died must still reach the packet.
+        self.assertIn("sibling_attempt", packet.prompt)
+        self.assertIn("wrong file targeted", packet.prompt)
+        self.assertIn("deadbeefcafefeed", packet.prompt)
+        # A failed unit of a different role stays out.
+        self.assertNotIn("unrelated_role_failure", packet.prompt)
+        self.assertNotIn("irrelevant to this role", packet.prompt)
+
+    def test_scars_are_bounded_not_an_archive(self):
+        """Bounded model context stays bounded: no growing buffer of every
+        failure the mission has ever produced."""
+        from hcli.goal import MAX_SCAR_LINES, compile_worker_context
+
+        wu = WorkUnit(id="child", role="work", description="touch target.py")
+        units = {"child": wu}
+        total = MAX_SCAR_LINES + 5
+        for i in range(total):
+            units[f"attempt{i}"] = WorkUnit(
+                id=f"attempt{i}",
+                role="work",
+                description=f"attempt {i}",
+                status="failed",
+                failure_context={"reason": f"reason {i}"},
+            )
+        compiled = {"invariants": [], "acceptance_criteria": [], "referenced_files": []}
+        packet = compile_worker_context(
+            wu, compiled, phase="running", units=units, steering=[]
+        )
+        shown = sum(1 for i in range(total) if f"attempt{i}" in packet.prompt)
+        self.assertEqual(shown, MAX_SCAR_LINES)
+
     def test_checkpoint_persists_compiled_ir_without_inlining_goal(self):
         root = _load_ultragoal()
         with tempfile.TemporaryDirectory() as tmp:

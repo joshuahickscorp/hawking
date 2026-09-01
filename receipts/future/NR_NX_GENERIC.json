@@ -146,7 +146,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T09:55:35Z",
+  "recorded_at": "2026-09-01T06:08:00Z",
   "recorded_by": "tools/future/nr_nx_generic.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -536,7 +536,7 @@
   "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages and pack a source-independent NX on a real specimen; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_generic.v1",
- "seal_sha256": "2ef2d99df3bf289020471fb273102ee57d70da520c42a38e784b4084addeaedc",
+ "seal_sha256": "c2c53a27a47ed0f17d28e5c8bfc0bc2ec17fc06ba97a227ad953ecbc211a9523",
  "sleeping_workunit": {
   "blocked_reason": "NX_LOWER blocked at stage None: None",
   "classification": "SLEEPING",
@@ -2055,47 +2055,47 @@
    "error": null,
    "evidence": {
     "adapted_family": "dense_swiglu_transformer",
-    "capture_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc",
+    "capture_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-ggzw3iwg",
     "captured_archives": {
      "embed": {
       "bytes": 15888,
       "entry_point": "organ_embed_gather",
-      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/embed.mtlarchive",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-ggzw3iwg/embed.mtlarchive",
       "sha256": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
       "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70"
      },
      "gqa_attention": {
       "bytes": 19952,
       "entry_point": "organ_gqa_decode",
-      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/gqa_attention.mtlarchive",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-ggzw3iwg/gqa_attention.mtlarchive",
       "sha256": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
       "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27"
      },
      "lm_head": {
       "bytes": 15888,
       "entry_point": "organ_lm_head_gemv",
-      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/lm_head.mtlarchive",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-ggzw3iwg/lm_head.mtlarchive",
       "sha256": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
       "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf"
      },
      "mlp_down": {
       "bytes": 15888,
       "entry_point": "organ_mlp_down_gemv",
-      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/mlp_down.mtlarchive",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-ggzw3iwg/mlp_down.mtlarchive",
       "sha256": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
       "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544"
      },
      "mlp_gate_up": {
       "bytes": 16928,
       "entry_point": "organ_mlp_gate_up_swiglu",
-      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/mlp_gate_up.mtlarchive",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-ggzw3iwg/mlp_gate_up.mtlarchive",
       "sha256": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
       "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f"
      },
      "rmsnorm": {
       "bytes": 16480,
       "entry_point": "organ_rmsnorm",
-      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-rdvccbmc/rmsnorm.mtlarchive",
+      "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-ggzw3iwg/rmsnorm.mtlarchive",
       "sha256": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
       "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e"
      }
@@ -2186,7 +2186,7 @@
        {
         "compiled_identity": {
          "archive_bytes": 15888,
-         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/embed.mtlarchive",
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/embed.mtlarchive",
          "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
          "device": null,
          "entry_point": "organ_embed_gather",
@@ -2219,7 +2219,7 @@
        {
         "compiled_identity": {
          "archive_bytes": 19952,
-         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/gqa_attention.mtlarchive",
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/gqa_attention.mtlarchive",
          "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
          "device": null,
          "entry_point": "organ_gqa_decode",
@@ -2252,7 +2252,7 @@
        {
         "compiled_identity": {
          "archive_bytes": 15888,
-         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/lm_head.mtlarchive",
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/lm_head.mtlarchive",
          "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
          "device": null,
          "entry_point": "organ_lm_head_gemv",
@@ -2285,7 +2285,7 @@
        {
         "compiled_identity": {
          "archive_bytes": 15888,
-         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_down.mtlarchive",
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/mlp_down.mtlarchive",
          "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
          "device": null,
          "entry_point": "organ_mlp_down_gemv",
@@ -2318,7 +2318,7 @@
        {
         "compiled_identity": {
          "archive_bytes": 16928,
-         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_gate_up.mtlarchive",
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/mlp_gate_up.mtlarchive",
          "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
          "device": null,
          "entry_point": "organ_mlp_gate_up_swiglu",
@@ -2351,7 +2351,7 @@
        {
         "compiled_identity": {
          "archive_bytes": 16480,
-         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/rmsnorm.mtlarchive",
+         "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/rmsnorm.mtlarchive",
          "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
          "device": null,
          "entry_point": "organ_rmsnorm",
@@ -2435,7 +2435,7 @@
      {
       "compiled_identity": {
        "archive_bytes": 15888,
-       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/embed.mtlarchive",
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/embed.mtlarchive",
        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
        "device": null,
        "entry_point": "organ_embed_gather",
@@ -2482,7 +2482,7 @@
      {
       "compiled_identity": {
        "archive_bytes": 19952,
-       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/gqa_attention.mtlarchive",
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/gqa_attention.mtlarchive",
        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
        "device": null,
        "entry_point": "organ_gqa_decode",
@@ -2533,7 +2533,7 @@
      {
       "compiled_identity": {
        "archive_bytes": 15888,
-       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/lm_head.mtlarchive",
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/lm_head.mtlarchive",
        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
        "device": null,
        "entry_point": "organ_lm_head_gemv",
@@ -2580,7 +2580,7 @@
      {
       "compiled_identity": {
        "archive_bytes": 15888,
-       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_down.mtlarchive",
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/mlp_down.mtlarchive",
        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
        "device": null,
        "entry_point": "organ_mlp_down_gemv",
@@ -2627,7 +2627,7 @@
      {
       "compiled_identity": {
        "archive_bytes": 16928,
-       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/mlp_gate_up.mtlarchive",
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/mlp_gate_up.mtlarchive",
        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
        "device": null,
        "entry_point": "organ_mlp_gate_up_swiglu",
@@ -2674,7 +2674,7 @@
      {
       "compiled_identity": {
        "archive_bytes": 16480,
-       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-vhqvuyy_/rmsnorm.mtlarchive",
+       "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-3qre812o/rmsnorm.mtlarchive",
        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
        "device": null,
        "entry_point": "organ_rmsnorm",

@@ -1,0 +1,41 @@
+{
+  "expected": 14605881703,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "model-00001-of-00003.safetensors",
+    "model-00002-of-00003.safetensors",
+    "model-00003-of-00003.safetensors",
+    "model.safetensors.index.json",
+    "olmo-base.png",
+    "olmo3-logo",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+  ],
+  "mode": "safe",
+  "repo": "allenai/Olmo-3-1025-7B",
+  "resolved_sha": "a81bae42db3975be1671e27b9c9a56da1a9f980f",
+  "revision": "a81bae42db3975be1671e27b9c9a56da1a9f980f",
+  "sizes": {
+    ".gitattributes": 1569,
+    "README.md": 12222,
+    "config.json": 1620,
+    "generation_config.json": 69,
+    "merges.txt": 916646,
+    "model-00001-of-00003.safetensors": 4969984976,
+    "model-00002-of-00003.safetensors": 4981161496,
+    "model-00003-of-00003.safetensors": 4644917240,
+    "model.safetensors.index.json": 29630,
+    "olmo-base.png": 103368,
+    "olmo3-logo": 119,
+    "special_tokens_map.json": 207,
+    "tokenizer.json": 7137177,
+    "tokenizer_config.json": 4308,
+    "vocab.json": 1611056
+  }
+}

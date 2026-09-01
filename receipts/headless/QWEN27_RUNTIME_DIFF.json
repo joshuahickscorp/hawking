@@ -10,7 +10,7 @@
     "source_derived_is_not_physical": true,
     "unknown_is_not_equal": true
   },
-  "generated_at": 1787808507.5289128,
+  "generated_at": 1787835757.072852,
   "identity_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json",
   "ranked_differences": [
     {
@@ -120,7 +120,7 @@
     },
     {
       "classification": "DIFFERENT_VERIFIED",
-      "current": "5651e858f7c2cbd5f9064b7f82e2ce76c53020e1",
+      "current": "3f06d081505de35b1e9b1685e6a11484eda116d1",
       "dimension": "source_git_head",
       "expected_token_ns_impact": null,
       "historical": "03373eae6c961158e3b929ecbd8f2c31302c1809",

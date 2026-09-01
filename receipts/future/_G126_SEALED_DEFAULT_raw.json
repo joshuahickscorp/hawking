@@ -1,0 +1,1617 @@
+{
+  "absolute_ms_are_measured_under_load": true,
+  "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+  "claim_boundary": "this example verifies KERNEL IDENTITY and DISPATCH COUNT under the sealed default. Timings are recorded but are not a protected absolute and must not be promoted as one.",
+  "complete_token_gpu_ns_median_of_medians": 36351333,
+  "complete_token_gpu_ns_medians": [
+    36616916,
+    36351333,
+    35777999,
+    36122624,
+    35893791,
+    36914916,
+    37224625
+  ],
+  "concurrent_load": {
+    "loadavg": "{ 7.46 8.44 8.89 }",
+    "note": "absolute ms are measured-under-load; the A/B ratio is back-to-back in this process",
+    "uptime": "22:02  up 6 days,  1:59, 3 users, load averages: 7.46 8.44 8.89"
+  },
+  "concurrent_load_start": {
+    "loadavg": "{ 7.39 8.53 8.93 }",
+    "note": "absolute ms are measured-under-load; the A/B ratio is back-to-back in this process",
+    "uptime": "22:01  up 6 days,  1:59, 3 users, load averages: 7.39 8.53 8.93"
+  },
+  "dn_state_kernel_after_sealed_config": "widen_f4",
+  "dn_state_kernel_at_open": "widen_f4",
+  "git_head": "d706254a5f1c2f5dd7e7aac2bf60213d41d37a9b",
+  "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+  "last": {
+    "complete_token_dispatches": [
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580,
+      580
+    ],
+    "complete_token_dispatches_last": 580,
+    "complete_token_gpu_ns": [
+      36696125,
+      37810000,
+      38565833,
+      37266999,
+      36553250,
+      37561041,
+      36851708,
+      37207124,
+      36331249,
+      37481791,
+      37299708,
+      37108166,
+      37941791,
+      38272375,
+      37055333,
+      36884833,
+      37277291,
+      37383458,
+      37613958,
+      37760250,
+      37475625,
+      36775666,
+      37224625,
+      37201458,
+      38814916,
+      38494249,
+      36232125,
+      35868958,
+      36100708,
+      36055291,
+      36576124,
+      36079833
+    ],
+    "complete_token_gpu_ns_median": 37224625,
+    "decode_steps": 31,
+    "decode_wall_ns": 1186688166,
+    "dense_w_materialized": 0,
+    "dn_state_kernel": "widen_f4",
+    "fallbacks": 0,
+    "fuse_ba_delta": false,
+    "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+    "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+    "kernel_histogram": [
+      {
+        "count": 8320,
+        "kernel": "qwen80_add_residual_rmsnorm_tg"
+      },
+      {
+        "count": 4225,
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+      },
+      {
+        "count": 4160,
+        "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+      },
+      {
+        "count": 4160,
+        "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+      },
+      {
+        "count": 3120,
+        "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+      },
+      {
+        "count": 3120,
+        "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+      },
+      {
+        "count": 3120,
+        "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+      },
+      {
+        "count": 3120,
+        "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+      },
+      {
+        "count": 1040,
+        "kernel": "mha_decode_f32"
+      },
+      {
+        "count": 1040,
+        "kernel": "qwen38_attention_apply_sigmoid_gate"
+      },
+      {
+        "count": 1040,
+        "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+      },
+      {
+        "count": 1040,
+        "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+      },
+      {
+        "count": 65,
+        "kernel": "qwen80_residual_rmsnorm_tg"
+      },
+      {
+        "count": 65,
+        "kernel": "qwen_uniform_q4_embedding_lookup"
+      },
+      {
+        "count": 65,
+        "kernel": "sample_argmax_f32"
+      }
+    ],
+    "kernel_names": [
+      "mha_decode_f32",
+      "qwen38_attention_apply_sigmoid_gate",
+      "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "qwen38_gqa_qk_norm_rope_cache_tg",
+      "qwen38_qkvz_rearrange_conv_l2_f32",
+      "qwen80_add_residual_rmsnorm_tg",
+      "qwen80_deltanet_gated_rmsnorm_tg",
+      "qwen80_residual_rmsnorm_tg",
+      "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+      "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+      "qwen_uniform_q4_embedding_lookup",
+      "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+      "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+      "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+      "sample_argmax_f32"
+    ],
+    "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+    "new_token_ids": [
+      248068,
+      198,
+      760,
+      1156,
+      6587,
+      264,
+      11346,
+      11,
+      18541,
+      9546,
+      323,
+      15673,
+      314,
+      1204,
+      264,
+      18826,
+      27545,
+      264,
+      364,
+      58621,
+      1083,
+      6557,
+      9714,
+      321,
+      1179,
+      1083,
+      5484,
+      1970,
+      13,
+      1061,
+      369,
+      264
+    ],
+    "prefill_wall_ns": 1286118916,
+    "prompt_len": 34,
+    "theoretical_dispatches": 580
+  },
+  "levers_unset": true,
+  "max_new_tokens": 32,
+  "obligation": "G126",
+  "question": "with every lever unset, what does the dispatcher actually launch?",
+  "reps": 7,
+  "runs": [
+    {
+      "complete_token_dispatches": [
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580
+      ],
+      "complete_token_dispatches_last": 580,
+      "complete_token_gpu_ns": [
+        36575083,
+        36352458,
+        36965750,
+        36616916,
+        36724083,
+        36430166,
+        36715249,
+        37481291,
+        37661875,
+        36685541,
+        36924000,
+        36846291,
+        37205374,
+        36654249,
+        36611041,
+        36913416,
+        36671124,
+        37352541,
+        37726250,
+        36709125,
+        36613708,
+        36526874,
+        36388249,
+        36290291,
+        35361499,
+        36231708,
+        36611833,
+        35477458,
+        35566083,
+        35537708,
+        35846333,
+        36300833
+      ],
+      "complete_token_gpu_ns_median": 36616916,
+      "decode_steps": 31,
+      "decode_wall_ns": 1168402875,
+      "dense_w_materialized": 0,
+      "dn_state_kernel": "widen_f4",
+      "fallbacks": 0,
+      "fuse_ba_delta": false,
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+      "kernel_histogram": [
+        {
+          "count": 8320,
+          "kernel": "qwen80_add_residual_rmsnorm_tg"
+        },
+        {
+          "count": 4225,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 1040,
+          "kernel": "mha_decode_f32"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_attention_apply_sigmoid_gate"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen80_residual_rmsnorm_tg"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen_uniform_q4_embedding_lookup"
+        },
+        {
+          "count": 65,
+          "kernel": "sample_argmax_f32"
+        }
+      ],
+      "kernel_names": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd_ba_f4",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+        "sample_argmax_f32"
+      ],
+      "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264,
+        364,
+        58621,
+        1083,
+        6557,
+        9714,
+        321,
+        1179,
+        1083,
+        5484,
+        1970,
+        13,
+        1061,
+        369,
+        264
+      ],
+      "prefill_wall_ns": 1265882666,
+      "prompt_len": 34,
+      "theoretical_dispatches": 580
+    },
+    {
+      "complete_token_dispatches": [
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580
+      ],
+      "complete_token_dispatches_last": 580,
+      "complete_token_gpu_ns": [
+        36716375,
+        35551333,
+        35379750,
+        36295125,
+        37561208,
+        36576999,
+        36152874,
+        36503375,
+        36697500,
+        36306000,
+        36543999,
+        36681875,
+        37658166,
+        37599375,
+        36800749,
+        36141125,
+        36738125,
+        36605250,
+        36351333,
+        36676666,
+        36546708,
+        37621666,
+        36034999,
+        35432291,
+        35209708,
+        34969500,
+        35223374,
+        36225000,
+        36094208,
+        35293249,
+        35674624,
+        34669666
+      ],
+      "complete_token_gpu_ns_median": 36351333,
+      "decode_steps": 31,
+      "decode_wall_ns": 1157750667,
+      "dense_w_materialized": 0,
+      "dn_state_kernel": "widen_f4",
+      "fallbacks": 0,
+      "fuse_ba_delta": false,
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+      "kernel_histogram": [
+        {
+          "count": 8320,
+          "kernel": "qwen80_add_residual_rmsnorm_tg"
+        },
+        {
+          "count": 4225,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 1040,
+          "kernel": "mha_decode_f32"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_attention_apply_sigmoid_gate"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen80_residual_rmsnorm_tg"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen_uniform_q4_embedding_lookup"
+        },
+        {
+          "count": 65,
+          "kernel": "sample_argmax_f32"
+        }
+      ],
+      "kernel_names": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd_ba_f4",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+        "sample_argmax_f32"
+      ],
+      "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264,
+        364,
+        58621,
+        1083,
+        6557,
+        9714,
+        321,
+        1179,
+        1083,
+        5484,
+        1970,
+        13,
+        1061,
+        369,
+        264
+      ],
+      "prefill_wall_ns": 1260803542,
+      "prompt_len": 34,
+      "theoretical_dispatches": 580
+    },
+    {
+      "complete_token_dispatches": [
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580
+      ],
+      "complete_token_dispatches_last": 580,
+      "complete_token_gpu_ns": [
+        37303749,
+        36355541,
+        36495416,
+        36121374,
+        35996666,
+        35100625,
+        35316874,
+        37458000,
+        36290624,
+        36489000,
+        35958541,
+        36058500,
+        35317500,
+        35456000,
+        36979791,
+        35809166,
+        35308916,
+        35942125,
+        35321249,
+        35090874,
+        36340999,
+        34621041,
+        35115875,
+        35266374,
+        35137375,
+        35777999,
+        35203583,
+        35276625,
+        35427875,
+        35139749,
+        35275083,
+        36286125
+      ],
+      "complete_token_gpu_ns_median": 35777999,
+      "decode_steps": 31,
+      "decode_wall_ns": 1140756750,
+      "dense_w_materialized": 0,
+      "dn_state_kernel": "widen_f4",
+      "fallbacks": 0,
+      "fuse_ba_delta": false,
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+      "kernel_histogram": [
+        {
+          "count": 8320,
+          "kernel": "qwen80_add_residual_rmsnorm_tg"
+        },
+        {
+          "count": 4225,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 1040,
+          "kernel": "mha_decode_f32"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_attention_apply_sigmoid_gate"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen80_residual_rmsnorm_tg"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen_uniform_q4_embedding_lookup"
+        },
+        {
+          "count": 65,
+          "kernel": "sample_argmax_f32"
+        }
+      ],
+      "kernel_names": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd_ba_f4",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+        "sample_argmax_f32"
+      ],
+      "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264,
+        364,
+        58621,
+        1083,
+        6557,
+        9714,
+        321,
+        1179,
+        1083,
+        5484,
+        1970,
+        13,
+        1061,
+        369,
+        264
+      ],
+      "prefill_wall_ns": 1250397959,
+      "prompt_len": 34,
+      "theoretical_dispatches": 580
+    },
+    {
+      "complete_token_dispatches": [
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580
+      ],
+      "complete_token_dispatches_last": 580,
+      "complete_token_gpu_ns": [
+        35299125,
+        34474625,
+        35104249,
+        35487625,
+        37224458,
+        36483416,
+        36543875,
+        36248583,
+        36182250,
+        35041708,
+        35872250,
+        36982250,
+        36122624,
+        36376875,
+        36331791,
+        35934125,
+        36363500,
+        36003708,
+        36735249,
+        36304500,
+        36036750,
+        36026499,
+        36071583,
+        36401208,
+        36675625,
+        37076875,
+        35610291,
+        35172958,
+        35427416,
+        35736666,
+        36155708,
+        36100125
+      ],
+      "complete_token_gpu_ns_median": 36122624,
+      "decode_steps": 31,
+      "decode_wall_ns": 1151131375,
+      "dense_w_materialized": 0,
+      "dn_state_kernel": "widen_f4",
+      "fallbacks": 0,
+      "fuse_ba_delta": false,
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+      "kernel_histogram": [
+        {
+          "count": 8320,
+          "kernel": "qwen80_add_residual_rmsnorm_tg"
+        },
+        {
+          "count": 4225,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 1040,
+          "kernel": "mha_decode_f32"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_attention_apply_sigmoid_gate"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen80_residual_rmsnorm_tg"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen_uniform_q4_embedding_lookup"
+        },
+        {
+          "count": 65,
+          "kernel": "sample_argmax_f32"
+        }
+      ],
+      "kernel_names": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd_ba_f4",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+        "sample_argmax_f32"
+      ],
+      "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264,
+        364,
+        58621,
+        1083,
+        6557,
+        9714,
+        321,
+        1179,
+        1083,
+        5484,
+        1970,
+        13,
+        1061,
+        369,
+        264
+      ],
+      "prefill_wall_ns": 1254516709,
+      "prompt_len": 34,
+      "theoretical_dispatches": 580
+    },
+    {
+      "complete_token_dispatches": [
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580
+      ],
+      "complete_token_dispatches_last": 580,
+      "complete_token_gpu_ns": [
+        35410249,
+        35748125,
+        36027875,
+        36547500,
+        35825749,
+        35358333,
+        35796375,
+        35349625,
+        35893791,
+        35451000,
+        35548166,
+        35593708,
+        35597624,
+        35944708,
+        36388000,
+        35020666,
+        35270208,
+        35470083,
+        36177833,
+        35964083,
+        36709416,
+        36117875,
+        35575166,
+        35080124,
+        35278041,
+        35919375,
+        36782999,
+        36076874,
+        36224791,
+        36441374,
+        36143500,
+        36421625
+      ],
+      "complete_token_gpu_ns_median": 35893791,
+      "decode_steps": 31,
+      "decode_wall_ns": 1145222208,
+      "dense_w_materialized": 0,
+      "dn_state_kernel": "widen_f4",
+      "fallbacks": 0,
+      "fuse_ba_delta": false,
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+      "kernel_histogram": [
+        {
+          "count": 8320,
+          "kernel": "qwen80_add_residual_rmsnorm_tg"
+        },
+        {
+          "count": 4225,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 1040,
+          "kernel": "mha_decode_f32"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_attention_apply_sigmoid_gate"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen80_residual_rmsnorm_tg"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen_uniform_q4_embedding_lookup"
+        },
+        {
+          "count": 65,
+          "kernel": "sample_argmax_f32"
+        }
+      ],
+      "kernel_names": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd_ba_f4",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+        "sample_argmax_f32"
+      ],
+      "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264,
+        364,
+        58621,
+        1083,
+        6557,
+        9714,
+        321,
+        1179,
+        1083,
+        5484,
+        1970,
+        13,
+        1061,
+        369,
+        264
+      ],
+      "prefill_wall_ns": 1251970541,
+      "prompt_len": 34,
+      "theoretical_dispatches": 580
+    },
+    {
+      "complete_token_dispatches": [
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580
+      ],
+      "complete_token_dispatches_last": 580,
+      "complete_token_gpu_ns": [
+        36535416,
+        37831375,
+        36565124,
+        37180874,
+        37065375,
+        36914916,
+        37137750,
+        36311166,
+        36780624,
+        35728125,
+        36403291,
+        37888874,
+        37343999,
+        38304958,
+        37899416,
+        36498958,
+        36042666,
+        36281374,
+        36588916,
+        36252083,
+        36524166,
+        37611791,
+        37485875,
+        37531625,
+        36949750,
+        38198291,
+        38798624,
+        36918875,
+        36274375,
+        35647624,
+        36179041,
+        35956750
+      ],
+      "complete_token_gpu_ns_median": 36914916,
+      "decode_steps": 31,
+      "decode_wall_ns": 1179127458,
+      "dense_w_materialized": 0,
+      "dn_state_kernel": "widen_f4",
+      "fallbacks": 0,
+      "fuse_ba_delta": false,
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+      "kernel_histogram": [
+        {
+          "count": 8320,
+          "kernel": "qwen80_add_residual_rmsnorm_tg"
+        },
+        {
+          "count": 4225,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 1040,
+          "kernel": "mha_decode_f32"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_attention_apply_sigmoid_gate"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen80_residual_rmsnorm_tg"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen_uniform_q4_embedding_lookup"
+        },
+        {
+          "count": 65,
+          "kernel": "sample_argmax_f32"
+        }
+      ],
+      "kernel_names": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd_ba_f4",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+        "sample_argmax_f32"
+      ],
+      "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264,
+        364,
+        58621,
+        1083,
+        6557,
+        9714,
+        321,
+        1179,
+        1083,
+        5484,
+        1970,
+        13,
+        1061,
+        369,
+        264
+      ],
+      "prefill_wall_ns": 1254573375,
+      "prompt_len": 34,
+      "theoretical_dispatches": 580
+    },
+    {
+      "complete_token_dispatches": [
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580,
+        580
+      ],
+      "complete_token_dispatches_last": 580,
+      "complete_token_gpu_ns": [
+        36696125,
+        37810000,
+        38565833,
+        37266999,
+        36553250,
+        37561041,
+        36851708,
+        37207124,
+        36331249,
+        37481791,
+        37299708,
+        37108166,
+        37941791,
+        38272375,
+        37055333,
+        36884833,
+        37277291,
+        37383458,
+        37613958,
+        37760250,
+        37475625,
+        36775666,
+        37224625,
+        37201458,
+        38814916,
+        38494249,
+        36232125,
+        35868958,
+        36100708,
+        36055291,
+        36576124,
+        36079833
+      ],
+      "complete_token_gpu_ns_median": 37224625,
+      "decode_steps": 31,
+      "decode_wall_ns": 1186688166,
+      "dense_w_materialized": 0,
+      "dn_state_kernel": "widen_f4",
+      "fallbacks": 0,
+      "fuse_ba_delta": false,
+      "generated_text": "<think>\nThe user wants a detailed, ordinary-prose explanation of how a compiler transforms a for-loop into basic blocks and then into machine code. This is a",
+      "gpu_timestamp_authority": "completed MTLCommandBuffer GPUStartTime/GPUEndTime after wait; never a CPU-wait proxy",
+      "kernel_histogram": [
+        {
+          "count": 8320,
+          "kernel": "qwen80_add_residual_rmsnorm_tg"
+        },
+        {
+          "count": 4225,
+          "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 4160,
+          "kernel": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen38_qkvz_rearrange_conv_l2_f32"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen80_deltanet_gated_rmsnorm_tg"
+        },
+        {
+          "count": 3120,
+          "kernel": "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 1040,
+          "kernel": "mha_decode_f32"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_attention_apply_sigmoid_gate"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen38_gqa_qk_norm_rope_cache_tg"
+        },
+        {
+          "count": 1040,
+          "kernel": "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen80_residual_rmsnorm_tg"
+        },
+        {
+          "count": 65,
+          "kernel": "qwen_uniform_q4_embedding_lookup"
+        },
+        {
+          "count": 65,
+          "kernel": "sample_argmax_f32"
+        }
+      ],
+      "kernel_names": [
+        "mha_decode_f32",
+        "qwen38_attention_apply_sigmoid_gate",
+        "qwen38_gated_delta_decode_vi_simd_ba_f4",
+        "qwen38_gqa_qk_norm_rope_cache_tg",
+        "qwen38_qkvz_rearrange_conv_l2_f32",
+        "qwen80_add_residual_rmsnorm_tg",
+        "qwen80_deltanet_gated_rmsnorm_tg",
+        "qwen80_residual_rmsnorm_tg",
+        "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_embedding_lookup",
+        "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+        "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast",
+        "sample_argmax_f32"
+      ],
+      "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+      "new_token_ids": [
+        248068,
+        198,
+        760,
+        1156,
+        6587,
+        264,
+        11346,
+        11,
+        18541,
+        9546,
+        323,
+        15673,
+        314,
+        1204,
+        264,
+        18826,
+        27545,
+        264,
+        364,
+        58621,
+        1083,
+        6557,
+        9714,
+        321,
+        1179,
+        1083,
+        5484,
+        1970,
+        13,
+        1061,
+        369,
+        264
+      ],
+      "prefill_wall_ns": 1286118916,
+      "prompt_len": 34,
+      "theoretical_dispatches": 580
+    }
+  ],
+  "schema": "hawking.future.sealed_default.raw.v1",
+  "session_open_s": 2.9792815839999998,
+  "the_state_kernel_was_never_pinned": true,
+  "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+  "warmup": 1
+}

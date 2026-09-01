@@ -38,7 +38,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import REPO, git  # noqa: E402
+from _common import REPO, git  # noqa: E402, require_known_flags
 
 RECEIPT = REPO / "receipts" / "future" / "INDEX_PROVENANCE.json"
 
@@ -126,6 +126,8 @@ def record() -> Path:
 
 
 if __name__ == "__main__":
+    from _common import require_known_flags
+    require_known_flags(["--build", "--check", "--record"])
     if "--check" in sys.argv:
         print(json.dumps(check(), indent=1))
     elif "--record" in sys.argv:

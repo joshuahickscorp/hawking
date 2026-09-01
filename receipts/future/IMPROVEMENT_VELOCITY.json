@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T09:54:32Z",
+  "recorded_at": "2026-09-01T05:30:20Z",
   "recorded_by": "tools/future/improvement_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -91,8 +91,7 @@
    "quantize_aux_u8",
    "reach_demonstrated_bandwidth_deltanet",
    "reach_demonstrated_bandwidth_gqa",
-   "reach_demonstrated_bandwidth_mlp",
-   "specimen_curriculum_ready"
+   "reach_demonstrated_bandwidth_mlp"
   ],
   "experimentally_killed": [
    "CONDITIONAL_PROGRAM",
@@ -102,10 +101,10 @@
    "NONLINEAR_GENERATOR",
    "PRODUCT_DICTIONARY"
   ],
-  "n_considered": 19,
+  "n_considered": 18,
   "n_experimentally_killed": 6,
   "n_oracle_killed": 4,
-  "n_still_live": 8,
+  "n_still_live": 7,
   "oracle_killed": [
    "deltanet_big_kernel_is_organ_cost",
    "dispatch_count",
@@ -119,8 +118,7 @@
    "mlp_decode_fma_cheapening",
    "quantize_aux_u8",
    "reach_demonstrated_bandwidth_deltanet",
-   "reach_demonstrated_bandwidth_gqa",
-   "specimen_curriculum_ready"
+   "reach_demonstrated_bandwidth_gqa"
   ]
  },
  "gpu_authority": false,
@@ -139,14 +137,14 @@
  "recorded_by": "tools/future/improvement_trial.py",
  "repeated_scar_attempts": 0,
  "schema": "hawking.future.improvement_velocity.v1",
- "seal_sha256": "e7b8f6ff358b9e9bc2f43b7d7c32a45d0bf03ca13c97665786e1e720ea0e1d2d",
+ "seal_sha256": "be295357ee5bed91f84bdfacc67146d4e3dcf7cdedc8110c003da46bbf3fb062",
  "search_space_collapse": {
-  "delta_ms": 5.597,
+  "delta_ms": 4.942,
   "delta_n_live": 10,
-  "live_hypothesis_mass_ms_after": 16.95,
-  "live_hypothesis_mass_ms_before": 22.547,
-  "n_live_after": 8,
-  "n_live_before": 18
+  "live_hypothesis_mass_ms_after": 10.151,
+  "live_hypothesis_mass_ms_before": 15.093,
+  "n_live_after": 7,
+  "n_live_before": 17
  },
  "trial": "HCLI_10M_IMPROVEMENT_TRIAL",
  "verified_frontier_movement": 12,

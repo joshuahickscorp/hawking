@@ -63,6 +63,18 @@ def test_only_the_final_op_writes_the_output_buffer():
     assert air.lower_to_msl(p).count("out[i] = ") == 1
 
 
+def test_scale_uses_specialization_literal_without_fabricating_scalar_buffer():
+    p = air.AirProgram(
+        "negate", [air.AirTensor("x", (8,))],
+        [air.AirOp("scale", ("x",), "z")], "z",
+        specialization={"ALPHA": -1.0},
+    )
+    msl = air.lower_to_msl(p)
+    assert "const float ALPHA = -1.0f" in msl
+    assert "ALPHA * x[i]" in msl
+    assert len(p.inputs) == 1
+
+
 def test_placement_is_a_field_so_egb_cannot_force_a_redesign():
     p = air.AirProgram("f", [air.AirTensor("x", (4,))],
                        [air.AirOp("relu", ("x",), "z")], "z", device="NVIDIA_GPU_0")

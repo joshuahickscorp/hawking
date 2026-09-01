@@ -83,3 +83,37 @@ def test_the_reading_does_not_overclaim_about_within_kernel_slack():
     joined = " ".join(r["what_this_does_not_prove"])
     assert "WITHIN a kernel" in joined
     assert "heads, groups and row blocks" in joined
+
+
+def test_the_reordering_scar_is_emitted_by_the_producer():
+    """A scar in a hand-edited receipt does not survive a rebuild."""
+    doc = dag.build()
+    scars = doc["scars"]
+    assert len(scars) == 1
+    s = scars[0]
+    assert s["family"] == "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK"
+    assert s["authority"] == "S026 §4"
+    assert "11 edges" in s["mechanism"]
+
+
+def test_the_scar_is_computed_from_the_slack_not_typed(monkeypatch):
+    """If overlapable work ever appears, the scar must refuse to be emitted."""
+    real = dag.slack()
+    monkeypatch.setattr(
+        dag, "slack",
+        lambda: {**real, "theoretically_overlapable_ns": 1_000_000})
+    with pytest.raises(dag.DagRefused, match="reopen condition has fired"):
+        dag.reordering_scar()
+
+
+def test_the_scar_does_not_claim_the_gpu_is_saturated():
+    s = dag.reordering_scar()
+    assert "a claim that the GPU is saturated" in s["not"]
+    assert "450-580 aggregate GB/s" in s["not"], "the oracle that motivates it"
+    assert "says only WHERE IT IS NOT" in s["not"]
+
+
+def test_the_scar_carries_a_reopen_condition():
+    s = dag.reordering_scar()
+    assert "speculative drafting" in s["reopen"]
+    assert "recomputes the slack and raises" in s["reopen"]

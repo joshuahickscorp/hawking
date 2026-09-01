@@ -3,12 +3,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:17:55Z",
+  "recorded_at": "2026-09-01T05:27:13Z",
   "recorded_by": "tools/future/freshness.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/l36-torture-wiring-20260830-182109",
+ "branch": "odyssey-i",
  "check": {
   "rule": "exit 1 iff any registered artifact is STALE_SEMANTIC; STALE_FINGERPRINT_ONLY exits 0",
   "stale_semantic": [],
@@ -17,36 +17,60 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "classifications": [
   {
+   "added_candidate_ids": [],
    "derived": "CANDIDATE_STAGED_PLAN.json",
+   "evidence_source": "live_headless",
    "kind": "queue",
+   "missing_at_capture": [],
    "producer": "tools.future.candidate_planner:build",
-   "reason": "derived receipt is not readable in receipts/future/",
-   "sources": [],
-   "status": "UNKNOWN"
-  },
-  {
-   "derived": "QUALIFICATION_PIPELINE.json",
-   "kind": "generic",
-   "producer": "tools.future.qualification_pipeline:build",
-   "reason": "derived receipt is not readable in receipts/future/",
-   "sources": [],
-   "status": "UNKNOWN"
-  },
-  {
-   "derived": "FLASH_NX_COMPLETENESS_AUDIT.json",
-   "kind": "generic",
-   "producer": "tools.future.flash_nx_audit:build",
-   "reason": "derived receipt is not readable in receipts/future/",
-   "sources": [],
-   "status": "UNKNOWN"
+   "reason": "all compared sources match in bytes and meaning",
+   "removed_candidate_ids": [],
+   "sources": [
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      }
+     ],
+     "current_candidate_count": 49,
+     "current_semantic_fingerprint": "0b8de5da310a2dd957f5638c1ba6aca11fe72f1bda456c0d4f214a329f6f34e0",
+     "current_sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": 49,
+     "recorded_semantic_fingerprint": "0b8de5da310a2dd957f5638c1ba6aca11fe72f1bda456c0d4f214a329f6f34e0",
+     "recorded_sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
+     "rel": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    }
+   ],
+   "status": "FRESH",
+   "status_changed_candidate_ids": []
   },
   {
    "added_candidate_ids": [],
-   "derived": "HCLI_FUTURE_WORKUNITS.json",
+   "derived": "QUALIFICATION_PIPELINE.json",
    "evidence_source": "live_headless",
    "kind": "generic",
    "missing_at_capture": [],
-   "producer": "tools.future.workunit_species:build",
+   "producer": "tools.future.qualification_pipeline:build",
    "reason": "no provenance recorded, or a current source is not visible",
    "removed_candidate_ids": [],
    "sources": [
@@ -56,8 +80,14 @@
      "copies": [
       {
        "evidence_source": "live_headless",
-       "kind": "git_common",
+       "kind": "this_worktree",
        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
        "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
       }
      ],
@@ -84,8 +114,274 @@
      "copies": [
       {
        "evidence_source": "live_headless",
-       "kind": "git_common",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/CANDIDATE_STAGED_PLAN.json",
+       "sha256": "4ecf625b232062348d17aaef18517f203e480ad58323dc3654c7a17c18df96c0"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "a02999b8f3827b0e6bb37969c88c3ad182bdbef4a51e5ea49c3287b245bd1f10",
+     "current_sha256": "4ecf625b232062348d17aaef18517f203e480ad58323dc3654c7a17c18df96c0",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/future/CANDIDATE_STAGED_PLAN.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/future/CANDIDATE_STAGED_PLAN.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    }
+   ],
+   "status": "UNKNOWN",
+   "status_changed_candidate_ids": []
+  },
+  {
+   "added_candidate_ids": [],
+   "derived": "FLASH_NX_COMPLETENESS_AUDIT.json",
+   "evidence_source": "live_headless",
+   "kind": "generic",
+   "missing_at_capture": [],
+   "producer": "tools.future.flash_nx_audit:build",
+   "reason": "no provenance recorded, or a current source is not visible",
+   "removed_candidate_ids": [],
+   "sources": [
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      }
+     ],
+     "current_candidate_count": 49,
+     "current_semantic_fingerprint": "0b8de5da310a2dd957f5638c1ba6aca11fe72f1bda456c0d4f214a329f6f34e0",
+     "current_sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "b425f25c29d2741d3dcbda5bc71a102791751ad293eea4bab80fbb9e61a1b6f0",
+     "current_sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+       "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+       "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "ad0b60f002ad6405f9076bb025c61f91b1ae2423046c7d3b15ea34c087d91a71",
+     "current_sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+       "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+       "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "9abbc29fbb5af2eabd0ef142a01afc3ab92203decbf02008d51e6db9a7319e23",
+     "current_sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+       "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+       "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "eaa982bfccb4d8c1163c3851380b1def7149b29c3d075cc18ea09882ad2f1e2d",
+     "current_sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    }
+   ],
+   "status": "UNKNOWN",
+   "status_changed_candidate_ids": []
+  },
+  {
+   "added_candidate_ids": [],
+   "derived": "HCLI_FUTURE_WORKUNITS.json",
+   "evidence_source": "live_headless",
+   "kind": "generic",
+   "missing_at_capture": [],
+   "producer": "tools.future.workunit_species:build",
+   "reason": "no provenance recorded, or a current source is not visible",
+   "removed_candidate_ids": [],
+   "sources": [
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      }
+     ],
+     "current_candidate_count": 49,
+     "current_semantic_fingerprint": "0b8de5da310a2dd957f5638c1ba6aca11fe72f1bda456c0d4f214a329f6f34e0",
+     "current_sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+       "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
        "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
       }
      ],
@@ -111,83 +407,1694 @@
    "status_changed_candidate_ids": []
   },
   {
+   "added_candidate_ids": [],
    "derived": "TOURNAMENT_READINESS.json",
+   "evidence_source": "live_headless",
    "kind": "generic",
+   "missing_at_capture": [],
    "producer": "tools.future.tournament:build",
-   "reason": "derived receipt is not readable in receipts/future/",
-   "sources": [],
-   "status": "UNKNOWN"
+   "reason": "no provenance recorded, or a current source is not visible",
+   "removed_candidate_ids": [],
+   "sources": [
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "b425f25c29d2741d3dcbda5bc71a102791751ad293eea4bab80fbb9e61a1b6f0",
+     "current_sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": false,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+       "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_SCOREBOARD.json",
+       "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "7571c2de874dd9bbc75f744ce3ae63dcc6ad4c58825d44b5f5a2183819fd472e",
+     "current_sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369",
+     "evidence_source": "live_headless",
+     "historical_path": null,
+     "reason": "derived artifact records no provenance to compare",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": null,
+     "recorded_sha256": null,
+     "rel": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": false,
+     "status": "UNKNOWN",
+     "status_changed_candidate_ids": []
+    }
+   ],
+   "status": "UNKNOWN",
+   "status_changed_candidate_ids": []
   },
   {
    "added_candidate_ids": [],
    "derived": "EVIDENCE_SNAPSHOT.json",
-   "evidence_source": null,
+   "evidence_source": "live_headless",
    "kind": "manifest",
    "missing_at_capture": [
-    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-    "receipts/headless/ACCELERATOR_SCOREBOARD.json",
-    "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
-    "receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
-    "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-    "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-    "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
-    "receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
-    "receipts/headless/FLASH_COMPLETE_V0.nx.json",
-    "receipts/headless/FLASH_COMPLETE_V2.nr.json",
-    "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
-    "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
-    "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
-    "receipts/headless/FLASH_ORGAN_CENSUS.json",
-    "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
     "receipts/headless/FLASH_ROUTE_STABILITY.json",
-    "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
-    "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
-    "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
-    "receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
-    "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
-    "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-    "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
-    "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
-    "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
-    "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
-    "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
-    "receipts/headless/QWEN80_BIT_BUDGET_LEDGER.json",
-    "receipts/headless/APPLE_ANE_ATLAS.json",
-    "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
-    "receipts/headless/HCLI_FPGA_PREBOARD.json",
-    "receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
-    "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
-    "receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
-    "receipts/headless/ODYSSEY_LEARNING_CURVE.json",
-    "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
-    "receipts/headless/DOCTOR_TRANSFER.json",
-    "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
-    "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
-    "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
-    "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
-    "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
-    "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
-    "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
-    "receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
-    "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
-    "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
-    "CODEX_ACCELERATOR_HANDOFF.json"
+    "receipts/headless/QWEN80_BIT_BUDGET_LEDGER.json"
    ],
    "producer": "tools.future.evidence_snapshot:build",
-   "reason": "no provenance recorded, or a current source is not visible",
+   "reason": "all compared sources match in bytes and meaning",
    "removed_candidate_ids": [],
-   "sources": [],
-   "status": "UNKNOWN",
+   "sources": [
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+       "sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb"
+      }
+     ],
+     "current_candidate_count": 49,
+     "current_semantic_fingerprint": "0b8de5da310a2dd957f5638c1ba6aca11fe72f1bda456c0d4f214a329f6f34e0",
+     "current_sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": 49,
+     "recorded_semantic_fingerprint": "0b8de5da310a2dd957f5638c1ba6aca11fe72f1bda456c0d4f214a329f6f34e0",
+     "recorded_sha256": "3d4291b2cacfe823ac5556268efe0814c24dd0daefee8894226070a48ade02eb",
+     "rel": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+       "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_SCOREBOARD.json",
+       "sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "7571c2de874dd9bbc75f744ce3ae63dcc6ad4c58825d44b5f5a2183819fd472e",
+     "current_sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "7571c2de874dd9bbc75f744ce3ae63dcc6ad4c58825d44b5f5a2183819fd472e",
+     "recorded_sha256": "8e4d50aa9898ebdd93b0404b0e7b9f73731c25280c2056220dfd85017a835369",
+     "rel": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_SCOREBOARD.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+       "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
+       "sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "f01d81e42bc880953c206c26d7b56fd917e6ed348f0477672345d048ed29f3e4",
+     "current_sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "f01d81e42bc880953c206c26d7b56fd917e6ed348f0477672345d048ed29f3e4",
+     "recorded_sha256": "7fe5eba1709bb2d2210f9fa4097a348a36a7040a5da2ca9ff35845f5dfefd94e",
+     "rel": "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+       "sha256": "c5b77fb1e3a6a167e38911e9c6cd5c460c39043d32494ae5ebb1e3fe714b8915"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_REPATRIATION_AUDIT.json",
+       "sha256": "c5b77fb1e3a6a167e38911e9c6cd5c460c39043d32494ae5ebb1e3fe714b8915"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "b4ad30b195cdda6a8d856d858e6dd7bb2ca804de6683c3dcb4d1b2a4e5931cd0",
+     "current_sha256": "c5b77fb1e3a6a167e38911e9c6cd5c460c39043d32494ae5ebb1e3fe714b8915",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "b4ad30b195cdda6a8d856d858e6dd7bb2ca804de6683c3dcb4d1b2a4e5931cd0",
+     "recorded_sha256": "c5b77fb1e3a6a167e38911e9c6cd5c460c39043d32494ae5ebb1e3fe714b8915",
+     "rel": "receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+       "sha256": "2711382665157b79dba2268aa290ce5c3d8397ac6fb95a409b8f2f1868b0a1e4"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+       "sha256": "2711382665157b79dba2268aa290ce5c3d8397ac6fb95a409b8f2f1868b0a1e4"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "3ca3a692fecb5210e9b3cf2cadcc7d9eab62ec7f51477c98fd2dfe02badba647",
+     "current_sha256": "2711382665157b79dba2268aa290ce5c3d8397ac6fb95a409b8f2f1868b0a1e4",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "3ca3a692fecb5210e9b3cf2cadcc7d9eab62ec7f51477c98fd2dfe02badba647",
+     "recorded_sha256": "2711382665157b79dba2268aa290ce5c3d8397ac6fb95a409b8f2f1868b0a1e4",
+     "rel": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+       "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+       "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "0e7c6fbe203acd8cde204c05560668a2c414c6907d330a9f8bd1a9c2a6c6f764",
+     "current_sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "0e7c6fbe203acd8cde204c05560668a2c414c6907d330a9f8bd1a9c2a6c6f764",
+     "recorded_sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
+     "rel": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+       "sha256": "17b6bb49a211a9345701e17e0dfddb86c5950135d7e5a4096476177e2e77f4db"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_TRANSFER_VERIFIED.json",
+       "sha256": "17b6bb49a211a9345701e17e0dfddb86c5950135d7e5a4096476177e2e77f4db"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "beddba54d1e84933586f725b7ed8e60bb5c6902ca6cfd41e6629b213b2543b43",
+     "current_sha256": "17b6bb49a211a9345701e17e0dfddb86c5950135d7e5a4096476177e2e77f4db",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "beddba54d1e84933586f725b7ed8e60bb5c6902ca6cfd41e6629b213b2543b43",
+     "recorded_sha256": "17b6bb49a211a9345701e17e0dfddb86c5950135d7e5a4096476177e2e77f4db",
+     "rel": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+       "sha256": "447247d2f48ce7d983a2d6de37b82cd9ae9b520f1415b439b659b0dd80ff4214"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+       "sha256": "447247d2f48ce7d983a2d6de37b82cd9ae9b520f1415b439b659b0dd80ff4214"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "2f018fa5a97c692948014614bc8466edfb5b0ed937f79277e488c4d2a7443136",
+     "current_sha256": "447247d2f48ce7d983a2d6de37b82cd9ae9b520f1415b439b659b0dd80ff4214",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "2f018fa5a97c692948014614bc8466edfb5b0ed937f79277e488c4d2a7443136",
+     "recorded_sha256": "447247d2f48ce7d983a2d6de37b82cd9ae9b520f1415b439b659b0dd80ff4214",
+     "rel": "receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_F_ODYSSEY_PASS.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+       "sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "b425f25c29d2741d3dcbda5bc71a102791751ad293eea4bab80fbb9e61a1b6f0",
+     "current_sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "b425f25c29d2741d3dcbda5bc71a102791751ad293eea4bab80fbb9e61a1b6f0",
+     "recorded_sha256": "0eee8f82b1adf97087f995b7d645a210c6ec5ea975d25bd96450956db75345a9",
+     "rel": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+       "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+       "sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "ad0b60f002ad6405f9076bb025c61f91b1ae2423046c7d3b15ea34c087d91a71",
+     "current_sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "ad0b60f002ad6405f9076bb025c61f91b1ae2423046c7d3b15ea34c087d91a71",
+     "recorded_sha256": "ebadbf2a038138c43064112e48a779f5ec7167a97ba1c44bf6c442867ef6c3a6",
+     "rel": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+       "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+       "sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "9abbc29fbb5af2eabd0ef142a01afc3ab92203decbf02008d51e6db9a7319e23",
+     "current_sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "9abbc29fbb5af2eabd0ef142a01afc3ab92203decbf02008d51e6db9a7319e23",
+     "recorded_sha256": "a644ca2407ec65af2bffc5a1fba15c63cbce7a492e70334fb9eb96535f47f3f1",
+     "rel": "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+       "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+       "sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "eaa982bfccb4d8c1163c3851380b1def7149b29c3d075cc18ea09882ad2f1e2d",
+     "current_sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "eaa982bfccb4d8c1163c3851380b1def7149b29c3d075cc18ea09882ad2f1e2d",
+     "recorded_sha256": "993e62421f1ffd77009dbab5c501cfd9f7fda1555c24bd46b309f171cb5849d9",
+     "rel": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+       "sha256": "f4de5744f9e1a7cb275cb6347a17069cee261052f9f823020e7b908d800ea588"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4.json",
+       "sha256": "f4de5744f9e1a7cb275cb6347a17069cee261052f9f823020e7b908d800ea588"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "3f6ee9bc0db5b8ac0c249263b6af4281ef7c7faad696a9a49977752a61f09fb0",
+     "current_sha256": "f4de5744f9e1a7cb275cb6347a17069cee261052f9f823020e7b908d800ea588",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "3f6ee9bc0db5b8ac0c249263b6af4281ef7c7faad696a9a49977752a61f09fb0",
+     "recorded_sha256": "f4de5744f9e1a7cb275cb6347a17069cee261052f9f823020e7b908d800ea588",
+     "rel": "receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_COHERENCE_SCREEN_L4.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ORGAN_CENSUS.json",
+       "sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
+       "sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "e1ae4e0e94d0148e02285b03955bd0e97fb76ee7b8ab9be110c6cb518468f3f7",
+     "current_sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ORGAN_CENSUS.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "e1ae4e0e94d0148e02285b03955bd0e97fb76ee7b8ab9be110c6cb518468f3f7",
+     "recorded_sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d",
+     "rel": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ORGAN_CENSUS.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+       "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+       "sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "b1a649bcd49160027b172d83cb701cb46c1e8b2ed897a9391fd00302119293c5",
+     "current_sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "b1a649bcd49160027b172d83cb701cb46c1e8b2ed897a9391fd00302119293c5",
+     "recorded_sha256": "4dc9bf25ea300f7c41e9623827a81fae29567c533e11c7c1f2ee85ba0614fa28",
+     "rel": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+       "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json",
+       "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "da7de471efddefc13550511a793a4306ee57bc197333dfdb50e5ce13ce6e6031",
+     "current_sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "da7de471efddefc13550511a793a4306ee57bc197333dfdb50e5ce13ce6e6031",
+     "recorded_sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa",
+     "rel": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+       "sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+       "sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "8a97f0c734dda82e8e738df160eeb8e6168ae8fd0bc3befb23b5d8ef7e0ee9bf",
+     "current_sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "8a97f0c734dda82e8e738df160eeb8e6168ae8fd0bc3befb23b5d8ef7e0ee9bf",
+     "recorded_sha256": "5b86c8a01c28c794bfa3804918236fae87d90320fd81626a92fb33cf1f912851",
+     "rel": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN_FULL_L44.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+       "sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_LAYER30_CRITICAL_PATH.json",
+       "sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "9196f2cf56ef1fbafa7ec273d107b3136398816230a5b57e339d7b7fbd5f3bb5",
+     "current_sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "9196f2cf56ef1fbafa7ec273d107b3136398816230a5b57e339d7b7fbd5f3bb5",
+     "recorded_sha256": "017c7d990b4bb92280a388a5ea13e2fbe693997d9c051685ac8f3cd51a82a3c7",
+     "rel": "receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER30_CRITICAL_PATH.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+       "sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_LAYER10_CRITICAL_PATH.json",
+       "sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "96b1d762021fced607e471b6e0a123e33f6329705b22783b9803cf7f3e781cbc",
+     "current_sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "96b1d762021fced607e471b6e0a123e33f6329705b22783b9803cf7f3e781cbc",
+     "recorded_sha256": "20c3684de53a6e682d74dbdd65a2fb7833db53f2520e1de10df94542ce7fe37e",
+     "rel": "receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER10_CRITICAL_PATH.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
+       "sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_LAYER46_DISPATCH_LEDGER.json",
+       "sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "d39d0aa2d205a5cc562f5765b59edf7e72e8c9125ebacc6117dcaf0b168d6826",
+     "current_sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "d39d0aa2d205a5cc562f5765b59edf7e72e8c9125ebacc6117dcaf0b168d6826",
+     "recorded_sha256": "2c65c1cf0ac8da4966a8d70b7779333e5a7d21f2fb48034b97416a9162458017",
+     "rel": "receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_LAYER46_DISPATCH_LEDGER.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "sha256": "57ead5d81c1974a8152deb8350876be362be33f3013d7e3c4015f90d3c7dcf8c"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_STATEFUL_TPS_GATE_V14.json",
+       "sha256": "57ead5d81c1974a8152deb8350876be362be33f3013d7e3c4015f90d3c7dcf8c"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "3a925a7d1a7f0b837dabc92cc753a2c72b84c9853567e0fafb602a37bdf830d4",
+     "current_sha256": "57ead5d81c1974a8152deb8350876be362be33f3013d7e3c4015f90d3c7dcf8c",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "3a925a7d1a7f0b837dabc92cc753a2c72b84c9853567e0fafb602a37bdf830d4",
+     "recorded_sha256": "57ead5d81c1974a8152deb8350876be362be33f3013d7e3c4015f90d3c7dcf8c",
+     "rel": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+       "sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+       "sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "2b5376d45a80ca0c66cbd939b7240c84200b2ff885d42cc8d6ef1768ddeee80e",
+     "current_sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "2b5376d45a80ca0c66cbd939b7240c84200b2ff885d42cc8d6ef1768ddeee80e",
+     "recorded_sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0",
+     "rel": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+       "sha256": "a403ed8eb3d5b2d1d4c38996809da93f72ea0ddb30cc321a613b8e7f01e4589b"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+       "sha256": "a403ed8eb3d5b2d1d4c38996809da93f72ea0ddb30cc321a613b8e7f01e4589b"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "0d7ea6c9f46cdd9ac168cbcfc0694a8a28567f94d2ba9820dc443a35f07ea83f",
+     "current_sha256": "a403ed8eb3d5b2d1d4c38996809da93f72ea0ddb30cc321a613b8e7f01e4589b",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "0d7ea6c9f46cdd9ac168cbcfc0694a8a28567f94d2ba9820dc443a35f07ea83f",
+     "recorded_sha256": "a403ed8eb3d5b2d1d4c38996809da93f72ea0ddb30cc321a613b8e7f01e4589b",
+     "rel": "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+       "sha256": "64253f9de400d83854826629eca19102c2593e0bcfbeeeecdfff47146474c3a1"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/QWEN27_TOKEN_NS_BUDGET.json",
+       "sha256": "64253f9de400d83854826629eca19102c2593e0bcfbeeeecdfff47146474c3a1"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "86d29cee5bfdad33fd30cdc5d90fa0fc19818612e60812f55b7b69791e6e400f",
+     "current_sha256": "64253f9de400d83854826629eca19102c2593e0bcfbeeeecdfff47146474c3a1",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "86d29cee5bfdad33fd30cdc5d90fa0fc19818612e60812f55b7b69791e6e400f",
+     "recorded_sha256": "64253f9de400d83854826629eca19102c2593e0bcfbeeeecdfff47146474c3a1",
+     "rel": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+       "sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/QWEN27_FPGA_ORGAN_MAP.json",
+       "sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "58015804e5c843d5d273ffdc816239cb8ce472514e41cfb8d3e5a42c8d799a32",
+     "current_sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "58015804e5c843d5d273ffdc816239cb8ce472514e41cfb8d3e5a42c8d799a32",
+     "recorded_sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655",
+     "rel": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_FPGA_ORGAN_MAP.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+       "sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+       "sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "a99800242699efd9d87c35b7e92f4baa2285997a61e7f142547e0492a59300f3",
+     "current_sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "a99800242699efd9d87c35b7e92f4baa2285997a61e7f142547e0492a59300f3",
+     "recorded_sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62",
+     "rel": "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_ATLAS.json",
+       "sha256": "f591a8eedf93b071d222c13103bbc750523dffe854981532785126d2c37a9d81"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/APPLE_ANE_ATLAS.json",
+       "sha256": "f591a8eedf93b071d222c13103bbc750523dffe854981532785126d2c37a9d81"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "97a8d9548dad6e71a539f265f5f72df50b2f25bf748b7004eb93f9128255f2e7",
+     "current_sha256": "f591a8eedf93b071d222c13103bbc750523dffe854981532785126d2c37a9d81",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_ATLAS.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "97a8d9548dad6e71a539f265f5f72df50b2f25bf748b7004eb93f9128255f2e7",
+     "recorded_sha256": "f591a8eedf93b071d222c13103bbc750523dffe854981532785126d2c37a9d81",
+     "rel": "receipts/headless/APPLE_ANE_ATLAS.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_ATLAS.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+       "sha256": "0f25b8bfc36dd7538b4121dfe491773ceb6c855d0ac61b7ab49feca8f6c6fecd"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/APPLE_ANE_DEVICE_PROFILE.json",
+       "sha256": "0f25b8bfc36dd7538b4121dfe491773ceb6c855d0ac61b7ab49feca8f6c6fecd"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "0813d96316792e2980ab7895de44a205bbde8883950e3553bf101c51681c2f36",
+     "current_sha256": "0f25b8bfc36dd7538b4121dfe491773ceb6c855d0ac61b7ab49feca8f6c6fecd",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "0813d96316792e2980ab7895de44a205bbde8883950e3553bf101c51681c2f36",
+     "recorded_sha256": "0f25b8bfc36dd7538b4121dfe491773ceb6c855d0ac61b7ab49feca8f6c6fecd",
+     "rel": "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/APPLE_ANE_DEVICE_PROFILE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FPGA_PREBOARD.json",
+       "sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_FPGA_PREBOARD.json",
+       "sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "b8884250cb37903cc8672e666a62046347c858f7a8f541d7606577edb3ad0a5a",
+     "current_sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FPGA_PREBOARD.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "b8884250cb37903cc8672e666a62046347c858f7a8f541d7606577edb3ad0a5a",
+     "recorded_sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d",
+     "rel": "receipts/headless/HCLI_FPGA_PREBOARD.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FPGA_PREBOARD.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+       "sha256": "5bbd75c24f78965b3f8094df5e4fbeda5faa8d2af5888650033e0feef2b981b9"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_FPGA_PREBOARD_CURRENT.json",
+       "sha256": "5bbd75c24f78965b3f8094df5e4fbeda5faa8d2af5888650033e0feef2b981b9"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "3fcbfd974bc0f8011875226a08d7d0d3281db16d1a677c27c439abd35302002d",
+     "current_sha256": "5bbd75c24f78965b3f8094df5e4fbeda5faa8d2af5888650033e0feef2b981b9",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "3fcbfd974bc0f8011875226a08d7d0d3281db16d1a677c27c439abd35302002d",
+     "recorded_sha256": "5bbd75c24f78965b3f8094df5e4fbeda5faa8d2af5888650033e0feef2b981b9",
+     "rel": "receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FPGA_PREBOARD_CURRENT.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+       "sha256": "b1827e68aac976c87afd940858cd3ad949fb16715c709b8ca29d0f8e90b8797a"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ODYSSEY_TRANSFER_PROVEN.json",
+       "sha256": "b1827e68aac976c87afd940858cd3ad949fb16715c709b8ca29d0f8e90b8797a"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "7b668bb1d43bac8880bf408f2abd6b3be54d63743ab37db4a08577f5769c85f2",
+     "current_sha256": "b1827e68aac976c87afd940858cd3ad949fb16715c709b8ca29d0f8e90b8797a",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "7b668bb1d43bac8880bf408f2abd6b3be54d63743ab37db4a08577f5769c85f2",
+     "recorded_sha256": "b1827e68aac976c87afd940858cd3ad949fb16715c709b8ca29d0f8e90b8797a",
+     "rel": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+       "sha256": "0e4e20dd5714660eea78122db71331874a1746799ddc6043d03680dcdabc0125"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ODYSSEY_ADVERSARIAL_SWEEP.json",
+       "sha256": "0e4e20dd5714660eea78122db71331874a1746799ddc6043d03680dcdabc0125"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "0c2683142a4058b05519bd6821a76d78d5297055480c2f3136dcada806895d74",
+     "current_sha256": "0e4e20dd5714660eea78122db71331874a1746799ddc6043d03680dcdabc0125",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "0c2683142a4058b05519bd6821a76d78d5297055480c2f3136dcada806895d74",
+     "recorded_sha256": "0e4e20dd5714660eea78122db71331874a1746799ddc6043d03680dcdabc0125",
+     "rel": "receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_LEARNING_CURVE.json",
+       "sha256": "11cc13bb93164d2c992718d17a71e3809482ebcd20260a86b7bfbcf89ceb2e70"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ODYSSEY_LEARNING_CURVE.json",
+       "sha256": "11cc13bb93164d2c992718d17a71e3809482ebcd20260a86b7bfbcf89ceb2e70"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "cca2222fe4fa203e4b5f25a699461700765c80e39929a4216998d75f86798f93",
+     "current_sha256": "11cc13bb93164d2c992718d17a71e3809482ebcd20260a86b7bfbcf89ceb2e70",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_LEARNING_CURVE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "cca2222fe4fa203e4b5f25a699461700765c80e39929a4216998d75f86798f93",
+     "recorded_sha256": "11cc13bb93164d2c992718d17a71e3809482ebcd20260a86b7bfbcf89ceb2e70",
+     "rel": "receipts/headless/ODYSSEY_LEARNING_CURVE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ODYSSEY_LEARNING_CURVE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+       "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/NOETIC_NEGATIVE_SCIENCE.json",
+       "sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "53efe8168d524332e8d46e0852e63104bcd2f0a71c6a3c589fa81516f6817b54",
+     "current_sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "53efe8168d524332e8d46e0852e63104bcd2f0a71c6a3c589fa81516f6817b54",
+     "recorded_sha256": "ba01d42d6e04952a56e5e56e1a36fcfbaddcab7cecc163efb9236bd8ebaf7015",
+     "rel": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/DOCTOR_TRANSFER.json",
+       "sha256": "de73716bd0cad1b460ad867214bd2f91a7610fa11a0febb8b6df84cec50594ea"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/DOCTOR_TRANSFER.json",
+       "sha256": "de73716bd0cad1b460ad867214bd2f91a7610fa11a0febb8b6df84cec50594ea"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "8acd620a51f17eddbaba337671596d2bb78e63f0468cc9ebda85afa99f994984",
+     "current_sha256": "de73716bd0cad1b460ad867214bd2f91a7610fa11a0febb8b6df84cec50594ea",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/DOCTOR_TRANSFER.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "8acd620a51f17eddbaba337671596d2bb78e63f0468cc9ebda85afa99f994984",
+     "recorded_sha256": "de73716bd0cad1b460ad867214bd2f91a7610fa11a0febb8b6df84cec50594ea",
+     "rel": "receipts/headless/DOCTOR_TRANSFER.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/DOCTOR_TRANSFER.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+       "sha256": "a8a6398caed0520147b1966167b6540ab6f50d072ad2bb5c11a9e6944ec7fb32"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/DENSE_SUBBIT_TRANSFER.json",
+       "sha256": "a8a6398caed0520147b1966167b6540ab6f50d072ad2bb5c11a9e6944ec7fb32"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "bc8741c1d0a481864d427887baaba273462faca0216a03945bce94ae57f0fb40",
+     "current_sha256": "a8a6398caed0520147b1966167b6540ab6f50d072ad2bb5c11a9e6944ec7fb32",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "bc8741c1d0a481864d427887baaba273462faca0216a03945bce94ae57f0fb40",
+     "recorded_sha256": "a8a6398caed0520147b1966167b6540ab6f50d072ad2bb5c11a9e6944ec7fb32",
+     "rel": "receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/DENSE_SUBBIT_TRANSFER.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+       "sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_ACCELERATOR_REGRESSION.json",
+       "sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "1b4fdf740450aff843a62bcf400b9f8ef59283a7adad18bf3b5606b0f6b8c408",
+     "current_sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "1b4fdf740450aff843a62bcf400b9f8ef59283a7adad18bf3b5606b0f6b8c408",
+     "recorded_sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3",
+     "rel": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_ACCELERATOR_REGRESSION.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+       "sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
+       "sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "164ec20ac6a4d7f56d13be0e34bd8e87478c79cede0a0bf7e3bd5581e2a32461",
+     "current_sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "164ec20ac6a4d7f56d13be0e34bd8e87478c79cede0a0bf7e3bd5581e2a32461",
+     "recorded_sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f",
+     "rel": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+       "sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+       "sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "4daae3c297d6ef760aa56ff0f1c92959e7e50630d77f21cdceb4c98556b393ed",
+     "current_sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "4daae3c297d6ef760aa56ff0f1c92959e7e50630d77f21cdceb4c98556b393ed",
+     "recorded_sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05",
+     "rel": "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+       "sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/NEGATIVE_SCIENCE_REGISTER.json",
+       "sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "06b41501980f06b2c7ca5d08ab24a41c352a158832c8cc63bd76e006339e32ac",
+     "current_sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "06b41501980f06b2c7ca5d08ab24a41c352a158832c8cc63bd76e006339e32ac",
+     "recorded_sha256": "8d6b507c219fee45f808a54e5833834c3f980ec40e8ecf57c3890c7480f0ab1a",
+     "rel": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/forge/projects/hawking/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/gravity/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/workspace/ops/local/genesis-agentos-worktrees/kernel/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/NEGATIVE_TRANSFER_ATLAS.json",
+       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "c195ad191ea4bb593dcaa930f4c96ffe25bbffaef4dcaf94c0e759d2b1893829",
+     "current_sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "c195ad191ea4bb593dcaa930f4c96ffe25bbffaef4dcaf94c0e759d2b1893829",
+     "recorded_sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0",
+     "rel": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+       "sha256": "b1ac537b66276f7b6d752e6ab891e195669348e7c1b9803c238a1b770f0dfd83"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/NEGATIVE_SCIENCE.json",
+       "sha256": "b1ac537b66276f7b6d752e6ab891e195669348e7c1b9803c238a1b770f0dfd83"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "1f7e18ae4595fe50681ee921b8975514c698ad565671bb3232ef29c83e08a0cf",
+     "current_sha256": "b1ac537b66276f7b6d752e6ab891e195669348e7c1b9803c238a1b770f0dfd83",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "1f7e18ae4595fe50681ee921b8975514c698ad565671bb3232ef29c83e08a0cf",
+     "recorded_sha256": "b1ac537b66276f7b6d752e6ab891e195669348e7c1b9803c238a1b770f0dfd83",
+     "rel": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/NEGATIVE_SCIENCE.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+       "sha256": "6c318342c0f934daa38b36383299f0e258d8cf4cf74f4be2c8235efc1f766e53"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_REPATRIATION_EFFECTS.json",
+       "sha256": "6c318342c0f934daa38b36383299f0e258d8cf4cf74f4be2c8235efc1f766e53"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "b31c426e4b7a6906be29b75f775336cb70f2a1bcf382364bdb358a96197c2913",
+     "current_sha256": "6c318342c0f934daa38b36383299f0e258d8cf4cf74f4be2c8235efc1f766e53",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "b31c426e4b7a6906be29b75f775336cb70f2a1bcf382364bdb358a96197c2913",
+     "recorded_sha256": "6c318342c0f934daa38b36383299f0e258d8cf4cf74f4be2c8235efc1f766e53",
+     "rel": "receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_REPATRIATION_EFFECTS.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+       "sha256": "40e580c6b68cafaecbb2cf1f5c8ab4da5cde53a5822a9580dcd36bd8fa8b97af"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+       "sha256": "40e580c6b68cafaecbb2cf1f5c8ab4da5cde53a5822a9580dcd36bd8fa8b97af"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "71663042b08242fba08387e3fdd678be653aded11ef695a01946c455e35401a5",
+     "current_sha256": "40e580c6b68cafaecbb2cf1f5c8ab4da5cde53a5822a9580dcd36bd8fa8b97af",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "71663042b08242fba08387e3fdd678be653aded11ef695a01946c455e35401a5",
+     "recorded_sha256": "40e580c6b68cafaecbb2cf1f5c8ab4da5cde53a5822a9580dcd36bd8fa8b97af",
+     "rel": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+       "sha256": "07d949a2eaab00e08f6dc092e07d1d462b5ae1aa2836da7ccc91858bb00cb597"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/ACCELERATOR_FRONT_G_P6.json",
+       "sha256": "07d949a2eaab00e08f6dc092e07d1d462b5ae1aa2836da7ccc91858bb00cb597"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "8b9915bd38f0097a3401d3495f6eddc3eeeb029d3c5395a149db2a3a0c9d43c6",
+     "current_sha256": "07d949a2eaab00e08f6dc092e07d1d462b5ae1aa2836da7ccc91858bb00cb597",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "8b9915bd38f0097a3401d3495f6eddc3eeeb029d3c5395a149db2a3a0c9d43c6",
+     "recorded_sha256": "07d949a2eaab00e08f6dc092e07d1d462b5ae1aa2836da7ccc91858bb00cb597",
+     "rel": "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    },
+    {
+     "added_candidate_ids": [],
+     "byte_match": true,
+     "copies": [
+      {
+       "evidence_source": "live_headless",
+       "kind": "this_worktree",
+       "path": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+       "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
+      },
+      {
+       "evidence_source": "pinned_snapshot",
+       "kind": "pinned_snapshot",
+       "path": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/CODEX_ACCELERATOR_HANDOFF.json",
+       "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
+      }
+     ],
+     "current_candidate_count": null,
+     "current_semantic_fingerprint": "db920bc8d35923a9eeeec7ad8b3127b97a57cdc4a196dedb5de3330ee656a436",
+     "current_sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482",
+     "evidence_source": "live_headless",
+     "historical_path": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+     "reason": "byte sha matches; semantic identity follows",
+     "recorded_candidate_count": null,
+     "recorded_semantic_fingerprint": "db920bc8d35923a9eeeec7ad8b3127b97a57cdc4a196dedb5de3330ee656a436",
+     "recorded_sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482",
+     "rel": "CODEX_ACCELERATOR_HANDOFF.json",
+     "removed_candidate_ids": [],
+     "resolved_path": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
+     "semantic_field_changed_candidate_ids": [],
+     "semantic_match": true,
+     "status": "FRESH",
+     "status_changed_candidate_ids": []
+    }
+   ],
+   "status": "FRESH",
    "status_changed_candidate_ids": []
   }
  ],
  "counts": {
-  "FRESH": 0,
+  "FRESH": 2,
   "STALE_FINGERPRINT_ONLY": 0,
   "STALE_SEMANTIC": 0,
-  "UNKNOWN": 6,
+  "UNKNOWN": 4,
   "registered": 6,
-  "unregistered": 19
+  "unregistered": 298
  },
  "eras": [
   "I Genesis of the Laboratory",
@@ -207,7 +2114,7 @@
   "registry of derived -> source(s) -> producer; unregistered receipts/future/*.json are findings",
   "source resolution copes with live-present, live-absent, and pinned-snapshot copies and records which"
  ],
- "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "head": "d6d14e9fd7255571ac832936c3d638d89df90074",
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
   "QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json and TOURNAMENT_READINESS.json record no source sha256/semantic fingerprint, so they classify UNKNOWN until those producers start writing the CANDIDATE_STAGED_PLAN.input pattern",
@@ -215,9 +2122,8 @@
   "this sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE; bench.state stays UNKNOWN",
   "no GPU / FPGA / power meter in this lane; no hardware quantity is asserted",
   "--refresh was not invoked by --check/--report; STALE_SEMANTIC artifacts stay on disk until a caller passes --refresh",
-  "UNKNOWN artifacts: CANDIDATE_STAGED_PLAN.json, QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json, TOURNAMENT_READINESS.json, EVIDENCE_SNAPSHOT.json",
-  "19 receipts/future/*.json files are not in the freshness registry",
-  "this worktree has no receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json; resolution used other_worktree/git_common/pinned_snapshot when present (absence here is a checkout fact, not a claim that the file does not exist)"
+  "UNKNOWN artifacts: QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json, TOURNAMENT_READINESS.json",
+  "298 receipts/future/*.json files are not in the freshness registry"
  ],
  "no_era_vi": true,
  "no_odyssey_iv": true,
@@ -241,7 +2147,7 @@
    {
     "in_git": true,
     "note": "already records input.queue_sha256 + input.queue_fingerprint + candidate_count + by_status",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/future/CANDIDATE_STAGED_PLAN.json"
    },
    {
@@ -265,13 +2171,13 @@
    {
     "in_git": true,
     "note": "sequences planner/preflight; does not record source sha/fingerprint",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/future/QUALIFICATION_PIPELINE.json"
    },
    {
     "in_git": true,
     "note": "audits Flash NX completeness against the queue; no source sha recorded",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
    },
    {
@@ -283,7 +2189,7 @@
    {
     "in_git": true,
     "note": "reads NX identity documents; no source sha recorded",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/future/TOURNAMENT_READINESS.json"
    },
    {
@@ -295,25 +2201,25 @@
    {
     "in_git": true,
     "note": "41-system inventory; this lane extends it, does not replace it",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/future/FUTURE_SUBSTRATE_HANDOFF.json"
    },
    {
     "in_git": true,
     "note": "live frontier; stale_entries is a different probe, not derived-artifact freshness",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/future/CLAUDE_GLOBAL_FRONTIER.json"
    },
    {
     "in_git": false,
     "note": "Codex live queue (untracked on many worktrees); disk state is authority",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    },
    {
     "in_git": true,
     "note": "pinned snapshot copy used when live headless is not visible",
-    "on_disk": false,
+    "on_disk": true,
     "path": "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    }
   ],
@@ -382,27 +2288,306 @@
   }
  ],
  "schema": "hawking.future.freshness.v1",
- "seal_sha256": "c07670ee157ce7550ae18593fa891b9428894a09e13447cb98e89fc8625a73ba",
+ "seal_sha256": "7d35bf91e099ae10d9612d552941a089b81a23335bea42b3ca61929bee337081",
  "unregistered": [
+  "ABI_VERDICT_HARNESS.json",
+  "ABLITERATION.json",
+  "ABLITERATION_RUN.json",
+  "ACCELERATOR_WORKUNITS.json",
+  "ADAPTIVE_VERIFICATION.json",
+  "ADDRESSING_ATTRIBUTION.json",
+  "ADDRESSING_GAP.json",
+  "ANE_PREBOARD.json",
+  "ANE_PROBE_LAB.json",
+  "ARTIFACT_IDENTITY.json",
+  "ATTRIBUTION_AUDIT.json",
+  "AUTONOMY_DEGENERACY.json",
   "AUTONOMY_MISSION_STATE.json",
   "AUTONOMY_RUN.json",
+  "AUTONOMY_SCARS.json",
+  "AUTONOMY_TIMELINE_15m.json",
+  "AUTONOMY_TIMELINE_1h.json",
+  "AUTONOMY_TIMELINE_30m.json",
+  "AUTONOMY_TRIALS.json",
+  "AUX_CAPABILITY_SCREEN.json",
+  "AUX_U8_LUT.json",
+  "AUX_U8_NATIVE.json",
+  "BASELINE_STALENESS.json",
+  "BA_DELTA_AB.json",
+  "BITCAST_DEQUANT_AB.json",
+  "CAMPAIGN_SCARS.json",
+  "CAPABILITY_BYTE_ELIMINATION.json",
+  "CAPABILITY_CURVE.json",
+  "CAPABILITY_INFORMATION_MAP.json",
+  "CAPABILITY_STAGES.json",
+  "CAPACITY_INFERENCE_RULE.json",
+  "CATALOG_ADDRESSING.json",
+  "CAUSAL_PATTERN_LIBRARY.json",
+  "CHOICE_JSON_PROBE.json",
+  "CLAIM_SCOPE.json",
+  "CLAUDE_GLOBAL_FRONTIER.json",
+  "CLAUDE_INTERVENTIONS.json",
+  "CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
   "CODEX_INGEST_STATE.json",
+  "CODEX_MUTATION_SURFACE.json",
+  "CODEX_WORKUNIT_SPECIES.json",
+  "COMPLETE_EBPW.json",
+  "COMPONENT_PERTURBATION.json",
+  "CONTAMINATION_SCIENCE.json",
   "CUDA_LOWBIT_HYPOTHESES.json",
+  "DEBUGGER_LAB.json",
   "DECODE_CIVILIZATION.json",
+  "DECODE_TAX_TARGET.json",
+  "DELTANET_GENERATED_TRANSITION.json",
+  "DELTANET_MULTISTEP.json",
+  "DELTANET_ORGAN_DECOMPOSE.json",
+  "DELTANET_PROGRAM_ORACLES.json",
+  "DELTANET_QKVZ_PRECISION.json",
+  "DELTANET_REPRESENTATION.json",
+  "DELTANET_STATE_FUNCTION.json",
+  "DELTANET_STATE_MACHINE_ECONOMICS.json",
+  "DELTANET_WIDEN_AB.json",
+  "DEQUANT_HOIST_AB.json",
+  "DEQUANT_HOIST_CANDIDATE.json",
+  "DETACHED_EXECUTION.json",
+  "DETACHED_WORK_TRIAL.json",
+  "DEVELOPER_PLATFORM.json",
+  "DEVICE_ASCENSION_PIPELINE.json",
+  "DEVICE_COMPILER.json",
   "DIRTY_MEASUREMENT.json",
+  "DIRTY_SOURCE_SEAL.json",
+  "DISPATCH_CEREMONY.json",
+  "DISPATCH_MOTIFS.json",
+  "DISPATCH_SIZE_SWEEP.json",
+  "DOCTOR_SEAL_DRIVEN.json",
+  "EBPW_CATEGORY_VALIDATOR.json",
+  "ECONOMICS_CALIBRATION.json",
   "EVIDENCE_DAG.json",
+  "EXAM_A_OPTION_TREE.json",
+  "EXECUTABLE_ECONOMICS.json",
+  "EXPERIMENT_TURNAROUND.json",
+  "EXPERT_BANK_SCHOOL.json",
+  "EXTERNAL_SPECIMEN_SEAL.json",
+  "FALLBACK_RESIDENT.json",
+  "FIDELITY_HIERARCHY.json",
+  "FLASH_BPW_LADDER.json",
+  "FLASH_META_REPLAN.json",
+  "FLASH_NR_COMPLETE.json",
+  "FLASH_ORGAN_PIVOT.json",
+  "FLASH_ORGAN_SCHOOLS.json",
+  "FLASH_ORGAN_WORKGRAPHS.json",
+  "FOLD_ADDQX_AB.json",
   "FPGA_ENGINE_SCHOOL.json",
+  "FPGA_MULTIFIDELITY.json",
+  "FRONTIER_STATE.json",
+  "FUNCTIONAL_ROLE_PROBE.json",
+  "FUSION_SIMULATION.json",
+  "FUTURE_SUBSTRATE_HANDOFF.json",
+  "GAP_LEDGER_60.json",
+  "GEOMETRY_TABLE.json",
+  "GIT_LOCK_DURABILITY_REPORT.json",
+  "GREEN_MACHINE.json",
+  "HARDWARE_DOCTOR.json",
+  "HARNESS_RECONCILIATION.json",
   "HBM_DOCTOR.json",
+  "HCLI_AUTONOMY_BUILD.json",
+  "HCLI_COMPACTOR.json",
+  "HCLI_FAST_THOUGHT.json",
+  "HCLI_MISSION_KERNEL.json",
   "HCLI_SELF_PROFILE.json",
+  "HMF_MANAGED_OBJECTS.json",
+  "HWIR_V1.json",
+  "IMPROVEMENT_METABOLISM.json",
+  "IMPROVEMENT_TRIAL.json",
+  "IMPROVEMENT_VELOCITY.json",
+  "INDEX_PROVENANCE.json",
+  "INTEGRATION_ATTACK.json",
+  "INTEGRATION_GATE.json",
+  "INTRA_TOKEN_CONCURRENCY_AB.json",
+  "KERNEL_GEOMETRY.json",
+  "LEGACY_ODYSSEY_DRIVER_RETIREMENT.json",
+  "LEVER_PROMOTION_GATE.json",
+  "LPC_BASELINES.json",
+  "LPC_DATASET.json",
+  "MAX_RESIDENT_PHYSICAL_ROOF.json",
+  "MEASUREMENT_PROVENANCE.json",
+  "MEMORY_TRAFFIC_PROBE.json",
+  "METAL_REACHABILITY.json",
+  "META_DOWNSTREAM_READY.json",
+  "META_EXPERIMENT_FUNNEL.json",
+  "MISSION_CLASS.json",
+  "MLP_ALU_ROOFLINE.json",
+  "MLP_AUXILIARY_INFORMATION.json",
+  "MLP_AUX_MERGE_AB.json",
+  "MLP_BYTE_CENSUS.json",
+  "MLP_CODE_INFORMATION.json",
+  "MLP_DECODE_CHEAPEN.json",
+  "MLP_ERROR_BUDGET.json",
+  "MLP_FUNCTIONAL_RANK.json",
+  "MLP_ISSUE_RATE_LADDER.json",
+  "MLP_NONLINEAR_PROGRAM.json",
+  "MLP_REGION_FALSIFIER.json",
+  "MLP_SHARED_PROGRAM.json",
+  "MLP_SPARSE_RESIDUAL.json",
+  "MLP_STREAM_COUNT.json",
+  "MLP_STRUCTURED_OPERATOR.json",
+  "MLP_TEACHER_CORPUS.json",
+  "MODELLAKE_EVENTS.json",
+  "MODELLAKE_SCHEDULER_VIEW.json",
+  "MODEL_BEARING.json",
+  "MODEL_BEARING_TIMELINE.json",
+  "MODEL_BEARING_TORTURE_30M.json",
+  "MOE_PHYSICAL_SCHOOL.json",
+  "MULTISTREAM_CAPACITY_TREE.json",
+  "MULTI_MODEL_TRIAL.json",
+  "MUTATION_ENGINE.json",
+  "MUTATION_TRIAL.json",
   "NEGATIVE_SCIENCE_INDEX.json",
   "NGRAM_SCHOOL.json",
+  "NO_WAIT_ORCHESTRATION.json",
+  "NO_WAIT_SCHEDULER.json",
+  "NR_NX_GENERIC.json",
+  "NR_NX_PATH.json",
+  "NX_PACKER.json",
+  "ODYSSEY2_LAW_STORE.json",
+  "ODYSSEY2_TRANSFER.json",
+  "ODYSSEY3_ADVERSARY.json",
+  "ODYSSEY3_ATTACK.json",
+  "ODYSSEY_BOOTSTRAP_GOLDEN.json",
+  "ODYSSEY_CONSOLIDATED_RUN.json",
+  "ODYSSEY_I_LAUNCH.json",
   "ODYSSEY_LAUNCH_GATE.json",
+  "ODYSSEY_LAUNCH_SPRINT_PROFILE.json",
+  "ODYSSEY_MISSION_CONTROLLER.json",
+  "ODYSSEY_TOOL_DRIVER.json",
+  "OP_CLASS_ABLATION.json",
+  "ORCHESTRATION_BINDINGS.json",
+  "ORGAN_BANDWIDTH.json",
+  "ORGAN_DECOMPOSITION_SEALED.json",
   "P6_PRIMITIVE_PROJECTION.json",
+  "PARITY_LADDER.json",
+  "PATH_TO_71.json",
+  "PER_GENERATED_TOKEN_INFLATION.json",
+  "PHASE_LISTENERS.json",
+  "PHYSICAL_PRIMITIVES.json",
+  "POWER_TORTURE.json",
+  "POWER_TORTURE_30M.json",
+  "POWER_TORTURE_TIMELINE.json",
+  "PRESERVED_RECOVERY_SOURCE.json",
+  "PRODUCTIVE_SEARCH.json",
+  "PROPAGATION_STATE.json",
+  "PROTECTED_BENCH_LEASE.json",
+  "PROTECTED_BITCAST_ABSOLUTE.json",
+  "PROTECTED_SCHEDULER.json",
+  "PROTECTED_WINDOW_PLAN.json",
+  "Q4_BITCAST_AB.json",
+  "QWEN27_ACCELERATOR_PROFILE_SCHEMA.json",
+  "RECEIPT_WAKEUP.json",
+  "RECURRING_OPERATIONS.json",
+  "REPRESENTATION_DECODE_FUSION.json",
+  "REPRESENTATION_FLOOR.json",
   "REPRO_SCIENCE.json",
+  "RESIDENT_71TPS_BUDGET_STATIC.json",
+  "RESIDENT_71TPS_CAUSAL_BUDGET.json",
+  "RESIDENT_API_AUDIT.json",
+  "RESIDENT_BINARY_DRIFT.json",
+  "RESIDENT_CODE_TOOLS.json",
+  "RESIDENT_CONCURRENCY_DOCTOR.json",
+  "RESIDENT_CONCURRENCY_MEASURED.json",
+  "RESIDENT_HEALTH.json",
+  "RESIDENT_IDENTITY.json",
+  "RESIDENT_INSTALL_CONTRACT.json",
+  "RESIDENT_OPTIMIZER.json",
+  "RESIDENT_OUTPUT_CONTRACT.json",
+  "RESIDENT_PROVIDER.json",
+  "RESIDENT_SANDBOX.json",
+  "RESIDENT_SUPERVISOR.json",
+  "RESIDENT_TOKEN_BUDGET.json",
+  "RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+  "RESIDENT_TOKEN_ROOF_DECOMPOSITION.json",
+  "RESTART_SUPERVISOR.json",
+  "RIVAL_CODEC_SCREEN.json",
+  "ROOF_ANCHOR.json",
+  "ROUTER_SENSITIVE_ALLOCATION.json",
+  "RUNNABILITY_SNAPSHOT.json",
+  "SCAR_REEVALUATOR.json",
+  "SCAR_SCHEDULING.json",
+  "SEALED_DEFAULT_ABSOLUTE.json",
+  "SEALED_DEFAULT_VERIFIED.json",
+  "SINGLE_TOKEN_PARALLEL_SLACK.json",
+  "SLEEPING_SPECIMENS.json",
+  "SOVEREIGN_ATTACKS.json",
+  "SOVEREIGN_TRIAL.json",
+  "SPECIMEN_CURRICULUM.json",
+  "SPECIMEN_EVENTS.json",
+  "SPECIMEN_LOAD_COST.json",
+  "SPECIMEN_REGISTRY.json",
+  "SPECIMEN_SCHEDULER.json",
   "SPECIMEN_VERIFICATION.json",
   "STATIC_KERNEL_PREFLIGHT.json",
+  "STATIC_SKELETON.json",
+  "STATUS_CAUSALITY_CHALLENGE.json",
+  "STATUS_CAUSALITY_COVERAGE.json",
+  "SUB2_UNIFIED_PLAN.json",
   "SUCCESSION.json",
-  "WORKGRAPH_STATE.json"
+  "SUCCESSION_TRIAL.json",
+  "SUPER_RESIDENT_FLOOR.json",
+  "TABULA_FLOOR.json",
+  "TEACHER_CORPUS_CONTRACT.json",
+  "TEACHER_CORPUS_EXPANSION.json",
+  "TOKEN_NS_OBJECTIVE.json",
+  "TPS_ESCALATION_CLOCK_START.json",
+  "TPS_FALSIFICATIONS.json",
+  "TPS_GAP.json",
+  "TPS_METRICS.json",
+  "TRIAL_NEGATIVE_CONTROLS.json",
+  "TRIAL_WORKLOAD.json",
+  "UMA_RESOURCE_LEDGER.json",
+  "WALL_GPU_RECONCILIATION.json",
+  "WORKGRAPH_STATE.json",
+  "WORK_EVENT_CONTRACT.json",
+  "_AUX_U8_LUT_raw.json",
+  "_AUX_U8_NATIVE_raw.json",
+  "_DELTANET_ORGAN_DECOMPOSE_raw.json",
+  "_DELTANET_WIDEN_AB_raw.json",
+  "_DISPATCH_SIZE_SWEEP_raw.json",
+  "_ECONOMICS_CALIBRATION_raw.json",
+  "_FOLD_ADDQX_AB_raw.json",
+  "_G075_greedy_baseline.json",
+  "_G075_greedy_widen_f4.json",
+  "_G075_organ_widen_f4.json",
+  "_G083_concurrent.json",
+  "_G083_serial.json",
+  "_G092_HOIST_REALX_raw.json",
+  "_G092_HOIST_SYNTH_W60_raw.json",
+  "_G092_HOIST_raw.json",
+  "_G094_OPCLASS_raw.json",
+  "_G094_PROTECTED_BITCAST_raw.json",
+  "_G094_PROTECTED_CTRL_raw.json",
+  "_G094_Q4RES_BOTH_raw.json",
+  "_G094_Q4RES_Q2ONLY_raw.json",
+  "_G094_Q4_BITCAST_raw.json",
+  "_G094_RESIDENT_BITCAST_raw.json",
+  "_G094_RESIDENT_CTRL_raw.json",
+  "_G095_LEASE_BITCAST_raw.json",
+  "_G095_LEASE_CTRL_raw.json",
+  "_G102_LOAD_RATES_raw.json",
+  "_G105_TRIAL_10m.json",
+  "_G105_TRIAL_1h.json",
+  "_G111_RESIDENT_REPLIES_raw.json",
+  "_G115_EXAM_A_reply.json",
+  "_G118_ROLE_PROBE_raw.json",
+  "_G118_SCIENCE_LOOP_raw.json",
+  "_G126_SEALED_DEFAULT_raw.json",
+  "_G131_LEASE_SEALED_raw.json",
+  "_G133_ORGAN_SEALED_raw.json",
+  "_GEOMETRY_TABLE_raw.json",
+  "_MLP_ALU_ROOFLINE_raw.json",
+  "_MLP_AUX_MERGE_AB_raw.json",
+  "_MLP_DECODE_CHEAPEN_raw.json",
+  "_MLP_ISSUE_RATE_LADDER_raw.json",
+  "_MLP_REGION_FALSIFIER_raw.json",
+  "_MLP_STREAM_COUNT_raw.json"
  ],
  "version": 1,
  "vocabulary": {

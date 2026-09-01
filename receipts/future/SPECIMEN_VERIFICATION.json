@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T09:56:23Z",
+  "recorded_at": "2026-08-31T19:55:14Z",
   "recorded_by": "tools/future/specimen_verify.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -14,8 +14,8 @@
   "corrupt": 0,
   "incomplete": 0,
   "partial": 0,
-  "specimens_examined": 5,
-  "whole_tree_verified": 5
+  "specimens_examined": 30,
+  "whole_tree_verified": 30
  },
  "gaps_closed": [
   "nothing recomputed specimen hashes offline; readiness rested on size checks"
@@ -31,7 +31,49 @@
   "a file with no .metadata sidecar cannot be verified offline at any effort",
   "this does not make ModelLake wrong: its seals already say MANIFEST_ONLY"
  ],
- "not_reached_this_pass": [],
+ "not_reached_this_pass": [
+  "allenai--Olmo-3-1025-7B@a81bae42db39",
+  "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+  "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+  "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+  "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+  "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+  "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+  "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+  "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+  "arcinstitute--evo2_40b@d529aa57c307",
+  "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+  "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+  "moonshotai--Kimi-K3@9f62e4e9fffb",
+  "tencent--HunyuanVideo@6204ad6aea1a",
+  "nvidia--audio-flamingo-3@ee26c5842398",
+  "facebook--sam2.1-hiera-large@665f8e2ad61c",
+  "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+  "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+  "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+  "Qwen--Qwen3-0.6B@c1899de289a0",
+  "answerdotai--ModernBERT-large@45bb4654a4d5",
+  "openai--whisper-large-v3-turbo@41f01f3fe87f",
+  "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+  "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+  "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+  "google--flan-t5-large@0613663d0d48",
+  "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+  "boltz-community--boltz-2@6fdef46d763f",
+  "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+  "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+  "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+  "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+  "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+  "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+  "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+  "arcinstitute--evo2_7b@bda0089f9258",
+  "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "qwen3.8-27b-abliterated-bf16@local",
+  "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+  "Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+ ],
  "purpose": "Earn whole-tree specimen verification offline from the HuggingFace .metadata digests, or state precisely which files cannot be verified.",
  "recovered_implementation": [
   "ModelLake manifests report n_sha256_verified vs n_size_only_verified",
@@ -47,7 +89,2759 @@
  },
  "results": [
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 13957873280,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=9; verified=9; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=13957873280",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "37d256b525d4117f8bbf790ab448a8e9f4746cd401900fe1ae72e154b1513a30",
+     "bytes": 236001935,
+     "digest_kind": "sha256",
+     "expected": "37d256b525d4117f8bbf790ab448a8e9f4746cd401900fe1ae72e154b1513a30",
+     "file": "compression_state_dict.bin",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "358fd569d7ca1f1c6a797d247b31f218893df530",
+     "bytes": 7866,
+     "digest_kind": "git_blob_sha1",
+     "expected": "358fd569d7ca1f1c6a797d247b31f218893df530",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "45e996eaadd56e1cdaab46cb5e97d295541d40a3",
+     "bytes": 224,
+     "digest_kind": "git_blob_sha1",
+     "expected": "45e996eaadd56e1cdaab46cb5e97d295541d40a3",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "296a202be3a7ff052df56d1639995608e4f075f0",
+     "bytes": 275,
+     "digest_kind": "git_blob_sha1",
+     "expected": "296a202be3a7ff052df56d1639995608e4f075f0",
+     "file": "preprocessor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "a7ed8a0d95eff206263d1ae62955a7b8a7dab11a6b55e953887aea6ed54f85bd",
+     "bytes": 9987827539,
+     "digest_kind": "sha256",
+     "expected": "a7ed8a0d95eff206263d1ae62955a7b8a7dab11a6b55e953887aea6ed54f85bd",
+     "file": "pytorch_model-00001-of-00002.bin",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "f9923d2947297a9883404abfd4041a32cf486c763d36e00eb4f178823bf6bdac",
+     "bytes": 3731608779,
+     "digest_kind": "sha256",
+     "expected": "f9923d2947297a9883404abfd4041a32cf486c763d36e00eb4f178823bf6bdac",
+     "file": "pytorch_model-00002-of-00002.bin",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "2c19eb6e3b583f52d34b903b5978d3d30b6b7682",
+     "bytes": 2201,
+     "digest_kind": "git_blob_sha1",
+     "expected": "2c19eb6e3b583f52d34b903b5978d3d30b6b7682",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "698d7a6a181bc68bbeb97703edc841c911e39a0c",
+     "bytes": 2422095,
+     "digest_kind": "git_blob_sha1",
+     "expected": "698d7a6a181bc68bbeb97703edc841c911e39a0c",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7e32cb31870e521addd427d5f5198e43e03a0473",
+     "bytes": 2366,
+     "digest_kind": "git_blob_sha1",
+     "expected": "7e32cb31870e521addd427d5f5198e43e03a0473",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "facebook--musicgen-large@15ccdc920998: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 9,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'facebook--musicgen-large@15ccdc920998' at /Volumes/corpdrive/hawking-modellake/specimens/facebook--musicgen-large@15ccdc920998: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "facebook--musicgen-large@15ccdc920998",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--musicgen-large@15ccdc920998",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 9,
+   "wall_seconds": 128.1,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 14005628474,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=6; verified=6; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=14005628474",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "06b70b7289bbc27017d158c43c4bb91a804e91b9",
+     "bytes": 4693,
+     "digest_kind": "git_blob_sha1",
+     "expected": "06b70b7289bbc27017d158c43c4bb91a804e91b9",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "58354c004ec619bc0b0d16faccf9a3c8f89e922b",
+     "bytes": 1895,
+     "digest_kind": "git_blob_sha1",
+     "expected": "58354c004ec619bc0b0d16faccf9a3c8f89e922b",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8229fd9a7c3c2aafc1e223567b61b5fe3e25eef873bb4233928dbee4bd836303",
+     "bytes": 14005618584,
+     "digest_kind": "sha256",
+     "expected": "8229fd9a7c3c2aafc1e223567b61b5fe3e25eef873bb4233928dbee4bd836303",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "3941bbef53e1ed8e68203d379e6b09455cd50c9d",
+     "bytes": 565,
+     "digest_kind": "git_blob_sha1",
+     "expected": "3941bbef53e1ed8e68203d379e6b09455cd50c9d",
+     "file": "policy_postprocessor.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "c9ad5422ef356e8c748f5b4d45ada59c6266b716",
+     "bytes": 1218,
+     "digest_kind": "git_blob_sha1",
+     "expected": "c9ad5422ef356e8c748f5b4d45ada59c6266b716",
+     "file": "policy_preprocessor.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "lerobot--pi0_base@25c379b52ba2: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 6,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'lerobot--pi0_base@25c379b52ba2' at /Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "lerobot--pi0_base@25c379b52ba2",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 6,
+   "wall_seconds": 255.08,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 14351246858,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=13; verified=13; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=14351246858",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d74442bf8313938df7ec034fc30bfcec89596c95",
+     "bytes": 8516,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d74442bf8313938df7ec034fc30bfcec89596c95",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "ed4a0e761628a161b1dfd5094f67269e5cef28e2",
+     "bytes": 893,
+     "digest_kind": "git_blob_sha1",
+     "expected": "ed4a0e761628a161b1dfd5094f67269e5cef28e2",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "55aae30143aab0831d9357e7def840cda4b8bf8a",
+     "bytes": 116,
+     "digest_kind": "git_blob_sha1",
+     "expected": "55aae30143aab0831d9357e7def840cda4b8bf8a",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "dc848ee612b08aea786a8cf4abb7fc1ff528a181",
+     "bytes": 441705,
+     "digest_kind": "git_blob_sha1",
+     "expected": "dc848ee612b08aea786a8cf4abb7fc1ff528a181",
+     "file": "merges.txt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "a8af6f18f9527fece36992ca3cda7ea257f37839539d26f5bf42997edfe3e3f5",
+     "bytes": 4889534952,
+     "digest_kind": "sha256",
+     "expected": "a8af6f18f9527fece36992ca3cda7ea257f37839539d26f5bf42997edfe3e3f5",
+     "file": "model-00001-of-00003.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "5432ea6c03caf138258efd8acd0434c64a2c22524ed0863671546627d6db6cb0",
+     "bytes": 4946278984,
+     "digest_kind": "sha256",
+     "expected": "5432ea6c03caf138258efd8acd0434c64a2c22524ed0863671546627d6db6cb0",
+     "file": "model-00002-of-00003.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "da5c636da861b5f0a8e01dbee183e6a814d612c454055449e3a9146d05e0ee3d",
+     "bytes": 4512091576,
+     "digest_kind": "sha256",
+     "expected": "da5c636da861b5f0a8e01dbee183e6a814d612c454055449e3a9146d05e0ee3d",
+     "file": "model-00003-of-00003.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "914b4b38f072e2d2f527dd5af6d854ba3c547756",
+     "bytes": 41641,
+     "digest_kind": "git_blob_sha1",
+     "expected": "914b4b38f072e2d2f527dd5af6d854ba3c547756",
+     "file": "model.safetensors.index.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "be92cbb8ee29740d5e58a8b9b1f867e7eb398602",
+     "bytes": 958,
+     "digest_kind": "git_blob_sha1",
+     "expected": "be92cbb8ee29740d5e58a8b9b1f867e7eb398602",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d6f3ae7bda4a1718b847d6f9234bd1a69a62ba03",
+     "bytes": 2060919,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d6f3ae7bda4a1718b847d6f9234bd1a69a62ba03",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7ab761cba63d59f29c68046788766ca886b74364",
+     "bytes": 7877,
+     "digest_kind": "git_blob_sha1",
+     "expected": "7ab761cba63d59f29c68046788766ca886b74364",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "ce6ed34e317bf5811bb557c2148e4724667e108d",
+     "bytes": 777202,
+     "digest_kind": "git_blob_sha1",
+     "expected": "ce6ed34e317bf5811bb557c2148e4724667e108d",
+     "file": "vocab.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "bigcode--starcoder2-7b@bb9afde76d79: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 13,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'bigcode--starcoder2-7b@bb9afde76d79' at /Volumes/corpdrive/hawking-modellake/specimens/bigcode--starcoder2-7b@bb9afde76d79: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "bigcode--starcoder2-7b@bb9afde76d79",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/bigcode--starcoder2-7b@bb9afde76d79",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 13,
+   "wall_seconds": 233.33,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 11870488581,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=6; verified=6; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=11870488581",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "d701d3b441e64fc827c37f89329b4263d460a600",
+     "bytes": 1807,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d701d3b441e64fc827c37f89329b4263d460a600",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "25845276f58ae3ecf51401937a58127b78c24054",
+     "bytes": 17169,
+     "digest_kind": "git_blob_sha1",
+     "expected": "25845276f58ae3ecf51401937a58127b78c24054",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981",
+     "bytes": 507609880,
+     "digest_kind": "sha256",
+     "expected": "38071ab59bd94681c686fa51d75a1968f64e470262043be31f7a094e442fd981",
+     "file": "Wan2.1_VAE.pth",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "dc867bf9a56dc745fb98b8cdfee9e69a3ec53926",
+     "bytes": 47,
+     "digest_kind": "git_blob_sha1",
+     "expected": "dc867bf9a56dc745fb98b8cdfee9e69a3ec53926",
+     "file": "configuration.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d",
+     "bytes": 11361920418,
+     "digest_kind": "sha256",
+     "expected": "7cace0da2b446bbbbc57d031ab6cf163a3d59b366da94e5afe36745b746fd81d",
+     "file": "models_t5_umt5-xxl-enc-bf16.pth",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "ec3f6eadc29cc4450f2ce0ffeac2259919deef64",
+     "bytes": 939260,
+     "digest_kind": "git_blob_sha1",
+     "expected": "ec3f6eadc29cc4450f2ce0ffeac2259919deef64",
+     "file": "nohup.out",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 6,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0' at /Volumes/corpdrive/hawking-modellake/specimens/Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 6,
+   "wall_seconds": 240.28,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 13766624059,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=4; verified=4; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=13766624059",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "48154a8d07d4053761c202c7d549eeab18b1d7b6",
+     "bytes": 1253,
+     "digest_kind": "git_blob_sha1",
+     "expected": "48154a8d07d4053761c202c7d549eeab18b1d7b6",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "9fcc468be76feea193bc080d6255d9f646046731",
+     "bytes": 87,
+     "digest_kind": "git_blob_sha1",
+     "expected": "9fcc468be76feea193bc080d6255d9f646046731",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "c66645929dc1b9c631f5be656da8726f38946315dc9167000a615dd626fcecf4",
+     "bytes": 13766621200,
+     "digest_kind": "sha256",
+     "expected": "c66645929dc1b9c631f5be656da8726f38946315dc9167000a615dd626fcecf4",
+     "file": "evo2_7b.pt",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "arcinstitute--evo2_7b@bda0089f9258: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 4,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'arcinstitute--evo2_7b@bda0089f9258' at /Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "arcinstitute--evo2_7b@bda0089f9258",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 4,
+   "wall_seconds": 261.94,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 6392637158,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=14; verified=14; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=6392637158",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "565e19c0f6995c6afc91aae2a63a05029f3ef6e6",
+     "bytes": 34447,
+     "digest_kind": "git_blob_sha1",
+     "expected": "565e19c0f6995c6afc91aae2a63a05029f3ef6e6",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "82e3ebf57b6de47c0c4e722dde0e33915f73bfe8",
+     "bytes": 6418,
+     "digest_kind": "git_blob_sha1",
+     "expected": "82e3ebf57b6de47c0c4e722dde0e33915f73bfe8",
+     "file": "chat_template.jinja",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "2f1d4fd53e021ad4582cc1f6e7bac5b3f7cce36a",
+     "bytes": 1796,
+     "digest_kind": "git_blob_sha1",
+     "expected": "2f1d4fd53e021ad4582cc1f6e7bac5b3f7cce36a",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "2eed7ca2d26ec1a753b8800e0bae20c824e8b015",
+     "bytes": 147,
+     "digest_kind": "git_blob_sha1",
+     "expected": "2eed7ca2d26ec1a753b8800e0bae20c824e8b015",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "354558edcdbd64ca7abd407b8be3d5d09d39d781",
+     "bytes": 916646,
+     "digest_kind": "git_blob_sha1",
+     "expected": "354558edcdbd64ca7abd407b8be3d5d09d39d781",
+     "file": "merges.txt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "883f134c083852597a3033cfc7de8357acde530b3fe941a567f507431f5c9216",
+     "bytes": 4990606832,
+     "digest_kind": "sha256",
+     "expected": "883f134c083852597a3033cfc7de8357acde530b3fe941a567f507431f5c9216",
+     "file": "model-00001-of-00002.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "987e8aee10c40446c71f4c91d689672f1805f94712738f7a44d06a7dee5e787f",
+     "bytes": 1392237216,
+     "digest_kind": "sha256",
+     "expected": "987e8aee10c40446c71f4c91d689672f1805f94712738f7a44d06a7dee5e787f",
+     "file": "model-00002-of-00002.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7294ddaa55a748c79b10ed393db2de5c9899efcd",
+     "bytes": 37384,
+     "digest_kind": "git_blob_sha1",
+     "expected": "7294ddaa55a748c79b10ed393db2de5c9899efcd",
+     "file": "model.safetensors.index.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "254b2226400e13c180867d00e44499fcd4673987",
+     "bytes": 10390,
+     "digest_kind": "git_blob_sha1",
+     "expected": "254b2226400e13c180867d00e44499fcd4673987",
+     "file": "model.sig",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "3f67e7c50d57b16925f4f15469a774e7bf439047",
+     "bytes": 579,
+     "digest_kind": "git_blob_sha1",
+     "expected": "3f67e7c50d57b16925f4f15469a774e7bf439047",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d7e1714703eb97dcef3435aa50eb1de1cf241d62",
+     "bytes": 7153421,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d7e1714703eb97dcef3435aa50eb1de1cf241d62",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7a6b382740c0c6587ae8af40aeb4b40f8fb8c431",
+     "bytes": 17659,
+     "digest_kind": "git_blob_sha1",
+     "expected": "7a6b382740c0c6587ae8af40aeb4b40f8fb8c431",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4764ec73731a47701c2f49b01bb428342870f498",
+     "bytes": 1612704,
+     "digest_kind": "git_blob_sha1",
+     "expected": "4764ec73731a47701c2f49b01bb428342870f498",
+     "file": "vocab.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 14,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'ibm-granite--granite-4.0-h-micro@d5f01a3ea75f' at /Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-micro@d5f01a3ea75f: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 14,
+   "wall_seconds": 114.95,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 6402622633,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=12; verified=12; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=6402622633",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "06ed20076e83ffe4ee3c87efec8a455fdafc8113",
+     "bytes": 11342,
+     "digest_kind": "git_blob_sha1",
+     "expected": "06ed20076e83ffe4ee3c87efec8a455fdafc8113",
+     "file": "LICENSE.txt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "bdd8ef45e4ec5c225e3e14c444e8aa69f5e2a71c",
+     "bytes": 4392,
+     "digest_kind": "git_blob_sha1",
+     "expected": "bdd8ef45e4ec5c225e3e14c444e8aa69f5e2a71c",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "da55fcd484e9dc818fc4e251f6634361ecbe9a5a",
+     "bytes": 3147,
+     "digest_kind": "git_blob_sha1",
+     "expected": "da55fcd484e9dc818fc4e251f6634361ecbe9a5a",
+     "file": "chat_template.jinja",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8e173f7fef22eae81bbf887fe93ffade4e015ba5",
+     "bytes": 1004,
+     "digest_kind": "git_blob_sha1",
+     "expected": "8e173f7fef22eae81bbf887fe93ffade4e015ba5",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "1d9d6387ae58a257c00fc44bc20bad3c861a3812",
+     "bytes": 132,
+     "digest_kind": "git_blob_sha1",
+     "expected": "1d9d6387ae58a257c00fc44bc20bad3c861a3812",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "78da3eac60acafbc0e6d40b2004e46d087f5a7e9cd4a559f7c6dd0408e961f52",
+     "bytes": 4973441016,
+     "digest_kind": "sha256",
+     "expected": "78da3eac60acafbc0e6d40b2004e46d087f5a7e9cd4a559f7c6dd0408e961f52",
+     "file": "model-00001-of-00002.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "920e3735fc9c349d7df8c5bf6e59b44d2b113eea5e49036b285ea43022a83b85",
+     "bytes": 1420830280,
+     "digest_kind": "sha256",
+     "expected": "920e3735fc9c349d7df8c5bf6e59b44d2b113eea5e49036b285ea43022a83b85",
+     "file": "model-00002-of-00002.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0b32c0259db925645764303145f8317d6c21ffb9",
+     "bytes": 37422,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0b32c0259db925645764303145f8317d6c21ffb9",
+     "file": "model.safetensors.index.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "23e28b9b493b9ef6073fbb9fd43783c970cd10a4",
+     "bytes": 895,
+     "digest_kind": "git_blob_sha1",
+     "expected": "23e28b9b493b9ef6073fbb9fd43783c970cd10a4",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "5095572a4d0935e44d317bc5603e0a21060d4eb7",
+     "bytes": 8285713,
+     "digest_kind": "git_blob_sha1",
+     "expected": "5095572a4d0935e44d317bc5603e0a21060d4eb7",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "44179b40ff36e201d3fb87c1fb464444782f2669",
+     "bytes": 5771,
+     "digest_kind": "git_blob_sha1",
+     "expected": "44179b40ff36e201d3fb87c1fb464444782f2669",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 12,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'ai21labs--AI21-Jamba2-3B@525c6c8e1d9f' at /Volumes/corpdrive/hawking-modellake/specimens/ai21labs--AI21-Jamba2-3B@525c6c8e1d9f: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 12,
+   "wall_seconds": 114.56,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 8992155310,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=16; verified=16; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=8992155310",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "65508aaa821a61e4e1e98a05abe9e67254e59a5e",
+     "bytes": 11437,
+     "digest_kind": "git_blob_sha1",
+     "expected": "65508aaa821a61e4e1e98a05abe9e67254e59a5e",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "71dc811700b6aa9274d3697ee7d4fb2d5375e766",
+     "bytes": 4739,
+     "digest_kind": "git_blob_sha1",
+     "expected": "71dc811700b6aa9274d3697ee7d4fb2d5375e766",
+     "file": "added_tokens.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "1d342e4f070c962a14ba4ece4e06212bc70d8e36",
+     "bytes": 430,
+     "digest_kind": "git_blob_sha1",
+     "expected": "1d342e4f070c962a14ba4ece4e06212bc70d8e36",
+     "file": "chat_template.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "6a01472ec2a0595b85ac601a4e99efdcaa1ff108",
+     "bytes": 3642,
+     "digest_kind": "git_blob_sha1",
+     "expected": "6a01472ec2a0595b85ac601a4e99efdcaa1ff108",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "eace9aa6d392fd94dbe0c90825074c53fd7ecd4a",
+     "bytes": 136,
+     "digest_kind": "git_blob_sha1",
+     "expected": "eace9aa6d392fd94dbe0c90825074c53fd7ecd4a",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "69503b13f727ba3812b6803e97442a6de05ef5eb",
+     "bytes": 466391,
+     "digest_kind": "git_blob_sha1",
+     "expected": "69503b13f727ba3812b6803e97442a6de05ef5eb",
+     "file": "merges.txt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7c88a90e78f567460b2369a0369cc4dafbfda5607c9cb090b30fa4437b0282f2",
+     "bytes": 4959390584,
+     "digest_kind": "sha256",
+     "expected": "7c88a90e78f567460b2369a0369cc4dafbfda5607c9cb090b30fa4437b0282f2",
+     "file": "model-00001-of-00002.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "cf3d0958a8240f71054a6812038f2a6bfbe2e5124573a3b363f6b120c9a52657",
+     "bytes": 4027833472,
+     "digest_kind": "sha256",
+     "expected": "cf3d0958a8240f71054a6812038f2a6bfbe2e5124573a3b363f6b120c9a52657",
+     "file": "model-00002-of-00002.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "9401d792de4308a3844189f61673670dc8c09349",
+     "bytes": 63881,
+     "digest_kind": "git_blob_sha1",
+     "expected": "9401d792de4308a3844189f61673670dc8c09349",
+     "file": "model.safetensors.index.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "9b5b2a5a98428bac8ba0257a59bc74da5d826e5c",
+     "bytes": 599,
+     "digest_kind": "git_blob_sha1",
+     "expected": "9b5b2a5a98428bac8ba0257a59bc74da5d826e5c",
+     "file": "preprocessor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "093f7dbbd52805fca7e747f569d2c7906227499a",
+     "bytes": 67,
+     "digest_kind": "git_blob_sha1",
+     "expected": "093f7dbbd52805fca7e747f569d2c7906227499a",
+     "file": "processor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "2b5aee28d56c0e9d89ff6bc70818fba986a90ca9",
+     "bytes": 868,
+     "digest_kind": "git_blob_sha1",
+     "expected": "2b5aee28d56c0e9d89ff6bc70818fba986a90ca9",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "a4005d1cf3170a31600a5c96f95768166cbc2b28",
+     "bytes": 3548256,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a4005d1cf3170a31600a5c96f95768166cbc2b28",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d986ab355a4a4de5aa4485fdfba4625eb737928c",
+     "bytes": 28627,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d986ab355a4a4de5aa4485fdfba4625eb737928c",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0ad5ecc2035b7031b88afb544ee95e2d49baa484",
+     "bytes": 800662,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0ad5ecc2035b7031b88afb544ee95e2d49baa484",
+     "file": "vocab.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 16,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02' at /Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 16,
+   "wall_seconds": 196.36,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 11177097274,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=30; verified=30; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=11177097274",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "b4d92b0fce26e0ebb62e1a329909e4bfacf82552",
+     "bytes": 1612,
+     "digest_kind": "git_blob_sha1",
+     "expected": "b4d92b0fce26e0ebb62e1a329909e4bfacf82552",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "f9ba8cf65f3e3104dd061c178066ec8247811f33",
+     "bytes": 444,
+     "digest_kind": "git_blob_sha1",
+     "expected": "f9ba8cf65f3e3104dd061c178066ec8247811f33",
+     "file": "CODE_OF_CONDUCT.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "9e841e7a26e4eb057b24511e7b92d42b257a80e5",
+     "bytes": 1141,
+     "digest_kind": "git_blob_sha1",
+     "expected": "9e841e7a26e4eb057b24511e7b92d42b257a80e5",
+     "file": "LICENSE",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "638090d959b0338919920f58c6cca1ab5dd9db7b",
+     "bytes": 65395,
+     "digest_kind": "git_blob_sha1",
+     "expected": "638090d959b0338919920f58c6cca1ab5dd9db7b",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "b3c89efc852e22f71eabf5dfbc6ac62493425eb6",
+     "bytes": 2656,
+     "digest_kind": "git_blob_sha1",
+     "expected": "b3c89efc852e22f71eabf5dfbc6ac62493425eb6",
+     "file": "SECURITY.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "291d4d43733f4c15a81ff598ec1c99fd6c18f64c",
+     "bytes": 1244,
+     "digest_kind": "git_blob_sha1",
+     "expected": "291d4d43733f4c15a81ff598ec1c99fd6c18f64c",
+     "file": "SUPPORT.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "af52cde61cc39aca58f7b7f04116b317116e75dd",
+     "bytes": 249,
+     "digest_kind": "git_blob_sha1",
+     "expected": "af52cde61cc39aca58f7b7f04116b317116e75dd",
+     "file": "added_tokens.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "6f294fb015412e07443c36ecc01233c1211f8d0d",
+     "bytes": 4631,
+     "digest_kind": "git_blob_sha1",
+     "expected": "6f294fb015412e07443c36ecc01233c1211f8d0d",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0abf4196bcf52128567ad4008062fcb2c0c45e33",
+     "bytes": 11014,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0abf4196bcf52128567ad4008062fcb2c0c45e33",
+     "file": "configuration_phi4mm.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8b691d0fc283dfd39dc4161d5551d59d469ac10a",
+     "bytes": 4619,
+     "digest_kind": "git_blob_sha1",
+     "expected": "8b691d0fc283dfd39dc4161d5551d59d469ac10a",
+     "file": "data_summary_card.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "98769448b636893c5e5780bd4beb070e95a70b48",
+     "bytes": 190,
+     "digest_kind": "git_blob_sha1",
+     "expected": "98769448b636893c5e5780bd4beb070e95a70b48",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "dcecc4524288b351bbd0da8028e74e9b5bcdb9b5",
+     "bytes": 2418348,
+     "digest_kind": "git_blob_sha1",
+     "expected": "dcecc4524288b351bbd0da8028e74e9b5bcdb9b5",
+     "file": "merges.txt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "c46bb03332d82f6a3eaf85bd20af388dd4d4d68b198c2203c965c7381a466094",
+     "bytes": 4997504848,
+     "digest_kind": "sha256",
+     "expected": "c46bb03332d82f6a3eaf85bd20af388dd4d4d68b198c2203c965c7381a466094",
+     "file": "model-00001-of-00003.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "b3e812c0c8acef4e7f5e34d6c9f77a7640ee4a2b93ea351921365ac62f19918d",
+     "bytes": 4952333128,
+     "digest_kind": "sha256",
+     "expected": "b3e812c0c8acef4e7f5e34d6c9f77a7640ee4a2b93ea351921365ac62f19918d",
+     "file": "model-00002-of-00003.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7be96b7339303752634b202d3f377bcf312a03046586eca6cea23347ace1e65a",
+     "bytes": 1199389232,
+     "digest_kind": "sha256",
+     "expected": "7be96b7339303752634b202d3f377bcf312a03046586eca6cea23347ace1e65a",
+     "file": "model-00003-of-00003.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "dde52c7dc181beab5d91b97ba009ef4fc6626594",
+     "bytes": 239890,
+     "digest_kind": "git_blob_sha1",
+     "expected": "dde52c7dc181beab5d91b97ba009ef4fc6626594",
+     "file": "model.safetensors.index.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "31fe013b98d269c5962e17968bc376992704036f",
+     "bytes": 116057,
+     "digest_kind": "git_blob_sha1",
+     "expected": "31fe013b98d269c5962e17968bc376992704036f",
+     "file": "modeling_phi4mm.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "a5469d9123cbee2b41729db3217cacfeaa96eaf543868caa2eeec7cf2d24547d",
+     "bytes": 5295165,
+     "digest_kind": "sha256",
+     "expected": "a5469d9123cbee2b41729db3217cacfeaa96eaf543868caa2eeec7cf2d24547d",
+     "file": "phi_4_mm.tech_report.02252025.pdf",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "6dd46225a7f8996f811adb74f920995ef206260a",
+     "bytes": 482,
+     "digest_kind": "git_blob_sha1",
+     "expected": "6dd46225a7f8996f811adb74f920995ef206260a",
+     "file": "preprocessor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "c4536317e3bef10a53438522682c7539663daad0",
+     "bytes": 32775,
+     "digest_kind": "git_blob_sha1",
+     "expected": "c4536317e3bef10a53438522682c7539663daad0",
+     "file": "processing_phi4mm.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "e30d7f7420bde05b724784200abc9c4df4731edf",
+     "bytes": 121,
+     "digest_kind": "git_blob_sha1",
+     "expected": "e30d7f7420bde05b724784200abc9c4df4731edf",
+     "file": "processor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "485e84b714e42ca6a62d0c00b643a42fd045b1af",
+     "bytes": 16669,
+     "digest_kind": "git_blob_sha1",
+     "expected": "485e84b714e42ca6a62d0c00b643a42fd045b1af",
+     "file": "sample_finetune_speech.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0b669758018d8c780058cfaa8fb40a6518bbcd91",
+     "bytes": 19617,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0b669758018d8c780058cfaa8fb40a6518bbcd91",
+     "file": "sample_finetune_vision.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "9e425b0d04dbc3c6fc616f4acdabe610ab6b893b",
+     "bytes": 10498,
+     "digest_kind": "git_blob_sha1",
+     "expected": "9e425b0d04dbc3c6fc616f4acdabe610ab6b893b",
+     "file": "sample_inference_phi4mm.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "330140f0678dc92ae683e1c1cccffc6a001251ae",
+     "bytes": 473,
+     "digest_kind": "git_blob_sha1",
+     "expected": "330140f0678dc92ae683e1c1cccffc6a001251ae",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d1b0dd2aa513530fa927b5409b69f15364b243b9",
+     "bytes": 110521,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d1b0dd2aa513530fa927b5409b69f15364b243b9",
+     "file": "speech_conformer_encoder.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4c1b9f641d4f8b7247b8d5007dd3b6a9f6a87cb5123134fe0d326f14d10c0585",
+     "bytes": 15524479,
+     "digest_kind": "sha256",
+     "expected": "4c1b9f641d4f8b7247b8d5007dd3b6a9f6a87cb5123134fe0d326f14d10c0585",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "eb04aec9ccf2d3bc9f8d28bc8d4e2d4c3a144460",
+     "bytes": 3248,
+     "digest_kind": "git_blob_sha1",
+     "expected": "eb04aec9ccf2d3bc9f8d28bc8d4e2d4c3a144460",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "e3da680471f4432a9828b42c7ad8de0e72e08e66",
+     "bytes": 78218,
+     "digest_kind": "git_blob_sha1",
+     "expected": "e3da680471f4432a9828b42c7ad8de0e72e08e66",
+     "file": "vision_siglip_navit.py",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "ea953a43348cdb3776cb7fd9ea02e3784febde34",
+     "bytes": 3910310,
+     "digest_kind": "git_blob_sha1",
+     "expected": "ea953a43348cdb3776cb7fd9ea02e3784febde34",
+     "file": "vocab.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "microsoft--Phi-4-multimodal-instruct@93f923e1a772: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 30,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'microsoft--Phi-4-multimodal-instruct@93f923e1a772' at /Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 30,
+   "wall_seconds": 250.77,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 23782,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=2; verified=2; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=23782",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "89541fd47902a6361964702b8da2c22cd5f20224",
+     "bytes": 23743,
+     "digest_kind": "git_blob_sha1",
+     "expected": "89541fd47902a6361964702b8da2c22cd5f20224",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "30b44608b74f674e692d3242a2153e667ddb816f",
+     "bytes": 39,
+     "digest_kind": "git_blob_sha1",
+     "expected": "30b44608b74f674e692d3242a2153e667ddb816f",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "tencent--HunyuanVideo@6204ad6aea1a: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 2,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'tencent--HunyuanVideo@6204ad6aea1a' at /Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "tencent--HunyuanVideo@6204ad6aea1a",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 2,
+   "wall_seconds": 0.36,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 37612,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=3; verified=3; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=37612",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "c939847f6b90a76c6ad0728cbf9fbb7e69eff071",
+     "bytes": 1802,
+     "digest_kind": "git_blob_sha1",
+     "expected": "c939847f6b90a76c6ad0728cbf9fbb7e69eff071",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4a4c6cf78911b5dda2c895925e53492170c6c9ba",
+     "bytes": 24612,
+     "digest_kind": "git_blob_sha1",
+     "expected": "4a4c6cf78911b5dda2c895925e53492170c6c9ba",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "de4b974a569495da2cd3a00c1722f4089548e6b9969c1ace99636805d91d3a10",
+     "bytes": 11198,
+     "digest_kind": "sha256",
+     "expected": "de4b974a569495da2cd3a00c1722f4089548e6b9969c1ace99636805d91d3a10",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "nvidia--audio-flamingo-3@ee26c5842398: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 3,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'nvidia--audio-flamingo-3@ee26c5842398' at /Volumes/corpdrive/hawking-modellake/specimens/nvidia--audio-flamingo-3@ee26c5842398: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "nvidia--audio-flamingo-3@ee26c5842398",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/nvidia--audio-flamingo-3@ee26c5842398",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 3,
+   "wall_seconds": 0.18,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 897929900,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=8; verified=8; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=897929900",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "be863d6696ff1dd6ea8c88ab46ae04e5f7fe68e6",
+     "bytes": 19979,
+     "digest_kind": "git_blob_sha1",
+     "expected": "be863d6696ff1dd6ea8c88ab46ae04e5f7fe68e6",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "62a1dd93657b383ec1e9bad75699747951d307c7",
+     "bytes": 5705,
+     "digest_kind": "git_blob_sha1",
+     "expected": "62a1dd93657b383ec1e9bad75699747951d307c7",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "dc407dce21301fd94abb395c5099b4f2c455fdc8a8f261ac3d0ea6d4cd197230",
+     "bytes": 897897416,
+     "digest_kind": "sha256",
+     "expected": "dc407dce21301fd94abb395c5099b4f2c455fdc8a8f261ac3d0ea6d4cd197230",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8499e53cb79bf1786a890021550e6994b9808f39",
+     "bytes": 683,
+     "digest_kind": "git_blob_sha1",
+     "expected": "8499e53cb79bf1786a890021550e6994b9808f39",
+     "file": "preprocessor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7556f607c3581a19f545de09d8b3fc98502b9f36",
+     "bytes": 95,
+     "digest_kind": "git_blob_sha1",
+     "expected": "7556f607c3581a19f545de09d8b3fc98502b9f36",
+     "file": "processor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "33c9097f34ea90beae52776eb88ad8eb1632ab66",
+     "bytes": 3798,
+     "digest_kind": "git_blob_sha1",
+     "expected": "33c9097f34ea90beae52776eb88ad8eb1632ab66",
+     "file": "sam2.1_hiera_l.yaml",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "aceb9b5b612e726cea11ae4db21c0964629aac3a",
+     "bytes": 705,
+     "digest_kind": "git_blob_sha1",
+     "expected": "aceb9b5b612e726cea11ae4db21c0964629aac3a",
+     "file": "video_preprocessor_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "facebook--sam2.1-hiera-large@665f8e2ad61c: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 8,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'facebook--sam2.1-hiera-large@665f8e2ad61c' at /Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 8,
+   "wall_seconds": 7.59,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 1187777736,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=10; verified=10; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=1187777736",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "48ea6616b5b8581df3401872996cecf1f8b08a0d",
+     "bytes": 1073,
+     "digest_kind": "git_blob_sha1",
+     "expected": "48ea6616b5b8581df3401872996cecf1f8b08a0d",
+     "file": "LICENSE",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "34bf8c6fb3024fc9195a7ee0dce583ce8af4bf65",
+     "bytes": 9647,
+     "digest_kind": "git_blob_sha1",
+     "expected": "34bf8c6fb3024fc9195a7ee0dce583ce8af4bf65",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4acf191af5817ad7534d03d3ca8a45a8d4f4a82a",
+     "bytes": 844,
+     "digest_kind": "git_blob_sha1",
+     "expected": "4acf191af5817ad7534d03d3ca8a45a8d4f4a82a",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "156c5705d7cf1e2f11a27e62f673c4576af7aa19",
+     "bytes": 3861,
+     "digest_kind": "git_blob_sha1",
+     "expected": "156c5705d7cf1e2f11a27e62f673c4576af7aa19",
+     "file": "data_summary_card.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "650ab2390d65b8182f2599fe7a0f2014eec3f38b",
+     "bytes": 199,
+     "digest_kind": "git_blob_sha1",
+     "expected": "650ab2390d65b8182f2599fe7a0f2014eec3f38b",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+     "bytes": 1178623988,
+     "digest_kind": "sha256",
+     "expected": "8143ae115ed6babe5e5ada8fb8c5b769d8f417802b2db042ad98b4f7ed73975b",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d8cd5076496dbe4be2320312abc10adc43097b81",
+     "bytes": 73,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d8cd5076496dbe4be2320312abc10adc43097b81",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "b197f72effb9d5ed16ee0f5663e11e4cfac2ba62",
+     "bytes": 9085698,
+     "digest_kind": "git_blob_sha1",
+     "expected": "b197f72effb9d5ed16ee0f5663e11e4cfac2ba62",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d54415c89774937967b9baac420d12455ff6e267",
+     "bytes": 50834,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d54415c89774937967b9baac420d12455ff6e267",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 10,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361' at /Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 10,
+   "wall_seconds": 10.44,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 1207488728,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=11; verified=11; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=1207488728",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+     "bytes": 1570,
+     "digest_kind": "git_blob_sha1",
+     "expected": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "00a82ea60dfb1d8aed899c16e2b4f12673cd2f79",
+     "bytes": 17237,
+     "digest_kind": "git_blob_sha1",
+     "expected": "00a82ea60dfb1d8aed899c16e2b4f12673cd2f79",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "cef2749ee93607b8f9a58ec72f4f6bfaf874e71d",
+     "bytes": 727,
+     "digest_kind": "git_blob_sha1",
+     "expected": "cef2749ee93607b8f9a58ec72f4f6bfaf874e71d",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "76aef3ade63553ebb698fe3c2a3264040ed093f8",
+     "bytes": 215,
+     "digest_kind": "git_blob_sha1",
+     "expected": "76aef3ade63553ebb698fe3c2a3264040ed093f8",
+     "file": "config_sentence_transformers.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d46f1983345269c582611bbedb3ca0a13f8e5f7b",
+     "bytes": 117,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d46f1983345269c582611bbedb3ca0a13f8e5f7b",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+     "bytes": 1671853,
+     "digest_kind": "git_blob_sha1",
+     "expected": "31349551d90c7606f325fe0f11bbb8bd5fa0d7c7",
+     "file": "merges.txt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd",
+     "bytes": 1191586416,
+     "digest_kind": "sha256",
+     "expected": "0437e45c94563b09e13cb7a64478fc406947a93cb34a7e05870fc8dcd48e23fd",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "952a9b81c0bfd99800fabf352f69c7ccd46c5e43",
+     "bytes": 349,
+     "digest_kind": "git_blob_sha1",
+     "expected": "952a9b81c0bfd99800fabf352f69c7ccd46c5e43",
+     "file": "modules.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "def76fb086971c7867b829c23a26261e38d9d74e02139253b38aeb9df8b4b50a",
+     "bytes": 11423705,
+     "digest_kind": "sha256",
+     "expected": "def76fb086971c7867b829c23a26261e38d9d74e02139253b38aeb9df8b4b50a",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7345216a0785dc7086e8c245b2a9d3896ce2b756",
+     "bytes": 9706,
+     "digest_kind": "git_blob_sha1",
+     "expected": "7345216a0785dc7086e8c245b2a9d3896ce2b756",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4783fe10ac3adce15ac8f358ef5462739852c569",
+     "bytes": 2776833,
+     "digest_kind": "git_blob_sha1",
+     "expected": "4783fe10ac3adce15ac8f358ef5462739852c569",
+     "file": "vocab.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 11,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'Qwen--Qwen3-Embedding-0.6B@97b0c614be4d' at /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Embedding-0.6B@97b0c614be4d: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 11,
+   "wall_seconds": 13.68,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 1341331020,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=5; verified=5; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=1341331020",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "019a5c3b2fee1e494e5cd9b20888339b3d8b7794",
+     "bytes": 4427,
+     "digest_kind": "git_blob_sha1",
+     "expected": "019a5c3b2fee1e494e5cd9b20888339b3d8b7794",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "ecf6e643113d1bb5ae566347665b8d78cea38617",
+     "bytes": 1431,
+     "digest_kind": "git_blob_sha1",
+     "expected": "ecf6e643113d1bb5ae566347665b8d78cea38617",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4e01e34ed5549b529b70b92d53226bc370f03041977b390d3dde45d47f516cf9",
+     "bytes": 1341322868,
+     "digest_kind": "sha256",
+     "expected": "4e01e34ed5549b529b70b92d53226bc370f03041977b390d3dde45d47f516cf9",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "a7822a90a0e91a14d50d1996953bac8f389a4377",
+     "bytes": 775,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a7822a90a0e91a14d50d1996953bac8f389a4377",
+     "file": "preprocessor_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 5,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d' at /Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 5,
+   "wall_seconds": 11.25,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 1585710451,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=7; verified=7; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=1585710451",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8b9d77d5a470f7ef31f7495da1593826849b6fd6",
+     "bytes": 8427,
+     "digest_kind": "git_blob_sha1",
+     "expected": "8b9d77d5a470f7ef31f7495da1593826849b6fd6",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "f58291adedf9dc2fe5a5d80f8e2221bd1f135a23",
+     "bytes": 1194,
+     "digest_kind": "git_blob_sha1",
+     "expected": "f58291adedf9dc2fe5a5d80f8e2221bd1f135a23",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "44510fec5d3a81a1877f225637b869495f18e55f6f23a09abb9be0acc030295f",
+     "bytes": 1583544840,
+     "digest_kind": "sha256",
+     "expected": "44510fec5d3a81a1877f225637b869495f18e55f6f23a09abb9be0acc030295f",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "6bf65ea14185a88eef7e24b41c86a953a58dcbad",
+     "bytes": 694,
+     "digest_kind": "git_blob_sha1",
+     "expected": "6bf65ea14185a88eef7e24b41c86a953a58dcbad",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "de3f3e316b66f3885df49ab2c0fff3e477ff1680",
+     "bytes": 2132967,
+     "digest_kind": "git_blob_sha1",
+     "expected": "de3f3e316b66f3885df49ab2c0fff3e477ff1680",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d78aa50c890c167d8700301e5580164466e51fa5",
+     "bytes": 20810,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d78aa50c890c167d8700301e5580164466e51fa5",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "answerdotai--ModernBERT-large@45bb4654a4d5: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 7,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'answerdotai--ModernBERT-large@45bb4654a4d5' at /Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 7,
+   "wall_seconds": 14.45,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 1622466054,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=13; verified=13; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=1622466054",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0bbe30273338d7e19f779c1343808e32617e64d1",
+     "bytes": 21196,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0bbe30273338d7e19f779c1343808e32617e64d1",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "1b33526d33aaa60d79f78ae8651dae50b730185a",
+     "bytes": 34648,
+     "digest_kind": "git_blob_sha1",
+     "expected": "1b33526d33aaa60d79f78ae8651dae50b730185a",
+     "file": "added_tokens.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "ad2f44ff1ed66e12765b2392dc041469db91a462",
+     "bytes": 1256,
+     "digest_kind": "git_blob_sha1",
+     "expected": "ad2f44ff1ed66e12765b2392dc041469db91a462",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "cbe752958dc3e4671b0e0220aa1c545423a6d5f5",
+     "bytes": 3772,
+     "digest_kind": "git_blob_sha1",
+     "expected": "cbe752958dc3e4671b0e0220aa1c545423a6d5f5",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "6038932a2a1f09a66991b1c2adae0d14066fa29e",
+     "bytes": 493869,
+     "digest_kind": "git_blob_sha1",
+     "expected": "6038932a2a1f09a66991b1c2adae0d14066fa29e",
+     "file": "merges.txt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "542566a422ae4f3fd23f1ba11add198fca01bbf82e66e6a2857b3f608b1eb9d1",
+     "bytes": 1617824864,
+     "digest_kind": "sha256",
+     "expected": "542566a422ae4f3fd23f1ba11add198fca01bbf82e66e6a2857b3f608b1eb9d1",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "dd6ae819ad738ac1a546e9f9282ef325c33b9ea0",
+     "bytes": 52666,
+     "digest_kind": "git_blob_sha1",
+     "expected": "dd6ae819ad738ac1a546e9f9282ef325c33b9ea0",
+     "file": "normalizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "931c77a740890c46365c7ae0c9d350ba3cca908f",
+     "bytes": 340,
+     "digest_kind": "git_blob_sha1",
+     "expected": "931c77a740890c46365c7ae0c9d350ba3cca908f",
+     "file": "preprocessor_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "312bc106291bb51bf2cc1648df070bef963a0639",
+     "bytes": 2186,
+     "digest_kind": "git_blob_sha1",
+     "expected": "312bc106291bb51bf2cc1648df070bef963a0639",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "17456db595adc78a973f97d69d8cb50bc87c0b1c",
+     "bytes": 2710337,
+     "digest_kind": "git_blob_sha1",
+     "expected": "17456db595adc78a973f97d69d8cb50bc87c0b1c",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "06ffdc8308eae6bb7bd1fdd81e94b0a881a539ab",
+     "bytes": 282843,
+     "digest_kind": "git_blob_sha1",
+     "expected": "06ffdc8308eae6bb7bd1fdd81e94b0a881a539ab",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0f3456460629e21d559c6daa23ab6ce3644e8271",
+     "bytes": 1036558,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0f3456460629e21d559c6daa23ab6ce3644e8271",
+     "file": "vocab.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "openai--whisper-large-v3-turbo@41f01f3fe87f: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 13,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'openai--whisper-large-v3-turbo@41f01f3fe87f' at /Volumes/corpdrive/hawking-modellake/specimens/openai--whisper-large-v3-turbo@41f01f3fe87f: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 13,
+   "wall_seconds": 26.02,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 1995416592,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=4; verified=4; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=1995416592",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "8ac6ecc86f536b240949d66e6279981b883c0b95",
+     "bytes": 1572,
+     "digest_kind": "git_blob_sha1",
+     "expected": "8ac6ecc86f536b240949d66e6279981b883c0b95",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "2307f702742694617a39228217633007e279a366",
+     "bytes": 7352,
+     "digest_kind": "git_blob_sha1",
+     "expected": "2307f702742694617a39228217633007e279a366",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "6091755f05e0e2b1f4d4886097a44373bf4c15f7",
+     "bytes": 692,
+     "digest_kind": "git_blob_sha1",
+     "expected": "6091755f05e0e2b1f4d4886097a44373bf4c15f7",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "bb9d7022d8027325f4e656b7d5cf36dd919269fd79ad714eab41f5ba49cc1cfe",
+     "bytes": 1995406976,
+     "digest_kind": "sha256",
+     "expected": "bb9d7022d8027325f4e656b7d5cf36dd919269fd79ad714eab41f5ba49cc1cfe",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "google--timesfm-2.0-500m-pytorch@dc2443792ce5: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 4,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'google--timesfm-2.0-500m-pytorch@dc2443792ce5' at /Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 4,
+   "wall_seconds": 45.34,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 2989542664,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=4; verified=4; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=2989542664",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "bc0265c6e5aa44832a9f50539a30a57d173d405a",
+     "bytes": 218,
+     "digest_kind": "git_blob_sha1",
+     "expected": "bc0265c6e5aa44832a9f50539a30a57d173d405a",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "4399d73c409724c8d74746425ab2cf97f35118cd",
+     "bytes": 2489,
+     "digest_kind": "git_blob_sha1",
+     "expected": "4399d73c409724c8d74746425ab2cf97f35118cd",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0666724be967df64daefc88d7d0a2a06e517bd9a",
+     "bytes": 650,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0666724be967df64daefc88d7d0a2a06e517bd9a",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "3deee40f7496390b344997d26a2fcc84897b0406b36c50978b90248177254075",
+     "bytes": 2989539307,
+     "digest_kind": "sha256",
+     "expected": "3deee40f7496390b344997d26a2fcc84897b0406b36c50978b90248177254075",
+     "file": "pytorch_model.bin",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "state-spaces--mamba3-siso-1.5b@5cfc721542ec: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 4,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'state-spaces--mamba3-siso-1.5b@5cfc721542ec' at /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 4,
+   "wall_seconds": 63.79,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 2994284299,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=4; verified=4; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=2994284299",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "bc0265c6e5aa44832a9f50539a30a57d173d405a",
+     "bytes": 218,
+     "digest_kind": "git_blob_sha1",
+     "expected": "bc0265c6e5aa44832a9f50539a30a57d173d405a",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "a6d378727d2f65eb35bcb8aa6627a31baa422484",
+     "bytes": 2500,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6d378727d2f65eb35bcb8aa6627a31baa422484",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "cce9d355a354a2002838bb35bcb91bf2fbebdfcd",
+     "bytes": 674,
+     "digest_kind": "git_blob_sha1",
+     "expected": "cce9d355a354a2002838bb35bcb91bf2fbebdfcd",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "139c09e9728d1f10ac7f4354d2ae29aaca41851a954aedd8f6728c05aeb6c744",
+     "bytes": 2994280907,
+     "digest_kind": "sha256",
+     "expected": "139c09e9728d1f10ac7f4354d2ae29aaca41851a954aedd8f6728c05aeb6c744",
+     "file": "pytorch_model.bin",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 4,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994' at /Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 4,
+   "wall_seconds": 31.5,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 3135902327,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=9; verified=9; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=3135902327",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "e2e68308705c59d0e047f13c1116ed223f9b7fec",
+     "bytes": 1434,
+     "digest_kind": "git_blob_sha1",
+     "expected": "e2e68308705c59d0e047f13c1116ed223f9b7fec",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d763a5405d53b5003d409cb3c4ac340f76cd1acc",
+     "bytes": 10820,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d763a5405d53b5003d409cb3c4ac340f76cd1acc",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "52d6c53a0bc88c7d1fe251e9643ce8aaf1c13e2e",
+     "bytes": 662,
+     "digest_kind": "git_blob_sha1",
+     "expected": "52d6c53a0bc88c7d1fe251e9643ce8aaf1c13e2e",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d52815623b46b7db1c4b957b5a83a8ad30b0146a",
+     "bytes": 147,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d52815623b46b7db1c4b957b5a83a8ad30b0146a",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "a9dd06ce490f139af36e9eb77dd3758b4fd07a08a73d5a1abe5ff2591e2d388e",
+     "bytes": 3132668804,
+     "digest_kind": "sha256",
+     "expected": "a9dd06ce490f139af36e9eb77dd3758b4fd07a08a73d5a1abe5ff2591e2d388e",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "2c19eb6e3b583f52d34b903b5978d3d30b6b7682",
+     "bytes": 2201,
+     "digest_kind": "git_blob_sha1",
+     "expected": "2c19eb6e3b583f52d34b903b5978d3d30b6b7682",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d60acb128cf7b7f2536e8f38a5b18a05535c9e14c7a355904270e15b0945ea86",
+     "bytes": 791656,
+     "digest_kind": "sha256",
+     "expected": "d60acb128cf7b7f2536e8f38a5b18a05535c9e14c7a355904270e15b0945ea86",
+     "file": "spiece.model",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "fc669fbad1a6a82119ca3e1fa75db33ee22ca47d",
+     "bytes": 2424064,
+     "digest_kind": "git_blob_sha1",
+     "expected": "fc669fbad1a6a82119ca3e1fa75db33ee22ca47d",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "031ce30f2198693aabefeac9588257b81658d7f4",
+     "bytes": 2539,
+     "digest_kind": "git_blob_sha1",
+     "expected": "031ce30f2198693aabefeac9588257b81658d7f4",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "google--flan-t5-large@0613663d0d48: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 9,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'google--flan-t5-large@0613663d0d48' at /Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "google--flan-t5-large@0613663d0d48",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 9,
+   "wall_seconds": 25.97,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 4138867523,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=7; verified=7; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=4138867523",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "6f4f3743f7c85d064d65519a905c1e04ebae69f8",
+     "bytes": 3209,
+     "digest_kind": "git_blob_sha1",
+     "expected": "6f4f3743f7c85d064d65519a905c1e04ebae69f8",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "3534852408cef7f5c0c54dfed6e0842c24492863",
+     "bytes": 801,
+     "digest_kind": "git_blob_sha1",
+     "expected": "3534852408cef7f5c0c54dfed6e0842c24492863",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "f205e77aa2ade168db6b09d4bc420d156141f64ab964278a9c181a2bdf2a232b",
+     "bytes": 4138311608,
+     "digest_kind": "sha256",
+     "expected": "f205e77aa2ade168db6b09d4bc420d156141f64ab964278a9c181a2bdf2a232b",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "b1b39c32857c5141adde7fc076100feaddefdf0d",
+     "bytes": 4302,
+     "digest_kind": "git_blob_sha1",
+     "expected": "b1b39c32857c5141adde7fc076100feaddefdf0d",
+     "file": "notebook.ipynb",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8be436f25057b709d28aa3a4993614d6f319bb0f",
+     "bytes": 544786,
+     "digest_kind": "git_blob_sha1",
+     "expected": "8be436f25057b709d28aa3a4993614d6f319bb0f",
+     "file": "notebook_finetuning.ipynb",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "c5dd15b27643a7fd207aa6f59373f255036b9a8b",
+     "bytes": 1298,
+     "digest_kind": "git_blob_sha1",
+     "expected": "c5dd15b27643a7fd207aa6f59373f255036b9a8b",
+     "file": "video_preprocessor_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 7,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'facebook--vjepa2-vitg-fpc64-256@875c192b7b70' at /Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 7,
+   "wall_seconds": 37.4,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 4348702182,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=4; verified=4; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=4348702182",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "7be5fc7f47d5db027d120b8024982df93db95b74",
+     "bytes": 24,
+     "digest_kind": "git_blob_sha1",
+     "expected": "7be5fc7f47d5db027d120b8024982df93db95b74",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "dcc5cd3722b1c9eaa34267e4ae32f55cbbf1963f4c19319381ccfa30fdd2ca9e",
+     "bytes": 2062139170,
+     "digest_kind": "sha256",
+     "expected": "dcc5cd3722b1c9eaa34267e4ae32f55cbbf1963f4c19319381ccfa30fdd2ca9e",
+     "file": "boltz2_aff.ckpt",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "090e82ac8c92f5e943fa1b39e7410a44027bea7243c0bbb3caa67a77fc1428e1",
+     "bytes": 2286561469,
+     "digest_kind": "sha256",
+     "expected": "090e82ac8c92f5e943fa1b39e7410a44027bea7243c0bbb3caa67a77fc1428e1",
+     "file": "boltz2_conf.ckpt",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "boltz-community--boltz-2@6fdef46d763f: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 4,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'boltz-community--boltz-2@6fdef46d763f' at /Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "boltz-community--boltz-2@6fdef46d763f",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 4,
+   "wall_seconds": 38.38,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 4834832435,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=10; verified=10; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=4834832435",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "bytes": 1519,
+     "digest_kind": "git_blob_sha1",
+     "expected": "a6344aac8c09253b3b630fb776ae94478aa0275b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "48ea6616b5b8581df3401872996cecf1f8b08a0d",
+     "bytes": 1073,
+     "digest_kind": "git_blob_sha1",
+     "expected": "48ea6616b5b8581df3401872996cecf1f8b08a0d",
+     "file": "LICENSE",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "cfe176334831acea2ecdaef02b5ae25416b14941",
+     "bytes": 8935,
+     "digest_kind": "git_blob_sha1",
+     "expected": "cfe176334831acea2ecdaef02b5ae25416b14941",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "8cb95b54570aababf062b4b8d95e78dc74a7ba51",
+     "bytes": 843,
+     "digest_kind": "git_blob_sha1",
+     "expected": "8cb95b54570aababf062b4b8d95e78dc74a7ba51",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "156c5705d7cf1e2f11a27e62f673c4576af7aa19",
+     "bytes": 3861,
+     "digest_kind": "git_blob_sha1",
+     "expected": "156c5705d7cf1e2f11a27e62f673c4576af7aa19",
+     "file": "data_summary_card.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "650ab2390d65b8182f2599fe7a0f2014eec3f38b",
+     "bytes": 199,
+     "digest_kind": "git_blob_sha1",
+     "expected": "650ab2390d65b8182f2599fe7a0f2014eec3f38b",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "529637ff6dab1f5890767356928693f69ffe61d3b6040a43de9306b37bfd5ae1",
+     "bytes": 4825679400,
+     "digest_kind": "sha256",
+     "expected": "529637ff6dab1f5890767356928693f69ffe61d3b6040a43de9306b37bfd5ae1",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d8cd5076496dbe4be2320312abc10adc43097b81",
+     "bytes": 73,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d8cd5076496dbe4be2320312abc10adc43097b81",
+     "file": "special_tokens_map.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "b197f72effb9d5ed16ee0f5663e11e4cfac2ba62",
+     "bytes": 9085698,
+     "digest_kind": "git_blob_sha1",
+     "expected": "b197f72effb9d5ed16ee0f5663e11e4cfac2ba62",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "d54415c89774937967b9baac420d12455ff6e267",
+     "bytes": 50834,
+     "digest_kind": "git_blob_sha1",
+     "expected": "d54415c89774937967b9baac420d12455ff6e267",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 10,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'microsoft--bitnet-b1.58-2B-4T-bf16@276681394656' at /Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T-bf16@276681394656: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 10,
+   "wall_seconds": 58.39,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
+   "bytes_hashed": 5412362135,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=9; verified=9; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=5412362135",
+   "falsifier": "recompute one file and compare",
+   "files": [
+    {
+     "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+     "bytes": 1570,
+     "digest_kind": "git_blob_sha1",
+     "expected": "52373fe24473b1aa44333d318f578ae6bf04b49b",
+     "file": ".gitattributes",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "25e731c697c4fe4c52ee654cedf7106a827748d2",
+     "bytes": 10574,
+     "digest_kind": "git_blob_sha1",
+     "expected": "25e731c697c4fe4c52ee654cedf7106a827748d2",
+     "file": "LICENSE",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "0e8de1dbf4dd2229a24555f6a410d5cf4141978f",
+     "bytes": 10600,
+     "digest_kind": "git_blob_sha1",
+     "expected": "0e8de1dbf4dd2229a24555f6a410d5cf4141978f",
+     "file": "README.md",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "805d5fd14b0662237559c31b61d0da210526372c",
+     "bytes": 4294,
+     "digest_kind": "git_blob_sha1",
+     "expected": "805d5fd14b0662237559c31b61d0da210526372c",
+     "file": "chat_template.jinja",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "44262b2c95b61b51bb83ab4a595b608db921e4f4",
+     "bytes": 1467,
+     "digest_kind": "git_blob_sha1",
+     "expected": "44262b2c95b61b51bb83ab4a595b608db921e4f4",
+     "file": "config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "75f2c3c9cb73aca859fa82693270ee20947257f9",
+     "bytes": 230,
+     "digest_kind": "git_blob_sha1",
+     "expected": "75f2c3c9cb73aca859fa82693270ee20947257f9",
+     "file": "generation_config.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "3331a7db7672c4d6feb91352ae17bc62ae8b6b3263b4c290886ac452402e0551",
+     "bytes": 5394427448,
+     "digest_kind": "sha256",
+     "expected": "3331a7db7672c4d6feb91352ae17bc62ae8b6b3263b4c290886ac452402e0551",
+     "file": "model.safetensors",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "c4687c0046da6579aba6f9aa713e9bed61e5fd210b0e012028ae57751d028689",
+     "bytes": 17905589,
+     "digest_kind": "sha256",
+     "expected": "c4687c0046da6579aba6f9aa713e9bed61e5fd210b0e012028ae57751d028689",
+     "file": "tokenizer.json",
+     "verdict": "VERIFIED"
+    },
+    {
+     "actual": "e3eefcd570bd438293cf1e1819c016077d5aa842",
+     "bytes": 363,
+     "digest_kind": "git_blob_sha1",
+     "expected": "e3eefcd570bd438293cf1e1819c016077d5aa842",
+     "file": "tokenizer_config.json",
+     "verdict": "VERIFIED"
+    }
+   ],
+   "interpretation": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1: every file carried a published digest and the hash recomputed here matched",
+   "mismatched": 0,
+   "modellake_mutated": false,
+   "n_files": 9,
+   "no_remote_digest": 0,
+   "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1' at /Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
+   "skipped_time_budget": 0,
+   "source_mutated": false,
+   "specimen": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "status": "WHOLE_TREE_VERIFIED",
+   "unrecognized_digest": 0,
+   "verified": 9,
+   "wall_seconds": 124.91,
+   "whole_tree_verified": true
+  },
+  {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
    "bytes_hashed": 1519209243,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "specimen=Qwen--Qwen3-0.6B@c1899de289a0; n_files=10; verified=10; mismatched=0; no_remote_digest=0; bytes_hashed=1519209243; whole_tree_verified=True",
+   "falsifier": "recompute one file and compare",
    "files": [
     {
      "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
@@ -130,11 +2924,14 @@
      "verdict": "VERIFIED"
     }
    ],
+   "interpretation": "Qwen--Qwen3-0.6B@c1899de289a0: every file carried a published digest and the hash recomputed here matched",
    "mismatched": 0,
    "modellake_mutated": false,
    "n_files": 10,
    "no_remote_digest": 0,
    "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'Qwen--Qwen3-0.6B@c1899de289a0' at /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
    "skipped_time_budget": 0,
    "source_mutated": false,
    "specimen": "Qwen--Qwen3-0.6B@c1899de289a0",
@@ -146,7 +2943,24 @@
    "whole_tree_verified": true
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
    "bytes_hashed": 360023286454,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "specimen=Qwen--Qwen3.8-Flash-Next@34567a4712bc; n_files=144; verified=144; mismatched=0; no_remote_digest=0; bytes_hashed=360023286454; whole_tree_verified=True",
+   "falsifier": "recompute one file and compare",
    "files": [
     {
      "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
@@ -1301,11 +4115,14 @@
      "verdict": "VERIFIED"
     }
    ],
+   "interpretation": "Qwen--Qwen3.8-Flash-Next@34567a4712bc: every file carried a published digest and the hash recomputed here matched",
    "mismatched": 0,
    "modellake_mutated": false,
    "n_files": 144,
    "no_remote_digest": 0,
    "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'Qwen--Qwen3.8-Flash-Next@34567a4712bc' at /Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
    "skipped_time_budget": 0,
    "source_mutated": false,
    "specimen": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
@@ -1317,7 +4134,24 @@
    "whole_tree_verified": true
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
    "bytes_hashed": 96077777512,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "specimen=mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618; n_files=25; verified=25; mismatched=0; no_remote_digest=0; bytes_hashed=96077777512; whole_tree_verified=True",
+   "falsifier": "recompute one file and compare",
    "files": [
     {
      "actual": "0d4cb185280917cac60ef7195f2a6250b2b90d83",
@@ -1520,11 +4354,14 @@
      "verdict": "VERIFIED"
     }
    ],
+   "interpretation": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618: every file carried a published digest and the hash recomputed here matched",
    "mismatched": 0,
    "modellake_mutated": false,
    "n_files": 25,
    "no_remote_digest": 0,
    "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618' at /Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
    "skipped_time_budget": 0,
    "source_mutated": false,
    "specimen": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
@@ -1536,7 +4373,24 @@
    "whole_tree_verified": true
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
    "bytes_hashed": 55586059240,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "specimen=qwen3.8-27b-abliterated-bf16@local; n_files=31; verified=31; mismatched=0; no_remote_digest=0; bytes_hashed=55586059240; whole_tree_verified=True",
+   "falsifier": "recompute one file and compare",
    "files": [
     {
      "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
@@ -1787,11 +4641,14 @@
      "verdict": "VERIFIED"
     }
    ],
+   "interpretation": "qwen3.8-27b-abliterated-bf16@local: every file carried a published digest and the hash recomputed here matched",
    "mismatched": 0,
    "modellake_mutated": false,
    "n_files": 31,
    "no_remote_digest": 0,
    "owner": "local_directory",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'qwen3.8-27b-abliterated-bf16@local' at /Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
    "skipped_time_budget": 0,
    "source_mutated": false,
    "specimen": "qwen3.8-27b-abliterated-bf16@local",
@@ -1803,7 +4660,24 @@
    "whole_tree_verified": true
   },
   {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "every published digest matched the hash recomputed here"
+    }
+   ],
    "bytes_hashed": 15182220635,
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "digest_match",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
+   "direct_observation": "n_files=13; verified=13; mismatched=0; no_remote_digest=0; unrecognized_digest=0; skipped_time_budget=0; bytes_hashed=15182220635",
+   "falsifier": "recompute one file and compare",
    "files": [
     {
      "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
@@ -1910,11 +4784,14 @@
      "verdict": "VERIFIED"
     }
    ],
+   "interpretation": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: every file carried a published digest and the hash recomputed here matched",
    "mismatched": 0,
    "modellake_mutated": false,
    "n_files": 13,
    "no_remote_digest": 0,
    "owner": "modellake",
+   "probe_kind": "hash_recompute",
+   "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'tiiuae--Falcon-H1-7B-Instruct@41e72f27effb' at /Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb: sha256 or git-blob sha1 per etag shape; ModelLake opened read-only; lake-own seal files skipped",
    "skipped_time_budget": 0,
    "source_mutated": false,
    "specimen": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
@@ -1922,15 +4799,40 @@
    "status": "WHOLE_TREE_VERIFIED",
    "unrecognized_digest": 0,
    "verified": 13,
-   "wall_seconds": 7.21,
+   "wall_seconds": 20.17,
    "whole_tree_verified": true
   }
  ],
  "schema": "hawking.future.specimen_verify.v1",
- "seal_sha256": "acd8a020d0309cb7081ca8a509a9559ef9a13b2d8778b3dfdb0c984db35df3f4",
+ "seal_sha256": "82b6d79844c62865d13b178409c40f7b23f5cd2c8d9b6102d7ce2b785f905964",
  "verification_rule": "VERIFIED means the hash was recomputed here and matched a published digest. Size agreement is not verification. A specimen is WHOLE_TREE_VERIFIED only when every file carried a digest and every one matched; a single undigested file yields PARTIAL_NO_REMOTE_DIGEST.",
  "version": 1,
  "whole_tree_verified_specimens": [
+  "facebook--musicgen-large@15ccdc920998",
+  "lerobot--pi0_base@25c379b52ba2",
+  "bigcode--starcoder2-7b@bb9afde76d79",
+  "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+  "arcinstitute--evo2_7b@bda0089f9258",
+  "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+  "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+  "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+  "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+  "tencent--HunyuanVideo@6204ad6aea1a",
+  "nvidia--audio-flamingo-3@ee26c5842398",
+  "facebook--sam2.1-hiera-large@665f8e2ad61c",
+  "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+  "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+  "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+  "answerdotai--ModernBERT-large@45bb4654a4d5",
+  "openai--whisper-large-v3-turbo@41f01f3fe87f",
+  "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+  "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+  "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+  "google--flan-t5-large@0613663d0d48",
+  "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+  "boltz-community--boltz-2@6fdef46d763f",
+  "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+  "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
   "Qwen--Qwen3-0.6B@c1899de289a0",
   "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
   "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",

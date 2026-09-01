@@ -1,0 +1,1 @@
+{"module": "status_causality.py", "entry_point": "build", "receipt": "receipts/future/STATUS_CAUSALITY_CHALLENGE.json", "routed_to_frontier": "FT.VERIFICATION.negative-index", "species": "STATUS_CHALLENGE", "wall_seconds": 0.02, "evidence_class": "STATIC_ONLY"}

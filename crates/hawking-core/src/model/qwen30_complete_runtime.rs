@@ -1,5 +1,6 @@
-//! Native Metal execution path for an admitted Qwen3-Coder-30B-A3B direct
-//! complete-binary artifact.
+//! Native Metal execution path for an admitted Qwen30-family direct
+//! complete-binary artifact (Qwen3-Coder-30B-A3B or its structurally
+//! identical base sibling).
 //!
 //! This module is intentionally narrower than the generic [`crate::Engine`]
 //! dispatch: a complete-binary artifact is a catalog directory, not a GGUF or
@@ -37,7 +38,7 @@ use super::qwen_complete_binary::{
     CompleteBinaryArtifact, CompleteBinaryHeader, Qwen30ActivationWeightedSvdAdmission,
     Qwen30ActivationWeightedSvdArtifact, Qwen30ActivationWeightedTensorLayout,
     Qwen30QualityRepackAdmission, Qwen30UniformQ4Admission, Qwen30UniformQnAdmission,
-    QwenCompleteBinaryModel, UniformQnBits, UNIFORM_Q4_CODE_BYTES_PER_GROUP, UNIFORM_Q4_GROUP_SIZE,
+    UniformQnBits, UNIFORM_Q4_CODE_BYTES_PER_GROUP, UNIFORM_Q4_GROUP_SIZE,
     UNIFORM_QN_GROUP_SIZE,
 };
 use crate::tokenizer::Tokenizer;
@@ -101,6 +102,7 @@ impl QwenCompleteSetScalar for ::metal::ComputeCommandEncoderRef {
 pub const QWEN30_COMPLETE_NATIVE_MAX_CONTEXT: usize = 4096;
 
 const QWEN30_MODEL_ID: &str = "Qwen3-Coder-30B-A3B-Instruct";
+const QWEN30_BASE_MODEL_ID: &str = "Qwen3-30B-A3B";
 const QWEN30_REPOSITORY: &str = "Qwen/Qwen3-Coder-30B-A3B-Instruct";
 
 /// Repositories this runtime admits.
@@ -138,7 +140,8 @@ const QWEN30_TOP_K: usize = 8;
 const QWEN30_MOE_INTERMEDIATE: usize = 768;
 const QWEN30_GROUP_SIZE: usize = 128;
 const QWEN30_VOCAB: usize = 151_936;
-const QWEN30_ROPE_THETA: f32 = 10_000_000.0;
+const QWEN30_CODER_ROPE_THETA: f32 = 10_000_000.0;
+const QWEN30_BASE_ROPE_THETA: f32 = 1_000_000.0;
 const QWEN30_RMS_EPS: f32 = 1.0e-6;
 
 /// Physical weight body consumed by the token path.
@@ -693,9 +696,14 @@ impl Qwen30CompleteRuntimeConfig {
         }
         let rope_theta = finite_f32_field(document, "rope_theta")?;
         let rms_norm_eps = finite_f32_field(document, "rms_norm_eps")?;
-        if rope_theta.to_bits() != QWEN30_ROPE_THETA.to_bits() {
+        let expected_rope_theta = if source_repository == "Qwen/Qwen3-30B-A3B" {
+            QWEN30_BASE_ROPE_THETA
+        } else {
+            QWEN30_CODER_ROPE_THETA
+        };
+        if rope_theta.to_bits() != expected_rope_theta.to_bits() {
             return Err(model_error(format!(
-                "config rope_theta={rope_theta:?} differs from Qwen30's exact 10000000.0"
+                "config rope_theta={rope_theta:?} differs from this Qwen30 family source's exact {expected_rope_theta:?}"
             )));
         }
         if rms_norm_eps.to_bits() != QWEN30_RMS_EPS.to_bits() {
@@ -710,7 +718,11 @@ impl Qwen30CompleteRuntimeConfig {
             ));
         }
         Ok(Self {
-            model_id: QWEN30_MODEL_ID.to_owned(),
+            model_id: if source_repository == "Qwen/Qwen3-30B-A3B" {
+                QWEN30_BASE_MODEL_ID.to_owned()
+            } else {
+                QWEN30_MODEL_ID.to_owned()
+            },
             source_repository: source_repository.to_owned(),
             source_revision: source_revision.to_owned(),
             layers: QWEN30_LAYERS,
@@ -1458,30 +1470,6 @@ fn tokenizer_from_source(
 fn source_user_chat_template_from_source(
     artifact: &CompleteBinaryArtifact,
 ) -> Result<Qwen30SourceUserChatTemplate> {
-    let source_template_path = source_sidecar_path(artifact, "chat_template.jinja")?;
-    let source_template_raw = regular_bytes(&source_template_path, "source chat template")?;
-    let source_template = std::str::from_utf8(&source_template_raw).map_err(|error| {
-        model_error(format!(
-            "source chat template is not valid UTF-8 at {}: {error}",
-            source_template_path.display()
-        ))
-    })?;
-    // This renderer supports *only* the exact no-system/no-tools, one-user
-    // path below.  These anchors encode that source branch and make a future
-    // upstream template rewrite fail closed rather than silently changing the
-    // prompt token stream.
-    for required in [
-        "{%- for message in loop_messages %}",
-        "{{- '<|im_start|>' + message.role + '\\n' + message.content + '<|im_end|>' + '\\n' }}",
-        "{%- if add_generation_prompt %}",
-        "{{- '<|im_start|>assistant\\n' }}",
-    ] {
-        if !source_template.contains(required) {
-            return Err(model_error(format!(
-                "source chat template does not contain required one-user branch anchor {required:?}"
-            )));
-        }
-    }
     let tokenizer_config_path = source_sidecar_path(artifact, "tokenizer_config.json")?;
     let tokenizer_config_raw = regular_bytes(&tokenizer_config_path, "source tokenizer config")?;
     let tokenizer_config: Value =
@@ -1495,7 +1483,53 @@ fn source_user_chat_template_from_source(
         .get("chat_template")
         .and_then(Value::as_str)
         .ok_or_else(|| model_error("source tokenizer config has no string chat_template"))?;
-    if configured_template.as_bytes() != source_template_raw {
+    // Qwen30-Coder publishes a standalone chat_template.jinja, while the
+    // base Qwen3-30B-A3B sibling embeds the exact template only in
+    // tokenizer_config.json.  Both are source-bound and sealed; use the
+    // embedded bytes when no standalone sidecar exists rather than inventing
+    // or mutating a source file.
+    let source_root = artifact
+        .source_index_path
+        .parent()
+        .ok_or_else(|| model_error("admitted source index has no parent directory"))?;
+    let standalone_candidate = source_root.join("chat_template.jinja");
+    let (source_template_path, source_template_raw) = if standalone_candidate.exists() {
+        let path = source_sidecar_path(artifact, "chat_template.jinja")?;
+        (path.clone(), regular_bytes(&path, "source chat template")?)
+    } else {
+        (
+            tokenizer_config_path.clone(),
+            configured_template.as_bytes().to_vec(),
+        )
+    };
+    let source_template = std::str::from_utf8(&source_template_raw).map_err(|error| {
+        model_error(format!(
+            "source chat template is not valid UTF-8 at {}: {error}",
+            source_template_path.display()
+        ))
+    })?;
+    // This renderer supports *only* the exact no-system/no-tools, one-user
+    // path below.  The two accepted loop spellings cover the Coder sidecar
+    // and the base sibling's tokenizer-config template.  The surrounding
+    // anchors keep an upstream rewrite fail-closed rather than silently
+    // changing the prompt token stream.
+    let has_message_loop = source_template.contains("for message in loop_messages")
+        || source_template.contains("for message in messages");
+    for required in ["message.role", "<|im_start|>", "{%- if add_generation_prompt %}"] {
+        if !source_template.contains(required) {
+            return Err(model_error(format!(
+                "source chat template does not contain required one-user branch anchor {required:?}"
+            )));
+        }
+    }
+    if !has_message_loop || !source_template.contains("assistant") {
+        return Err(model_error(
+            "source chat template does not contain a recognized one-user message loop",
+        ));
+    }
+    if source_template_path != tokenizer_config_path
+        && configured_template.as_bytes() != source_template_raw
+    {
         return Err(model_error(
             "source tokenizer_config chat_template differs from source chat_template.jinja",
         ));
@@ -1517,15 +1551,13 @@ fn render_source_user_chat_template(user_content: &str) -> String {
 
 /// Bind the exact artifact/config/tokenizer/canonical tensor catalog without
 /// constructing a Metal cache.  Useful for an independent preflight worker.
-pub fn preflight_complete_runtime(
-    manifest_path: impl AsRef<Path>,
-    admission: &CompleteBinaryAdmission,
+fn preflight_admitted_artifact(
+    artifact: CompleteBinaryArtifact,
 ) -> Result<Qwen30CompleteRuntimePreflight> {
-    let artifact = admit_complete_binary_artifact(manifest_path, admission)?;
     let (config_path, config_sha256, source_config) = parse_source_config(&artifact)?;
     let config = Qwen30CompleteRuntimeConfig::from_source_config(
         &source_config,
-        QWEN30_REPOSITORY,
+        artifact.model.source_repository(),
         &artifact.source_revision,
     )?;
     let (tokenizer_path, tokenizer_sha256, _tokenizer, tokenizer_addressable_vocab) =
@@ -1562,6 +1594,25 @@ pub fn preflight_complete_runtime(
         verified_payload_count,
         complete_verified_payload_cache_at_admission,
     })
+}
+
+/// Bind a direct complete-binary artifact without constructing a Metal cache.
+pub fn preflight_complete_runtime(
+    manifest_path: impl AsRef<Path>,
+    admission: &CompleteBinaryAdmission,
+) -> Result<Qwen30CompleteRuntimePreflight> {
+    preflight_admitted_artifact(admit_complete_binary_artifact(manifest_path, admission)?)
+}
+
+/// Bind a uniform-Q4 artifact using its stronger family-specific admission
+/// chain, then run the same source/config/tokenizer/catalog checks as the
+/// direct complete-binary preflight.  This is the Base-sibling-safe preflight
+/// entrypoint; it does not construct a Metal cache or execute a token.
+pub fn preflight_uniform_q4_runtime(
+    manifest_path: impl AsRef<Path>,
+    admission: &Qwen30UniformQ4Admission,
+) -> Result<Qwen30CompleteRuntimePreflight> {
+    preflight_admitted_artifact(admit_qwen30_uniform_q4_artifact(manifest_path, admission)?)
 }
 
 #[cfg(target_os = "macos")]
@@ -1862,7 +1913,7 @@ impl Qwen30CompleteNativeRuntime {
         let (_config_path, _config_sha256, source_config) = parse_source_config(&artifact)?;
         let config = Qwen30CompleteRuntimeConfig::from_source_config(
             &source_config,
-            QWEN30_REPOSITORY,
+            artifact.model.source_repository(),
             &artifact.source_revision,
         )?;
         if options.max_seq_len > config.source_max_position_embeddings {
@@ -2000,7 +2051,7 @@ impl Qwen30CompleteNativeRuntime {
         let (_config_path, _config_sha256, source_config) = parse_source_config(&direct)?;
         let config = Qwen30CompleteRuntimeConfig::from_source_config(
             &source_config,
-            QWEN30_REPOSITORY,
+            direct.model.source_repository(),
             &direct.source_revision,
         )?;
         if options.max_seq_len > config.source_max_position_embeddings {

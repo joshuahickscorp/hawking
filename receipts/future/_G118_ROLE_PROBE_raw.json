@@ -1,0 +1,478 @@
+{
+ "schema": "hawking.future.functional_role_probe.raw.v1",
+ "method": "zero a random `frac` of OUTPUT ROWS of one MLP tensor at one layer, replay every prompt token from that layer through +2 layers, compare hidden state by cosine against the unperturbed replay",
+ "perturbation": "zero_rows",
+ "measure": "hidden_after_2_layers_cosine",
+ "seed": 31,
+ "activations": "real captured prefix, 4 real vocabulary tokens, not Gaussian",
+ "rows": [
+  {
+   "frac": 0.05,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 4454400,
+   "hidden_cos_after_2": 0.9999105989265819,
+   "damage": 8.94010734181494e-05,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 4454400,
+   "hidden_cos_after_2": 0.9998142648939596,
+   "damage": 0.00018573510604036336,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 4456448,
+   "hidden_cos_after_2": 0.9998109351610348,
+   "damage": 0.00018906483896519166,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 8913920,
+   "hidden_cos_after_2": 0.9996052857968465,
+   "damage": 0.00039471420315351224,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 8913920,
+   "hidden_cos_after_2": 0.9993964868237806,
+   "damage": 0.0006035131762194279,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 8912896,
+   "hidden_cos_after_2": 0.9996027778965731,
+   "damage": 0.00039722210342685305,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 17827840,
+   "hidden_cos_after_2": 0.999293556056586,
+   "damage": 0.0007064439434140146,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 17827840,
+   "hidden_cos_after_2": 0.9993217634063102,
+   "damage": 0.0006782365936898183,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 17825792,
+   "hidden_cos_after_2": 0.9987803046647883,
+   "damage": 0.0012196953352117124,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 35650560,
+   "hidden_cos_after_2": 0.9978335949206295,
+   "damage": 0.0021664050793704925,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 35650560,
+   "hidden_cos_after_2": 0.9981040928336237,
+   "damage": 0.0018959071663763316,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 35651584,
+   "hidden_cos_after_2": 0.9976882068942643,
+   "damage": 0.0023117931057357044,
+   "layer": 0,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 4454400,
+   "hidden_cos_after_2": 0.9997082002481457,
+   "damage": 0.00029179975185433804,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 4454400,
+   "hidden_cos_after_2": 0.9997556709540979,
+   "damage": 0.000244329045902103,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 4456448,
+   "hidden_cos_after_2": 0.999551631053838,
+   "damage": 0.0004483689461619589,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 8913920,
+   "hidden_cos_after_2": 0.9992716914634856,
+   "damage": 0.0007283085365143993,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 8913920,
+   "hidden_cos_after_2": 0.999443260403312,
+   "damage": 0.0005567395966880051,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 8912896,
+   "hidden_cos_after_2": 0.9992056609686398,
+   "damage": 0.0007943390313601695,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 17827840,
+   "hidden_cos_after_2": 0.9987441965456545,
+   "damage": 0.0012558034543455054,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 17827840,
+   "hidden_cos_after_2": 0.998730862313618,
+   "damage": 0.001269137686382038,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 17825792,
+   "hidden_cos_after_2": 0.9983415847945675,
+   "damage": 0.0016584152054325285,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 35650560,
+   "hidden_cos_after_2": 0.9974349390501331,
+   "damage": 0.0025650609498668597,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 35650560,
+   "hidden_cos_after_2": 0.9974478733177207,
+   "damage": 0.002552126682279332,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 35651584,
+   "hidden_cos_after_2": 0.9969030596444421,
+   "damage": 0.0030969403555578534,
+   "layer": 21,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 4454400,
+   "hidden_cos_after_2": 0.9995342628960087,
+   "damage": 0.00046573710399133716,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 4454400,
+   "hidden_cos_after_2": 0.9994933534463559,
+   "damage": 0.0005066465536440745,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.05,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 4456448,
+   "hidden_cos_after_2": 0.9991704389110446,
+   "damage": 0.0008295610889553773,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 8913920,
+   "hidden_cos_after_2": 0.9984702696569129,
+   "damage": 0.0015297303430871212,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 8913920,
+   "hidden_cos_after_2": 0.9985502600378252,
+   "damage": 0.0014497399621747897,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.1,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 8912896,
+   "hidden_cos_after_2": 0.9985405907008449,
+   "damage": 0.0014594092991551122,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 17827840,
+   "hidden_cos_after_2": 0.9975093743368,
+   "damage": 0.002490625663200019,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 17827840,
+   "hidden_cos_after_2": 0.9970995677284977,
+   "damage": 0.0029004322715022735,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.2,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 17825792,
+   "hidden_cos_after_2": 0.9973274790252136,
+   "damage": 0.00267252097478643,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "gate",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 35650560,
+   "hidden_cos_after_2": 0.9944729330647208,
+   "damage": 0.005527066935279157,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "up",
+   "shape": [
+    17408,
+    5120
+   ],
+   "elements_destroyed": 35650560,
+   "hidden_cos_after_2": 0.9954739660372962,
+   "damage": 0.0045260339627037904,
+   "layer": 42,
+   "n_more": 2
+  },
+  {
+   "frac": 0.4,
+   "tensor": "down",
+   "shape": [
+    5120,
+    17408
+   ],
+   "elements_destroyed": 35651584,
+   "hidden_cos_after_2": 0.9940951119779219,
+   "damage": 0.005904888022078114,
+   "layer": 42,
+   "n_more": 2
+  }
+ ]
+}

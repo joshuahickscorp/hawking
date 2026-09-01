@@ -278,7 +278,7 @@ def discover_models(roots: Optional[List[str]] = None) -> List[ModelInfo]:
                 # its filename is vendor-neutral.  The predicate parses the
                 # JSON shape before admitting it, so arbitrary config JSON is
                 # not exposed as a selectable model.
-                if low.endswith((".noetic", ".hawking", ".hawking.json")) or (
+                if low.endswith((".nx", ".noetic", ".hawking", ".hawking.json")) or (
                     low.endswith(".json") and is_hawking_native_path(full_candidate)
                 ):
                     full = full_candidate

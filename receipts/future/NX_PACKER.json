@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T09:54:59Z",
+  "recorded_at": "2026-09-01T06:08:05Z",
   "recorded_by": "tools/future/nx_packer.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -153,6 +153,6 @@
  ],
  "replaces": "tools/headless/first_noetic_executable.py (Qwen3.8-27B hardlink mix)",
  "schema": "hawking.future.nx_packer.v1",
- "seal_sha256": "b7c9ea70f6e9e41e9ff96e6daaf2e4a0d8e9f315d7c1615c0b69c38bef919b63",
+ "seal_sha256": "313fcf624704ac6466f9787647ef9bbd62c44422f3b2c9edfd409f4603d119eb",
  "version": 1
 }

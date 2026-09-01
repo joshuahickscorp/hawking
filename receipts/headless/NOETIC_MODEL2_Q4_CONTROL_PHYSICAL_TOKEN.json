@@ -1,0 +1,52 @@
+{
+  "artifact": {
+    "complete_physical_bpw": 4.255513123672171,
+    "complete_tensor_count": 18867,
+    "manifest_path": "/Users/scammermike/noetic/MODEL2_Q4_ARTIFACT/QWEN30BASE_UNIFORM_Q4_GROUP64_V1_COMPLETE_BINARY_GRAVITY_CANDIDATE.json",
+    "manifest_seal_sha256": "73080756bdcf8d0634d9c82a337778b6d2ee1696d2812e6ec2a921ff3fec35e4",
+    "mean_component_cosine": 0.9939640420807648,
+    "source_revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+    "terminal_path": "/Users/scammermike/noetic/MODEL2_Q4_ARTIFACT/QWEN30BASE_UNIFORM_Q4_GROUP64_V1_COMPLETE_GRAVITY_TERMINAL_RECEIPT.json",
+    "uniform_q4_group_size": 64
+  },
+  "control_role": "generalization_and_transfer_control_only",
+  "execution": {
+    "all_48_layers_executed": true,
+    "bytes_allocated": 16221820352,
+    "command_buffers": 1,
+    "elapsed_us_diagnostic_not_tps": 6950129,
+    "fallback_count": 0,
+    "host_route_id_readbacks": 0,
+    "host_sample_id_readbacks": 1,
+    "input_token_id": 151643,
+    "metal_dispatches": 821,
+    "raw_result_path": "/Users/scammermike/noetic/MODEL2_Q4_CONTROL/QWEN30BASE_UNIFORM_Q4_FORWARD_TOKEN_RAW.json",
+    "raw_result_sha256": "57182039bb1fcb44c3a8dcebdf24de56d553e2aea0f0f1e6f8a410cd0380a021",
+    "runtime_executable_sha256": "93a7b2735ff7456e532f1bcd56288e8378ce0bedbbb36f892e9401fc4dd8252a",
+    "sampled_token_id": 220
+  },
+  "next_action": "return_primary_campaign_to_qwen38_flash_next",
+  "recorded_at": "2026-08-28T03:01:18.772111Z",
+  "schema": "hawking.odyssey.qwen30_uniform_q4_control_execution.v1",
+  "seal_sha256": "036bdd5ebc7e0f2eb0b048f0f20afdafaab5f87776cbe4f6356d594c9cc99853",
+  "status": "ACCEPTED_CONTROL_PHYSICAL_TOKEN_UNQUALIFIED",
+  "verdict": {
+    "control_not_primary_hcli_resident": true,
+    "cuda_execution_observed": false,
+    "native_metal_only": true,
+    "not_clean_tps": true,
+    "not_generation_capability": true,
+    "not_tg_or_tournament_qualification": true,
+    "physical_complete_token_executed": true,
+    "weights_remained_packed_q4": true
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

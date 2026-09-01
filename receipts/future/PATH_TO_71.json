@@ -1,9 +1,9 @@
 {
  "baseline": {
   "active_gb": 9.878901136,
-  "host_ms": 0.989,
-  "token_ms": 27.2896,
-  "tps": 36.64
+  "host_ms": 0.956,
+  "token_ms": 21.9464,
+  "tps": 45.57
  },
  "claim_boundary": "Arithmetic over recorded components. QUALIFIED means measured on the real resident with parity. PROSPECTIVE means the byte model is measured and capability is NOT \u2014 no generate gate has been run on any auxiliary lever. Overlapping levers are not summed. A composed path is a prediction, not a result, and every one above PATH_01 contains at least one component nobody has implemented.",
  "components": {
@@ -108,12 +108,12 @@
  "evidence_class": "DIAGNOSTIC_RELATIVE",
  "gap_to_71": {
   "best_composed_path": "PATH_04",
-  "best_composed_token_ms": 20.078,
-  "best_composed_tps": 49.8,
-  "still_to_remove_ms": 5.993,
-  "still_to_remove_share_of_gpu": 0.314,
+  "best_composed_token_ms": 15.898,
+  "best_composed_tps": 62.9,
+  "still_to_remove_ms": 1.813,
+  "still_to_remove_share_of_gpu": 0.1214,
   "target_token_ms": 14.085,
-  "verdict": "Everything on record \u2014 every qualified win, every prospective byte lever, refuted ones excluded \u2014 reaches 49.8 TPS. Reaching 71 needs another 5.99 ms, which is 31% of the GPU time that would remain. No component on record can supply that. It requires a representation result that does not exist yet.",
+  "verdict": "Everything on record \u2014 every qualified win, every prospective byte lever, refuted ones excluded \u2014 reaches 62.9 TPS. Reaching 71 needs another 1.81 ms, which is 12% of the GPU time that would remain. No component on record can supply that. It requires a representation result that does not exist yet.",
   "what_would_supply_it": "A functional replacement for the MLP or DeltaNet that eliminates information rather than coding it better. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently."
  },
  "gpu_authority": false,
@@ -123,74 +123,76 @@
    "label": "measured now",
    "path": "PATH_00",
    "skipped": [],
-   "token_ms": 27.2896,
-   "tps": 36.64,
+   "token_ms": 21.9464,
+   "tps": 45.57,
    "weakest_evidence": "MEASURED"
   },
   {
-   "components": [
-    "ba_delta_fusion",
-    "deltanet_widen_f4"
-   ],
+   "components": [],
    "gb_removed": 0.0,
    "label": "everything QUALIFIED today",
-   "ms_removed_directly": 1.1629,
+   "ms_removed_directly": 0.0,
    "path": "PATH_01",
-   "skipped": [],
-   "token_ms": 26.127,
-   "tps": 38.28,
+   "skipped": [
+    "ba_delta_fusion: ALREADY IN THE BASELINE - G126: folded by the widen_f4 kernel on the sealed graph",
+    "deltanet_widen_f4: ALREADY IN THE BASELINE - G126: HAWKING_QWEN38_DN_STATE=widen_f4 is the default"
+   ],
+   "token_ms": 21.946,
+   "tps": 45.57,
    "weakest_evidence": "QUALIFIED"
   },
   {
    "components": [
-    "ba_delta_fusion",
-    "deltanet_widen_f4",
     "mlp_decode_fold_addqx"
    ],
    "gb_removed": 0.0,
    "label": "qualified + the decode fold (APPROX, not exact)",
-   "ms_removed_directly": 5.1462,
+   "ms_removed_directly": 3.9833,
    "path": "PATH_02",
-   "skipped": [],
-   "token_ms": 22.143,
-   "tps": 45.16,
+   "skipped": [
+    "ba_delta_fusion: ALREADY IN THE BASELINE - G126: folded by the widen_f4 kernel on the sealed graph",
+    "deltanet_widen_f4: ALREADY IN THE BASELINE - G126: HAWKING_QWEN38_DN_STATE=widen_f4 is the default"
+   ],
+   "token_ms": 17.963,
+   "tps": 55.67,
    "weakest_evidence": "DIRTY_DIAGNOSTIC"
   },
   {
    "components": [
-    "ba_delta_fusion",
-    "deltanet_widen_f4",
     "mlp_decode_fold_addqx",
     "mlp_dispatch_size"
    ],
    "gb_removed": 0.0,
    "label": "that + the executor lever that survived",
-   "ms_removed_directly": 6.4042,
+   "ms_removed_directly": 5.2413,
    "path": "PATH_03",
-   "skipped": [],
-   "token_ms": 20.885,
-   "tps": 47.88,
+   "skipped": [
+    "ba_delta_fusion: ALREADY IN THE BASELINE - G126: folded by the widen_f4 kernel on the sealed graph",
+    "deltanet_widen_f4: ALREADY IN THE BASELINE - G126: HAWKING_QWEN38_DN_STATE=widen_f4 is the default"
+   ],
+   "token_ms": 16.705,
+   "tps": 59.86,
    "weakest_evidence": "PROSPECTIVE"
   },
   {
    "components": [
-    "ba_delta_fusion",
-    "deltanet_widen_f4",
     "mlp_decode_fold_addqx",
     "mlp_dispatch_size",
     "mlp_entropy_floor"
    ],
    "gb_removed": 0.2777,
    "label": "everything on record, refuted excluded",
-   "ms_removed_directly": 6.4042,
+   "ms_removed_directly": 5.2413,
    "path": "PATH_04",
    "skipped": [
+    "ba_delta_fusion: ALREADY IN THE BASELINE - G126: folded by the widen_f4 kernel on the sealed graph",
+    "deltanet_widen_f4: ALREADY IN THE BASELINE - G126: HAWKING_QWEN38_DN_STATE=widen_f4 is the default",
     "aux_group_size_1024: REFUTED",
     "aux_u8: REFUTED",
     "deltanet_q3: REFUTED"
    ],
-   "token_ms": 20.078,
-   "tps": 49.8,
+   "token_ms": 15.898,
+   "tps": 62.9,
    "weakest_evidence": "PROSPECTIVE"
   }
  ],

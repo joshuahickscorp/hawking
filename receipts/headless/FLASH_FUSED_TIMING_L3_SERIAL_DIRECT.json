@@ -1,0 +1,457 @@
+{
+  "artifact_kind": "SOURCE",
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787973805592",
+    "recorded_by": "flash_full_attention_layer3",
+    "rule": "S032 §3 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "This proves only the layer-3 source-BF16 full-attention plus routed/shared MoE organ through its second HyperConnection combine for the explicitly identified single-token state. It does not prove later layers, complete token, tokenizer, decoding, TPS, EBPW, or resident promotion.",
+  "execution": {
+    "command_buffers": 1,
+    "device": "Apple M3 Ultra",
+    "dispatches": 28,
+    "fallback_count": 0,
+    "gpu_ns": 11857124,
+    "native_source_bf16": true,
+    "position": 0,
+    "provider": "apple_metal",
+    "route_accumulation": "fused_compact_down_weighted_sum",
+    "routed_output_materialized": false,
+    "wall_ns": 80439542
+  },
+  "layer": 3,
+  "layer_type": "full_attention",
+  "next_action": "continue from this exact layer-3 state into the next Flash layer",
+  "parity": {
+    "attention_block_logits": {
+      "cosine": 0.9999999999999947,
+      "finite": true,
+      "max_abs_error": 7.62939453125e-6,
+      "rmse": 3.960906917056119e-6,
+      "within_tolerance": true
+    },
+    "attention_input": {
+      "cosine": 0.9999999999999953,
+      "finite": true,
+      "max_abs_error": 2.384185791015625e-7,
+      "rmse": 8.61514970971619e-9,
+      "within_tolerance": true
+    },
+    "causal_attention": {
+      "cosine": 0.9999999999999885,
+      "finite": true,
+      "max_abs_error": 2.384185791015625e-7,
+      "rmse": 3.2571455899514014e-8,
+      "within_tolerance": true
+    },
+    "final_hyperconnection": {
+      "cosine": 0.9999999999999638,
+      "finite": true,
+      "max_abs_error": 4.284083843231201e-8,
+      "rmse": 4.900924125603939e-9,
+      "within_tolerance": true
+    },
+    "hyperconnection_norm": {
+      "cosine": 0.9999999999999921,
+      "finite": true,
+      "max_abs_error": 1.9073486328125e-6,
+      "rmse": 6.884021386028713e-8,
+      "within_tolerance": true
+    },
+    "k_projection": {
+      "cosine": 0.9999999999999909,
+      "finite": true,
+      "max_abs_error": 1.7881393432617188e-7,
+      "rmse": 4.0705589051107545e-8,
+      "within_tolerance": true
+    },
+    "key_norm_rope": {
+      "cosine": 0.9999999999999912,
+      "finite": true,
+      "max_abs_error": 9.5367431640625e-7,
+      "rmse": 1.8900302060650474e-7,
+      "within_tolerance": true
+    },
+    "mlp_block_logits": {
+      "cosine": 0.999999999999977,
+      "finite": true,
+      "max_abs_error": 5.7220458984375e-6,
+      "rmse": 3.1831335837408756e-6,
+      "within_tolerance": true
+    },
+    "mlp_hyperconnection_norm": {
+      "cosine": 0.9999999999999745,
+      "finite": true,
+      "max_abs_error": 2.384185791015625e-6,
+      "rmse": 2.6374438531256673e-7,
+      "within_tolerance": true
+    },
+    "mlp_input": {
+      "cosine": 0.9999999999999444,
+      "finite": true,
+      "max_abs_error": 8.642673492431641e-7,
+      "rmse": 1.5870350451079122e-7,
+      "within_tolerance": true
+    },
+    "moe_output": {
+      "cosine": 0.9999999999992711,
+      "finite": true,
+      "max_abs_error": 3.91155481338501e-8,
+      "rmse": 9.614014602712506e-9,
+      "within_tolerance": true
+    },
+    "output": {
+      "cosine": 0.9999999999998163,
+      "finite": true,
+      "max_abs_error": 5.364418029785156e-7,
+      "rmse": 9.552008902279707e-8,
+      "within_tolerance": true
+    },
+    "post_attention_hyperconnection": {
+      "cosine": 0.9999999999999799,
+      "finite": true,
+      "max_abs_error": 2.60770320892334e-8,
+      "rmse": 3.163506386513616e-9,
+      "within_tolerance": true
+    },
+    "q_projection": {
+      "cosine": 0.9999999999999747,
+      "finite": true,
+      "max_abs_error": 2.980232238769531e-7,
+      "rmse": 2.980122775303592e-8,
+      "within_tolerance": true
+    },
+    "query_norm_rope": {
+      "cosine": 0.9999999999999669,
+      "finite": true,
+      "max_abs_error": 1.430511474609375e-6,
+      "rmse": 2.7689673389752766e-7,
+      "within_tolerance": true
+    },
+    "route_ids": {
+      "expected": [
+        315,
+        405,
+        182,
+        291,
+        194,
+        205,
+        143,
+        297,
+        223,
+        51
+      ],
+      "match": true,
+      "observed": [
+        315,
+        405,
+        182,
+        291,
+        194,
+        205,
+        143,
+        297,
+        223,
+        51
+      ]
+    },
+    "route_weights": {
+      "cosine": 0.999999999999429,
+      "finite": true,
+      "max_abs_error": 1.7881393432617188e-7,
+      "rmse": 1.1193242083013701e-7,
+      "within_tolerance": true
+    },
+    "routed_sum": {
+      "cosine": 0.9999999999990623,
+      "finite": true,
+      "max_abs_error": 3.259629011154175e-8,
+      "rmse": 8.574243364291855e-9,
+      "within_tolerance": true
+    },
+    "router_logits": {
+      "cosine": 0.9999999999999856,
+      "finite": true,
+      "max_abs_error": 4.76837158203125e-6,
+      "rmse": 1.3143466157436338e-6,
+      "within_tolerance": true
+    },
+    "shared_gated_output": {
+      "cosine": 0.9999999999998097,
+      "finite": true,
+      "max_abs_error": 1.955777406692505e-8,
+      "rmse": 3.944361525242922e-9,
+      "within_tolerance": true
+    },
+    "sigmoid_gate": {
+      "cosine": 0.9999999999999871,
+      "finite": true,
+      "max_abs_error": 1.7881393432617188e-7,
+      "rmse": 1.687292123685384e-8,
+      "within_tolerance": true
+    },
+    "v_projection": {
+      "cosine": 0.9999999999999947,
+      "finite": true,
+      "max_abs_error": 2.384185791015625e-7,
+      "rmse": 3.2571455899514014e-8,
+      "within_tolerance": true
+    }
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "EXACT_SOURCE_BF16_LAYER3_FULL_ATTENTION_MOE_ORGAN_THROUGH_HC_COMBINE",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "schema": "hawking.flash_noetic_full_attention_source_bf16_moe_organ.v1",
+  "seal_sha256": "d97b10547b4471db8c1e266aa5bf3a1182445f2c362531131db1403e67a43007",
+  "source": {
+    "embedding": null,
+    "geometry": {
+      "head_dim": 256,
+      "hidden": 2560,
+      "kv_heads": 2,
+      "query_heads": 24,
+      "rope_theta": 10000000.0,
+      "rotary_dim": 64
+    },
+    "input_state": {
+      "bytes": 40960,
+      "kind": "prefix_state_f32",
+      "path": "receipts/headless/FLASH_FAST_FUSED_L0_L47_V1/group-0-2/state.f32",
+      "sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "source": "explicit preceding-layer state artifact"
+    },
+    "manifest": {
+      "bytes": 360053432320,
+      "n_files": 144,
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+    },
+    "output_state": {
+      "bytes": 40960,
+      "elements": 10240,
+      "kind": "layer3_final_state_f32",
+      "path": "receipts/headless/FLASH_FUSED_TIMING_L3_SERIAL_DIRECT.state.f32",
+      "sha256": "116e84dd2c4b72f3e0e144c301d3195071490c155496e11a40090744f5720476",
+      "source": "prefix-fed layer-3 Metal final-state snapshot"
+    },
+    "tensors": [
+      {
+        "bytes": 20480,
+        "name": "model.language_model.layers.3.attn_hyper_connection.hc_norm.weight",
+        "sha256": "0f545eb1c0e13694087a96e904170f90816d7707cbf7fb2ad62fcc14cb1bda95",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "name": "model.language_model.layers.3.attn_hyper_connection.input_mix_weight_down.weight",
+        "sha256": "c1b380ed7a0ba6999ac501c6dd0d5f1cf36a7c4a756c9c7bfbe38f7dd13cb515",
+        "shape": [
+          320,
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "name": "model.language_model.layers.3.attn_hyper_connection.input_mix_weight_up.weight",
+        "sha256": "1b71826e90322748f4b5e50a51854fab1fdfd937d826c0989a2f409e6904fbd5",
+        "shape": [
+          10240,
+          320
+        ]
+      },
+      {
+        "bytes": 81920,
+        "name": "model.language_model.layers.3.attn_hyper_connection.block_inject_weight.weight",
+        "sha256": "ccbf0a9f9ea43e4b69a5aea034e6ef78c407dfd6ad5285b2de3516b7dfc7316c",
+        "shape": [
+          4,
+          10240
+        ]
+      },
+      {
+        "bytes": 62914560,
+        "name": "model.language_model.layers.3.self_attn.q_proj.weight",
+        "sha256": "a9c357cbf04d7d5a5fc3fd1cfc90930b3beb2f60697570c1ad1e7345f9bacd77",
+        "shape": [
+          12288,
+          2560
+        ]
+      },
+      {
+        "bytes": 2621440,
+        "name": "model.language_model.layers.3.self_attn.k_proj.weight",
+        "sha256": "d35e481191fceeac6b12c10ffcd135488880580f533de44f2441a58522e4228a",
+        "shape": [
+          512,
+          2560
+        ]
+      },
+      {
+        "bytes": 2621440,
+        "name": "model.language_model.layers.3.self_attn.v_proj.weight",
+        "sha256": "47fe0446b1127b03a7f8b65e17e6c35ff2e0716f51bbeb3f60148883faa1358e",
+        "shape": [
+          512,
+          2560
+        ]
+      },
+      {
+        "bytes": 512,
+        "name": "model.language_model.layers.3.self_attn.q_norm.weight",
+        "sha256": "792149e5f759070f7aaacd5b0772332c43c431cc1d440eaa363643f5d50fc3d6",
+        "shape": [
+          256
+        ]
+      },
+      {
+        "bytes": 512,
+        "name": "model.language_model.layers.3.self_attn.k_norm.weight",
+        "sha256": "4dce667d25a299fa3b86fba448a1d6a89cb7cda6f036339a77c902301638d260",
+        "shape": [
+          256
+        ]
+      },
+      {
+        "bytes": 31457280,
+        "name": "model.language_model.layers.3.self_attn.o_proj.weight",
+        "sha256": "96af396edce353b4e99bd6d6c56c2a0b3eeb19a624be5e4c9e36bd05f4f3eeb4",
+        "shape": [
+          2560,
+          6144
+        ]
+      },
+      {
+        "bytes": 2621440,
+        "name": "model.language_model.layers.3.mlp.gate.weight",
+        "sha256": "b3f123bb49874bade319d7e32a769fd1c32acadce05b07410257b895e327c1a0",
+        "shape": [
+          512,
+          2560
+        ]
+      },
+      {
+        "bytes": 65536000,
+        "name": "model.language_model.layers.3.mlp.experts.gate_up_proj",
+        "sha256": "5ff3ccd1fe92299b9e68d54dc8e10dd088badfc47ca6fb7c4cb4c37497dec8b4",
+        "shape": [
+          10,
+          1280,
+          2560
+        ]
+      },
+      {
+        "bytes": 32768000,
+        "name": "model.language_model.layers.3.mlp.experts.down_proj",
+        "sha256": "e15445134c3b4fd541792d92f1d0a086779b940699f80f174afc46caa54573f7",
+        "shape": [
+          10,
+          2560,
+          640
+        ]
+      },
+      {
+        "bytes": 3276800,
+        "name": "model.language_model.layers.3.mlp.shared_expert.gate_proj.weight",
+        "sha256": "ff8ad2f50ea297902cff9de98207c23cf987c895443b11eb8338c9fd10703ab6",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "bytes": 3276800,
+        "name": "model.language_model.layers.3.mlp.shared_expert.up_proj.weight",
+        "sha256": "91410b912b848ca0359a0e71affed67860b4c9d389cd21c1059b9b6f76f99d14",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "bytes": 3276800,
+        "name": "model.language_model.layers.3.mlp.shared_expert.down_proj.weight",
+        "sha256": "df094edf118d52f89b0b6ec4af563202b8d048771d8c03f01d808aba731067c8",
+        "shape": [
+          2560,
+          640
+        ]
+      },
+      {
+        "bytes": 5120,
+        "name": "model.language_model.layers.3.mlp.shared_expert_gate.weight",
+        "sha256": "91fc23701b1c6c07c887460ea038c69d949c62c3e49e9bf328e0499592e11269",
+        "shape": [
+          1,
+          2560
+        ]
+      },
+      {
+        "bytes": 20480,
+        "name": "model.language_model.layers.3.mlp_hyper_connection.hc_norm.weight",
+        "sha256": "b61d66dc492b73b3e5144e6af9cb9d43dbcab1ebe2db3df722f6ca8f1578a654",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "name": "model.language_model.layers.3.mlp_hyper_connection.input_mix_weight_down.weight",
+        "sha256": "2f3d00b1e3e15f7dbac7059bb0867410c36a37d6a83705b7f1cf812e39b44674",
+        "shape": [
+          320,
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "name": "model.language_model.layers.3.mlp_hyper_connection.input_mix_weight_up.weight",
+        "sha256": "6f3e854147eb1a6b3d9d2037e6d2e1812f1445948622b300196eebe5ac49615d",
+        "shape": [
+          10240,
+          320
+        ]
+      },
+      {
+        "bytes": 81920,
+        "name": "model.language_model.layers.3.mlp_hyper_connection.block_inject_weight.weight",
+        "sha256": "4326d2930151a805441ef7f4c79bbf59f16c63647cf29865794d51a3fb1f36a0",
+        "shape": [
+          4,
+          10240
+        ]
+      }
+    ]
+  },
+  "status": "PASSED",
+  "timing": {
+    "command_wait_ns": 77624750,
+    "config_ns": 65042,
+    "decomposition": "source_open/index/config/input + source payload + CPU oracle + device preparation + command encoding/wait + parity reads/metrics + state serialization + receipt write",
+    "device_prepare_ns": 30490708,
+    "encode_ns": 2814792,
+    "forward_wall_ns": 80439542,
+    "gpu_ns": 11857124,
+    "index_context_ns": 35059791,
+    "input_load_ns": 105625,
+    "manifest_ns": 103667,
+    "oracle_ns": 139311750,
+    "parity_ns": 262916,
+    "receipt_write_ns": 154708,
+    "receipt_write_passes": 2,
+    "root_canonicalize_ns": 34583,
+    "source_cache_policy": "F_NOCACHE_DEFAULT",
+    "source_load_ns": 74761750,
+    "source_payload_bytes_read": 138491904,
+    "state_write_ns": 346875,
+    "total_before_receipt_ns": 361014250,
+    "total_ns_including_first_receipt_write": 361226708
+  }
+}

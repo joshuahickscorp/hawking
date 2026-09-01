@@ -10,6 +10,11 @@ compute_ceiling() returns a number only when given a roof_id from the
 registry. Passing no roof, an empty roof, a positional GB/s figure, or an
 id that is not in the registry RAISES. The refusal is the deliverable.
 
+The ceiling audit carries a source reference (artifact path, field path,
+tolerance) and resolves the quoted value at evaluation time. It does not
+copy a mutable number into this file. A claimed quote that disagrees with
+the named source still raises QuoteDrift.
+
 No GPU lease. Numbers are copied from named historical receipts. Those
 receipts keep the wrong numbers; they are the evidence.
 
@@ -827,36 +832,110 @@ RECOMMENDED_ANCHOR: dict[str, Any] = {
 # Ceiling audit. Which roof each on-record ceiling rests on, including silence.
 #
 # Row ids DO NOT encode their value. They used to - causal_budget_demonstrated_47p97,
-# _66p54 - and three tests keyed on those strings, so correcting the number broke
-# tests that had nothing to do with the correction. An id that carries a
-# measurement is a calendar entry: it is wrong the moment the measurement improves.
-# The number lives in quoted_value, which is now CHECKED against the receipt.
+# _66p54, path_to_71_best_composed_42p36 - and tests keyed on those strings, so
+# correcting the number broke tests that had nothing to do with the correction.
+# An id that carries a measurement is a calendar entry: it is wrong the moment
+# the measurement improves.
+#
+# quoted_value is not a number copied into this module. Each row carries a
+# SOURCE REFERENCE (artifact path, field path, tolerance) and the value is
+# resolved from that source at evaluation time. PATH_TO_71.best_composed_tps
+# moved 42.36 -> 49.8 and a static 42.36 in this file made collection raise
+# QuoteDrift against a producer that had been rebased. The consumer follows
+# the producer. Passing a claimed quoted_value that disagrees with the source
+# still raises QuoteDrift — that is the guard, and it is not weakened.
 # ---------------------------------------------------------------------------
 
 
 class QuoteDrift(RuntimeError):
-    """A ceiling-audit row quotes a number its own receipt no longer carries."""
+    """A claimed quote disagrees with the source the audit names."""
 
 
 _UNRESOLVABLE = object()
+_RESOLVE = object()
+
+
+def source_ref(*, artifact: Any, field: Any, tolerance: Any) -> dict[str, Any]:
+    """A citation resolved at evaluation time, not a number copied here.
+
+    Missing any of the three parts RAISES. There is no default artifact, no
+    default field, and no default tolerance: a partial reference is how a
+    hop drops its source.
+    """
+    if artifact is None or (isinstance(artifact, str) and not artifact.strip()):
+        raise RoofAnchorError("source reference missing artifact path")
+    if field is None or (isinstance(field, str) and not str(field).strip()):
+        raise RoofAnchorError("source reference missing field path")
+    if tolerance is None or isinstance(tolerance, bool) or not isinstance(tolerance, (int, float)):
+        raise RoofAnchorError("source reference missing numeric tolerance")
+    if float(tolerance) < 0:
+        raise RoofAnchorError("source reference tolerance must be >= 0")
+    return {
+        "artifact": str(artifact),
+        "field": str(field),
+        "tolerance": float(tolerance),
+    }
+
+
+def _bind_source(
+    *,
+    source: Mapping[str, Any] | None,
+    receipt: str | None,
+    field: str | None,
+) -> dict[str, Any]:
+    if source is not None:
+        return source_ref(
+            artifact=source.get("artifact"),
+            field=source.get("field"),
+            tolerance=source.get("tolerance"),
+        )
+    if receipt is None or field is None:
+        raise RoofAnchorError(
+            "audit row needs a source reference (artifact path, field path, tolerance)"
+        )
+    return source_ref(artifact=receipt, field=field, tolerance=1e-6)
+
+
+def _load_artifact(artifact: str) -> Any:
+    """Read a JSON artifact from disk, or from HEAD if this checkout is sparse.
+
+    An absolute path is the caller's file (tests mutate a temp producer). A
+    repo-relative path prefers the working tree and falls back to git show;
+    sparse-absent is not campaign-absent.
+    """
+    if _os.path.isabs(artifact):
+        if not _os.path.isfile(artifact):
+            return _UNRESOLVABLE
+        try:
+            with open(artifact, encoding="utf-8") as fh:
+                return json.load(fh)
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return _UNRESOLVABLE
+    rp = REPO / artifact
+    if rp.is_file():
+        try:
+            return json.loads(rp.read_text())
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            return _UNRESOLVABLE
+    blob = git("show", f"HEAD:{artifact}")
+    if not blob:
+        return _UNRESOLVABLE
+    try:
+        return json.loads(blob)
+    except json.JSONDecodeError:
+        return _UNRESOLVABLE
 
 
 def _resolve_field(receipt_rel: str, field: str) -> Any:
-    """Read the quoted field out of the receipt it names.
-
-    The audit used to STORE quoted_value and never compare it. That is the exact
-    failure this module exists to catch, one level up: a number recorded as a
-    claim rather than checked as a fact. The budget's demonstrated rung moved
-    47.97 -> 47.25 and this audit went on quoting 47.97 with every test green.
+    """Read the quoted field out of the artifact it names.
 
     Grammar in use: dotted keys, name[key=value] to select one row of a list,
     name[] for the whole list. Anything else resolves to _UNRESOLVABLE and is
     RECORDED as unresolvable rather than silently passing.
     """
-    rp = REPO / receipt_rel
-    if not rp.exists():
+    cur: Any = _load_artifact(receipt_rel)
+    if cur is _UNRESOLVABLE:
         return _UNRESOLVABLE
-    cur: Any = json.loads(rp.read_text())
     for seg in re.findall(r"[^.\[\]]+(?:\[[^\]]*\])?", field):
         m = re.fullmatch(r"([^\[]+)(?:\[([^\]]*)\])?", seg)
         if m is None:
@@ -879,49 +958,77 @@ def _resolve_field(receipt_rel: str, field: str) -> Any:
     return cur
 
 
+def _leaf_for_row(got: Any) -> Any:
+    if isinstance(got, (int, float, str, bool)) or got is None:
+        return got
+    return "<structure>"
+
+
+def _numeric(value: Any) -> bool:
+    return isinstance(value, (int, float)) and not isinstance(value, bool)
+
+
+def _drifted(got: Any, claimed: Any, tolerance: float) -> bool:
+    if not (_numeric(got) and _numeric(claimed)):
+        return False
+    return abs(float(got) - float(claimed)) > float(tolerance) * max(abs(float(claimed)), 1.0)
+
+
 def _audit_row(
     *,
     id: str,
-    receipt: str,
-    field: str,
-    quoted_value: Any,
     rests_on_roof_id: str | None,
     roof_named_in_record: bool,
     defect: str | None,
     reading: str,
+    source: Mapping[str, Any] | None = None,
+    receipt: str | None = None,
+    field: str | None = None,
+    quoted_value: Any = _RESOLVE,
     steers_priorities: bool = False,
     extra: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
+    src = _bind_source(source=source, receipt=receipt, field=field)
+    artifact, field_path, tolerance = src["artifact"], src["field"], src["tolerance"]
     row = {
         "id": id,
-        "receipt": receipt,
-        "field": field,
-        "quoted_value": quoted_value,
+        "receipt": artifact,
+        "field": field_path,
+        "source": {
+            "artifact": artifact,
+            "field": field_path,
+            "tolerance": tolerance,
+        },
         "rests_on_roof_id": rests_on_roof_id,
         "roof_named_in_record": roof_named_in_record,
         "defect": defect,
         "reading": reading,
         "steers_priorities": steers_priorities,
     }
-    got = _resolve_field(receipt, field)
+    got = _resolve_field(artifact, field_path)
     if got is _UNRESOLVABLE:
         row["resolved"] = None
         row["quote_checked"] = False
         row["why_not_checked"] = "field is not a resolvable path in this receipt"
+        row["quoted_value"] = None if quoted_value is _RESOLVE else quoted_value
     else:
-        row["resolved"] = got if isinstance(got, (int, float, str, bool)) or got is None else "<structure>"
+        row["resolved"] = _leaf_for_row(got)
         row["quote_checked"] = True
-        if isinstance(quoted_value, (int, float)) and isinstance(got, (int, float)) and not isinstance(got, bool):
-            if abs(float(got) - float(quoted_value)) > 1e-6 * max(abs(float(quoted_value)), 1.0):
+        if quoted_value is _RESOLVE:
+            row["quoted_value"] = _leaf_for_row(got)
+        else:
+            row["quoted_value"] = quoted_value
+            if _drifted(got, quoted_value, tolerance):
                 raise QuoteDrift(
-                    f"{id}: {receipt}:{field} is {got!r} but the audit quotes "
+                    f"{id}: {artifact}:{field_path} is {got!r} but the audit quotes "
                     f"{quoted_value!r}. An audit that records a number instead of "
                     "checking it is the defect this module exists to find."
                 )
     if extra:
         row.update(extra)
     origin = row.get("inherited_from")
-    if origin and row.get("quote_checked") and isinstance(quoted_value, (int, float)):
+    displayed = row.get("quoted_value")
+    if origin and row.get("quote_checked") and _numeric(displayed):
         # A quote can match its OWN receipt and still be stale, because the receipt
         # it was copied from has moved. That is the hops problem this module is
         # named for, and it fired the moment it was wired: the budget's
@@ -932,21 +1039,24 @@ def _audit_row(
         # and this check now reads clean. Recorded, not raised - a stale
         # inheritance is a finding about the corpus, and raising would leave the
         # detector unable to report the thing it detected.
-        at_origin = _resolve_field(str(origin), "ladder[rung=every organ at the clean GEMV roof 703.5 GB/s].tps")
-        if isinstance(at_origin, (int, float)) and not isinstance(at_origin, bool):
+        at_origin = _resolve_field(
+            str(origin),
+            "ladder[rung=every organ at the clean GEMV roof 703.5 GB/s].tps",
+        )
+        if _numeric(at_origin):
             row["origin_value"] = at_origin
-            row["inherited_quote_is_stale"] = (
-                abs(float(at_origin) - float(quoted_value)) > 1e-6 * max(abs(float(quoted_value)), 1.0)
-            )
+            row["inherited_quote_is_stale"] = _drifted(at_origin, displayed, tolerance)
     return row
 
 
 CEILING_AUDIT: tuple[dict[str, Any], ...] = (
     _audit_row(
         id="atlas_the_ceiling",
-        receipt=ATLAS_REL,
-        field="THE_CEILING.raw_tps_ceiling_at_100pct_of_roof",
-        quoted_value=59.69591069708626,
+        source=source_ref(
+            artifact=ATLAS_REL,
+            field="THE_CEILING.raw_tps_ceiling_at_100pct_of_roof",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id="machine_genome_f32_triad_589p73",
         roof_named_in_record=False,
         defect="unstated_roof",
@@ -965,9 +1075,11 @@ CEILING_AUDIT: tuple[dict[str, Any], ...] = (
     ),
     _audit_row(
         id="census_anchor_595p9",
-        receipt=CENSUS_REL,
-        field="artifact.anchors_not_rederived.measured_roof_GB_s",
-        quoted_value=595.9,
+        source=source_ref(
+            artifact=CENSUS_REL,
+            field="artifact.anchors_not_rederived.measured_roof_GB_s",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id="g072_family_scoring_595p9",
         roof_named_in_record=False,
         defect="unstated_roof",
@@ -980,9 +1092,11 @@ CEILING_AUDIT: tuple[dict[str, Any], ...] = (
     ),
     _audit_row(
         id="causal_budget_demonstrated_regime",
-        receipt=BUDGET_REL,
-        field="ladder[rung=every organ at the LM head's demonstrated 497.4 GB/s].tps",
-        quoted_value=47.76,
+        source=source_ref(
+            artifact=BUDGET_REL,
+            field="ladder[rung=every organ at the LM head's demonstrated 497.4 GB/s].tps",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id="lm_head_production_497p4",
         roof_named_in_record=True,
         defect=None,
@@ -1002,9 +1116,11 @@ CEILING_AUDIT: tuple[dict[str, Any], ...] = (
     ),
     _audit_row(
         id="causal_budget_roof_on_todays_bytes",
-        receipt=BUDGET_REL,
-        field="ladder[rung=every organ at the clean GEMV roof 703.5 GB/s].tps",
-        quoted_value=66.13,
+        source=source_ref(
+            artifact=BUDGET_REL,
+            field="ladder[rung=every organ at the clean GEMV roof 703.5 GB/s].tps",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id="q4_single_gemv_addr_13p6gb_max",
         roof_named_in_record=True,
         defect="wrong_roof_shape",
@@ -1013,13 +1129,13 @@ CEILING_AUDIT: tuple[dict[str, Any], ...] = (
             "The rung NAMES 703.5 ('clean GEMV roof') so this is not an unstated "
             "roof. It is the wrong shape: 703.5 is the addr_probe that never "
             "loads the activation. the_two_numbers_that_matter.roof_on_todays_bytes_tps "
-            "= 66.13 (66.54 before an unattributed term entered the "
-            "reconstruction, 65.15 while that term was wrongly 0.321) has been "
-            "steering priorities. Flag: NO INPUT-VECTOR LOAD. "
+            "is the live figure on that rung (66.54 before an unattributed term "
+            "entered the reconstruction, 65.15 while that term was wrongly 0.321) "
+            "and has been steering priorities. Flag: NO INPUT-VECTOR LOAD. "
             "A 66.54 TPS ceiling is a ceiling for a kernel that does not exist "
             "in production. Recomputed against the recommended 497.4 with the "
             "same host-gap formula this receipt uses, the demonstrated rung is "
-            "47.97 — already in this ladder, one storey down."
+            "already in this ladder, one storey down."
         ),
         extra={
             "caveat": "no_input_vector_load",
@@ -1031,86 +1147,102 @@ CEILING_AUDIT: tuple[dict[str, Any], ...] = (
     ),
     _audit_row(
         id="causal_budget_71_target",
-        receipt=BUDGET_REL,
-        field="ladder[rung=71 TPS].tps",
-        quoted_value=71.0,
+        source=source_ref(
+            artifact=BUDGET_REL,
+            field="ladder[rung=71 TPS].tps",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id="q4_single_gemv_addr_13p6gb_max",
         roof_named_in_record=True,
         defect="wrong_roof_shape",
         reading=(
             "71 is recorded as NOT_REACHABLE_AT_THE_ROOF_ON_TODAYS_BYTES. It "
             "still rests on the 703.5 addr_probe plus either 6.7% fewer bytes "
-            "or the host gap gone. Same no-input-vector-load caveat as 66.54."
+            "or the host gap gone. Same no-input-vector-load caveat as the "
+            "roof-on-today's-bytes rung."
         ),
         extra={"caveat": "no_input_vector_load"},
     ),
     _audit_row(
         id="path_to_71_campaign_target",
-        receipt=PATH_REL,
-        field="gap_to_71 (target 71 TPS / 14.085 ms)",
+        source=source_ref(
+            artifact=PATH_REL,
+            field="gap_to_71 (target 71 TPS / 14.085 ms)",
+            tolerance=1e-6,
+        ),
         quoted_value=71.0,
         rests_on_roof_id=None,
         roof_named_in_record=False,
         defect="unstated_roof",
         reading=(
             "PATH_TO_71 never names a GB/s roof. 71 is a campaign target. The "
-            "composed PATH_04 42.36 TPS is component arithmetic over measured "
-            "token_ms (28.722) and listed levers, not roof_gb_s * bytes. A "
-            "ceiling with no roof_id is the defect; this record cannot recover "
-            "one because none was used."
+            "composed PATH_04 figure is component arithmetic over measured "
+            "token_ms and listed levers, not roof_gb_s * bytes. A ceiling with "
+            "no roof_id is the defect; this record cannot recover one because "
+            "none was used."
         ),
         extra={"kind_of_ceiling": "campaign_target_not_roof_derived"},
     ),
     _audit_row(
-        id="path_to_71_best_composed_42p36",
-        receipt=PATH_REL,
-        field="gap_to_71.best_composed_tps",
-        quoted_value=42.36,
+        id="path_to_71_best_composed",
+        source=source_ref(
+            artifact=PATH_REL,
+            field="gap_to_71.best_composed_tps",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id=None,
         roof_named_in_record=False,
         defect=None,
         reading=(
             "Not a roof-derived ceiling. Component composition over measured "
             "token_ms. No roof to name; no roof was used. Listed so it is not "
-            "mistaken for a 497.4 or 703.5 ceiling."
+            "mistaken for a 497.4 or 703.5 ceiling. The number lives on "
+            "PATH_TO_71; this row names that field rather than copying it."
         ),
         extra={"kind_of_ceiling": "component_composition"},
     ),
     _audit_row(
         id="capability_map_inherits_roof_on_todays_bytes",
-        receipt=CAP_MAP_REL,
-        field="answers.roof_movement_on_the_71tps_ladder.quoted_roof_on_todays_bytes",
-        quoted_value=66.13,  # 66.54 -> 65.15 -> 66.13; the hops check caught each move
+        source=source_ref(
+            artifact=CAP_MAP_REL,
+            field="answers.roof_movement_on_the_71tps_ladder.quoted_roof_on_todays_bytes",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id="q4_single_gemv_addr_13p6gb_max",
         roof_named_in_record=True,
         defect="wrong_roof_shape",
         steers_priorities=True,
         reading=(
-            "Inherits causal-budget 66.54, which inherits 703.5. The note names "
-            "clean GEMV 703.5 GB/s. Same no-input-vector-load caveat; this is "
-            "how the 66.54 rung propagated."
+            "Inherits causal-budget roof-on-today's-bytes, which inherits 703.5. "
+            "The note names clean GEMV 703.5 GB/s. Same no-input-vector-load "
+            "caveat; this is how that rung propagated."
         ),
         extra={"caveat": "no_input_vector_load", "inherited_from": BUDGET_REL},
     ),
     _audit_row(
         id="improvement_metabolism_inherits_roof_on_todays_bytes",
-        receipt=METABOLISM_REL,
-        field="cited.causal_budget.roof_on_todays_bytes_cited_tps",
-        quoted_value=66.13,  # 66.54 -> 65.15 -> 66.13; the hops check caught each move
+        source=source_ref(
+            artifact=METABOLISM_REL,
+            field="cited.causal_budget.roof_on_todays_bytes_cited_tps",
+            tolerance=1e-6,
+        ),
         rests_on_roof_id="q4_single_gemv_addr_13p6gb_max",
         roof_named_in_record=False,
         defect="unstated_roof",
         reading=(
-            "Cites 66.54 from the causal budget without naming 703.5 in the "
-            "cited field. Inherited ceiling, inherited silence about the "
-            "addr_probe shape."
+            "Cites roof-on-today's-bytes from the causal budget without naming "
+            "703.5 in the cited field. Inherited ceiling, inherited silence "
+            "about the addr_probe shape."
         ),
         extra={"caveat": "no_input_vector_load", "inherited_from": BUDGET_REL},
     ),
     _audit_row(
         id="addressing_gap_named_table",
-        receipt=ADDRESSING_GAP_REL,
-        field="ceilings[]",
+        source=source_ref(
+            artifact=ADDRESSING_GAP_REL,
+            field="ceilings[]",
+            tolerance=1e-6,
+        ),
         quoted_value="table of raw-TPS ceilings, each with roof_name and roof_source",
         rests_on_roof_id="(each row names its own)",
         roof_named_in_record=True,
@@ -1169,7 +1301,7 @@ def load_receipt(rel: str) -> dict[str, Any]:
 
 
 def _is_number(value: Any) -> bool:
-    return isinstance(value, (int, float)) and not isinstance(value, bool)
+    return _numeric(value)
 
 
 def _probe_spread(doc: Mapping[str, Any], key: str, label: str | None, field: str) -> Any:

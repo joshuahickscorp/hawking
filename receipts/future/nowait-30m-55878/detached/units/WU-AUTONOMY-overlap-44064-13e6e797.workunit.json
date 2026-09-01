@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.44064.receipt.json",
+    "mutation_engine.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "propose the PIPELINE_SELF refill-identity mutation, apply it in a reversible scope, and roll it back proving byte-identity; this is the metabolism the 1h trial never had",
+  "frontier_id": "FT.HCLI_SELF.emit-workunits",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.44064",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.44064.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "2c1e3bd942faeee69cffe28f2b41cbff0c3f0840130fd17ae5e1c14197503a45",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

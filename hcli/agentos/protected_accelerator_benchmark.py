@@ -150,9 +150,25 @@ def _request_record(
     else:
         gpu_source = None
 
-    wall_minus = _number(metrics.get("wall_minus_gpu_ns"))
-    wall_minus_source = "native_wall_minus_gpu_ns" if wall_minus is not None else None
-    if wall_minus is None and wall_per is not None and gpu_per is not None:
+    # Native ``wall_minus_gpu_ns`` is a generation-subphase residual.  The
+    # complete wall denominator below includes the provider request round
+    # trip, so it must not be placed directly in the complete per-token
+    # accounting field.  Preserve both scopes and derive the complete residual
+    # only from the complete wall and GPU operands.
+    native_wall_minus = _number(metrics.get("wall_minus_gpu_ns"))
+    native_wall_minus_per = _number(metrics.get("wall_minus_gpu_ns_per_generated_token"))
+    native_wall_minus_source = (
+        "native_wall_minus_gpu_ns_per_generated_token"
+        if native_wall_minus_per is not None
+        else None
+    )
+    if native_wall_minus_per is None and native_wall_minus is not None and generated and generated > 0:
+        native_wall_minus_per = native_wall_minus / generated
+        native_wall_minus_source = "derived_from_native_wall_minus_gpu_ns"
+
+    wall_minus = None
+    wall_minus_source = None
+    if wall_per is not None and gpu_per is not None:
         wall_minus = wall_per - gpu_per
         wall_minus_source = "derived_complete_wall_minus_gpu"
 
@@ -165,6 +181,20 @@ def _request_record(
         dispatch_source = "native_dispatches_per_generated_token"
     else:
         dispatch_source = None
+
+    active_bytes = _number(metrics.get("active_bytes_per_token"))
+    active_weight_bytes = _number(metrics.get("active_weight_bytes_per_generated_token"))
+    if active_bytes is None and active_weight_bytes is not None:
+        active_bytes = active_weight_bytes
+        active_bytes_source = "native_active_weight_bytes_per_generated_token"
+    elif active_bytes is not None:
+        active_bytes_source = "native_active_bytes_per_token"
+    else:
+        active_bytes_source = None
+    resident_weight_bytes = _number(metrics.get("resident_weight_bytes"))
+    workspace_resident_bytes = _number(metrics.get("workspace_resident_bytes"))
+    actual_read_bytes = _number(metrics.get("actual_read_bytes_per_token"))
+    transient_bytes = _number(metrics.get("transient_bytes_per_token"))
 
     capability = metrics.get("capability")
     capability = _safe(capability) if capability is not None else None
@@ -192,9 +222,20 @@ def _request_record(
         "gpu_metric_source": gpu_source,
         "wall_minus_gpu_ns_per_token": wall_minus,
         "wall_minus_gpu_metric_source": wall_minus_source,
+        "native_wall_minus_gpu_ns": native_wall_minus,
+        "native_wall_minus_gpu_ns_per_token": native_wall_minus_per,
+        "native_wall_minus_gpu_metric_source": native_wall_minus_source,
         "dispatches": dispatches,
         "dispatches_per_token": dispatches_per,
         "dispatch_metric_source": dispatch_source,
+        "active_bytes_per_token": active_bytes,
+        "active_bytes_source": active_bytes_source,
+        "active_bytes_scope": metrics.get("active_bytes_scope"),
+        "active_weight_bytes_per_generated_token": active_weight_bytes,
+        "resident_weight_bytes": resident_weight_bytes,
+        "workspace_resident_bytes": workspace_resident_bytes,
+        "actual_read_bytes_per_token": actual_read_bytes,
+        "transient_bytes_per_token": transient_bytes,
         "prompt_tokens": _integer(hawking.get("prompt_tokens")),
         "prefill_steps": _integer(metrics.get("prefill_steps")),
         "decode_steps": _integer(metrics.get("decode_steps")),
@@ -221,8 +262,16 @@ def _aggregate(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
         "gpu_ns",
         "gpu_ns_per_token",
         "wall_minus_gpu_ns_per_token",
+        "native_wall_minus_gpu_ns",
+        "native_wall_minus_gpu_ns_per_token",
         "dispatches",
         "dispatches_per_token",
+        "active_bytes_per_token",
+        "active_weight_bytes_per_generated_token",
+        "resident_weight_bytes",
+        "workspace_resident_bytes",
+        "actual_read_bytes_per_token",
+        "transient_bytes_per_token",
         "prefill_steps",
         "decode_steps",
     )
@@ -273,6 +322,16 @@ def _required_metrics(rows: Iterable[Mapping[str, Any]]) -> Dict[str, Any]:
     return {
         "all_required_metrics_present": bool(records) and all(fields.values()),
         "fields": fields,
+        "optional_physical_fields": {
+            field: any(row.get(field) is not None for row in records)
+            for field in (
+                "active_bytes_per_token",
+                "resident_weight_bytes",
+                "workspace_resident_bytes",
+                "actual_read_bytes_per_token",
+                "transient_bytes_per_token",
+            )
+        },
         "missing_for_generic_provider_is_explicit": True,
     }
 
@@ -380,6 +439,8 @@ def run_protected_accelerator_benchmark(
             "machine_quiescence_before_and_after": True,
             "complete_wall_includes_request_round_trip": True,
             "gpu_metric_must_be_provider_declared_or_explicitly_derived": True,
+            "complete_wall_minus_gpu_uses_complete_wall_scope": True,
+            "native_subphase_residual_recorded_separately": True,
             "missing_metrics_never_become_zero": True,
             "promotion_requires_separate_capability_and_quality_gate": True,
             "fusion_env_overrides_are_child_only": True,

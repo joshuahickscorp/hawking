@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.10176.receipt.json",
+    "p6_projection.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F020: fourteen P6/P7 candidates encode reusable concepts and have no primitive, HWIR hypothesis, FPGA realization, transfer scope or Odyssey III counterexample. All BLOCKED and unm",
+  "frontier_id": "FT.PHYSICAL_GRAPH.p6-projection",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.10176",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.10176.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "a389515be0373b1c51843839a996fe3cfc337735e03fb0bf7e6d816991e65bc3",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

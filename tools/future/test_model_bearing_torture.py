@@ -583,3 +583,145 @@ def test_live_receipts_if_present_are_sealed_and_hardware_free():
             assert row.get("found") is True, key
         assert doc["sealed"]["pin"]["sealed"] is True
         assert doc["degeneracy"]["verdict"] != "FAIL"
+
+
+# --- divergence is undefined on a menu of one --------------------------------
+
+def _choose(n_options, diverged=False, model_id="m", policy_id="p"):
+    return {"n_options": n_options, "diverged": diverged,
+            "model_id": model_id, "policy_id": policy_id if not diverged else "q"}
+
+
+def test_single_option_cycles_are_excluded_from_the_choice_fraction():
+    """7 real work units, 44 auto-generated probes: 86% of cycles offered ONE
+    option. Counting those as agreement scores a choice nobody was given."""
+    chooses = [_choose(5), _choose(4, diverged=True)] + [_choose(1)] * 44
+    r = mbt.participation_report(chooses=chooses, calls=[], mb_report=None)
+    assert r["n_choose"] == 46
+    assert r["n_cycles_with_a_real_choice"] == 2
+    assert r["n_cycles_with_one_or_no_option"] == 44
+    assert r["n_diverged_where_a_choice_existed"] == 1
+    assert r["fraction_model_over_policy_where_a_choice_existed"] == 0.5
+    # The unscoped fraction is diluted by 44 cycles with nothing to choose.
+    assert r["fraction_model_over_policy"] < 0.05
+
+
+def test_a_frontier_with_no_real_choice_reports_null_not_zero():
+    """Null means the FRONTIER offered nothing, which is not a statement about
+    the resident. Zero would read as a verdict on the model."""
+    r = mbt.participation_report(chooses=[_choose(1)] * 30, calls=[],
+                                 mb_report=None)
+    assert r["n_cycles_with_a_real_choice"] == 0
+    assert r["fraction_model_over_policy_where_a_choice_existed"] is None
+    assert "not about the resident" in r["why_two_fractions"]
+
+
+def test_both_fractions_are_reported_never_just_the_flattering_one():
+    chooses = [_choose(3, diverged=True)] + [_choose(1)] * 9
+    r = mbt.participation_report(chooses=chooses, calls=[], mb_report=None)
+    assert r["fraction_model_over_policy"] == 0.1
+    assert r["fraction_model_over_policy_where_a_choice_existed"] == 1.0
+    assert r["fraction_model_over_policy"] != \
+        r["fraction_model_over_policy_where_a_choice_existed"]
+
+
+def test_the_option_count_is_recorded_at_the_decision_point():
+    import inspect
+    src = inspect.getsource(mbt)
+    assert '"n_options": len(remaining)' in src
+    assert "DIVERGENCE IS UNDEFINED ON A MENU OF ONE" in src
+
+
+def test_the_catalog_is_deeper_than_the_run_that_exhausted_it():
+    """Six live units against fifty-one cycles is how 86% of that run became
+    single-option filler.
+
+    This asserted >= 20 for one afternoon, and then FAILED because the work got
+    DONE: the derived rows come from the staleness review list, which fell from
+    20 to 10 as those receipts were fixed. Pinning a count punishes exactly the
+    progress the campaign is for. The invariant is that the catalog is deeper
+    than the run that exhausted it, and the no-filler claim is asserted where it
+    can actually be observed - on the run receipt, below."""
+    live = [r for r in mbt.live_catalog() if not r.get("dead")]
+    assert len(live) > 6, f"only {len(live)} live units; the run that failed had 6"
+
+
+def test_the_last_run_needed_no_synthetic_filler():
+    """The claim the catalog depth exists to support, checked on the RUN rather
+    than on the menu."""
+    import json
+    p = mbt.REPO / "receipts/future/MODEL_BEARING_TORTURE_30M.json"
+    if not p.is_file():
+        pytest.skip("no run receipt on disk")
+    launched = json.loads(p.read_text())["control"]["launched_under_model"]
+    probes = [x for x in launched if "health_probe" in x]
+    assert not probes, f"{len(probes)} of {len(launched)} launches were filler"
+
+
+def test_the_added_rows_are_real_open_work_read_from_disk():
+    import json as _j
+    rows = mbt._staleness_frontier_rows()
+    doc = _j.loads(
+        (mbt.REPO / "receipts/future/BASELINE_STALENESS.json").read_text())
+    assert len(rows) == len(doc["report"]["needing_review"])
+    for r in rows:
+        assert r["frontier"] == "RECEIPT_INTEGRITY"
+        assert r["dead"] is False
+        assert "SEALED_DEFAULT_ABSOLUTE" in r["description"]
+
+
+def test_a_missing_source_returns_nothing_rather_than_fabricating_work(monkeypatch):
+    """A padded catalog is the same defect as a padded timeline."""
+    real = mbt.REPO
+    monkeypatch.setattr(mbt, "REPO", real / "no-such-dir")
+    assert mbt._staleness_frontier_rows() == []
+
+
+def test_the_first_eight_rows_are_unchanged_so_required_events_still_fire():
+    """interpret() sees the first eight rows. The added tier must sit below the
+    units that produce the scar avoidance and the Hawking-self work unit."""
+    ids = [r["id"] for r in mbt.live_catalog()[:8]]
+    assert "WU.HAWKING.resident_identity_pin" in ids
+    assert any(i.startswith("WU.DEAD.") for i in ids)
+    assert not any(i.startswith("WU.STALE.") for i in ids)
+
+
+def test_the_added_rows_rank_below_every_pre_existing_live_unit():
+    live = [r for r in mbt.live_catalog() if not r.get("dead")]
+    added = [r for r in live if r["id"].startswith("WU.STALE.")]
+    kept = [r for r in live if not r["id"].startswith("WU.STALE.")]
+    assert added and kept
+    assert max(r["expected_information_gain"] for r in added) <= \
+        min(r["expected_information_gain"] for r in kept)
+
+
+def test_the_prompt_window_rotates_so_the_question_can_change():
+    """interpret() shows only the first PROMPT_ENTRY_CAP rows, so a deep but
+    statically ordered catalog still asks ONE question: 26 live units produced a
+    BYTE-IDENTICAL prompt 23 times out of 29."""
+    import inspect
+    src = inspect.getsource(mbt)
+    assert "shown_unchosen" in src
+    assert "THE WINDOW HAS TO MOVE OR THE QUESTION NEVER CHANGES" in src
+
+
+def test_the_rotation_sinks_shown_units_and_keeps_gain_within_a_tier():
+    """Not decoration: the SET is unchanged and the policy reads the same
+    rotated list, so divergence stays a fair comparison."""
+    shown = {"a": 2, "b": 0, "c": 2}
+    rows = [{"id": "a", "expected_information_gain": 9},
+            {"id": "b", "expected_information_gain": 1},
+            {"id": "c", "expected_information_gain": 5}]
+    order = [r["id"] for r in sorted(
+        rows, key=lambda c: (shown.get(c["id"], 0),
+                             -int(c["expected_information_gain"]), c["id"]))]
+    assert order[0] == "b", "an unshown low-gain unit must surface"
+    assert order[1:] == ["a", "c"], (
+        "inside the shown-twice tier gain still ranks: 9 before 5")
+
+
+def test_a_chosen_unit_is_not_counted_as_shown_and_declined():
+    """The model must not be punished for picking something."""
+    import inspect
+    src = inspect.getsource(mbt)
+    assert "shown_unchosen.pop(uid, None)" in src

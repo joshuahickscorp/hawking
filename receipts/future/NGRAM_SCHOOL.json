@@ -18,7 +18,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:33:32Z",
+  "recorded_at": "2026-09-01T06:07:00Z",
   "recorded_by": "tools/future/ngram_school.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -414,7 +414,7 @@
   "negative control that actually fires: half-bytes/triple-lookups does not dominate Q4",
   "active-byte observation: PLE aux dominates per-token DRAM, so table-storage ranking is a trap"
  ],
- "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "head": "ec0d4d1fb89bf7f9b4b38f4a797e3bf999c8f15e",
  "integration": {
   "build": "build() -> Path",
   "candidates": "candidates() -> list[dict]",
@@ -712,7 +712,7 @@
   }
  ],
  "schema": "hawking.future.ngram_school.v1",
- "seal_sha256": "cd1fce8ca747dd3d9143462fc9ddf54107d4f329564455fda35d98109621da23",
+ "seal_sha256": "0305cb2c882d48816293a299f4f7b5bf9f26b9c7563104b167a0e26af86566a7",
  "storage_only_policy": "REFUSED",
  "version": 1
 }

@@ -38,6 +38,14 @@ pub const WORKLIST_FP4_SIMD: &str = "gk_worklist_fp4_simd";
 pub const SWIGLU_F32: &str = "gk_swiglu_f32";
 /// DSV4F worklist SwiGLU (bf16, clamp, route weight).
 pub const SWIGLU_BF16_WORKLIST: &str = "gk_swiglu_bf16_worklist";
+/// DSV4F FP4 routed gate/up projections fused directly into BF16 SwiGLU.
+/// The fused path preserves the two authority matvec accumulation orders,
+/// the intermediate BF16 round-trip, and the route-weighted epilogue while
+/// removing the two FP32->BF16 staging dispatches.
+pub const WORKLIST_FP4_GATE_UP_SWIGLU_BF16: &str =
+    "gk_worklist_fp4_gate_up_swiglu_bf16";
+pub const WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD: &str =
+    "gk_worklist_fp4_gate_up_swiglu_bf16_simd";
 /// DSV4F (and Q80-if-worklisted) combine.
 pub const COMBINE_BF16: &str = "gk_combine_bf16";
 /// Device worklist pack. Default K=6; specialize kGkWorklistK=10 for Q80.
@@ -71,6 +79,8 @@ pub const DSV4F_GRAPH_KERNELS: &[&str] = &[
     WORKLIST_FP4,
     WORKLIST_FP4_SIMD,
     SWIGLU_BF16_WORKLIST,
+    WORKLIST_FP4_GATE_UP_SWIGLU_BF16,
+    WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD,
     COMBINE_BF16,
 ];
 
@@ -85,6 +95,8 @@ pub const FAMILY_KERNELS: &[&str] = &[
     WORKLIST_FP4_SIMD,
     SWIGLU_F32,
     SWIGLU_BF16_WORKLIST,
+    WORKLIST_FP4_GATE_UP_SWIGLU_BF16,
+    WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD,
     COMBINE_BF16,
     PACK_WORKLIST,
 ];
@@ -111,6 +123,10 @@ pub const LEGACY_WORKLIST_FP4: &str = "dsv4f_worklist_fp4_matvec";
 pub const LEGACY_WORKLIST_FP4_SIMD: &str = "dsv4f_worklist_fp4_matvec_simd";
 pub const LEGACY_SWIGLU_F32: &str = "qwen80_silu_mul_f32";
 pub const LEGACY_SWIGLU_BF16_WORKLIST: &str = "dsv4f_worklist_swiglu";
+pub const LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16: &str =
+    "dsv4f_worklist_fp4_gate_up_swiglu_bf16";
+pub const LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD: &str =
+    "dsv4f_worklist_fp4_gate_up_swiglu_bf16_simd";
 pub const LEGACY_COMBINE_BF16: &str = "dsv4f_worklist_combine";
 
 fn pick<'a>(family: &'a str, legacy: &'a str) -> &'a str {
@@ -171,6 +187,20 @@ pub fn swiglu_f32() -> &'static str {
 
 pub fn swiglu_bf16_worklist() -> &'static str {
     pick(SWIGLU_BF16_WORKLIST, LEGACY_SWIGLU_BF16_WORKLIST)
+}
+
+pub fn worklist_fp4_gate_up_swiglu_bf16() -> &'static str {
+    pick(
+        WORKLIST_FP4_GATE_UP_SWIGLU_BF16,
+        LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16,
+    )
+}
+
+pub fn worklist_fp4_gate_up_swiglu_bf16_simd() -> &'static str {
+    pick(
+        WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD,
+        LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD,
+    )
 }
 
 pub fn combine_bf16() -> &'static str {
@@ -248,6 +278,14 @@ mod tests {
         assert_eq!(LEGACY_WORKLIST_FP4_SIMD, "dsv4f_worklist_fp4_matvec_simd");
         assert_eq!(LEGACY_SWIGLU_F32, "qwen80_silu_mul_f32");
         assert_eq!(LEGACY_SWIGLU_BF16_WORKLIST, "dsv4f_worklist_swiglu");
+        assert_eq!(
+            LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16,
+            "dsv4f_worklist_fp4_gate_up_swiglu_bf16"
+        );
+        assert_eq!(
+            LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD,
+            "dsv4f_worklist_fp4_gate_up_swiglu_bf16_simd"
+        );
         assert_eq!(LEGACY_COMBINE_BF16, "dsv4f_worklist_combine");
     }
 

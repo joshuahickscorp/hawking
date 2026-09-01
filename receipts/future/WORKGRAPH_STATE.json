@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:33:50Z",
+  "recorded_at": "2026-09-01T06:08:22Z",
   "recorded_by": "tools/future/workgraph.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -677,7 +677,7 @@
   ]
  },
  "hardware_qualification": {
-  "contamination_class": "HEAVY",
+  "contamination_class": "LIGHT",
   "gpu_authority": false,
   "lease_present": false,
   "pipeline_receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
@@ -690,12 +690,12 @@
    "qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
    "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
    "teacher capture is 0/256",
-   "QUALIFICATION_PIPELINE.json pipeline.contamination_class='HEAVY'",
+   "QUALIFICATION_PIPELINE.json pipeline.contamination_class='LIGHT'",
    "lease_present=False from receipts/future/QUALIFICATION_PIPELINE.json"
   ],
   "rule": "blocked physical work becomes a SLEEPING WorkUnit; it never becomes a synthetic result. UNKNOWN is the correct hardware answer."
  },
- "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "head": "17b5765ffb5ae187179a0796a149a4867cc658e0",
  "integration_points": [
   "hcli.scheduler.Scheduler.submit \u2014 consume emit_hcli_workunit() rows (hcli frozen)",
   "tools.future.wakeup \u2014 wake_sleeping(hardware_qualified=True) when Codex qualifies (sibling, not imported)",
@@ -1099,7 +1099,7 @@
   }
  },
  "schema": "hawking.future.workgraph.v1",
- "seal_sha256": "02c83a7dbdf764bd2e3e3f2d6d42bab02addde9a132315a6be1fca37a703ec81",
+ "seal_sha256": "1cd46d033ff6386a9397bb1f132afaffc8b11ede71829c8319f260fa8d815f17",
  "selection_rule": {
   "info_domain": [
    1,

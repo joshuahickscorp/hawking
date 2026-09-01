@@ -1,0 +1,1 @@
+{"module": "ngram_school.py", "entry_point": "build", "receipt": "receipts/future/NGRAM_SCHOOL.json", "routed_to_frontier": "FT.MODEL_REPRESENTATION.ngram-school", "species": "GRAVITY_SEARCH", "wall_seconds": 0.026, "evidence_class": "STATIC_ONLY"}

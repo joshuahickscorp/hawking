@@ -1,0 +1,169 @@
+{
+  "schema": "hawking.flash.fast_compact_parity.v1",
+  "status": "PASSED_FAST_COMPACT_PARITY",
+  "dense_receipt": "receipts/headless/FLASH_DENSE_L0_L3_V1/FAST_CHAIN_SUMMARY.json",
+  "dense_receipt_sha256": "dd06222dcb2bcf030e98f6f1ea3dfb1d61e2b46ab2d9df3b8ec32b0604406b1b",
+  "compact_receipt": "receipts/headless/FLASH_COMPACT_L0_L3_V1/FAST_CHAIN_SUMMARY.json",
+  "compact_receipt_sha256": "07cad82d714ff042dc2fbf8fdeb73123699044cbb3325b209b8030eaac0ba093",
+  "layers": [
+    0,
+    1,
+    2,
+    3
+  ],
+  "comparisons": [
+    {
+      "layer": 0,
+      "dense_output_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+      "compact_output_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+      "exact_fingerprint_match": true,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "compact_route_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 1,
+      "dense_output_sha256": "5eb2ef9e2044cc1d258ed06ffce4f064e6e18b2f2907a14127bff22b9a90e91b",
+      "compact_output_sha256": "5eb2ef9e2044cc1d258ed06ffce4f064e6e18b2f2907a14127bff22b9a90e91b",
+      "exact_fingerprint_match": true,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        320,
+        19,
+        157,
+        46,
+        149,
+        131,
+        151,
+        367,
+        165,
+        452
+      ],
+      "compact_route_ids": [
+        320,
+        19,
+        157,
+        46,
+        149,
+        131,
+        151,
+        367,
+        165,
+        452
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 2,
+      "dense_output_sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "compact_output_sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "exact_fingerprint_match": true,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        75,
+        12,
+        209,
+        4,
+        9,
+        222,
+        5,
+        272,
+        114,
+        269
+      ],
+      "compact_route_ids": [
+        75,
+        12,
+        209,
+        4,
+        9,
+        222,
+        5,
+        272,
+        114,
+        269
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 3,
+      "dense_output_sha256": "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+      "compact_output_sha256": "86aa8b0f0cc130bd96b0ba84947ac81635d21af9847aad194a207e174b1f6e85",
+      "exact_fingerprint_match": false,
+      "full_attention_tolerance_match": true,
+      "dense_route_ids": [
+        315,
+        405,
+        182,
+        291,
+        194,
+        205,
+        143,
+        297,
+        223,
+        51
+      ],
+      "compact_route_ids": [
+        315,
+        405,
+        182,
+        291,
+        194,
+        205,
+        143,
+        297,
+        223,
+        51
+      ],
+      "route_ids_match": true
+    }
+  ],
+  "source_payload": {
+    "dense_bytes": 20735531328,
+    "compact_bytes": 996088128,
+    "bytes_saved": 19739443200,
+    "reduction_fraction": 0.9519622568506386
+  },
+  "timing": {
+    "dense_wall_ns": 525583833250,
+    "compact_wall_ns": 34670089500,
+    "wall_reduction_fraction": 0.9340350914418085,
+    "dense_gpu_ns": 625492039,
+    "compact_gpu_ns": 103253165,
+    "gpu_reduction_fraction": 0.8349248934245829,
+    "interpretation": "bounded four-layer (0..3) device-resident cross-species prefix; full-attention seam uses source-parity tolerance, no complete-token/TPS claim"
+  },
+  "claim_boundary": "Per-layer compact route-before-payload execution matched the dense device-resident control for layers 0..2 exactly and layer 3 within the established source-parity tolerance, including router IDs. This is bounded cross-species prefix evidence, not complete-model TPS, EBPW, or residency promotion.",
+  "next": "Extend the compact cross-species path through the next attention boundary, then jump to a larger route-safe range.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T01:42:54.142603Z",
+    "recorded_by": "tools/flash_fast_compact_compare.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "bounded parity/source-read comparison only; no TPS or residency claim"
+  },
+  "seal_sha256": "599614f48f4b13717280f485d697b69fd337ea6c6bef2f2f0f00a3188cb6892f"
+}

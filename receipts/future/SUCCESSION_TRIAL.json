@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T09:24:08Z",
+  "recorded_at": "2026-09-01T05:58:17Z",
   "recorded_by": "tools/future/succession_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -202,7 +202,7 @@
   "Flash-Next and Coder-30B inspected and rejected with disk reasons"
  ],
  "gpu_authority": false,
- "head": "023420e5926e1d744f4d632b481660bcaec90ace",
+ "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "incumbent": {
   "artifact_path": "/Users/scammermike/noetic/NOETIC_PARENT_A",
   "config_digest": "2979da8f8d30d0965ef6629b6df47e82cf5a7bb99c9ffc6531fb308292c4cf7e",
@@ -627,7 +627,7 @@
   "workunit": "one CPU_ANALYSIS unit; real ModelLake child; independent judge; Qwen27 restorable; PROMOTE unreachable"
  },
  "schema": "hawking.future.succession_trial.v1",
- "seal_sha256": "a62ce7c8e338609ce0a59dab9f955bc7389b8ea7dfeeabd2b2bb7da20ea59fe3",
+ "seal_sha256": "6d2763dce16eb677594d664e5f586bd224c1b6b3a02f099a93f1fca3e1fe9a37",
  "shadow": {
   "bound_exceeded_on_real_units": {
    "error": "child.different_specimen.Qwen--Qwen3-0.6B@c1899de289a0: cloned workunits 26 exceed bound.max_cloned_workunits 1",

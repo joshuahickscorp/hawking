@@ -1,0 +1,176 @@
+{
+  "body_mutated": false,
+  "candidate_body": {
+    "bytes": 174080,
+    "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-mtp-gate-independent-q4-g64-l0-r0-128.bin",
+    "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MTP_GATE_COMPONENT_BODY_L0_R0_128.json",
+    "receipt_sha256": "3174014a597bea7d00315aa54e9551a07c427965b01678ada350a66784ce6dc4",
+    "sha256": "c721b7cfd6c5ca43b1f81b4560373867e29a28a3811e60b8fa5500a1fd2e8e87",
+    "source_independent": true
+  },
+  "claim_boundary": "PASSED bounded source-independent Noetic component-body load, source-reference Q4 Metal kernel parity, and GPU timing only; no whole-model loader, capability, complete-token runtime, EBPW, or Flash TPS claim",
+  "complete_system_ebpw": null,
+  "derived_label": "[D]",
+  "elapsed_s": 0.376155709,
+  "flash_tps": null,
+  "gpu_timing": {
+    "device": "Apple M3 Ultra",
+    "gpu_ns": [
+      450416,
+      453750,
+      451125,
+      453291,
+      450916,
+      453791,
+      450041
+    ],
+    "gpu_ns_max": 453791,
+    "gpu_ns_median": 451125,
+    "gpu_ns_min": 450041,
+    "host_wall_ns": [
+      735208,
+      758500,
+      868250,
+      768250,
+      1061125,
+      840792,
+      783083
+    ],
+    "host_wall_ns_max": 1061125,
+    "host_wall_ns_median": 783083,
+    "host_wall_ns_min": 735208,
+    "measured_runs": 7,
+    "memory_limits": {
+      "current_allocated_size": 638976,
+      "has_unified_memory": true,
+      "max_buffer_length": 62620631040,
+      "recommended_max_working_set_size": 83494174720
+    },
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+    "warmup_runs": 2
+  },
+  "input": {
+    "definition": "((index * 71) mod 509 - 254) / 509",
+    "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+    "values": 2560
+  },
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+  },
+  "model_loaded": false,
+  "native_kernel": {
+    "dispatches_per_sample": 1,
+    "grid": [
+      128,
+      1,
+      1
+    ],
+    "kernel": "qwen_uniform_q4_group64_matvec",
+    "kernel_registered": true,
+    "label": "[V]/[D]",
+    "scope": "one Flash matrix row-block matvec",
+    "shader_family": "qwen_uniform_q4.metal",
+    "threadgroup": [
+      1,
+      1,
+      1
+    ],
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "native_loader": {
+    "candidate_body_persisted": true,
+    "candidate_id": "independent_q4_g64",
+    "dense_rematerialization": "forbidden",
+    "descriptor_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MTP_GATE_COMPONENT_BODY_L0_R0_128.json",
+    "descriptor_sha256": "3174014a597bea7d00315aa54e9551a07c427965b01678ada350a66784ce6dc4",
+    "source_block_streamed_for_reference": true,
+    "source_independent_execution": true,
+    "status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "next_action": "compose the source-independent component body into the bounded Noetic graph while keeping protected complete-token timing gated",
+  "noetic_descriptor": {
+    "candidate_id": "independent_q4_g64",
+    "load_policy": "validated serialized descriptor; candidate body is not persisted by this bounded probe",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MTP_GATE_COMPONENT_BODY_L0_R0_128.json",
+    "schema": "hcli.noetic.representation_descriptor.v1",
+    "sha256": "3174014a597bea7d00315aa54e9551a07c427965b01678ada350a66784ce6dc4"
+  },
+  "noetic_representation": {
+    "candidate_bytes": 174080,
+    "candidate_id": "independent_q4_g64",
+    "candidate_sha256": "c721b7cfd6c5ca43b1f81b4560373867e29a28a3811e60b8fa5500a1fd2e8e87",
+    "code_bytes": 163840,
+    "code_dtype": "uint4_packed",
+    "code_offset": 8,
+    "effective_bits_per_value": 4.25,
+    "group_size": 64,
+    "label": "[D]",
+    "layout": "row-major [row, column]",
+    "nibble_order": "low_nibble_then_high_nibble_row_major",
+    "scale_bytes": 10240,
+    "scale_dtype": "little_endian_float16",
+    "scale_scope": "one scale per 64 source values",
+    "schema": "hcli.noetic.representation_descriptor.v1",
+    "source_to_candidate_max_abs_error": 0.0205078125,
+    "source_to_candidate_rmse": 0.001552222940547453
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "cosine": 0.9999999999999715,
+    "count": 128,
+    "finite": true,
+    "max_abs_error": 8.940696716308594e-08,
+    "rmse": 3.577700744556215e-08,
+    "tolerance": 0.0020000000949949026,
+    "within_tolerance": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+  "source_label": "[V]",
+  "source_tensor": {
+    "dtype": "BF16",
+    "header_sha256": "88296ad899cc28800ff9ad7ee6fefe6331e6d8fdbb50e72ebf7cc682696e859e",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "selected_block_bytes": 655360,
+    "selected_block_sha256": "07c0da51e4f0b75aa40c165764ff4f029ad60172ab6c3e557bfe4b074b2d656f",
+    "selected_expert": 0,
+    "selected_row_count": 128,
+    "selected_row_start": 0,
+    "selected_shard_full_hash_recomputed": false,
+    "shape": [
+      512,
+      2560
+    ],
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00066-of-00131.safetensors",
+    "shard_name": "model-00066-of-00131.safetensors",
+    "shard_size": 1719221392,
+    "tensor_data_offsets": [
+      1716597760,
+      1719219200
+    ],
+    "tensor_name": "mtp.layers.0.mlp.gate.weight"
+  },
+  "status": "PASSED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

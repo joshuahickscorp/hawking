@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.44864.receipt.json",
+    "odyssey_launch.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "odyssey_launch refuses on specimen_curriculum_ready; a WHOLE_TREE_VERIFIED specimen can raise that criterion, PARTIAL keeps launch refused",
+  "frontier_id": "FT.ODYSSEY_TRANSFER.re-earn",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.44864",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.44864.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "66df8248dc861c6ca95e2e2a75c2569af0e99568dc7a992427ae2b32f1f16ddf",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

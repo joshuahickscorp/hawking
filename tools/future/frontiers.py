@@ -267,6 +267,53 @@ def _redundancy_key(item: Mapping[str, Any]) -> str:
 # Catalog. Items are templates; live counts and wake evidence overlay at load.
 # ---------------------------------------------------------------------------
 
+
+# S026 §4 and TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK. G082 measured all
+# 11 edges of the single-token data flow as TRUE dependencies with zero
+# overlapable top-level work, so command-order permutations cannot reach the
+# capacity multi-session execution exposes. A unit proposing one is refused HERE,
+# at proposal time, rather than discovered after it has run.
+#
+# This refuses a SCHOOL, not a word. OPEN_QUESTIONs are exempt: asking whether
+# the scar still holds is legitimate, proposing work that assumes it does not is
+# what costs GPU time.
+DEAD_SCHOOL_REORDERING = (
+    "reorder",
+    "reordering",
+    "permute the dispatch",
+    "dispatch permutation",
+    "command-order",
+    "command order permutation",
+    "overlap top-level",
+    "top-level overlap",
+)
+
+
+class DeadSchoolRefused(ValueError):
+    """A proposed unit belongs to a school an emitted scar has closed."""
+
+
+def _refuse_dead_school(
+    id: str, kind: str, title: str, detail: str, family: str
+) -> None:
+    if kind == "OPEN_QUESTION":
+        return
+    hay = f"{title} {detail} {family}".lower()
+    hit = next((p for p in DEAD_SCHOOL_REORDERING if p in hay), None)
+    if hit is None:
+        return
+    raise DeadSchoolRefused(
+        f"{id}: proposes {hit!r}, which belongs to the school closed by "
+        "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK "
+        "(receipts/future/SINGLE_TOKEN_DAG.json, S026 §4): all 11 token edges "
+        "are true dependencies and there is zero overlapable top-level work. "
+        "The next questions live INSIDE kernels - occupancy, memory-level "
+        "parallelism, register pressure, unpack and convert cost. If you "
+        "believe the graph has changed, rebuild single_token_dag first: it "
+        "recomputes the slack and refuses to emit the scar if any appears."
+    )
+
+
 def _item(
     *,
     id: str,
@@ -292,6 +339,7 @@ def _item(
     kind_n = str(kind).strip().upper()
     if kind_n not in {"NEXT_WORK", "BLOCKED", "OPEN_QUESTION"}:
         raise ValueError(f"{id}: kind {kind!r} is not NEXT_WORK/BLOCKED/OPEN_QUESTION")
+    _refuse_dead_school(id, kind_n, title, detail, hypothesis_family)
     lanes = tuple(str(x) for x in required_lanes)
     unknown = [x for x in lanes if x not in ALL_LANES]
     if unknown:

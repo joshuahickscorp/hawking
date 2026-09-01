@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.58592.receipt.json",
+    "fusion_sim.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "fusion_simulation.py is executable. Run the simulation receipt refresh; do not claim token_ns.",
+  "frontier_id": "FT.MODEL_EXECUTION.fusion-sim",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.58592",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.58592.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "6c8273900c636f71bcf2e2248e41db64b6fcac631ee5c2ec1c76ae32878c6535",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

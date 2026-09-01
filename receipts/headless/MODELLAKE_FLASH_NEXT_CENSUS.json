@@ -15,10 +15,10 @@
     ]
   },
   "capacity": {
-    "available_for_unprivileged_bytes": 3386791518208,
+    "available_for_unprivileged_bytes": 3348533145600,
     "capacity_bytes": 5000771321856,
     "filesystem": "observed via statvfs",
-    "free_bytes": 3386791518208,
+    "free_bytes": 3348533145600,
     "mounted_directory": true,
     "path": "/Volumes/corpdrive/hawking-modellake"
   },
@@ -33,8 +33,8 @@
     "remote_file_count_matches_pin": true,
     "target_not_published_as_verified": true
   },
-  "elapsed_s": 0.995,
-  "finished_at": 1787825047.085519,
+  "elapsed_s": 0.64,
+  "finished_at": 1787837442.55626,
   "flash_target_manifest": {
     "files": [
       {
@@ -2929,7 +2929,7 @@
   "partials": {
     "entries": [
       {
-        "age_s": 22395.6,
+        "age_s": 34791.4,
         "kind": "file",
         "name": ".DS_Store",
         "path": "/Volumes/corpdrive/hawking-modellake/partial/.DS_Store",
@@ -2939,7 +2939,7 @@
         }
       },
       {
-        "age_s": 130217.2,
+        "age_s": 142613.1,
         "kind": "directory",
         "name": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
         "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen2.5-72B-Instruct@495f39366efe",
@@ -2949,27 +2949,7 @@
         }
       },
       {
-        "age_s": 151939.8,
-        "kind": "directory",
-        "name": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
-        "path": "/Volumes/corpdrive/hawking-modellake/partial/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
-        "size": {
-          "bytes": 159630491648,
-          "status": "BOUNDED_DU"
-        }
-      },
-      {
-        "age_s": 157508.0,
-        "kind": "directory",
-        "name": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
-        "path": "/Volumes/corpdrive/hawking-modellake/partial/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
-        "size": {
-          "bytes": 57819607040,
-          "status": "BOUNDED_DU"
-        }
-      },
-      {
-        "age_s": 138861.6,
+        "age_s": 151257.4,
         "kind": "directory",
         "name": "moonshotai--Kimi-K3@9f62e4e9fffb",
         "path": "/Volumes/corpdrive/hawking-modellake/partial/moonshotai--Kimi-K3@9f62e4e9fffb",
@@ -2979,7 +2959,7 @@
         }
       },
       {
-        "age_s": 169433.7,
+        "age_s": 181829.5,
         "kind": "directory",
         "name": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
         "path": "/Volumes/corpdrive/hawking-modellake/partial/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
@@ -2989,7 +2969,7 @@
         }
       },
       {
-        "age_s": 124400.9,
+        "age_s": 136796.7,
         "kind": "directory",
         "name": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
         "path": "/Volumes/corpdrive/hawking-modellake/partial/zai-org--GLM-4.5-Air@a24ceef6ce4f",
@@ -2999,7 +2979,7 @@
         }
       },
       {
-        "age_s": 127891.9,
+        "age_s": 140287.8,
         "kind": "directory",
         "name": "zai-org--GLM-4.5@cbb2c7cfb52f",
         "path": "/Volumes/corpdrive/hawking-modellake/partial/zai-org--GLM-4.5@cbb2c7cfb52f",
@@ -3016,28 +2996,10 @@
   "processes": {
     "matches": [
       {
-        "command": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -c import json, subprocess, sys, time\\012from pathlib import Path\\012root = Path(\"/Users/scammermike/Downloads/hawking\")\\012wait_jobs = [\\012    root / \".hcli/background/jobs/job-b9987aa6-541f-4690-8fd4-7b91fdb2380e.json\",\\012    root / \".hcli/background/jobs/job-10ab7f2c-52a1-4084-8d6d-3e949643284d.json\",\\012]\\012deadline = time.time() + 14000\\012states = {}\\012while time.time() < deadline:\\012    for path in wait_jobs:\\012        try:\\012            states[str(path)] = json.loads(path.read_text()).get(\"state\")\\012        except Exception:\\012            states[str(path)] = None\\012    if all(state in {\"COMPLETED\", \"FAILED\", \"CANCELLED\", \"TIMED_OUT\"} for state in states.values()):\\012        break\\012    time.sleep(30)\\012experts = [309, 455, 374, 151, 93, 500, 149, 220]\\012specimen = \"/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc\"\\012descriptor = str(root / \"receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json\")\\012all_passed = True\\012for expert in experts:\\012    body = root / f\".hcli/flash-component/flash-routed-expert-independent-q4-g64-e{expert}-r0-128.bin\"\\012    body_receipt = root / f\"receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E{expert}_R0_128.json\"\\012    out = root / f\"receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E{expert}_R0_128_PARITY.json\"\\012    cmd = [\\012        str(root / \".hcli/flash-kernel-build/release-fast/release/examples/flash_noetic_q4_kernel_parity\"),\\012        \"--root\", specimen, \"--descriptor\", descriptor, \"--candidate-body\", str(body),\\012        \"--body-receipt\", str(body_receipt), \"--expert-index\", str(expert),\\012        \"--row-start\", \"0\", \"--row-count\", \"128\", \"--reps\", \"7\", \"--warmup\", \"2\",\\012        \"--out\", str(out),\\012    ]\\012    result = subprocess.run(cmd, cwd=root)\\012    if result.returncode != 0:\\012        all_passed = False\\012if not all_passed:\\012    subprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"handoff\", \"--repo-root\", str(root), \"--emit\", str(root / \"receipts/headless/OVERNIGHT_HAWKING_HANDOFF.json\")], cwd=root, check=False)\\012    raise SystemExit(4)\\012components = [\\012    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json\"),\\012    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E0_R128_256_PARITY.json\"),\\012    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E1_R0_128_PARITY.json\"),\\012    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E32_R0_128_PARITY.json\"),\\012    (\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json\", \"FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json\"),\\012]\\012components.extend(\\012    (f\"FLASH_NOETIC_ROUTED_EXPERT_BODY_E{expert}_R0_128.json\", f\"FLASH_NOETIC_Q4_BODY_KERNEL_E{expert}_R0_128_PARITY.json\")\\012    for expert in experts\\012)\\012campaign = [sys.executable, \"-m\", \"hcli\", \"agentos\", \"flash-component-campaign\", \"--repo-root\", str(root)]\\012for body, kernel in components:\\012    campaign.extend([\"--component\", body + \",\" + kernel])\\012campaign.extend([\"--emit\", str(root / \"receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json\")])\\012subprocess.run(campaign, cwd=root, check=True)\\012subprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"flash-executable\", \"--repo-root\", str(root)], cwd=root, check=True)\\012subprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"checkpoint\", \"--repo-root\", str(root), \"--workspace\", str(root / \".hcli/unattended-qwen-long\"), \"--emit\", str(root / \"receipts/headless/HCLI_AGENTOS_CHECKPOINT.json\")], cwd=root, check=True)\\012subprocess.run([sys.executable, \"-m\", \"hcli\", \"agentos\", \"handoff\", \"--repo-root\", str(root), \"--emit\", str(root / \"receipts/headless/OVERNIGHT_HAWKING_HANDOFF.json\")], cwd=root, check=True)\\012raise SystemExit(0)",
+        "command": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m hcli agentos modellake-census --repo-root /Users/scammermike/Downloads/hawking --emit /Users/scammermike/Downloads/hawking/receipts/headless/MODELLAKE_FLASH_NEXT_CENSUS.json",
         "cpu_pct": "0.0",
-        "pid": "7214",
-        "rss_kib": "17936"
-      },
-      {
-        "command": "/bin/zsh -c python3 -m hcli agentos modellake-census --repo-root /Users/scammermike/Downloads/hawking --timeout-s 60 --emit /Users/scammermike/Downloads/hawking/receipts/headless/MODELLAKE_FLASH_NEXT_CENSUS.json > /tmp/hawking-modellake-census.out 2>&1\\012rc=$?\\012tail -n 80 /tmp/hawking-modellake-census.out\\012exit $rc",
-        "cpu_pct": "2.8",
-        "pid": "10804",
-        "rss_kib": "3088"
-      },
-      {
-        "command": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -m hcli agentos modellake-census --repo-root /Users/scammermike/Downloads/hawking --timeout-s 60 --emit /Users/scammermike/Downloads/hawking/receipts/headless/MODELLAKE_FLASH_NEXT_CENSUS.json",
-        "cpu_pct": "9.1",
-        "pid": "10806",
-        "rss_kib": "33808"
-      },
-      {
-        "command": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python -c import os, subprocess, sys, time\\012for pid in (53733, 53735):\\012    while True:\\012        try:\\012            os.kill(pid, 0)\\012        except (ProcessLookupError, PermissionError):\\012            break\\012        time.sleep(30)\\012time.sleep(30)\\012cmd = [\\012    '/Users/scammermike/Downloads/hawking/.hcli/flash-kernel-build/release-fast/release/examples/flash_noetic_q4_kernel_parity',\\012    '--root', '/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc',\\012    '--descriptor', '/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json',\\012    '--candidate-body', '/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-routed-expert-independent-q4-g64-e29-r256-384.bin',\\012    '--body-receipt', '/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json',\\012    '--expert-index', '29', '--row-start', '256', '--row-count', '128',\\012    '--reps', '7', '--warmup', '2',\\012    '--out', '/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json',\\012]\\012raise SystemExit(subprocess.run(cmd).returncode)",
-        "cpu_pct": "0.0",
-        "pid": "95098",
-        "rss_kib": "17136"
+        "pid": "13934",
+        "rss_kib": "33952"
       }
     ],
     "needles": [
@@ -3956,7 +3918,7 @@
   "specimens": {
     "entries": [
       {
-        "age_s": 14296.1,
+        "age_s": 26691.9,
         "kind": "file",
         "name": ".DS_Store",
         "path": "/Volumes/corpdrive/hawking-modellake/specimens/.DS_Store",
@@ -3966,7 +3928,7 @@
         }
       },
       {
-        "age_s": 208411.0,
+        "age_s": 220806.8,
         "kind": "directory",
         "name": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
         "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
@@ -3976,7 +3938,7 @@
         }
       },
       {
-        "age_s": 192927.6,
+        "age_s": 205323.4,
         "kind": "directory",
         "name": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
         "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
@@ -3986,7 +3948,7 @@
         }
       },
       {
-        "age_s": 21602.4,
+        "age_s": 33998.2,
         "kind": "directory",
         "name": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
         "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
@@ -3996,7 +3958,27 @@
         }
       },
       {
-        "age_s": 181309.6,
+        "age_s": 164335.6,
+        "kind": "directory",
+        "name": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+        "size": {
+          "bytes": 159630491648,
+          "status": "BOUNDED_DU"
+        }
+      },
+      {
+        "age_s": 1020.1,
+        "kind": "directory",
+        "name": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+        "path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+        "size": {
+          "bytes": 96077959168,
+          "status": "BOUNDED_DU"
+        }
+      },
+      {
+        "age_s": 193705.5,
         "kind": "directory",
         "name": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
         "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
@@ -4006,7 +3988,7 @@
         }
       },
       {
-        "age_s": 207546.5,
+        "age_s": 219942.4,
         "kind": "directory",
         "name": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
         "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
@@ -4024,54 +4006,40 @@
     {
       "action": "REPORT_ONLY_NO_DELETE",
       "active_process_evidence": true,
-      "age_s": 130217.2,
+      "age_s": 142613.1,
       "candidate_stale": false,
       "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen2.5-72B-Instruct@495f39366efe"
     },
     {
       "action": "REPORT_ONLY_NO_DELETE",
       "active_process_evidence": true,
-      "age_s": 151939.8,
-      "candidate_stale": false,
-      "path": "/Volumes/corpdrive/hawking-modellake/partial/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6"
-    },
-    {
-      "action": "REPORT_ONLY_NO_DELETE",
-      "active_process_evidence": true,
-      "age_s": 157508.0,
-      "candidate_stale": false,
-      "path": "/Volumes/corpdrive/hawking-modellake/partial/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
-    },
-    {
-      "action": "REPORT_ONLY_NO_DELETE",
-      "active_process_evidence": true,
-      "age_s": 138861.6,
+      "age_s": 151257.4,
       "candidate_stale": false,
       "path": "/Volumes/corpdrive/hawking-modellake/partial/moonshotai--Kimi-K3@9f62e4e9fffb"
     },
     {
       "action": "REPORT_ONLY_NO_DELETE",
       "active_process_evidence": true,
-      "age_s": 169433.7,
+      "age_s": 181829.5,
       "candidate_stale": false,
       "path": "/Volumes/corpdrive/hawking-modellake/partial/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471"
     },
     {
       "action": "REPORT_ONLY_NO_DELETE",
       "active_process_evidence": true,
-      "age_s": 124400.9,
+      "age_s": 136796.7,
       "candidate_stale": false,
       "path": "/Volumes/corpdrive/hawking-modellake/partial/zai-org--GLM-4.5-Air@a24ceef6ce4f"
     },
     {
       "action": "REPORT_ONLY_NO_DELETE",
       "active_process_evidence": true,
-      "age_s": 127891.9,
+      "age_s": 140287.8,
       "candidate_stale": false,
       "path": "/Volumes/corpdrive/hawking-modellake/partial/zai-org--GLM-4.5@cbb2c7cfb52f"
     }
   ],
-  "started_at": 1787825046.090949,
+  "started_at": 1787837441.916587,
   "status": "PASSED",
   "verified_receipts": {
     "path": "/Volumes/corpdrive/hawking-modellake/manifests",
@@ -4126,6 +4094,30 @@
         "valid_json_object": true
       },
       {
+        "bytes": 553,
+        "n_files": 73,
+        "n_sha256_verified": 47,
+        "n_size_only_verified": 26,
+        "path": "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
+        "repo": "deepseek-ai/DeepSeek-V4-Flash",
+        "resolved_sha": "60d8d70770c6776ff598c94bb586a859a38244f1",
+        "revision": "60d8d70770c6776ff598c94bb586a859a38244f1",
+        "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+        "valid_json_object": true
+      },
+      {
+        "bytes": 600,
+        "n_files": 25,
+        "n_sha256_verified": 13,
+        "n_size_only_verified": 12,
+        "path": "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+        "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+        "resolved_sha": "68faf511d618ef198fef186659617cfd2eb8e33a",
+        "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+        "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+        "valid_json_object": true
+      },
+      {
         "bytes": 559,
         "n_files": 25,
         "n_sha256_verified": 12,
@@ -4150,5 +4142,14 @@
         "valid_json_object": true
       }
     ]
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
   }
 }

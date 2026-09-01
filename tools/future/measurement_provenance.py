@@ -32,7 +32,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import REPO, git  # noqa: E402
+from _common import REPO, git  # noqa: E402, require_known_flags
 
 RECEIPT = REPO / "receipts" / "future" / "MEASUREMENT_PROVENANCE.json"
 BINARY = REPO / "workspace/ops/build/rust/release/examples/ascension_qwen38_resident"
@@ -156,6 +156,8 @@ def record() -> Path:
 
 
 if __name__ == "__main__":
+    from _common import require_known_flags
+    require_known_flags(["--build", "--record"])
     d = build()
     if "--record" in sys.argv:
         print(f"wrote {record()}")

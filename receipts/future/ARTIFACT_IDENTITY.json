@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T03:24:46Z",
+  "recorded_at": "2026-09-01T05:12:34Z",
   "recorded_by": "tools/future/artifact_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -93,11 +93,11 @@
    "sealed_env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b"
   },
   "binary": {
-   "bytes": 6481704,
-   "mtime_unix": 1787779874.6017668,
+   "bytes": 6752552,
+   "mtime_unix": 1788204196.2034652,
    "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
    "rel": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-   "sha256": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+   "sha256": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37"
   },
   "environment": {
    "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",
@@ -135,14 +135,14 @@
    "resident_weight_bytes": 1785796352.0
   },
   "fields_in_binary": {
-   "active_bytes_per_token": false,
-   "active_weight_bytes_per_generated_token": false,
-   "actual_read_bytes_per_token": false,
-   "actual_read_bytes_status": false,
+   "active_bytes_per_token": true,
+   "active_weight_bytes_per_generated_token": true,
+   "actual_read_bytes_per_token": true,
+   "actual_read_bytes_status": true,
    "dispatches": true,
-   "dispatches_per_generated_token": false,
-   "gpu_ns_per_generated_token": false,
-   "resident_weight_bytes": false
+   "dispatches_per_generated_token": true,
+   "gpu_ns_per_generated_token": true,
+   "resident_weight_bytes": true
   },
   "interpreted_fields": [
    "dispatches",
@@ -197,50 +197,7 @@
    "dirty": true,
    "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs"
   },
-  "stale_fields": [
-   {
-    "binary_mtime_unix": 1787779874.6017668,
-    "delta_s": 28351.398233175278,
-    "field": "dispatches",
-    "field_introduced_unix": 1787808226.0,
-    "in_binary": true
-   },
-   {
-    "binary_mtime_unix": 1787779874.6017668,
-    "delta_s": 28351.398233175278,
-    "field": "dispatches_per_generated_token",
-    "field_introduced_unix": 1787808226.0,
-    "in_binary": false
-   },
-   {
-    "binary_mtime_unix": 1787779874.6017668,
-    "delta_s": 263240.3982331753,
-    "field": "active_weight_bytes_per_generated_token",
-    "field_introduced_unix": 1788043115.0,
-    "in_binary": false
-   },
-   {
-    "binary_mtime_unix": 1787779874.6017668,
-    "delta_s": 263240.3982331753,
-    "field": "actual_read_bytes_per_token",
-    "field_introduced_unix": 1788043115.0,
-    "in_binary": false
-   },
-   {
-    "binary_mtime_unix": 1787779874.6017668,
-    "delta_s": 359254.3982331753,
-    "field": "actual_read_bytes_status",
-    "field_introduced_unix": 1788139129.0,
-    "in_binary": false
-   },
-   {
-    "binary_mtime_unix": 1787779874.6017668,
-    "delta_s": 28351.398233175278,
-    "field": "gpu_ns_per_generated_token",
-    "field_introduced_unix": 1787808226.0,
-    "in_binary": false
-   }
-  ]
+  "stale_fields": []
  },
  "negative_findings": [
   "the serving binary that motivated this helper predated 8b6f50270 by a day",
@@ -279,7 +236,7 @@
   "receipt": "receipts/future/ARTIFACT_IDENTITY.json"
  },
  "schema": "hawking.future.artifact_identity.v1",
- "seal_sha256": "374bc5f97e692550338a287ae2390d1761b5d932419d6824a4994604d43d6918",
+ "seal_sha256": "82b1d1d32aaf5457c70f1ea6b9da11cf2aed818f6de89a2218d2a891bf9b79ee",
  "sealed_does_inherit_incumbent": true,
  "sealed_environment": {
   "env_hash": "7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b",

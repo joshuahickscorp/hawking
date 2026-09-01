@@ -1,0 +1,551 @@
+{
+  "bench": {
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy",
+    "quiescence": null,
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "Measured Metal GPU work for a bounded layer-0 candidate only; no complete-token rate or EBPW is inferred.",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": false,
+  "device": "Apple M3 Ultra",
+  "device_intermediate_no_host_roundtrip": true,
+  "dispatches_per_graph": 33,
+  "flash_tps": null,
+  "graph_gpu_ns_median": 3256918,
+  "graph_host_wall_ns_median": 12188000,
+  "graph_wall_minus_gpu_ns_median": 8931082,
+  "measured_runs": 3,
+  "physical_graph_fingerprint": "3ba3809684a0016f2b3a656b0cdb821c4866c778257593166e4ac33e4816fb23",
+  "promotion_allowed": false,
+  "qualification": "BOUNDED_LAYER0_GRAPH_ONLY",
+  "schema": "hcli.agentos.flash_gpu_work_ledger.v1",
+  "scope": "layer-0 exact HyperConnection read/write around selected routed-plus-shared MoE candidate",
+  "source_receipt": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+    "schema": "hawking.flash_noetic_exact_hyperconnection_native.v1",
+    "sha256": "4f6ba5f25248ed8f4553a909585a077a7212cf3d62383e1042449cd39dc1060f",
+    "status": "PASSED"
+  },
+  "stages": [
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        182959,
+        184584,
+        183209
+      ],
+      "gpu_ns_median": 183209,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "hc_norm",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        1000334,
+        998250,
+        997334
+      ],
+      "gpu_ns_median": 998250,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "input_mix_down",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        4500,
+        3750,
+        4500
+      ],
+      "gpu_ns_median": 4500,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "read_silu_scaled",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        34000,
+        34875,
+        35041
+      ],
+      "gpu_ns_median": 34875,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "input_mix_up",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        5209,
+        5334,
+        5125
+      ],
+      "gpu_ns_median": 5209,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "read_mix",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        9000,
+        9459,
+        10500
+      ],
+      "gpu_ns_median": 9459,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "shared_gate_up_swiglu",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        64500,
+        65416,
+        65209
+      ],
+      "gpu_ns_median": 65209,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "shared_down",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        224459,
+        233166,
+        228125
+      ],
+      "gpu_ns_median": 228125,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "shared_scalar_gate",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        4875,
+        4709,
+        4584
+      ],
+      "gpu_ns_median": 4709,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "shared_block_output",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 29,
+      "gpu_ns": [
+        10000,
+        9666,
+        10375
+      ],
+      "gpu_ns_median": 10000,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_29_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 29,
+      "gpu_ns": [
+        64875,
+        65166,
+        66041
+      ],
+      "gpu_ns_median": 65166,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_29_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 309,
+      "gpu_ns": [
+        9416,
+        9625,
+        10000
+      ],
+      "gpu_ns_median": 9625,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_309_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 309,
+      "gpu_ns": [
+        65416,
+        65125,
+        66250
+      ],
+      "gpu_ns_median": 65416,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_309_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 455,
+      "gpu_ns": [
+        9916,
+        10000,
+        10334
+      ],
+      "gpu_ns_median": 10000,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_455_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 455,
+      "gpu_ns": [
+        64875,
+        64709,
+        65791
+      ],
+      "gpu_ns_median": 64875,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_455_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 374,
+      "gpu_ns": [
+        9500,
+        9416,
+        9541
+      ],
+      "gpu_ns_median": 9500,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_374_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 374,
+      "gpu_ns": [
+        64834,
+        64791,
+        65625
+      ],
+      "gpu_ns_median": 64834,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_374_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 151,
+      "gpu_ns": [
+        9834,
+        9375,
+        10000
+      ],
+      "gpu_ns_median": 9834,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_151_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 151,
+      "gpu_ns": [
+        65000,
+        64541,
+        65041
+      ],
+      "gpu_ns_median": 65000,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_151_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 93,
+      "gpu_ns": [
+        9459,
+        9250,
+        10000
+      ],
+      "gpu_ns_median": 9459,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_93_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 93,
+      "gpu_ns": [
+        65000,
+        64875,
+        65000
+      ],
+      "gpu_ns_median": 65000,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_93_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 0,
+      "gpu_ns": [
+        9834,
+        8875,
+        9416
+      ],
+      "gpu_ns_median": 9416,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_0_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 0,
+      "gpu_ns": [
+        65125,
+        65500,
+        64916
+      ],
+      "gpu_ns_median": 65125,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_0_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 500,
+      "gpu_ns": [
+        9416,
+        10084,
+        9709
+      ],
+      "gpu_ns_median": 9709,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_500_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 500,
+      "gpu_ns": [
+        64541,
+        64875,
+        65000
+      ],
+      "gpu_ns_median": 64875,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_500_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 149,
+      "gpu_ns": [
+        9250,
+        9750,
+        9709
+      ],
+      "gpu_ns_median": 9709,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_149_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 149,
+      "gpu_ns": [
+        64875,
+        77166,
+        64959
+      ],
+      "gpu_ns_median": 64959,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_149_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 220,
+      "gpu_ns": [
+        9500,
+        9709,
+        9875
+      ],
+      "gpu_ns_median": 9709,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_220_gate_up_swiglu",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "expert_index": 220,
+      "gpu_ns": [
+        65375,
+        65334,
+        64750
+      ],
+      "gpu_ns_median": 65334,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_expert_220_down",
+      "stage_class": "routed_expert"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        6875,
+        7166,
+        6416
+      ],
+      "gpu_ns_median": 6875,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "routed_weighted_sum",
+      "stage_class": "moe_join"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        4416,
+        4584,
+        4334
+      ],
+      "gpu_ns_median": 4416,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "moe_add_shared",
+      "stage_class": "moe_join"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        963834,
+        972041,
+        941041
+      ],
+      "gpu_ns_median": 963834,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "block_inject",
+      "stage_class": "exact_hyperconnection"
+    },
+    {
+      "bytes_touched": null,
+      "complete_token_stage": false,
+      "device_resident": true,
+      "gpu_ns": [
+        5916,
+        6250,
+        5750
+      ],
+      "gpu_ns_median": 5916,
+      "host_roundtrip": false,
+      "measured_runs": 3,
+      "stage": "combine",
+      "stage_class": "exact_hyperconnection"
+    }
+  ],
+  "status": "PASSED"
+}

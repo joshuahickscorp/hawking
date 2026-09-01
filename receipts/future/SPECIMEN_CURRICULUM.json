@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T10:13:07Z",
+  "recorded_at": "2026-09-01T05:56:52Z",
   "recorded_by": "tools/future/specimen_curriculum.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -468,7 +468,24 @@
     "gap_class": null,
     "identity_source": "odyssey2_law_store.SCHOOLS.Qwen27",
     "local_specimen": {
+     "alternatives": [
+      {
+       "consistent_with_claim": true,
+       "consistent_with_observation": true,
+       "hypothetical": "every published digest matched the hash recomputed here"
+      }
+     ],
      "bytes_hashed": 55586059240,
+     "causality_verdict": "SUPPORTED",
+     "claim_kind": "digest_match",
+     "confidence": {
+      "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+      "level": "HIGH",
+      "would_lower": "a demonstration that the observation is consistent with the claim being false",
+      "would_raise": "independent replication of the same probe"
+     },
+     "direct_observation": "specimen=qwen3.8-27b-abliterated-bf16@local; n_files=31; verified=31; mismatched=0; no_remote_digest=0; bytes_hashed=55586059240; whole_tree_verified=True",
+     "falsifier": "recompute one file and compare",
      "files": [
       {
        "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
@@ -719,11 +736,14 @@
        "verdict": "VERIFIED"
       }
      ],
+     "interpretation": "qwen3.8-27b-abliterated-bf16@local: every file carried a published digest and the hash recomputed here matched",
      "mismatched": 0,
      "modellake_mutated": false,
      "n_files": 31,
      "no_remote_digest": 0,
      "owner": "local_directory",
+     "probe_kind": "hash_recompute",
+     "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'qwen3.8-27b-abliterated-bf16@local' at /Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
      "skipped_time_budget": 0,
      "source_mutated": false,
      "specimen": "qwen3.8-27b-abliterated-bf16@local",
@@ -1055,7 +1075,24 @@
    "gap_class": null,
    "identity_source": "odyssey2_law_store.SCHOOLS.Qwen27",
    "local_specimen": {
+    "alternatives": [
+     {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "every published digest matched the hash recomputed here"
+     }
+    ],
     "bytes_hashed": 55586059240,
+    "causality_verdict": "SUPPORTED",
+    "claim_kind": "digest_match",
+    "confidence": {
+     "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+     "level": "HIGH",
+     "would_lower": "a demonstration that the observation is consistent with the claim being false",
+     "would_raise": "independent replication of the same probe"
+    },
+    "direct_observation": "specimen=qwen3.8-27b-abliterated-bf16@local; n_files=31; verified=31; mismatched=0; no_remote_digest=0; bytes_hashed=55586059240; whole_tree_verified=True",
+    "falsifier": "recompute one file and compare",
     "files": [
      {
       "actual": "52373fe24473b1aa44333d318f578ae6bf04b49b",
@@ -1306,11 +1343,14 @@
       "verdict": "VERIFIED"
      }
     ],
+    "interpretation": "qwen3.8-27b-abliterated-bf16@local: every file carried a published digest and the hash recomputed here matched",
     "mismatched": 0,
     "modellake_mutated": false,
     "n_files": 31,
     "no_remote_digest": 0,
     "owner": "local_directory",
+    "probe_kind": "hash_recompute",
+    "probe_performed": "recompute published HuggingFace .metadata digests for specimen 'qwen3.8-27b-abliterated-bf16@local' at /Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
     "skipped_time_budget": 0,
     "source_mutated": false,
     "specimen": "qwen3.8-27b-abliterated-bf16@local",
@@ -1433,7 +1473,7 @@
   "rule": "A blocked role records wake_condition, blocked_reason, required_resource, reevaluation_trigger. That converts an unexplained refusal into a named dependency."
  },
  "schema": "hawking.future.specimen_curriculum.v1",
- "seal_sha256": "3aa100728782169a5f83038cf7735b618414bdd7379ce41ea51da1524f6f9687",
+ "seal_sha256": "02d479abbb43aa427e51116089ad8f0d2a958faf0f47806bf0786cb8d1a92fcd",
  "unready": [],
  "verified_roles": [
   {

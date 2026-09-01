@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.17600.receipt.json",
+    "frontiers.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "The idle state is the failure. Refill is the loop: discover, invoke, schedule, verify, persist, refill.",
+  "frontier_id": "FT.TOOLS.frontiers-refill",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.17600",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.17600.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "1b636587dcddd9cc444f33cdb2c9bc0cae0ce69c07c620034c558e0077548078",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

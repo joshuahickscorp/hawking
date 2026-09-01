@@ -1,0 +1,502 @@
+{
+  "baseline": {
+    "byte_atlas": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+    "byte_atlas_sha256": "8e21b7347dd7b6e6ed069afd46e05e360189d1392853db51825e0924866dd218",
+    "profile": "hcli/hawking-native.sealed-3.14.json",
+    "representation": "native-packed sealed control"
+  },
+  "bench": {
+    "claim_boundary": "static byte derivation and control metadata are not physical qualification",
+    "machine": "planning artifact; this command executes no GPU work",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "No Qwen27 latency, TPS, GPU, active-read, resident, or accepted-token claim is made until a native protected complete-token receipt fills the ledger.",
+  "control_observation": {
+    "bench_state": "QUIESCED",
+    "benchmark_class": "QUALIFIED_PROTECTED",
+    "claim_boundary": "quiet protected control evidence; NOT_FOR_PROMOTION and not a mutation result",
+    "metrics": {
+      "accepted_tps": null,
+      "complete_wall_ns_per_token": 121407854.16666667,
+      "dispatches_per_token": 2616.6666666666665,
+      "gpu_ns_per_token": 113647928.5
+    },
+    "receipt": "receipts/headless/HCLI_PROTECTED_ACCELERATOR_BENCHMARK_AFTER_FLASH.json",
+    "receipt_sha256": "57045fe5dedb3eecd792630ac8c83d6d7c6b1a5f33eb1282ab5bd818d82dfb97",
+    "status": "PROTECTED_CONTROL_NOT_FOR_PROMOTION"
+  },
+  "label": "DERIVED",
+  "lifecycle_buckets": {
+    "accepted_complete_token_ns": null,
+    "cold_load_ns": null,
+    "first_token_ns": null,
+    "steady_state_decode_token_ns": null,
+    "warm_decode_token_ns": null,
+    "warm_start_ns": null
+  },
+  "measurement_protocol": {
+    "active_bytes_include_actual_read_and_transient_fields": true,
+    "cold_warm_first_warm_steady_state_separated": true,
+    "complete_accepted_token_denominator": true,
+    "diagnostic_relative_runs_cannot_promote": true,
+    "native_kernel_genome_and_dispatch_trace": true,
+    "protected_quiescent_before_and_after": true,
+    "same_tokenizer_and_output_contract": true
+  },
+  "model": "qwen3.8-27b-sealed-3.14",
+  "organs": [
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "representation_access",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "qkv_and_projection",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "attention",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "deltanet_and_recurrent_state",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "mlp",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "lm_head_and_sampling",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "dispatch_encode",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "command_wait_and_synchronization",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    },
+    {
+      "absence_reasons": {
+        "accepted_tps": "native provider has not emitted a quiet protected complete-token receipt",
+        "active_representation_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "actual_read_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "complete_wall_ns_per_accepted_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "dispatches_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "fallback_count": "native provider has not emitted a quiet protected complete-token receipt",
+        "gpu_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "resident_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "sync_ns_per_token": "native provider has not emitted a quiet protected complete-token receipt",
+        "total_nx_bytes": "native provider has not emitted a quiet protected complete-token receipt",
+        "transient_bytes_per_token": "native provider has not emitted a quiet protected complete-token receipt"
+      },
+      "actual": {
+        "accepted_tps": null,
+        "active_representation_bytes_per_token": null,
+        "actual_read_bytes_per_token": null,
+        "complete_wall_ns_per_accepted_token": null,
+        "dispatches_per_token": null,
+        "fallback_count": null,
+        "gpu_ns_per_token": null,
+        "resident_bytes": null,
+        "sync_ns_per_token": null,
+        "total_nx_bytes": null,
+        "transient_bytes_per_token": null
+      },
+      "organ": "host_ceremony",
+      "source_dispatches_per_token": null,
+      "source_weight_bytes_per_token": null,
+      "status": "WAITING_FOR_NATIVE_PROTECTED_EXECUTION"
+    }
+  ],
+  "promotion_allowed": false,
+  "schema": "hawking.accelerator.qwen27_token_ns_budget.v1",
+  "source_byte_denominator": {
+    "active_ebpw_per_token": 2.9384002677492123,
+    "active_weight_bytes_per_token": 9878901136,
+    "claim_boundary": "catalog-derived weight traffic only; activations, KV, and recurrent state are not included",
+    "complete_ebpw": 3.139300850311054,
+    "regions": [
+      {
+        "bytes_per_dispatch": 27853103,
+        "dispatches_per_token": 192,
+        "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.layers.N.mlp.gate_proj.weight",
+          "language_model.model.layers.N.mlp.up_proj.weight",
+          "language_model.model.layers.N.mlp.down_proj.weight"
+        ],
+        "weight_bytes_per_token": 5347795776
+      },
+      {
+        "bytes_per_dispatch": 21629271,
+        "dispatches_per_token": 209,
+        "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.layers.N.linear_attn.in_proj_qkvz.weight",
+          "language_model.model.layers.N.linear_attn.in_proj_ba.weight",
+          "language_model.model.layers.N.linear_attn.out_proj.weight",
+          "language_model.model.layers.N.self_attn.q_proj.weight",
+          "language_model.model.layers.N.self_attn.k_proj.weight",
+          "language_model.model.layers.N.self_attn.v_proj.weight",
+          "language_model.model.layers.N.self_attn.o_proj.weight",
+          "language_model.lm_head.weight"
+        ],
+        "weight_bytes_per_token": 4520517800
+      },
+      {
+        "bytes_per_dispatch": 163848,
+        "dispatches_per_token": 48,
+        "kernel": "qwen38_qkvz_rearrange_conv_l2_f32",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.layers.N.linear_attn.conv1d.weight"
+        ],
+        "weight_bytes_per_token": 7864704
+      },
+      {
+        "bytes_per_dispatch": 20488,
+        "dispatches_per_token": 129,
+        "kernel": "qwen80_residual_rmsnorm_tg",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.layers.N.input_layernorm.weight",
+          "language_model.model.layers.N.post_attention_layernorm.weight",
+          "language_model.model.norm.weight"
+        ],
+        "weight_bytes_per_token": 2642952
+      },
+      {
+        "bytes_per_dispatch": 2064,
+        "dispatches_per_token": 16,
+        "kernel": "qwen38_gqa_qk_norm_rope_cache_tg",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.layers.N.self_attn.q_norm.weight",
+          "language_model.model.layers.N.self_attn.k_norm.weight"
+        ],
+        "weight_bytes_per_token": 33024
+      },
+      {
+        "bytes_per_dispatch": 520,
+        "dispatches_per_token": 48,
+        "kernel": "qwen80_deltanet_gated_rmsnorm_tg",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.layers.N.linear_attn.norm.weight"
+        ],
+        "weight_bytes_per_token": 24960
+      },
+      {
+        "bytes_per_dispatch": 400,
+        "dispatches_per_token": 48,
+        "kernel": "qwen80_ba_to_decay_beta_f32",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.layers.N.linear_attn.A_log",
+          "language_model.model.layers.N.linear_attn.dt_bias"
+        ],
+        "weight_bytes_per_token": 19200
+      },
+      {
+        "bytes_per_dispatch": 2720,
+        "dispatches_per_token": 1,
+        "kernel": "qwen_uniform_q4_embedding_lookup",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [
+          "language_model.model.embed_tokens.weight"
+        ],
+        "weight_bytes_per_token": 2720
+      },
+      {
+        "bytes_per_dispatch": 0,
+        "dispatches_per_token": 16,
+        "kernel": "qwen38_attention_apply_sigmoid_gate",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [],
+        "weight_bytes_per_token": 0
+      },
+      {
+        "bytes_per_dispatch": 0,
+        "dispatches_per_token": 128,
+        "kernel": "qwen_next_add_residual",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [],
+        "weight_bytes_per_token": 0
+      },
+      {
+        "bytes_per_dispatch": 0,
+        "dispatches_per_token": 64,
+        "kernel": "gk_swiglu_f32",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [],
+        "weight_bytes_per_token": 0
+      },
+      {
+        "bytes_per_dispatch": 0,
+        "dispatches_per_token": 48,
+        "kernel": "qwen38_gated_delta_decode_vi_simd",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [],
+        "weight_bytes_per_token": 0
+      },
+      {
+        "bytes_per_dispatch": 0,
+        "dispatches_per_token": 16,
+        "kernel": "mha_decode_f32",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [],
+        "weight_bytes_per_token": 0
+      },
+      {
+        "bytes_per_dispatch": 0,
+        "dispatches_per_token": 1,
+        "kernel": "sample_argmax_f32",
+        "label": "STATIC_DERIVATION_FROM_CATALOG",
+        "roles": [],
+        "weight_bytes_per_token": 0
+      }
+    ]
+  },
+  "status": "PLANNED_UNTIL_NATIVE_PROTECTED_EXECUTION",
+  "system_ledger": {
+    "accepted_tps": null,
+    "active_representation_bytes_per_token": null,
+    "actual_read_bytes_per_token": null,
+    "complete_wall_ns_per_accepted_token": null,
+    "dispatches_per_token": null,
+    "fallback_count": null,
+    "gpu_ns_per_token": null,
+    "resident_bytes": null,
+    "sync_ns_per_token": null,
+    "total_nx_bytes": null,
+    "transient_bytes_per_token": null
+  }
+}

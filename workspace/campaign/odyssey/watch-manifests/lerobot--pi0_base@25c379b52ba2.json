@@ -1,0 +1,23 @@
+{
+  "expected": 14005628474,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "model.safetensors",
+    "policy_postprocessor.json",
+    "policy_preprocessor.json"
+  ],
+  "mode": "safe",
+  "repo": "lerobot/pi0_base",
+  "resolved_sha": "25c379b52ba2ff8788cab921758a3cc3fe3f77f2",
+  "revision": "25c379b52ba2ff8788cab921758a3cc3fe3f77f2",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 4693,
+    "config.json": 1895,
+    "model.safetensors": 14005618584,
+    "policy_postprocessor.json": 565,
+    "policy_preprocessor.json": 1218
+  }
+}

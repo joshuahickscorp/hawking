@@ -29,11 +29,35 @@ const WO_A_KERNEL: &str = "deepseek_v4_p4a_wo_a_convert_bf16_einsum_authority";
 const CAST_KERNEL: &str = "deepseek_v4_p3a_fp32_to_bf16_authority";
 const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
 const LM_HEAD_KERNEL: &str = "gemv_native_bf16_seq";
+const LM_HEAD_VEC4_KERNEL: &str = "gemv_native_bf16_seq_vec4";
+const LM_HEAD_GEO_KERNEL: &str = "gemv_native_bf16_geo_vec4_tg128";
 const AX_ACT_QUANT_KERNEL: &str = "dsv4f_ax_act_quant_bf16_ue8m0_batched";
 const AX_FP8_GEMM_KERNEL: &str = "dsv4f_ax_fp8_e4m3fn_e8m0_gemm";
 const AX_FP4_GEMM_KERNEL: &str = "dsv4f_ax_fp4_e2m1fn_x2_e8m0_gemm";
 const AX_GATE_GEMM_KERNEL: &str = "dsv4f_ax_gate_bf16_gemm";
 const AX_WO_A_KERNEL: &str = "dsv4f_ax_wo_a_convert_bf16_einsum_batched";
+
+fn selected_lm_head_kernel() -> &'static str {
+    if crate::env_on("HAWKING_FLASH_BF16_GEO") {
+        LM_HEAD_GEO_KERNEL
+    } else if crate::env_on("HAWKING_FLASH_BF16_VEC4") {
+        LM_HEAD_VEC4_KERNEL
+    } else {
+        LM_HEAD_KERNEL
+    }
+}
+
+fn lm_head_launch(
+    kernel: &str,
+    rows: u32,
+    preferred_tg: u32,
+) -> ((u32, u32, u32), (u32, u32, u32)) {
+    if kernel == LM_HEAD_GEO_KERNEL {
+        ((rows.div_ceil(4) * 128, 1, 1), (128, 1, 1))
+    } else {
+        ((rows, 1, 1), (preferred_tg.min(rows.max(1)), 1, 1))
+    }
+}
 
 /// Stated per-element tolerance for Metal vs CPU linear outputs (decoded BF16).
 pub const LINEAR_ABS_TOL: f32 = 1.0e-3;
@@ -64,6 +88,8 @@ pub struct StreamedNativeSession {
     gate_tg: u32,
     #[cfg(target_os = "macos")]
     lm_head_tg: u32,
+    #[cfg(target_os = "macos")]
+    lm_head_kernel: &'static str,
     #[cfg(target_os = "macos")]
     ax_act_quant_tg: u32,
     #[cfg(target_os = "macos")]
@@ -96,7 +122,13 @@ impl StreamedNativeSession {
             let wo_a_tg = pipeline_tg(&metal, WO_A_KERNEL, 256)?;
             let cast_tg = pipeline_tg(&metal, CAST_KERNEL, 256)?;
             let gate_tg = pipeline_tg(&metal, GATE_KERNEL, 256)?;
-            let lm_head_tg = pipeline_tg(&metal, LM_HEAD_KERNEL, 256)?;
+            let lm_head_kernel = selected_lm_head_kernel();
+            let lm_head_tg = pipeline_tg(&metal, lm_head_kernel, 256)?;
+            if lm_head_kernel == LM_HEAD_GEO_KERNEL && lm_head_tg < 128 {
+                return Err(native_error(
+                    "source-BF16 SIMD lm_head requires at least 128 threads per threadgroup",
+                ));
+            }
             let ax_act_quant_tg = pipeline_tg(&metal, AX_ACT_QUANT_KERNEL, 32)?;
             let ax_fp8_tg = pipeline_tg(&metal, AX_FP8_GEMM_KERNEL, 256)?;
             let ax_fp4_tg = pipeline_tg(&metal, AX_FP4_GEMM_KERNEL, 256)?;
@@ -111,6 +143,7 @@ impl StreamedNativeSession {
                 cast_tg,
                 gate_tg,
                 lm_head_tg,
+                lm_head_kernel,
                 ax_act_quant_tg,
                 ax_fp8_tg,
                 ax_fp4_tg,
@@ -556,9 +589,9 @@ impl StreamedNativeSession {
         let out_buf = self.metal.new_buffer_checked(rows * size_of::<f32>())?;
         let rows_u = rows as u32;
         let cols_u = HIDDEN_SIZE as u32;
-        let tg = self.lm_head_tg.min(rows_u.max(1));
+        let (grid, tg) = lm_head_launch(self.lm_head_kernel, rows_u, self.lm_head_tg);
         self.metal.dispatch_batch(|batch| {
-            batch.dispatch_threads(LM_HEAD_KERNEL, (rows_u, 1, 1), (tg, 1, 1), |encoder| {
+            batch.dispatch_threads(self.lm_head_kernel, grid, tg, |encoder| {
                 encoder.set_buffer(0, Some(&weight_buf), 0);
                 encoder.set_buffer(1, Some(&residual_buf), 0);
                 encoder.set_buffer(2, Some(&out_buf), 0);

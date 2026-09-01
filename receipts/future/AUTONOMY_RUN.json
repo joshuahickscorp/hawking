@@ -11,7 +11,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:32:42Z",
+  "recorded_at": "2026-09-01T05:15:47Z",
   "recorded_by": "tools/future/autonomy_run.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -27,7 +27,8 @@
   "driver now emits detached_started/completed around real no_wait_scheduler handles and keeps two jobs open at once",
   "driver now emits negative_science_query and negative_science_refusal carrying the scar source_path, without renaming idea_rejected",
   "driver now reorders the remaining queue when a cause result lands and emits priority_altered with before != after citing that receipt",
-  "driver no longer preloads every SAFE binding and every next_work item, so frontiers.refill can deliver novel work after an ingest"
+  "driver no longer preloads every SAFE binding and every next_work item, so frontiers.refill can deliver novel work after an ingest",
+  "queue-exhausted branch consults frontiers.refill before sleeping on a handle; held is remaining+in-flight, not the historical queue"
  ],
  "gpu_authority": false,
  "invalidated_runs": [
@@ -42,7 +43,9 @@
  ],
  "invariants": [
   "every workunit_launched is followed by a real orchestration.invoke() or a live no_wait_scheduler.launch_detached handle",
-  "blocked lanes park SLEEPING with a wake condition; the loop never idles",
+  "blocked lanes park SLEEPING with a wake condition",
+  "queue-exhausted sleep happens only after frontiers.refill returns no novel work, and emits idle_justified naming what was asked, what each returned, and the open handles",
+  "the loop ends only when refill is dry AND no handle is open, or the clock runs out",
   "no code path emits idle / awaiting_instructions / all_tasks_complete",
   "negative science is consulted before admission; query and refusal events carry the scar source_path that justified the kill",
   "detached_started is refused unless pid_is_alive on the handle",
@@ -136,7 +139,7 @@
   "git_lock_doctor.py"
  ],
  "schema": "hawking.future.autonomy_run.v1",
- "seal_sha256": "872d8615f9402800556898ae1c690c7eba72dcba1edd813c83e2f4abf3769d34",
+ "seal_sha256": "cd5e85174c01f4664205a4b0e9f3ed8cb5b1a195c06b5a0b1f860be9b385e929",
  "version": 1,
  "why_unavailable": "measured on this host, not quoted from a blocker list: Apple M3 Ultra GPU is present; the offline Metal shader compiler is absent (developer dir is /Library/Developer/CommandLineTools, full Xcode not installed), so no .metallib can be built ahead of time here; runtime shader compilation from source is AVAILABLE (exercised with the crate the runtime uses), so the missing offline compiler is a cold-start cost, not a wall"
 }

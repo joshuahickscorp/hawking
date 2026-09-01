@@ -1,0 +1,43 @@
+{
+  "expected": 17135667560,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "bias.md",
+    "config.json",
+    "dist.tgz",
+    "explainability.md",
+    "figures/.DS_Store",
+    "figures/results_conversation_dynamics.png",
+    "figures/results_latency.png",
+    "figures/results_task_adherence.png",
+    "model.safetensors",
+    "privacy.md",
+    "safety.md",
+    "tokenizer-e351c8d8-checkpoint125.safetensors",
+    "tokenizer_spm_32k_3.model",
+    "voices.tgz"
+  ],
+  "mode": "all",
+  "repo": "nvidia/personaplex-7b-v1",
+  "resolved_sha": "fdaf4090a61cb315c138a1faee287ffd6c716309",
+  "revision": "fdaf4090a61cb315c138a1faee287ffd6c716309",
+  "sizes": {
+    ".gitattributes": 1732,
+    "README.md": 11080,
+    "bias.md": 593,
+    "config.json": 56,
+    "dist.tgz": 598195,
+    "explainability.md": 4693,
+    "figures/.DS_Store": 6148,
+    "figures/results_conversation_dynamics.png": 265915,
+    "figures/results_latency.png": 354245,
+    "figures/results_task_adherence.png": 254701,
+    "model.safetensors": 16742874000,
+    "privacy.md": 2143,
+    "safety.md": 860,
+    "tokenizer-e351c8d8-checkpoint125.safetensors": 384644900,
+    "tokenizer_spm_32k_3.model": 552778,
+    "voices.tgz": 6095521
+  }
+}

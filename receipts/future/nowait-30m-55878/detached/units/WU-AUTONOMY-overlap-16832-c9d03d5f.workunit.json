@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.16832.receipt.json",
+    "tournament.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F013: FLASH_SINGULARITY.NX vs QWEN27_SINGULARITY.NX. The harness must refuse, not invent a winner. CPU work: re-seal readiness against current NX seals.",
+  "frontier_id": "FT.MODEL_CAPABILITY.tournament-refuse",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.16832",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.16832.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "cebbeeb40ae5294a1234fc4ebbef34ff70d161148c2a32befeb53c258ed83aca",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

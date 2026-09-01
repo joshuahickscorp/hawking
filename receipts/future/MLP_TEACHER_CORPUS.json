@@ -23,7 +23,7 @@
   "gpu_authority": false,
   "machine": "Apple host; CPU/MPS affine-Q2 F(X), no GPU lease",
   "measurement_state": "DIAGNOSTIC_RELATIVE",
-  "recorded_at": "2026-08-31T06:44:12Z",
+  "recorded_at": "2026-09-01T06:06:06Z",
   "recorded_by": "tools/future/mlp_teacher_corpus.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -208,11 +208,11 @@
     "num_hidden_layers": 64
    },
    "model_id": "qwen3.8-27b-sealed-3.14",
-   "pinned_revision": "c7b9aaa4d93471a1af6fb11e2828289b6f0a51d2",
+   "pinned_revision": "b087a0606c9a5f45b0468f91c017aed36a53931c",
    "protocol": "hawking.qwen38.resident.v1",
    "require_fusion_env": true,
    "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
-   "resident_binary_sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8",
+   "resident_binary_sha256": "6a548bb54a092c77dcedbf15ead67120aa39b7961cfa5c0758a0af465936119d",
    "resident_identity": "sealed-3.14",
    "seal_source": "hcli/hawking-native.sealed-3.14.json",
    "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
@@ -1063,7 +1063,7 @@
   "NNS-015": "Layer 31 down_proj is the named distillation surface; included."
  },
  "schema": "hawking.future.mlp_teacher_corpus.v1",
- "seal_sha256": "878c7ee02c7a37bc9b3c148658dc41cfeeb55b715bad71c5ff578cde62a1a0a2",
+ "seal_sha256": "14ff22d6d66a00918b86989e5872c648eabcb5291940d27729f9a6e4f52d0496",
  "selftest": {
   "chosen_layers": [
    3,
@@ -1114,11 +1114,11 @@
    "num_hidden_layers": 64
   },
   "model_id": "qwen3.8-27b-sealed-3.14",
-  "pinned_revision": "c7b9aaa4d93471a1af6fb11e2828289b6f0a51d2",
+  "pinned_revision": "b087a0606c9a5f45b0468f91c017aed36a53931c",
   "protocol": "hawking.qwen38.resident.v1",
   "require_fusion_env": true,
   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
-  "resident_binary_sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8",
+  "resident_binary_sha256": "6a548bb54a092c77dcedbf15ead67120aa39b7961cfa5c0758a0af465936119d",
   "resident_identity": "sealed-3.14",
   "seal_source": "hcli/hawking-native.sealed-3.14.json",
   "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"

@@ -1,0 +1,78 @@
+{
+ "arms": {
+  "after": {
+   "distinct_belief_updates": 29,
+   "distinct_result_summaries": 9,
+   "execute_rate": 0.8,
+   "label": "run5_post_fix",
+   "n_executed": 32,
+   "n_iterations": 40,
+   "n_parsed": 32,
+   "parse_rate": 0.8
+  },
+  "before": {
+   "distinct_belief_updates": 12,
+   "distinct_result_summaries": 8,
+   "execute_rate": 0.1571,
+   "label": "run4_pre_fix",
+   "n_executed": 11,
+   "n_iterations": 70,
+   "n_parsed": 11,
+   "parse_rate": 0.1571
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T03:16:18Z",
+  "recorded_by": "tools/future/sovereign_trial.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "DERIVED_FROM_THE_LOOPS_OWN_LOG",
+ "improvement": {
+  "executed_after": 32,
+  "executed_before": 11,
+  "executed_per_iteration_after": 0.8,
+  "executed_per_iteration_before": 0.1571,
+  "parse_rate_after": 0.8,
+  "parse_rate_before": 0.1571,
+  "parse_rate_ratio": 5.092,
+  "reading": "11 experiments in 70 turns became 32 in 40. The loop was not slow; it was repeating itself."
+ },
+ "inputs": [
+  "receipts/future/_G135_SOVEREIGN_TRIAL_log.jsonl",
+  "receipts/future/SOVEREIGN_ATTACKS.json"
+ ],
+ "obligation": "G135",
+ "question": "did the eight sovereign-loop fixes change the resident's behaviour?",
+ "seal_sha256": "70433d59705024ef9d1cc7f9da926bc841974374cb9b658e2bcedcdea51a24ca",
+ "verdict": "PARSE_AND_EXECUTE_RATE_16_TO_78_PERCENT",
+ "what_changed": {
+  "defects_fixed_in_the_landing": [
+   "MALFORMED_REPLY_MISSING_KEY",
+   "MALFORMED_REPLY_DICT_AS_LIST",
+   "MALFORMED_REPLY_PARSE_FAILURE_COUNTS",
+   "MALFORMED_REPLY_PARAMS_LIST",
+   "MALFORMED_REPLY_PARAMS_STRING",
+   "MALFORMED_REPLY_TOOL_RESULT_LIST",
+   "SILENT_DROP_TRUNCATION",
+   "SILENT_DROP_STRING_SELECTED_WORK",
+   "SILENT_DROP_HYPOTHESES",
+   "GENERATED_BUT_NEVER_LAUNCHED_DEADLINE",
+   "IDENTICAL_REPLY_LOOP",
+   "KERNEL_WRITE_SAFETY",
+   "KERNEL_CORRUPT_LOAD"
+  ],
+  "dominant": "IDENTICAL_REPLY_LOOP",
+  "mechanism": "after one failed-parse turn LAST TURN froze to the constant 'no work was accepted from that turn' and tried_params stopped changing, so the pack was BYTE-IDENTICAL and greedy decoding returned the same reply. The pack now carries a turn number and the resident's own live hypotheses.",
+  "the_signature_is_in_run4": "its tail is 55 consecutive unparsed turns across only 8 distinct result summaries"
+ },
+ "what_this_does_not_claim": {
+  "not_a_capability_result": "parse rate is whether a reply had the right SHAPE and its work ran. It says nothing about whether the science was any good.",
+  "not_a_controlled_experiment": "the two runs are sequential, not randomised, and the mission kernel carried more evidence by run 5. The confound is named rather than argued away: a richer kernel could raise the rate on its own.",
+  "not_a_smarter_model": "nothing about the body changed - same weights, same decoding. The HARNESS stopped handing it the same prompt and stopped dropping what it produced. The 16% measured the harness and so does the 78%."
+ }
+}

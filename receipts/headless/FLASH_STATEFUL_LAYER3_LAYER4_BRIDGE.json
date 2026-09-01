@@ -1,0 +1,69 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787953475302",
+    "recorded_by": "flash_stateful_layer3_layer4_bridge",
+    "rule": "S032 §3 -- bounded stateful bridge; no complete-token performance claim",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "Two token steps traverse layers 0..2 stateful DeltaNet, layer 3 stateful full-attention KV plus MLP/MoE, and layer 4 stateful DeltaNet recurrence. The layer-3-to-layer-4 seam is a host diagnostic copy; this does not prove device-only 48-layer integration, tokenizer acceptance, TPS, EBPW, or residency.",
+  "complete_system_ebpw": null,
+  "execution": {
+    "layer3_to_layer4_handoff": "host diagnostic copy",
+    "layer4_context_reused": true,
+    "layer4_weights_reused": true,
+    "process_boundary": "one native process"
+  },
+  "layer3": {
+    "final_state_count": 2,
+    "final_state_sha256": [
+      "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+      "ed176ce5428dbb3cd40860dd91178d68fd0386abe3375cb0ff16ad402e8ec551"
+    ],
+    "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER4_BRIDGE_ATTN.json"
+  },
+  "layer4": {
+    "final_state_sha256": [
+      "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+      "3d85152f1fc5cfd300aba5e4cd37b696e40ed46a0a81de556d95ab0109c23662"
+    ],
+    "layer": 4,
+    "species": "linear_attention",
+    "stateful_recurrence": true,
+    "steps": [
+      {
+        "dispatches": 20,
+        "final_state_sha256": "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+        "finite": true,
+        "gpu_ns": 30549874,
+        "input_layer3_state_sha256": "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 38289250
+      },
+      {
+        "dispatches": 20,
+        "final_state_sha256": "3d85152f1fc5cfd300aba5e4cd37b696e40ed46a0a81de556d95ab0109c23662",
+        "finite": true,
+        "gpu_ns": 24952083,
+        "input_layer3_state_sha256": "ed176ce5428dbb3cd40860dd91178d68fd0386abe3375cb0ff16ad402e8ec551",
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25243291
+      }
+    ]
+  },
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Continue the same state arena through the remaining linear and full-attention layers, then replace the diagnostic seam with device-resident handoff.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_layer3_layer4_bridge.v1",
+  "seal_sha256": "87e416c8fe86a9f346e129c51635083fcc1921ec627831873080229e93303dc1",
+  "status": "PASSED_STATEFUL_CROSS_SPECIES_CHAIN",
+  "token_ids": [
+    248044,
+    248044
+  ]
+}

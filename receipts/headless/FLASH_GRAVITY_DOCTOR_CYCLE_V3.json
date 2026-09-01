@@ -1,0 +1,405 @@
+{
+  "schema": "hawking.flash.gravity_doctor_cycle.v1",
+  "obligation": "bounded organ-level Gravity/Doctor search before complete-token promotion",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "artifact_kind": "NR",
+  "representation_type": "organ-level candidate set (literal and scalar-quantized controls)",
+  "artifact_contract": {
+    "gravity_is_process_not_file": true,
+    "nr_shards": ".nr",
+    "final_noetic_executable": ".nx",
+    "historical_gravity_suffix": ".gravity",
+    "rule": "NR is portable representation/transient storage; NX is machine-bound executable"
+  },
+  "source_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "source_weight_hashes": {
+    "layer7_q_proj": "bd773c2ed79c728f701eab208a153289d5cb2dad589b946f10492f970fd40acd",
+    "layer8_linear_out_proj": "c7d053593ff1da743acd574a234b77c53933b1aef7c2e0130b2c2f4113eee26c"
+  },
+  "doctor_seal": {
+    "verdict": "PASS_WITH_WARNINGS",
+    "reasons": [
+      "tabula_drift present but its instrument is NOT validated -- G123 recovers the direction with a 200x null separation and its ladder misses the recorded 11-12/25-27/64-67 by a constant 2.5x. The drift number is PROVISIONAL."
+    ],
+    "negative_control": "zero_control_known_bad"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T02:06:56Z",
+    "recorded_by": "tools/flash_gravity_doctor_cycle.py",
+    "machine": "Apple host; organ screen only",
+    "rule": "S032 \u00a73 -- organ timing and capability remain unmeasured"
+  },
+  "nr_artifact": {
+    "path": "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE_V3.nr.json",
+    "sha256": "ac50234873bd89d4200441c553f631c49b513cf83dc884d79a357fe6798bee43",
+    "validated": true
+  },
+  "rows": [
+    {
+      "organ": "layer7_q_proj",
+      "candidate": "source_bf16",
+      "representation": "source_bf16",
+      "kernel": "gemv_native_bf16_seq",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 16.0,
+      "doctor": {
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999998807907104,
+        "gain": 1.0,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9999998807907104,
+      "doctor_worst_axis_name": "worst_unit",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer7_q_proj",
+      "candidate": "uniform_q4_g64",
+      "representation": "uniform_q4_g64",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 4.25,
+      "doctor": {
+        "observed": 0.9887310266494751,
+        "probed": 0.98835289478302,
+        "worst_unit": 0.9738460779190063,
+        "gain": 0.9372805953025818,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9372805953025818,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer7_q_proj",
+      "candidate": "uniform_q4_g128",
+      "representation": "uniform_q4_g128",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 4.125,
+      "doctor": {
+        "observed": 0.9835975170135498,
+        "probed": 0.9831823110580444,
+        "worst_unit": 0.9546927809715271,
+        "gain": 0.9308868050575256,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9308868050575256,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer7_q_proj",
+      "candidate": "uniform_q3_g64",
+      "representation": "uniform_q3_g64",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 3.25,
+      "doctor": {
+        "observed": 0.9470558166503906,
+        "probed": 0.9460245966911316,
+        "worst_unit": 0.8705199360847473,
+        "gain": 0.8709263205528259,
+        "healthy": false
+      },
+      "doctor_worst_axis": 0.8705199360847473,
+      "doctor_worst_axis_name": "worst_unit",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer7_q_proj",
+      "candidate": "q3_g64_sparse_residual_1pct",
+      "representation": "SparseResidualProgram",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 3.73,
+      "doctor": {
+        "observed": 0.9543153047561646,
+        "probed": 0.953357458114624,
+        "worst_unit": 0.8958044052124023,
+        "gain": 0.8759302496910095,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.8759302496910095,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer7_q_proj",
+      "candidate": "zero_control_known_bad",
+      "representation": "zero_control_known_bad",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 0.0,
+      "doctor": {
+        "observed": 0.0,
+        "probed": 0.0,
+        "worst_unit": 0.0,
+        "gain": 0.0,
+        "healthy": false
+      },
+      "doctor_worst_axis": 0.0,
+      "doctor_worst_axis_name": "observed",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "source_bf16",
+      "representation": "source_bf16",
+      "kernel": "gemv_native_bf16_seq",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 16.0,
+      "doctor": {
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999998807907104,
+        "gain": 1.0,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9999998807907104,
+      "doctor_worst_axis_name": "worst_unit",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "uniform_q4_g64",
+      "representation": "uniform_q4_g64",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 4.25,
+      "doctor": {
+        "observed": 0.992902398109436,
+        "probed": 0.9928147196769714,
+        "worst_unit": 0.9788975119590759,
+        "gain": 0.9522954821586609,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9522954821586609,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "uniform_q4_g128",
+      "representation": "uniform_q4_g128",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 4.125,
+      "doctor": {
+        "observed": 0.9910775423049927,
+        "probed": 0.9910188317298889,
+        "worst_unit": 0.9692782759666443,
+        "gain": 0.9499826431274414,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9499826431274414,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "uniform_q3_g64",
+      "representation": "uniform_q3_g64",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 3.25,
+      "doctor": {
+        "observed": 0.964035153388977,
+        "probed": 0.9635769128799438,
+        "worst_unit": 0.9172828793525696,
+        "gain": 0.8975521922111511,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.8975521922111511,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "q3_g64_sparse_residual_1pct",
+      "representation": "SparseResidualProgram",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 3.73,
+      "doctor": {
+        "observed": 0.9682662487030029,
+        "probed": 0.9679244756698608,
+        "worst_unit": 0.9384857416152954,
+        "gain": 0.9064387083053589,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9064387083053589,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "zero_control_known_bad",
+      "representation": "zero_control_known_bad",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 0.0,
+      "doctor": {
+        "observed": 0.0,
+        "probed": 0.0,
+        "worst_unit": 0.0,
+        "gain": 0.0,
+        "healthy": false
+      },
+      "doctor_worst_axis": 0.0,
+      "doctor_worst_axis_name": "observed",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    }
+  ],
+  "pareto_frontier": [
+    {
+      "organ": "layer7_q_proj",
+      "candidate": "source_bf16",
+      "representation": "source_bf16",
+      "kernel": "gemv_native_bf16_seq",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 16.0,
+      "doctor": {
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999998807907104,
+        "gain": 1.0,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9999998807907104,
+      "doctor_worst_axis_name": "worst_unit",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "source_bf16",
+      "representation": "source_bf16",
+      "kernel": "gemv_native_bf16_seq",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 16.0,
+      "doctor": {
+        "observed": 1.0,
+        "probed": 1.0,
+        "worst_unit": 0.9999998807907104,
+        "gain": 1.0,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9999998807907104,
+      "doctor_worst_axis_name": "worst_unit",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "uniform_q4_g64",
+      "representation": "uniform_q4_g64",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 4.25,
+      "doctor": {
+        "observed": 0.992902398109436,
+        "probed": 0.9928147196769714,
+        "worst_unit": 0.9788975119590759,
+        "gain": 0.9522954821586609,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9522954821586609,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "uniform_q4_g128",
+      "representation": "uniform_q4_g128",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 4.125,
+      "doctor": {
+        "observed": 0.9910775423049927,
+        "probed": 0.9910188317298889,
+        "worst_unit": 0.9692782759666443,
+        "gain": 0.9499826431274414,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9499826431274414,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "uniform_q3_g64",
+      "representation": "uniform_q3_g64",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 3.25,
+      "doctor": {
+        "observed": 0.964035153388977,
+        "probed": 0.9635769128799438,
+        "worst_unit": 0.9172828793525696,
+        "gain": 0.8975521922111511,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.8975521922111511,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    },
+    {
+      "organ": "layer8_linear_out_proj",
+      "candidate": "q3_g64_sparse_residual_1pct",
+      "representation": "SparseResidualProgram",
+      "kernel": "flash_uniform_group_matvec_candidate",
+      "layout": "row-major contiguous; group along contraction axis",
+      "runtime_graph": "single organ only; no reconstructed dense production path",
+      "active_bpw": 3.73,
+      "doctor": {
+        "observed": 0.9682662487030029,
+        "probed": 0.9679244756698608,
+        "worst_unit": 0.9384857416152954,
+        "gain": 0.9064387083053589,
+        "healthy": true
+      },
+      "doctor_worst_axis": 0.9064387083053589,
+      "doctor_worst_axis_name": "gain",
+      "promotion_allowed": false,
+      "claim_boundary": "organ representation screen; not complete-token capability or HCLI residence evidence"
+    }
+  ],
+  "frontier_rule": "minimize active BPW while maximizing the weakest Doctor axis; no capability claim",
+  "next": "use the bound full-model census to batch routed-expert and attention-family candidates; then measure native kernel, wall, GPU, memory and coherence before any promotion",
+  "git_head": "c5cb8a93d175d6947bcaa3e32965eb081611a920"
+}

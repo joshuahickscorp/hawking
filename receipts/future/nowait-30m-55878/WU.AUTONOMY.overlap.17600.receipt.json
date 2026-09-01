@@ -1,0 +1,1 @@
+{"module": "frontiers.py", "entry_point": "build", "receipt": "receipts/future/FRONTIER_STATE.json", "routed_to_frontier": "FT.TOOLS.frontiers-refill", "species": "FRONTIER_REFILL", "wall_seconds": 0.302, "evidence_class": "STATIC_ONLY"}

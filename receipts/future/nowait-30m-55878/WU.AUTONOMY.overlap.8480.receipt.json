@@ -1,0 +1,1 @@
+{"module": "hardware_doctor.py", "entry_point": "build", "receipt": "receipts/future/HARDWARE_DOCTOR.json", "routed_to_frontier": "FT.FPGA.hardware-doctor", "species": "HARDWARE_DOCTOR", "wall_seconds": 0.018, "evidence_class": "STATIC_ONLY"}

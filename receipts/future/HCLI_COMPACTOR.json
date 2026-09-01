@@ -1,0 +1,2056 @@
+{
+ "all_negative_controls_caught": true,
+ "answer": "YES - a reader of the compacted kernel can continue correctly",
+ "authority": "receipts/future/HCLI_MISSION_KERNEL.json",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T06:53:10Z",
+  "recorded_by": "tools/future/hcli_compactor.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "bytes_after": 27826,
+ "bytes_before": 105201,
+ "bytes_saved": 77375,
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "compacted_kernel": {
+  "active_work": [
+   {
+    "params": {
+     "fraction": 0.5,
+     "layer": 0,
+     "side": "cols",
+     "tensor": "up"
+    },
+    "type": "PERTURB"
+   }
+  ],
+  "authority": {
+   "may": [
+    "propose hypotheses and experiments",
+    "request perturbation experiments on any MLP tensor and layer",
+    "request deterministic computation",
+    "request a receipt be read"
+   ],
+   "may_not": [
+    "delete or overwrite any artifact",
+    "modify the canonical worktree directly",
+    "claim a hardware number it did not receive from a tool"
+   ]
+  },
+  "created_unix": 1788225013.993709,
+  "current_target": "SUB2_EBPW",
+  "executable_work_types": [
+   "COMPUTE",
+   "PERTURB",
+   "READ_RECEIPT"
+  ],
+  "frontier": "SUB2_EBPW",
+  "harness_defects_found_and_fixed": [
+   "validate() omitted n_accepted on the parse-failure path; the first unparsed reply crashed the loop",
+   "a 2667-char context pack made the body restate the pack instead of answering; 14 consecutive echoes, byte-identical under greedy decoding because the pack never changed"
+  ],
+  "hypotheses": [
+   {
+    "claim": "the up code is partly predictable from the gate code at the same position, so joint coding beats marginal",
+    "evidence": "mutual information 0.00059 bits per weight pair across layers 0/21/42/63",
+    "id": "H1.gate_up_mutual_information",
+    "proposer": "resident",
+    "verdict": "REFUTED"
+   },
+   {
+    "claim": "the SwiGLU gate is control and deserves literal storage; up and down are linear bulk and can be generated or shared",
+    "evidence": "receipts/future/FUNCTIONAL_ROLE_PROBE.json - gate never exceeds 1.31x up per matched element, and down is most sensitive at 9 of 12 points",
+    "id": "H2.functional_role_gate_dominant",
+    "proposer": "resident",
+    "verdict": "REFUTED"
+   }
+  ],
+  "iterations": [
+   {
+    "degenerated": false,
+    "n": 1,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.5,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 44.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 77.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 3,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 183.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 4,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.4,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 253.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 5,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.4,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 331.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": true,
+    "n": 6,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 45.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 45.9,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 432.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 7,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0007021354973953953,
+       "elements_destroyed": 17827840,
+       "fraction": 0.2,
+       "hidden_cosine_after_2_layers": 0.9992978645026046,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 500.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 8,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.3,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 583.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 9,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00018141200163390714,
+       "elements_destroyed": 8912896,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.9998185879983661,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 662.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 10,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 727.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 11,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 35.6,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 803.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 1,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 61.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 2,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.9,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 128.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 3,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.5,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 200.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 5,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 334.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 6,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 35.4,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 35.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 397.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 9,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 593.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 10,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0024993117160853062,
+       "elements_destroyed": 35651584,
+       "fraction": 0.4,
+       "hidden_cosine_after_2_layers": 0.9975006882839147,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.8,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 664.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 11,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 731.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 13,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 840.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 14,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.3,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 908.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 16,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.6,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1029.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 17,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1100.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 18,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.0,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1174.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 19,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1247.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 20,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.4,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.9,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1316.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 21,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.4,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1386.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 22,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1459.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 23,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00018141200163390714,
+       "elements_destroyed": 8912896,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.9998185879983661,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1529.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 24,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0017027174887448426,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9982972825112552,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1615.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 26,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.3,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1730.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 27,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.4,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1820.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 28,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1890.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 30,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2009.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 31,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.5,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.9,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2074.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 32,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.3,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2141.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 34,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.9,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2260.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 35,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.6,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2347.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 36,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2430.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 37,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 44.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2501.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 38,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2573.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 39,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.9,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 44.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2647.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-uniform importance distribution, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
+    "degenerated": false,
+    "live_hypotheses": [
+     {
+      "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+      "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+      "id": "x"
+     }
+    ],
+    "n": 40,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.6,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.3,
+      "type": "PERTURB"
+     }
+    ],
+    "results_summary": [
+     "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+    ],
+    "t_s": 2717.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   }
+  ],
+  "live_hypotheses": [
+   {
+    "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+    "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+    "id": "x"
+   }
+  ],
+  "measured_state": {
+   "basis": "GPU",
+   "complete_bpw": 3.139301,
+   "conventional_floor_bpw_if_every_untested_move_worked": 2.508137,
+   "mlp_elements": 17112760320,
+   "payload_bytes": 10554328856,
+   "refreshed_from": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json",
+   "refreshed_unix": 1788236273.617277,
+   "source": [
+    "receipts/future/REPRESENTATION_FLOOR.json",
+    "receipts/future/GAP_LEDGER_60.json"
+   ],
+   "storage_bpw": 3.139300850311054,
+   "token_ms": 21.9464,
+   "tps": null,
+   "tps_cited_from": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+  },
+  "measurement_caveat": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+  "next_work": [
+   {
+    "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+    "id": "x"
+   }
+  ],
+  "objective": "Discover the lowest capability-preserving complete EBPW for the current dense resident. First milestone: 2.0 complete EBPW or less.",
+  "observations": [
+   {
+    "id": "O1.local_robustness",
+    "interpretation": "NONE RECORDED - this is evidence, not a conclusion",
+    "source": "receipts/future/FUNCTIONAL_ROLE_PROBE.json",
+    "text": "zeroing 40% of a tensor's output rows - about 35.6 million elements - moves the hidden state two layers later by 0.005905 of cosine"
+   }
+  ],
+  "resident_mode": "ACTIVE_ORCHESTRATOR",
+  "scars": [
+   "MLP 2-bit codes carry ~1.87 bits entropy per 2 stored bits",
+   "affine groups 256 and 1024: CAPABILITY REFUTED",
+   "shared linear low-rank across MLP factors: REFUTED at relative L2 0.9",
+   "auxiliary broadcast bytes bill 0.000 ms/GB - smaller, not faster",
+   "only weight codes bill time, at 0.547282 ms/GB",
+   "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK",
+   "REMOVING_ONE_OP_CLASS_IS_NOT_A_LEVER_WHEN_FOUR_SHARE_THE_COST"
+  ],
+  "scars_bind_methods_not_goals": "a scar constrains the method it measured, at the scope it measured. It does not forbid the objective.",
+  "schema": "hawking.future.hcli_mission_kernel.v1",
+  "tried_params": [
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.2",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.1",
+   "gate/L0/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.4",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/cols/0.1",
+   "gate/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5"
+  ],
+  "unsupported_requests": [],
+  "updated_unix": 1788236273.6172779,
+  "wake_conditions": [
+   "validate() omitted n_accepted on the parse-failure path; the first unparsed reply crashed the loop",
+   "a 2667-char context pack made the body restate the pack instead of answering; 14 consecutive echoes, byte-identical under greedy decoding because the pack never changed"
+  ]
+ },
+ "compression_ratio": 0.2645,
+ "continuity": {
+  "could_continue": true,
+  "grade": "CONTINUITY",
+  "loss_kinds": [],
+  "losses": [],
+  "n_losses": 0,
+  "not_the_grade": "textual similarity is not the grade",
+  "ok": true
+ },
+ "discarded_by_category": {
+  "degenerate_tails": {
+   "bytes": 18701,
+   "n": 53
+  },
+  "obsolete_deliberation": {
+   "bytes": 27994,
+   "n": 82
+  },
+  "repeated_prose": {
+   "bytes": 31957,
+   "n": 453
+  }
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "grade_is_not": "textual similarity",
+ "kernel_resolved_to": "/Users/scammermike/Downloads/hawking/receipts/future/HCLI_MISSION_KERNEL.json",
+ "n_iterations_after": 42,
+ "n_iterations_before": 95,
+ "negative_controls": {
+  "alter_target": {
+   "caught": true,
+   "loss_kinds": [
+    "current_target"
+   ],
+   "n_losses": 1,
+   "primary_loss": "current_target",
+   "worthless_self_grade_would_pass": true
+  },
+  "remove_latest_refutation": {
+   "caught": true,
+   "loss_kinds": [
+    "hypothesis_verdict",
+    "latest_refutation"
+   ],
+   "n_losses": 2,
+   "primary_loss": "latest_refutation",
+   "worthless_self_grade_would_pass": true
+  },
+  "remove_live_hypothesis": {
+   "caught": true,
+   "loss_kinds": [
+    "live_hypothesis"
+   ],
+   "n_losses": 1,
+   "primary_loss": "live_hypothesis",
+   "worthless_self_grade_would_pass": true
+  },
+  "remove_scar": {
+   "caught": true,
+   "loss_kinds": [
+    "scar"
+   ],
+   "n_losses": 1,
+   "primary_loss": "scar",
+   "worthless_self_grade_would_pass": true
+  },
+  "remove_wake_condition": {
+   "caught": true,
+   "loss_kinds": [
+    "wake_condition"
+   ],
+   "n_losses": 1,
+   "primary_loss": "wake_condition",
+   "worthless_self_grade_would_pass": true
+  }
+ },
+ "preserved": {
+  "current_target": "SUB2_EBPW",
+  "hypothesis_verdicts": {
+   "H1.gate_up_mutual_information": "REFUTED",
+   "H2.functional_role_gate_dominant": "REFUTED"
+  },
+  "n_live_hypotheses": 1,
+  "n_scars": 7,
+  "n_unsupported_requests": 0,
+  "n_wake_conditions": 2,
+  "objective": "Discover the lowest capability-preserving complete EBPW for the current dense resident. First milestone: 2.0 complete EBPW or less.",
+  "scars": [
+   "MLP 2-bit codes carry ~1.87 bits entropy per 2 stored bits",
+   "affine groups 256 and 1024: CAPABILITY REFUTED",
+   "shared linear low-rank across MLP factors: REFUTED at relative L2 0.9",
+   "auxiliary broadcast bytes bill 0.000 ms/GB - smaller, not faster",
+   "only weight codes bill time, at 0.547282 ms/GB",
+   "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK",
+   "REMOVING_ONE_OP_CLASS_IS_NOT_A_LEVER_WHEN_FOUR_SHARE_THE_COST"
+  ],
+  "tried_params": [
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.2",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.1",
+   "gate/L0/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.4",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/cols/0.1",
+   "gate/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/cols/0.5"
+  ]
+ },
+ "question": "Can mission state be compacted without the resident losing what it knows?",
+ "schema": "hawking.future.hcli_compactor.v1",
+ "seal_sha256": "0684ccce2447057658860904af393d9346feb28eb0213c218973f25b5a481f40",
+ "what_this_module_does_not_do": "choose the next hypothesis, representation, or experiment. The resident owns those. Compaction copies load-bearing state and discards repeated prose, obsolete deliberation, and degenerate tails."
+}

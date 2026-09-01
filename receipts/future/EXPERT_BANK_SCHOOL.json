@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:44:37Z",
+  "recorded_at": "2026-09-01T05:26:34Z",
   "recorded_by": "tools/future/expert_bank_school.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -465,7 +465,7 @@
   ]
  },
  "schema": "hawking.future.expert_bank_school.v1",
- "seal_sha256": "6aa4f337516dccc03de5a228585a5d346361ed9dbcd78339cc3eb86df12e85ed",
+ "seal_sha256": "bba47685a2abffd36cc2407c07cf9d34f81f8cdd5ed169f5383e576696c3c31c",
  "storage_candidates": [
   {
    "axis": "STORAGE",

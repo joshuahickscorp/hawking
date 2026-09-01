@@ -1,0 +1,161 @@
+{
+ "authority": "S026 \u00a714-\u00a720, \u00a735, \u00a738, \u00a751",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T04:17:03Z",
+  "recorded_by": "tools/future/fast_thought.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claude_escalations_per_frontier_move": {
+  "commits": 4136,
+  "commits_per_verified_obligation": 22.478,
+  "is_a_proxy": true,
+  "partial_obligations": 10,
+  "unmet_obligations": 1,
+  "verified_obligations": 184,
+  "what_would_measure_it_directly": "an escalation event written by HCLI whenever it hands a decision to Claude, so the ratio counts hand-offs rather than commits",
+  "why_a_proxy": "a Claude turn is not recorded anywhere on disk, and a commit is. Every commit was authored inside a turn, so this is an UPPER bound on turns per move rather than a count of them. Driving it down is meaningful; treating it as the literal metric is not."
+ },
+ "decision_compression": {
+  "dead_schools": [
+   "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK",
+   "BYTE_COUNT_TIMES_ORGAN_AVERAGE",
+   "REMOVING_ONE_OP_CLASS_IS_NOT_A_LEVER_WHEN_FOUR_SHARE_THE_COST",
+   "WARMUP_5_LEAVES_THE_FIRST_MEASURED_ARM_OUTSIDE_STEADY_STATE"
+  ],
+  "gap_to_60_ms": 5.2797,
+  "hard_bounds": [
+   "THE DECODE-ARITHMETIC SCHOOL CANNOT REACH 60 EVEN IF IT PERFECTLY SUCCEEDS. Removing every arithmetic operation from every q2 and q4 matvec reaches 52.0 TPS. 60 needs 2.56 ms from a DIFFERENT class - fewer bytes, less host time, or work removed rather than made cheaper.",
+   "after perfect arithmetic removal the q2 and q4 matvecs are 15.27 ms of pure streaming. Reaching 60 needs 2.56 ms more, which at that point can only come from reading fewer bytes: 16.8% of the matvec weight bytes must stop existing."
+  ],
+  "live_tps": 45.566,
+  "options": [
+   {
+    "max_ms_removable": 4.79,
+    "option": "reach_demonstrated_bandwidth_mlp",
+    "status": "RUNNING"
+   },
+   {
+    "max_ms_removable": 2.273,
+    "option": "reach_demonstrated_bandwidth_deltanet",
+    "status": "QUEUED"
+   }
+  ],
+  "size_bytes": 1358,
+  "tps_if_built_levers_promoted": 57.443,
+  "why_this_shape": "a gap, a ranked option list with each option's maximum payoff, the bounds that are already proven, and the schools that are already dead. No history, no narrative, no receipts quoted at length. S026 \u00a738 asks for exactly this and \u00a763 says context is a cache."
+ },
+ "event_driven_contract": {
+  "gap": "the recorded timelines carry result_ingested and workunit_launched, which cover the benchmark-result trigger. scar emitted, model sealed and new kernel compiled do NOT appear as event kinds in any recorded run, so those three triggers are DECLARED, NOT DEMONSTRATED.",
+  "observed_in_timelines": [
+   "BRANCH_KILLED",
+   "NEXT_DECISION",
+   "RESULT_INGESTED",
+   "dead_units_retired",
+   "detached_completed",
+   "detached_failed",
+   "detached_overlap_confirmed",
+   "detached_started",
+   "failure_explained",
+   "frontier_delta",
+   "frontier_identified",
+   "gpu_park",
+   "hawking_self_unit",
+   "idea_rejected",
+   "idle_justified",
+   "mission_state_written",
+   "model_reasoned_during_wait",
+   "negative_science_query",
+   "negative_science_refusal",
+   "next_work_left",
+   "priority_altered",
+   "process_failed",
+   "prune_verification",
+   "receipt_ingested",
+   "resident_body_ready",
+   "resident_body_stop",
+   "resident_cli_start",
+   "resident_cli_status",
+   "resident_cli_stop",
+   "restorable_after",
+   "restorable_before",
+   "result_ingested",
+   "runnability_snapshot",
+   "scheduler_replan",
+   "sealed_pin",
+   "second_hypothesis",
+   "state_recovered",
+   "subprocess_wait_start",
+   "work_refilled",
+   "workunit_launched",
+   "workunit_sleeping"
+  ],
+  "rule": "any of these events triggers immediate reconsideration; the loop does not wait for a periodic heartbeat when the evidence is already available (S026 \u00a720)",
+  "triggers": [
+   "benchmark result",
+   "failed test",
+   "scar emitted",
+   "model sealed",
+   "new kernel compiled",
+   "new child available",
+   "causal budget changed",
+   "unexpected regression"
+  ]
+ },
+ "evidence_class": "STATIC_ONLY",
+ "frontier_to_experiment_latency": {
+  "fraction_within_target": 1.0,
+  "max_s": 2.0,
+  "mean_s": 0.1382,
+  "median_s": 0.0,
+  "n_pairs": 152,
+  "per_timeline": [
+   {
+    "max_s": 1.0,
+    "mean_s": 0.0385,
+    "median_s": 0.0,
+    "pairs": 130,
+    "timeline": "receipts/future/AUTONOMY_TIMELINE_1h.json",
+    "within_target": 130
+   },
+   {
+    "max_s": 2.0,
+    "mean_s": 0.7273,
+    "median_s": 1.0,
+    "pairs": 22,
+    "timeline": "receipts/future/AUTONOMY_TIMELINE_30m.json",
+    "within_target": 22
+   },
+   {
+    "note": "no ingest-then-launch pair in this run",
+    "pairs": 0,
+    "timeline": "receipts/future/AUTONOMY_TIMELINE_15m.json"
+   },
+   {
+    "note": "no ingest-then-launch pair in this run",
+    "pairs": 0,
+    "timeline": "receipts/future/MODEL_BEARING_TIMELINE.json"
+   }
+  ],
+  "target_s": 120.0,
+  "verdict": "GREEN",
+  "what_it_does_not_measure": "this is the SCHEDULER's latency - the gap between a result landing and the next unit launching. It says nothing about how long the reasoning took, because the reasoning that produced these units was largely precomputed by the frontier catalogue. A green number here is necessary and nowhere near sufficient for FAST_THOUGHT."
+ },
+ "gpu_authority": false,
+ "honest_summary": "the SCHEDULER loop is fast: 152 recorded ingest-then-launch pairs with a median of 0.0 s and a maximum of 2.0 s, far inside S026's seconds-to-low-minutes target. What is slow is everything that still runs in a Claude turn, and this module cannot measure that directly because no escalation event is written to disk. The first concrete step toward FAST_THOUGHT is therefore instrumentation, not optimisation.",
+ "obligation": "G096",
+ "scientific_tps": {
+  "campaign_wall_hours": 2906.98,
+  "components": {
+   "experiments_per_hour": 1.4228
+  },
+  "scientific_tps_per_hour": 0.0633,
+  "the_denominator_is_the_whole_repo_history": "this dates the campaign from the first commit in the repository, which predates this ultragoal. The RATE is therefore a floor, not the rate of the current campaign. It is reported this way because the ledger records no campaign start, and inventing one would be the fabricated provenance this project forbids.",
+  "verified_frontier_moves": 184
+ },
+ "seal_sha256": "b296ecd6031c90164d895d899e0fed4444f95ffa0665bdeb38e79dcda3545737"
+}

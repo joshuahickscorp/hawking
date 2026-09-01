@@ -1,0 +1,161 @@
+{
+  "nr_version": "1.0.0",
+  "nr_kind": "hawking.nos.noetic_representation",
+  "artifact_kind": "NR",
+  "semantic_provenance": {
+    "parent_model": "Qwen3.8-Flash-Next",
+    "source_weight_hash": "59ee8b7c1f07b916353ec16f5e5a57719e59dd7442b7077eff1a2d5bcde4a7a5"
+  },
+  "representation": {
+    "scope": "layer-4 routed output basis",
+    "candidates": [
+      {
+        "rank": 8,
+        "active_bpw": 0.03328125,
+        "shared_weight_rel_fro": 0.996873140335083,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9969278573989868,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.9972518682479858,
+        "coefficient_mean_abs_error": 0.0016302206786349416,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 68160,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      },
+      {
+        "rank": 16,
+        "active_bpw": 0.0665625,
+        "shared_weight_rel_fro": 0.994100034236908,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9941536784172058,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.994421660900116,
+        "coefficient_mean_abs_error": 0.0015823000576347113,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 136320,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      },
+      {
+        "rank": 32,
+        "active_bpw": 0.133125,
+        "shared_weight_rel_fro": 0.9889964461326599,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9890609979629517,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.9894265532493591,
+        "coefficient_mean_abs_error": 0.0015217508189380169,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 272640,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      },
+      {
+        "rank": 64,
+        "active_bpw": 0.26625,
+        "shared_weight_rel_fro": 0.980025053024292,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9801741242408752,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.9805926084518433,
+        "coefficient_mean_abs_error": 0.0014441744424402714,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 545280,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      }
+    ],
+    "frontier_candidates": [
+      {
+        "rank": 8,
+        "active_bpw": 0.03328125,
+        "shared_weight_rel_fro": 0.996873140335083,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9969278573989868,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.9972518682479858,
+        "coefficient_mean_abs_error": 0.0016302206786349416,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 68160,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      },
+      {
+        "rank": 16,
+        "active_bpw": 0.0665625,
+        "shared_weight_rel_fro": 0.994100034236908,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9941536784172058,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.994421660900116,
+        "coefficient_mean_abs_error": 0.0015823000576347113,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 136320,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      },
+      {
+        "rank": 32,
+        "active_bpw": 0.133125,
+        "shared_weight_rel_fro": 0.9889964461326599,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9890609979629517,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.9894265532493591,
+        "coefficient_mean_abs_error": 0.0015217508189380169,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 272640,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      },
+      {
+        "rank": 64,
+        "active_bpw": 0.26625,
+        "shared_weight_rel_fro": 0.980025053024292,
+        "baseline_q4_weight_rel_fro": 0.10986339300870895,
+        "shared_function_rel_fro": 0.9801741242408752,
+        "baseline_q4_function_rel_fro": 0.10979495942592621,
+        "latent_aggregate_rel_fro": 0.9805926084518433,
+        "coefficient_mean_abs_error": 0.0014441744424402714,
+        "baseline_q4_mean_abs_error": 0.0011527924798429012,
+        "stored_bytes": 545280,
+        "selected_dense_bytes": 65536000,
+        "shared_beats_baseline_function": false,
+        "aggregation_is_better_than_per_expert": false,
+        "organ": "down_proj"
+      }
+    ],
+    "runtime_required": false
+  },
+  "dependencies": [],
+  "kernel_requirements": [
+    {
+      "requires": "latent_routed_accumulate_then_expand",
+      "parameters": "shared output basis and coefficient group"
+    }
+  ],
+  "verifier": "native fused organ parity required",
+  "seal": {
+    "status": "UNSEALED_STAGE_B",
+    "promotion_allowed": false
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "rule": "NR hypothesis only"
+  }
+}

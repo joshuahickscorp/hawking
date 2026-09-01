@@ -74,7 +74,19 @@ def accounting() -> dict[str, Any]:
             "the measured inner loop does not reconcile: "
             f"({dequant}+{mac})/{wb} != {inner['fma_per_weight_byte']}"
         )
-    folded_dequant = 2.0 * w / GROUP  # two FMA per group, amortised over the iteration
+    # AMORTISED OVER THE CHUNK, NOT THE GROUP - and getting this wrong is how the
+    # first version of this receipt claimed 1.939x.
+    #
+    # The production kernel strides `col += 512` (64 threads per row x 8 weights),
+    # so a thread handles ONE 8-weight chunk of a group and never returns to that
+    # group. scale and bias are constant within the CHUNK, not across the group,
+    # so the affine has to be applied every 8 weights: 2 FMA per 8, not 2 per 64.
+    #
+    # A retiling where one thread owns a whole group of 64 would reach 2 per 64
+    # and 1.939x, but that is a DIFFERENT candidate with its own addressing
+    # consequences, and quoting its number here would be claiming a change this
+    # receipt does not describe.
+    folded_dequant = 2.0
     folded_total = mac + folded_dequant
     return {
         "group_size": GROUP,
@@ -100,10 +112,98 @@ def accounting() -> dict[str, Any]:
         },
         "total_arithmetic_cheapening": round((dequant + mac) / folded_total, 4),
         "decode_cheapening": round(dequant / folded_dequant, 1),
+        "amortised_over": "the 8-weight chunk, because the kernel strides col += 512",
+        "a_retiling_would_do_better": {
+            "if": "one thread owned a whole group of 64 instead of an 8-chunk",
+            "folded_total_fma": round(mac + 2.0 * w / GROUP, 4),
+            "total_arithmetic_cheapening": round((dequant + mac) / (mac + 2.0 * w / GROUP), 4),
+            "but": (
+                "that is a DIFFERENT candidate with its own addressing and "
+                "occupancy consequences. The first version of this receipt quoted "
+                "its 1.939x while describing the un-retiled loop, which was a "
+                "change it did not state."
+            ),
+        },
         "int_to_float_unchanged_because": (
             "the codes still have to become floats to multiply x. The saving is "
             "the dequant FMA, not the conversions, and claiming the conversions "
             "too would be the easiest way to overstate this."
+        ),
+    }
+
+
+
+LADDER_REL = "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+BODY_REL = "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
+
+# The issue-rate ladder already swept FMA per weight byte on the real kernel, so
+# this candidate does not need a guess about what its arithmetic saving is worth
+# - it needs a POSITION on a measured curve.
+#
+#     arm          FMA/B     GB/s     vs production
+#     production   2.6667    308.3    1.000x
+#     k6           2.0000    390.9    1.268x
+#     k4           1.3333    439.5    1.426x
+#     k2           0.6667    440.6    1.429x
+#     arm_a        0.3333    504.9    1.638x
+#
+# The hoist lands at 1.6667 FMA/B, BETWEEN k6 and k4. The ladder's own verdict is
+# that its shape is "neither linear nor plateau" (r^2 0.8712), so interpolating to
+# a point would be false precision. It is BRACKETED instead.
+#
+# And the bracket sits just above a KNEE: k4 at 1.3333 gives 439.5 and k2 at
+# 0.6667 gives 440.6 - halving the FMA again buys 0.25%. Below about 1.3 FMA/B
+# the arithmetic stops being the binding term, which is why arm_a only pulls
+# further ahead by ALSO cutting int and convert ops.
+LADDER_POINTS = (
+    {"arm": "production", "fma_per_byte": 2.6667, "gb_s": 308.3},
+    {"arm": "k6", "fma_per_byte": 2.0, "gb_s": 390.9},
+    {"arm": "k4", "fma_per_byte": 1.3333, "gb_s": 439.5},
+    {"arm": "k2", "fma_per_byte": 0.6667, "gb_s": 440.6},
+    {"arm": "arm_a", "fma_per_byte": 0.3333, "gb_s": 504.9},
+)
+
+
+def ladder_bracket() -> dict[str, Any]:
+    """Where this candidate sits on the MEASURED ops/byte curve."""
+    acc = accounting()
+    mine = float(acc["folded"]["fma_per_weight_byte"])
+    prod = next(p for p in LADDER_POINTS if p["arm"] == "production")
+    below = [p for p in LADDER_POINTS if p["fma_per_byte"] <= mine]
+    above = [p for p in LADDER_POINTS if p["fma_per_byte"] >= mine]
+    lo = max(above, key=lambda p: -p["fma_per_byte"]) if above else None
+    hi = min(below, key=lambda p: -p["fma_per_byte"]) if below else None
+    lo = min(above, key=lambda p: p["fma_per_byte"]) if above else None
+    hi = max(below, key=lambda p: p["fma_per_byte"]) if below else None
+    body = json.loads((REPO / BODY_REL).read_text())
+    rows = {r["organ"]: float(r["gpu_ms"]) for r in body["organs"]["rows"]}
+    mlp_ms = rows["mlp_gate_up"] + rows["mlp_down"]
+    r_lo = lo["gb_s"] / prod["gb_s"]
+    r_hi = hi["gb_s"] / prod["gb_s"]
+    return {
+        "candidate_fma_per_weight_byte": mine,
+        "bracketed_by": [lo["arm"], hi["arm"]],
+        "speedup_bracket": [round(r_lo, 4), round(r_hi, 4)],
+        "mlp_ms_now": round(mlp_ms, 4),
+        "mlp_ms_bracket": [round(mlp_ms / r_hi, 4), round(mlp_ms / r_lo, 4)],
+        "mlp_ms_saved_bracket": [round(mlp_ms - mlp_ms / r_lo, 4),
+                                 round(mlp_ms - mlp_ms / r_hi, 4)],
+        "not_interpolated_because": (
+            "the ladder's own verdict is that its shape is neither linear nor "
+            "plateau, r^2 0.8712. A point estimate between two measured arms "
+            "would be false precision, so this is a bracket."
+        ),
+        "the_knee": (
+            "k4 at 1.3333 FMA/B gives 439.5 GB/s and k2 at 0.6667 gives 440.6 - "
+            "halving the arithmetic again buys 0.25%. Below about 1.3 FMA/B the "
+            "arithmetic stops being the binding term, and arm_a only pulls "
+            "further ahead by ALSO cutting int and convert ops. So this candidate "
+            "sits just above the knee and would capture most of the FMA-side "
+            "gain that exists."
+        ),
+        "ladder_arms_are_not_bit_identical": (
+            "every k-arm is recorded not-identical, which is consistent with "
+            "this candidate: they change the arithmetic and so does it"
         ),
     }
 
@@ -170,6 +270,7 @@ def build() -> dict[str, Any]:
             "offered_total_cheapening": acc["total_arithmetic_cheapening"],
             "clears": acc["total_arithmetic_cheapening"] >= 1.509,
         },
+        "ladder_bracket": ladder_bracket(),
         "risks": risks(),
         "claim_boundary": (
             "Static sidecar artifact. The incumbent inner loop is READ from "

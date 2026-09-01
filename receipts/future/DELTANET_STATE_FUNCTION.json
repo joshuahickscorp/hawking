@@ -102,7 +102,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T06:44:14Z",
+  "recorded_at": "2026-09-01T05:24:01Z",
   "recorded_by": "tools/future/deltanet_state_function.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1479,7 +1479,7 @@
   "z_binding": "gated RMSNorm only; not gated-delta; not conv"
  },
  "schema": "hawking.future.deltanet_state_function.v1",
- "seal_sha256": "8221806f190eec2a22171a37110b62b6f4bebfa6ab1029540a57420ce4982924",
+ "seal_sha256": "adcf07818ea8405e1a2e61a5bb1ad4239f45e085acdc77c5e1b535196453f970",
  "spectrum": {
   "coefficients": "isotropic Gaussian q,k,v then L2 like the shader; decay U(0.85,0.99); beta U(0.2,0.9). Not post-norm x and not a generate gate.",
   "dim": 128,

@@ -467,6 +467,17 @@ pub fn yarn_rope_table_for_position(
     position: usize,
 ) -> Result<PositionOneRopeTable> {
     verify_layer0_position1_continuation_anchors(reader)?;
+    yarn_rope_table_for_position_verified(position)
+}
+
+/// Derive a bounded static RoPE table after the caller has already verified
+/// the pinned source/tokenizer/config anchors. Keeping this split lets a
+/// resident full-sequence executor validate its exact manifest once at
+/// preparation, then reuse the 128-position control table without reparsing
+/// metadata or repeating trigonometry on every position.
+pub(crate) fn yarn_rope_table_for_position_verified(
+    position: usize,
+) -> Result<PositionOneRopeTable> {
     if position >= WINDOW_SIZE {
         return Err(continuation(format!(
             "RoPE position {position} exceeds the ratio-0 sliding window of {WINDOW_SIZE}"

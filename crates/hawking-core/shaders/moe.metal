@@ -1575,6 +1575,374 @@ kernel void deepseek_v4_p5b_fp4_act_quant_e2m1fn_x2_e8m0_matvec_authority(
 }
 #pragma clang fp contract(on)
 
+// ── DeepSeek-V4 P6A routed FP4 gate/up/SwiGLU fusion candidate ───────────
+//
+// P6A has exactly six independently resident routed experts.  The authority
+// path launches W1, W3, two BF16 casts, and one route-weighted SwiGLU per
+// expert.  These fixed-slot pointer records let one launch process the six
+// pairs while retaining the source association:
+//   FP4 matvec -> FP32-to-BF16 -> clamp/SwiGLU -> route weight -> BF16.
+// The output pointer is part of the record because P6A deliberately keeps
+// one scratch allocation per expert for the later down-projection wave.
+// This is a candidate only; the authority kernels above remain unchanged.
+
+constant constexpr uint DSV4F_P6_GATE_UP_K = 6u;
+
+struct DeepSeekV4P6Fp4GateUpRef {
+    device const uchar* gate_weights;
+    device const uchar* gate_scales;
+    device const uchar* up_weights;
+    device const uchar* up_scales;
+    device       ushort* output_bf16;
+    uint route_slot;
+    uint ready;
+};
+
+static_assert(sizeof(DeepSeekV4P6Fp4GateUpRef) == 48,
+    "DeepSeekV4P6Fp4GateUpRef ABI drift");
+
+static inline float deepseek_v4_p6a_fp4_row(
+    device const uchar* packed_weights,
+    device const uchar* weight_scales,
+    device const uchar* quantized,
+    device const uchar* act_scales,
+    uint row,
+    uint packed_cols,
+    uint scale_cols)
+{
+    constexpr uint kFp4Block = 32u;
+    constexpr uint kActBlock = 128u;
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        float block_accumulator = 0.0f;
+        const uint start = block * kFp4Block;
+        for (uint offset = 0u; offset < kFp4Block; ++offset) {
+            const uint col = start + offset;
+            const uchar packed = packed_weights[weight_base + (ulong)(col >> 1u)];
+            const float activation = deepseek_v4_p5b_e4m3fn_value(quantized[col]);
+            const float weight = deepseek_v4_p5b_e2m1fn_value(
+                packed, (col & 1u) != 0u);
+            block_accumulator = block_accumulator + activation * weight;
+        }
+        const float activation_scale = deepseek_v4_p5b_e8m0fnu_value(
+            act_scales[block / (kActBlock / kFp4Block)]);
+        const float weight_scale = deepseek_v4_p5b_e8m0fnu_value(
+            weight_scales[scale_base + (ulong)block]);
+        row_accumulator = row_accumulator
+            + block_accumulator * (activation_scale * weight_scale);
+    }
+    return row_accumulator;
+}
+
+// One thread owns one (expert, intermediate-row) result.  The grid is
+// top_k * rows and the records are in the P6 execution order (ascending
+// numeric expert ID for hash mode, source top-slot order for learned mode).
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_authority(
+    device const DeepSeekV4P6Fp4GateUpRef* refs [[buffer(0)]],
+    device const uchar* quantized             [[buffer(1)]],
+    device const uchar* act_scales            [[buffer(2)]],
+    device const float* route_weights         [[buffer(3)]],
+    constant uint& rows                        [[buffer(4)]],
+    constant uint& packed_cols                 [[buffer(5)]],
+    constant uint& scale_cols                  [[buffer(6)]],
+    constant uint& top_k                       [[buffer(7)]],
+    uint tid                                   [[thread_position_in_grid]])
+{
+    if (top_k != DSV4F_P6_GATE_UP_K || rows == 0u || packed_cols == 0u
+        || scale_cols == 0u
+        || packed_cols * 2u != scale_cols * 32u) {
+        return;
+    }
+    const uint slot = tid / rows;
+    const uint row = tid % rows;
+    if (slot >= DSV4F_P6_GATE_UP_K) return;
+    const DeepSeekV4P6Fp4GateUpRef ref = refs[slot];
+    if (ref.ready != 1u || ref.route_slot >= DSV4F_P6_GATE_UP_K
+        || ref.gate_weights == nullptr || ref.gate_scales == nullptr
+        || ref.up_weights == nullptr || ref.up_scales == nullptr
+        || ref.output_bf16 == nullptr) {
+        return;
+    }
+    const float gate_f32 = deepseek_v4_p6a_fp4_row(
+        ref.gate_weights, ref.gate_scales, quantized, act_scales,
+        row, packed_cols, scale_cols);
+    const float up_f32 = deepseek_v4_p6a_fp4_row(
+        ref.up_weights, ref.up_scales, quantized, act_scales,
+        row, packed_cols, scale_cols);
+    const float gate = min(deepseek_v4_p5b_bf16_value(
+        deepseek_v4_p5b_bf16_encode_rne(gate_f32)), 10.0f);
+    const float up = clamp(deepseek_v4_p5b_bf16_value(
+        deepseek_v4_p5b_bf16_encode_rne(up_f32)), -10.0f, 10.0f);
+    ref.output_bf16[row] = deepseek_v4_p5b_bf16_encode_rne(
+        deepseek_v4_p5b_silu(gate) * up * route_weights[ref.route_slot]);
+}
+#pragma clang fp contract(on)
+
+// Occupancy sibling: one SIMDgroup owns one row and splits each 32-value
+// FP4 block across its lanes.  It is separately named so a protected run can
+// compare scalar-fused and SIMD-fused arithmetic/occupancy independently.
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_simd_candidate(
+    device const DeepSeekV4P6Fp4GateUpRef* refs [[buffer(0)]],
+    device const uchar* quantized             [[buffer(1)]],
+    device const uchar* act_scales            [[buffer(2)]],
+    device const float* route_weights         [[buffer(3)]],
+    constant uint& rows                        [[buffer(4)]],
+    constant uint& packed_cols                 [[buffer(5)]],
+    constant uint& scale_cols                  [[buffer(6)]],
+    constant uint& top_k                       [[buffer(7)]],
+    uint group_id                              [[threadgroup_position_in_grid]],
+    uint simd_lane                             [[thread_index_in_simdgroup]],
+    uint simd_id                               [[simdgroup_index_in_threadgroup]])
+{
+    if (top_k != DSV4F_P6_GATE_UP_K || rows == 0u || packed_cols == 0u
+        || scale_cols == 0u
+        || packed_cols * 2u != scale_cols * 32u) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint groups_per_slot = (rows + kSimdgroupsPerThreadgroup - 1u)
+        / kSimdgroupsPerThreadgroup;
+    const uint slot = group_id / groups_per_slot;
+    const uint row = (group_id % groups_per_slot)
+        * kSimdgroupsPerThreadgroup + simd_id;
+    if (slot >= DSV4F_P6_GATE_UP_K || row >= rows) return;
+    const DeepSeekV4P6Fp4GateUpRef ref = refs[slot];
+    if (ref.ready != 1u || ref.route_slot >= DSV4F_P6_GATE_UP_K
+        || ref.gate_weights == nullptr || ref.gate_scales == nullptr
+        || ref.up_weights == nullptr || ref.up_scales == nullptr
+        || ref.output_bf16 == nullptr) {
+        return;
+    }
+    const ulong gate_weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong gate_scale_base = (ulong)row * (ulong)scale_cols;
+    const ulong up_weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong up_scale_base = (ulong)row * (ulong)scale_cols;
+    float gate_f32 = 0.0f;
+    float up_f32 = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * 32u + simd_lane;
+        const uchar gate_packed = ref.gate_weights[
+            gate_weight_base + (ulong)(col >> 1u)];
+        const uchar up_packed = ref.up_weights[
+            up_weight_base + (ulong)(col >> 1u)];
+        const float activation = deepseek_v4_p5b_e4m3fn_value(quantized[col]);
+        float gate_block = activation * deepseek_v4_p5b_e2m1fn_value(
+            gate_packed, (col & 1u) != 0u);
+        float up_block = activation * deepseek_v4_p5b_e2m1fn_value(
+            up_packed, (col & 1u) != 0u);
+        gate_block = simd_sum(gate_block);
+        up_block = simd_sum(up_block);
+        if (simd_lane == 0u) {
+            const float activation_scale = deepseek_v4_p5b_e8m0fnu_value(
+                act_scales[block / 4u]);
+            const float gate_scale = deepseek_v4_p5b_e8m0fnu_value(
+                ref.gate_scales[gate_scale_base + (ulong)block]);
+            const float up_scale = deepseek_v4_p5b_e8m0fnu_value(
+                ref.up_scales[up_scale_base + (ulong)block]);
+            gate_f32 = gate_f32 + gate_block * (activation_scale * gate_scale);
+            up_f32 = up_f32 + up_block * (activation_scale * up_scale);
+        }
+    }
+    if (simd_lane == 0u) {
+        const float gate = min(deepseek_v4_p5b_bf16_value(
+            deepseek_v4_p5b_bf16_encode_rne(gate_f32)), 10.0f);
+        const float up = clamp(deepseek_v4_p5b_bf16_value(
+            deepseek_v4_p5b_bf16_encode_rne(up_f32)), -10.0f, 10.0f);
+        ref.output_bf16[row] = deepseek_v4_p5b_bf16_encode_rne(
+            deepseek_v4_p5b_silu(gate) * up * route_weights[ref.route_slot]);
+    }
+}
+#pragma clang fp contract(on)
+
+// Fixed-six routed W2 projection plus FP32-to-BF16 fusion candidate. The
+// preceding QAT wave remains authoritative and writes one quantized input per
+// routed expert. This launch removes only the six routed FP32 output buffers'
+// cast boundaries; it preserves the source-order FP4 accumulation and the
+// existing per-expert BF16 output consumed by the final combine.
+struct DeepSeekV4P6Fp4DownRef {
+    device const uchar* weights;
+    device const uchar* weight_scales;
+    device const uchar* activations;
+    device const uchar* activation_scales;
+    device       ushort* output_bf16;
+    uint ready;
+    uint reserved;
+};
+
+static_assert(sizeof(DeepSeekV4P6Fp4DownRef) == 48,
+    "DeepSeekV4P6Fp4DownRef ABI drift");
+
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_fp4_down_bf16_fused_authority(
+    device const DeepSeekV4P6Fp4DownRef* refs [[buffer(0)]],
+    constant uint& rows                        [[buffer(1)]],
+    constant uint& packed_cols                 [[buffer(2)]],
+    constant uint& scale_cols                  [[buffer(3)]],
+    uint tid                                   [[thread_position_in_grid]])
+{
+    constexpr uint kFixedTopK = 6u;
+    if (rows == 0u || packed_cols == 0u || scale_cols == 0u
+        || packed_cols * 2u != scale_cols * 32u) {
+        return;
+    }
+    const uint slot = tid / rows;
+    const uint row = tid % rows;
+    if (slot >= kFixedTopK) return;
+    const DeepSeekV4P6Fp4DownRef ref = refs[slot];
+    if (ref.ready != 1u || ref.weights == nullptr
+        || ref.weight_scales == nullptr || ref.activations == nullptr
+        || ref.activation_scales == nullptr || ref.output_bf16 == nullptr) {
+        return;
+    }
+    const float value = deepseek_v4_p6a_fp4_row(
+        ref.weights, ref.weight_scales, ref.activations,
+        ref.activation_scales, row, packed_cols, scale_cols);
+    ref.output_bf16[row] = deepseek_v4_p5b_bf16_encode_rne(value);
+}
+#pragma clang fp contract(on)
+
+// Occupancy sibling: one SIMDgroup owns one output row and splits each
+// source 32-value FP4 block across its lanes. The source block order is
+// retained, but the intra-block sum is a separate A/B surface from the
+// scalar authority kernel.
+#pragma clang fp contract(off)
+kernel void deepseek_v4_p6a_fp4_down_bf16_fused_simd_candidate(
+    device const DeepSeekV4P6Fp4DownRef* refs [[buffer(0)]],
+    constant uint& rows                        [[buffer(1)]],
+    constant uint& packed_cols                 [[buffer(2)]],
+    constant uint& scale_cols                  [[buffer(3)]],
+    uint group_id                              [[threadgroup_position_in_grid]],
+    uint simd_lane                             [[thread_index_in_simdgroup]],
+    uint simd_id                               [[simdgroup_index_in_threadgroup]])
+{
+    constexpr uint kFixedTopK = 6u;
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    if (rows == 0u || packed_cols == 0u || scale_cols == 0u
+        || packed_cols * 2u != scale_cols * 32u) {
+        return;
+    }
+    const uint groups_per_slot = (rows + kSimdgroupsPerThreadgroup - 1u)
+        / kSimdgroupsPerThreadgroup;
+    const uint slot = group_id / groups_per_slot;
+    const uint row = (group_id % groups_per_slot)
+        * kSimdgroupsPerThreadgroup + simd_id;
+    if (slot >= kFixedTopK || row >= rows) return;
+    const DeepSeekV4P6Fp4DownRef ref = refs[slot];
+    if (ref.ready != 1u || ref.weights == nullptr
+        || ref.weight_scales == nullptr || ref.activations == nullptr
+        || ref.activation_scales == nullptr || ref.output_bf16 == nullptr) {
+        return;
+    }
+    const ulong weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong scale_base = (ulong)row * (ulong)scale_cols;
+    float row_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * 32u + simd_lane;
+        const uchar packed = ref.weights[
+            weight_base + (ulong)(col >> 1u)];
+        float block_accumulator = deepseek_v4_p5b_e4m3fn_value(
+            ref.activations[col])
+            * deepseek_v4_p5b_e2m1fn_value(packed, (col & 1u) != 0u);
+        block_accumulator = simd_sum(block_accumulator);
+        if (simd_lane == 0u) {
+            const float activation_scale = deepseek_v4_p5b_e8m0fnu_value(
+                ref.activation_scales[block / 4u]);
+            const float weight_scale = deepseek_v4_p5b_e8m0fnu_value(
+                ref.weight_scales[scale_base + (ulong)block]);
+            row_accumulator = row_accumulator
+                + block_accumulator * (activation_scale * weight_scale);
+        }
+    }
+    if (simd_lane == 0u) {
+        ref.output_bf16[row] = deepseek_v4_p5b_bf16_encode_rne(
+            row_accumulator);
+    }
+}
+#pragma clang fp contract(on)
+
+// Full downstream composition candidate: routed FP4 W2 -> BF16 and shared
+// FP8 W2 -> BF16 + fixed-six combine in one dependent launch. The routed
+// records still carry the source-order FP4 inputs, but their intermediate
+// down_bf16 stores are deliberately bypassed here. Each routed row is
+// round-tripped through BF16 before the numeric-order combine, exactly as the
+// two-launch fused-down/shared-combine composition does.
+#pragma clang fp contract(off)
+#pragma clang fp reassociate(off)
+kernel void deepseek_v4_p6a_fp4_down_fp8_shared_combine_bf16_fused_authority(
+    device const DeepSeekV4P6Fp4DownRef* routed_refs [[buffer(0)]],
+    device const uchar* shared_weights              [[buffer(1)]],
+    device const uchar* shared_scales               [[buffer(2)]],
+    device const uchar* shared_quantized            [[buffer(3)]],
+    device const uchar* shared_act_scales           [[buffer(4)]],
+    device       ushort* output_bf16                [[buffer(5)]],
+    constant uint& rows                              [[buffer(6)]],
+    constant uint& routed_packed_cols                [[buffer(7)]],
+    constant uint& routed_scale_cols                 [[buffer(8)]],
+    constant uint& shared_cols                       [[buffer(9)]],
+    constant uint& shared_scale_cols                 [[buffer(10)]],
+    uint row                                         [[thread_position_in_grid]])
+{
+    constexpr uint kFixedTopK = 6u;
+    constexpr uint kFp4Block = 32u;
+    constexpr uint kFp8Block = 128u;
+    if (row >= rows || routed_packed_cols == 0u || routed_scale_cols == 0u
+        || shared_cols == 0u || shared_scale_cols == 0u
+        || routed_packed_cols * 2u != routed_scale_cols * kFp4Block
+        || shared_cols % kFp8Block != 0u
+        || shared_scale_cols != shared_cols / kFp8Block) {
+        return;
+    }
+
+    float value = 0.0f;
+    for (uint slot = 0u; slot < kFixedTopK; ++slot) {
+        const DeepSeekV4P6Fp4DownRef ref = routed_refs[slot];
+        if (ref.ready != 1u || ref.weights == nullptr
+            || ref.weight_scales == nullptr || ref.activations == nullptr
+            || ref.activation_scales == nullptr) {
+            return;
+        }
+        const float routed_f32 = deepseek_v4_p6a_fp4_row(
+            ref.weights, ref.weight_scales, ref.activations,
+            ref.activation_scales, row, routed_packed_cols, routed_scale_cols);
+        const ushort routed_bf16 = deepseek_v4_p5b_bf16_encode_rne(routed_f32);
+        value = value + deepseek_v4_p5b_bf16_value(routed_bf16);
+    }
+
+    const uint shared_scale_row = row / kFp8Block;
+    const ulong shared_row_base = (ulong)row * (ulong)shared_cols;
+    const ulong shared_scale_base =
+        (ulong)shared_scale_row * (ulong)shared_scale_cols;
+    float shared_accumulator = 0.0f;
+    for (uint block = 0u; block < shared_scale_cols; ++block) {
+        float block_accumulator = 0.0f;
+        const uint start = block * kFp8Block;
+        for (uint offset = 0u; offset < kFp8Block; ++offset) {
+            const uint col = start + offset;
+            const float activation = deepseek_v4_p5b_e4m3fn_value(
+                shared_quantized[col]);
+            const float weight = deepseek_v4_p5b_e4m3fn_value(
+                shared_weights[shared_row_base + (ulong)col]);
+            block_accumulator = block_accumulator + activation * weight;
+        }
+        const float activation_scale = deepseek_v4_p5b_e8m0fnu_value(
+            shared_act_scales[block]);
+        const float weight_scale = deepseek_v4_p5b_e8m0fnu_value(
+            shared_scales[shared_scale_base + (ulong)block]);
+        shared_accumulator = shared_accumulator
+            + block_accumulator * (activation_scale * weight_scale);
+    }
+    const ushort shared_bf16 =
+        deepseek_v4_p5b_bf16_encode_rne(shared_accumulator);
+    value = value + deepseek_v4_p5b_bf16_value(shared_bf16);
+    output_bf16[row] = deepseek_v4_p5b_bf16_encode_rne(value);
+}
+#pragma clang fp reassociate(on)
+#pragma clang fp contract(on)
+
 // The source MoE loop adds routed and shared BF16 W2 results in F32 before it
 // casts the combined result back to the current BF16 dtype.  P5B has exactly
 // one routed expert, whose source route weight was already applied before W2.

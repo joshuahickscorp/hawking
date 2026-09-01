@@ -1,0 +1,266 @@
+{
+  "checks": {
+    "A1_direct_resident": true,
+    "A2_hawking_native_backend": true,
+    "A3_provider_abstraction": true,
+    "A4_hcli_plain_cognition": false,
+    "A5_hcli_structured_cognition": false,
+    "A6_full_hcli_task": false
+  },
+  "errors": [
+    {
+      "error": "RuntimePool has no admitted runtimes",
+      "stage": "A4_hcli_plain_cognition",
+      "type": "EngineError"
+    }
+  ],
+  "finished_at": 1787874766.94461,
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "prompt": "Return exactly: HAWKING_OK",
+  "prompt_contract": {
+    "chars": 332,
+    "estimated_tokens": 111,
+    "fallback_template": "qwen_closed_think",
+    "thinking_qualified": true,
+    "token_count_source": "estimated"
+  },
+  "qualification": "LIVE_NATIVE_HCLI_LADDER",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/G065_NATIVE_GATE_FRESH.json",
+  "schema": "hcli.agentos.native_gate.v1",
+  "stages": [
+    {
+      "backend_class": "subprocess-resident",
+      "elapsed_s": 7.271,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "pid": 16452,
+      "ready": {
+        "completion_tokens": null,
+        "error": null,
+        "fallbacks": 0,
+        "finish_reason": null,
+        "generated_tokens": null,
+        "id": null,
+        "new_token_ids_len": null,
+        "prompt_tokens": null,
+        "status": "ready",
+        "text_len": null,
+        "text_preview": null
+      },
+      "request_id": "native-gate-a1",
+      "response": {
+        "completion_tokens": 6,
+        "error": null,
+        "fallbacks": 0,
+        "finish_reason": null,
+        "generated_tokens": 6,
+        "id": "native-gate-a1",
+        "new_token_ids_len": 6,
+        "prompt_tokens": 62,
+        "status": "ok",
+        "text_len": 10,
+        "text_preview": "'HAWKING_OK'"
+      },
+      "stage": "A1_direct_resident",
+      "status": "PASSED"
+    },
+    {
+      "backend_class": "HawkingNativeConnector",
+      "elapsed_s": 6.054,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "pid": 16537,
+      "response": {
+        "completion_tokens": 6,
+        "error": null,
+        "fallbacks": null,
+        "finish_reason": "stop",
+        "generated_tokens": null,
+        "id": "hawking-chat-7fbdfbc1-bd03-4a67-b21f-bad25d7dc544",
+        "new_token_ids_len": null,
+        "prompt_tokens": 62,
+        "status": null,
+        "text_len": 10,
+        "text_preview": "'HAWKING_OK'"
+      },
+      "stage": "A2_hawking_native_backend",
+      "status": "PASSED"
+    },
+    {
+      "backend_class": "NoeticNativeBackend",
+      "completion_result": {
+        "degraded": [],
+        "finish_reason": "stop"
+      },
+      "elapsed_s": 5.997,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "pid": 16635,
+      "response": {
+        "completion_tokens": 6,
+        "error": null,
+        "fallbacks": null,
+        "finish_reason": "stop",
+        "generated_tokens": null,
+        "id": "hawking-chat-62025ba7-9f8d-4609-8c62-7c04c694ae13",
+        "new_token_ids_len": null,
+        "prompt_tokens": 62,
+        "status": null,
+        "text_len": 10,
+        "text_preview": "'HAWKING_OK'"
+      },
+      "stage": "A3_provider_abstraction",
+      "status": "PASSED"
+    },
+    {
+      "elapsed_s": 0.848,
+      "error": "RuntimePool has no admitted runtimes",
+      "error_type": "EngineError",
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "stage": "A4_hcli_plain_cognition",
+      "status": "FAILED"
+    },
+    {
+      "backend_class": "Controller/Engine.execute",
+      "elapsed_s": 0.282,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "receipt": "/Users/scammermike/Downloads/hawking/.hcli/receipts/8ddb963f-3828-4e1a-a2bd-f6c6a97c6639.json",
+      "result": {
+        "content": "",
+        "error": "RuntimePool has no admitted runtimes",
+        "kind": "error",
+        "receipt": "/Users/scammermike/Downloads/hawking/.hcli/receipts/8ddb963f-3828-4e1a-a2bd-f6c6a97c6639.json",
+        "status": "failed"
+      },
+      "stage": "A5_hcli_structured_cognition",
+      "status": "FAILED"
+    },
+    {
+      "backend_class": "hcli-command",
+      "command": [
+        "/Users/scammermike/.local/bin/hcli",
+        "--model",
+        "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+        "--task",
+        "Return exactly: HAWKING_OK"
+      ],
+      "elapsed_s": 0.505,
+      "identity": {
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "family": "qwen3.8",
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "physical_ebpw": 3.1393,
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+      },
+      "returncode": 1,
+      "stage": "A6_full_hcli_task",
+      "status": "FAILED",
+      "stderr": "RuntimePool has no admitted runtimes\n",
+      "stdout": ""
+    }
+  ],
+  "started_at": 1787874745.889763,
+  "status": "FAILED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

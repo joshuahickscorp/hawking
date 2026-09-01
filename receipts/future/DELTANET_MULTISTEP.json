@@ -66,7 +66,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T13:47:42Z",
+  "recorded_at": "2026-09-01T05:23:03Z",
   "recorded_by": "tools/future/deltanet_multistep.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -84,7 +84,7 @@
   "cited_deltanet_ms": 8.227,
   "cited_resident_tps": 34.82,
   "cited_token_bytes": 9878901136,
-  "cited_token_ms": 28.722,
+  "cited_token_ms": 22.9024,
   "mlp_bytes": 5347795776,
   "mlp_ms": 15.541,
   "note": "Cited, not re-measured. Keys are cited_* so this sidecar cannot assert a hardware field (tps, token_ns, ...).",
@@ -530,7 +530,7 @@
      "bandwidth_is_assumption": true,
      "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
      "bandwidth_regime": "production_deltanet",
-     "cited_token_ms": 28.722,
+     "cited_token_ms": 22.9024,
      "dispatch_class": "deltanet_ba",
      "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
      "dispatch_us_nominal": 2.884,
@@ -543,7 +543,7 @@
       0.0,
       0.0
      ],
-     "host_gap_floor_ms": 0.989,
+     "host_gap_floor_ms": 0.956,
      "incremental_byte_rate_gb_s": 344.1,
      "organ_average_gb_s": 360.0,
      "stream_billing_gb_s": 344.1,
@@ -566,7 +566,7 @@
     "extra_flops_per_output_element": 0.0,
     "id": "identity_control",
     "lane_material": {
-     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 22.9024 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
      "clears": true,
      "decisive_falsifier": true,
      "five_percent_bytes": false,
@@ -584,20 +584,20 @@
      0.0
     ],
     "predicted_ms_saved": -0.0,
-    "predicted_token_ms": 28.722,
+    "predicted_token_ms": 22.9024,
     "predicted_token_ms_range": [
-     28.722,
-     28.722
+     22.9024,
+     22.9024
     ],
-    "predicted_tps": 34.816516955643756,
+    "predicted_tps": 43.66354617856644,
     "predicted_tps_range": [
-     34.816516955643756,
-     34.816516955643756
+     43.66354617856644,
+     43.66354617856644
     ],
     "retime_organ": false,
     "s020_section_20": {
      "bar_frac": 0.01,
-     "bar_ms": 0.28722000000000003,
+     "bar_ms": 0.229024,
      "clears_time_bar": false,
      "high_information_falsifier": true,
      "plausible_ms_saved": 0.0,
@@ -1174,7 +1174,7 @@
      "bandwidth_is_assumption": true,
      "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
      "bandwidth_regime": "production_deltanet",
-     "cited_token_ms": 28.722,
+     "cited_token_ms": 22.9024,
      "dispatch_class": "deltanet_ba",
      "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
      "dispatch_us_nominal": 2.884,
@@ -1187,7 +1187,7 @@
       0.0,
       0.0
      ],
-     "host_gap_floor_ms": 0.989,
+     "host_gap_floor_ms": 0.956,
      "incremental_byte_rate_gb_s": 344.1,
      "organ_average_gb_s": 360.0,
      "stream_billing_gb_s": 344.1,
@@ -1211,7 +1211,7 @@
     "extra_flops_per_output_element": 0.0,
     "id": "truncated_state_rank16",
     "lane_material": {
-     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 22.9024 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
      "clears": true,
      "decisive_falsifier": true,
      "five_percent_bytes": false,
@@ -1229,20 +1229,20 @@
      -0.3291028421970357
     ],
     "predicted_ms_saved": 0.3291028421970357,
-    "predicted_token_ms": 28.392897157802967,
+    "predicted_token_ms": 22.573297157802966,
     "predicted_token_ms_range": [
-     28.392897157802967,
-     28.392897157802967
+     22.573297157802966,
+     22.573297157802966
     ],
-    "predicted_tps": 35.220076149403404,
+    "predicted_tps": 44.300130061165106,
     "predicted_tps_range": [
-     35.220076149403404,
-     35.220076149403404
+     44.300130061165106,
+     44.300130061165106
     ],
     "retime_organ": false,
     "s020_section_20": {
      "bar_frac": 0.01,
-     "bar_ms": 0.28722000000000003,
+     "bar_ms": 0.229024,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 0.3291028421970357,
@@ -1834,7 +1834,7 @@
      "bandwidth_is_assumption": true,
      "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
      "bandwidth_regime": "production_deltanet",
-     "cited_token_ms": 28.722,
+     "cited_token_ms": 22.9024,
      "dispatch_class": "deltanet_ba",
      "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
      "dispatch_us_nominal": 2.884,
@@ -1847,7 +1847,7 @@
       0.0,
       0.0
      ],
-     "host_gap_floor_ms": 0.989,
+     "host_gap_floor_ms": 0.956,
      "incremental_byte_rate_gb_s": 344.1,
      "organ_average_gb_s": 360.0,
      "stream_billing_gb_s": 344.1,
@@ -1871,7 +1871,7 @@
     "extra_flops_per_output_element": 0.0,
     "id": "lower_rank_transition_rank8",
     "lane_material": {
-     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+     "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 22.9024 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
      "clears": true,
      "decisive_falsifier": true,
      "five_percent_bytes": false,
@@ -1889,20 +1889,20 @@
      -0.41137994768962505
     ],
     "predicted_ms_saved": 0.41137994768962505,
-    "predicted_token_ms": 28.310620052310377,
+    "predicted_token_ms": 22.491020052310375,
     "predicted_token_ms_range": [
-     28.310620052310377,
-     28.310620052310377
+     22.491020052310375,
+     22.491020052310375
     ],
-    "predicted_tps": 35.322433706936486,
+    "predicted_tps": 44.462189695005655,
     "predicted_tps_range": [
-     35.322433706936486,
-     35.322433706936486
+     44.462189695005655,
+     44.462189695005655
     ],
     "retime_organ": false,
     "s020_section_20": {
      "bar_frac": 0.01,
-     "bar_ms": 0.28722000000000003,
+     "bar_ms": 0.229024,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 0.41137994768962505,
@@ -2161,7 +2161,7 @@
     "bandwidth_is_assumption": true,
     "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
     "bandwidth_regime": "unknown_new_representation",
-    "cited_token_ms": 28.722,
+    "cited_token_ms": 22.9024,
     "dispatch_class": "deltanet_ba",
     "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
     "dispatch_us_nominal": 2.884,
@@ -2174,7 +2174,7 @@
      0.0,
      0.0
     ],
-    "host_gap_floor_ms": 0.989,
+    "host_gap_floor_ms": 0.956,
     "incremental_byte_rate_gb_s": 1827.21,
     "organ_average_gb_s": 360.0,
     "stream_billing_gb_s": 1827.21,
@@ -2198,7 +2198,7 @@
    "extra_flops_per_output_element": 0.0,
    "id": "generated_transition_coefficients",
    "lane_material": {
-    "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 28.722 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
+    "bar": "MATERIAL means >= 1 ms of cited token time, or >= 5% of model bytes, or a reusable family, or a decisive falsifier. Cited token time is 22.9024 ms; 5% of 9878901136 bytes is 493945056. This is not a hardware measurement.",
     "clears": true,
     "decisive_falsifier": true,
     "five_percent_bytes": true,
@@ -2216,20 +2216,20 @@
     -0.6917988413359625
    ],
    "predicted_ms_saved": 1.029768918339983,
-   "predicted_token_ms": 27.69223108166002,
+   "predicted_token_ms": 21.872631081660018,
    "predicted_token_ms_range": [
-    27.668313153835413,
-    28.03020115866404
+    21.848713153835412,
+    22.210601158664037
    ],
-   "predicted_tps": 36.111211012617865,
+   "predicted_tps": 45.719236806334195,
    "predicted_tps_range": [
-    35.67580533366609,
-    36.14242742013273
+    45.02354496649517,
+    45.7692859510335
    ],
    "retime_organ": false,
    "s020_section_20": {
     "bar_frac": 0.01,
-    "bar_ms": 0.28722000000000003,
+    "bar_ms": 0.229024,
     "clears_time_bar": true,
     "high_information_falsifier": true,
     "plausible_ms_saved": 1.0536868461645863,
@@ -2444,7 +2444,7 @@
   "n_judged_on_trajectory": 2
  },
  "schema": "hawking.future.deltanet_multistep.v1",
- "seal_sha256": "d5b0f32f68669e7cb5e6beedeee77d84c7020dc9ed5a2f1d9e72b436d84aae38",
+ "seal_sha256": "5058a77a91457b89c434d4f30fd316f00f4c60ae3967fcbf17caaf14c3f7d225",
  "version": 1,
  "what_this_does_not_prove": [
   "capability or generate identity of any candidate",

@@ -148,12 +148,17 @@ CITATIONS: tuple[dict[str, Any], ...] = (
     {"id": "region_trace_overhead_pct", "expect": 1.8,
      "source": "receipts/future/ORGAN_BANDWIDTH.json",
      "path": ["trace_overhead", "gpu_overhead_pct"]},
-    {"id": "current_body_wall_ms", "expect": 27.2896,
-     "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
-     "path": ["decode_wall_ms_per_token"]},
-    {"id": "current_body_gpu_ms", "expect": 26.5943,
-     "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
-     "path": ["decode_gpu_ms_per_token"]},
+    # G131 promoted three levers to sealed defaults and measured the result in
+    # a protected window. This module was not DRIFTED - its expect matched its
+    # source exactly - it was citing a SUPERSEDED source, which no drift check
+    # can catch. The citation moves; the mechanism that pins expect to source is
+    # unchanged and now pins it to the current body.
+    {"id": "current_body_wall_ms", "expect": 22.9024,
+     "source": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json",
+     "path": ["measured", "wall_ms_per_token"]},
+    {"id": "current_body_gpu_ms", "expect": 21.9464,
+     "source": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json",
+     "path": ["measured", "gpu_ms_per_token"]},
     {"id": "host_gap_worth_tps", "expect": 1.214,
      "source": "receipts/future/WALL_GPU_RECONCILIATION.json",
      "path": ["derived", "tps_gain_from_deleting_all_host_work"]},
@@ -464,7 +469,13 @@ def causal_residual() -> dict[str, Any]:
             "current_body_gpu_ms": float(cited["current_body_gpu_ms"]),
             "current_body_tps": round(1000.0 / float(cited["current_body_wall_ms"]), 3),
             "ms_removed_since": round(wall_ms - float(cited["current_body_wall_ms"]), 4),
-            "measured_by": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+            # Read from the citation, not typed. A hard-coded source string
+            # outlives the citation it describes, and this one did: the numbers
+            # above moved to SEALED_DEFAULT_ABSOLUTE while this line still named
+            # the receipt they had left.
+            "measured_by": next(
+                c["source"] for c in CITATIONS
+                if c["id"] == "current_body_wall_ms"),
             "what_is_still_from_the_old_census": (
                 "the PER-ORGAN ms in ORGANS are from the pre-widen_f4 region trace. "
                 "The new census has eight rows (it separates mlp_gate_up from "
@@ -544,8 +555,15 @@ def record() -> Path:
 
 
 if __name__ == "__main__":
+    # AN UNKNOWN FLAG IS A REFUSAL, NOT A NO-OP. This is the third module found
+    # with the same trap: --build printed a fresh table, exited 0 and wrote
+    # NOTHING, so the terminal showed current numbers while the receipt stayed
+    # stale. A tool that reports success without doing the work is the failure
+    # this campaign keeps finding in its own checks.
+    from _common import require_known_flags
+    require_known_flags(["--build", "--record"])
     d = build()
-    if "--record" in sys.argv:
+    if "--record" in sys.argv or "--build" in sys.argv:
         print(f"wrote {record()}")
     for r in d["ladder"]:
         print(f"  {r['tps']:6.2f} TPS  {r['ms']:7.3f} ms   {r['rung']}")

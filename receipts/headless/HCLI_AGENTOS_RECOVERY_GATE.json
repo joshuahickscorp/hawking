@@ -1,4 +1,12 @@
 {
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "benchmark_rejected": true,
     "malformed_json": true,
@@ -7,6 +15,13 @@
     "recovery": true
   },
   "claim_boundary": "This proves the tested AgentOS control-plane failure paths with a disposable fixture; it is not proof of production resident sovereignty.",
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
   "controls": {
     "benchmark_rejected": {
       "failure_class": "PERMISSION_DENIED",
@@ -42,9 +57,14 @@
       "status": "REJECTED"
     }
   },
+  "direct_observation": "recovery.status='PASSED'; host_started=True; resident_killed=True; host_killed=True; safe_work_unit_verified=True; artifact_persisted=True; control_status={'benchmark_rejected': 'REJECTED', 'malformed_json': 'REJECTED', 'network_unavailable': 'REJECTED', 'nonsense_model': 'REJECTED'}; checks={benchmark_rejected=True, malformed_json=True, network_unavailable=True, nonsense_model=True, recovery=True}; unmet=[]",
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "finished_at": 1787788288.194433,
+  "interpretation": "fixture recovery completed a verified WorkUnit and every negative control rejected",
   "next_action": "run the same gate against each configured production provider and persist its receipts before claiming unattended sovereignty",
   "owned_workspace": true,
+  "probe_kind": "measured_flags",
+  "probe_performed": "disposable fixture: spawn AgentOS host + fixture resident, SIGKILL resident and host, recover_mission + continue_mission; negative controls for malformed JSON, unreachable web.fetch, benchmark.run without confirm, nonsense provider that must not self-certify",
   "qualification": "FIXTURE_PHYSICAL_CONTROL_PLANE_ONLY",
   "receipt_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-recovery-gate-5lkxm_gq/.hcli/receipts/recovery-gate.json",
   "recovery": {

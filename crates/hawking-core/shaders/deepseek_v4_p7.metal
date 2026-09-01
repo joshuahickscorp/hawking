@@ -186,6 +186,231 @@ kernel void deepseek_v4_p7_mhc_ffn_pre_authority(
     }
 }
 
+// Occupancy candidate for the shared mHC-pre ABI used by P4B attention and P7
+// FFN.  Twenty-four SIMD-groups own the twenty-four source control rows; each
+// group stripes the wide dot product across its 32 lanes.  When
+// `replicated_input == 1`, buffer 0 is one embedding row logically replicated
+// across the four HC lanes (P4B attention).  When it is zero, buffer 0 is the
+// full `[4, hidden]` residual state (P7 FFN).  The residual RMS reduction is
+// staged through the threadgroup, and the compact control/Sinkhorn grammar
+// remains source-ordered in SIMD-group 0.  The wide reductions have a
+// different floating-point association from the authority kernels, so this is
+// opt-in only and must be rejected unless its bounded storage/coherence screen
+// and protected latency receipt both pass.
+#pragma clang fp contract(off)
+#pragma clang fp reassociate(off)
+kernel void deepseek_v4_mhc_pre_simdgroup_candidate(
+    device const ushort* residual_hc_bf16 [[buffer(0)]], // [hidden] or [hc_mult, hidden]
+    device const float* hc_fn              [[buffer(1)]], // [mix_width, hc_mult * hidden]
+    device const float* hc_scale           [[buffer(2)]], // [3]
+    device const float* hc_base            [[buffer(3)]], // [mix_width]
+    device       ushort* reduced_bf16      [[buffer(4)]], // [hidden]
+    device       float* flat_rsqrt_out     [[buffer(5)]], // [1]
+    device       float* mixes_out          [[buffer(6)]], // [mix_width]
+    device       float* pre_out            [[buffer(7)]], // [hc_mult]
+    device       float* post_out           [[buffer(8)]], // [hc_mult]
+    device       float* comb_out           [[buffer(9)]], // [hc_mult, hc_mult]
+    constant uint& hidden                   [[buffer(10)]],
+    constant uint& hc_mult                  [[buffer(11)]],
+    constant uint& mix_width                [[buffer(12)]],
+    constant uint& sinkhorn_iters           [[buffer(13)]],
+    constant float& norm_eps                [[buffer(14)]],
+    constant float& hc_eps                  [[buffer(15)]],
+    constant uint& replicated_input         [[buffer(16)]],
+    uint simd_lane                           [[thread_index_in_simdgroup]],
+    uint simd_id                             [[simdgroup_index_in_threadgroup]],
+    uint threads_per_tg                      [[threads_per_threadgroup]])
+{
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kHcMult = 4u;
+    constexpr uint kMixWidth = 24u;
+    constexpr uint kHidden = 4096u;
+    constexpr uint kThreads = kMixWidth * kSimdWidth;
+    threadgroup float mixes[kMixWidth];
+    threadgroup float reciprocal_slot[1];
+    threadgroup float pre_local[kHcMult];
+
+    if (hidden != kHidden || hc_mult != kHcMult || mix_width != kMixWidth
+        || sinkhorn_iters != 20u || !(norm_eps > 0.0f) || !(hc_eps > 0.0f)
+        || replicated_input > 1u || threads_per_tg != kThreads
+        || simd_id >= kMixWidth) {
+        return;
+    }
+
+    // P4B's source authority sees the same embedding row four times; P7's
+    // source authority sees a real four-lane residual.  Only SIMD-group 0
+    // needs to form the RMS reciprocal, while every group participates in the
+    // barriers that publish it.
+    if (simd_id == 0u) {
+        float norm_partial = 0.0f;
+        if (replicated_input == 1u) {
+            for (uint feature = simd_lane; feature < kHidden;
+                 feature += kSimdWidth) {
+                const float value = dsv4f_p7_bf16_value(residual_hc_bf16[feature]);
+                norm_partial = norm_partial + value * value;
+            }
+        } else {
+            for (uint flat_index = simd_lane; flat_index < kHcMult * kHidden;
+                 flat_index += kSimdWidth) {
+                const float value = dsv4f_p7_bf16_value(residual_hc_bf16[flat_index]);
+                norm_partial = norm_partial + value * value;
+            }
+        }
+        norm_partial = simd_sum(norm_partial);
+        if (simd_lane == 0u) {
+            const float mean_square_sum = replicated_input == 1u
+                ? norm_partial * (float)kHcMult
+                : norm_partial;
+            reciprocal_slot[0] = 1.0f
+                / sqrt(mean_square_sum / (float)(kHcMult * kHidden) + norm_eps);
+            flat_rsqrt_out[0] = reciprocal_slot[0];
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float reciprocal = reciprocal_slot[0];
+
+    // One SIMD-group owns one complete source mHC row.  Every lane traverses
+    // its row-major slice with a stride of 32, then the SIMD sum produces the
+    // row's candidate dot product.
+    const uint row = simd_id;
+    float accumulator = 0.0f;
+    const ulong row_base = (ulong)row * (ulong)(kHcMult * kHidden);
+    if (replicated_input == 1u) {
+        for (uint feature = simd_lane; feature < kHidden; feature += kSimdWidth) {
+            const float residual = dsv4f_p7_bf16_value(residual_hc_bf16[feature]);
+            for (uint lane = 0u; lane < kHcMult; ++lane) {
+                const ulong offset = row_base + (ulong)lane * (ulong)kHidden
+                    + (ulong)feature;
+                accumulator = accumulator + hc_fn[offset] * residual;
+            }
+        }
+    } else {
+        for (uint flat_index = simd_lane; flat_index < kHcMult * kHidden;
+             flat_index += kSimdWidth) {
+            const float fn = hc_fn[row_base + (ulong)flat_index];
+            const float residual = dsv4f_p7_bf16_value(residual_hc_bf16[flat_index]);
+            accumulator = accumulator + fn * residual;
+        }
+    }
+    accumulator = simd_sum(accumulator) * reciprocal;
+    if (simd_lane == 0u) {
+        mixes[row] = accumulator;
+        mixes_out[row] = accumulator;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Keep the small nonlinear control domain in one source-ordered lane.
+    // This makes any candidate divergence attributable to the wide reductions
+    // above rather than to a second change in Sinkhorn/exp evaluation.
+    if (simd_id == 0u && simd_lane == 0u) {
+        float pre[kHcMult];
+        float post[kHcMult];
+        float comb[kHcMult * kHcMult];
+        for (uint lane = 0u; lane < kHcMult; ++lane) {
+            const float pre_value = mixes[lane] * hc_scale[0] + hc_base[lane];
+            pre[lane] = 1.0f
+                / (1.0f + deepseek_v4_mhc_control_expf(-pre_value)) + hc_eps;
+            const float post_value = mixes[lane + kHcMult] * hc_scale[1]
+                + hc_base[lane + kHcMult];
+            post[lane] = 2.0f
+                * (1.0f / (1.0f + deepseek_v4_mhc_control_expf(-post_value)));
+            pre_local[lane] = pre[lane];
+            pre_out[lane] = pre[lane];
+            post_out[lane] = post[lane];
+        }
+        for (uint row_index = 0u; row_index < kHcMult; ++row_index) {
+            for (uint column = 0u; column < kHcMult; ++column) {
+                const uint index = row_index * kHcMult + column;
+                const uint source_index = index + kHcMult * 2u;
+                comb[index] = mixes[source_index] * hc_scale[2]
+                    + hc_base[source_index];
+            }
+        }
+
+        // Initial source `softmax(-1) + eps` row pass.
+        for (uint row_index = 0u; row_index < kHcMult; ++row_index) {
+            const uint start = row_index * kHcMult;
+            float row_max = comb[start];
+            for (uint column = 1u; column < kHcMult; ++column) {
+                row_max = max(row_max, comb[start + column]);
+            }
+            float row_sum = 0.0f;
+            for (uint column = 0u; column < kHcMult; ++column) {
+                const uint index = start + column;
+                comb[index] = deepseek_v4_mhc_control_expf(comb[index] - row_max);
+                row_sum = row_sum + comb[index];
+            }
+            for (uint column = 0u; column < kHcMult; ++column) {
+                const uint index = start + column;
+                comb[index] = comb[index] / row_sum + hc_eps;
+            }
+        }
+
+        // The initial pass already did the row normalization.  Match the
+        // authority's first column pass and 19 remaining row/column passes.
+        for (uint column = 0u; column < kHcMult; ++column) {
+            float column_sum = 0.0f;
+            for (uint row_index = 0u; row_index < kHcMult; ++row_index) {
+                column_sum = column_sum + comb[row_index * kHcMult + column];
+            }
+            for (uint row_index = 0u; row_index < kHcMult; ++row_index) {
+                const uint index = row_index * kHcMult + column;
+                comb[index] = comb[index] / (column_sum + hc_eps);
+            }
+        }
+        for (uint iteration = 1u; iteration < sinkhorn_iters; ++iteration) {
+            for (uint row_index = 0u; row_index < kHcMult; ++row_index) {
+                const uint start = row_index * kHcMult;
+                float row_sum = 0.0f;
+                for (uint column = 0u; column < kHcMult; ++column) {
+                    row_sum = row_sum + comb[start + column];
+                }
+                for (uint column = 0u; column < kHcMult; ++column) {
+                    const uint index = start + column;
+                    comb[index] = comb[index] / (row_sum + hc_eps);
+                }
+            }
+            for (uint column = 0u; column < kHcMult; ++column) {
+                float column_sum = 0.0f;
+                for (uint row_index = 0u; row_index < kHcMult; ++row_index) {
+                    column_sum = column_sum + comb[row_index * kHcMult + column];
+                }
+                for (uint row_index = 0u; row_index < kHcMult; ++row_index) {
+                    const uint index = row_index * kHcMult + column;
+                    comb[index] = comb[index] / (column_sum + hc_eps);
+                }
+            }
+        }
+        for (uint index = 0u; index < kHcMult * kHcMult; ++index) {
+            comb_out[index] = comb[index];
+        }
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // SIMD-group 0 performs the final four-lane reduction over hidden
+    // features.  Other groups have already contributed their mHC rows and
+    // exit after the shared control barrier.
+    if (simd_id == 0u) {
+        for (uint feature = simd_lane; feature < kHidden; feature += kSimdWidth) {
+            float reduced = 0.0f;
+            if (replicated_input == 1u) {
+                const float value = dsv4f_p7_bf16_value(residual_hc_bf16[feature]);
+                for (uint lane = 0u; lane < kHcMult; ++lane) {
+                    reduced = reduced + pre_local[lane] * value;
+                }
+            } else {
+                for (uint lane = 0u; lane < kHcMult; ++lane) {
+                    reduced = reduced + pre_local[lane]
+                        * dsv4f_p7_bf16_value(
+                            residual_hc_bf16[(ulong)lane * (ulong)kHidden
+                                + (ulong)feature]);
+                }
+            }
+            reduced_bf16[feature] = dsv4f_p7_bf16_encode_rne(reduced);
+        }
+    }
+}
+
 // Source `RMSNorm.forward` at the P7 pre->P6 boundary.  It consumes the
 // device-produced reduced BF16 row and source BF16 FFn norm weight, retains
 // FP32 sum-square/product ordering, then writes the one BF16 P6 input row.
@@ -233,6 +458,38 @@ kernel void deepseek_v4_p7_mhc_ffn_post_authority(
     const uint output_lane = index / hidden;
     const uint feature = index - output_lane * hidden;
     float value = post[output_lane] * dsv4f_p7_bf16_value(moe_output_bf16[feature]);
+    for (uint source_lane = 0u; source_lane < hc_mult; ++source_lane) {
+        value = value + comb[source_lane * hc_mult + output_lane]
+            * dsv4f_p7_bf16_value(
+                attention_hc_post_bf16[(ulong)source_lane * (ulong)hidden + (ulong)feature]);
+    }
+    child_hc_state_bf16[index] = dsv4f_p7_bf16_encode_rne(value);
+}
+
+// Attention's W2 projection already produces FP32.  When the device-mHC
+// path consumes that result immediately, perform the required source BF16
+// round-trip in registers and feed the decoded value to the same HC-post
+// grammar.  This removes the standalone FP32->BF16 dispatch and its
+// HIDDEN_SIZE BF16 intermediate without changing the value seen by post.
+kernel void deepseek_v4_p7_mhc_ffn_post_from_f32_authority(
+    device const float* attention_output_f32 [[buffer(0)]], // [hidden]
+    device const ushort* attention_hc_post_bf16 [[buffer(1)]], // [hc_mult, hidden]
+    device const float* post                    [[buffer(2)]], // [hc_mult]
+    device const float* comb                    [[buffer(3)]], // [hc_mult, hc_mult]
+    device       ushort* child_hc_state_bf16    [[buffer(4)]], // [hc_mult, hidden]
+    constant uint& hidden                        [[buffer(5)]],
+    constant uint& hc_mult                       [[buffer(6)]],
+    uint index                                  [[thread_position_in_grid]])
+{
+    constexpr uint kHidden = 4096u;
+    if (hidden != kHidden || hc_mult != 4u) return;
+    const uint count = hidden * hc_mult;
+    if (index >= count) return;
+    const uint output_lane = index / hidden;
+    const uint feature = index - output_lane * hidden;
+    const float source = dsv4f_p7_bf16_value(
+        dsv4f_p7_bf16_encode_rne(attention_output_f32[feature]));
+    float value = post[output_lane] * source;
     for (uint source_lane = 0u; source_lane < hc_mult; ++source_lane) {
         value = value + comb[source_lane * hc_mult + output_lane]
             * dsv4f_p7_bf16_value(

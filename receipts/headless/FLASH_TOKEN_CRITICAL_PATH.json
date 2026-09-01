@@ -1,0 +1,72 @@
+{
+  "accepted_tokens": null,
+  "bench": {
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy",
+    "quiescence": null,
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "state": "UNKNOWN"
+  },
+  "blockers": [
+    "source router/top-k parity is not exact",
+    "source BF16 activation/output parity for Q4/G64 bodies is unqualified",
+    "attention and recurrent state organs are not in the candidate graph",
+    "complete token runtime, accepted-token accounting, TPS, and EBPW are unmeasured"
+  ],
+  "candidate_graph": {
+    "dispatches_per_graph": 33,
+    "physical_graph_fingerprint": "3ba3809684a0016f2b3a656b0cdb821c4866c778257593166e4ac33e4816fb23",
+    "qualification": "EXACT_QWEN38_FLASH_NEXT_HYPERCONNECTION_READ_WRITE_AROUND_LAYER0_ROUTED_SHARED_MOE_CANDIDATE",
+    "stages": [
+      "hc_norm",
+      "input_mix_down",
+      "read_silu_scaled",
+      "input_mix_up",
+      "read_mix",
+      "shared_gate_up_swiglu",
+      "shared_down",
+      "shared_scalar_gate",
+      "shared_block_output",
+      "routed_expert_29_gate_up_swiglu",
+      "routed_expert_29_down",
+      "routed_expert_309_gate_up_swiglu",
+      "routed_expert_309_down",
+      "routed_expert_455_gate_up_swiglu",
+      "routed_expert_455_down",
+      "routed_expert_374_gate_up_swiglu",
+      "routed_expert_374_down",
+      "routed_expert_151_gate_up_swiglu",
+      "routed_expert_151_down",
+      "routed_expert_93_gate_up_swiglu",
+      "routed_expert_93_down",
+      "routed_expert_0_gate_up_swiglu",
+      "routed_expert_0_down",
+      "routed_expert_500_gate_up_swiglu",
+      "routed_expert_500_down",
+      "routed_expert_149_gate_up_swiglu",
+      "routed_expert_149_down",
+      "routed_expert_220_gate_up_swiglu",
+      "routed_expert_220_down",
+      "routed_weighted_sum",
+      "moe_add_shared",
+      "block_inject",
+      "combine"
+    ]
+  },
+  "claim_boundary": "This is a critical-path gate, not a token-performance result. Complete-token fields remain null until protected native execution exists.",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": null,
+  "complete_wall_ns_per_accepted_token": null,
+  "flash_tps": null,
+  "promotion_allowed": false,
+  "schema": "hcli.agentos.flash_token_critical_path.v1",
+  "source_receipt": {
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json",
+    "schema": "hawking.flash_noetic_exact_hyperconnection_native.v1",
+    "sha256": "4f6ba5f25248ed8f4553a909585a077a7212cf3d62383e1042449cd39dc1060f",
+    "status": "PASSED"
+  },
+  "status": "WAITING_FOR_COMPLETE_TOKEN"
+}

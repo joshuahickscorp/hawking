@@ -1,0 +1,56 @@
+{
+  "schema": "hawking.flash.route_stability_audit.v1",
+  "status": "ROUTE_UNSAFE_FOR_COMPACT_REUSE",
+  "source_receipt": "receipts/headless/FLASH_STATEFUL_ATTENTION_REUSE.json",
+  "source_receipt_sha256": "05ad5b2c4a0e5a33cbdd56f7035859d3ef89a83bccc39d7f0adfb2546c16fb65",
+  "layers": [
+    {
+      "layer": 3,
+      "initial_loaded_experts": [
+        45,
+        248,
+        275,
+        317,
+        339,
+        412,
+        419,
+        434,
+        437,
+        467
+      ],
+      "compact_experts": 10,
+      "dense_experts": 512,
+      "compact_bank_fraction": 0.01953125,
+      "later_steps": [
+        {
+          "step": 1,
+          "token_id": 799,
+          "missing_experts": [
+            77,
+            300,
+            302,
+            326,
+            471
+          ]
+        }
+      ],
+      "route_stable": false
+    }
+  ],
+  "summary": {
+    "layers_audited": 1,
+    "steps_audited": 2,
+    "unmapped_route_count": 5,
+    "compact_reuse_allowed": false
+  },
+  "claim_boundary": "Later token router selections escape the first-token compact bank. Compact reuse would omit required expert payloads and is not exact; use a route union or dense fallback.",
+  "next": "Build a route-union compact loader across a verified token window; retain dense execution until union parity is proven.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T01:03:48.398780Z",
+    "recorded_by": "tools/flash_route_stability.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "route safety evidence only; no TPS or residency claim"
+  },
+  "seal_sha256": "fed96bc0f06f472f539db3f797398c5c9c678307289bc1857f51196003e716f1"
+}

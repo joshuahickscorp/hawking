@@ -1,0 +1,51 @@
+{
+  "checksum_sha256": "0a03d3ff73dd1de246eeb0aebdfc8b223b848e4cbe227d2f5b71110981f7003b",
+  "cursor": {},
+  "dispatched": {},
+  "expectations": {
+    "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+      "verifier": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.verifier"
+    },
+    "WU.TRIAL.NEGATIVE_SCIENCE.negative_index": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.NEGATIVE_SCIENCE.negative_index.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+      "verifier": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index.verifier"
+    }
+  },
+  "graph": {
+    "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.TRIAL.NEGATIVE_SCIENCE.negative_index": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    }
+  },
+  "schema": "hawking.future.wakeup.ledger.v1",
+  "version": 1
+}

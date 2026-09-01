@@ -754,5 +754,58 @@
     "source_sha256": "fbb11476dff889029d52451f95f538b7a7c39910d689d29e7b4e9a72a00b6746"
   },
   "started_at": 1787807703.1940072,
-  "status": "PASSED"
+  "status": "PASSED",
+  "bench": {
+    "state": "CONTENDED",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": {
+      "contenders": [
+        {
+          "comm": "/System/Library/Frameworks/CoreServices.framework/Versions/A/Frameworks/Metadata.framework/Versions/A/Support/mds_stores",
+          "cpu_pct": 95.4,
+          "pid": 292,
+          "rss_gib": 0.28
+        },
+        {
+          "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+          "cpu_pct": 42.7,
+          "pid": 180,
+          "rss_gib": 0.21
+        },
+        {
+          "comm": "/usr/libexec/avconferenced",
+          "cpu_pct": 67.8,
+          "pid": 739,
+          "rss_gib": 0.12
+        },
+        {
+          "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+          "cpu_pct": 117.4,
+          "pid": 59666,
+          "rss_gib": 0.04
+        },
+        {
+          "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+          "cpu_pct": 94.8,
+          "pid": 59677,
+          "rss_gib": 0.03
+        }
+      ],
+      "max_rss_gib": 0.28,
+      "method": "enumerate",
+      "n_contenders": 5,
+      "no_name_filter": true,
+      "quiet": false,
+      "rss_is_the_gate_not_cpu": "Metal working set is this machine's admission gate (2026-08-22), so a large-RSS neighbour contends with a resident model in the dimension that decides; CPU is reported because it is real, not because it is equally predictive.",
+      "thresholds": {
+        "cpu_pct": 20.0,
+        "rss_gib": 2.0
+      },
+      "total_cpu_pct": 418.1
+    },
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "DERIVED from a quiescence sample this receipt already carried"
+  }
 }

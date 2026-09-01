@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T00:11:44Z",
+  "recorded_at": "2026-09-01T05:41:59Z",
   "recorded_by": "tools/future/resident_provider.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -139,6 +139,17 @@
      "observed_thinking": "no_think_tag",
      "quality": "CLEAN",
      "raw_text": "\n\nParis",
+     "salvage": {
+      "clean_prefix_hash": "5dd272b4f316b776",
+      "degeneration_class": "none",
+      "degeneration_start": null,
+      "full_chars": 5,
+      "full_reply_hash": "5dd272b4f316b776",
+      "salvage_fraction": 1.0,
+      "salvaged": false,
+      "salvaged_chars": 5
+     },
+     "salvaged_text": "Paris",
      "stopped_at": "eos_token_id",
      "text": "Paris"
     },
@@ -156,15 +167,30 @@
      "identity": "sealed-3.14",
      "in_flight": null,
      "model_open_count": 1,
-     "pid": 97905,
+     "pid": 79441,
      "presence": "ABSENT",
      "queue_depth": 0,
      "ready": false,
      "reason": "resident pid is not alive",
+     "reasoning_quality": {
+      "clean_rate": null,
+      "counts": {
+       "clean": 0,
+       "degenerate": 0,
+       "replies": 0,
+       "salvaged": 0,
+       "truncated": 0
+      },
+      "degeneration_rate": null,
+      "not_measured_here": "valid STRUCTURED reply rate, arithmetic correction rate, useful hypothesis rate and repeated-ask rate are properties of the CALLER's schema and mission, not of the provider. resident_output_contract.admit and the sovereign log carry those; inventing them here would double-count.",
+      "replies": 0,
+      "salvage_rate": null,
+      "truncated_rate": null
+     },
      "requests_served": 0,
      "rss_bytes": null,
      "sessions": 0,
-     "start_token": "1788135104.547231",
+     "start_token": "1788241319.436595",
      "waiters": 0,
      "weight_upload_count": 1
     },
@@ -192,6 +218,8 @@
       "pid",
       "quality",
       "raw_text",
+      "salvage",
+      "salvaged_text",
       "session",
       "status",
       "stopped_at",
@@ -251,15 +279,15 @@
    },
    "restart_reaches_ready_and_serves": {
     "detail": {
-     "new": 97886,
-     "old": 97885,
+     "new": 79438,
+     "old": 79437,
      "text": "ok"
     },
     "fires": true
    },
    "reuse_same_pid": {
     "detail": {
-     "pid": 97885,
+     "pid": 79437,
      "served": 2
     },
     "fires": true
@@ -301,13 +329,13 @@
    "start_reaches_ready": {
     "detail": {
      "open": 1,
-     "pid": 97885
+     "pid": 79437
     },
     "fires": true
    },
    "stop_kills": {
     "detail": {
-     "pid": 97886
+     "pid": 79438
     },
     "fires": true
    },
@@ -349,20 +377,20 @@
      "concatenated": false,
      "generation": 1,
      "n": 2,
-     "pid": 97885,
+     "pid": 79437,
      "same_process": true,
      "second_model_body": false,
      "sessions": [
       {
        "id": "s1",
-       "last_request_id": "ba294d619c4a4b6396d1f8605f5f60b1",
+       "last_request_id": "4b35ad3132a645228c4cf3164bdaf417",
        "n_turns": 2,
        "process_generation": 1,
        "templated": true
       },
       {
        "id": "s2",
-       "last_request_id": "0768c93288fd4044ae1b6993a6e1e97f",
+       "last_request_id": "3ef407e1c9ea4f6fb42c4d90fa2b2244",
        "n_turns": 1,
        "process_generation": 1,
        "templated": true
@@ -389,6 +417,21 @@
      "queue_depth": 0,
      "ready": false,
      "reason": "no resident pid; will not invent one from the largest RSS neighbour",
+     "reasoning_quality": {
+      "clean_rate": null,
+      "counts": {
+       "clean": 0,
+       "degenerate": 0,
+       "replies": 0,
+       "salvaged": 0,
+       "truncated": 0
+      },
+      "degeneration_rate": null,
+      "not_measured_here": "valid STRUCTURED reply rate, arithmetic correction rate, useful hypothesis rate and repeated-ask rate are properties of the CALLER's schema and mission, not of the provider. resident_output_contract.admit and the sovereign log carry those; inventing them here would double-count.",
+      "replies": 0,
+      "salvage_rate": null,
+      "truncated_rate": null
+     },
      "requests_served": 0,
      "rss_bytes": null,
      "sessions": 0,
@@ -449,7 +492,7 @@
   "workunit": "one CPU_ANALYSIS unit; protocol-double start/templated-ask/stop+quality/sessions/health/stop/restart; does not take a GPU lease"
  },
  "schema": "hawking.future.resident_provider.v1",
- "seal_sha256": "317cb93aeb0c64f47ac76c418a18ce358e45f424dc9e7d8de2f62d0cc2a5f2c6",
+ "seal_sha256": "ad57c39b1c5628fed49821b467b24a6619339fbeaa76df73eb478c7046c9d8a3",
  "started_model_process": false,
  "started_protocol_double": true,
  "started_sealed_resident": false,

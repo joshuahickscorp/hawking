@@ -8,32 +8,32 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:34:12Z",
+  "recorded_at": "2026-09-01T05:58:04Z",
   "recorded_by": "tools/future/static_kernel_verify.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "blocking_defect_count": 0,
+ "blocking_defect_count": 2,
  "branch": "odyssey-i",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "ERROR": 0,
-  "INFO_pass_like": 871,
+  "ERROR": 2,
+  "INFO_pass_like": 867,
   "UNVERIFIABLE": 533,
   "WARNING": 76
  },
  "coverage": {
-  "binding_pairs_with_matching_index_sets": 753,
-  "dispatches_resolved": 780,
-  "dispatches_unverifiable_name": 91,
+  "binding_pairs_with_matching_index_sets": 749,
+  "dispatches_resolved": 778,
+  "dispatches_unverifiable_name": 93,
   "honesty": "PASS-like INFO is only recorded when the checker followed both sides to a concrete index or layout. A bind it could not follow is UNVERIFIABLE, never PASS. Matching indices are not a speed claim.",
   "host_dispatches": 871,
   "host_files_with_dispatch": 66,
   "metal_files": 45,
   "metal_generated_kernels": 19,
-  "metal_kernels": 791,
-  "metal_source_kernels": 772,
-  "referenced_kernel_names": 776,
+  "metal_kernels": 785,
+  "metal_source_kernels": 766,
+  "referenced_kernel_names": 772,
   "shaders_not_in_metalcontext_library": [
    "affine2_group32_matvec.metal",
    "bandwidth_roof.metal",
@@ -47,7 +47,7 @@
    "shared_basis_kernel.metal"
   ],
   "structs_paired": 43,
-  "threadgroup_triples_resolved": 462,
+  "threadgroup_triples_resolved": 460,
   "unreferenced_kernel_names": 15
  },
  "decode_family_named_kernels": [
@@ -84,6 +84,32 @@
  "does_not_substitute_for_protected_measurement": true,
  "evidence_class": "STATIC_ONLY",
  "findings": [
+  {
+   "check": "kernel_existence",
+   "extra": {
+    "host_sites": [
+     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333"
+    ]
+   },
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333",
+   "kernel": "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
+   "message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+   "severity": "ERROR",
+   "shader": null
+  },
+  {
+   "check": "kernel_existence",
+   "extra": {
+    "host_sites": [
+     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277"
+    ]
+   },
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277",
+   "kernel": "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
+   "message": "host references kernel 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128(`",
+   "severity": "ERROR",
+   "shader": null
+  },
   {
    "check": "dispatch_geometry",
    "host": "crates/hawking-core/examples/ascension_qwen80_all_ten_true_moe_graph_device.rs:427",
@@ -656,7 +682,7 @@
   },
   {
    "check": "dispatch_geometry",
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:5470",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:5650",
    "kernel": "qwen80_ba_to_decay_beta_f32",
    "message": "threadgroup product 16 is not a multiple of simdgroup width 32",
    "severity": "WARNING",
@@ -686,7 +712,7 @@
      4
     ]
    },
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6126",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6296",
    "kernel": "qwen80_residual_rmsnorm_f32",
    "message": "host binds buffers [0, 1, 2, 3, 4, 5] but shader declares [0, 1, 2, 3, 4]",
    "severity": "WARNING",
@@ -716,7 +742,7 @@
      4
     ]
    },
-   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6126",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:6296",
    "kernel": "qwen80_residual_rmsnorm_tg",
    "message": "host binds buffers [0, 1, 2, 3, 4, 5] but shader declares [0, 1, 2, 3, 4]",
    "severity": "WARNING",
@@ -925,7 +951,7 @@
       "kernel": "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
       "message": "one or more host binds use a non-literal index or a helper this checker cannot follow; not scored as PASS",
       "severity": "UNVERIFIABLE",
-      "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal:182"
+      "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal:215"
      },
      {
       "check": "binding_index",
@@ -986,7 +1012,7 @@
   {
    "check": "dispatch_geometry",
    "extra": {
-    "count": 366,
+    "count": 364,
     "sample": [
      {
       "check": "dispatch_geometry",
@@ -1058,7 +1084,7 @@
       "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
       "message": "threadgroup size is not a literal/const triple; coverage of the problem size is not scored as PASS",
       "severity": "UNVERIFIABLE",
-      "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal:1713"
+      "shader": "crates/hawking-core/shaders/qwen_uniform_q4.metal:1749"
      },
      {
       "check": "dispatch_geometry",
@@ -1136,7 +1162,7 @@
    },
    "host": null,
    "kernel": null,
-   "message": "366 UNVERIFIABLE site(s) for dispatch_geometry (sample of 12)",
+   "message": "364 UNVERIFIABLE site(s) for dispatch_geometry (sample of 12)",
    "severity": "UNVERIFIABLE",
    "shader": null
   },
@@ -1168,7 +1194,7 @@
   {
    "check": "kernel_name",
    "extra": {
-    "count": 91,
+    "count": 93,
     "sample": [
      {
       "check": "kernel_name",
@@ -1318,7 +1344,7 @@
    },
    "host": null,
    "kernel": null,
-   "message": "91 UNVERIFIABLE site(s) for kernel_name (sample of 12)",
+   "message": "93 UNVERIFIABLE site(s) for kernel_name (sample of 12)",
    "severity": "UNVERIFIABLE",
    "shader": null
   },
@@ -1837,7 +1863,7 @@
    "extra": {
     "feature_gate": 19,
     "host_shader_abi": 118,
-    "type_width": 753
+    "type_width": 749
    },
    "host": null,
    "kernel": null,
@@ -1974,7 +2000,7 @@
    "verification": "NAME_RECOVERED_FROM_MACRO; body binding and PSO geometry remain compiler/runtime checks"
   }
  },
- "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "library_membership_files": [
   [
    "attn.metal",
@@ -2155,8 +2181,8 @@
   "metal_mod_trace_name_tests": "crates/hawking-core/src/metal/mod.rs \u2014 static_kernel_name plus per-family `SHADER_X.contains(kernel void {name}()` tests. Compile/trace-name contract, not host bind vs [[buffer(N)]]."
  },
  "schema": "hawking.future.static_kernel_verify.v1",
- "seal_sha256": "c9ba9b0a97ad9254ef54c0910d5f676abb073834a8c569c5126e5b3138e8504d",
+ "seal_sha256": "b1cd2e78048d0c4ed14049e8b8688abda95dcbec1e8b9c28c02e55dcf1ee9201",
  "static_correctness_does_not_prove_speed": "Static correctness does NOT prove speed and does NOT substitute for a protected measurement. A finding of no static ERROR is not a tps number, not a token_ns, not a complete-token, and not PROTECTED_ABSOLUTE. This tool exists to stop wasting a protected GPU window on a defect that was detectable from the .metal sources and their Rust hosts. It produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. Everything here is STATIC_ONLY with bench state UNKNOWN.",
  "version": 1,
- "would_waste_a_protected_window": false
+ "would_waste_a_protected_window": true
 }

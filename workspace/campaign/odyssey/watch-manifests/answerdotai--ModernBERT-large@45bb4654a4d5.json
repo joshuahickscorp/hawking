@@ -1,0 +1,25 @@
+{
+  "expected": 1585710451,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "model.safetensors",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "answerdotai/ModernBERT-large",
+  "resolved_sha": "45bb4654a4d5aaff24dd11d4781fa46d39bf8c13",
+  "revision": "45bb4654a4d5aaff24dd11d4781fa46d39bf8c13",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 8427,
+    "config.json": 1194,
+    "model.safetensors": 1583544840,
+    "special_tokens_map.json": 694,
+    "tokenizer.json": 2132967,
+    "tokenizer_config.json": 20810
+  }
+}

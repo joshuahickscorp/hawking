@@ -1,0 +1,94 @@
+{
+  "claim_boundary": "device-resident protected-shaped continuation; deep per-layer parity, complete token, and resident promotion remain open",
+  "compact_experts": true,
+  "deep_verification": "all linear-group layers deep-verified with diagnostic reads; activation handoff remains device-resident",
+  "deep_verification_enabled": true,
+  "device_resident": true,
+  "elapsed_wall_ns": 3674907000,
+  "end_layer": 0,
+  "groups": [
+    {
+      "checkpoint": "one group checkpoint",
+      "end_layer": 0,
+      "group_wall_ns": 3674894542,
+      "kind": "linear_attention",
+      "layers": [
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 88138292,
+          "device_prepare_ns": 16915042,
+          "dispatches": 20,
+          "final_state": {
+            "cosine": 0.9999999999998211,
+            "finite": true,
+            "length_match": true,
+            "max_abs_error": 8.940696716308594e-8,
+            "rmse": 9.84960417802271e-9,
+            "within_tolerance": true
+          },
+          "gpu_ns": [
+            28345500
+          ],
+          "graph_setup_ns": 360250,
+          "host_ns": [
+            40238458
+          ],
+          "layer": 0,
+          "layer_type": "linear_attention",
+          "output_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+          "route_ids_expected": [
+            411,
+            334,
+            286,
+            152,
+            291,
+            106,
+            421,
+            304,
+            226,
+            331
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [
+            411,
+            334,
+            286,
+            152,
+            291,
+            106,
+            421,
+            304,
+            226,
+            331
+          ],
+          "route_weights": {
+            "cosine": 0.9999999999999236,
+            "finite": true,
+            "length_match": true,
+            "max_abs_error": 8.940696716308594e-8,
+            "rmse": 4.703317315008232e-8,
+            "within_tolerance": true
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 3095843875,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 0,
+          "status": "PASSED",
+          "warmup_ns": 0
+        }
+      ],
+      "receipt": "receipts/headless/FLASH_FAST_TIMING_LINEAR_L0_V1/group-0-0/receipt.json",
+      "start_layer": 0,
+      "state": "receipts/headless/FLASH_FAST_TIMING_LINEAR_L0_V1/group-0-0/state.f32"
+    }
+  ],
+  "metal_context": "cached in linear executor thread-local resource cache",
+  "process_boundary": "single_os_process",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_fast_chain.v1",
+  "source_index": "cached in linear executor thread-local resource cache",
+  "start_layer": 0,
+  "state_handoff": "device final-state blit between structural groups; diagnostic host snapshots enabled, not required for activation",
+  "status": "PASSED",
+  "terminal_receipt": null
+}

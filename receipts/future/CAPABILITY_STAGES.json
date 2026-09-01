@@ -1,0 +1,436 @@
+{
+ "answer": "The judge cost of the four cheap stages is MEASURED wall_seconds on a caller-supplied fixture in this process. Evidence-production cost (hidden replay, logits, generate, live mission) is UNMEASURED because this sidecar does not spawn the resident. EXPENSIVE_QUALIFICATION is UNMEASURED: qualification_pipeline.execute always refuses and the skip is not a pass.",
+ "bars_reused": {
+  "hidden_cosine_bar": 0.99,
+  "local_level": "LOCAL_FUNCTIONAL_FIDELITY",
+  "logit_kl_bar": 0.1,
+  "top_k": 5,
+  "top_k_agree_bar": 0.8
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T05:19:25Z",
+  "recorded_by": "tools/future/capability_stages.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "caller_supplies_component": true,
+ "chooses_component": false,
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate. A stage PASS is only the measurement that stage names. Hidden-state cosine is not capability (functional_role_probe / S031 \u00a79). Next-token argmax is not capability (meta_funnel logit_token_validation). A SKIPPED stage is not a pass. This sidecar never chooses the component under test; a missing component.id is a refusal. Wall seconds in the receipt are judge time on caller-supplied evidence in this process, not resident generate time and not a qualified token cost. evidence_class STATIC_ONLY. gpu_authority false.",
+ "evidence_class": "STATIC_ONLY",
+ "expensive_qualification": {
+  "declared": true,
+  "execute_always_refuses": true,
+  "gpu_authority": false,
+  "kind": "SPEC",
+  "n_pipeline_stages": 13,
+  "pipeline_stages": [
+   "identify_lease_availability",
+   "assess_machine_quiescence",
+   "identify_contaminating_worker",
+   "select_ready_candidates",
+   "static_preflight_drop",
+   "emit_ab_execution_plan",
+   "parity_verification_spec",
+   "failure_classification",
+   "survivor_promotion_prerequisites",
+   "protected_lease_request",
+   "protected_measurement_spec",
+   "scoreboard_update_spec",
+   "derive_next_workunits"
+  ],
+  "reason": "qualification_pipeline.execute raises unless --execute, an existing HCLI lease, and QUIESCENT all hold \u2014 and then raises anyway because this sidecar has no GPU authority",
+  "source": "tools/future/qualification_pipeline.py::execute"
+ },
+ "fast_probes": [
+  {
+   "expect_contains": [
+    "paris"
+   ],
+   "expect_number": null,
+   "id": "fact-capital",
+   "origin": "tools/future/resident_provider.py:PROMPT_FRANCE",
+   "prompt": "What is the capital of France? Answer in one word."
+  },
+  {
+   "expect_contains": [
+    "hbm_doctor.py"
+   ],
+   "expect_number": null,
+   "id": "fact-choice",
+   "origin": "tools/future/resident_provider.py:PROMPT_CHOICE",
+   "prompt": "Choose ONE and reply with only its name: freshness.py, negative_index.py, hbm_doctor.py. Which most likely reveals a stale artifact?"
+  },
+  {
+   "expect_contains": [],
+   "expect_number": 323,
+   "id": "fact-arith",
+   "origin": "tools/headless/capability_suite.py:fact-arith (cited, not imported)",
+   "prompt": "Compute 17 * 19. Reply with only the number."
+  }
+ ],
+ "fixture_run": {
+  "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate. A stage PASS is only the measurement that stage names. Hidden-state cosine is not capability (functional_role_probe / S031 \u00a79). Next-token argmax is not capability (meta_funnel logit_token_validation). A SKIPPED stage is not a pass. This sidecar never chooses the component under test; a missing component.id is a refusal. Wall seconds in the receipt are judge time on caller-supplied evidence in this process, not resident generate time and not a qualified token cost. evidence_class STATIC_ONLY. gpu_authority false.",
+  "component": {
+   "id": "FIXTURE.caller_supplied",
+   "kind": "FIXTURE",
+   "note": "build() supplies a fixture so the judges can be timed. This is not a scientific selection of a resident organ."
+  },
+  "establishes_capability": false,
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "max_stage": "EXPENSIVE_QUALIFICATION",
+  "n_fail": 0,
+  "n_not_run": 0,
+  "n_pass": 4,
+  "n_skipped": 1,
+  "overall": "PARTIAL",
+  "passed_stage_ids": [
+   "LOCAL_FUNCTIONAL_FIDELITY",
+   "LOGIT_TOKEN",
+   "FAST_CAPABILITY",
+   "HCLI_MISSION_SUBSET"
+  ],
+  "stages": [
+   {
+    "cheapest_first_index": 0,
+    "cost": {
+     "evaluation_cost": "MEASURED",
+     "evidence_production_cost": "UNMEASURED",
+     "evidence_production_reason": "producing hidden states is a CPU replay or a generate this sidecar does not run; only the cosine judge is timed here",
+     "id": "LOCAL_FUNCTIONAL_FIDELITY",
+     "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+     "verdict": "PASS",
+     "wall_cost": "MEASURED",
+     "wall_seconds": 4.087504930794239e-05
+    },
+    "counts_as_pass": true,
+    "does_not_establish": "Not capability, not next-token identity, not checkable-task competence, not HCLI mission competence, and not qualification. S031 \u00a79 forbids local cosine as the final verdict. A role can carry unequal capability value while carrying equal fidelity value.",
+    "evidence_production_cost": "UNMEASURED",
+    "evidence_production_reason": "producing hidden states is a CPU replay or a generate this sidecar does not run; only the cosine judge is timed here",
+    "id": "LOCAL_FUNCTIONAL_FIDELITY",
+    "measurement": {
+     "bar": 0.99,
+     "cosine": 0.9999999999999989,
+     "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+     "n": 5120,
+     "wrapped": "capability_information_map._cosine"
+    },
+    "measures": "Hidden-state cosine between caller-supplied incumbent and candidate activations, judged against capability_information_map.HIDDEN_COSINE_BAR. This is the SUB2 LOCAL_FUNCTIONAL_FIDELITY instrument (functional_role_probe.MEASURED_LEVEL=LOCAL_FUNCTIONAL_FIDELITY).",
+    "origin": "tools/future/capability_information_map.py::_cosine, HIDDEN_COSINE_BAR; tools/future/functional_role_probe.py:MEASURED_LEVEL",
+    "rank": 0,
+    "reason": "hidden-state cosine 1.000000 >= bar 0.99",
+    "required_input": "hidden_a and hidden_b (incumbent vs candidate hidden state)",
+    "verdict": "PASS",
+    "wall_seconds": 4.087504930794239e-05
+   },
+   {
+    "cheapest_first_index": 1,
+    "cost": {
+     "evaluation_cost": "MEASURED",
+     "evidence_production_cost": "UNMEASURED",
+     "evidence_production_reason": "producing logits requires a forward / LM-head this sidecar does not run; only KL/top-k/argmax on supplied logits are timed",
+     "id": "LOGIT_TOKEN",
+     "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+     "verdict": "PASS",
+     "wall_cost": "MEASURED",
+     "wall_seconds": 7.750000804662704e-05
+    },
+    "counts_as_pass": true,
+    "does_not_establish": "Not checkable-task competence, not HCLI mission competence, and not qualification. meta_funnel gate 5: token-level identity on a stated probe is not bounded capability. Argmax agreement is not logit parity (aux_capability_screen.ArgmaxAloneParityRefuse).",
+    "evidence_production_cost": "UNMEASURED",
+    "evidence_production_reason": "producing logits requires a forward / LM-head this sidecar does not run; only KL/top-k/argmax on supplied logits are timed",
+    "id": "LOGIT_TOKEN",
+    "measurement": {
+     "argmax_a": 0,
+     "argmax_agreement": 1.0,
+     "argmax_b": 0,
+     "argmax_is_not_parity": true,
+     "kl_bar": 0.1,
+     "kl_nats": 0.0,
+     "logits_cosine": 1.0,
+     "n_rows": 1,
+     "parity_quantities": [
+      "kl_nats",
+      "top_k_agreement"
+     ],
+     "top_k": 5,
+     "top_k_agreement": 1.0,
+     "top_k_bar": 0.8,
+     "wrapped": "aux_capability_screen.report_logit_parity"
+    },
+    "measures": "Next-token logits: KL(incumbent || candidate), top-k agreement, logits cosine, and argmax agreement. KL and top-k are the screen; argmax is a side report and is not parity.",
+    "origin": "tools/future/aux_capability_screen.py::kl_divergence, topk_agreement, report_logit_parity, softmax; tools/future/capability_information_map.py::_cosine",
+    "rank": 1,
+    "reason": "KL 0.000000 (bar 0.1) top-5 agreement 1.0000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+    "required_input": "logits_a and logits_b (incumbent vs candidate next-token logits)",
+    "verdict": "PASS",
+    "wall_seconds": 7.750000804662704e-05
+   },
+   {
+    "cheapest_first_index": 2,
+    "cost": {
+     "evaluation_cost": "MEASURED",
+     "evidence_production_cost": "UNMEASURED",
+     "evidence_production_reason": "producing answers requires a generate this sidecar does not spawn; only the deterministic predicates are timed",
+     "id": "FAST_CAPABILITY",
+     "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+     "verdict": "PASS",
+     "wall_cost": "MEASURED",
+     "wall_seconds": 6.14159507676959e-05
+    },
+    "counts_as_pass": true,
+    "does_not_establish": "HCLI mission competence, protected qualification, or that a live resident generate would match these answers. A three-item checkable floor is not the capability contract; the larger headless suite is not imported and is not this stage.",
+    "evidence_production_cost": "UNMEASURED",
+    "evidence_production_reason": "producing answers requires a generate this sidecar does not spawn; only the deterministic predicates are timed",
+    "id": "FAST_CAPABILITY",
+    "measurement": {
+     "items": [
+      {
+       "id": "fact-capital",
+       "origin": "tools/future/resident_provider.py:PROMPT_FRANCE",
+       "passed": true,
+       "quality": "CLEAN",
+       "quality_reason": null,
+       "reason": "predicate held",
+       "text_len": 5
+      },
+      {
+       "id": "fact-choice",
+       "origin": "tools/future/resident_provider.py:PROMPT_CHOICE",
+       "passed": true,
+       "quality": "CLEAN",
+       "quality_reason": null,
+       "reason": "predicate held",
+       "text_len": 13
+      },
+      {
+       "id": "fact-arith",
+       "origin": "tools/headless/capability_suite.py:fact-arith (cited, not imported)",
+       "passed": true,
+       "quality": "CLEAN",
+       "quality_reason": null,
+       "reason": "predicate held",
+       "text_len": 3
+      }
+     ],
+     "n_passed": 3,
+     "n_probes": 3,
+     "wrapped": "resident_provider.quality / PROMPT_FRANCE / PROMPT_CHOICE"
+    },
+    "measures": "A small fixed prompt set with deterministic predicates (capital of France, HCLI stale-artifact choice, 17*19). Degenerate replies that contain a checkable token still fail (resident_provider quality / MEASURED_DEGENERATE_CHOICE).",
+    "origin": "tools/future/resident_provider.py::PROMPT_FRANCE, PROMPT_CHOICE, quality, MEASURED_DEGENERATE_CHOICE; tools/headless/capability_suite.py fact-arith cited not imported",
+    "rank": 2,
+    "reason": "3/3 checkable probes passed",
+    "required_input": "answers keyed by probe id (fact-capital, fact-choice, fact-arith)",
+    "verdict": "PASS",
+    "wall_seconds": 6.14159507676959e-05
+   },
+   {
+    "cheapest_first_index": 3,
+    "cost": {
+     "evaluation_cost": "MEASURED",
+     "evidence_production_cost": "UNMEASURED",
+     "evidence_production_reason": "producing a live mission emission requires the resident; only WorkUnit validation is timed here",
+     "id": "HCLI_MISSION_SUBSET",
+     "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+     "verdict": "PASS",
+     "wall_cost": "MEASURED",
+     "wall_seconds": 1.4458084478974342e-05
+    },
+    "counts_as_pass": true,
+    "does_not_establish": "Protected qualification, throughput, or that the resident will emit this under a live mission loop. Valid work-request shape is necessary and not sufficient for mission competence.",
+    "evidence_production_cost": "UNMEASURED",
+    "evidence_production_reason": "producing a live mission emission requires the resident; only WorkUnit validation is timed here",
+    "id": "HCLI_MISSION_SUBSET",
+    "measurement": {
+     "invalid": [],
+     "n_emissions": 1,
+     "n_invalid": 0,
+     "n_valid": 1,
+     "valid_ids": [
+      "future.capability_stages.fixture"
+     ],
+     "wrapped": "workunit_species.validate_emitted_unit"
+    },
+    "measures": "Whether caller-supplied emissions are valid structured HCLI work requests under workunit_species.validate_emitted_unit (core fields, claim_boundary, verifier, HCLI-safe effect_class).",
+    "origin": "tools/future/workunit_species.py::validate_emitted_unit, emit_hcli_workunit",
+    "rank": 3,
+    "reason": "1 valid structured work request(s), 0 invalid",
+    "required_input": "emissions: one or more WorkUnit mappings or JSON objects",
+    "verdict": "PASS",
+    "wall_seconds": 1.4458084478974342e-05
+   },
+   {
+    "cheapest_first_index": 4,
+    "cost": {
+     "evaluation_cost": "UNMEASURED",
+     "evidence_production_cost": "UNMEASURED",
+     "evidence_production_reason": "protected qualification requires a GPU lease this sidecar will not take; qualification_pipeline.execute always refuses",
+     "id": "EXPENSIVE_QUALIFICATION",
+     "reason": "EXPENSIVE_QUALIFICATION is declared but this sidecar has no GPU authority; qualification_pipeline.execute always refuses. This is a skip, not a pass.",
+     "verdict": "SKIPPED",
+     "wall_cost": "MEASURED",
+     "wall_seconds": 7.5410353019833565e-06
+    },
+    "counts_as_pass": false,
+    "does_not_establish": "Anything, when SKIPPED. A polite refusal is not a pass and is not a fail of the model. This sidecar has no GPU authority and will not seize an HCLI lease.",
+    "evidence_production_cost": "UNMEASURED",
+    "evidence_production_reason": "protected qualification requires a GPU lease this sidecar will not take; qualification_pipeline.execute always refuses",
+    "id": "EXPENSIVE_QUALIFICATION",
+    "measurement": null,
+    "measures": "Nothing on this sidecar. The stage is declared so a caller can name the depth. qualification_pipeline.execute always raises; stages 10-12 of that pipeline emit a REQUEST/SPEC and stop.",
+    "origin": "tools/future/qualification_pipeline.py::execute, STAGES",
+    "rank": 4,
+    "reason": "EXPENSIVE_QUALIFICATION is declared but this sidecar has no GPU authority; qualification_pipeline.execute always refuses. This is a skip, not a pass.",
+    "required_input": "a protected GPU lease and a QUIESCENT machine, which this sidecar will not take or coerce",
+    "verdict": "SKIPPED",
+    "wall_seconds": 7.5410353019833565e-06
+   }
+  ],
+  "stop_on_fail": true,
+  "terminated_because": null,
+  "why_not_capability": "even PASS_THROUGH_DEPTH through FAST_CAPABILITY or HCLI_MISSION_SUBSET is not qualification, and EXPENSIVE_QUALIFICATION cannot run on this sidecar. A SKIPPED stage is excluded from n_pass."
+ },
+ "gpu_authority": false,
+ "ladder_order": [
+  "LOCAL_FUNCTIONAL_FIDELITY",
+  "LOGIT_TOKEN",
+  "FAST_CAPABILITY",
+  "HCLI_MISSION_SUBSET",
+  "EXPENSIVE_QUALIFICATION"
+ ],
+ "n_stages": 5,
+ "non_pass_verdicts": [
+  "FAIL",
+  "SKIPPED",
+  "NOT_RUN"
+ ],
+ "pass_verdict": "PASS",
+ "per_stage_cost": [
+  {
+   "evaluation_cost": "MEASURED",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing hidden states is a CPU replay or a generate this sidecar does not run; only the cosine judge is timed here",
+   "id": "LOCAL_FUNCTIONAL_FIDELITY",
+   "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+   "verdict": "PASS",
+   "wall_cost": "MEASURED",
+   "wall_seconds": 4.087504930794239e-05
+  },
+  {
+   "evaluation_cost": "MEASURED",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing logits requires a forward / LM-head this sidecar does not run; only KL/top-k/argmax on supplied logits are timed",
+   "id": "LOGIT_TOKEN",
+   "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+   "verdict": "PASS",
+   "wall_cost": "MEASURED",
+   "wall_seconds": 7.750000804662704e-05
+  },
+  {
+   "evaluation_cost": "MEASURED",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing answers requires a generate this sidecar does not spawn; only the deterministic predicates are timed",
+   "id": "FAST_CAPABILITY",
+   "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+   "verdict": "PASS",
+   "wall_cost": "MEASURED",
+   "wall_seconds": 6.14159507676959e-05
+  },
+  {
+   "evaluation_cost": "MEASURED",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing a live mission emission requires the resident; only WorkUnit validation is timed here",
+   "id": "HCLI_MISSION_SUBSET",
+   "reason": "judge wall time on caller-supplied evidence in this process; not resident generate time",
+   "verdict": "PASS",
+   "wall_cost": "MEASURED",
+   "wall_seconds": 1.4458084478974342e-05
+  },
+  {
+   "evaluation_cost": "UNMEASURED",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "protected qualification requires a GPU lease this sidecar will not take; qualification_pipeline.execute always refuses",
+   "id": "EXPENSIVE_QUALIFICATION",
+   "reason": "EXPENSIVE_QUALIFICATION is declared but this sidecar has no GPU authority; qualification_pipeline.execute always refuses. This is a skip, not a pass.",
+   "verdict": "SKIPPED",
+   "wall_cost": "MEASURED",
+   "wall_seconds": 7.5410353019833565e-06
+  }
+ ],
+ "purpose": "Staged evaluation API: five increasing depths at which a caller can ask whether a supplied component is still capable, and stop cheaply. LOCAL_FUNCTIONAL_FIDELITY is not capability.",
+ "question": "What does it cost to ask 'is the model still capable' at five increasing depths?",
+ "reused_not_rebuilt": {
+  "EXPENSIVE_QUALIFICATION": "qualification_pipeline.execute (always refuses); STAGES cited",
+  "FAST_CAPABILITY": "resident_provider.PROMPT_FRANCE, PROMPT_CHOICE, quality",
+  "HCLI_MISSION_SUBSET": "workunit_species.validate_emitted_unit, emit_hcli_workunit",
+  "LOCAL_FUNCTIONAL_FIDELITY": "capability_information_map._cosine + HIDDEN_COSINE_BAR; functional_role_probe.MEASURED_LEVEL",
+  "LOGIT_TOKEN": "aux_capability_screen.kl_divergence, topk_agreement, softmax, report_logit_parity"
+ },
+ "schema": "hawking.future.capability_stages.v1",
+ "seal_sha256": "511028117add500d484097d31406ac0fb2eb8a748c3986793a67cf356b109ef2",
+ "skip_is_not_a_pass": true,
+ "stages": [
+  {
+   "cheapest_first_index": 0,
+   "does_not_establish": "Not capability, not next-token identity, not checkable-task competence, not HCLI mission competence, and not qualification. S031 \u00a79 forbids local cosine as the final verdict. A role can carry unequal capability value while carrying equal fidelity value.",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing hidden states is a CPU replay or a generate this sidecar does not run; only the cosine judge is timed here",
+   "id": "LOCAL_FUNCTIONAL_FIDELITY",
+   "measures": "Hidden-state cosine between caller-supplied incumbent and candidate activations, judged against capability_information_map.HIDDEN_COSINE_BAR. This is the SUB2 LOCAL_FUNCTIONAL_FIDELITY instrument (functional_role_probe.MEASURED_LEVEL=LOCAL_FUNCTIONAL_FIDELITY).",
+   "origin": "tools/future/capability_information_map.py::_cosine, HIDDEN_COSINE_BAR; tools/future/functional_role_probe.py:MEASURED_LEVEL",
+   "rank": 0,
+   "required_input": "hidden_a and hidden_b (incumbent vs candidate hidden state)"
+  },
+  {
+   "cheapest_first_index": 1,
+   "does_not_establish": "Not checkable-task competence, not HCLI mission competence, and not qualification. meta_funnel gate 5: token-level identity on a stated probe is not bounded capability. Argmax agreement is not logit parity (aux_capability_screen.ArgmaxAloneParityRefuse).",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing logits requires a forward / LM-head this sidecar does not run; only KL/top-k/argmax on supplied logits are timed",
+   "id": "LOGIT_TOKEN",
+   "measures": "Next-token logits: KL(incumbent || candidate), top-k agreement, logits cosine, and argmax agreement. KL and top-k are the screen; argmax is a side report and is not parity.",
+   "origin": "tools/future/aux_capability_screen.py::kl_divergence, topk_agreement, report_logit_parity, softmax; tools/future/capability_information_map.py::_cosine",
+   "rank": 1,
+   "required_input": "logits_a and logits_b (incumbent vs candidate next-token logits)"
+  },
+  {
+   "cheapest_first_index": 2,
+   "does_not_establish": "HCLI mission competence, protected qualification, or that a live resident generate would match these answers. A three-item checkable floor is not the capability contract; the larger headless suite is not imported and is not this stage.",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing answers requires a generate this sidecar does not spawn; only the deterministic predicates are timed",
+   "id": "FAST_CAPABILITY",
+   "measures": "A small fixed prompt set with deterministic predicates (capital of France, HCLI stale-artifact choice, 17*19). Degenerate replies that contain a checkable token still fail (resident_provider quality / MEASURED_DEGENERATE_CHOICE).",
+   "origin": "tools/future/resident_provider.py::PROMPT_FRANCE, PROMPT_CHOICE, quality, MEASURED_DEGENERATE_CHOICE; tools/headless/capability_suite.py fact-arith cited not imported",
+   "rank": 2,
+   "required_input": "answers keyed by probe id (fact-capital, fact-choice, fact-arith)"
+  },
+  {
+   "cheapest_first_index": 3,
+   "does_not_establish": "Protected qualification, throughput, or that the resident will emit this under a live mission loop. Valid work-request shape is necessary and not sufficient for mission competence.",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "producing a live mission emission requires the resident; only WorkUnit validation is timed here",
+   "id": "HCLI_MISSION_SUBSET",
+   "measures": "Whether caller-supplied emissions are valid structured HCLI work requests under workunit_species.validate_emitted_unit (core fields, claim_boundary, verifier, HCLI-safe effect_class).",
+   "origin": "tools/future/workunit_species.py::validate_emitted_unit, emit_hcli_workunit",
+   "rank": 3,
+   "required_input": "emissions: one or more WorkUnit mappings or JSON objects"
+  },
+  {
+   "cheapest_first_index": 4,
+   "does_not_establish": "Anything, when SKIPPED. A polite refusal is not a pass and is not a fail of the model. This sidecar has no GPU authority and will not seize an HCLI lease.",
+   "evidence_production_cost": "UNMEASURED",
+   "evidence_production_reason": "protected qualification requires a GPU lease this sidecar will not take; qualification_pipeline.execute always refuses",
+   "id": "EXPENSIVE_QUALIFICATION",
+   "measures": "Nothing on this sidecar. The stage is declared so a caller can name the depth. qualification_pipeline.execute always raises; stages 10-12 of that pipeline emit a REQUEST/SPEC and stop.",
+   "origin": "tools/future/qualification_pipeline.py::execute, STAGES",
+   "rank": 4,
+   "required_input": "a protected GPU lease and a QUIESCENT machine, which this sidecar will not take or coerce"
+  }
+ ],
+ "version": 1,
+ "what_is_not_measured_here": "resident generate time, CPU catalog replay of sealed-3.14, protected-accelerator-bench wall, GPU lease occupancy. Those are UNMEASURED with a per-stage reason, not guessed.",
+ "what_the_wall_seconds_are": "perf_counter around each stage judge on the fixture_run subject. They are not GPU ns, not token_ns, and not a qualified cost."
+}

@@ -160,7 +160,19 @@ class ArchitectureRecognizer:
     def __init__(self, *, max_tensors: int = _MAX_TENSORS) -> None:
         self.max_tensors = max(1, min(int(max_tensors), _MAX_TENSORS))
 
-    def inspect(self, source: str | os.PathLike[str]) -> Dict[str, Any]:
+    def inspect(
+        self,
+        source: str | os.PathLike[str],
+        *,
+        architecture_atlas: Optional[Mapping[str, Any]] = None,
+        backend: Optional[str] = None,
+    ) -> Dict[str, Any]:
+        """Inspect metadata and optionally project atlas hypotheses into its graph.
+
+        The atlas is opt-in so historical metadata-only callers retain their
+        exact planning shape.  When supplied, it is still only a
+        backend-neutral hypothesis projection; no backend is executed here.
+        """
         requested = Path(source).expanduser().resolve(strict=False)
         configs, indexes, profile = _source_candidates(requested)
         config_path = configs[0] if configs else None
@@ -275,7 +287,11 @@ class ArchitectureRecognizer:
         try:
             from .physical_graph import compile_physical_graph
 
-            document["physical_graph"] = compile_physical_graph(document)
+            document["physical_graph"] = compile_physical_graph(
+                document,
+                architecture_atlas=architecture_atlas,
+                backend=backend,
+            )
         except Exception as exc:  # noqa: BLE001 - recognizer remains useful if planner is absent
             document["physical_graph"] = {
                 "schema": "hcli.physical_graph.v1",

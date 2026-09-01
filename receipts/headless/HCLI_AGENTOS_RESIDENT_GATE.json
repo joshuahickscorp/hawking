@@ -1,4 +1,12 @@
 {
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "all_nonempty": true,
     "no_errors": true,
@@ -12,7 +20,16 @@
     "unique_responses": true,
     "zero_fallbacks": true
   },
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
+  "direct_observation": "ready.pid=23306; ready.model_open_count=1; ready.weight_upload_count=1; n_requests=20; n_errors=0; pids=[23306]; final_health={'model_open_count': 1, 'pid': 23306, 'restart_count': 0, 'weight_upload_count': 1}; isolation_probe=[{'expected_marker': True, 'sentinel_absent_from_reply': True}]; checks={all_nonempty=True, no_errors=True, no_restart=True, one_model_open=True, one_pid_reused=True, one_weight_upload=True, requested_count_reached=True, resident_started=True, state_reset_isolated=True, unique_responses=True, zero_fallbacks=True}; unmet=[]",
   "errors": [],
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "final_health": {
     "model_open_count": 1,
     "pid": 23306,
@@ -20,6 +37,9 @@
     "weight_upload_count": 1
   },
   "finished_at": 1787791827.838013,
+  "interpretation": "every named residency lifecycle check in this run's measured flags was True",
+  "probe_kind": "measured_flags",
+  "probe_performed": "HawkingNativeConnector.start + sequential complete_payload of requested_count=20 prompts against profile /Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json; recorded per-request pid, model_open_count, weight_upload_count, fallbacks, restart_count, response id, nonempty text, and one isolation sentinel at index 5",
   "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
   "qualification": "LIVE_RESIDENT_SEQUENTIAL_PROOF",
   "ready": {

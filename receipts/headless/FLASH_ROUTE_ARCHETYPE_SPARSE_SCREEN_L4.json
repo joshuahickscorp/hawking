@@ -1,0 +1,2165 @@
+{
+  "schema": "hawking.flash.route_archetype_sparse_screen.v1",
+  "status": "STAGE_B_NR_SCREEN",
+  "artifact_kind": "NR",
+  "model": "Qwen3.8-Flash-Next",
+  "layer": 4,
+  "source": {
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "parity_receipt": "receipts/headless/FLASH_FAST_COMPACT_L0_L7_PARITY.json",
+    "route_ids": [
+      309,
+      252,
+      59,
+      106,
+      410,
+      475,
+      453,
+      41,
+      162,
+      108
+    ],
+    "route_count": 10,
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de"
+  },
+  "method": "route-conditioned nearest expert archetypes with BF16 archetypes and FP16+u32 sparse residual element records; held-out random probes are evaluated in function space",
+  "rows": [
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 1.6000048828125,
+      "weight_rel_fro": 1.3280569314956665,
+      "function_rel_fro": 1.3227267265319824,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 32770,
+      "active_bpw": 1.6480078125,
+      "weight_rel_fro": 1.3178215026855469,
+      "function_rel_fro": 1.3126003742218018,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 1.8400048828125,
+      "weight_rel_fro": 1.2917182445526123,
+      "function_rel_fro": 1.2868061065673828,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 2.0800048828125,
+      "weight_rel_fro": 1.2657543420791626,
+      "function_rel_fro": 1.2606887817382812,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 2.5600048828125,
+      "weight_rel_fro": 1.2222191095352173,
+      "function_rel_fro": 1.218400478363037,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 3.2000048828125,
+      "weight_rel_fro": 1.2492425441741943,
+      "function_rel_fro": 1.24415123462677,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 32770,
+      "active_bpw": 3.2480078125,
+      "weight_rel_fro": 1.2396172285079956,
+      "function_rel_fro": 1.2345890998840332,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 3.4400048828125,
+      "weight_rel_fro": 1.2150789499282837,
+      "function_rel_fro": 1.2102646827697754,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 3.6800048828125,
+      "weight_rel_fro": 1.1906670331954956,
+      "function_rel_fro": 1.1858395338058472,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 4.1600048828125,
+      "weight_rel_fro": 1.1497251987457275,
+      "function_rel_fro": 1.1464465856552124,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 6.4000048828125,
+      "weight_rel_fro": 1.0767430067062378,
+      "function_rel_fro": 1.0725497007369995,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 32770,
+      "active_bpw": 6.4480078125,
+      "weight_rel_fro": 1.068384051322937,
+      "function_rel_fro": 1.064333438873291,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 6.6400048828125,
+      "weight_rel_fro": 1.0471662282943726,
+      "function_rel_fro": 1.0434421300888062,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 6.8800048828125,
+      "weight_rel_fro": 1.0260818004608154,
+      "function_rel_fro": 1.022398591041565,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 7.3600048828125,
+      "weight_rel_fro": 0.9907374978065491,
+      "function_rel_fro": 0.9882279634475708,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 12.8000048828125,
+      "weight_rel_fro": 0.6126923561096191,
+      "function_rel_fro": 0.6166784167289734,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 32770,
+      "active_bpw": 12.8480078125,
+      "weight_rel_fro": 0.6080468893051147,
+      "function_rel_fro": 0.6119956970214844,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 13.0400048828125,
+      "weight_rel_fro": 0.5960656404495239,
+      "function_rel_fro": 0.5995137095451355,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 13.2800048828125,
+      "weight_rel_fro": 0.5841414928436279,
+      "function_rel_fro": 0.5872659683227539,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 13.7600048828125,
+      "weight_rel_fro": 0.5641305446624756,
+      "function_rel_fro": 0.5670208930969238,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 1.600009765625,
+      "weight_rel_fro": 1.3354008197784424,
+      "function_rel_fro": 1.3336951732635498,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 16380,
+      "active_bpw": 1.647998046875,
+      "weight_rel_fro": 1.3256652355194092,
+      "function_rel_fro": 1.32426917552948,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 81920,
+      "active_bpw": 1.840009765625,
+      "weight_rel_fro": 1.3001295328140259,
+      "function_rel_fro": 1.2984148263931274,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 163840,
+      "active_bpw": 2.080009765625,
+      "weight_rel_fro": 1.2744847536087036,
+      "function_rel_fro": 1.2729556560516357,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 327680,
+      "active_bpw": 2.560009765625,
+      "weight_rel_fro": 1.2312513589859009,
+      "function_rel_fro": 1.229811191558838,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        7
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 3.200009765625,
+      "weight_rel_fro": 1.2559717893600464,
+      "function_rel_fro": 1.2542357444763184,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        7
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 16380,
+      "active_bpw": 3.247998046875,
+      "weight_rel_fro": 1.2467612028121948,
+      "function_rel_fro": 1.2452682256698608,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        7
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 81920,
+      "active_bpw": 3.440009765625,
+      "weight_rel_fro": 1.2227240800857544,
+      "function_rel_fro": 1.2209681272506714,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        7
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 163840,
+      "active_bpw": 3.680009765625,
+      "weight_rel_fro": 1.1985933780670166,
+      "function_rel_fro": 1.197180986404419,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        7
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 327680,
+      "active_bpw": 4.160009765625,
+      "weight_rel_fro": 1.1579245328903198,
+      "function_rel_fro": 1.1565489768981934,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3
+      ],
+      "assignment": [
+        0,
+        0,
+        2,
+        3,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 6.400009765625,
+      "weight_rel_fro": 1.0837680101394653,
+      "function_rel_fro": 1.0817325115203857,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3
+      ],
+      "assignment": [
+        0,
+        0,
+        2,
+        3,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 16380,
+      "active_bpw": 6.447998046875,
+      "weight_rel_fro": 1.0759817361831665,
+      "function_rel_fro": 1.0741671323776245,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3
+      ],
+      "assignment": [
+        0,
+        0,
+        2,
+        3,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 81920,
+      "active_bpw": 6.640009765625,
+      "weight_rel_fro": 1.0552260875701904,
+      "function_rel_fro": 1.0531401634216309,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3
+      ],
+      "assignment": [
+        0,
+        0,
+        2,
+        3,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 163840,
+      "active_bpw": 6.880009765625,
+      "weight_rel_fro": 1.0343831777572632,
+      "function_rel_fro": 1.0325759649276733,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3
+      ],
+      "assignment": [
+        0,
+        0,
+        2,
+        3,
+        0,
+        0,
+        0,
+        1,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 327680,
+      "active_bpw": 7.360009765625,
+      "weight_rel_fro": 0.999265730381012,
+      "function_rel_fro": 0.9976669549942017,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3,
+        6,
+        1,
+        4,
+        5
+      ],
+      "assignment": [
+        0,
+        5,
+        2,
+        3,
+        6,
+        7,
+        4,
+        1,
+        7,
+        7
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 12.800009765625,
+      "weight_rel_fro": 0.6181009411811829,
+      "function_rel_fro": 0.6176255345344543,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3,
+        6,
+        1,
+        4,
+        5
+      ],
+      "assignment": [
+        0,
+        5,
+        2,
+        3,
+        6,
+        7,
+        4,
+        1,
+        7,
+        7
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 16380,
+      "active_bpw": 12.847998046875,
+      "weight_rel_fro": 0.6137151718139648,
+      "function_rel_fro": 0.6133041977882385,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3,
+        6,
+        1,
+        4,
+        5
+      ],
+      "assignment": [
+        0,
+        5,
+        2,
+        3,
+        6,
+        7,
+        4,
+        1,
+        7,
+        7
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 81920,
+      "active_bpw": 13.040009765625,
+      "weight_rel_fro": 0.6018518805503845,
+      "function_rel_fro": 0.6014838218688965,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3,
+        6,
+        1,
+        4,
+        5
+      ],
+      "assignment": [
+        0,
+        5,
+        2,
+        3,
+        6,
+        7,
+        4,
+        1,
+        7,
+        7
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 163840,
+      "active_bpw": 13.280009765625,
+      "weight_rel_fro": 0.5899584293365479,
+      "function_rel_fro": 0.5893470644950867,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3,
+        6,
+        1,
+        4,
+        5
+      ],
+      "assignment": [
+        0,
+        5,
+        2,
+        3,
+        6,
+        7,
+        4,
+        1,
+        7,
+        7
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 327680,
+      "active_bpw": 13.760009765625,
+      "weight_rel_fro": 0.5699316263198853,
+      "function_rel_fro": 0.5687324404716492,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    }
+  ],
+  "frontier": [
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 1.6000048828125,
+      "weight_rel_fro": 1.3280569314956665,
+      "function_rel_fro": 1.3227267265319824,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 32770,
+      "active_bpw": 1.6480078125,
+      "weight_rel_fro": 1.3178215026855469,
+      "function_rel_fro": 1.3126003742218018,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 1.8400048828125,
+      "weight_rel_fro": 1.2917182445526123,
+      "function_rel_fro": 1.2868061065673828,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 2.0800048828125,
+      "weight_rel_fro": 1.2657543420791626,
+      "function_rel_fro": 1.2606887817382812,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 1,
+      "archetype_source_indices": [
+        0
+      ],
+      "assignment": [
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 2.5600048828125,
+      "weight_rel_fro": 1.2222191095352173,
+      "function_rel_fro": 1.218400478363037,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 3.4400048828125,
+      "weight_rel_fro": 1.2150789499282837,
+      "function_rel_fro": 1.2102646827697754,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 3.6800048828125,
+      "weight_rel_fro": 1.1906670331954956,
+      "function_rel_fro": 1.1858395338058472,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 2,
+      "archetype_source_indices": [
+        0,
+        2
+      ],
+      "assignment": [
+        0,
+        0,
+        1,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 4.1600048828125,
+      "weight_rel_fro": 1.1497251987457275,
+      "function_rel_fro": 1.1464465856552124,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 6.4000048828125,
+      "weight_rel_fro": 1.0767430067062378,
+      "function_rel_fro": 1.0725497007369995,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 32770,
+      "active_bpw": 6.4480078125,
+      "weight_rel_fro": 1.068384051322937,
+      "function_rel_fro": 1.064333438873291,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 6.6400048828125,
+      "weight_rel_fro": 1.0471662282943726,
+      "function_rel_fro": 1.0434421300888062,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 6.8800048828125,
+      "weight_rel_fro": 1.0260818004608154,
+      "function_rel_fro": 1.022398591041565,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 4,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        0,
+        0,
+        0,
+        0,
+        2,
+        0,
+        0
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 7.3600048828125,
+      "weight_rel_fro": 0.9907374978065491,
+      "function_rel_fro": 0.9882279634475708,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.0,
+      "residual_elements": 0,
+      "active_bpw": 12.8000048828125,
+      "weight_rel_fro": 0.6126923561096191,
+      "function_rel_fro": 0.6166784167289734,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 32770,
+      "active_bpw": 12.8480078125,
+      "weight_rel_fro": 0.6080468893051147,
+      "function_rel_fro": 0.6119956970214844,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.005,
+      "residual_elements": 163840,
+      "active_bpw": 13.0400048828125,
+      "weight_rel_fro": 0.5960656404495239,
+      "function_rel_fro": 0.5995137095451355,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.01,
+      "residual_elements": 327680,
+      "active_bpw": 13.2800048828125,
+      "weight_rel_fro": 0.5841414928436279,
+      "function_rel_fro": 0.5872659683227539,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "shape": [
+        10,
+        1280,
+        2560
+      ],
+      "full_tensor_bytes": 131072000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        2,
+        7,
+        1,
+        4,
+        3,
+        6,
+        5
+      ],
+      "assignment": [
+        0,
+        3,
+        1,
+        5,
+        4,
+        7,
+        6,
+        2,
+        7,
+        7
+      ],
+      "residual_fraction": 0.02,
+      "residual_elements": 655360,
+      "active_bpw": 13.7600048828125,
+      "weight_rel_fro": 0.5641305446624756,
+      "function_rel_fro": 0.5670208930969238,
+      "baseline_q4_function_rel_fro": 0.11178594082593918,
+      "beats_q4_function": false,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "shape": [
+        10,
+        2560,
+        640
+      ],
+      "full_tensor_bytes": 65536000,
+      "archetype_count": 8,
+      "archetype_source_indices": [
+        0,
+        7,
+        2,
+        3,
+        6,
+        1,
+        4,
+        5
+      ],
+      "assignment": [
+        0,
+        5,
+        2,
+        3,
+        6,
+        7,
+        4,
+        1,
+        7,
+        7
+      ],
+      "residual_fraction": 0.001,
+      "residual_elements": 16380,
+      "active_bpw": 12.847998046875,
+      "weight_rel_fro": 0.6137151718139648,
+      "function_rel_fro": 0.6133041977882385,
+      "baseline_q4_function_rel_fro": 0.10967566817998886,
+      "beats_q4_function": false,
+      "native_ready": false
+    }
+  ],
+  "doctor_funnel": {
+    "stage": "B",
+    "baseline": "per-expert group-Q4 function error on the same probes",
+    "next": "native fused organ only for a frontier row that beats Q4 function error and has credible active bytes"
+  },
+  "claim_boundary": "bounded real-weight route-conditioned archetype/sparse-residual screen only; no native kernel, complete-token, capability, TPS, EBPW, or residency claim",
+  "promotion_allowed": false,
+  "bench": {
+    "state": "UNKNOWN",
+    "measurement_state": "MEASURED_STAGE_B",
+    "recorded_at": "2026-08-29T03:07:03Z",
+    "recorded_by": "tools/flash_route_archetype_sparse_screen.py",
+    "machine": "Apple host CPU; selected real route union",
+    "rule": "S032 \u00a73 -- NR screen only",
+    "elapsed_ns": 9761130708
+  },
+  "seal_sha256": "56b5f69c52a131db73fa5460e1a8b4293f5c93e1ab46cef6292b0374d5e83f4a"
+}

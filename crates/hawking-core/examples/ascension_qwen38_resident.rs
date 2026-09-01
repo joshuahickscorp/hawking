@@ -163,6 +163,8 @@ fn run_resident(args: Args) -> Result<(), String> {
             "model_open_count": 1,
             "weight_upload_count": 1,
             "dense_w_materialized": dense_w_materialized,
+            "resident_weight_bytes": weights.resident_bytes(),
+            "workspace_resident_bytes": session.workspace_resident_bytes(),
             "fallbacks": 0,
         }),
     )?;
@@ -271,6 +273,12 @@ fn serve_request(
     let prefill_dispatches = sum_values(&result.dispatches[..dispatch_split]);
     let decode_dispatches = sum_values(&result.dispatches[dispatch_split..]);
     let dispatches = sum_values(&result.dispatches);
+    let active_weight_bytes_total = sum_values(&result.active_weight_bytes);
+    let active_weight_bytes_per_generated_token = if generated_count > 0 {
+        Some(active_weight_bytes_total as f64 / generated_count as f64)
+    } else {
+        None
+    };
     let kernel_histogram = session.dispatched_kernel_histogram();
     let text = tokenizer
         .decode(&generated, true)
@@ -316,6 +324,14 @@ fn serve_request(
         "decode_tps": decode_tps,
         "fallbacks": result.fallbacks,
         "dense_w_materialized": result.dense_w_materialized,
+        "resident_weight_bytes": result.resident_weight_bytes,
+        "workspace_resident_bytes": result.workspace_resident_bytes,
+        "active_bytes_per_token": active_weight_bytes_per_generated_token,
+        "active_weight_bytes_per_generated_token": active_weight_bytes_per_generated_token,
+        "active_bytes_scope": "packed_weight_payloads_per_complete_request_generated_token",
+        "actual_read_bytes_per_token": null,
+        "actual_read_bytes_status": "NOT_MEASURED_NO_METAL_MEMORY_COUNTER",
+        "transient_bytes_per_token": null,
         "model_open_count": 1,
         "weight_upload_count": 1,
         "metrics": {
@@ -327,6 +343,15 @@ fn serve_request(
             "wall_minus_gpu_ns": complete_gpu_ns.map(|value| complete_wall_ns.saturating_sub(value)),
             "dispatches": dispatches,
             "dispatches_per_generated_token": dispatches_per_generated_token,
+            "resident_weight_bytes": result.resident_weight_bytes,
+            "workspace_resident_bytes": result.workspace_resident_bytes,
+            "active_bytes_per_token": active_weight_bytes_per_generated_token,
+            "active_weight_bytes_per_generated_token": active_weight_bytes_per_generated_token,
+            "active_weight_bytes_total": active_weight_bytes_total,
+            "active_bytes_scope": "packed_weight_payloads_per_complete_request_generated_token",
+            "actual_read_bytes_per_token": null,
+            "actual_read_bytes_status": "NOT_MEASURED_NO_METAL_MEMORY_COUNTER",
+            "transient_bytes_per_token": null,
             "generated_tokens": generated_count,
             "prefill": {
                 "steps": result.prompt_len,
@@ -350,6 +375,7 @@ fn serve_request(
                 "encode_ns": result.encode_ns,
                 "submit_ns": result.submit_ns,
                 "dispatches": result.dispatches,
+                "active_weight_bytes": result.active_weight_bytes,
             },
             "kernel_genome": {
                 "trace_enabled": env::var("HAWKING_TRACE_DISPATCH").ok().as_deref() == Some("1"),

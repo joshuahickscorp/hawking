@@ -6,8 +6,11 @@
 //! - only the six selected expert payloads touched
 //! - streaming residency (layer working set, not the 159 GiB parent)
 //!
-//! Host MHC uses the CPU source algorithm so the HC BF16 SHA can match the
-//! oracle. Expert outputs are never read back or gathered on the host.
+//! Host MHC uses the CPU source algorithm by default so the HC BF16 SHA can
+//! match the oracle. An explicit device-mHC control uses the exact P7
+//! authority kernels and retains the HC state across layer boundaries, while
+//! still reading it back once when the report or final head requires it.
+//! Expert outputs are never read back or gathered on the host.
 //! The CPU oracle in `gravity_deepseek_v4_streamed_forward` is unchanged.
 
 use std::cell::Cell;
@@ -161,25 +164,162 @@ const GATE_KERNEL: &str = "deepseek_v4_p6a_gate_bf16_matvec_authority";
 const HASH_ROUTE_KERNEL: &str = "deepseek_v4_p6a_hash_route_sqrtsoftplus_authority";
 const LEARNED_ROUTE_KERNEL: &str = "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority";
 const SHARED_SWIGLU_KERNEL: &str = "deepseek_v4_p5b_swiglu_route_bf16_authority";
-fn pack_kernel() -> &'static str {
-    crate::decode_family::pack_worklist()
+const SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV: &str =
+    "HAWKING_DSV4F_FP8_SHARED_GATE_UP_SWIGLU_FUSED";
+const SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL: &str =
+    "deepseek_v4_fp8_gate_up_swiglu_bf16_fused";
+const SHARED_FP8_DOWN_COMBINE_FUSED_ENV: &str =
+    "HAWKING_DSV4F_FP8_SHARED_DOWN_COMBINE_FUSED";
+const SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL: &str =
+    "deepseek_v4_fp8_down_bf16_combine_fused";
+
+/// Opt-in only: the shared FP8 gate/up fusion remains unqualified until it
+/// earns source-independent parity and protected complete-token timing on the
+/// target Metal device.
+fn shared_fp8_gate_up_swiglu_fused_enabled() -> bool {
+    crate::env_on(SHARED_FP8_GATE_UP_SWIGLU_FUSED_ENV)
 }
-fn worklist_fp4_kernel() -> &'static str {
-    crate::decode_family::worklist_fp4()
+
+/// Opt-in only: shared FP8 W2, its BF16 boundary, and the fixed six-way
+/// routed combine remain unqualified until source-independent parity and
+/// protected complete-token timing exist on the target Metal device.
+fn shared_fp8_down_combine_fused_enabled() -> bool {
+    crate::env_on(SHARED_FP8_DOWN_COMBINE_FUSED_ENV)
 }
-fn worklist_fp4_simd_kernel() -> &'static str {
-    crate::decode_family::worklist_fp4_simd()
+
+fn pack_kernel(family_dispatch: bool) -> &'static str {
+    if family_dispatch {
+        crate::decode_family::PACK_WORKLIST
+    } else {
+        crate::decode_family::LEGACY_PACK_WORKLIST
+    }
+}
+fn worklist_fp4_kernel(family_dispatch: bool) -> &'static str {
+    if family_dispatch {
+        crate::decode_family::WORKLIST_FP4
+    } else {
+        crate::decode_family::LEGACY_WORKLIST_FP4
+    }
+}
+fn worklist_fp4_simd_kernel(family_dispatch: bool) -> &'static str {
+    if family_dispatch {
+        crate::decode_family::WORKLIST_FP4_SIMD
+    } else {
+        crate::decode_family::LEGACY_WORKLIST_FP4_SIMD
+    }
+}
+fn worklist_fp4_gate_up_swiglu_kernel(family_dispatch: bool) -> &'static str {
+    if family_dispatch {
+        crate::decode_family::WORKLIST_FP4_GATE_UP_SWIGLU_BF16
+    } else {
+        crate::decode_family::LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16
+    }
+}
+fn worklist_fp4_gate_up_swiglu_simd_kernel(family_dispatch: bool) -> &'static str {
+    if family_dispatch {
+        crate::decode_family::WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD
+    } else {
+        crate::decode_family::LEGACY_WORKLIST_FP4_GATE_UP_SWIGLU_BF16_SIMD
+    }
 }
 const WORKLIST_FP4_SIMD_ROWS_PER_TG: u32 = 8;
-fn worklist_swiglu_kernel() -> &'static str {
-    crate::decode_family::swiglu_bf16_worklist()
+fn worklist_swiglu_kernel(family_dispatch: bool) -> &'static str {
+    if family_dispatch {
+        crate::decode_family::SWIGLU_BF16_WORKLIST
+    } else {
+        crate::decode_family::LEGACY_SWIGLU_BF16_WORKLIST
+    }
 }
-fn worklist_combine_kernel() -> &'static str {
-    crate::decode_family::combine_bf16()
+fn worklist_combine_kernel(family_dispatch: bool) -> &'static str {
+    if family_dispatch {
+        crate::decode_family::COMBINE_BF16
+    } else {
+        crate::decode_family::LEGACY_COMBINE_BF16
+    }
+}
+const FP4_GATE_UP_SWIGLU_FUSED_ENV: &str = "HAWKING_DSV4F_FP4_GATE_UP_SWIGLU_FUSED";
+
+/// Opt-in only: keep the four-lane HC residual on Metal across attention and
+/// FFN.  The host source path remains the authority/default until a complete
+/// token receipt proves parity and latency on the target device.
+const DEVICE_MHC_ENV: &str = "HAWKING_DSV4F_DEVICE_MHC";
+const DEVICE_MHC_PRE_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_pre_authority";
+const DEVICE_MHC_PRE_SIMD_ENV: &str = "HAWKING_DSV4F_MHC_PRE_SIMD";
+const DEVICE_MHC_PRE_SIMD_KERNEL: &str = "deepseek_v4_mhc_pre_simdgroup_candidate";
+const DEVICE_MHC_PRE_SIMD_THREADS: u32 = 24 * 32;
+const DEVICE_MHC_NORM_KERNEL: &str = "deepseek_v4_p7_ffn_rmsnorm_bf16_authority";
+const DEVICE_MHC_NORM_ACT_QUANT_KERNEL: &str =
+    "deepseek_v4_p7_ffn_rmsnorm_act_quant_bf16_ue8m0_simdgroup_candidate";
+const DEVICE_MHC_NORM_SIMD_ENV: &str = "HAWKING_DSV4F_MHC_NORM_SIMD";
+const DEVICE_MHC_POST_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_post_authority";
+const DEVICE_MHC_ATTN_POST_F32_KERNEL: &str =
+    "deepseek_v4_p7_mhc_ffn_post_from_f32_authority";
+
+fn device_mhc_pre_kernel(simd: bool) -> &'static str {
+    if simd {
+        DEVICE_MHC_PRE_SIMD_KERNEL
+    } else {
+        DEVICE_MHC_PRE_KERNEL
+    }
+}
+
+fn device_mhc_norm_kernel(simd: bool) -> &'static str {
+    if simd {
+        DEVICE_MHC_NORM_ACT_QUANT_KERNEL
+    } else {
+        DEVICE_MHC_NORM_KERNEL
+    }
+}
+
+/// Opt-in only: the fused routed FP4 gate/up epilogue has not earned a
+/// protected parity/latency promotion until it runs on the target Metal
+/// device. The authority path remains the three-dispatch sequence.
+fn fp4_gate_up_swiglu_fused_enabled() -> bool {
+    crate::env_on(FP4_GATE_UP_SWIGLU_FUSED_ENV)
+}
+
+fn fp4_gate_up_swiglu_fused_kernel() -> &'static str {
+    let family_dispatch = crate::decode_family::family_dispatch_enabled();
+    if crate::env_opt_out("HAWKING_DSV4F_FP4_OCCUPANCY") {
+        worklist_fp4_gate_up_swiglu_simd_kernel(family_dispatch)
+    } else {
+        worklist_fp4_gate_up_swiglu_kernel(family_dispatch)
+    }
 }
 const LM_HEAD_KERNEL: &str = "gemv_native_bf16_seq";
+const LM_HEAD_VEC4_KERNEL: &str = "gemv_native_bf16_seq_vec4";
+const LM_HEAD_GEO_KERNEL: &str = "gemv_native_bf16_geo_vec4_tg128";
 const EMBED_WEIGHT: &str = "embed.weight";
 const LM_HEAD_WEIGHT: &str = "head.weight";
+
+/// Select an opt-in source-BF16 lm_head geometry for the active native graph.
+///
+/// The scalar kernel remains the authority/default. `VEC4` preserves the
+/// source-order reduction and only changes the load shape; `GEO` uses a
+/// SIMD-group reduction and therefore has a separate parity gate. The
+/// precedence is deliberate so a stale VEC4 toggle cannot silently override
+/// the explicitly requested geometry candidate.
+fn selected_lm_head_kernel() -> &'static str {
+    if crate::env_on("HAWKING_FLASH_BF16_GEO") {
+        LM_HEAD_GEO_KERNEL
+    } else if crate::env_on("HAWKING_FLASH_BF16_VEC4") {
+        LM_HEAD_VEC4_KERNEL
+    } else {
+        LM_HEAD_KERNEL
+    }
+}
+
+fn lm_head_launch(
+    kernel: &str,
+    rows: u32,
+    preferred_tg: u32,
+) -> ((u32, u32, u32), (u32, u32, u32)) {
+    if kernel == LM_HEAD_GEO_KERNEL {
+        ((rows.div_ceil(4) * 128, 1, 1), (128, 1, 1))
+    } else {
+        ((rows, 1, 1), (preferred_tg.min(rows.max(1)), 1, 1))
+    }
+}
 
 const W1_PACKED: usize = MOE_INTER_DIM * (HIDDEN_SIZE / 2);
 const W1_SCALES: usize = MOE_INTER_DIM * (HIDDEN_SIZE / FP4_BLOCK);
@@ -233,10 +373,20 @@ pub struct NativeTokenGraphHonesty {
     pub dense_over_256: bool,
     pub lm_head_path: String,
     pub mhc_path: String,
+    pub device_mhc: bool,
+    pub device_mhc_pre_kernel: String,
+    pub device_mhc_norm_kernel: String,
+    pub device_mhc_attn_post_kernel: String,
 }
 
 impl NativeTokenGraphHonesty {
-    fn for_run(compute_final_head: bool, lm_head_on_device: bool) -> Self {
+    fn for_run(
+        compute_final_head: bool,
+        lm_head_on_device: bool,
+        device_mhc: bool,
+        device_mhc_pre_simd: bool,
+        device_mhc_norm_simd: bool,
+    ) -> Self {
         Self {
             native: true,
             host_cpu: false,
@@ -258,7 +408,27 @@ impl NativeTokenGraphHonesty {
             } else {
                 "host_f64_mhc_merge_rmsnorm_then_host_streamed_lm_head_greedy".to_owned()
             },
-            mhc_path: "host_source_algorithm_exact_sha".to_owned(),
+            mhc_path: if device_mhc {
+                "device_p7_authority_final_hc_readback_for_report_or_head".to_owned()
+            } else {
+                "host_source_algorithm_exact_sha".to_owned()
+            },
+            device_mhc,
+            device_mhc_pre_kernel: if device_mhc {
+                device_mhc_pre_kernel(device_mhc_pre_simd).to_owned()
+            } else {
+                "not_used".to_owned()
+            },
+            device_mhc_norm_kernel: if device_mhc {
+                device_mhc_norm_kernel(device_mhc_norm_simd).to_owned()
+            } else {
+                "not_used".to_owned()
+            },
+            device_mhc_attn_post_kernel: if device_mhc {
+                DEVICE_MHC_ATTN_POST_F32_KERNEL.to_owned()
+            } else {
+                "not_used".to_owned()
+            },
         }
     }
 }
@@ -294,6 +464,7 @@ pub struct NativeTokenGraphReport {
     pub second_touch_cache_hits_delta: u64,
     pub second_touch_identity_calls_delta: u64,
     pub second_touch_mmap_calls_delta: u64,
+    pub lm_head_kernel: &'static str,
 }
 
 impl NativeTokenGraphReport {
@@ -372,6 +543,8 @@ impl NativeTokenGraphReport {
                     crate::decode_family::worklist_fp4(),
                     crate::decode_family::worklist_fp4_simd(),
                     crate::decode_family::swiglu_bf16_worklist(),
+                    crate::decode_family::worklist_fp4_gate_up_swiglu_bf16(),
+                    crate::decode_family::worklist_fp4_gate_up_swiglu_bf16_simd(),
                     crate::decode_family::combine_bf16(),
                 ],
                 "metal_dispatches": self.counters.metal_dispatches,
@@ -388,6 +561,46 @@ impl NativeTokenGraphReport {
                 "total_buffer_rebinds": self.counters.total_buffer_rebinds,
                 "scratch_buffer_creations": self.counters.scratch_buffer_creations,
                 "cb_collapse": cb_collapse_enabled(),
+                "device_mhc": self.honesty.device_mhc,
+                "device_mhc_pre_kernel": if self.honesty.device_mhc {
+                    Some(self.honesty.device_mhc_pre_kernel.as_str())
+                } else {
+                    None
+                },
+                "device_mhc_norm_kernel": if self.honesty.device_mhc {
+                    Some(self.honesty.device_mhc_norm_kernel.as_str())
+                } else {
+                    None
+                },
+                "device_mhc_post_kernel": if self.honesty.device_mhc {
+                    Some(DEVICE_MHC_POST_KERNEL)
+                } else {
+                    None
+                },
+                "device_mhc_attn_post_kernel": if self.honesty.device_mhc {
+                    Some(self.honesty.device_mhc_attn_post_kernel.as_str())
+                } else {
+                    None
+                },
+                "lm_head_kernel": self.lm_head_kernel,
+                "fp4_gate_up_swiglu_fused": fp4_gate_up_swiglu_fused_enabled(),
+                "fp4_gate_up_swiglu_kernel": if fp4_gate_up_swiglu_fused_enabled() {
+                    Some(fp4_gate_up_swiglu_fused_kernel())
+                } else {
+                    None
+                },
+                "shared_fp8_gate_up_swiglu_fused": shared_fp8_gate_up_swiglu_fused_enabled(),
+                "shared_fp8_gate_up_swiglu_kernel": if shared_fp8_gate_up_swiglu_fused_enabled() {
+                    Some(SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL)
+                } else {
+                    None
+                },
+                "shared_fp8_down_combine_fused": shared_fp8_down_combine_fused_enabled(),
+                "shared_fp8_down_combine_kernel": if shared_fp8_down_combine_fused_enabled() {
+                    Some(SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL)
+                } else {
+                    None
+                },
                 "expert_nocopy_binds": self.counters.expert_nocopy_binds,
                 "expert_slab_packs": self.counters.expert_slab_packs,
                 "expert_payload_path": if self.counters.expert_slab_packs > 0 {
@@ -633,6 +846,13 @@ mod macos {
         env_flag("HAWKING_DSV4F_MLA_FP8_SIMD", false)
     }
 
+    fn device_mhc_enabled() -> bool {
+        // This path removes real host work, but it is not promoted until the
+        // target Metal device supplies an exact-storage and complete-token
+        // receipt.  Keep the default conservative and make admission explicit.
+        env_flag(DEVICE_MHC_ENV, false)
+    }
+
     fn align_simd(threads: u32) -> u32 {
         let aligned = threads - (threads % SIMD_WIDTH);
         aligned.max(SIMD_WIDTH)
@@ -655,6 +875,54 @@ mod macos {
         }
     }
 
+    /// Process-scoped native-graph controls.  These switches are selected
+    /// before a graph is attached; keeping one immutable snapshot means the
+    /// per-layer/per-dispatch path does not repeatedly parse the environment
+    /// or accidentally change topology halfway through a token.
+    #[derive(Debug, Clone, Copy)]
+    struct GraphControls {
+        cb_collapse: bool,
+        mla_serial_group: bool,
+        mla_kv_qat_simd: bool,
+        mla_rmsnorm_simd: bool,
+        mla_wo_a_simd: bool,
+        mla_fp8_simd: bool,
+        fp4_occupancy: bool,
+        expert_slab_pack: bool,
+        kernel_probe: bool,
+        decode_family: bool,
+        fp4_gate_up_swiglu_fused: bool,
+        shared_fp8_gate_up_swiglu_fused: bool,
+        shared_fp8_down_combine_fused: bool,
+        device_mhc: bool,
+        device_mhc_pre_simd: bool,
+        device_mhc_norm_simd: bool,
+    }
+
+    impl GraphControls {
+        fn from_env() -> Self {
+            let device_mhc = device_mhc_enabled();
+            Self {
+                cb_collapse: cb_collapse_enabled(),
+                mla_serial_group: mla_serial_group_enabled(),
+                mla_kv_qat_simd: mla_kv_qat_simd_enabled(),
+                mla_rmsnorm_simd: mla_rmsnorm_simd_enabled(),
+                mla_wo_a_simd: mla_wo_a_simd_enabled(),
+                mla_fp8_simd: mla_fp8_simd_enabled(),
+                fp4_occupancy: crate::env_opt_out("HAWKING_DSV4F_FP4_OCCUPANCY"),
+                expert_slab_pack: expert_compact_slab_pack_enabled(),
+                kernel_probe: kernel_probe_enabled(),
+                decode_family: crate::decode_family::family_dispatch_enabled(),
+                fp4_gate_up_swiglu_fused: fp4_gate_up_swiglu_fused_enabled(),
+                shared_fp8_gate_up_swiglu_fused: shared_fp8_gate_up_swiglu_fused_enabled(),
+                shared_fp8_down_combine_fused: shared_fp8_down_combine_fused_enabled(),
+                device_mhc,
+                device_mhc_pre_simd: device_mhc && crate::env_on(DEVICE_MHC_PRE_SIMD_ENV),
+                device_mhc_norm_simd: device_mhc && crate::env_on(DEVICE_MHC_NORM_SIMD_ENV),
+            }
+        }
+    }
+
     static FIRST_LAYER_BIND_TIMED: AtomicBool = AtomicBool::new(false);
 
     #[repr(C)]
@@ -667,7 +935,22 @@ mod macos {
     }
 
     struct Scratch {
-        _hc: metal::Buffer,
+        hc_state_a: metal::Buffer,
+        hc_state_b: metal::Buffer,
+        hc_attn_fn: metal::Buffer,
+        hc_attn_base: metal::Buffer,
+        hc_attn_scale: metal::Buffer,
+        hc_ffn_fn: metal::Buffer,
+        hc_ffn_base: metal::Buffer,
+        hc_ffn_scale: metal::Buffer,
+        hc_reduced: metal::Buffer,
+        hc_flat_rsqrt: metal::Buffer,
+        hc_mixes: metal::Buffer,
+        hc_pre: metal::Buffer,
+        hc_post: metal::Buffer,
+        hc_comb: metal::Buffer,
+        attn_norm_weight: metal::Buffer,
+        ffn_norm_weight: metal::Buffer,
         hidden_a: metal::Buffer,
         hidden_b: metal::Buffer,
         q_lora: metal::Buffer,
@@ -744,10 +1027,32 @@ mod macos {
     }
 
     impl Scratch {
-        fn new(metal: &MetalContext) -> Result<Self> {
+        fn new(metal: &MetalContext, device_mhc: bool) -> Result<Self> {
             let bf16_h = HIDDEN_SIZE * size_of::<u16>();
+            let device_only = |bytes: usize| {
+                metal.new_buffer_checked(if device_mhc { bytes } else { 1 })
+            };
             Ok(Self {
-                _hc: metal.new_buffer_checked(HC_FLAT_WIDTH * size_of::<u16>())?,
+                hc_state_a: device_only(HC_FLAT_WIDTH * size_of::<u16>())?,
+                hc_state_b: device_only(HC_FLAT_WIDTH * size_of::<u16>())?,
+                hc_attn_fn: device_only(
+                    HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>(),
+                )?,
+                hc_attn_base: device_only(HC_MIX_WIDTH * size_of::<f32>())?,
+                hc_attn_scale: device_only(3 * size_of::<f32>())?,
+                hc_ffn_fn: device_only(
+                    HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>(),
+                )?,
+                hc_ffn_base: device_only(HC_MIX_WIDTH * size_of::<f32>())?,
+                hc_ffn_scale: device_only(3 * size_of::<f32>())?,
+                hc_reduced: device_only(bf16_h)?,
+                hc_flat_rsqrt: device_only(size_of::<f32>())?,
+                hc_mixes: device_only(HC_MIX_WIDTH * size_of::<f32>())?,
+                hc_pre: device_only(HC_MULT * size_of::<f32>())?,
+                hc_post: device_only(HC_MULT * size_of::<f32>())?,
+                hc_comb: device_only(HC_MULT * HC_MULT * size_of::<f32>())?,
+                attn_norm_weight: device_only(bf16_h)?,
+                ffn_norm_weight: device_only(bf16_h)?,
                 hidden_a: metal.new_buffer_checked(bf16_h)?,
                 hidden_b: metal.new_buffer_checked(bf16_h)?,
                 q_lora: metal.new_buffer_checked(Q_LORA_RANK * size_of::<u16>())?,
@@ -858,6 +1163,8 @@ mod macos {
         counters: NativeTokenGraphCounters,
         act_tg: u32,
         fp8_tg: u32,
+        shared_fp8_tg: u32,
+        shared_fp8_down_combine_tg: u32,
         fp8_occ_tg: u32,
         fp4_tg: u32,
         cast_tg: u32,
@@ -866,34 +1173,134 @@ mod macos {
         wo_a_occ_tg: u32,
         rms_tg: u32,
         lm_tg: u32,
+        lm_head_kernel: &'static str,
         attn_scratch_ready: bool,
         mla_pipeline_limits: Vec<crate::gravity_deepseek_v4_token_ns_ledger::MlaPipelineLimit>,
+        controls: GraphControls,
+        device_mhc_pre_tg: u32,
+        device_mhc_norm_tg: u32,
+        /// Keep warmed pipeline handles across the graph's per-organ batches.
+        /// `=0` restores the context lookup path for a protected control.
+        pipeline_cache: crate::metal::TokenPipelineCache,
+        pipeline_cache_reuse: bool,
     }
 
     impl Graph {
         fn new() -> Result<Self> {
             let metal = MetalContext::new()?;
-            let scratch = Scratch::new(&metal)?;
+            let controls = GraphControls::from_env();
+            let scratch = Scratch::new(&metal, controls.device_mhc)?;
             let mut counters = NativeTokenGraphCounters::default();
             counters.scratch_buffer_creations =
                 std::mem::size_of::<Scratch>() / std::mem::size_of::<metal::Buffer>();
             let mla_pipeline_limits = mla_pipeline_limits(&metal)?;
+            let pipeline_cache_reuse = crate::env_opt_out("HAWKING_FLASH_PIPELINE_CACHE_REUSE");
+            let lm_head_kernel = selected_lm_head_kernel();
+            let lm_tg = pipeline_tg(&metal, lm_head_kernel, 256)?;
+            if lm_head_kernel == LM_HEAD_GEO_KERNEL && lm_tg < 128 {
+                return Err(graph_error(
+                    "source-BF16 SIMD lm_head requires at least 128 threads per threadgroup",
+                ));
+            }
+            let device_mhc_pre_tg = if controls.device_mhc {
+                let kernel = device_mhc_pre_kernel(controls.device_mhc_pre_simd);
+                let preferred = if controls.device_mhc_pre_simd {
+                    DEVICE_MHC_PRE_SIMD_THREADS
+                } else {
+                    1
+                };
+                let actual = pipeline_tg(&metal, kernel, preferred)?;
+                if controls.device_mhc_pre_simd && actual < DEVICE_MHC_PRE_SIMD_THREADS {
+                    return Err(graph_error(format!(
+                        "{kernel} requires {DEVICE_MHC_PRE_SIMD_THREADS} threads per threadgroup; device supports {actual}"
+                    )));
+                }
+                actual
+            } else {
+                1
+            };
+            let device_mhc_norm_tg = if controls.device_mhc {
+                let kernel = device_mhc_norm_kernel(controls.device_mhc_norm_simd);
+                let preferred = if controls.device_mhc_norm_simd {
+                    256
+                } else {
+                    1
+                };
+                let actual = pipeline_tg(&metal, kernel, preferred)?;
+                if controls.device_mhc_norm_simd && actual < SIMD_WIDTH {
+                    return Err(graph_error(format!(
+                        "{kernel} requires at least {SIMD_WIDTH} threads per threadgroup; device supports {actual}"
+                    )));
+                }
+                actual
+            } else {
+                1
+            };
+            if controls.device_mhc {
+                // Resolve both state-preserving kernels before a protected
+                // window. This keeps compilation/lookup outside token timing
+                // and fails closed if the linked library is incomplete.
+                let _ = pipeline_tg(
+                    &metal,
+                    device_mhc_pre_kernel(controls.device_mhc_pre_simd),
+                    device_mhc_pre_tg,
+                )?;
+                let _ = pipeline_tg(
+                    &metal,
+                    device_mhc_norm_kernel(controls.device_mhc_norm_simd),
+                    device_mhc_norm_tg,
+                )?;
+                let _ = pipeline_tg(&metal, DEVICE_MHC_ATTN_POST_F32_KERNEL, 256)?;
+                let _ = pipeline_tg(&metal, DEVICE_MHC_POST_KERNEL, 256)?;
+            }
+            if controls.fp4_gate_up_swiglu_fused {
+                // Resolve the candidate before the first token so pipeline
+                // compilation cannot contaminate a protected timing window.
+                let fused_kernel = if controls.fp4_occupancy {
+                    worklist_fp4_gate_up_swiglu_simd_kernel(controls.decode_family)
+                } else {
+                    worklist_fp4_gate_up_swiglu_kernel(controls.decode_family)
+                };
+                let _ = pipeline_tg(&metal, fused_kernel, 256)?;
+            }
+            let shared_fp8_tg = if controls.shared_fp8_gate_up_swiglu_fused {
+                // Resolve the candidate before the first token so pipeline
+                // compilation cannot contaminate a protected timing window.
+                pipeline_tg(&metal, SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL, 256)?
+            } else {
+                1
+            };
+            let shared_fp8_down_combine_tg = if controls.shared_fp8_down_combine_fused {
+                // Resolve the candidate before the first token so pipeline
+                // compilation cannot contaminate a protected timing window.
+                pipeline_tg(&metal, SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL, 256)?
+            } else {
+                1
+            };
             Ok(Self {
                 act_tg: pipeline_tg(&metal, ACT_QUANT_SIMD_KERNEL, 256)?,
                 fp8_tg: pipeline_tg(&metal, FP8_KERNEL, 256)?,
+                shared_fp8_tg,
+                shared_fp8_down_combine_tg,
                 fp8_occ_tg: align_simd(pipeline_tg(&metal, FP8_OCC_KERNEL, 256)?),
-                fp4_tg: pipeline_tg(&metal, worklist_fp4_kernel(), 256)?,
+                fp4_tg: pipeline_tg(&metal, worklist_fp4_kernel(controls.decode_family), 256)?,
                 cast_tg: pipeline_tg(&metal, CAST_KERNEL, 256)?,
                 gate_tg: pipeline_tg(&metal, GATE_KERNEL, 256)?,
                 wo_a_tg: pipeline_tg(&metal, WO_A_KERNEL, 256)?,
                 wo_a_occ_tg: align_simd(pipeline_tg(&metal, WO_A_SIMD_KERNEL, 256)?),
                 rms_tg: align_simd(pipeline_tg(&metal, RMSNORM_SIMD_KERNEL, 256)?),
-                lm_tg: pipeline_tg(&metal, LM_HEAD_KERNEL, 256)?,
+                lm_tg,
+                lm_head_kernel,
                 metal,
                 scratch,
                 counters,
                 attn_scratch_ready: false,
                 mla_pipeline_limits,
+                controls,
+                device_mhc_pre_tg,
+                device_mhc_norm_tg,
+                pipeline_cache: Default::default(),
+                pipeline_cache_reuse,
             })
         }
 
@@ -914,10 +1321,20 @@ mod macos {
             encode: impl FnOnce(&mut CommandBatch<'_>, &Scratch) -> Result<usize>,
         ) -> Result<(usize, SubmittedBatch)> {
             let mut n = 0usize;
-            let submitted = self.metal.submit_batch(|batch| {
-                n = encode(batch, &self.scratch)?;
-                Ok(())
-            })?;
+            let submitted = if self.pipeline_cache_reuse {
+                self.metal.submit_batch_with_pipeline_cache(
+                    &mut self.pipeline_cache,
+                    |batch| {
+                        n = encode(batch, &self.scratch)?;
+                        Ok(())
+                    },
+                )?
+            } else {
+                self.metal.submit_batch(|batch| {
+                    n = encode(batch, &self.scratch)?;
+                    Ok(())
+                })?
+            };
             Ok((n, submitted))
         }
 
@@ -1022,6 +1439,8 @@ mod macos {
         wo_a_tg: u32,
         wo_a_occ_tg: u32,
         rms_tg: u32,
+        device_mhc_norm_tg: u32,
+        controls: GraphControls,
     ) -> Vec<crate::gravity_deepseek_v4_token_ns_ledger::MlaDispatchSpec> {
         use crate::gravity_deepseek_v4_token_ns_ledger::MlaDispatchSpec;
         let spec = |name: &str,
@@ -1063,11 +1482,17 @@ mod macos {
         let wo_tg = wo_a_tg.min(WO_A_ROWS as u32).max(1);
         let wo_occ_tg = align_simd(wo_a_occ_tg.max(SIMD_WIDTH));
         let rms_tg = align_simd(rms_tg.max(SIMD_WIDTH));
-        let rms_simd = mla_rmsnorm_simd_enabled();
-        let wo_a_simd = mla_wo_a_simd_enabled();
-        let fp8_simd = mla_fp8_simd_enabled();
+        let device_mhc_norm_simd = controls.device_mhc && controls.device_mhc_norm_simd;
+        let device_mhc_norm_tg = if device_mhc_norm_simd {
+            align_simd(device_mhc_norm_tg.max(SIMD_WIDTH))
+        } else {
+            1
+        };
+        let rms_simd = controls.mla_rmsnorm_simd;
+        let wo_a_simd = controls.mla_wo_a_simd;
+        let fp8_simd = controls.mla_fp8_simd;
         let qat_blocks = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u64;
-        let kv_qat_simd = mla_kv_qat_simd_enabled();
+        let kv_qat_simd = controls.mla_kv_qat_simd;
         let rms_q_threads = if rms_simd {
             Q_LORA_RANK.min(rms_tg as usize) as u64
         } else {
@@ -1135,7 +1560,7 @@ mod macos {
         let scale_bytes = |rows: usize, cols: usize| -> u64 {
             ((rows / ACT_QUANT_BLOCK) * (cols / ACT_QUANT_BLOCK)) as u64
         };
-        vec![
+        let mut specs = vec![
             spec(
                 "act_quant.hidden",
                 ACT_QUANT_SIMD_KERNEL,
@@ -1354,7 +1779,15 @@ mod macos {
                 (WO_B_ROWS * 4) as u64,
                 2 * WO_B_ROWS as u64 * WO_B_COLS as u64,
             ),
-            spec(
+        ];
+        if device_mhc_norm_simd {
+            // The fused device-mHC norm kernel writes the projection-ready
+            // quantized row and scales directly, so the standalone hidden
+            // activation-quant dispatch is not part of that topology.
+            specs.remove(0);
+        }
+        if !controls.device_mhc {
+            specs.push(spec(
                 "cast.hidden_b",
                 CAST_KERNEL,
                 WO_B_ROWS as u64,
@@ -1364,11 +1797,138 @@ mod macos {
                 (WO_B_ROWS * 4) as u64,
                 (WO_B_ROWS * 2) as u64,
                 WO_B_ROWS as u64,
-            ),
-        ]
+            ));
+        }
+        if controls.device_mhc {
+            let device_pre_kernel = device_mhc_pre_kernel(controls.device_mhc_pre_simd);
+            let device_pre_tg = if controls.device_mhc_pre_simd {
+                DEVICE_MHC_PRE_SIMD_THREADS
+            } else {
+                1
+            };
+            let device_pre_simdgroups = if controls.device_mhc_pre_simd {
+                (DEVICE_MHC_PRE_SIMD_THREADS / SIMD_WIDTH) as u64
+            } else {
+                1
+            };
+            let hc_state_bytes = (HC_FLAT_WIDTH * size_of::<u16>()) as u64;
+            let hc_control_bytes = (HC_MIX_WIDTH * HC_FLAT_WIDTH * size_of::<f32>()
+                + HC_MIX_WIDTH * size_of::<f32>()
+                + 3 * size_of::<f32>()) as u64;
+            specs.push(spec(
+                "mhc.attn_pre.device",
+                device_pre_kernel,
+                device_pre_tg as u64,
+                1,
+                device_pre_tg as u64,
+                device_pre_simdgroups,
+                hc_state_bytes + hc_control_bytes,
+                (HIDDEN_SIZE * size_of::<u16>()
+                    + size_of::<f32>()
+                    + HC_MIX_WIDTH * size_of::<f32>()
+                    + HC_MULT * size_of::<f32>()
+                    + HC_MULT * size_of::<f32>()
+                    + HC_MULT * HC_MULT * size_of::<f32>()) as u64,
+                (2 * HC_MIX_WIDTH * HC_FLAT_WIDTH + 4 * HC_FLAT_WIDTH) as u64,
+            ));
+            specs.push(spec(
+                "mhc.attn_norm.device",
+                device_mhc_norm_kernel(device_mhc_norm_simd),
+                device_mhc_norm_tg as u64,
+                1,
+                device_mhc_norm_tg as u64,
+                if device_mhc_norm_simd {
+                    (device_mhc_norm_tg / SIMD_WIDTH) as u64
+                } else {
+                    1
+                },
+                (2 * HIDDEN_SIZE * size_of::<u16>()) as u64,
+                if device_mhc_norm_simd {
+                    (HIDDEN_SIZE + HIDDEN_SIZE / ACT_QUANT_BLOCK) as u64
+                } else {
+                    (HIDDEN_SIZE * size_of::<u16>()) as u64
+                },
+                if device_mhc_norm_simd {
+                    (4 * HIDDEN_SIZE) as u64
+                } else {
+                    (3 * HIDDEN_SIZE) as u64
+                },
+            ));
+            specs.push(spec(
+                "mhc.attn_post.device",
+                DEVICE_MHC_ATTN_POST_F32_KERNEL,
+                HC_FLAT_WIDTH as u64,
+                (HC_FLAT_WIDTH as u32).div_ceil(256) as u64,
+                256,
+                8,
+                (HIDDEN_SIZE * size_of::<f32>()
+                    + HC_FLAT_WIDTH * size_of::<u16>()
+                    + HC_MULT * size_of::<f32>()
+                    + HC_MULT * HC_MULT * size_of::<f32>()) as u64,
+                hc_state_bytes,
+                (10 * HC_FLAT_WIDTH) as u64,
+            ));
+            specs.push(spec(
+                "mhc.ffn_pre.device",
+                device_pre_kernel,
+                device_pre_tg as u64,
+                1,
+                device_pre_tg as u64,
+                device_pre_simdgroups,
+                hc_state_bytes + hc_control_bytes,
+                (HIDDEN_SIZE * size_of::<u16>()
+                    + size_of::<f32>()
+                    + HC_MIX_WIDTH * size_of::<f32>()
+                    + HC_MULT * size_of::<f32>()
+                    + HC_MULT * size_of::<f32>()
+                    + HC_MULT * HC_MULT * size_of::<f32>()) as u64,
+                (2 * HC_MIX_WIDTH * HC_FLAT_WIDTH + 4 * HC_FLAT_WIDTH) as u64,
+            ));
+            specs.push(spec(
+                "mhc.ffn_norm.device",
+                device_mhc_norm_kernel(device_mhc_norm_simd),
+                device_mhc_norm_tg as u64,
+                1,
+                device_mhc_norm_tg as u64,
+                if device_mhc_norm_simd {
+                    (device_mhc_norm_tg / SIMD_WIDTH) as u64
+                } else {
+                    1
+                },
+                (2 * HIDDEN_SIZE * size_of::<u16>()) as u64,
+                if device_mhc_norm_simd {
+                    (HIDDEN_SIZE + HIDDEN_SIZE / ACT_QUANT_BLOCK) as u64
+                } else {
+                    (HIDDEN_SIZE * size_of::<u16>()) as u64
+                },
+                if device_mhc_norm_simd {
+                    (4 * HIDDEN_SIZE) as u64
+                } else {
+                    (3 * HIDDEN_SIZE) as u64
+                },
+            ));
+            specs.push(spec(
+                "mhc.ffn_post.device",
+                DEVICE_MHC_POST_KERNEL,
+                HC_FLAT_WIDTH as u64,
+                (HC_FLAT_WIDTH as u32).div_ceil(256) as u64,
+                256,
+                8,
+                (HIDDEN_SIZE * size_of::<u16>()
+                    + HC_FLAT_WIDTH * size_of::<u16>()
+                    + HC_MULT * size_of::<f32>()
+                    + HC_MULT * HC_MULT * size_of::<f32>()) as u64,
+                hc_state_bytes,
+                (10 * HC_FLAT_WIDTH) as u64,
+            ));
+        }
+        specs
     }
 
-    fn mla_kv_state(layers: u64) -> crate::gravity_deepseek_v4_token_ns_ledger::MlaKvState {
+    fn mla_kv_state(
+        layers: u64,
+        device_mhc: bool,
+    ) -> crate::gravity_deepseek_v4_token_ns_ledger::MlaKvState {
         let kv_bf16 = (HEAD_DIM * size_of::<u16>()) as u64;
         let qat_bytes = (HEAD_DIM - ROPE_HEAD_DIM) as u64;
         let qat_scales = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u64;
@@ -1383,11 +1943,21 @@ mod macos {
             bytes_written_per_token: written.saturating_mul(layers),
             bytes_read_per_token: read.saturating_mul(layers),
             device_copies_per_token: 0,
-            host_syncs_per_token: layers,
-            host_sync_bytes_per_token: (HIDDEN_SIZE * size_of::<u16>()) as u64 * layers,
+            host_syncs_per_token: if device_mhc { 0 } else { layers },
+            host_sync_bytes_per_token: if device_mhc {
+                0
+            } else {
+                (HIDDEN_SIZE * size_of::<u16>()) as u64 * layers
+            },
             scratch_overwritten_per_layer: true,
             rebuild_rebind_reallocate_per_token: true,
-            note: "BOS position-0 graph: compressed indexer is not loaded and window KV is empty. scratch.wkv / kv_qat_bytes are per-layer scratch overwritten on the next layer; they are not a device-addressable cache that survives the token. The only host sync in this region is wo_b activation readback for host MHC post (HIDDEN_SIZE bf16 / layer). A second token would rebuild latent KV from streamed WKV weights — the standing anti-pattern.".to_owned(),
+            note: if device_mhc {
+                "BOS position-0 graph: compressed indexer is not loaded and window KV is empty. scratch.wkv / kv_qat_bytes are per-layer scratch overwritten on the next layer; they are not a device-addressable cache that survives the token. Device mHC removes the per-layer wo_b/moe activation handoffs; one final HC readback remains for the report/final head. A second token would rebuild latent KV from streamed WKV weights — the standing anti-pattern."
+                    .to_owned()
+            } else {
+                "BOS position-0 graph: compressed indexer is not loaded and window KV is empty. scratch.wkv / kv_qat_bytes are per-layer scratch overwritten on the next layer; they are not a device-addressable cache that survives the token. The only host sync in this region is wo_b activation readback for host MHC post (HIDDEN_SIZE bf16 / layer). A second token would rebuild latent KV from streamed WKV weights — the standing anti-pattern."
+                    .to_owned()
+            },
         }
     }
 
@@ -1493,10 +2063,11 @@ mod macos {
         cols: u32,
         tg: u32,
         occupancy: bool,
+        fp8_simd: bool,
     ) -> Result<()> {
         let scale_cols = cols / ACT_QUANT_BLOCK as u32;
         let occ_ok = occupancy
-            && mla_fp8_simd_enabled()
+            && fp8_simd
             && rows > 0
             && scale_cols > 0
             && scale_cols <= FP8_OCC_MAX_BLOCKS
@@ -1534,6 +2105,82 @@ mod macos {
         }
     }
 
+    fn dispatch_shared_fp8_gate_up_swiglu(
+        batch: &mut CommandBatch<'_>,
+        gate_weight: &metal::Buffer,
+        gate_scale: &metal::Buffer,
+        up_weight: &metal::Buffer,
+        up_scale: &metal::Buffer,
+        quant: &metal::Buffer,
+        act_scale: &metal::Buffer,
+        output_bf16: &metal::Buffer,
+        rows: u32,
+        cols: u32,
+        tg: u32,
+    ) -> Result<()> {
+        let scale_cols = cols / ACT_QUANT_BLOCK as u32;
+        let route_weight = 1.0f32;
+        let tg = tg.min(rows.max(1));
+        batch.dispatch_threads(
+            SHARED_FP8_GATE_UP_SWIGLU_FUSED_KERNEL,
+            (rows, 1, 1),
+            (tg, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(gate_weight), 0);
+                enc.set_buffer(1, Some(gate_scale), 0);
+                enc.set_buffer(2, Some(up_weight), 0);
+                enc.set_buffer(3, Some(up_scale), 0);
+                enc.set_buffer(4, Some(quant), 0);
+                enc.set_buffer(5, Some(act_scale), 0);
+                enc.set_buffer(6, Some(output_bf16), 0);
+                set_u32(enc, 7, &rows);
+                set_u32(enc, 8, &cols);
+                set_u32(enc, 9, &scale_cols);
+                set_f32(enc, 10, &route_weight);
+            },
+        )
+    }
+
+    fn dispatch_shared_fp8_down_bf16_combine(
+        batch: &mut CommandBatch<'_>,
+        shared_weight: &metal::Buffer,
+        shared_scale: &metal::Buffer,
+        quant: &metal::Buffer,
+        act_scale: &metal::Buffer,
+        routed_bf16: &metal::Buffer,
+        output_bf16: &metal::Buffer,
+        rows: u32,
+        cols: u32,
+        tg: u32,
+    ) -> Result<()> {
+        if rows == 0 || cols == 0 || cols % ACT_QUANT_BLOCK as u32 != 0 {
+            return Err(graph_error(
+                "shared FP8 down/combine fusion has invalid source geometry",
+            ));
+        }
+        let scale_cols = cols / ACT_QUANT_BLOCK as u32;
+        let tg = tg.min(rows);
+        batch.dispatch_threads(
+            SHARED_FP8_DOWN_COMBINE_FUSED_KERNEL,
+            (rows, 1, 1),
+            (tg.max(1), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(shared_weight), 0);
+                enc.set_buffer(1, Some(shared_scale), 0);
+                enc.set_buffer(2, Some(quant), 0);
+                enc.set_buffer(3, Some(act_scale), 0);
+                for slot in 0..ACTIVATED_EXPERTS {
+                    let offset = slot as u64 * rows as u64 * size_of::<u16>() as u64;
+                    enc.set_buffer(4u64 + slot as u64, Some(routed_bf16), offset);
+                }
+                enc.set_buffer(10, Some(output_bf16), 0);
+                set_u32(enc, 11, &rows);
+                set_u32(enc, 12, &cols);
+                set_u32(enc, 13, &scale_cols);
+            },
+        )
+    }
+
     fn dispatch_cast(
         batch: &mut CommandBatch<'_>,
         input: &metal::Buffer,
@@ -1557,8 +2204,9 @@ mod macos {
         width: u32,
         eps: f32,
         rms_tg: u32,
+        rms_simd: bool,
     ) -> Result<()> {
-        if mla_rmsnorm_simd_enabled() && width >= SIMD_WIDTH {
+        if rms_simd && width >= SIMD_WIDTH {
             let threads = align_simd(width.min(rms_tg.max(SIMD_WIDTH)));
             batch.dispatch_threads(RMSNORM_SIMD_KERNEL, (threads, 1, 1), (threads, 1, 1), |enc| {
                 enc.set_buffer(0, Some(input), 0);
@@ -1578,6 +2226,134 @@ mod macos {
         }
     }
 
+    fn dispatch_device_mhc_norm(
+        batch: &mut CommandBatch<'_>,
+        input: &metal::Buffer,
+        weight: &metal::Buffer,
+        output: &metal::Buffer,
+    ) -> Result<()> {
+        let hidden = HIDDEN_SIZE as u32;
+        batch.dispatch_threads(DEVICE_MHC_NORM_KERNEL, (1, 1, 1), (1, 1, 1), |enc| {
+            enc.set_buffer(0, Some(input), 0);
+            enc.set_buffer(1, Some(weight), 0);
+            enc.set_buffer(2, Some(output), 0);
+            set_u32(enc, 3, &hidden);
+            set_f32(enc, 4, &RMS_NORM_EPS);
+        })
+    }
+
+    fn dispatch_device_mhc_norm_act_quant(
+        batch: &mut CommandBatch<'_>,
+        input: &metal::Buffer,
+        weight: &metal::Buffer,
+        quantized: &metal::Buffer,
+        scales: &metal::Buffer,
+        threads: u32,
+    ) -> Result<()> {
+        let hidden = HIDDEN_SIZE as u32;
+        let threads = align_simd(threads.min(hidden).max(SIMD_WIDTH));
+        batch.dispatch_threads(
+            DEVICE_MHC_NORM_ACT_QUANT_KERNEL,
+            (threads, 1, 1),
+            (threads, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(input), 0);
+                enc.set_buffer(1, Some(weight), 0);
+                enc.set_buffer(2, Some(quantized), 0);
+                enc.set_buffer(3, Some(scales), 0);
+                set_u32(enc, 4, &hidden);
+                set_f32(enc, 5, &RMS_NORM_EPS);
+            },
+        )
+    }
+
+    #[allow(clippy::too_many_arguments)]
+    fn dispatch_device_mhc_pre(
+        batch: &mut CommandBatch<'_>,
+        residual_hc: &metal::Buffer,
+        hc_fn: &metal::Buffer,
+        hc_scale: &metal::Buffer,
+        hc_base: &metal::Buffer,
+        reduced: &metal::Buffer,
+        flat_rsqrt: &metal::Buffer,
+        mixes: &metal::Buffer,
+        pre: &metal::Buffer,
+        post: &metal::Buffer,
+        comb: &metal::Buffer,
+        threads: u32,
+        simd: bool,
+    ) -> Result<()> {
+        let hidden = HIDDEN_SIZE as u32;
+        let hc_mult = HC_MULT as u32;
+        let mix_width = HC_MIX_WIDTH as u32;
+        let sinkhorn_iters = HC_SINKHORN_ITERS as u32;
+        let kernel = device_mhc_pre_kernel(simd);
+        batch.dispatch_threads(
+            kernel,
+            (threads, 1, 1),
+            (threads, 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(residual_hc), 0);
+                enc.set_buffer(1, Some(hc_fn), 0);
+                enc.set_buffer(2, Some(hc_scale), 0);
+                enc.set_buffer(3, Some(hc_base), 0);
+                enc.set_buffer(4, Some(reduced), 0);
+                enc.set_buffer(5, Some(flat_rsqrt), 0);
+                enc.set_buffer(6, Some(mixes), 0);
+                enc.set_buffer(7, Some(pre), 0);
+                enc.set_buffer(8, Some(post), 0);
+                enc.set_buffer(9, Some(comb), 0);
+                set_u32(enc, 10, &hidden);
+                set_u32(enc, 11, &hc_mult);
+                set_u32(enc, 12, &mix_width);
+                set_u32(enc, 13, &sinkhorn_iters);
+                set_f32(enc, 14, &RMS_NORM_EPS);
+                set_f32(enc, 15, &HC_EPS);
+                if simd {
+                    // P7 consumes a real lane-major [4, hidden] state. The
+                    // shared candidate also serves P4B's replicated row, so
+                    // make this distinction explicit in the ABI.
+                    let replicated_input = 0u32;
+                    set_u32(enc, 16, &replicated_input);
+                }
+            },
+        )
+    }
+
+    fn dispatch_device_mhc_post(
+        batch: &mut CommandBatch<'_>,
+        attention_or_moe: &metal::Buffer,
+        residual_hc: &metal::Buffer,
+        post: &metal::Buffer,
+        comb: &metal::Buffer,
+        output_hc: &metal::Buffer,
+        threads: u32,
+        input_f32: bool,
+    ) -> Result<()> {
+        let hidden = HIDDEN_SIZE as u32;
+        let hc_mult = HC_MULT as u32;
+        let count = HC_FLAT_WIDTH as u32;
+        let kernel = if input_f32 {
+            DEVICE_MHC_ATTN_POST_F32_KERNEL
+        } else {
+            DEVICE_MHC_POST_KERNEL
+        };
+        batch.dispatch_threads(
+            kernel,
+            (count, 1, 1),
+            (threads.min(count).max(1), 1, 1),
+            |enc| {
+                enc.set_buffer(0, Some(attention_or_moe), 0);
+                enc.set_buffer(1, Some(residual_hc), 0);
+                enc.set_buffer(2, Some(post), 0);
+                enc.set_buffer(3, Some(comb), 0);
+                enc.set_buffer(4, Some(output_hc), 0);
+                set_u32(enc, 5, &hidden);
+                set_u32(enc, 6, &hc_mult);
+            },
+        )
+    }
+
     fn dispatch_per_head_rms(
         batch: &mut CommandBatch<'_>,
         input: &metal::Buffer,
@@ -1585,8 +2361,9 @@ mod macos {
         heads: u32,
         dim: u32,
         eps: f32,
+        rms_simd: bool,
     ) -> Result<()> {
-        if mla_rmsnorm_simd_enabled() {
+        if rms_simd {
             batch.dispatch_threads(
                 PER_HEAD_RMS_SIMD_KERNEL,
                 (heads * SIMD_WIDTH, 1, 1),
@@ -1623,12 +2400,13 @@ mod macos {
         output: &metal::Buffer,
         wo_a_tg: u32,
         wo_a_occ_tg: u32,
+        wo_a_simd: bool,
     ) -> Result<()> {
         let rows = WO_A_ROWS as u32;
         let cols = WO_A_COLS as u32;
         let scale_cols = (WO_A_COLS / ACT_QUANT_BLOCK) as u32;
         let ranks = O_LORA_RANK as u32;
-        if mla_wo_a_simd_enabled() {
+        if wo_a_simd {
             let threads_x = align_simd(wo_a_occ_tg);
             batch.dispatch_threads(
                 WO_A_SIMD_KERNEL,
@@ -1667,12 +2445,13 @@ mod macos {
         output: &metal::Buffer,
         quantized: &metal::Buffer,
         scales: &metal::Buffer,
+        kv_qat_simd: bool,
     ) -> Result<()> {
         let dim = HEAD_DIM as u32;
         let rope = ROPE_HEAD_DIM as u32;
         let block = KV_QAT_BLOCK as u32;
         let qat_blocks = ((HEAD_DIM - ROPE_HEAD_DIM) / KV_QAT_BLOCK) as u32;
-        if mla_kv_qat_simd_enabled() {
+        if kv_qat_simd {
             let threads_x = (qat_blocks.max(1) * ACT_QUANT_SIMD_WIDTH).max(ACT_QUANT_SIMD_WIDTH);
             batch.dispatch_threads(
                 KV_QAT_SIMD_KERNEL,
@@ -1785,11 +2564,25 @@ mod macos {
         if resources.is_empty() {
             return;
         }
-        let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
-        for resource in resources {
-            refs.push(resource);
+        match resources.len() {
+            2 => {
+                let refs: [&metal::ResourceRef; 2] =
+                    std::array::from_fn(|index| &**resources[index]);
+                enc.use_resources(&refs, metal::MTLResourceUsage::Read);
+            }
+            12 => {
+                let refs: [&metal::ResourceRef; ACTIVATED_EXPERTS * 2] =
+                    std::array::from_fn(|index| &**resources[index]);
+                enc.use_resources(&refs, metal::MTLResourceUsage::Read);
+            }
+            _ => {
+                // Keep an allocation-backed escape hatch for future resource
+                // layouts, but avoid it on the fixed production paths above.
+                let refs: Vec<&metal::ResourceRef> =
+                    resources.iter().map(|resource| &***resource).collect();
+                enc.use_resources(&refs, metal::MTLResourceUsage::Read);
+            }
         }
-        enc.use_resources(&refs, metal::MTLResourceUsage::Read);
     }
 
     fn no_copy_verified(
@@ -1843,17 +2636,22 @@ mod macos {
         top_k: u32,
         act_is_per_slot: u32,
         tg: u32,
+        occupancy: bool,
+        family_dispatch: bool,
     ) -> Result<()> {
-        let occupancy = crate::env_opt_out("HAWKING_DSV4F_FP4_OCCUPANCY");
         let (kernel, grid, tg) = if occupancy {
             let groups = rows.div_ceil(WORKLIST_FP4_SIMD_ROWS_PER_TG);
             (
-                worklist_fp4_simd_kernel(),
+                worklist_fp4_simd_kernel(family_dispatch),
                 top_k * groups * 256,
                 256u32,
             )
         } else {
-            (worklist_fp4_kernel(), top_k * rows, tg.min(rows.max(1)))
+            (
+                worklist_fp4_kernel(family_dispatch),
+                top_k * rows,
+                tg.min(rows.max(1)),
+            )
         };
         batch.dispatch_threads(kernel, (grid, 1, 1), (tg, 1, 1), |enc| {
             enc.set_buffer(0, Some(worklist), 0);
@@ -1867,6 +2665,56 @@ mod macos {
             set_u32(enc, 8, &top_k);
             set_u32(enc, 9, &act_is_per_slot);
             use_read_resources(enc, resources);
+        })
+    }
+
+    fn dispatch_worklist_fp4_gate_up_swiglu(
+        batch: &mut CommandBatch<'_>,
+        worklist: &metal::Buffer,
+        gate_refs: &metal::Buffer,
+        gate_resources: &[metal::Buffer],
+        up_refs: &metal::Buffer,
+        up_resources: &[metal::Buffer],
+        quant: &metal::Buffer,
+        act_scale: &metal::Buffer,
+        output_bf16: &metal::Buffer,
+        rows: u32,
+        packed_cols: u32,
+        scale_cols: u32,
+        top_k: u32,
+        act_is_per_slot: u32,
+        tg: u32,
+        occupancy: bool,
+        family_dispatch: bool,
+    ) -> Result<()> {
+        let (kernel, grid, tg) = if occupancy {
+            let groups = rows.div_ceil(WORKLIST_FP4_SIMD_ROWS_PER_TG);
+            (
+                worklist_fp4_gate_up_swiglu_simd_kernel(family_dispatch),
+                top_k * groups * 256,
+                256u32,
+            )
+        } else {
+            (
+                worklist_fp4_gate_up_swiglu_kernel(family_dispatch),
+                top_k * rows,
+                tg.min(rows.max(1)),
+            )
+        };
+        batch.dispatch_threads(kernel, (grid, 1, 1), (tg, 1, 1), |enc| {
+            enc.set_buffer(0, Some(worklist), 0);
+            enc.set_buffer(1, Some(gate_refs), 0);
+            enc.set_buffer(2, Some(up_refs), 0);
+            enc.set_buffer(3, Some(quant), 0);
+            enc.set_buffer(4, Some(act_scale), 0);
+            enc.set_buffer(5, Some(output_bf16), 0);
+            set_u32(enc, 6, &rows);
+            set_u32(enc, 7, &packed_cols);
+            set_u32(enc, 8, &scale_cols);
+            set_u32(enc, 9, &top_k);
+            set_u32(enc, 10, &act_is_per_slot);
+            use_read_resources(enc, gate_resources);
+            use_read_resources(enc, up_resources);
         })
     }
 
@@ -1938,9 +2786,9 @@ mod macos {
         reader: &DeepSeekV4FullStreamReader,
         ledger: &mut ResidentLedger,
         layer: &DeepSeekV4LayerSourceAnchor,
+        pack: bool,
         exec: &[(u32, f32, u32)],
     ) -> Result<ExpertAddressBind> {
-        let pack = expert_compact_slab_pack_enabled();
         let mut names = Vec::new();
         let mut jobs = Vec::with_capacity(ACTIVATED_EXPERTS * 6);
         for &(expert_id, _, _) in exec {
@@ -2198,7 +3046,7 @@ mod macos {
         let body = Instant::now();
         let mut profiler = TokenNsCollector::new();
         profiler.record_mla_static(
-            cb_collapse_enabled() || mla_serial_group_enabled(),
+            graph.controls.cb_collapse || graph.controls.mla_serial_group,
             mla_dispatch_specs(
                 (max_layer + 1) as u64,
                 graph.act_tg,
@@ -2208,8 +3056,10 @@ mod macos {
                 graph.wo_a_tg,
                 graph.wo_a_occ_tg,
                 graph.rms_tg,
+                graph.device_mhc_norm_tg,
+                graph.controls,
             ),
-            mla_kv_state((max_layer + 1) as u64),
+            mla_kv_state((max_layer + 1) as u64, graph.controls.device_mhc),
             graph.mla_pipeline_limits.clone(),
         );
         let mut peak_rss = peak_rss_bytes();
@@ -2219,6 +3069,13 @@ mod macos {
         let mut hc = profiler.time_result("host.embed_io", || {
             load_bos_embed_hc(&reader, &mut ledger, PREFIX_TOKEN_ID)
         })?;
+        if graph.controls.device_mhc {
+            // Seed the persistent ping-pong HC state once. Subsequent layers
+            // consume/produce device buffers; the host vector is only retained
+            // for the final report/head boundary.
+            write_u16(&graph.scratch.hc_state_a, &hc);
+            hc.clear();
+        }
         let mut attn_prefetch: Option<Vec<DeepSeekV4VerifiedBytes>> = None;
 
         for layer_idx in 0..=max_layer {
@@ -2260,6 +3117,18 @@ mod macos {
                     break;
                 }
             }
+        }
+
+        if graph.controls.device_mhc {
+            let readback_started = Instant::now();
+            hc = read_u16(&graph.scratch.hc_state_a, HC_FLAT_WIDTH)?;
+            profiler.record_sync(
+                "host.final_hc_state_readback",
+                None,
+                "report_sha_or_final_lm_head_requires_completed_hc_state",
+                readback_started.elapsed().as_nanos() as u64,
+                (HC_FLAT_WIDTH * size_of::<u16>()) as u64,
+            );
         }
 
         let deepest_layer = layers_executed.last().copied();
@@ -2408,7 +3277,13 @@ mod macos {
             weight_within_bound: ledger.peak_bytes() <= DECLARED_WEIGHT_RESIDENT_BOUND_BYTES,
             greedy,
             stop_reason,
-            honesty: NativeTokenGraphHonesty::for_run(compute_final_head, lm_head_on_device),
+            honesty: NativeTokenGraphHonesty::for_run(
+                compute_final_head,
+                lm_head_on_device,
+                graph.controls.device_mhc,
+                graph.controls.device_mhc_pre_simd,
+                graph.controls.device_mhc_norm_simd,
+            ),
             counters: graph.counters,
             artifact_root: admission.source_path.display().to_string(),
             manifest_seal_sha256: reader.manifest_seal_sha256().to_owned(),
@@ -2421,6 +3296,7 @@ mod macos {
             second_touch_cache_hits_delta,
             second_touch_identity_calls_delta,
             second_touch_mmap_calls_delta,
+            lm_head_kernel: graph.lm_head_kernel,
         })
     }
 
@@ -2562,26 +3438,44 @@ mod macos {
         profiler.add_stage("host.mla.wkv_bytes", 0, 1, (WKV_ROWS * HIDDEN_SIZE) as u64);
         profiler.add_stage("host.mla.wo_a_bytes", 0, 1, (WO_A_ROWS * WO_A_COLS) as u64);
         profiler.add_stage("host.mla.wo_b_bytes", 0, 1, (WO_B_ROWS * WO_B_COLS) as u64);
-        let hc_fn = decode_f32_le(blobs[0].as_bytes(), &mhc.fn_tensor.name)?;
-        let hc_base = decode_f32_le(blobs[1].as_bytes(), &mhc.base_tensor.name)?;
-        let hc_scale = decode_f32_le(blobs[2].as_bytes(), &mhc.scale_tensor.name)?;
-        let attn_norm_w = decode_u16_le(blobs[3].as_bytes(), &attn_norm.name)?;
-        let (_, _, _, post_f32, comb_f32, reduced) = profiler.time_result("host.mhc_pre", || {
-            hc_attn_pre_source_algorithm(
-                hc_in,
-                &hc_fn,
-                &hc_scale,
-                &hc_base,
-                RMS_NORM_EPS,
-                HC_EPS,
-                HC_SINKHORN_ITERS,
-            )
-        })?;
-        let attn_norm_row = profiler.time_result("host.rmsnorm", || {
-            rms_norm_bf16_source_algorithm(&reduced, &attn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)
-        })?;
         let attn_ready = graph.attn_scratch_ready;
         graph.attn_scratch_ready = false;
+        let device_mhc = graph.controls.device_mhc;
+        let device_mhc_pre_tg = graph.device_mhc_pre_tg;
+        let device_mhc_pre_simd = graph.controls.device_mhc_pre_simd;
+        if device_mhc && !attn_ready {
+            // Prefetch fill owns these slots when `attn_ready` is true. Keep
+            // attention controls separate from the concurrent FFN preload so
+            // the attention mHC-post never races a next-stage control upload.
+            write_bytes(&graph.scratch.hc_attn_fn, blobs[0].as_bytes());
+            write_bytes(&graph.scratch.hc_attn_base, blobs[1].as_bytes());
+            write_bytes(&graph.scratch.hc_attn_scale, blobs[2].as_bytes());
+            write_bytes(&graph.scratch.attn_norm_weight, blobs[3].as_bytes());
+        }
+        let (attn_norm_row, post_f32, comb_f32) = if device_mhc {
+            (Vec::new(), Vec::new(), Vec::new())
+        } else {
+            let hc_fn = decode_f32_le(blobs[0].as_bytes(), &mhc.fn_tensor.name)?;
+            let hc_base = decode_f32_le(blobs[1].as_bytes(), &mhc.base_tensor.name)?;
+            let hc_scale = decode_f32_le(blobs[2].as_bytes(), &mhc.scale_tensor.name)?;
+            let attn_norm_w = decode_u16_le(blobs[3].as_bytes(), &attn_norm.name)?;
+            let (_, _, _, post_f32, comb_f32, reduced) =
+                profiler.time_result("host.mhc_pre", || {
+                    hc_attn_pre_source_algorithm(
+                        hc_in,
+                        &hc_fn,
+                        &hc_scale,
+                        &hc_base,
+                        RMS_NORM_EPS,
+                        HC_EPS,
+                        HC_SINKHORN_ITERS,
+                    )
+                })?;
+            let attn_norm_row = profiler.time_result("host.rmsnorm", || {
+                rms_norm_bf16_source_algorithm(&reduced, &attn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)
+            })?;
+            (attn_norm_row, post_f32, comb_f32)
+        };
         let mut bind_or_fill = |dest_w: &metal::Buffer,
                             dest_s: &metal::Buffer,
                             w_name: &str,
@@ -2686,8 +3580,11 @@ mod macos {
             write_bytes(&graph.scratch.sink, blobs[16].as_bytes());
         }
         let sink_buf = graph.scratch.sink.clone();
+        let attn_norm_weight_buf = graph.scratch.attn_norm_weight.clone();
 
-        write_u16(&graph.scratch.hidden_a, &attn_norm_row);
+        if !device_mhc {
+            write_u16(&graph.scratch.hidden_a, &attn_norm_row);
+        }
         let softmax_scale = (HEAD_DIM as f32).powf(-0.5);
         let eps = RMS_NORM_EPS;
         let act_tg = graph.act_tg;
@@ -2697,29 +3594,73 @@ mod macos {
         let wo_a_tg = graph.wo_a_tg;
         let wo_a_occ_tg = graph.wo_a_occ_tg;
         let rms_tg = graph.rms_tg;
+        let device_mhc_norm_tg = graph.device_mhc_norm_tg;
+        let device_mhc_norm_simd = graph.controls.device_mhc_norm_simd;
+        let fp8_simd = graph.controls.mla_fp8_simd;
+        let rms_simd = graph.controls.mla_rmsnorm_simd;
+        let wo_a_simd = graph.controls.mla_wo_a_simd;
+        let kv_qat_simd = graph.controls.mla_kv_qat_simd;
         let layer_idx = layer.layer;
 
-        let collapse = cb_collapse_enabled();
-        let serial = !collapse && mla_serial_group_enabled();
+        let collapse = graph.controls.cb_collapse;
+        let serial = !collapse && graph.controls.mla_serial_group;
         let (attn_n, attn_submitted) = graph.submit(|batch, s| {
             if collapse {
-                maybe_ordered(batch);
+                maybe_ordered(batch, collapse);
             } else if serial {
                 batch.begin_serial_group()?;
             }
             let mut n = 0usize;
-            dispatch_act_quant(
-                batch,
-                &s.hidden_a,
-                &s.quant_k,
-                &s.quant_scale_k,
-                HIDDEN_SIZE as u32,
-                act_tg,
-                0,
-                0,
-                0,
-            )?;
-            n += 1;
+            if device_mhc {
+                dispatch_device_mhc_pre(
+                    batch,
+                    &s.hc_state_a,
+                    &s.hc_attn_fn,
+                    &s.hc_attn_scale,
+                    &s.hc_attn_base,
+                    &s.hc_reduced,
+                    &s.hc_flat_rsqrt,
+                    &s.hc_mixes,
+                    &s.hc_pre,
+                    &s.hc_post,
+                    &s.hc_comb,
+                    device_mhc_pre_tg,
+                    device_mhc_pre_simd,
+                )?;
+                n += 1;
+                if device_mhc_norm_simd {
+                    dispatch_device_mhc_norm_act_quant(
+                        batch,
+                        &s.hc_reduced,
+                        &attn_norm_weight_buf,
+                        &s.quant_k,
+                        &s.quant_scale_k,
+                        device_mhc_norm_tg,
+                    )?;
+                } else {
+                    dispatch_device_mhc_norm(
+                        batch,
+                        &s.hc_reduced,
+                        &attn_norm_weight_buf,
+                        &s.hidden_a,
+                    )?;
+                }
+                n += 1;
+            }
+            if !(device_mhc && device_mhc_norm_simd) {
+                dispatch_act_quant(
+                    batch,
+                    &s.hidden_a,
+                    &s.quant_k,
+                    &s.quant_scale_k,
+                    HIDDEN_SIZE as u32,
+                    act_tg,
+                    0,
+                    0,
+                    0,
+                )?;
+                n += 1;
+            }
             dispatch_fp8(
                 batch,
                 &wq_a_p.weight,
@@ -2731,6 +3672,7 @@ mod macos {
                 HIDDEN_SIZE as u32,
                 fp8_occ_tg,
                 true,
+                fp8_simd,
             )?;
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.q_lora, Q_LORA_RANK as u32, cast_tg)?;
@@ -2743,6 +3685,7 @@ mod macos {
                 Q_LORA_RANK as u32,
                 eps,
                 rms_tg,
+                rms_simd,
             )?;
             n += 1;
             dispatch_act_quant(
@@ -2768,13 +3711,14 @@ mod macos {
                 Q_LORA_RANK as u32,
                 fp8_tg,
                 false,
+                fp8_simd,
             )?;
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.wq_b, WQ_B_ROWS as u32, cast_tg)?;
             n += 1;
             let heads = NUM_HEADS as u32;
             let dim = HEAD_DIM as u32;
-            dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps)?;
+            dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps, rms_simd)?;
             n += 1;
             dispatch_fp8(
                 batch,
@@ -2787,6 +3731,7 @@ mod macos {
                 HIDDEN_SIZE as u32,
                 fp8_occ_tg,
                 true,
+                fp8_simd,
             )?;
             n += 1;
             dispatch_cast(batch, &s.f32_tmp, &s.wkv, WKV_ROWS as u32, cast_tg)?;
@@ -2799,6 +3744,7 @@ mod macos {
                 HEAD_DIM as u32,
                 eps,
                 rms_tg,
+                rms_simd,
             )?;
             n += 1;
             dispatch_kv_qat(
@@ -2807,6 +3753,7 @@ mod macos {
                 &s.wkv,
                 &s.kv_qat_bytes,
                 &s.kv_qat_scales,
+                kv_qat_simd,
             )?;
             n += 1;
             batch.dispatch_threads(ATTN_KERNEL, (heads, 1, 1), (heads.min(64), 1, 1), |enc| {
@@ -2829,6 +3776,7 @@ mod macos {
                 &s.wo_a,
                 wo_a_tg,
                 wo_a_occ_tg,
+                wo_a_simd,
             )?;
             n += 1;
             dispatch_act_quant(
@@ -2854,10 +3802,25 @@ mod macos {
                 WO_B_COLS as u32,
                 fp8_occ_tg,
                 true,
+                fp8_simd,
             )?;
             n += 1;
-            dispatch_cast(batch, &s.f32_tmp, &s.hidden_b, WO_B_ROWS as u32, cast_tg)?;
-            n += 1;
+            if device_mhc {
+                dispatch_device_mhc_post(
+                    batch,
+                    &s.f32_tmp,
+                    &s.hc_state_a,
+                    &s.hc_post,
+                    &s.hc_comb,
+                    &s.hc_state_b,
+                    cast_tg,
+                    true,
+                )?;
+                n += 1;
+            } else {
+                dispatch_cast(batch, &s.f32_tmp, &s.hidden_b, WO_B_ROWS as u32, cast_tg)?;
+                n += 1;
+            }
             if serial {
                 batch.end_serial_group()?;
             }
@@ -2867,23 +3830,32 @@ mod macos {
         graph.finish(
             "attn",
             Some(layer_idx),
-            "host_mhc_post_needs_wo_b_bf16",
+            if device_mhc {
+                "device_mhc_post_keeps_hc_state_on_device"
+            } else {
+                "host_mhc_post_needs_wo_b_bf16"
+            },
             attn_n,
             attn_submitted,
             profiler,
         )?;
 
-        let readback_started = Instant::now();
-        let wo_b_out = read_u16(&graph.scratch.hidden_b, HIDDEN_SIZE)?;
-        profiler.record_sync(
-            "host.attn_activation_readback",
-            Some(layer_idx),
-            "host_source_mhc_post_requires_wo_b",
-            readback_started.elapsed().as_nanos() as u64,
-            (HIDDEN_SIZE * size_of::<u16>()) as u64,
-        );
+        let wo_b_out = if device_mhc {
+            Vec::new()
+        } else {
+            let readback_started = Instant::now();
+            let output = read_u16(&graph.scratch.hidden_b, HIDDEN_SIZE)?;
+            profiler.record_sync(
+                "host.attn_activation_readback",
+                Some(layer_idx),
+                "host_source_mhc_post_requires_wo_b",
+                readback_started.elapsed().as_nanos() as u64,
+                (HIDDEN_SIZE * size_of::<u16>()) as u64,
+            );
+            output
+        };
 
-        if kernel_probe_enabled() && (layer_idx == 0 || layer_idx == 3) {
+        if graph.controls.kernel_probe && (layer_idx == 0 || layer_idx == 3) {
             probe_attention_kernels(
                 graph,
                 profiler,
@@ -2907,9 +3879,13 @@ mod macos {
         ledger.release(&q_norm.name)?;
         ledger.release(&kv_norm.name)?;
         ledger.release(&sink.name)?;
-        let hc = profiler.time_result("host.mhc_post", || {
-            hc_attn_post_source_algorithm(&wo_b_out, hc_in, &post_f32, &comb_f32)
-        })?;
+        let hc = if device_mhc {
+            Vec::new()
+        } else {
+            profiler.time_result("host.mhc_post", || {
+                hc_attn_post_source_algorithm(&wo_b_out, hc_in, &post_f32, &comb_f32)
+            })?
+        };
         Ok((hc, overlapped))
     }
 
@@ -2971,10 +3947,23 @@ mod macos {
         let blobs = profiler.time_bytes_result("host.moe_control_io", moe_io_bytes as u64, || {
             par_read_views(reader, &jobs)
         })?;
-        let hc_fn = decode_f32_le(blobs[0].as_bytes(), &mhc.fn_tensor.name)?;
-        let hc_base = decode_f32_le(blobs[1].as_bytes(), &mhc.base_tensor.name)?;
-        let hc_scale = decode_f32_le(blobs[2].as_bytes(), &mhc.scale_tensor.name)?;
-        let ffn_norm_w = decode_u16_le(blobs[3].as_bytes(), &ffn_norm.name)?;
+        let (hc_fn, hc_base, hc_scale, ffn_norm_w) = if graph.controls.device_mhc {
+            // FFN controls have their own slots because this preload runs while
+            // attention is still in flight.  The next CB consumes them only
+            // after the attention graph has completed.
+            write_bytes(&graph.scratch.hc_ffn_fn, blobs[0].as_bytes());
+            write_bytes(&graph.scratch.hc_ffn_base, blobs[1].as_bytes());
+            write_bytes(&graph.scratch.hc_ffn_scale, blobs[2].as_bytes());
+            write_bytes(&graph.scratch.ffn_norm_weight, blobs[3].as_bytes());
+            (Vec::new(), Vec::new(), Vec::new(), Vec::new())
+        } else {
+            (
+                decode_f32_le(blobs[0].as_bytes(), &mhc.fn_tensor.name)?,
+                decode_f32_le(blobs[1].as_bytes(), &mhc.base_tensor.name)?,
+                decode_f32_le(blobs[2].as_bytes(), &mhc.scale_tensor.name)?,
+                decode_u16_le(blobs[3].as_bytes(), &ffn_norm.name)?,
+            )
+        };
         ledger.acquire(&gate.score_weight.name, blobs[4].len())?;
         write_bytes(&graph.scratch.gate_w, blobs[4].as_bytes());
         let gate_w = graph.scratch.gate_w.clone();
@@ -3067,7 +4056,14 @@ mod macos {
             Some(profiler.time_bytes_result(
                 "host.expert_slab_io_overlapped",
                 expert_bytes,
-                || bind_expert_payloads(graph, reader, ledger, layer, &exec),
+                || bind_expert_payloads(
+                    graph,
+                    reader,
+                    ledger,
+                    layer,
+                    graph.controls.expert_slab_pack,
+                    &exec,
+                ),
             )?)
         } else {
             None
@@ -3089,8 +4085,8 @@ mod macos {
         })
     }
 
-    fn maybe_ordered(batch: &mut CommandBatch<'_>) {
-        if cb_collapse_enabled() {
+    fn maybe_ordered(batch: &mut CommandBatch<'_>, collapse: bool) {
+        if collapse {
             batch.enable_ordered_encoder();
         }
     }
@@ -3105,6 +4101,7 @@ mod macos {
         top_k: u32,
         route_scale: f32,
         gate_tg: u32,
+        decode_family: bool,
     }
 
     fn encode_route(batch: &mut CommandBatch<'_>, s: &Scratch, p: &RouteEncode<'_>) -> Result<usize> {
@@ -3149,14 +4146,19 @@ mod macos {
             })?;
         }
         n += 1;
-        batch.dispatch_threads(pack_kernel(), (1, 1, 1), (1, 1, 1), |enc| {
+        batch.dispatch_threads(
+            pack_kernel(p.decode_family),
+            (1, 1, 1),
+            (1, 1, 1),
+            |enc| {
             enc.set_buffer(0, Some(&s.route_ids), 0);
             enc.set_buffer(1, Some(&s.route_weights), 0);
             enc.set_buffer(2, Some(&s.worklist), 0);
             enc.set_buffer(3, Some(&s.pack_valid), 0);
             set_u32(enc, 4, &p.top_k);
             set_u32(enc, 5, &p.experts_u);
-        })?;
+            },
+        )?;
         n += 1;
         Ok(n)
     }
@@ -3164,10 +4166,19 @@ mod macos {
     struct MoeEncode<'a> {
         act_tg: u32,
         fp8_tg: u32,
+        shared_fp8_tg: u32,
+        shared_fp8_down_combine_tg: u32,
         fp4_tg: u32,
         cast_tg: u32,
         top_k: u32,
         collapse: bool,
+        fp4_occupancy: bool,
+        fp4_gate_up_swiglu_fused: bool,
+        shared_fp8_gate_up_swiglu_fused: bool,
+        shared_fp8_down_combine_fused: bool,
+        fp8_simd: bool,
+        decode_family: bool,
+        input_quant_ready: bool,
         sh_w1: &'a Fp8Pair,
         sh_w3: &'a Fp8Pair,
         sh_w2: &'a Fp8Pair,
@@ -3176,71 +4187,111 @@ mod macos {
 
     fn encode_moe(batch: &mut CommandBatch<'_>, s: &Scratch, p: &MoeEncode<'_>) -> Result<usize> {
         let mut n = 0usize;
-        dispatch_act_quant(
-            batch,
-            &s.hidden_a,
-            &s.quant_ffn,
-            &s.quant_scale_ffn,
-            HIDDEN_SIZE as u32,
-            p.act_tg,
-            0,
-            0,
-            0,
-        )?;
-        n += 1;
+        if !p.input_quant_ready {
+            dispatch_act_quant(
+                batch,
+                &s.hidden_a,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                HIDDEN_SIZE as u32,
+                p.act_tg,
+                0,
+                0,
+                0,
+            )?;
+            n += 1;
+        }
         let rows_w1 = MOE_INTER_DIM as u32;
         let packed = (HIDDEN_SIZE / 2) as u32;
         let scale_cols = (HIDDEN_SIZE / FP4_BLOCK) as u32;
-        let tg = p.fp4_tg.min(rows_w1);
-        let zero = 0u32;
         let one = 1u32;
         let shared_one = 1.0f32;
-        dispatch_worklist_fp4(
-            batch,
-            &s.worklist,
-            &p.experts.w1_refs,
-            &p.experts.w1_resources,
-            &s.quant_ffn,
-            &s.quant_scale_ffn,
-            &s.expert_gate_f32,
-            rows_w1,
-            packed,
-            scale_cols,
-            p.top_k,
-            zero,
-            p.fp4_tg,
-        )?;
-        n += 1;
-        dispatch_worklist_fp4(
-            batch,
-            &s.worklist,
-            &p.experts.w3_refs,
-            &p.experts.w3_resources,
-            &s.quant_ffn,
-            &s.quant_scale_ffn,
-            &s.expert_up_f32,
-            rows_w1,
-            packed,
-            scale_cols,
-            p.top_k,
-            zero,
-            p.fp4_tg,
-        )?;
-        n += 1;
-        let gate_count = p.top_k * rows_w1;
-        dispatch_cast(batch, &s.expert_gate_f32, &s.expert_gate_bf16, gate_count, p.cast_tg)?;
-        n += 1;
-        dispatch_cast(batch, &s.expert_up_f32, &s.expert_up_bf16, gate_count, p.cast_tg)?;
-        n += 1;
-        batch.dispatch_threads(worklist_swiglu_kernel(), (gate_count, 1, 1), (tg, 1, 1), |enc| {
-            enc.set_buffer(0, Some(&s.worklist), 0);
-            enc.set_buffer(1, Some(&s.expert_gate_bf16), 0);
-            enc.set_buffer(2, Some(&s.expert_up_bf16), 0);
-            enc.set_buffer(3, Some(&s.expert_swiglu), 0);
-            set_u32(enc, 4, &rows_w1);
-            set_u32(enc, 5, &p.top_k);
-        })?;
-        n += 1;
+        if p.fp4_gate_up_swiglu_fused {
+            dispatch_worklist_fp4_gate_up_swiglu(
+                batch,
+                &s.worklist,
+                &p.experts.w1_refs,
+                &p.experts.w1_resources,
+                &p.experts.w3_refs,
+                &p.experts.w3_resources,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.expert_swiglu,
+                rows_w1,
+                packed,
+                scale_cols,
+                p.top_k,
+                0,
+                p.fp4_tg,
+                p.fp4_occupancy,
+                p.decode_family,
+            )?;
+            n += 1;
+        } else {
+            let tg = p.fp4_tg.min(rows_w1);
+            let zero = 0u32;
+            dispatch_worklist_fp4(
+                batch,
+                &s.worklist,
+                &p.experts.w1_refs,
+                &p.experts.w1_resources,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.expert_gate_f32,
+                rows_w1,
+                packed,
+                scale_cols,
+                p.top_k,
+                zero,
+                p.fp4_tg,
+                p.fp4_occupancy,
+                p.decode_family,
+            )?;
+            n += 1;
+            dispatch_worklist_fp4(
+                batch,
+                &s.worklist,
+                &p.experts.w3_refs,
+                &p.experts.w3_resources,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.expert_up_f32,
+                rows_w1,
+                packed,
+                scale_cols,
+                p.top_k,
+                zero,
+                p.fp4_tg,
+                p.fp4_occupancy,
+                p.decode_family,
+            )?;
+            n += 1;
+            let gate_count = p.top_k * rows_w1;
+            dispatch_cast(
+                batch,
+                &s.expert_gate_f32,
+                &s.expert_gate_bf16,
+                gate_count,
+                p.cast_tg,
+            )?;
+            n += 1;
+            dispatch_cast(batch, &s.expert_up_f32, &s.expert_up_bf16, gate_count, p.cast_tg)?;
+            n += 1;
+            batch.dispatch_threads(
+                worklist_swiglu_kernel(p.decode_family),
+                (gate_count, 1, 1),
+                (tg, 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&s.worklist), 0);
+                    enc.set_buffer(1, Some(&s.expert_gate_bf16), 0);
+                    enc.set_buffer(2, Some(&s.expert_up_bf16), 0);
+                    enc.set_buffer(3, Some(&s.expert_swiglu), 0);
+                    set_u32(enc, 4, &rows_w1);
+                    set_u32(enc, 5, &p.top_k);
+                },
+            )?;
+            n += 1;
+        }
         if p.collapse {
             // Six experts are packed contiguously; 2048 % 128 == 0 so block
             // boundaries never cross experts. Same kernel, one dispatch.
@@ -3293,65 +4344,86 @@ mod macos {
             p.top_k,
             one,
             p.fp4_tg,
+            p.fp4_occupancy,
+            p.decode_family,
         )?;
         n += 1;
         dispatch_cast(batch, &s.expert_down_f32, &s.expert_down_bf16, grid_w2, p.cast_tg)?;
         n += 1;
-        dispatch_fp8(
-            batch,
-            &p.sh_w1.weight,
-            &p.sh_w1.scale,
-            &s.quant_ffn,
-            &s.quant_scale_ffn,
-            &s.shared_gate_f32,
-            MOE_INTER_DIM as u32,
-            HIDDEN_SIZE as u32,
-            p.fp8_tg,
-            false,
-        )?;
-        n += 1;
-        dispatch_fp8(
-            batch,
-            &p.sh_w3.weight,
-            &p.sh_w3.scale,
-            &s.quant_ffn,
-            &s.quant_scale_ffn,
-            &s.shared_up_f32,
-            MOE_INTER_DIM as u32,
-            HIDDEN_SIZE as u32,
-            p.fp8_tg,
-            false,
-        )?;
-        n += 1;
-        dispatch_cast(
-            batch,
-            &s.shared_gate_f32,
-            &s.shared_gate_bf16,
-            MOE_INTER_DIM as u32,
-            p.cast_tg,
-        )?;
-        n += 1;
-        dispatch_cast(
-            batch,
-            &s.shared_up_f32,
-            &s.shared_up_bf16,
-            MOE_INTER_DIM as u32,
-            p.cast_tg,
-        )?;
-        n += 1;
-        batch.dispatch_threads(
-            SHARED_SWIGLU_KERNEL,
-            (MOE_INTER_DIM as u32, 1, 1),
-            (p.cast_tg.min(MOE_INTER_DIM as u32), 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(&s.shared_gate_bf16), 0);
-                enc.set_buffer(1, Some(&s.shared_up_bf16), 0);
-                enc.set_buffer(2, Some(&s.shared_swiglu), 0);
-                set_f32(enc, 3, &shared_one);
-                set_u32(enc, 4, &(MOE_INTER_DIM as u32));
-            },
-        )?;
-        n += 1;
+        if p.shared_fp8_gate_up_swiglu_fused {
+            dispatch_shared_fp8_gate_up_swiglu(
+                batch,
+                &p.sh_w1.weight,
+                &p.sh_w1.scale,
+                &p.sh_w3.weight,
+                &p.sh_w3.scale,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.shared_swiglu,
+                MOE_INTER_DIM as u32,
+                HIDDEN_SIZE as u32,
+                p.shared_fp8_tg,
+            )?;
+            n += 1;
+        } else {
+            dispatch_fp8(
+                batch,
+                &p.sh_w1.weight,
+                &p.sh_w1.scale,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.shared_gate_f32,
+                MOE_INTER_DIM as u32,
+                HIDDEN_SIZE as u32,
+                p.fp8_tg,
+                false,
+                p.fp8_simd,
+            )?;
+            n += 1;
+            dispatch_fp8(
+                batch,
+                &p.sh_w3.weight,
+                &p.sh_w3.scale,
+                &s.quant_ffn,
+                &s.quant_scale_ffn,
+                &s.shared_up_f32,
+                MOE_INTER_DIM as u32,
+                HIDDEN_SIZE as u32,
+                p.fp8_tg,
+                false,
+                p.fp8_simd,
+            )?;
+            n += 1;
+            dispatch_cast(
+                batch,
+                &s.shared_gate_f32,
+                &s.shared_gate_bf16,
+                MOE_INTER_DIM as u32,
+                p.cast_tg,
+            )?;
+            n += 1;
+            dispatch_cast(
+                batch,
+                &s.shared_up_f32,
+                &s.shared_up_bf16,
+                MOE_INTER_DIM as u32,
+                p.cast_tg,
+            )?;
+            n += 1;
+            batch.dispatch_threads(
+                SHARED_SWIGLU_KERNEL,
+                (MOE_INTER_DIM as u32, 1, 1),
+                (p.cast_tg.min(MOE_INTER_DIM as u32), 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&s.shared_gate_bf16), 0);
+                    enc.set_buffer(1, Some(&s.shared_up_bf16), 0);
+                    enc.set_buffer(2, Some(&s.shared_swiglu), 0);
+                    set_f32(enc, 3, &shared_one);
+                    set_u32(enc, 4, &(MOE_INTER_DIM as u32));
+                },
+            )?;
+            n += 1;
+        }
         dispatch_act_quant(
             batch,
             &s.shared_swiglu,
@@ -3364,40 +4436,57 @@ mod macos {
             0,
         )?;
         n += 1;
-        dispatch_fp8(
-            batch,
-            &p.sh_w2.weight,
-            &p.sh_w2.scale,
-            &s.shared_down_quant,
-            &s.shared_down_scales,
-            &s.shared_down_f32,
-            HIDDEN_SIZE as u32,
-            MOE_INTER_DIM as u32,
-            p.fp8_tg,
-            false,
-        )?;
-        n += 1;
-        dispatch_cast(
-            batch,
-            &s.shared_down_f32,
-            &s.shared_down_bf16,
-            HIDDEN_SIZE as u32,
-            p.cast_tg,
-        )?;
-        n += 1;
-        batch.dispatch_threads(
-            worklist_combine_kernel(),
-            (HIDDEN_SIZE as u32, 1, 1),
-            (p.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
-            |enc| {
-                enc.set_buffer(0, Some(&s.expert_down_bf16), 0);
-                enc.set_buffer(1, Some(&s.shared_down_bf16), 0);
-                enc.set_buffer(2, Some(&s.moe_out), 0);
-                set_u32(enc, 3, &(HIDDEN_SIZE as u32));
-                set_u32(enc, 4, &p.top_k);
-            },
-        )?;
-        n += 1;
+        if p.shared_fp8_down_combine_fused {
+            dispatch_shared_fp8_down_bf16_combine(
+                batch,
+                &p.sh_w2.weight,
+                &p.sh_w2.scale,
+                &s.shared_down_quant,
+                &s.shared_down_scales,
+                &s.expert_down_bf16,
+                &s.moe_out,
+                HIDDEN_SIZE as u32,
+                MOE_INTER_DIM as u32,
+                p.shared_fp8_down_combine_tg,
+            )?;
+            n += 1;
+        } else {
+            dispatch_fp8(
+                batch,
+                &p.sh_w2.weight,
+                &p.sh_w2.scale,
+                &s.shared_down_quant,
+                &s.shared_down_scales,
+                &s.shared_down_f32,
+                HIDDEN_SIZE as u32,
+                MOE_INTER_DIM as u32,
+                p.fp8_tg,
+                false,
+                p.fp8_simd,
+            )?;
+            n += 1;
+            dispatch_cast(
+                batch,
+                &s.shared_down_f32,
+                &s.shared_down_bf16,
+                HIDDEN_SIZE as u32,
+                p.cast_tg,
+            )?;
+            n += 1;
+            batch.dispatch_threads(
+                worklist_combine_kernel(p.decode_family),
+                (HIDDEN_SIZE as u32, 1, 1),
+                (p.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
+                |enc| {
+                    enc.set_buffer(0, Some(&s.expert_down_bf16), 0);
+                    enc.set_buffer(1, Some(&s.shared_down_bf16), 0);
+                    enc.set_buffer(2, Some(&s.moe_out), 0);
+                    set_u32(enc, 3, &(HIDDEN_SIZE as u32));
+                    set_u32(enc, 4, &p.top_k);
+                },
+            )?;
+            n += 1;
+        }
         Ok(n)
     }
 
@@ -3416,7 +4505,16 @@ mod macos {
             let started = Instant::now();
             let (bind, prefetched) = std::thread::scope(|scope| -> Result<_> {
                 let expert =
-                    scope.spawn(|| bind_expert_payloads(graph, reader, ledger, layer, exec));
+                    scope.spawn(|| {
+                        bind_expert_payloads(
+                            graph,
+                            reader,
+                            ledger,
+                            layer,
+                            graph.controls.expert_slab_pack,
+                            exec,
+                        )
+                    });
                 let attn = scope.spawn(|| {
                     let jobs = attn_read_jobs(next);
                     par_read_views(reader, &jobs)
@@ -3441,7 +4539,14 @@ mod macos {
             Ok(bind)
         } else {
             profiler.time_bytes_result("host.expert_slab_io", expert_bytes, || {
-                bind_expert_payloads(graph, reader, ledger, layer, exec)
+                bind_expert_payloads(
+                    graph,
+                    reader,
+                    ledger,
+                    layer,
+                    graph.controls.expert_slab_pack,
+                    exec,
+                )
             })
         }
     }
@@ -3475,6 +4580,12 @@ mod macos {
         if let Some(blobs) = attn_prefetch.as_ref() {
             if blobs.len() >= 14 {
                 profiler.time("host.mla.prefetch_fill", || {
+                    if graph.controls.device_mhc {
+                        write_bytes(&graph.scratch.hc_attn_fn, blobs[0].as_bytes());
+                        write_bytes(&graph.scratch.hc_attn_base, blobs[1].as_bytes());
+                        write_bytes(&graph.scratch.hc_attn_scale, blobs[2].as_bytes());
+                        write_bytes(&graph.scratch.attn_norm_weight, blobs[3].as_bytes());
+                    }
                     write_bytes(&graph.scratch.wq_a_w, blobs[4].as_bytes());
                     write_bytes(&graph.scratch.wq_a_s, blobs[5].as_bytes());
                     write_bytes(&graph.scratch.wq_b_w, blobs[6].as_bytes());
@@ -3548,21 +4659,34 @@ mod macos {
             is_hash,
             expert_bind: preloaded_experts,
         } = preload;
-        let (_, _, _, post_f32, comb_f32, reduced) = profiler.time_result("host.mhc_pre", || {
-            hc_attn_pre_source_algorithm(
-                attn_hc,
-                &hc_fn,
-                &hc_scale,
-                &hc_base,
-                RMS_NORM_EPS,
-                HC_EPS,
-                HC_SINKHORN_ITERS,
-            )
-        })?;
-        let ffn_norm_row = profiler.time_result("host.rmsnorm", || {
-            rms_norm_bf16_source_algorithm(&reduced, &ffn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)
-        })?;
-        write_u16(&graph.scratch.hidden_a, &ffn_norm_row);
+        let device_mhc = graph.controls.device_mhc;
+        let device_mhc_pre_tg = graph.device_mhc_pre_tg;
+        let device_mhc_pre_simd = graph.controls.device_mhc_pre_simd;
+        let device_mhc_norm_tg = graph.device_mhc_norm_tg;
+        let device_mhc_norm_simd = graph.controls.device_mhc_norm_simd;
+        let (post_f32, comb_f32) = if device_mhc {
+            (Vec::new(), Vec::new())
+        } else {
+            let (_, _, _, post_f32, comb_f32, reduced) =
+                profiler.time_result("host.mhc_pre", || {
+                    hc_attn_pre_source_algorithm(
+                        attn_hc,
+                        &hc_fn,
+                        &hc_scale,
+                        &hc_base,
+                        RMS_NORM_EPS,
+                        HC_EPS,
+                        HC_SINKHORN_ITERS,
+                    )
+                })?;
+            let ffn_norm_row = profiler.time_result("host.rmsnorm", || {
+                rms_norm_bf16_source_algorithm(&reduced, &ffn_norm_w, HIDDEN_SIZE, RMS_NORM_EPS)
+            })?;
+            write_u16(&graph.scratch.hidden_a, &ffn_norm_row);
+            (post_f32, comb_f32)
+        };
+        let ffn_norm_weight_buf = graph.scratch.ffn_norm_weight.clone();
+        let mhc_post_tg = graph.cast_tg;
 
         let token_u = if is_hash { 0u32 } else { token_id as u32 };
         let experts_u = ROUTED_EXPERTS as u32;
@@ -3571,7 +4695,7 @@ mod macos {
         let gate_tg = graph.gate_tg;
         let layer_idx = layer.layer;
 
-        let collapse = cb_collapse_enabled();
+        let collapse = graph.controls.cb_collapse;
         let route_p = RouteEncode {
             gate_w: &gate_w,
             tid2eid: tid2eid_buf.as_ref(),
@@ -3582,6 +4706,7 @@ mod macos {
             top_k,
             route_scale,
             gate_tg,
+            decode_family: graph.controls.decode_family,
         };
         let expert_bytes = (ACTIVATED_EXPERTS
             * (2 * W1_PACKED + W2_PACKED + 2 * W1_SCALES + W2_SCALES)) as u64;
@@ -3614,20 +4739,81 @@ mod macos {
             let moe_p = MoeEncode {
                 act_tg: graph.act_tg,
                 fp8_tg: graph.fp8_tg,
+                shared_fp8_tg: graph.shared_fp8_tg,
+                shared_fp8_down_combine_tg: graph.shared_fp8_down_combine_tg,
                 fp4_tg: graph.fp4_tg,
                 cast_tg: graph.cast_tg,
                 top_k,
                 collapse,
+                fp4_occupancy: graph.controls.fp4_occupancy,
+                fp4_gate_up_swiglu_fused: graph.controls.fp4_gate_up_swiglu_fused,
+                shared_fp8_gate_up_swiglu_fused:
+                    graph.controls.shared_fp8_gate_up_swiglu_fused,
+                shared_fp8_down_combine_fused: graph.controls.shared_fp8_down_combine_fused,
+                fp8_simd: graph.controls.mla_fp8_simd,
+                decode_family: graph.controls.decode_family,
+                input_quant_ready: device_mhc && device_mhc_norm_simd,
                 sh_w1: &sh_w1,
                 sh_w3: &sh_w3,
                 sh_w2: &sh_w2,
                 experts: &bind,
             };
             let (n, submitted) = graph.submit(|batch, s| {
-                maybe_ordered(batch);
+                maybe_ordered(batch, collapse);
+                let mut n = 0usize;
+                if device_mhc {
+                    dispatch_device_mhc_pre(
+                        batch,
+                        &s.hc_state_b,
+                        &s.hc_ffn_fn,
+                        &s.hc_ffn_scale,
+                        &s.hc_ffn_base,
+                        &s.hc_reduced,
+                        &s.hc_flat_rsqrt,
+                        &s.hc_mixes,
+                        &s.hc_pre,
+                        &s.hc_post,
+                        &s.hc_comb,
+                        device_mhc_pre_tg,
+                        device_mhc_pre_simd,
+                    )?;
+                    n += 1;
+                    if device_mhc_norm_simd {
+                        dispatch_device_mhc_norm_act_quant(
+                            batch,
+                            &s.hc_reduced,
+                            &ffn_norm_weight_buf,
+                            &s.quant_ffn,
+                            &s.quant_scale_ffn,
+                            device_mhc_norm_tg,
+                        )?;
+                    } else {
+                        dispatch_device_mhc_norm(
+                            batch,
+                            &s.hc_reduced,
+                            &ffn_norm_weight_buf,
+                            &s.hidden_a,
+                        )?;
+                    }
+                    n += 1;
+                }
                 let a = encode_route(batch, s, &route_p)?;
                 let b = encode_moe(batch, s, &moe_p)?;
-                Ok(a + b)
+                n += a + b;
+                if device_mhc {
+                    dispatch_device_mhc_post(
+                        batch,
+                        &s.moe_out,
+                        &s.hc_state_b,
+                        &s.hc_post,
+                        &s.hc_comb,
+                        &s.hc_state_a,
+                        mhc_post_tg,
+                        false,
+                    )?;
+                    n += 1;
+                }
+                Ok(n)
             })?;
             fill_attn_prefetch(graph, profiler, attn_prefetch);
             graph.finish(
@@ -3651,8 +4837,46 @@ mod macos {
                 },
                 profiler,
                 |batch, s| {
-                    maybe_ordered(batch);
-                    encode_route(batch, s, &route_p)
+                    maybe_ordered(batch, collapse);
+                    let mut n = 0usize;
+                    if device_mhc {
+                        dispatch_device_mhc_pre(
+                            batch,
+                            &s.hc_state_b,
+                            &s.hc_ffn_fn,
+                            &s.hc_ffn_scale,
+                            &s.hc_ffn_base,
+                            &s.hc_reduced,
+                            &s.hc_flat_rsqrt,
+                            &s.hc_mixes,
+                            &s.hc_pre,
+                            &s.hc_post,
+                            &s.hc_comb,
+                            device_mhc_pre_tg,
+                            device_mhc_pre_simd,
+                        )?;
+                        n += 1;
+                        if device_mhc_norm_simd {
+                            dispatch_device_mhc_norm_act_quant(
+                                batch,
+                                &s.hc_reduced,
+                                &ffn_norm_weight_buf,
+                                &s.quant_ffn,
+                                &s.quant_scale_ffn,
+                                device_mhc_norm_tg,
+                            )?;
+                        } else {
+                            dispatch_device_mhc_norm(
+                                batch,
+                                &s.hc_reduced,
+                                &ffn_norm_weight_buf,
+                                &s.hidden_a,
+                            )?;
+                        }
+                        n += 1;
+                    }
+                    n += encode_route(batch, s, &route_p)?;
+                    Ok(n)
                 },
             )?;
             check_route_flags(layer_idx, &graph.scratch)?;
@@ -3709,24 +4933,52 @@ mod macos {
             let moe_p = MoeEncode {
                 act_tg: graph.act_tg,
                 fp8_tg: graph.fp8_tg,
+                shared_fp8_tg: graph.shared_fp8_tg,
+                shared_fp8_down_combine_tg: graph.shared_fp8_down_combine_tg,
                 fp4_tg: graph.fp4_tg,
                 cast_tg: graph.cast_tg,
                 top_k,
                 collapse,
+                fp4_occupancy: graph.controls.fp4_occupancy,
+                fp4_gate_up_swiglu_fused: graph.controls.fp4_gate_up_swiglu_fused,
+                shared_fp8_gate_up_swiglu_fused:
+                    graph.controls.shared_fp8_gate_up_swiglu_fused,
+                shared_fp8_down_combine_fused: graph.controls.shared_fp8_down_combine_fused,
+                fp8_simd: graph.controls.mla_fp8_simd,
+                decode_family: graph.controls.decode_family,
+                input_quant_ready: device_mhc && device_mhc_norm_simd,
                 sh_w1: &sh_w1,
                 sh_w3: &sh_w3,
                 sh_w2: &sh_w2,
                 experts: &bind,
             };
             let (moe_n, moe_submitted) = graph.submit(|batch, s| {
-                maybe_ordered(batch);
-                encode_moe(batch, s, &moe_p)
+                maybe_ordered(batch, collapse);
+                let mut n = encode_moe(batch, s, &moe_p)?;
+                if device_mhc {
+                    dispatch_device_mhc_post(
+                        batch,
+                        &s.moe_out,
+                        &s.hc_state_b,
+                        &s.hc_post,
+                        &s.hc_comb,
+                        &s.hc_state_a,
+                        mhc_post_tg,
+                        false,
+                    )?;
+                    n += 1;
+                }
+                Ok(n)
             })?;
             fill_attn_prefetch(graph, profiler, attn_prefetch);
             graph.finish(
                 "moe",
                 Some(layer_idx),
-                "host_mhc_post_needs_moe_out_bf16",
+                if device_mhc {
+                    "device_mhc_post_keeps_hc_state_on_device"
+                } else {
+                    "host_mhc_post_needs_moe_out_bf16"
+                },
                 moe_n,
                 moe_submitted,
                 profiler,
@@ -3734,17 +4986,22 @@ mod macos {
             bind
         };
 
-        let readback_started = Instant::now();
-        let moe = read_u16(&graph.scratch.moe_out, HIDDEN_SIZE)?;
-        profiler.record_sync(
-            "host.moe_activation_readback",
-            Some(layer_idx),
-            "host_source_mhc_post_requires_moe_out",
-            readback_started.elapsed().as_nanos() as u64,
-            (HIDDEN_SIZE * size_of::<u16>()) as u64,
-        );
+        let moe = if device_mhc {
+            Vec::new()
+        } else {
+            let readback_started = Instant::now();
+            let output = read_u16(&graph.scratch.moe_out, HIDDEN_SIZE)?;
+            profiler.record_sync(
+                "host.moe_activation_readback",
+                Some(layer_idx),
+                "host_source_mhc_post_requires_moe_out",
+                readback_started.elapsed().as_nanos() as u64,
+                (HIDDEN_SIZE * size_of::<u16>()) as u64,
+            );
+            output
+        };
 
-        if kernel_probe_enabled() && (layer_idx == 0 || layer_idx == 3) {
+        if graph.controls.kernel_probe && (layer_idx == 0 || layer_idx == 3) {
             probe_moe_kernels(
                 graph,
                 profiler,
@@ -3772,9 +5029,13 @@ mod macos {
         if !is_hash {
             ledger.release(&gate.route_data.name)?;
         }
-        profiler.time_result("host.mhc_post", || {
-            hc_attn_post_source_algorithm(&moe, attn_hc, &post_f32, &comb_f32)
-        })
+        if device_mhc {
+            Ok(Vec::new())
+        } else {
+            profiler.time_result("host.mhc_post", || {
+                hc_attn_post_source_algorithm(&moe, attn_hc, &post_f32, &comb_f32)
+            })
+        }
     }
 
     fn metal_lm_head(
@@ -3846,6 +5107,7 @@ mod macos {
         let mut best_id = 0u32;
         let mut best_logit = f32::NEG_INFINITY;
         let before = graph.counters.metal_dispatches;
+        let lm_head_kernel = graph.lm_head_kernel;
         let lm_tg = graph.lm_tg;
         for (tile, bytes) in tiles.iter().zip(blobs.iter()) {
             ledger.acquire(LM_HEAD_WEIGHT, bytes.len())?;
@@ -3854,10 +5116,10 @@ mod macos {
             });
             let rows_u = tile.1 as u32;
             let cols_u = HIDDEN_SIZE as u32;
-            let tg = lm_tg.min(rows_u.max(1));
+            let (grid, tg) = lm_head_launch(lm_head_kernel, rows_u, lm_tg);
             let tile_name = format!("lm_head.tile{}", tile.0 / ROWS_PER_BLOCK);
             let timing = graph.metal.dispatch_batch_timed(|batch| {
-                batch.dispatch_threads(LM_HEAD_KERNEL, (rows_u, 1, 1), (tg, 1, 1), |enc| {
+                batch.dispatch_threads(lm_head_kernel, grid, tg, |enc| {
                     enc.set_buffer(0, Some(&weight_buf), 0);
                     enc.set_buffer(1, Some(&residual_buf), 0);
                     enc.set_buffer(2, Some(&out_buf), 0);
@@ -3926,6 +5188,10 @@ mod macos {
         let wo_a_tg = graph.wo_a_tg;
         let wo_a_occ_tg = graph.wo_a_occ_tg;
         let rms_tg = graph.rms_tg;
+        let fp8_simd = graph.controls.mla_fp8_simd;
+        let rms_simd = graph.controls.mla_rmsnorm_simd;
+        let wo_a_simd = graph.controls.mla_wo_a_simd;
+        let kv_qat_simd = graph.controls.mla_kv_qat_simd;
         let eps = RMS_NORM_EPS;
         let softmax_scale = (HEAD_DIM as f32).powf(-0.5);
         let heads = NUM_HEADS as u32;
@@ -3955,6 +5221,7 @@ mod macos {
                 HIDDEN_SIZE as u32,
                 fp8_occ_tg,
                 true,
+                fp8_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.cast.q_lora", layer_idx, |batch| {
@@ -3969,6 +5236,7 @@ mod macos {
                 Q_LORA_RANK as u32,
                 eps,
                 rms_tg,
+                rms_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wq_b", layer_idx, |batch| {
@@ -3983,6 +5251,7 @@ mod macos {
                 Q_LORA_RANK as u32,
                 fp8_tg,
                 false,
+                fp8_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wkv", layer_idx, |batch| {
@@ -3997,6 +5266,7 @@ mod macos {
                 HIDDEN_SIZE as u32,
                 fp8_occ_tg,
                 true,
+                fp8_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wo_a", layer_idx, |batch| {
@@ -4008,6 +5278,7 @@ mod macos {
                 &s.wo_a,
                 wo_a_tg,
                 wo_a_occ_tg,
+                wo_a_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.mla.wo_b", layer_idx, |batch| {
@@ -4022,6 +5293,7 @@ mod macos {
                 WO_B_COLS as u32,
                 fp8_occ_tg,
                 true,
+                fp8_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.attn.sparse_pos0", layer_idx, |batch| {
@@ -4038,7 +5310,14 @@ mod macos {
             })
         })?;
         probe_one(&graph.metal, profiler, "isolated.kv_qat", layer_idx, |batch| {
-            dispatch_kv_qat(batch, &s.wkv, &s.wkv, &s.kv_qat_bytes, &s.kv_qat_scales)
+            dispatch_kv_qat(
+                batch,
+                &s.wkv,
+                &s.wkv,
+                &s.kv_qat_bytes,
+                &s.kv_qat_scales,
+                kv_qat_simd,
+            )
         })?;
         probe_one(&graph.metal, profiler, "isolated.rmsnorm.kv", layer_idx, |batch| {
             dispatch_rmsnorm(
@@ -4049,10 +5328,11 @@ mod macos {
                 HEAD_DIM as u32,
                 RMS_NORM_EPS,
                 rms_tg,
+                rms_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.per_head_rms", layer_idx, |batch| {
-            dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps)
+            dispatch_per_head_rms(batch, &s.wq_b, &s.attn, heads, dim, eps, rms_simd)
         })?;
         Ok(())
     }
@@ -4141,6 +5421,8 @@ mod macos {
                 top_k,
                 zero,
                 fp4_tg,
+                graph.controls.fp4_occupancy,
+                graph.controls.decode_family,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.routed.w3", layer_idx, |batch| {
@@ -4158,6 +5440,8 @@ mod macos {
                 top_k,
                 zero,
                 fp4_tg,
+                graph.controls.fp4_occupancy,
+                graph.controls.decode_family,
             )
         })?;
         let rows_w2 = HIDDEN_SIZE as u32;
@@ -4178,6 +5462,8 @@ mod macos {
                 top_k,
                 one,
                 fp4_tg,
+                graph.controls.fp4_occupancy,
+                graph.controls.decode_family,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.shared.w1", layer_idx, |batch| {
@@ -4192,6 +5478,7 @@ mod macos {
                 HIDDEN_SIZE as u32,
                 fp8_tg,
                 false,
+                graph.controls.mla_fp8_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.shared.w3", layer_idx, |batch| {
@@ -4206,6 +5493,7 @@ mod macos {
                 HIDDEN_SIZE as u32,
                 fp8_tg,
                 false,
+                graph.controls.mla_fp8_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.shared.w2", layer_idx, |batch| {
@@ -4220,11 +5508,12 @@ mod macos {
                 MOE_INTER_DIM as u32,
                 fp8_tg,
                 false,
+                graph.controls.mla_fp8_simd,
             )
         })?;
         probe_one(&graph.metal, profiler, "isolated.moe_combine", layer_idx, |batch| {
             batch.dispatch_threads(
-                worklist_combine_kernel(),
+                worklist_combine_kernel(graph.controls.decode_family),
                 (HIDDEN_SIZE as u32, 1, 1),
                 (graph.cast_tg.min(HIDDEN_SIZE as u32), 1, 1),
                 |enc| {
@@ -4249,7 +5538,7 @@ mod tests {
 
     #[test]
     fn new_kernels_are_publicly_enumerated() {
-        assert_eq!(NATIVE_TOKEN_GRAPH_KERNELS.len(), 5);
+        assert_eq!(NATIVE_TOKEN_GRAPH_KERNELS.len(), 7);
         for kernel in NATIVE_TOKEN_GRAPH_KERNELS {
             assert!(!kernel.is_empty());
             assert!(
@@ -4279,7 +5568,7 @@ mod tests {
 
     #[test]
     fn honesty_labels_a_complete_bos_token_not_a_dense_256() {
-        let honesty = NativeTokenGraphHonesty::for_run(true, true);
+        let honesty = NativeTokenGraphHonesty::for_run(true, true, false, false, false);
         assert!(honesty.native);
         assert!(honesty.complete_bos_token_graph);
         assert!(honesty.device_resident_routing);
@@ -4312,6 +5601,22 @@ mod tests {
         // The function reads the process env; just prove it returns a bool
         // without panicking. Paired A/B sets the var explicitly.
         let _ = cb_collapse_enabled();
+    }
+
+    #[test]
+    fn lm_head_geometry_uses_exact_grid_contracts() {
+        assert_eq!(
+            lm_head_launch(LM_HEAD_KERNEL, 17, 256),
+            ((17, 1, 1), (17, 1, 1))
+        );
+        assert_eq!(
+            lm_head_launch(LM_HEAD_VEC4_KERNEL, 17, 256),
+            ((17, 1, 1), (17, 1, 1))
+        );
+        assert_eq!(
+            lm_head_launch(LM_HEAD_GEO_KERNEL, 17, 256),
+            ((640, 1, 1), (128, 1, 1))
+        );
     }
 
     #[test]

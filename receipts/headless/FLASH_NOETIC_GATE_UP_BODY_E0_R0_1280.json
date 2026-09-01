@@ -1,0 +1,128 @@
+{
+  "body": {
+    "bytes": 1740800,
+    "code_bytes": 1638400,
+    "format": "packed uint4 codes followed by little-endian float16 G64 scales; row-major component block",
+    "label": "[D]",
+    "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e0-r0-1280.bin",
+    "scale_bytes": 102400,
+    "sha256": "79bb4d85c9473ca6b6c008f13cd310c906802f0714e98a537d850ec7a5e39073"
+  },
+  "body_mutated": false,
+  "body_path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e0-r0-1280.bin",
+  "candidate_body_persisted": true,
+  "candidate_id": "independent_q4_g64",
+  "claim_boundary": "One source-independent Q4/G64 routed-expert component body persisted and typed for native loading; source parity was checked against the pinned cold block, but whole-model capability, complete-token runtime, complete-system EBPW, and Flash TPS remain untested.",
+  "complete_system_ebpw": null,
+  "elapsed_s": 0.094,
+  "expert_index": 0,
+  "finished_at": 1787839163.198089,
+  "flash_tps": null,
+  "inputs": {
+    "descriptor_sha256": "e5de59c4502b1adfc8da8fc6ba5bef9ded3994d90079c44eeb042abffa81a14d",
+    "loader_receipt": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+      "sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+      "status": "PASSED"
+    },
+    "transform_receipt": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_FULL_TENSOR_TRANSFORM_PARITY.json",
+      "sha256": "f0ad216973c421a4457a9e33b091b05168c4289de8aedd23633747b5c54cf3d3",
+      "status": "PASSED"
+    }
+  },
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+  },
+  "model_loaded": false,
+  "native_loader": {
+    "candidate_body_persisted": true,
+    "candidate_id": "independent_q4_g64",
+    "dense_rematerialization": "forbidden",
+    "source_independent": true,
+    "status": "SOURCE_INDEPENDENT_COMPONENT_BODY_PERSISTED"
+  },
+  "next_action": "load this persisted component body in the native graph, then extend the same independently-owned representation/loader contract across the remaining Flash organs",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E0_R0_1280.json",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation_descriptor": {
+    "candidate_id": "independent_q4_g64",
+    "descriptor_sha256": "e5de59c4502b1adfc8da8fc6ba5bef9ded3994d90079c44eeb042abffa81a14d",
+    "schema": "hcli.noetic.representation_descriptor.v1",
+    "source_tensor": {
+      "dtype": "BF16",
+      "group_size": 64,
+      "layout": "row-major [expert, row, column]",
+      "shape": [
+        512,
+        1280,
+        2560
+      ],
+      "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+    },
+    "storage": {
+      "code_dtype": "uint4_packed",
+      "code_offset": 8,
+      "nibble_order": "low_nibble_then_high_nibble_row_major",
+      "scale_dtype": "little_endian_float16",
+      "scale_scope": "one_scale_per_64_values"
+    }
+  },
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "row_count": 1280,
+  "row_start": 0,
+  "schema": "hcli.agentos.flash_noetic_component_body.v1",
+  "source_block": {
+    "bytes": 6553600,
+    "dtype": "BF16",
+    "expert_index": 0,
+    "label": "[V]",
+    "payload_sha256": "2b60bf61f0c1d4591cd15acd60a0de71a695420d640b73fc29209557e73000ca",
+    "row_count": 1280,
+    "row_start": 0,
+    "shape": [
+      512,
+      1280,
+      2560
+    ],
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00002-of-00131.safetensors",
+    "shard_name": "model-00002-of-00131.safetensors",
+    "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+  },
+  "source_guard": {
+    "source_mutation": false,
+    "unchanged": true
+  },
+  "source_identity": {
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "source_independent": true,
+  "status": "PASSED",
+  "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj",
+  "whole_model_capability": "NOT_TESTED",
+  "whole_model_runtime": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

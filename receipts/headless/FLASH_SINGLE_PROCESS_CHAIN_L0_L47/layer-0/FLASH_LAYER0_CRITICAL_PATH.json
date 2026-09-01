@@ -1,0 +1,88 @@
+{
+  "claim_boundary": "no vague runtime-overhead bucket; un-attributed per-dispatch GPU ownership remains explicitly unmeasured when trace mode is off",
+  "integrated_graph_gpu_ns": [
+    19875083
+  ],
+  "integrated_graph_host_ns": [
+    105926750
+  ],
+  "layer": 0,
+  "owners": [
+    {
+      "kernels": "qwen_next_hyperconnection_grouped_rmsnorm",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "norm"
+    },
+    {
+      "kernels": "gemv_native_bf16_dual_seq + gemv_native_bf16_seq",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "projections"
+    },
+    {
+      "kernels": "qwen_next_gated_delta_decode_single",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "DeltaNet state"
+    },
+    {
+      "kernels": "qwen_next_gated_delta_decode_single",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "recurrence"
+    },
+    {
+      "kernels": "qwen_next_deltanet_source_bf16_gated_rmsnorm + out_proj",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "attention"
+    },
+    {
+      "kernels": "gemv_native_bf16_seq + moe_topk_gate",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "routing"
+    },
+    {
+      "kernels": "qwen_next_bf16_expert_gate_up_swiglu + qwen_next_bf16_expert_down",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "selected experts"
+    },
+    {
+      "kernels": "gemv_native_bf16_swiglu_seq + gemv_native_bf16_seq",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "shared expert"
+    },
+    {
+      "kernels": "qwen_next_hyperconnection_combine",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "residual"
+    },
+    {
+      "kernels": "TokenCommandBuffer commit_and_wait",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "synchronization"
+    },
+    {
+      "kernels": "Metal command buffer",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "command submission"
+    },
+    {
+      "kernels": "none; source BF16 remains resident",
+      "measurement": "per-dispatch GPU ownership requires HAWKING_TCB_TRACE=gpu; command-buffer GPU interval is recorded separately",
+      "ns": null,
+      "owner": "representation conversion"
+    }
+  ],
+  "promotion_allowed": false,
+  "schema": "hawking.flash_layer0_critical_path.v1",
+  "source_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "status": "PASSED"
+}

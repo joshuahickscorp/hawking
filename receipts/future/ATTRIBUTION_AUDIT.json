@@ -1,0 +1,64 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T03:26:06Z",
+  "recorded_by": "tools/future/attribution_audit.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "canonical": {
+  "clean": true,
+  "main": {
+   "commits": 3951,
+   "generated_with_footers": 0,
+   "tool_identities": 0,
+   "trailers": 0
+  },
+  "main_is_pushed": true,
+  "odyssey-i": {
+   "commits": 4126,
+   "generated_with_footers": 0,
+   "tool_identities": 0,
+   "trailers": 0
+  },
+  "origin/main": {
+   "commits": 3951,
+   "generated_with_footers": 0,
+   "tool_identities": 0,
+   "trailers": 0
+  }
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "DERIVED_FROM_GIT",
+ "method": "every ref walked with git log; identities matched exactly against the four known tool names; trailers and footers matched LINE-ANCHORED so prose cannot inflate the count",
+ "no_claude_attribution_anywhere": {
+  "claude_or_anthropic_identities": [],
+  "generated_with_footers_anywhere": 0,
+  "n_identities": 0,
+  "prose_is_not_attribution": "bodies containing the words 'regenerated with' match a naive grep and are prose about hashes and profile JSON. The footer pattern is LINE-ANCHORED so it cannot count them.",
+  "verdict": "NONE"
+ },
+ "obligation": "G021",
+ "question": "what in this repository's history still carries agent attribution, and who can see it?",
+ "remaining": {
+  "n_local_only_dirty": 187,
+  "n_other_refs_dirty": 15,
+  "n_published_dirty": 0,
+  "published_dirty": [],
+  "reading": "0 branches anyone else can read still carry agent attribution. The other 202 refs are unpublished local scratch."
+ },
+ "seal_sha256": "0759c0df73da801d77f9cd62c034560bf13d8add5cfc6a62a4c7ab740627d72e",
+ "verdict": "CANONICAL_CLEAN_EXPOSURE_IS_0_PUBLISHED_BRANCHES",
+ "what_this_does_not_do": {
+  "does_not_push": true,
+  "does_not_rewrite": true,
+  "preconditions_for_any_rewrite": [
+   "a bundle of every ref, verified with git bundle verify, taken first",
+   "--prune-empty=never --prune-degenerate=never, because the first S016 attempt lost 970 commits to filter-repo's defaults",
+   "tree identity checked per branch, not just commit counts"
+  ],
+  "why": "rewriting a PUBLISHED branch is a force-push. Both remaining branches are UNMERGED - ahead of main - so they are not stale mirrors of landed work and deleting them would discard commits that exist nowhere else. Which of rewrite / delete / leave is correct is the user's call, and this obligation's own words are 'Nothing may be lost'."
+ }
+}

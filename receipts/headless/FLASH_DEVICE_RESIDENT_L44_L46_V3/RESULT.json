@@ -1,0 +1,9 @@
+{
+  "schema": "hawking.flash.detached_result.v1",
+  "status": "FAILED_OR_INCOMPLETE",
+  "summary": null,
+  "receipts": [
+    "group-44-46/receipt.json"
+  ],
+  "completed_unix_ns": 1787940504601836000
+}

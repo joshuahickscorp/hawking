@@ -1,0 +1,45 @@
+{
+ "schema": "hawking.odyssey.noetic_model2_q4_generalization.v1",
+ "generated_at": "2026-08-28T02:07:44Z",
+ "generated_by": "tools/odyssey/model2_q4_generalization.py",
+ "obligation": "G023 \u2014 model-2 Qwen30 uniform-Q4 generalization",
+ "hand_authored": false,
+ "specimen": {
+  "repository": "Qwen/Qwen3-30B-A3B",
+  "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+  "model_dir": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+  "source_audit": "/Users/scammermike/noetic/MODEL2_AUDIT/QWEN30BASE_SOURCE_BODY_AUDIT_CANDIDATE.json",
+  "source_audit_seal_sha256": "5bcea5aec56473bdc8242c7f6b5cd37a838eaf8588190ec06bcc1180e8a82fcf",
+  "source_revalidation": {
+   "path": "/Users/scammermike/noetic/MODEL2_Q4_CONTROL/QWEN30BASE_Q4_CONTROL_CURRENT_SOURCE_SHARD_REVALIDATION.json",
+   "seal_sha256": "c1112c5be79738661bcf256caf41f2c94213ca14b3e0a807e6ce26fcbc5dc829",
+   "observed_total_bytes": 61066575648,
+   "shard_count": 16
+  }
+ },
+ "checks": {
+  "source_directory_present": true,
+  "source_config_is_qwen3_moe": true,
+  "sealed_source_audit_matches_base": true,
+  "embedded_chat_template_is_recognized": true,
+  "uniform_admission_resolves_base_variant": true,
+  "runtime_uses_admitted_repository": true,
+  "uniform_q4_preflight_is_family_specific": true,
+  "repacker_is_source_parameterized": true,
+  "bounded_repacker_refuses_partial_manifest": true,
+  "native_uniform_q4_tests_pass": true
+ },
+ "test_command": "cargo test --manifest-path crates/hawking-core/Cargo.toml --lib uniform_q4 --quiet",
+ "test_returncode": 0,
+ "claim_boundary": {
+  "current_source_shard_revalidation_completed": true,
+  "full_qwen30base_q4_artifact_packed": false,
+  "uniform_q4_artifact_admitted": false,
+  "native_token_executed": false,
+  "device_profiles_qualified": false,
+  "cuda_hardware_execution": false,
+  "meaning": "wiring and source-contract generalization only; no physical or capability claim"
+ },
+ "pass": true,
+ "seal_sha256": "851fb29cc92e3611404c3ffd5ff636bc41b20744a445666ef5d8e97b0fc64686"
+}

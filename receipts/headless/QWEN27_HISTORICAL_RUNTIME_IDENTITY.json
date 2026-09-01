@@ -100,7 +100,7 @@
       }
     },
     "git": {
-      "head": "5651e858f7c2cbd5f9064b7f82e2ce76c53020e1",
+      "head": "3f06d081505de35b1e9b1685e6a11484eda116d1",
       "working_tree_dirty": true
     },
     "label": "[V]",
@@ -266,7 +266,7 @@
       "source_derived_is_not_physical": true,
       "unknown_is_not_equal": true
     },
-    "generated_at": 1787808507.5289128,
+    "generated_at": 1787835757.072852,
     "ranked_differences": [
       {
         "classification": "UNKNOWN",
@@ -375,7 +375,7 @@
       },
       {
         "classification": "DIFFERENT_VERIFIED",
-        "current": "5651e858f7c2cbd5f9064b7f82e2ce76c53020e1",
+        "current": "3f06d081505de35b1e9b1685e6a11484eda116d1",
         "dimension": "source_git_head",
         "expected_token_ns_impact": null,
         "historical": "03373eae6c961158e3b929ecbd8f2c31302c1809",
@@ -474,8 +474,8 @@
     }
   },
   "diff_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN27_RUNTIME_DIFF.json",
-  "elapsed_s": 0.305,
-  "finished_at": 1787808507.528927,
+  "elapsed_s": 0.307,
+  "finished_at": 1787835757.072872,
   "historical": {
     "artifact": {
       "declared": {
@@ -665,5 +665,14 @@
   "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
   "repo_root": "/Users/scammermike/Downloads/hawking",
   "schema": "hcli.agentos.qwen27_historical_runtime_identity.v1",
-  "status": "PASSED"
+  "status": "PASSED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
 }

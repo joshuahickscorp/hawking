@@ -1,0 +1,79 @@
+{
+ "corroboration": {
+  "agrees": true,
+  "difference_ms": 0.0636,
+  "prior_protected_gpu_ms": 22.01,
+  "relative_difference": 0.00289,
+  "this_protected_gpu_ms": 21.9464,
+  "why_this_matters": "the prior lease measured the levers as EXPORTED ENV VARS on the bitcast arm; this one measures them UNSET as the sealed default, through a different instrument on a different day. Agreement to 0.29% is evidence that the promotion changed the default and not the number."
+ },
+ "headline_gpu_tps": 45.566,
+ "host_gap_is_not_the_resident": {
+  "host_gap_ms_by_window": {
+   "canonical_noisy": 0.6953,
+   "prior_lease": 0.3247,
+   "this_lease": 0.956
+  },
+  "reading": "G125 established that a wall-time disagreement between harnesses is host contention, not an instrument conflict. Three protected or semi-protected windows put the host gap across a 2.94x span while GPU time moved under 0.3%. The GPU figure is promoted; the wall figure is reported beside its host gap and is not the resident's number.",
+  "span": 2.944
+ },
+ "identity_verified_separately": {
+  "note": "G126 proved this arm dispatches the measured kernels. This receipt measures it; it does not re-prove identity.",
+  "receipt": "receipts/future/SEALED_DEFAULT_VERIFIED.json"
+ },
+ "inputs": [
+  "receipts/future/_G131_LEASE_SEALED_raw.json",
+  "receipts/future/PROTECTED_BITCAST_ABSOLUTE.json",
+  "receipts/future/SEALED_DEFAULT_VERIFIED.json"
+ ],
+ "lease": {
+  "evidence_class": "PROTECTED_ABSOLUTE",
+  "loadavg_at_close": "8.70 8.87 8.68",
+  "loadavg_at_open": "9.10 8.95 8.71",
+  "loadavg_before": "10.28 9.12 8.75",
+  "method": "SIGSTOP the ModelLake SUPERVISOR first (tools/odyssey/modellake_watch.py pid 82743), then both hf download workers, settle 25s, measure under the GPU lane lock, then SIGCONT workers then supervisor",
+  "nothing_was_killed": "SIGSTOP and SIGCONT only. No signal other than STOP/CONT was sent to any download process.",
+  "one_worker_exited_after_resume": {
+   "partial_intact": "5.9 GB with 16 .incomplete files, so the specimen resumes rather than restarts",
+   "specimen": "thinkingmachines/Inkling-Small",
+   "supervisor_alive": true,
+   "supervisor_rescheduled_to": "zai-org/GLM-5.3-Flash",
+   "when": "AFTER the window closed, not during it - which is what stopping the supervisor first is for",
+   "work_lost": null
+  },
+  "states_after_resume": "supervisor S, one worker running, one exited",
+  "states_at_open": "supervisor T, both workers T"
+ },
+ "measured": {
+  "dense_w_materialized": 0,
+  "dispatches": 580,
+  "dn_state_kernel_at_open": "widen_f4",
+  "fallbacks": 0,
+  "gpu_ms_max": 21.9727,
+  "gpu_ms_min": 21.8741,
+  "gpu_ms_per_token": 21.9464,
+  "gpu_rep_spread": 1.0045,
+  "gpu_tps": 45.566,
+  "host_gap_ms": 0.956,
+  "levers_unset": true,
+  "n_reps": 9,
+  "wall_ms_per_token": 22.9024,
+  "wall_tps": 43.664
+ },
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g126-lease",
+  "loadavg": "{ 9.10 8.95 8.71 }",
+  "measured_at": "2026-09-01T02:23:49Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "obligation": "G131",
+ "question": "with the three levers promoted to sealed defaults, what does the resident actually cost in a protected window?",
+ "recorded_by": "tools/future/sealed_default_absolute.py",
+ "seal_sha256": "01123a80f64a375abc18715e00a4c555fbf1f1f104248dc1feb15c0c7aa21fbc",
+ "still_short_of_60_by_ms": 5.2797,
+ "still_short_of_71_by_ms": 7.8619,
+ "verdict": "PROTECTED_ABSOLUTE_FOR_THE_SEALED_DEFAULT"
+}

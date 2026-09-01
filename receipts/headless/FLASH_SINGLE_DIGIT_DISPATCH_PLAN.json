@@ -1,0 +1,141 @@
+{
+  "schema": "hawking.flash.single_digit_dispatch_plan.v1",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "representation": "source_bf16_exact",
+  "scope": "layer-0 measured topology and parity-gated superkernel plan",
+  "current_measured": {
+    "receipt": "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_FUSED_HC_INPUT.json",
+    "dispatches": 20,
+    "baseline_dispatches": 28,
+    "command_buffers": 1,
+    "fallback_count": 0,
+    "graph_gpu_ns": 41078541,
+    "prior_28_dispatch_graph_gpu_ns": 19965999,
+    "candidate_geometry_threads": 512,
+    "candidate_geometry_status": "COMPILED_NOT_YET_PHYSICALLY_MEASURED",
+    "useful_work_gate": "INCONCLUSIVE_CONCURRENT_GPU_CHAIN_RETAIN_28_DISPATCH_WINNER",
+    "measurement_interference": "the 48-layer source-parity chain was active on the same GPU during this probe; rerun in a protected quiescent window before declaring a speed rejection",
+    "parity": true,
+    "output_hash": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+    "claim_boundary": "physically measured layer-0 source-parity graph after HC input fusion; not complete-token throughput or residence"
+  },
+  "target": {
+    "dispatches": 8,
+    "under_single_digit": true,
+    "selection_authority": "complete useful work with exact source parity, not nominal dispatch count"
+  },
+  "groups": [
+    {
+      "id": "hc_attn_input",
+      "current_dispatches": 5,
+      "target_dispatches": 1,
+      "sequence": [
+        "grouped_rmsnorm",
+        "hc_down_gemv",
+        "silu_scale",
+        "hc_up_gemv",
+        "read_mix"
+      ],
+      "status": "DESIGN_REQUIRED",
+      "parity_gate": "all five intermediate tensors and final attn_input"
+    },
+    {
+      "id": "deltanet_projection",
+      "current_dispatches": 6,
+      "target_dispatches": 2,
+      "sequence": [
+        "qkv_z_dual_projection",
+        "ba_dual_projection",
+        "rearrange_conv",
+        "ba_to_decay_beta",
+        "state_update",
+        "gated_rmsnorm"
+      ],
+      "status": "PARTIAL_FUSION_REQUIRED",
+      "parity_gate": "q/k/v/z, decay, beta, recurrent state and recurrent output"
+    },
+    {
+      "id": "attn_residual",
+      "current_dispatches": 3,
+      "target_dispatches": 1,
+      "sequence": [
+        "out_projection",
+        "block_logits",
+        "hyperconnection_combine"
+      ],
+      "status": "DESIGN_REQUIRED",
+      "parity_gate": "attn_block_output, block logits and post-attn state"
+    },
+    {
+      "id": "hc_mlp_input",
+      "current_dispatches": 5,
+      "target_dispatches": 1,
+      "sequence": [
+        "grouped_rmsnorm",
+        "hc_down_gemv",
+        "silu_scale",
+        "hc_up_gemv",
+        "read_mix"
+      ],
+      "status": "DESIGN_REQUIRED",
+      "parity_gate": "all five intermediate tensors and final mlp_input"
+    },
+    {
+      "id": "router",
+      "current_dispatches": 2,
+      "target_dispatches": 1,
+      "sequence": [
+        "router_and_shared_scalar",
+        "topk_gate"
+      ],
+      "status": "DESIGN_REQUIRED",
+      "parity_gate": "router logits, shared scalar, route ids and route weights"
+    },
+    {
+      "id": "moe",
+      "current_dispatches": 5,
+      "target_dispatches": 1,
+      "sequence": [
+        "expert_gate_up_swiglu",
+        "expert_down",
+        "shared_expert",
+        "weighted_sum_add_shared_sigmoid"
+      ],
+      "status": "HIGH_RISK",
+      "parity_gate": "routed activation/output, shared output, routed sum, gated output and MoE output"
+    },
+    {
+      "id": "mlp_residual",
+      "current_dispatches": 2,
+      "target_dispatches": 1,
+      "sequence": [
+        "block_logits",
+        "hyperconnection_combine"
+      ],
+      "status": "DESIGN_REQUIRED",
+      "parity_gate": "MLP block logits and final state"
+    }
+  ],
+  "safety": {
+    "no_count_only_relabel": true,
+    "no_promotion_until": [
+      "compile",
+      "physical_run",
+      "all_stage_parity",
+      "repeated_determinism"
+    ],
+    "fallback_policy": "retain 28-dispatch graph when any superkernel fails compile, parity, or useful wall-time"
+  },
+  "next_action": "Retain the 28-dispatch graph provisionally; rerun the 20-dispatch HC superkernel in a protected quiescent window, then optimize or reject it against 19,965,999 ns before composing further fusions.",
+  "artifact_kind": "NR",
+  "nx_promotion": "not_allowed",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

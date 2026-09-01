@@ -4,27 +4,27 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T10:22:28Z",
+  "recorded_at": "2026-09-01T05:40:27Z",
   "recorded_by": "tools/future/power_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
- "elapsed_s": 4.00228,
+ "elapsed_s": 4.122555,
  "events": [
   {
    "kind": "substrate_hashed",
    "payload": {
-    "digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
+    "digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
     "id": "WU.TORTURE.substrate.before",
-    "n_files": 64,
+    "n_files": 67,
     "n_shaders": 1,
     "unit_id": "WU.TORTURE.substrate.before",
     "when": "before"
    },
    "seq": 0,
-   "t_s": 0.622492,
-   "t_unix": 1788171745.461941
+   "t_s": 0.626904,
+   "t_unix": 1788241224.202827
   },
   {
    "kind": "gpu_lane_lock_parked",
@@ -41,17 +41,17 @@
     "waited_for": null
    },
    "seq": 1,
-   "t_s": 0.622504,
-   "t_unix": 1788171745.46195
+   "t_s": 0.626912,
+   "t_unix": 1788241224.202832
   },
   {
    "kind": "detached_started",
    "payload": {
     "detached": true,
     "id": "WU.TORTURE.NO_WAIT.child",
-    "job_id": "WU-TORTURE-NO_WAIT-child-c7570080",
+    "job_id": "WU-TORTURE-NO_WAIT-child-aea07356",
     "no_wait": true,
-    "pid": 72371,
+    "pid": 75519,
     "power": "NO_WAIT",
     "runnable_now": [
      {
@@ -66,8 +66,8 @@
     "unit_id": "WU.TORTURE.NO_WAIT.child"
    },
    "seq": 2,
-   "t_s": 0.706458,
-   "t_unix": 1788171745.5459058
+   "t_s": 0.705079,
+   "t_unix": 1788241224.281003
   },
   {
    "kind": "WORK_LAUNCHED",
@@ -75,7 +75,7 @@
     "blocking": false,
     "detached": false,
     "id": "WU.TORTURE.NO_WAIT.ind",
-    "pid": 72373,
+    "pid": 75523,
     "power": "NO_WAIT",
     "status": "EXERCISED",
     "unit": {
@@ -85,36 +85,36 @@
     "unit_id": "WU.TORTURE.NO_WAIT.ind"
    },
    "seq": 3,
-   "t_s": 0.778365,
-   "t_unix": 1788171745.617814
+   "t_s": 0.775606,
+   "t_unix": 1788241224.351528
   },
   {
    "kind": "workunit_progressed",
    "payload": {
     "id": "WU.TORTURE.NO_WAIT.ind",
     "power": "NO_WAIT",
-    "progress_at": 1788171745.659212,
+    "progress_at": 1788241224.4029,
     "slow_still_open": true,
     "unit_id": "WU.TORTURE.NO_WAIT.ind"
    },
    "seq": 4,
-   "t_s": 0.819769,
-   "t_unix": 1788171745.659216
+   "t_s": 0.826983,
+   "t_unix": 1788241224.402905
   },
   {
    "kind": "WORK_LAUNCHED",
    "payload": {
     "correct_refusal": false,
     "id": "WU.TORTURE.NO_WAIT",
-    "pid": 72371,
+    "pid": 75519,
     "power": "NO_WAIT",
     "status": "EXERCISED",
     "unit_id": "WU.TORTURE.NO_WAIT",
-    "why": "detached pid 72371 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+    "why": "detached pid 75519 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
    },
    "seq": 5,
-   "t_s": 1.011054,
-   "t_unix": 1788171745.8505018
+   "t_s": 1.029452,
+   "t_unix": 1788241224.605375
   },
   {
    "kind": "WORK_REFILLED",
@@ -123,7 +123,7 @@
     "id": "WU.TORTURE.REAL_REFILL.a",
     "n_fresh": 2,
     "power": "REAL_REFILL",
-    "queue_depth": 32,
+    "queue_depth": 33,
     "source": "replan_after_scar_and_invalidation",
     "status": "EXERCISED",
     "unit_id": "WU.TORTURE.REAL_REFILL.a",
@@ -134,15 +134,15 @@
     "why": "replan_after_scar_and_invalidation returned 2 id(s) not already offered"
    },
    "seq": 6,
-   "t_s": 1.833225,
-   "t_unix": 1788171746.6726751
+   "t_s": 1.864158,
+   "t_unix": 1788241225.4400818
   },
   {
    "kind": "WORK_REFILLED",
    "payload": {
     "id": "WU.TORTURE.REAL_REFILL.b",
     "power": "REAL_REFILL",
-    "queue_depth": 34,
+    "queue_depth": 35,
     "status": "EXERCISED",
     "unit_id": "WU.TORTURE.REAL_REFILL.b",
     "unit_ids": [
@@ -152,14 +152,14 @@
     "why": "second refill set differs from the first; consecutive identical sets are the 1h scar"
    },
    "seq": 7,
-   "t_s": 1.833233,
-   "t_unix": 1788171746.672679
+   "t_s": 1.864165,
+   "t_unix": 1788241225.440085
   },
   {
    "cites": [
     "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
     "receipts/future/DETACHED_WORK_TRIAL.json",
-    "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-1741/power_torture_run0/nowait/results/fast.json"
+    "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-2223/power_torture_run0/nowait/results/fast.json"
    ],
    "kind": "RESULT_INGESTED",
    "payload": {
@@ -171,8 +171,8 @@
     "why": "ok"
    },
    "seq": 8,
-   "t_s": 1.83332,
-   "t_unix": 1788171746.672765
+   "t_s": 1.864253,
+   "t_unix": 1788241225.4401731
   },
   {
    "kind": "IDEA_REJECTED",
@@ -188,8 +188,8 @@
     "why": "candidate refused by scar receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json#NS-010; replacement admitted"
    },
    "seq": 9,
-   "t_s": 1.849791,
-   "t_unix": 1788171746.6892438
+   "t_s": 1.880019,
+   "t_unix": 1788241225.455942
   },
   {
    "kind": "NEGATIVE_SCIENCE_REFUSAL",
@@ -202,8 +202,8 @@
     "unit_id": "WU.TORTURE.SCAR_PRUNING.ni"
    },
    "seq": 10,
-   "t_s": 1.849803,
-   "t_unix": 1788171746.689248
+   "t_s": 1.88003,
+   "t_unix": 1788241225.4559512
   },
   {
    "kind": "status_challenged",
@@ -211,8 +211,8 @@
     "claim_kind": "host_hardware_absence",
     "emit_verdict": "OVERREACHING",
     "id": "WU.TORTURE.STATUS_CAUSALITY",
-    "n_gates_named_gap": 11,
-    "n_gates_recording": 7,
+    "n_gates_named_gap": 1,
+    "n_gates_recording": 17,
     "power": "STATUS_CAUSALITY",
     "probe_kind": "process_error",
     "status": "EXERCISED",
@@ -221,8 +221,8 @@
     "why": "challenged 'BLOCKED_NO_METAL_GPU' with probe_kind='process_error'; verdict=OVERREACHING"
    },
    "seq": 11,
-   "t_s": 1.86286,
-   "t_unix": 1788171746.7023082
+   "t_s": 1.886614,
+   "t_unix": 1788241225.462535
   },
   {
    "kind": "workunit_sleeping",
@@ -232,7 +232,7 @@
     "classification": "SLEEPING",
     "correct_refusal": true,
     "id": "WU.TORTURE.PROTECTED_PARKING",
-    "n_continued": 32,
+    "n_continued": 33,
     "power": "PROTECTED_PARKING",
     "status": "EXERCISED",
     "unit_id": "WU.TORTURE.PROTECTED_PARKING",
@@ -253,14 +253,14 @@
     "why": "GPU_EXCLUSIVE parked BLOCKED_ON_PROTECTED_WINDOW; scheduler stays CAPABLE"
    },
    "seq": 12,
-   "t_s": 3.181961,
-   "t_unix": 1788171748.02141
+   "t_s": 3.21692,
+   "t_unix": 1788241226.792845
   },
   {
    "kind": "blocked_resource_reroute",
    "payload": {
     "id": "WU.TORTURE.BLOCKED_RESOURCE_REROUTE",
-    "n_continued": 32,
+    "n_continued": 33,
     "power": "BLOCKED_RESOURCE_REROUTE",
     "status": "EXERCISED",
     "unit_id": "WU.TORTURE.BLOCKED_RESOURCE_REROUTE",
@@ -273,6 +273,7 @@
      "FT.GPU_KERNELS.static-warnings",
      "FT.HCLI_SELF.emit-workunits",
      "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+     "FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
      "FT.MODEL_REPRESENTATION.meta-gates-3-9",
      "FT.ODYSSEY_ADVERSARY.attacks",
      "FT.ODYSSEY_TRANSFER.re-earn",
@@ -298,11 +299,11 @@
      "FT.PHYSICAL_GRAPH.hwir-lower",
      "FT.TOOLS.frontiers-refill"
     ],
-    "why": "protected unit parked; continue_with returned 32 CPU units"
+    "why": "protected unit parked; continue_with returned 33 CPU units"
    },
    "seq": 13,
-   "t_s": 3.18197,
-   "t_unix": 1788171748.021415
+   "t_s": 3.216928,
+   "t_unix": 1788241226.7928488
   },
   {
    "kind": "nr_nx_stage",
@@ -318,8 +319,8 @@
     "why": "every named stage ran and PASSED"
    },
    "seq": 14,
-   "t_s": 3.182089,
-   "t_unix": 1788171748.021535
+   "t_s": 3.217072,
+   "t_unix": 1788241226.792993
   },
   {
    "kind": "mutation_applied",
@@ -335,8 +336,8 @@
     "why": "proposal applied in reversible scope; rollback digest matched"
    },
    "seq": 15,
-   "t_s": 3.18361,
-   "t_unix": 1788171748.0230558
+   "t_s": 3.218437,
+   "t_unix": 1788241226.794358
   },
   {
    "kind": "mutation_rolled_back",
@@ -349,8 +350,8 @@
     "unit_id": "WU.TORTURE.MUTATION.rollback"
    },
    "seq": 16,
-   "t_s": 3.183613,
-   "t_unix": 1788171748.023058
+   "t_s": 3.21844,
+   "t_unix": 1788241226.7943602
   },
   {
    "kind": "subagent_state_persisted",
@@ -364,8 +365,8 @@
     "why": "two WorkGraph documents, distinct unit sets, reload preserved identity and did not leak state"
    },
    "seq": 17,
-   "t_s": 3.185618,
-   "t_unix": 1788171748.025064
+   "t_s": 3.220714,
+   "t_unix": 1788241226.7966359
   },
   {
    "kind": "concurrency_doctor_decided",
@@ -388,8 +389,8 @@
     "why": "doctor REFUSED a verdict without observations and is SLEEPING with blocked_reason=\"resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware\"; that is the exercise"
    },
    "seq": 18,
-   "t_s": 3.344455,
-   "t_unix": 1788171748.183906
+   "t_s": 3.406496,
+   "t_unix": 1788241226.982422
   },
   {
    "kind": "restatement_refused",
@@ -403,8 +404,8 @@
     "why": "REFUSED WU.TORTURE.invalidate.gate_up.shared_input_latent: restatement of killed family shared_input_latent_plus_expert_local_output_readout (receipts/future/RIVAL_CODEC_SCREEN.json): nearby restatement of shared_input_latent_plus_expert_local_output_readout on layer_4.routed_experts.gate_up_proj (split=None); more ranks of a killed family on the exhausted surface are refused. The scar does not generalise, and this candidate did not leave the surface."
    },
    "seq": 19,
-   "t_s": 3.346276,
-   "t_unix": 1788171748.185722
+   "t_s": 3.408169,
+   "t_unix": 1788241226.98409
   },
   {
    "kind": "replan_emitted",
@@ -420,8 +421,8 @@
     "why": "result scar_pruning changes what runs next"
    },
    "seq": 20,
-   "t_s": 3.351639,
-   "t_unix": 1788171748.1910841
+   "t_s": 3.413493,
+   "t_unix": 1788241226.989414
   },
   {
    "kind": "replan_emitted",
@@ -437,8 +438,8 @@
     "why": "result status_causality changes what runs next"
    },
    "seq": 21,
-   "t_s": 3.351642,
-   "t_unix": 1788171748.191087
+   "t_s": 3.413498,
+   "t_unix": 1788241226.989418
   },
   {
    "kind": "replan_emitted",
@@ -454,8 +455,8 @@
     "why": "result frontier_invalidation changes what runs next"
    },
    "seq": 22,
-   "t_s": 3.351644,
-   "t_unix": 1788171748.191089
+   "t_s": 3.413499,
+   "t_unix": 1788241226.989419
   },
   {
    "kind": "replan_emitted",
@@ -471,8 +472,8 @@
     "why": "result flash_meta_replan changes what runs next"
    },
    "seq": 23,
-   "t_s": 3.351645,
-   "t_unix": 1788171748.1910899
+   "t_s": 3.4135,
+   "t_unix": 1788241226.9894211
   },
   {
    "kind": "tabula_callable",
@@ -491,8 +492,8 @@
     "why": "Tabula floor is callable: recover, evaluate, rank, catalog, resident_callable; apply_to_weights is WeightsFrozen (the floor, not a stubbed model); zero-refusal scoring is refused"
    },
    "seq": 24,
-   "t_s": 3.383282,
-   "t_unix": 1788171748.222731
+   "t_s": 3.443383,
+   "t_unix": 1788241227.019308
   },
   {
    "kind": "cognition_state",
@@ -506,13 +507,13 @@
     "why": "PASS means new power integration, not resident cognition"
    },
    "seq": 25,
-   "t_s": 3.385208,
-   "t_unix": 1788171748.2246542
+   "t_s": 3.443443,
+   "t_unix": 1788241227.019364
   },
   {
    "kind": "substrate_hashed",
    "payload": {
-    "digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
+    "digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
     "equal": true,
     "id": "WU.TORTURE.substrate.after",
     "moved": [],
@@ -521,20 +522,20 @@
     "when": "after"
    },
    "seq": 26,
-   "t_s": 4.00228,
-   "t_unix": 1788171748.841728
+   "t_s": 4.122555,
+   "t_unix": 1788241227.698478
   }
  ],
- "events_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+ "events_sha256": "3ac02f383b8220c7dce645a8e0717b8c8bc255c6f5f88832e5e02b0dcdfdcd4d",
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "n_events": 27,
  "purpose": "Sealed append-only timeline of the 30-minute power torture. The judge reads this document, not the runner's summary.",
  "schema": "hawking.future.power_torture.timeline.v1",
- "seal_sha256": "9b1e32439476461d6bd997aba8b98bb1b1713fecf450ef28b4412947b673d946",
+ "seal_sha256": "cb9377a542ef5e3e2d084afc32d79bd140bc89f659f675c8765992c65787c4b2",
  "sealed": true,
- "sealed_at": "2026-08-31T10:22:28Z",
- "t0_unix": 1788171744.8394449,
+ "sealed_at": "2026-09-01T05:40:27Z",
+ "t0_unix": 1788241223.57592,
  "trial_id": "30m",
  "version": 1
 }

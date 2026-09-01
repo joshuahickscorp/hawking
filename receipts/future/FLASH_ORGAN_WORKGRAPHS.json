@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:44:32Z",
+  "recorded_at": "2026-09-01T05:26:59Z",
   "recorded_by": "tools/future/flash_organ_workgraphs.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -8582,7 +8582,7 @@
   "DECODING",
   "MTP_SPECULATION"
  ],
- "seal_sha256": "a39e5f8566809565cbc8d012e3a4ae29c6d2840551936dce749fb67e26dafa80",
+ "seal_sha256": "646a98a2820d94575691f129cf490ab2086ccf4adbfa78b224331adaa7413bce",
  "teacher_corpus": {
   "contract_is_not_a_corpus": true,
   "contract_receipt": {

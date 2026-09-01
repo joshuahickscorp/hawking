@@ -1,0 +1,62 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-60327/_bound_run.py",
+    "shell",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-60327/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+    "[\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"tools/future/test_mlp_byte_census.py\", \"-q\", \"-p\", \"no:cacheprovider\"]"
+  ],
+  "attempts": 0,
+  "cancel_requested": false,
+  "crash_reason": null,
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-60327/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+  "finished_at": 1788195764.2643971,
+  "identity_status": "dead",
+  "job_id": "WU-AUTONOMY-detach-FT-VERIFICATION-repro-a19fb505",
+  "launch_refused": false,
+  "log_paths": {
+    "stderr": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-60327/detached/logs/WU-AUTONOMY-detach-FT-VERIFICATION-repro-a19fb505.stderr.log",
+    "stdout": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-60327/detached/logs/WU-AUTONOMY-detach-FT-VERIFICATION-repro-a19fb505.stdout.log"
+  },
+  "pgid": 88114,
+  "pid": 88114,
+  "resource_class": "STATIC_ANALYSIS",
+  "resource_lease": {
+    "held": false,
+    "kind": null,
+    "reason": "this lane never takes a GPU or bench lease; flock of the protected lock would be a seizure",
+    "refused": true
+  },
+  "result_location": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-60327/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+  "retry_policy": {
+    "max_attempts": 3,
+    "never_resume_mid_execution": true,
+    "never_retry_on": [
+      "cancelled",
+      "completed-with-receipt",
+      "completed-without-receipt",
+      "timed_out",
+      "unknown"
+    ],
+    "policy": "rerun",
+    "retry_on": [
+      "crashed"
+    ],
+    "source": "hcli/workunit.py RESUME_POLICY + DEFAULT_RETRY_BUDGET"
+  },
+  "returncode": 0,
+  "running_at": 1788195761.781043,
+  "schema": "hawking.future.detached.supervision.v1",
+  "start_token": "1788195761.772601",
+  "started_at": 1788195761.718403,
+  "state": "TERMINAL",
+  "supervisor_pid": 88113,
+  "supervisor_start_token": "1788195761.719035",
+  "terminal": "completed-with-receipt",
+  "timeout_s": 1791.8736712932587,
+  "workunit_id": "WU.AUTONOMY.detach.FT.VERIFICATION.repro",
+  "workunit_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-60327/detached/units/WU-AUTONOMY-detach-FT-VERIFICATION-repro-a19fb505.workunit.json",
+  "workunit_seal_sha256": "bc04fd2e2f8b71c5288dfec283b71d90be39b4e7141bc8c9561005e58ebec481"
+}

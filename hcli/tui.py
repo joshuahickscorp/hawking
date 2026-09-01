@@ -2,7 +2,9 @@ from __future__ import annotations
 
 import os
 import re
+import shutil
 import sys
+import unicodedata
 from typing import Any, Callable, Dict, List, Optional
 
 from .events import Event, EventBus
@@ -12,6 +14,15 @@ _REASONING_RE = re.compile(r"reasoning_content\s*[:=].*?(?=\n\n|$)", re.DOTALL)
 _RAW_PARENT_RE = re.compile(r"RAW PARENT", re.IGNORECASE)
 _TOOL_JSON_RE = re.compile(r"\{\s*\"tool\"\s*:.*?\}", re.DOTALL)
 _HTTP_RE = re.compile(r"HTTP/[0-9.]+\s+[0-9]{3}", re.MULTILINE)
+_ANSI_RE = re.compile(r"\x1b\[[0-9;?]*[ -/]*[@-~]")
+
+# The frame is measured in terminal COLUMNS, never in len(): the rows carry
+# box-drawing characters, and model output carries CJK and emoji, which occupy
+# two columns each. Counting code points is what made every row a different
+# width and left the right border ragged.
+_MIN_WIDTH = 40
+_MAX_WIDTH = 100
+_FALLBACK_WIDTH = 80
 
 
 def sanitize_output(text: str) -> str:
@@ -21,6 +32,71 @@ def sanitize_output(text: str) -> str:
     text = _TOOL_JSON_RE.sub("", text)
     text = _HTTP_RE.sub("", text)
     return text.strip()
+
+
+def _char_width(ch: str) -> int:
+    # Combining marks, variation selectors and joiners render into the previous
+    # cell; East Asian Wide/Fullwidth (and most emoji) take two.
+    if unicodedata.combining(ch) or unicodedata.category(ch) in ("Mn", "Me", "Cf"):
+        return 0
+    return 2 if unicodedata.east_asian_width(ch) in ("W", "F") else 1
+
+
+def display_width(text: str) -> int:
+    """Columns `text` occupies once ANSI escapes are stripped."""
+    # ponytail: per-codepoint, not grapheme clusters, so a ZWJ/skin-tone emoji
+    # sequence over-counts. Reach for a grapheme segmenter if that ever shows.
+    return sum(_char_width(ch) for ch in _ANSI_RE.sub("", text))
+
+
+def _fit(text: str, width: int) -> List[str]:
+    """Split one logical line into chunks of at most `width` display columns.
+
+    Wraps on a space when there is one worth breaking at, hard-cuts otherwise,
+    so no content is silently dropped and nothing exceeds the frame.
+    """
+    text = _ANSI_RE.sub("", text)
+    rows: List[str] = []
+    chunk = ""
+    used = 0
+    for ch in text:
+        cw = _char_width(ch)
+        if used + cw > width:
+            cut = chunk.rfind(" ")
+            if cut > width // 2:
+                rows.append(chunk[:cut])
+                chunk = chunk[cut + 1:]
+            else:
+                rows.append(chunk)
+                chunk = ""
+            used = display_width(chunk)
+        chunk += ch
+        used += cw
+    rows.append(chunk)
+    return rows
+
+
+def frame_width() -> int:
+    """Real terminal width, clamped to something readable, 80 when not a tty."""
+    try:
+        cols = shutil.get_terminal_size((_FALLBACK_WIDTH, 24)).columns
+    except Exception:
+        cols = _FALLBACK_WIDTH
+    return max(_MIN_WIDTH, min(_MAX_WIDTH, cols))
+
+
+def _rule(left: str, right: str, width: int, label: str = "") -> str:
+    head = f"{left} {label} " if label else left
+    return head + "─" * max(width - display_width(head) - 1, 0) + right
+
+
+def _rows(text: str, width: int) -> List[str]:
+    """Every visual line of `text`, each padded to exactly `width` columns."""
+    out: List[str] = []
+    for logical in text.expandtabs(4).splitlines() or [""]:
+        for line in _fit(logical, width - 4):
+            out.append("│ " + line + " " * (width - 4 - display_width(line)) + " │")
+    return out
 
 
 class TUI:
@@ -36,6 +112,11 @@ class TUI:
         self._detect_prompt()
 
     def _detect_prompt(self):
+        # prompt_toolkit on a pipe warns and emits bare carriage returns into
+        # the frame, so it only gets the terminal.
+        if not sys.stdin.isatty():
+            self._prompt_fn = lambda msg: input(msg)
+            return
         try:
             from prompt_toolkit import prompt as pt_prompt
             from prompt_toolkit.history import InMemoryHistory
@@ -44,24 +125,32 @@ class TUI:
             self._prompt_fn = lambda msg: input(msg)
 
     def render_header(self) -> str:
-        return f"┌ HCLI ───────────────────────────────────────────────────────────────┐\n│ {os.path.basename(self.workspace)}  {self.model_name}  {self.runtime_count} runtime(s) │"
+        w = frame_width()
+        info = f"{os.path.basename(self.workspace)}  {self.model_name}  {self.runtime_count} runtime(s)"
+        return "\n".join([_rule("┌", "┐", w, "HCLI")] + _rows(info, w))
 
     def render_status(self) -> str:
-        return f"│ {self.status} │"
+        return "\n".join(_rows(self.status, frame_width()))
 
     def render_transcript(self) -> str:
+        w = frame_width()
         if not self.transcript:
-            return "│ (no activity yet) │"
-        lines = []
-        for line in self.transcript[-20:]:
-            lines.append(f"│ {line} │")
+            return "\n".join(_rows("(no activity yet)", w))
+        lines: List[str] = []
+        for entry in self.transcript[-20:]:
+            lines.extend(_rows(entry, w))
         return "\n".join(lines)
 
-    def render_input(self) -> str:
-        return "├────────────────────────────────────────────────────────────────────┤\n│ > "
-
     def render(self) -> str:
-        parts = [self.render_header(), "├" + "─" * 68 + "┤", self.render_transcript(), self.render_status(), self.render_input()]
+        w = frame_width()
+        parts = [
+            self.render_header(),
+            _rule("├", "┤", w),
+            self.render_transcript(),
+            _rule("├", "┤", w),
+            self.render_status(),
+            _rule("└", "┘", w),
+        ]
         return "\n".join(parts)
 
     def _on_event(self, event: Event):
@@ -111,8 +200,9 @@ class TUI:
 
     def run(self, on_input: Callable[[str], None]) -> int:
         self.bus.subscribe(self._on_event)
-        print(self.render_header())
-        print("├" + "─" * 68 + "┤")
+        # One closed box per turn: printing a header and then unterminated
+        # transcript lines is what left the frame hanging open.
+        print(self.render())
         while True:
             try:
                 user_input = self._prompt_fn("> ")
@@ -125,5 +215,6 @@ class TUI:
             on_input(text)
             if text in ("/exit", "/quit"):
                 break
-            print(self.render_transcript())
+            # The prompt leaves the cursor mid-line; start the box on its own.
+            print("\n" + self.render())
         return 0

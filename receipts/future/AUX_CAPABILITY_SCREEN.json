@@ -14,7 +14,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T16:13:40Z",
+  "recorded_at": "2026-09-01T04:16:50Z",
   "recorded_by": "tools/future/aux_capability_screen.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -169,18 +169,18 @@
      0.0
     ],
     "predicted_ms_saved": 0.0,
-    "predicted_token_ms": 28.722,
+    "predicted_token_ms": 22.9024,
     "predicted_token_ms_range": [
-     28.722,
-     28.722
+     22.9024,
+     22.9024
     ],
-    "predicted_tps": 34.817,
+    "predicted_tps": 43.664,
     "predicted_tps_range": [
-     34.817,
-     34.817
+     43.664,
+     43.664
     ],
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": false,
      "high_information_falsifier": false,
      "plausible_ms_saved": 0.0,
@@ -719,18 +719,18 @@
      0.0
     ],
     "predicted_ms_saved": 0.0,
-    "predicted_token_ms": 28.722,
+    "predicted_token_ms": 22.9024,
     "predicted_token_ms_range": [
-     28.722,
-     28.722
+     22.9024,
+     22.9024
     ],
-    "predicted_tps": 34.817,
+    "predicted_tps": 43.664,
     "predicted_tps_range": [
-     34.817,
-     34.817
+     43.664,
+     43.664
     ],
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": false,
      "high_information_falsifier": false,
      "plausible_ms_saved": 0.0,
@@ -1265,18 +1265,18 @@
      0.0
     ],
     "predicted_ms_saved": 0.0,
-    "predicted_token_ms": 28.722,
+    "predicted_token_ms": 22.9024,
     "predicted_token_ms_range": [
-     28.722,
-     28.722
+     22.9024,
+     22.9024
     ],
-    "predicted_tps": 34.817,
+    "predicted_tps": 43.664,
     "predicted_tps_range": [
-     34.817,
-     34.817
+     43.664,
+     43.664
     ],
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": false,
      "high_information_falsifier": false,
      "plausible_ms_saved": 0.0,
@@ -1859,18 +1859,18 @@
      0.0
     ],
     "predicted_ms_saved": 0.0,
-    "predicted_token_ms": 28.722,
+    "predicted_token_ms": 22.9024,
     "predicted_token_ms_range": [
-     28.722,
-     28.722
+     22.9024,
+     22.9024
     ],
-    "predicted_tps": 34.817,
+    "predicted_tps": 43.664,
     "predicted_tps_range": [
-     34.817,
-     34.817
+     43.664,
+     43.664
     ],
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": false,
      "high_information_falsifier": false,
      "plausible_ms_saved": 0.0,
@@ -2482,7 +2482,7 @@
  "purpose": "Capability screen for the three OPEN auxiliary byte levers on the 1.07 GB of MLP scale/bias/header, plus a heterogeneous allocator that is the first use of the sensitivity map as a byte-placement rule rather than a byte claim.",
  "recorded_by": "tools/future/aux_capability_screen.py",
  "schema": "hawking.future.aux_capability_screen.v1",
- "seal_sha256": "423b2b444fd7fb4abdda3c6b11093e3ff312dd7ecc4d4d0ec1862bbe0395ac3f",
+ "seal_sha256": "5db172c268ebcc9668a0ad0e7603efd10e2aa80473a45bbca7e87c2e9000318b",
  "sources": [
   "receipts/future/MLP_AUXILIARY_INFORMATION.json",
   "receipts/future/CAPABILITY_INFORMATION_MAP.json",

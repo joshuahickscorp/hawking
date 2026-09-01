@@ -1,4 +1,11 @@
 {
+ "alternatives": [
+  {
+   "consistent_with_claim": true,
+   "consistent_with_observation": true,
+   "hypothetical": "the named flags were measured and have these values"
+  }
+ ],
  "authority_boundary": {
   "even_then": "sidecar has no GPU authority and still raises",
   "execute_requires": [
@@ -18,13 +25,21 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:47:34Z",
+  "recorded_at": "2026-09-01T05:41:03Z",
   "recorded_by": "tools.future.qualification_pipeline.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "branch": "odyssey-i",
+ "causality_verdict": "SUPPORTED",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "confidence": {
+  "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+  "level": "HIGH",
+  "would_lower": "a demonstration that the observation is consistent with the claim being false",
+  "would_raise": "independent replication of the same probe"
+ },
+ "direct_observation": "blocking_defect_count=None; would_waste_a_protected_window=None; dry_run_stop={'honest_on_this_machine': 'stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens', 'reason': \"lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure\", 'stage_id': 'identify_lease_availability', 'stage_index': 1}",
  "dry_run_stop": {
   "honest_on_this_machine": "stops at the lease check: no existing HCLI lease. later stages are still walked as STATIC_ONLY specs so a human does not have to assemble the run by hand when a window opens",
   "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
@@ -38,6 +53,7 @@
   "IV Synthetic Machine Civilization",
   "V Released Hawking Civilization"
  ],
+ "falsifier": "an independent probe of the same object the status names, not a reread of the status",
  "fpga": "FPGA is part of Accelerator / Physical Compiler / Fusion. It is not its own civilization and this module does not build an FPGA backend.",
  "frontier_entry": {
   "classification": "BLOCKED",
@@ -56,13 +72,14 @@
   "stages 10-12 emit REQUEST/SPEC only; scoreboard and HCLI lock are not written",
   "next WorkUnits derived from survivors + drops + a blocked lease-request proposal"
  ],
- "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "integration": {
   "admit_checkpoint": "admit_checkpoint(doc) -> dict  # raises FailClosed on corrupt/partial",
   "execute": "execute(*, explicit_execute=False, lease=None, contamination_class=None) -> None  # always raises ExecuteRefused",
   "read_hcli_lease_state": "read_hcli_lease_state(repo=None) -> dict  # present True only with a proven holder; never flock",
   "run_pipeline": "run_pipeline(*, dry_run=True, live=False, queue=None, plan=None, snap=None, klass=None, preflight=None, lease=None, interrupt_after=None, resume_from=None, on_stage=None) -> dict"
  },
+ "interpretation": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
  "n_stages": 13,
  "negative_findings": [
   "no .hcli/locks/protected-accelerator-bench.lock in this worktree; lease present is fail-closed false",
@@ -85,8 +102,18 @@
  ],
  "pipeline": {
   "bench_state": "UNKNOWN",
-  "contamination_class": "HEAVY",
-  "dropped_ids": [],
+  "contamination_class": "LIGHT",
+  "dropped_ids": [
+   "qwen27-attention-gate-fusion",
+   "qwen27-ba-delta-fusion",
+   "qwen27-deltanet-inproj-fusion",
+   "qwen27-fast-profile",
+   "qwen27-gqa-qkv-fusion",
+   "qwen27-pipeline-cache-reuse",
+   "qwen27-pipeline-id-resolution",
+   "qwen27-q2f-splitk4",
+   "qwen27-q4-vecgroup-x64"
+  ],
   "dry_run": true,
   "execution_stop": {
    "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
@@ -143,30 +170,30 @@
     "name": "assess_machine_quiescence",
     "payload": {
      "acquires_lease": false,
-     "contamination_class": "HEAVY",
-     "contamination_reason": "at least one HEAVY probe fired",
+     "contamination_class": "LIGHT",
+     "contamination_reason": "contenders or mild pressure without a HEAVY trigger",
      "executes_benchmark": false,
      "execution_ok": false,
      "gpu_authority": false,
-     "n_competing_workloads": 2,
+     "n_competing_workloads": 8,
      "quiesces_worker": false,
-     "reason": "machine is HEAVY; queue_policy.protected_start_requires_machine_quiescence. sidecar will not quiesce a worker to make it so",
+     "reason": "machine is LIGHT; queue_policy.protected_start_requires_machine_quiescence. sidecar will not quiesce a worker to make it so",
      "required_probes": {
       "loadavg": true,
       "memory": true,
       "processes_cpu_pct": true
      },
      "resident_local_model": {
-      "cpu_pct": 0.2,
+      "cpu_pct": 105.2,
       "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
       "note": "largest RSS neighbour over the quiet threshold; not a model-name guess",
-      "pid": 17562,
-      "rss_gib": 9.26
+      "pid": 75282,
+      "rss_gib": 4.59
      },
      "signals_process": false,
      "source": "tools.future.contamination.snapshot + classify_contamination"
     },
-    "reason": "machine is HEAVY; queue_policy.protected_start_requires_machine_quiescence. sidecar will not quiesce a worker to make it so",
+    "reason": "machine is LIGHT; queue_policy.protected_start_requires_machine_quiescence. sidecar will not quiesce a worker to make it so",
     "status": "COMPLETED"
    },
    {
@@ -177,7 +204,7 @@
      "acquires_lease": false,
      "executes_benchmark": false,
      "gpu_authority": false,
-     "n_over_threshold": 2,
+     "n_over_threshold": 8,
      "pausable_patterns": [
       "hf download",
       "lake_filler.py"
@@ -185,42 +212,102 @@
      "policy_source": "tools/odyssey/gpu_cleanliness.py PAUSE_PATTERN (recovered, not imported)",
      "primary": {
       "class": "STANDING",
-      "cpu_pct": 0.2,
+      "cpu_pct": 105.2,
       "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-      "pid": 17562,
+      "pid": 75282,
       "policy_would_permit_quiesce": false,
       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-      "rss_gib": 9.26,
+      "rss_gib": 4.59,
       "sidecar_will_quiesce": false
      },
      "quiesces_worker": false,
-     "reason": "primary='/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python' pid=17562 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
+     "reason": "primary='/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python' pid=75282 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
      "sidecar_will_quiesce_any": false,
      "signals_process": false,
      "workers": [
       {
        "class": "STANDING",
-       "cpu_pct": 0.2,
+       "cpu_pct": 105.2,
        "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-       "pid": 17562,
+       "pid": 75282,
        "policy_would_permit_quiesce": false,
        "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 9.26,
+       "rss_gib": 4.59,
        "sidecar_will_quiesce": false
       },
       {
        "class": "STANDING",
-       "cpu_pct": 208.8,
+       "cpu_pct": 89.2,
        "name": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
-       "pid": 22647,
+       "pid": 75304,
        "policy_would_permit_quiesce": false,
        "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
-       "rss_gib": 0.48,
+       "rss_gib": 3.13,
+       "sidecar_will_quiesce": false
+      },
+      {
+       "class": "STANDING",
+       "cpu_pct": 26.7,
+       "name": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+       "pid": 78838,
+       "policy_would_permit_quiesce": false,
+       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
+       "rss_gib": 2.22,
+       "sidecar_will_quiesce": false
+      },
+      {
+       "class": "STANDING",
+       "cpu_pct": 47.6,
+       "name": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+       "pid": 77282,
+       "policy_would_permit_quiesce": false,
+       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
+       "rss_gib": 0.06,
+       "sidecar_will_quiesce": false
+      },
+      {
+       "class": "STANDING",
+       "cpu_pct": 30.2,
+       "name": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+       "pid": 180,
+       "policy_would_permit_quiesce": false,
+       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
+       "rss_gib": 0.06,
+       "sidecar_will_quiesce": false
+      },
+      {
+       "class": "STANDING",
+       "cpu_pct": 82.4,
+       "name": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+       "pid": 77296,
+       "policy_would_permit_quiesce": false,
+       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
+       "rss_gib": 0.03,
+       "sidecar_will_quiesce": false
+      },
+      {
+       "class": "STANDING",
+       "cpu_pct": 38.9,
+       "name": "/System/Library/CoreServices/RemoteManagement/screensharingd.bundle/Contents/MacOS/screensharingd",
+       "pid": 41075,
+       "policy_would_permit_quiesce": false,
+       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
+       "rss_gib": 0.03,
+       "sidecar_will_quiesce": false
+      },
+      {
+       "class": "STANDING",
+       "cpu_pct": 94.9,
+       "name": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+       "pid": 77305,
+       "policy_would_permit_quiesce": false,
+       "reason": "STANDING (or unidentified) neighbour: pausing it would forge a speedup. queue_policy.protected_start_requires_machine_quiescence is a requirement on the machine, not permission for this sidecar to quiesce a worker",
+       "rss_gib": 0.02,
        "sidecar_will_quiesce": false
       }
      ]
     },
-    "reason": "primary='/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python' pid=17562 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
+    "reason": "primary='/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python' pid=75282 class=STANDING; policy_would_permit_quiesce=False; sidecar_will_quiesce=false",
     "status": "COMPLETED"
    },
    {
@@ -281,14 +368,105 @@
     "name": "static_preflight_drop",
     "payload": {
      "acquires_lease": false,
-     "blocking_defect_count": 0,
+     "blocking_defect_count": 2,
      "does_not_substitute_for_protected_measurement": true,
-     "dropped": [],
+     "dropped": [
+      {
+       "candidate_id": "qwen27-attention-gate-fusion",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-ba-delta-fusion",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-deltanet-inproj-fusion",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-fast-profile",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-gqa-qkv-fusion",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-pipeline-cache-reuse",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-pipeline-id-resolution",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-q2f-splitk4",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      },
+      {
+       "candidate_id": "qwen27-q4-vecgroup-x64",
+       "checks": [
+        "kernel_existence"
+       ],
+       "n_hits": 2,
+       "reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
+       "sample_message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+       "status": "READY_PROTECTED"
+      }
+     ],
      "executes_benchmark": false,
      "gpu_authority": false,
-     "n_dropped": 0,
+     "n_dropped": 9,
      "n_input": 13,
-     "n_survivors": 13,
+     "n_survivors": 4,
      "note": "unmapped ERROR findings still would_waste_a_protected_window for the kernels they name, but they do not drop a candidate they do not touch",
      "preflight_schema": "hawking.future.static_kernel_verify.v1",
      "quiesces_worker": false,
@@ -297,21 +475,12 @@
      "static_correctness_does_not_prove_speed": true,
      "survivor_ids": [
       "qwen27-affine2-splitk4",
-      "qwen27-attention-gate-fusion",
-      "qwen27-ba-delta-fusion",
       "qwen27-commit-timing-elision",
-      "qwen27-deltanet-inproj-fusion",
       "qwen27-encoder-label-elision",
-      "qwen27-fast-profile",
-      "qwen27-gqa-qkv-fusion",
-      "qwen27-pipeline-cache-reuse",
-      "qwen27-pipeline-id-resolution",
-      "qwen27-pipeline-state-elision",
-      "qwen27-q2f-splitk4",
-      "qwen27-q4-vecgroup-x64"
+      "qwen27-pipeline-state-elision"
      ],
      "unmapped_blocking_defects": [],
-     "would_waste_a_protected_window": false
+     "would_waste_a_protected_window": true
     },
     "status": "COMPLETED"
    },
@@ -337,45 +506,9 @@
       {
        "acquires_lease": false,
        "candidates": [
-        "qwen27-attention-gate-fusion"
-       ],
-       "cell_id": "S1-qwen27-attention-gate-fusion",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-ba-delta-fusion"
-       ],
-       "cell_id": "S1-qwen27-ba-delta-fusion",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
         "qwen27-commit-timing-elision"
        ],
        "cell_id": "S1-qwen27-commit-timing-elision",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-deltanet-inproj-fusion"
-       ],
-       "cell_id": "S1-qwen27-deltanet-inproj-fusion",
        "executes_benchmark": false,
        "kind": "single",
        "planned_evidence_rung": "PROTECTED_ABSOLUTE",
@@ -397,54 +530,6 @@
       {
        "acquires_lease": false,
        "candidates": [
-        "qwen27-fast-profile"
-       ],
-       "cell_id": "S1-qwen27-fast-profile",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-gqa-qkv-fusion"
-       ],
-       "cell_id": "S1-qwen27-gqa-qkv-fusion",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-pipeline-cache-reuse"
-       ],
-       "cell_id": "S1-qwen27-pipeline-cache-reuse",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-pipeline-id-resolution"
-       ],
-       "cell_id": "S1-qwen27-pipeline-id-resolution",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
         "qwen27-pipeline-state-elision"
        ],
        "cell_id": "S1-qwen27-pipeline-state-elision",
@@ -457,99 +542,10 @@
       {
        "acquires_lease": false,
        "candidates": [
-        "qwen27-q2f-splitk4"
-       ],
-       "cell_id": "S1-qwen27-q2f-splitk4",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-q4-vecgroup-x64"
-       ],
-       "cell_id": "S1-qwen27-q4-vecgroup-x64",
-       "executes_benchmark": false,
-       "kind": "single",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "1",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-affine2-splitk4",
-        "qwen27-q4-vecgroup-x64"
-       ],
-       "cell_id": "S2-qwen27-affine2-splitk4__qwen27-q4-vecgroup-x64",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-attention-gate-fusion",
-        "qwen27-gqa-qkv-fusion"
-       ],
-       "cell_id": "S2-qwen27-attention-gate-fusion__qwen27-gqa-qkv-fusion",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-ba-delta-fusion",
-        "qwen27-deltanet-inproj-fusion"
-       ],
-       "cell_id": "S2-qwen27-ba-delta-fusion__qwen27-deltanet-inproj-fusion",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
         "qwen27-commit-timing-elision",
         "qwen27-encoder-label-elision"
        ],
        "cell_id": "S2-qwen27-commit-timing-elision__qwen27-encoder-label-elision",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-commit-timing-elision",
-        "qwen27-pipeline-cache-reuse"
-       ],
-       "cell_id": "S2-qwen27-commit-timing-elision__qwen27-pipeline-cache-reuse",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-commit-timing-elision",
-        "qwen27-pipeline-id-resolution"
-       ],
-       "cell_id": "S2-qwen27-commit-timing-elision__qwen27-pipeline-id-resolution",
        "executes_benchmark": false,
        "kind": "pair",
        "planned_evidence_rung": "PROTECTED_ABSOLUTE",
@@ -573,32 +569,6 @@
        "acquires_lease": false,
        "candidates": [
         "qwen27-encoder-label-elision",
-        "qwen27-pipeline-cache-reuse"
-       ],
-       "cell_id": "S2-qwen27-encoder-label-elision__qwen27-pipeline-cache-reuse",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-encoder-label-elision",
-        "qwen27-pipeline-id-resolution"
-       ],
-       "cell_id": "S2-qwen27-encoder-label-elision__qwen27-pipeline-id-resolution",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-encoder-label-elision",
         "qwen27-pipeline-state-elision"
        ],
        "cell_id": "S2-qwen27-encoder-label-elision__qwen27-pipeline-state-elision",
@@ -607,124 +577,13 @@
        "planned_evidence_rung": "PROTECTED_ABSOLUTE",
        "stage": "2",
        "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-pipeline-cache-reuse",
-        "qwen27-pipeline-state-elision"
-       ],
-       "cell_id": "S2-qwen27-pipeline-cache-reuse__qwen27-pipeline-state-elision",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-pipeline-id-resolution",
-        "qwen27-pipeline-state-elision"
-       ],
-       "cell_id": "S2-qwen27-pipeline-id-resolution__qwen27-pipeline-state-elision",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-q2f-splitk4",
-        "qwen27-q4-vecgroup-x64"
-       ],
-       "cell_id": "S2-qwen27-q2f-splitk4__qwen27-q4-vecgroup-x64",
-       "executes_benchmark": false,
-       "kind": "pair",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "2",
-       "status": "SCHEDULED"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-attention-gate-fusion",
-        "qwen27-ba-delta-fusion",
-        "qwen27-deltanet-inproj-fusion",
-        "qwen27-gqa-qkv-fusion"
-       ],
-       "cell_id": "S3-fusion-organ-union",
-       "executes_benchmark": false,
-       "kind": "union",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "3",
-       "status": "CONTINGENT"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-commit-timing-elision",
-        "qwen27-encoder-label-elision",
-        "qwen27-pipeline-id-resolution",
-        "qwen27-pipeline-state-elision"
-       ],
-       "cell_id": "S3-host-ceremony-union",
-       "executes_benchmark": false,
-       "kind": "union",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "3",
-       "status": "CONTINGENT"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-affine2-splitk4",
-        "qwen27-attention-gate-fusion",
-        "qwen27-ba-delta-fusion",
-        "qwen27-commit-timing-elision",
-        "qwen27-deltanet-inproj-fusion",
-        "qwen27-encoder-label-elision",
-        "qwen27-gqa-qkv-fusion",
-        "qwen27-pipeline-id-resolution",
-        "qwen27-pipeline-state-elision",
-        "qwen27-q4-vecgroup-x64"
-       ],
-       "cell_id": "S3-survivor-union-affine2",
-       "executes_benchmark": false,
-       "kind": "union",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "3",
-       "status": "CONTINGENT"
-      },
-      {
-       "acquires_lease": false,
-       "candidates": [
-        "qwen27-attention-gate-fusion",
-        "qwen27-ba-delta-fusion",
-        "qwen27-commit-timing-elision",
-        "qwen27-deltanet-inproj-fusion",
-        "qwen27-encoder-label-elision",
-        "qwen27-gqa-qkv-fusion",
-        "qwen27-pipeline-id-resolution",
-        "qwen27-pipeline-state-elision",
-        "qwen27-q2f-splitk4",
-        "qwen27-q4-vecgroup-x64"
-       ],
-       "cell_id": "S3-survivor-union-q2f",
-       "executes_benchmark": false,
-       "kind": "union",
-       "planned_evidence_rung": "PROTECTED_ABSOLUTE",
-       "stage": "3",
-       "status": "CONTINGENT"
       }
      ],
      "executes_benchmark": false,
      "gpu_authority": false,
      "min_pairs": 7,
-     "n_cells": 30,
-     "n_cells_dropped_because_member_failed_preflight": 4,
+     "n_cells": 7,
+     "n_cells_dropped_because_member_failed_preflight": 27,
      "never_reports": [
       "mean",
       "average"
@@ -754,28 +613,7 @@
        "status": "READY_PROTECTED"
       },
       {
-       "candidate_id": "qwen27-attention-gate-fusion",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
-       "candidate_id": "qwen27-ba-delta-fusion",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
        "candidate_id": "qwen27-commit-timing-elision",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
-       "candidate_id": "qwen27-deltanet-inproj-fusion",
        "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
        "executed": false,
        "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
@@ -789,49 +627,7 @@
        "status": "READY_PROTECTED"
       },
       {
-       "candidate_id": "qwen27-fast-profile",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
-       "candidate_id": "qwen27-gqa-qkv-fusion",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
-       "candidate_id": "qwen27-pipeline-cache-reuse",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
-       "candidate_id": "qwen27-pipeline-id-resolution",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
        "candidate_id": "qwen27-pipeline-state-elision",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
-       "candidate_id": "qwen27-q2f-splitk4",
-       "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
-       "executed": false,
-       "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
-       "status": "READY_PROTECTED"
-      },
-      {
-       "candidate_id": "qwen27-q4-vecgroup-x64",
        "capability_contract": "complete accepted-token capability, zero fallback, independent resident identity, and explicit native metric absence reasons",
        "executed": false,
        "parity_contract": "identical tokenizer-bound output ids and source-approved graph semantics; any numerical/output divergence rejects the candidate",
@@ -843,7 +639,7 @@
      "funnel_promotion_rule": "only a protected complete-token receipt with capability and zero-fallback gates may promote",
      "gpu_authority": false,
      "kind": "SPEC",
-     "n": 13,
+     "n": 4,
      "note": "spec only. sidecar does not run a resident or compare token ids",
      "quiesces_worker": false,
      "rule": "any numerical/output divergence rejects the candidate; capability requires complete accepted-token, zero fallback, independent resident identity",
@@ -972,61 +768,7 @@
       },
       {
        "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-attention-gate-fusion",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-ba-delta-fusion",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
        "candidate_id": "qwen27-commit-timing-elision",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-deltanet-inproj-fusion",
        "legal_next_statuses": [
         "BLOCKED",
         "PROTECTED_PASS",
@@ -1062,115 +804,7 @@
       },
       {
        "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-fast-profile",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-gqa-qkv-fusion",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-pipeline-cache-reuse",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-pipeline-id-resolution",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
        "candidate_id": "qwen27-pipeline-state-elision",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-q2f-splitk4",
-       "legal_next_statuses": [
-        "BLOCKED",
-        "PROTECTED_PASS",
-        "PROTECTED_REJECT"
-       ],
-       "promotion_prerequisites": [
-        "funnel.promotion_rule: only a protected complete-token receipt with capability and zero-fallback gates may promote",
-        "queue_policy.protected_start_requires_existing_hcli_lease",
-        "queue_policy.protected_start_requires_machine_quiescence",
-        "queue_policy.diagnostic_results_do_not_promote (DIAGNOSTIC_RELATIVE never promotes)",
-        "measurement_contract.protected_pass_requires_all_fields",
-        "measurement_contract.null_policy: missing physical metrics remain null until a native protected complete-token receipt records them"
-       ],
-       "status": "READY_PROTECTED"
-      },
-      {
-       "can_enter_protected_pass": true,
-       "candidate_id": "qwen27-q4-vecgroup-x64",
        "legal_next_statuses": [
         "BLOCKED",
         "PROTECTED_PASS",
@@ -1309,62 +943,6 @@
         "--max-new-tokens",
         "32",
         "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--fusion-env",
-        "HAWKING_QWEN38_FUSE_ATTENTION_GATE=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-attention-gate-fusion-protected.json"
-       ],
-       "candidate_id": "qwen27-attention-gate-fusion",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--fusion-env",
-        "HAWKING_QWEN38_FUSE_BA_DELTA=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-ba-delta-fusion-protected.json"
-       ],
-       "candidate_id": "qwen27-ba-delta-fusion",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
         "HAWKING_METAL_COMMIT_TIMING_ELISION=1",
         "--fusion-env",
         "HAWKING_QWEN38_FAST=1",
@@ -1372,34 +950,6 @@
         "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-commit-timing-elision-protected.json"
        ],
        "candidate_id": "qwen27-commit-timing-elision",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--fusion-env",
-        "HAWKING_QWEN38_FUSE_DN_INPROJ=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-deltanet-inproj-fusion-protected.json"
-       ],
-       "candidate_id": "qwen27-deltanet-inproj-fusion",
        "executed": false,
        "note": "argv copied from the queue as a spec; sidecar does not spawn it"
       },
@@ -1449,118 +999,6 @@
         "--max-new-tokens",
         "32",
         "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-fast-profile-protected.json"
-       ],
-       "candidate_id": "qwen27-fast-profile",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--fusion-env",
-        "HAWKING_QWEN38_FUSE_GQA_QKV=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-gqa-qkv-fusion-protected.json"
-       ],
-       "candidate_id": "qwen27-gqa-qkv-fusion",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
-        "HAWKING_METAL_PIPELINE_CACHE_REUSE=1",
-        "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-pipeline-cache-reuse-protected.json"
-       ],
-       "candidate_id": "qwen27-pipeline-cache-reuse",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
-        "HAWKING_METAL_PIPELINE_CACHE_REUSE=1",
-        "--fusion-env",
-        "HAWKING_METAL_PIPELINE_ID_RESOLUTION=1",
-        "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-pipeline-id-resolution-protected.json"
-       ],
-       "candidate_id": "qwen27-pipeline-id-resolution",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
         "HAWKING_METAL_PIPELINE_STATE_ELISION=1",
         "--fusion-env",
         "HAWKING_QWEN38_FAST=1",
@@ -1568,64 +1006,6 @@
         "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-pipeline-state-elision-protected.json"
        ],
        "candidate_id": "qwen27-pipeline-state-elision",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
-        "HAWKING_AFFINE2_GEO=tpr64",
-        "--fusion-env",
-        "HAWKING_Q2F_GEO=splitk4",
-        "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-q2f-splitk4-protected.json"
-       ],
-       "candidate_id": "qwen27-q2f-splitk4",
-       "executed": false,
-       "note": "argv copied from the queue as a spec; sidecar does not spawn it"
-      },
-      {
-       "argv": [
-        "python3",
-        "-m",
-        "hcli",
-        "agentos",
-        "protected-accelerator-bench",
-        "--profile",
-        "hcli/hawking-native.sealed-3.14.json",
-        "--repo-root",
-        ".",
-        "--warmup-requests",
-        "2",
-        "--measure-requests",
-        "10",
-        "--max-new-tokens",
-        "32",
-        "--fusion-env",
-        "HAWKING_QWEN38_FAST=1",
-        "--fusion-env",
-        "HAWKING_QWEN38_Q4_GEO=vecgroup_x64",
-        "--emit",
-        "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION/qwen27-q4-vecgroup-x64-protected.json"
-       ],
-       "candidate_id": "qwen27-q4-vecgroup-x64",
        "executed": false,
        "note": "argv copied from the queue as a spec; sidecar does not spawn it"
       }
@@ -1691,55 +1071,7 @@
        "accepted_tps": null,
        "bandwidth_gbps": null,
        "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-attention-gate-fusion",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-ba-delta-fusion",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
        "candidate_id": "qwen27-commit-timing-elision",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-deltanet-inproj-fusion",
        "complete_token_ns": null,
        "dispatch_ns": null,
        "gpu_authority": false,
@@ -1771,103 +1103,7 @@
        "accepted_tps": null,
        "bandwidth_gbps": null,
        "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-fast-profile",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-gqa-qkv-fusion",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-pipeline-cache-reuse",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-pipeline-id-resolution",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
        "candidate_id": "qwen27-pipeline-state-elision",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-q2f-splitk4",
-       "complete_token_ns": null,
-       "dispatch_ns": null,
-       "gpu_authority": false,
-       "gpu_ns": null,
-       "joules_per_token": null,
-       "measurement_state": "STATIC_ONLY",
-       "token_ns": null,
-       "tps": null,
-       "wall_ns": null,
-       "would_write": false
-      },
-      {
-       "accepted_tps": null,
-       "bandwidth_gbps": null,
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-q4-vecgroup-x64",
        "complete_token_ns": null,
        "dispatch_ns": null,
        "gpu_authority": false,
@@ -1917,23 +1153,23 @@
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-attention-gate-fusion",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-attention-gate-fusion",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-ba-delta-fusion",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-ba-delta-fusion",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
@@ -1947,13 +1183,13 @@
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-deltanet-inproj-fusion",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-deltanet-inproj-fusion",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
@@ -1967,43 +1203,43 @@
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-fast-profile",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-fast-profile",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-gqa-qkv-fusion",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-gqa-qkv-fusion",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-pipeline-cache-reuse",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-pipeline-cache-reuse",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-pipeline-id-resolution",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-pipeline-id-resolution",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
@@ -2017,23 +1253,23 @@
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-q2f-splitk4",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-q2f-splitk4",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
-       "blocked_reason": "proposal only: protected start requires an existing HCLI lease this sidecar does not hold",
+       "blocked_reason": "static preflight ERROR mapped onto this candidate; DROP rather than waste a protected window",
        "candidate_id": "qwen27-q4-vecgroup-x64",
        "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-       "classification": "STATIC_ONLY",
+       "classification": "BLOCKED",
        "id": "accelerator.physical.qwen27-q4-vecgroup-x64",
-       "requires_quiescence": true,
-       "resource_class": "GPU_EXCLUSIVE",
+       "requires_quiescence": false,
+       "resource_class": "STATIC_ANALYSIS",
        "status": "blocked"
       },
       {
@@ -2053,20 +1289,12 @@
   ],
   "survivor_ids": [
    "qwen27-affine2-splitk4",
-   "qwen27-attention-gate-fusion",
-   "qwen27-ba-delta-fusion",
    "qwen27-commit-timing-elision",
-   "qwen27-deltanet-inproj-fusion",
    "qwen27-encoder-label-elision",
-   "qwen27-fast-profile",
-   "qwen27-gqa-qkv-fusion",
-   "qwen27-pipeline-cache-reuse",
-   "qwen27-pipeline-id-resolution",
-   "qwen27-pipeline-state-elision",
-   "qwen27-q2f-splitk4",
-   "qwen27-q4-vecgroup-x64"
+   "qwen27-pipeline-state-elision"
   ]
  },
+ "probe_performed": "static_kernel_verify.scan(): host/shader ABI analysis of .metal sources and Rust hosts; blocking_defect_count from ERROR findings; zero GPU, no lease",
  "purpose": "Sequence the existing qualification pieces into one resumable pipeline that is structurally incapable of taking GPU authority. FIVE ERAS, THREE ODYSSEYS. FPGA stays inside Accelerator / Physical Compiler / Fusion. DISK STATE IS AUTHORITY.",
  "queue_policy_binding": {
   "diagnostic_results_do_not_promote": true,
@@ -2158,7 +1386,7 @@
   }
  ],
  "schema": "hawking.future.qualification_pipeline.v1",
- "seal_sha256": "2bf1f0f74d0b9871dea50d99877d762d41bf33ee38e64eb2e5d3df0fb4634fcb",
+ "seal_sha256": "c41e235b4f5d20208a79d065ba5250fa3475da0ee37a4bc8482d4b5649dee9f7",
  "stages_declared": [
   "identify_lease_availability",
   "assess_machine_quiescence",

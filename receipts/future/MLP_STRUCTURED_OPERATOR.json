@@ -48,7 +48,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T16:35:10Z",
+  "recorded_at": "2026-09-01T06:06:04Z",
   "recorded_by": "tools/future/mlp_structured_operator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -164,10 +164,10 @@
      2.326
     ],
     "predicted_ms_saved": -1.4817,
-    "predicted_token_ms": 30.2037,
-    "predicted_tps": 33.109,
+    "predicted_token_ms": 24.3841,
+    "predicted_tps": 41.01,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": false,
      "high_information_falsifier": true,
      "plausible_ms_saved": 0.0,
@@ -403,10 +403,10 @@
      -1.679
     ],
     "predicted_ms_saved": 2.5253,
-    "predicted_token_ms": 26.1967,
-    "predicted_tps": 38.173,
+    "predicted_token_ms": 20.3771,
+    "predicted_tps": 49.075,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.5852,
@@ -642,10 +642,10 @@
      -0.878
     ],
     "predicted_ms_saved": 1.7239,
-    "predicted_token_ms": 26.9981,
-    "predicted_tps": 37.04,
+    "predicted_token_ms": 21.1785,
+    "predicted_tps": 47.218,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 1.7837,
@@ -881,10 +881,10 @@
      0.7241
     ],
     "predicted_ms_saved": 0.121,
-    "predicted_token_ms": 28.601,
-    "predicted_tps": 34.964,
+    "predicted_token_ms": 22.7814,
+    "predicted_tps": 43.895,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": false,
      "high_information_falsifier": true,
      "plausible_ms_saved": 0.1808,
@@ -1120,10 +1120,10 @@
      -0.7747
     ],
     "predicted_ms_saved": 1.09,
-    "predicted_token_ms": 27.632,
-    "predicted_tps": 36.19,
+    "predicted_token_ms": 21.8124,
+    "predicted_tps": 45.846,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 1.1123,
@@ -1361,10 +1361,10 @@
      -0.7747
     ],
     "predicted_ms_saved": 1.09,
-    "predicted_token_ms": 27.632,
-    "predicted_tps": 36.19,
+    "predicted_token_ms": 21.8124,
+    "predicted_tps": 45.846,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 1.1123,
@@ -1602,10 +1602,10 @@
      1.162
     ],
     "predicted_ms_saved": -1.1467,
-    "predicted_token_ms": 29.8687,
-    "predicted_tps": 33.48,
+    "predicted_token_ms": 24.0491,
+    "predicted_tps": 41.582,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": false,
      "high_information_falsifier": true,
      "plausible_ms_saved": 0.0,
@@ -1846,10 +1846,10 @@
      -1.6749
     ],
     "predicted_ms_saved": 2.5196,
-    "predicted_token_ms": 26.2024,
-    "predicted_tps": 38.164,
+    "predicted_token_ms": 20.3828,
+    "predicted_tps": 49.061,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.5793,
@@ -2085,10 +2085,10 @@
      -1.6787
     ],
     "predicted_ms_saved": 2.5249,
-    "predicted_token_ms": 26.1971,
-    "predicted_tps": 38.172,
+    "predicted_token_ms": 20.3775,
+    "predicted_tps": 49.074,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.5848,
@@ -2324,10 +2324,10 @@
      -1.5984
     ],
     "predicted_ms_saved": 2.412,
-    "predicted_token_ms": 26.31,
-    "predicted_tps": 38.008,
+    "predicted_token_ms": 20.4904,
+    "predicted_tps": 48.803,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.4695,
@@ -2563,10 +2563,10 @@
      -1.6791
     ],
     "predicted_ms_saved": 2.5255,
-    "predicted_token_ms": 26.1965,
-    "predicted_tps": 38.173,
+    "predicted_token_ms": 20.3769,
+    "predicted_tps": 49.075,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.5854,
@@ -2802,10 +2802,10 @@
      -1.6795
     ],
     "predicted_ms_saved": 2.526,
-    "predicted_token_ms": 26.196,
-    "predicted_tps": 38.174,
+    "predicted_token_ms": 20.3764,
+    "predicted_tps": 49.076,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.5859,
@@ -3041,10 +3041,10 @@
      -1.6596
     ],
     "predicted_ms_saved": 2.498,
-    "predicted_token_ms": 26.224,
-    "predicted_tps": 38.133,
+    "predicted_token_ms": 20.4044,
+    "predicted_tps": 49.009,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.5574,
@@ -3280,10 +3280,10 @@
      -1.6795
     ],
     "predicted_ms_saved": 2.526,
-    "predicted_token_ms": 26.196,
-    "predicted_tps": 38.174,
+    "predicted_token_ms": 20.3764,
+    "predicted_tps": 49.076,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.5859,
@@ -3519,10 +3519,10 @@
      -1.2372
     ],
     "predicted_ms_saved": 2.0665,
-    "predicted_token_ms": 26.6555,
-    "predicted_tps": 37.516,
+    "predicted_token_ms": 20.8359,
+    "predicted_tps": 47.994,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.1252,
@@ -3758,10 +3758,10 @@
      -1.1944
     ],
     "predicted_ms_saved": 2.0062,
-    "predicted_token_ms": 26.7158,
-    "predicted_tps": 37.431,
+    "predicted_token_ms": 20.8962,
+    "predicted_tps": 47.856,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.0637,
@@ -3997,10 +3997,10 @@
      -1.2097
     ],
     "predicted_ms_saved": 2.0278,
-    "predicted_token_ms": 26.6942,
-    "predicted_tps": 37.461,
+    "predicted_token_ms": 20.8746,
+    "predicted_tps": 47.905,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.0856,
@@ -4236,10 +4236,10 @@
      -1.2311
     ],
     "predicted_ms_saved": 2.0579,
-    "predicted_token_ms": 26.6641,
-    "predicted_tps": 37.504,
+    "predicted_token_ms": 20.8445,
+    "predicted_tps": 47.974,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.1164,
@@ -4475,10 +4475,10 @@
      -1.2372
     ],
     "predicted_ms_saved": 2.0665,
-    "predicted_token_ms": 26.6555,
-    "predicted_tps": 37.516,
+    "predicted_token_ms": 20.8359,
+    "predicted_tps": 47.994,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.1252,
@@ -4714,10 +4714,10 @@
      -1.2433
     ],
     "predicted_ms_saved": 2.0751,
-    "predicted_token_ms": 26.6469,
-    "predicted_tps": 37.528,
+    "predicted_token_ms": 20.8273,
+    "predicted_tps": 48.014,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.134,
@@ -4953,10 +4953,10 @@
      -1.2433
     ],
     "predicted_ms_saved": 2.0751,
-    "predicted_token_ms": 26.6469,
-    "predicted_tps": 37.528,
+    "predicted_token_ms": 20.8273,
+    "predicted_tps": 48.014,
     "s020_section_20": {
-     "bar_ms": 0.2872,
+     "bar_ms": 0.229,
      "clears_time_bar": true,
      "high_information_falsifier": true,
      "plausible_ms_saved": 2.134,
@@ -5390,7 +5390,7 @@
   "train-set figure cannot be reported as held-out",
   "negative_index queried; proposal families not refused"
  ],
- "git_head": "c7f2c7e51284ef6d504ca9a2f23f5415887a2b0c",
+ "git_head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "go_wider": false,
  "gpu_authority": false,
  "incumbent_mlp_bytes": 5347795776,
@@ -5638,7 +5638,7 @@
   }
  ],
  "schema": "hawking.future.mlp_structured_operator.v1",
- "seal_sha256": "febb1ee5d8e186ba85e3d566b6a1f275e173c6dbd92b70c616ad109b6dc9979b",
+ "seal_sha256": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
  "selftest": {
   "baseline_codes": [
    "BaselineOmitted"

@@ -1,0 +1,117 @@
+{
+  "schema": "hawking.flash.margin_residual_candidate.v1",
+  "status": "ORACLE_NR_CANDIDATE_UNPROMOTED",
+  "artifact_kind": "NR",
+  "model": "Qwen3.8-Flash-Next",
+  "seam": {
+    "source_layer": 3,
+    "router_layer": 4,
+    "positions": 4,
+    "hidden": 2560,
+    "dense": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DENSE_L0_L7_V1/layer-3/state.f32",
+    "compact": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPACT_L0_L7_V1/layer-3/state.f32"
+  },
+  "router": {
+    "tensor": "model.language_model.layers.4.mlp.gate.weight",
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00104-of-00131.safetensors",
+    "sha256": "59ee8b7c1f07b916353ec16f5e5a57719e59dd7442b7077eff1a2d5bcde4a7a5",
+    "dense_min_top10_top11_margin": 7.858499884605408e-06,
+    "margin_threshold": 1e-05
+  },
+  "candidate_rows": [
+    {
+      "policy": "oracle_salience_fixed_coordinate_residual",
+      "fraction": 0.001,
+      "dimensions": 3,
+      "residual_bytes_fp16": 24,
+      "residual_bytes_fp32": 48,
+      "rows_with_top10_membership_change": 1,
+      "mean_top10_membership_symmetric_difference": 0.5,
+      "rows_with_top10_order_change": 2,
+      "mean_top10_order_difference": 0.75,
+      "router_logit_rmse": 0.000718513096217066,
+      "hidden_rmse": 0.0007729830103926361,
+      "min_margin_rows_below_1e-5": 1,
+      "route_stable_on_observed_seam": false
+    },
+    {
+      "policy": "oracle_salience_fixed_coordinate_residual",
+      "fraction": 0.0025,
+      "dimensions": 6,
+      "residual_bytes_fp16": 48,
+      "residual_bytes_fp32": 96,
+      "rows_with_top10_membership_change": 1,
+      "mean_top10_membership_symmetric_difference": 0.5,
+      "rows_with_top10_order_change": 2,
+      "mean_top10_order_difference": 0.75,
+      "router_logit_rmse": 0.0007322650635614991,
+      "hidden_rmse": 0.0007710572681389749,
+      "min_margin_rows_below_1e-5": 1,
+      "route_stable_on_observed_seam": false
+    },
+    {
+      "policy": "oracle_salience_fixed_coordinate_residual",
+      "fraction": 0.005,
+      "dimensions": 13,
+      "residual_bytes_fp16": 104,
+      "residual_bytes_fp32": 208,
+      "rows_with_top10_membership_change": 1,
+      "mean_top10_membership_symmetric_difference": 0.5,
+      "rows_with_top10_order_change": 2,
+      "mean_top10_order_difference": 0.75,
+      "router_logit_rmse": 0.0006888945936225355,
+      "hidden_rmse": 0.0007662751013413072,
+      "min_margin_rows_below_1e-5": 1,
+      "route_stable_on_observed_seam": false
+    },
+    {
+      "policy": "oracle_salience_fixed_coordinate_residual",
+      "fraction": 0.01,
+      "dimensions": 26,
+      "residual_bytes_fp16": 208,
+      "residual_bytes_fp32": 416,
+      "rows_with_top10_membership_change": 2,
+      "mean_top10_membership_symmetric_difference": 1.0,
+      "rows_with_top10_order_change": 3,
+      "mean_top10_order_difference": 1.0,
+      "router_logit_rmse": 0.0006736387149430811,
+      "hidden_rmse": 0.0007557312492281199,
+      "min_margin_rows_below_1e-5": 1,
+      "route_stable_on_observed_seam": false
+    },
+    {
+      "policy": "oracle_salience_fixed_coordinate_residual",
+      "fraction": 0.02,
+      "dimensions": 51,
+      "residual_bytes_fp16": 408,
+      "residual_bytes_fp32": 816,
+      "rows_with_top10_membership_change": 1,
+      "mean_top10_membership_symmetric_difference": 0.5,
+      "rows_with_top10_order_change": 2,
+      "mean_top10_order_difference": 0.75,
+      "router_logit_rmse": 0.0006350190378725529,
+      "hidden_rmse": 0.0007391704129986465,
+      "min_margin_rows_below_1e-5": 1,
+      "route_stable_on_observed_seam": false
+    }
+  ],
+  "conditional_policy": {
+    "policy": "0.5% salience residual normally; 2% when dense top10/top11 margin < 1e-5",
+    "residual_bytes_fp16_upper_bound": 408,
+    "rows_with_membership_change": 1,
+    "mean_membership_symmetric_difference": 0.5,
+    "state_artifact": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+    "state_sha256": "14155cfb6e373b850cc1df19b74ac3dda5951d46fe156849c9449add1aeb148b"
+  },
+  "claim_boundary": "oracle-derived seam candidate only; residual is not learned or generalized, and no native organ parity, complete-token, capability, TPS, EBPW, or residency claim is made",
+  "promotion_allowed": false,
+  "next_gate": "learn/compile state-dependent residual, then run exact layer-3/4 native organ parity and route-stability tests",
+  "bench": {
+    "state": "UNKNOWN",
+    "measurement_state": "MEASURED_ORACLE_CANDIDATE",
+    "recorded_at": "2026-08-29T02:33:50Z",
+    "machine": "Apple host CPU; existing state artifacts plus BF16 router",
+    "rule": "S032 \u00a73 -- oracle residual diagnostic, not execution timing",
+    "elapsed_ns": 932680833
+  }
+}

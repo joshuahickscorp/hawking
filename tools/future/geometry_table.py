@@ -58,14 +58,41 @@ PRODUCTION_TPR = 64
 PRODUCTION_PACKING_AFFINE = "mlp_2_2_2_32"
 PACKING_MID = "mid_2_4_32"
 
-# Cited, not this-run. PATH_TO_71 / ORGAN_BANDWIDTH / TOKEN_NS_OBJECTIVE /
-# MLP_STREAM_COUNT / MLP_ISSUE_RATE_LADDER.
-TOKEN_MS = 28.722
-TOKEN_TPS = 34.82
-MLP_MS = 15.541
-DELTANET_MS = 8.227
-GQA_MS = 2.607
-LM_HEAD_MS = 1.358
+# Cited, not this-run - and READ, not remembered. These were hard-coded at the
+# pre-widen_f4 anchor and survived two rebases: G131 measured 21.9464 ms GPU as
+# the sealed default and G133 re-measured the organs under it, where the old
+# table summed to 26.7013 against a 21.9464 body. A geometry table priced
+# against a body that no longer runs ranks shapes by a stale share.
+def _cited_body() -> dict[str, float]:
+    a = REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+    o = REPO / "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+    if not (a.is_file() and o.is_file()):
+        # Loud fallback: the pre-promotion figures, named as such.
+        return {"token_ms": 28.722, "token_tps": 34.82, "mlp_ms": 15.541,
+                "deltanet_ms": 8.227, "gqa_ms": 2.607, "lm_head_ms": 1.358,
+                "basis": "PRE_PROMOTION_FALLBACK"}
+    m = json.loads(a.read_text())["measured"]
+    rows = {r["organ"]: float(r["sealed_ms"])
+            for r in json.loads(o.read_text())["table"]}
+    return {
+        "token_ms": float(m["gpu_ms_per_token"]),
+        "token_tps": float(m["gpu_tps"]),
+        "mlp_ms": rows.get("mlp_gate_up", 0.0) + rows.get("mlp_down", 0.0),
+        "deltanet_ms": rows.get("deltanet", 0.0),
+        "gqa_ms": rows.get("gqa_attention", 0.0),
+        "lm_head_ms": rows.get("lm_head", 0.0),
+        "basis": "GPU_SEALED_DEFAULT",
+    }
+
+
+_BODY = _cited_body()
+TOKEN_MS = _BODY["token_ms"]
+TOKEN_TPS = _BODY["token_tps"]
+MLP_MS = _BODY["mlp_ms"]
+DELTANET_MS = _BODY["deltanet_ms"]
+GQA_MS = _BODY["gqa_ms"]
+LM_HEAD_MS = _BODY["lm_head_ms"]
+CITED_BODY_BASIS = _BODY["basis"]
 TOKEN_TPS_ACCEPTED_CONTROL = 35.158
 CAPABILITY_FLOOR_OVER_43 = 30
 BYTES_PER_TOKEN = 9_878_901_136

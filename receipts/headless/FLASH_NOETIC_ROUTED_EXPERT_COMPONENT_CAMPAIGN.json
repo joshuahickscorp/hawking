@@ -6,7 +6,7 @@
   "compiler_stage": "PhysicalGraphCompiler",
   "complete_system_ebpw": null,
   "complete_token_runtime": "NOT_TESTED",
-  "component_count": 4,
+  "component_count": 13,
   "component_status": "BOUNDED_MULTI_COMPONENT_COMPILED",
   "component_windows": [
     {
@@ -26,6 +26,51 @@
     },
     {
       "expert_index": 32,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 29,
+      "row_count": 128,
+      "row_start": 256
+    },
+    {
+      "expert_index": 309,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 455,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 374,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 151,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 93,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 500,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 149,
+      "row_count": 128,
+      "row_start": 0
+    },
+    {
+      "expert_index": 220,
       "row_count": 128,
       "row_start": 0
     }
@@ -77,7 +122,7 @@
         "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
         "warmup_runs": 2
       },
-      "id": "e0_r0_128",
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
       "kernel_receipt": {
         "label": "[V]",
         "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
@@ -147,7 +192,7 @@
         "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
         "warmup_runs": 2
       },
-      "id": "e0_r128_256",
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
       "kernel_receipt": {
         "label": "[V]",
         "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E0_R128_256_PARITY.json",
@@ -217,7 +262,7 @@
         "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
         "warmup_runs": 2
       },
-      "id": "e1_r0_128",
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
       "kernel_receipt": {
         "label": "[V]",
         "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E1_R0_128_PARITY.json",
@@ -287,7 +332,7 @@
         "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
         "warmup_runs": 2
       },
-      "id": "e32_r0_128",
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
       "kernel_receipt": {
         "label": "[V]",
         "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E32_R0_128_PARITY.json",
@@ -310,12 +355,642 @@
         "row_count": 128,
         "row_start": 0
       }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "887bca5f95bc146eb81ef8dadf0efbb0ed53da0ede9336bbe93514bcb4ede637",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          459000,
+          457834,
+          447625,
+          454750,
+          448000,
+          453875,
+          448709
+        ],
+        "gpu_ns_max": 459000,
+        "gpu_ns_median": 453875,
+        "gpu_ns_min": 447625,
+        "host_wall_ns": [
+          1313084,
+          799833,
+          856709,
+          743042,
+          688042,
+          898333,
+          704583
+        ],
+        "host_wall_ns_max": 1313084,
+        "host_wall_ns_median": 799833,
+        "host_wall_ns_min": 688042,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "0dd362b56e3061e64a675f11fdfb00a29bfc0db06b5667ce8640c50cbea5a45f",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999741,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.6391277313232422e-07,
+        "rmse": 4.471599685625497e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 29,
+        "row_count": 128,
+        "row_start": 256
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "992a2344b609c7a837edb53a9d3844a6f5cbc1d586e12039036582c81b27b75e",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          449500,
+          452875,
+          449500,
+          448500,
+          450666,
+          447209,
+          449375
+        ],
+        "gpu_ns_max": 452875,
+        "gpu_ns_median": 449500,
+        "gpu_ns_min": 447209,
+        "host_wall_ns": [
+          803542,
+          799958,
+          768000,
+          822042,
+          775333,
+          732709,
+          754583
+        ],
+        "host_wall_ns_max": 822042,
+        "host_wall_ns_median": 775333,
+        "host_wall_ns_min": 732709,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E309_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "d18cef7883ccf34e5e4f266585da716ceabcbc4ba4aab90de4bee4164f703a59",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999643,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.7881393432617188e-07,
+        "rmse": 5.2259414498261954e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 309,
+        "row_count": 128,
+        "row_start": 0
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "ce74c6f7f59d601e0702f936d811db3549be5cced618e9c687ab31b0aeaee4fc",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          449084,
+          446541,
+          449000,
+          453625,
+          449125,
+          453541,
+          448625
+        ],
+        "gpu_ns_max": 453625,
+        "gpu_ns_median": 449084,
+        "gpu_ns_min": 446541,
+        "host_wall_ns": [
+          756166,
+          721417,
+          751167,
+          760042,
+          753834,
+          751375,
+          735875
+        ],
+        "host_wall_ns_max": 760042,
+        "host_wall_ns_median": 751375,
+        "host_wall_ns_min": 721417,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E455_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "b6a8f8562d9c370dae69614af0fbae347f98cd4cdb16308a68ea06c52c3df8bf",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999717,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 2.086162567138672e-07,
+        "rmse": 5.499864740519619e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 455,
+        "row_count": 128,
+        "row_start": 0
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "7aafb5448d4323a8807aa402690f9184ca193c7c160900efe17eb065a918976d",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          254084,
+          257709,
+          255666,
+          256959,
+          255250,
+          256125,
+          254875
+        ],
+        "gpu_ns_max": 257709,
+        "gpu_ns_median": 255666,
+        "gpu_ns_min": 254084,
+        "host_wall_ns": [
+          531750,
+          512250,
+          505084,
+          511083,
+          496042,
+          498375,
+          492458
+        ],
+        "host_wall_ns_max": 531750,
+        "host_wall_ns_median": 505084,
+        "host_wall_ns_min": 492458,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E374_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "f3ed371e5eb42e531eedfd219f5d7f1456374b924e83b309aa1ae93a1313939d",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999681,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.7881393432617188e-07,
+        "rmse": 5.455551640358801e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 374,
+        "row_count": 128,
+        "row_start": 0
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "efe91203e211bcf9161120e4e39f3399a5da407b7ba11b630f625170479e7533",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          448875,
+          453250,
+          442625,
+          264166,
+          254666,
+          255250,
+          253500
+        ],
+        "gpu_ns_max": 453250,
+        "gpu_ns_median": 264166,
+        "gpu_ns_min": 253500,
+        "host_wall_ns": [
+          730666,
+          729458,
+          734458,
+          515833,
+          495625,
+          499500,
+          491375
+        ],
+        "host_wall_ns_max": 734458,
+        "host_wall_ns_median": 515833,
+        "host_wall_ns_min": 491375,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E151_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "26416c7498a690135c6560e86c53eac9787d5dae2e2f780669436cb49ac4960f",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.999999999999955,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 2.384185791015625e-07,
+        "rmse": 6.562553751479944e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 151,
+        "row_count": 128,
+        "row_start": 0
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "8debf1773fdc072c188e8a30eaebfa12e1d7cf846c9443d75860b764177dd166",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          450125,
+          452750,
+          447416,
+          454500,
+          450166,
+          453125,
+          449625
+        ],
+        "gpu_ns_max": 454500,
+        "gpu_ns_median": 450166,
+        "gpu_ns_min": 447416,
+        "host_wall_ns": [
+          756167,
+          775542,
+          874750,
+          736792,
+          771083,
+          762500,
+          773500
+        ],
+        "host_wall_ns_max": 874750,
+        "host_wall_ns_median": 771083,
+        "host_wall_ns_min": 736792,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E93_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "36ee0c3b06045080c69ea264370a031a4f541f365bdc5e93ba280d2f58bf38e1",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999621,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.4901161193847656e-07,
+        "rmse": 5.4541529742733305e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 93,
+        "row_count": 128,
+        "row_start": 0
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "e8ce325a6c486bab31609dbfe63d0db4074083d619be712cb99bea501d4b7c4e",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          265291,
+          257334,
+          254125,
+          256459,
+          255250,
+          257625,
+          255166
+        ],
+        "gpu_ns_max": 265291,
+        "gpu_ns_median": 256459,
+        "gpu_ns_min": 254125,
+        "host_wall_ns": [
+          935917,
+          511625,
+          503291,
+          507708,
+          498833,
+          504000,
+          497792
+        ],
+        "host_wall_ns_max": 935917,
+        "host_wall_ns_median": 504000,
+        "host_wall_ns_min": 497792,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E500_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "0e7bb466c55f89ef4e0be19b2df3e46b17fb8b58fd888266949ccc9b7ecb9720",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999696,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.4901161193847656e-07,
+        "rmse": 4.780620014991829e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 500,
+        "row_count": 128,
+        "row_start": 0
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "5d9855b120fd4cc4e6b43cbb4993439447a173c494f354e075a4360bccbf858f",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          450500,
+          454584,
+          449000,
+          454334,
+          451250,
+          453500,
+          444375
+        ],
+        "gpu_ns_max": 454584,
+        "gpu_ns_median": 451250,
+        "gpu_ns_min": 444375,
+        "host_wall_ns": [
+          804541,
+          806834,
+          846583,
+          829125,
+          798667,
+          778125,
+          713833
+        ],
+        "host_wall_ns_max": 846583,
+        "host_wall_ns_median": 804541,
+        "host_wall_ns_min": 713833,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E149_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "ff817b2e782dd13687d2963b8853cf9a093a2b4db7c69a2c674b0a8b156a91f8",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999712,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.7881393432617188e-07,
+        "rmse": 5.148419922084351e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 149,
+        "row_count": 128,
+        "row_start": 0
+      }
+    },
+    {
+      "body_bytes": 174080,
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "71e2c99bada22b7a84178296c563a5faead152f2400163a6d8f4570d3600d21a",
+        "status": "PASSED"
+      },
+      "candidate_body_persisted": true,
+      "gpu_timing": {
+        "device": "Apple M3 Ultra",
+        "gpu_ns": [
+          449375,
+          453459,
+          449541,
+          456125,
+          449959,
+          447500,
+          448875
+        ],
+        "gpu_ns_max": 456125,
+        "gpu_ns_median": 449541,
+        "gpu_ns_min": 447500,
+        "host_wall_ns": [
+          762333,
+          791250,
+          742541,
+          809667,
+          750292,
+          749833,
+          713875
+        ],
+        "host_wall_ns_max": 809667,
+        "host_wall_ns_median": 750292,
+        "host_wall_ns_min": 713875,
+        "measured_runs": 7,
+        "memory_limits": {
+          "current_allocated_size": 638976,
+          "has_unified_memory": true,
+          "max_buffer_length": 62620631040,
+          "recommended_max_working_set_size": 83494174720
+        },
+        "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+        "warmup_runs": 2
+      },
+      "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E220_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "d337550d2ff2c59a27cc6c5d203ee17a7a36d176b1a51bf3a3d9d455f738cf45",
+        "status": "PASSED"
+      },
+      "parity": {
+        "cosine": 0.9999999999999768,
+        "count": 128,
+        "finite": true,
+        "max_abs_error": 1.4901161193847656e-07,
+        "rmse": 4.6322801378532086e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_independent_execution": true,
+      "window": {
+        "expert_index": 220,
+        "row_count": 128,
+        "row_start": 0
+      }
     }
   ],
-  "elapsed_s": 0.003,
-  "finished_at": 1787820648.1927838,
+  "elapsed_s": 0.007,
+  "finished_at": 1787833248.827807,
   "flash_tps": null,
-  "generated_at": 1787820648.190166,
+  "generated_at": 1787833248.820983,
   "inputs": {
     "components": [
       {
@@ -326,7 +1001,7 @@
           "sha256": "60deabc9be0f32005679ad17a6124a56f89a791dab2c641268d9f5bc7599672b",
           "status": "PASSED"
         },
-        "id": "e0_r0_128",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
         "kernel": {
           "label": "[V]",
           "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
@@ -343,7 +1018,7 @@
           "sha256": "5365ca3c0c6d9895f60dc3399a2f4e94c38921b23dd8dca9c8be19b615b20cb1",
           "status": "PASSED"
         },
-        "id": "e0_r128_256",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
         "kernel": {
           "label": "[V]",
           "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E0_R128_256_PARITY.json",
@@ -360,7 +1035,7 @@
           "sha256": "bd886dd356ea4c0f18d4e46c6b96a63067b757eb76ede6cd6386408bf1a20d38",
           "status": "PASSED"
         },
-        "id": "e1_r0_128",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
         "kernel": {
           "label": "[V]",
           "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E1_R0_128_PARITY.json",
@@ -377,12 +1052,165 @@
           "sha256": "13f8d51bc256c48eae70e5310e6cef6b7ac61a8b60593cd28cf9a7e17b823632",
           "status": "PASSED"
         },
-        "id": "e32_r0_128",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
         "kernel": {
           "label": "[V]",
           "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E32_R0_128_PARITY.json",
           "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
           "sha256": "f35e093689665a422e0ff82e8a38fb9b67fbbdf1a3cba327b057c931e364526c",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "887bca5f95bc146eb81ef8dadf0efbb0ed53da0ede9336bbe93514bcb4ede637",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "0dd362b56e3061e64a675f11fdfb00a29bfc0db06b5667ce8640c50cbea5a45f",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "992a2344b609c7a837edb53a9d3844a6f5cbc1d586e12039036582c81b27b75e",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E309_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "d18cef7883ccf34e5e4f266585da716ceabcbc4ba4aab90de4bee4164f703a59",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "ce74c6f7f59d601e0702f936d811db3549be5cced618e9c687ab31b0aeaee4fc",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E455_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "b6a8f8562d9c370dae69614af0fbae347f98cd4cdb16308a68ea06c52c3df8bf",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "7aafb5448d4323a8807aa402690f9184ca193c7c160900efe17eb065a918976d",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E374_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "f3ed371e5eb42e531eedfd219f5d7f1456374b924e83b309aa1ae93a1313939d",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "efe91203e211bcf9161120e4e39f3399a5da407b7ba11b630f625170479e7533",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E151_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "26416c7498a690135c6560e86c53eac9787d5dae2e2f780669436cb49ac4960f",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "8debf1773fdc072c188e8a30eaebfa12e1d7cf846c9443d75860b764177dd166",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E93_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "36ee0c3b06045080c69ea264370a031a4f541f365bdc5e93ba280d2f58bf38e1",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "e8ce325a6c486bab31609dbfe63d0db4074083d619be712cb99bea501d4b7c4e",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E500_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "0e7bb466c55f89ef4e0be19b2df3e46b17fb8b58fd888266949ccc9b7ecb9720",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "5d9855b120fd4cc4e6b43cbb4993439447a173c494f354e075a4360bccbf858f",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E149_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "ff817b2e782dd13687d2963b8853cf9a093a2b4db7c69a2c674b0a8b156a91f8",
+          "status": "PASSED"
+        }
+      },
+      {
+        "body": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "71e2c99bada22b7a84178296c563a5faead152f2400163a6d8f4570d3600d21a",
+          "status": "PASSED"
+        },
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "kernel": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E220_R0_128_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "d337550d2ff2c59a27cc6c5d203ee17a7a36d176b1a51bf3a3d9d455f738cf45",
           "status": "PASSED"
         }
       }
@@ -406,18 +1234,36 @@
   "noetic_ir": {
     "candidate_id": "independent_q4_g64",
     "complete_model": false,
-    "component_count": 4,
+    "component_count": 13,
     "operations": [
       "retain_verified_source_blocks_as_parity_references",
-      "load_persisted_source_independent_component_body:e0_r0_128",
-      "load_persisted_source_independent_component_body:e0_r128_256",
-      "load_persisted_source_independent_component_body:e1_r0_128",
-      "load_persisted_source_independent_component_body:e32_r0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+      "load_persisted_source_independent_component_body:FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
       "load_serialized_representation_descriptor",
-      "dispatch_qwen_uniform_q4_group64_matvec:e0_r0_128",
-      "dispatch_qwen_uniform_q4_group64_matvec:e0_r128_256",
-      "dispatch_qwen_uniform_q4_group64_matvec:e1_r0_128",
-      "dispatch_qwen_uniform_q4_group64_matvec:e32_r0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+      "dispatch_qwen_uniform_q4_group64_matvec:FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
       "merge_bounded_component_outputs"
     ],
     "schema": "hcli.noetic.ir.v1",
@@ -430,10 +1276,10 @@
     "component_scope": "bounded source-independent routed-expert body campaign; not complete Flash execution",
     "computation": [
       {
-        "component_id": "e0_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
         "execution_input": false,
         "expert": 0,
-        "id": "e0_r0_128:source_block_reference",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY:source_block_reference",
         "kind": "verified_source_reference",
         "row_count": 128,
         "row_start": 0,
@@ -445,10 +1291,10 @@
       {
         "body_persisted": true,
         "candidate_id": "independent_q4_g64",
-        "component_id": "e0_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
         "execution_input": true,
         "expert_index": 0,
-        "id": "e0_r0_128:noetic_component_body_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY:noetic_component_body_load",
         "kind": "source_independent_component_body",
         "row_count": 128,
         "row_start": 0,
@@ -456,11 +1302,11 @@
       },
       {
         "candidate_id": "independent_q4_g64",
-        "component_id": "e0_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
         "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
         "execution_input": true,
         "expert_index": 0,
-        "id": "e0_r0_128:noetic_descriptor_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY:noetic_descriptor_load",
         "kind": "serialized_representation_descriptor",
         "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
         "row_count": 128,
@@ -469,10 +1315,10 @@
         "stage": "NoeticCompiler"
       },
       {
-        "component_id": "e0_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
         "dispatches_per_sample": 1,
         "expert_index": 0,
-        "id": "e0_r0_128:routed_expert_q4_g64_matvec",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY:routed_expert_q4_g64_matvec",
         "kernel": "qwen_uniform_q4_group64_matvec",
         "kind": "native_kernel_dispatch",
         "parity_within_tolerance": true,
@@ -484,9 +1330,9 @@
       },
       {
         "complete_token": false,
-        "component_id": "e0_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
         "expert_index": 0,
-        "id": "e0_r0_128:bounded_component_output",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY:bounded_component_output",
         "kind": "source_block_matvec_output",
         "row_count": 128,
         "row_start": 0,
@@ -494,10 +1340,10 @@
         "whole_model": false
       },
       {
-        "component_id": "e0_r128_256",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
         "execution_input": false,
         "expert": 0,
-        "id": "e0_r128_256:source_block_reference",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:source_block_reference",
         "kind": "verified_source_reference",
         "row_count": 128,
         "row_start": 128,
@@ -509,10 +1355,10 @@
       {
         "body_persisted": true,
         "candidate_id": "independent_q4_g64",
-        "component_id": "e0_r128_256",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
         "execution_input": true,
         "expert_index": 0,
-        "id": "e0_r128_256:noetic_component_body_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:noetic_component_body_load",
         "kind": "source_independent_component_body",
         "row_count": 128,
         "row_start": 128,
@@ -520,11 +1366,11 @@
       },
       {
         "candidate_id": "independent_q4_g64",
-        "component_id": "e0_r128_256",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
         "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
         "execution_input": true,
         "expert_index": 0,
-        "id": "e0_r128_256:noetic_descriptor_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:noetic_descriptor_load",
         "kind": "serialized_representation_descriptor",
         "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
         "row_count": 128,
@@ -533,10 +1379,10 @@
         "stage": "NoeticCompiler"
       },
       {
-        "component_id": "e0_r128_256",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
         "dispatches_per_sample": 1,
         "expert_index": 0,
-        "id": "e0_r128_256:routed_expert_q4_g64_matvec",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:routed_expert_q4_g64_matvec",
         "kernel": "qwen_uniform_q4_group64_matvec",
         "kind": "native_kernel_dispatch",
         "parity_within_tolerance": true,
@@ -548,9 +1394,9 @@
       },
       {
         "complete_token": false,
-        "component_id": "e0_r128_256",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
         "expert_index": 0,
-        "id": "e0_r128_256:bounded_component_output",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:bounded_component_output",
         "kind": "source_block_matvec_output",
         "row_count": 128,
         "row_start": 128,
@@ -558,10 +1404,10 @@
         "whole_model": false
       },
       {
-        "component_id": "e1_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
         "execution_input": false,
         "expert": 1,
-        "id": "e1_r0_128:source_block_reference",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:source_block_reference",
         "kind": "verified_source_reference",
         "row_count": 128,
         "row_start": 0,
@@ -573,10 +1419,10 @@
       {
         "body_persisted": true,
         "candidate_id": "independent_q4_g64",
-        "component_id": "e1_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
         "execution_input": true,
         "expert_index": 1,
-        "id": "e1_r0_128:noetic_component_body_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:noetic_component_body_load",
         "kind": "source_independent_component_body",
         "row_count": 128,
         "row_start": 0,
@@ -584,11 +1430,11 @@
       },
       {
         "candidate_id": "independent_q4_g64",
-        "component_id": "e1_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
         "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
         "execution_input": true,
         "expert_index": 1,
-        "id": "e1_r0_128:noetic_descriptor_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:noetic_descriptor_load",
         "kind": "serialized_representation_descriptor",
         "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
         "row_count": 128,
@@ -597,10 +1443,10 @@
         "stage": "NoeticCompiler"
       },
       {
-        "component_id": "e1_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
         "dispatches_per_sample": 1,
         "expert_index": 1,
-        "id": "e1_r0_128:routed_expert_q4_g64_matvec",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:routed_expert_q4_g64_matvec",
         "kernel": "qwen_uniform_q4_group64_matvec",
         "kind": "native_kernel_dispatch",
         "parity_within_tolerance": true,
@@ -612,9 +1458,9 @@
       },
       {
         "complete_token": false,
-        "component_id": "e1_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
         "expert_index": 1,
-        "id": "e1_r0_128:bounded_component_output",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:bounded_component_output",
         "kind": "source_block_matvec_output",
         "row_count": 128,
         "row_start": 0,
@@ -622,10 +1468,10 @@
         "whole_model": false
       },
       {
-        "component_id": "e32_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
         "execution_input": false,
         "expert": 32,
-        "id": "e32_r0_128:source_block_reference",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:source_block_reference",
         "kind": "verified_source_reference",
         "row_count": 128,
         "row_start": 0,
@@ -637,10 +1483,10 @@
       {
         "body_persisted": true,
         "candidate_id": "independent_q4_g64",
-        "component_id": "e32_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
         "execution_input": true,
         "expert_index": 32,
-        "id": "e32_r0_128:noetic_component_body_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:noetic_component_body_load",
         "kind": "source_independent_component_body",
         "row_count": 128,
         "row_start": 0,
@@ -648,11 +1494,11 @@
       },
       {
         "candidate_id": "independent_q4_g64",
-        "component_id": "e32_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
         "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
         "execution_input": true,
         "expert_index": 32,
-        "id": "e32_r0_128:noetic_descriptor_load",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:noetic_descriptor_load",
         "kind": "serialized_representation_descriptor",
         "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
         "row_count": 128,
@@ -661,10 +1507,10 @@
         "stage": "NoeticCompiler"
       },
       {
-        "component_id": "e32_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
         "dispatches_per_sample": 1,
         "expert_index": 32,
-        "id": "e32_r0_128:routed_expert_q4_g64_matvec",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:routed_expert_q4_g64_matvec",
         "kernel": "qwen_uniform_q4_group64_matvec",
         "kind": "native_kernel_dispatch",
         "parity_within_tolerance": true,
@@ -676,9 +1522,585 @@
       },
       {
         "complete_token": false,
-        "component_id": "e32_r0_128",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
         "expert_index": 32,
-        "id": "e32_r0_128:bounded_component_output",
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "execution_input": false,
+        "expert": 29,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 256,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "execution_input": true,
+        "expert_index": 29,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 256,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 29,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 256,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "dispatches_per_sample": 1,
+        "expert_index": 29,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 256,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "expert_index": 29,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 256,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "execution_input": false,
+        "expert": 309,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "execution_input": true,
+        "expert_index": 309,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 309,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 309,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "expert_index": 309,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "execution_input": false,
+        "expert": 455,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "execution_input": true,
+        "expert_index": 455,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 455,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 455,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "expert_index": 455,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "execution_input": false,
+        "expert": 374,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "execution_input": true,
+        "expert_index": 374,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 374,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 374,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "expert_index": 374,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "execution_input": false,
+        "expert": 151,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "execution_input": true,
+        "expert_index": 151,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 151,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 151,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "expert_index": 151,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "execution_input": false,
+        "expert": 93,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "execution_input": true,
+        "expert_index": 93,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 93,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 93,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "expert_index": 93,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "execution_input": false,
+        "expert": 500,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "execution_input": true,
+        "expert_index": 500,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 500,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 500,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "expert_index": 500,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "execution_input": false,
+        "expert": 149,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "execution_input": true,
+        "expert_index": 149,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 149,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 149,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "expert_index": 149,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:bounded_component_output",
+        "kind": "source_block_matvec_output",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticExecutableCandidate",
+        "whole_model": false
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "execution_input": false,
+        "expert": 220,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:source_block_reference",
+        "kind": "verified_source_reference",
+        "row_count": 128,
+        "row_start": 0,
+        "source_backed": true,
+        "source_block_bytes": 655360,
+        "stage": "SourceSpecimen",
+        "tensor_name": "model.language_model.layers.0.mlp.experts.gate_up_proj"
+      },
+      {
+        "body_persisted": true,
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "execution_input": true,
+        "expert_index": 220,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:noetic_component_body_load",
+        "kind": "source_independent_component_body",
+        "row_count": 128,
+        "row_start": 0,
+        "stage": "NoeticCompiler"
+      },
+      {
+        "candidate_id": "independent_q4_g64",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "descriptor_sha256": "60e7c098c67f26013e47d3411efc554b7e8612417300eb2116d8237f53568c19",
+        "execution_input": true,
+        "expert_index": 220,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:noetic_descriptor_load",
+        "kind": "serialized_representation_descriptor",
+        "loader_status": "BOUNDED_NOETIC_DESCRIPTOR_AND_BODY_LOAD",
+        "row_count": 128,
+        "row_start": 0,
+        "schema": "hcli.noetic.representation_descriptor.v1",
+        "stage": "NoeticCompiler"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "dispatches_per_sample": 1,
+        "expert_index": 220,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:routed_expert_q4_g64_matvec",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "kind": "native_kernel_dispatch",
+        "parity_within_tolerance": true,
+        "registered": true,
+        "row_count": 128,
+        "row_start": 0,
+        "source_independent_execution": true,
+        "stage": "HawkingAccelerator"
+      },
+      {
+        "complete_token": false,
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "expert_index": 220,
+        "id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:bounded_component_output",
         "kind": "source_block_matvec_output",
         "row_count": 128,
         "row_start": 0,
@@ -697,100 +2119,316 @@
     ],
     "dependencies": [
       {
-        "component_id": "e0_r0_128",
-        "from": "e0_r0_128:source_block_reference",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY:source_block_reference",
         "kind": "parity_reference_only",
-        "to": "e0_r0_128:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY:bounded_component_output"
       },
       {
-        "component_id": "e0_r0_128",
-        "from": "e0_r0_128:noetic_component_body_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY:noetic_component_body_load",
         "kind": "body_to_descriptor",
-        "to": "e0_r0_128:noetic_descriptor_load"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY:noetic_descriptor_load"
       },
       {
-        "component_id": "e0_r0_128",
-        "from": "e0_r0_128:noetic_descriptor_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY:noetic_descriptor_load",
         "kind": "descriptor_to_kernel",
-        "to": "e0_r0_128:routed_expert_q4_g64_matvec"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY:routed_expert_q4_g64_matvec"
       },
       {
-        "component_id": "e0_r0_128",
-        "from": "e0_r0_128:routed_expert_q4_g64_matvec",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY:routed_expert_q4_g64_matvec",
         "kind": "kernel_to_output",
-        "to": "e0_r0_128:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY:bounded_component_output"
       },
       {
-        "component_id": "e0_r128_256",
-        "from": "e0_r128_256:source_block_reference",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:source_block_reference",
         "kind": "parity_reference_only",
-        "to": "e0_r128_256:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:bounded_component_output"
       },
       {
-        "component_id": "e0_r128_256",
-        "from": "e0_r128_256:noetic_component_body_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:noetic_component_body_load",
         "kind": "body_to_descriptor",
-        "to": "e0_r128_256:noetic_descriptor_load"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:noetic_descriptor_load"
       },
       {
-        "component_id": "e0_r128_256",
-        "from": "e0_r128_256:noetic_descriptor_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:noetic_descriptor_load",
         "kind": "descriptor_to_kernel",
-        "to": "e0_r128_256:routed_expert_q4_g64_matvec"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:routed_expert_q4_g64_matvec"
       },
       {
-        "component_id": "e0_r128_256",
-        "from": "e0_r128_256:routed_expert_q4_g64_matvec",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:routed_expert_q4_g64_matvec",
         "kind": "kernel_to_output",
-        "to": "e0_r128_256:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E0_R128_256:bounded_component_output"
       },
       {
-        "component_id": "e1_r0_128",
-        "from": "e1_r0_128:source_block_reference",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:source_block_reference",
         "kind": "parity_reference_only",
-        "to": "e1_r0_128:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:bounded_component_output"
       },
       {
-        "component_id": "e1_r0_128",
-        "from": "e1_r0_128:noetic_component_body_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:noetic_component_body_load",
         "kind": "body_to_descriptor",
-        "to": "e1_r0_128:noetic_descriptor_load"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:noetic_descriptor_load"
       },
       {
-        "component_id": "e1_r0_128",
-        "from": "e1_r0_128:noetic_descriptor_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:noetic_descriptor_load",
         "kind": "descriptor_to_kernel",
-        "to": "e1_r0_128:routed_expert_q4_g64_matvec"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:routed_expert_q4_g64_matvec"
       },
       {
-        "component_id": "e1_r0_128",
-        "from": "e1_r0_128:routed_expert_q4_g64_matvec",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:routed_expert_q4_g64_matvec",
         "kind": "kernel_to_output",
-        "to": "e1_r0_128:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E1_R0_128:bounded_component_output"
       },
       {
-        "component_id": "e32_r0_128",
-        "from": "e32_r0_128:source_block_reference",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:source_block_reference",
         "kind": "parity_reference_only",
-        "to": "e32_r0_128:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:bounded_component_output"
       },
       {
-        "component_id": "e32_r0_128",
-        "from": "e32_r0_128:noetic_component_body_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:noetic_component_body_load",
         "kind": "body_to_descriptor",
-        "to": "e32_r0_128:noetic_descriptor_load"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:noetic_descriptor_load"
       },
       {
-        "component_id": "e32_r0_128",
-        "from": "e32_r0_128:noetic_descriptor_load",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:noetic_descriptor_load",
         "kind": "descriptor_to_kernel",
-        "to": "e32_r0_128:routed_expert_q4_g64_matvec"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:routed_expert_q4_g64_matvec"
       },
       {
-        "component_id": "e32_r0_128",
-        "from": "e32_r0_128:routed_expert_q4_g64_matvec",
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:routed_expert_q4_g64_matvec",
         "kind": "kernel_to_output",
-        "to": "e32_r0_128:bounded_component_output"
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E32_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:source_block_reference",
+        "kind": "parity_reference_only",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:bounded_component_output"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:noetic_component_body_load",
+        "kind": "body_to_descriptor",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:noetic_descriptor_load"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:noetic_descriptor_load",
+        "kind": "descriptor_to_kernel",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:routed_expert_q4_g64_matvec"
+      },
+      {
+        "component_id": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128",
+        "from": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:routed_expert_q4_g64_matvec",
+        "kind": "kernel_to_output",
+        "to": "FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128:bounded_component_output"
       }
     ],
     "device_placement": {
@@ -844,6 +2482,69 @@
       },
       {
         "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E29_R256_384.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "887bca5f95bc146eb81ef8dadf0efbb0ed53da0ede9336bbe93514bcb4ede637",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E309_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "992a2344b609c7a837edb53a9d3844a6f5cbc1d586e12039036582c81b27b75e",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E455_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "ce74c6f7f59d601e0702f936d811db3549be5cced618e9c687ab31b0aeaee4fc",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E374_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "7aafb5448d4323a8807aa402690f9184ca193c7c160900efe17eb065a918976d",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E151_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "efe91203e211bcf9161120e4e39f3399a5da407b7ba11b630f625170479e7533",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E93_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "8debf1773fdc072c188e8a30eaebfa12e1d7cf846c9443d75860b764177dd166",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E500_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "e8ce325a6c486bab31609dbfe63d0db4074083d619be712cb99bea501d4b7c4e",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E149_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "5d9855b120fd4cc4e6b43cbb4993439447a173c494f354e075a4360bccbf858f",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_BODY_E220_R0_128.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "71e2c99bada22b7a84178296c563a5faead152f2400163a6d8f4570d3600d21a",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
         "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_PARITY.json",
         "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
         "sha256": "28f6dcdcc9a9d77b39c5e803ca9a902cb6cff75e37fa115e5effd01dc85d7295",
@@ -869,10 +2570,73 @@
         "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
         "sha256": "f35e093689665a422e0ff82e8a38fb9b67fbbdf1a3cba327b057c931e364526c",
         "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E29_R256_384_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "0dd362b56e3061e64a675f11fdfb00a29bfc0db06b5667ce8640c50cbea5a45f",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E309_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "d18cef7883ccf34e5e4f266585da716ceabcbc4ba4aab90de4bee4164f703a59",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E455_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "b6a8f8562d9c370dae69614af0fbae347f98cd4cdb16308a68ea06c52c3df8bf",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E374_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "f3ed371e5eb42e531eedfd219f5d7f1456374b924e83b309aa1ae93a1313939d",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E151_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "26416c7498a690135c6560e86c53eac9787d5dae2e2f780669436cb49ac4960f",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E93_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "36ee0c3b06045080c69ea264370a031a4f541f365bdc5e93ba280d2f58bf38e1",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E500_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "0e7bb466c55f89ef4e0be19b2df3e46b17fb8b58fd888266949ccc9b7ecb9720",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E149_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "ff817b2e782dd13687d2963b8853cf9a093a2b4db7c69a2c674b0a8b156a91f8",
+        "status": "PASSED"
+      },
+      {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_Q4_BODY_KERNEL_E220_R0_128_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "d337550d2ff2c59a27cc6c5d203ee17a7a36d176b1a51bf3a3d9d455f738cf45",
+        "status": "PASSED"
       }
     ],
-    "fingerprint": "da2cfb70c04a4626f6a060ea4ec654b2ddd740b02ed28975d57d57801f8dfcbe",
-    "generated_at": 1787820648.192599,
+    "fingerprint": "5a375b824ef13302c239d7d5f96f438872e311ff4b794be41f184f0802d0b73c",
+    "generated_at": 1787833248.827456,
     "graph_execution_observed": false,
     "memory": [
       {
@@ -902,8 +2666,8 @@
     "representation": {
       "candidate_body_persisted": true,
       "candidate_id": "independent_q4_g64",
-      "component_body_bytes": 696320,
-      "component_count": 4,
+      "component_body_bytes": 2263040,
+      "component_count": 13,
       "component_windows": [
         {
           "expert_index": 0,
@@ -922,6 +2686,51 @@
         },
         {
           "expert_index": 32,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 29,
+          "row_count": 128,
+          "row_start": 256
+        },
+        {
+          "expert_index": 309,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 455,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 374,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 151,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 93,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 500,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 149,
+          "row_count": 128,
+          "row_start": 0
+        },
+        {
+          "expert_index": 220,
           "row_count": 128,
           "row_start": 0
         }
@@ -965,5 +2774,14 @@
   "validation": {
     "errors": []
   },
-  "whole_model_capability": "NOT_TESTED"
+  "whole_model_capability": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
 }

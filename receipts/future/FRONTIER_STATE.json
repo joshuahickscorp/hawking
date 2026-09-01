@@ -3,13 +3,13 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:17:58Z",
+  "recorded_at": "2026-09-01T05:27:14Z",
   "recorded_by": "tools/future/frontiers.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "bench_state": "UNKNOWN",
- "branch": "grok/l36-torture-wiring-20260830-182109",
+ "branch": "odyssey-i",
  "busywork": {
   "admission_refusals_during_next_work": [],
   "rule": "score by expected information gain, redundancy against already-queued work, and overlap with recorded scars; a flood of low-value units is REFUSED at admission",
@@ -1069,6 +1069,216 @@
    "blocked": [
     {
      "bench_state": "UNKNOWN",
+     "detail": "MULTISTREAM_CAPACITY_TREE class F, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: vary only the per-launch working-set size at constant bytes and constant arithmetic and look for a knee.",
+     "evidence": [
+      "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+      "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+      "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_cache_behaviour",
+     "id": "FT.MODEL_EXECUTION.capacity-cache_behaviour",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|executor_capacity_cache_behaviour|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "S025",
+     "species": "executor_capacity_discriminator",
+     "title": "Capacity class F: cache behaviour",
+     "verifier": "future.multistream_capacity_tree.classes",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "MULTISTREAM_CAPACITY_TREE class G, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: the same token issued across two command queues versus one, identical kernels and identical order, token output bit-identical. INTRA_TOKEN_CONCURRENCY_AB varied encoder topology within ONE queue and explicitly did not test this.",
+     "evidence": [
+      "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+      "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+      "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_command_queue_topology",
+     "id": "FT.MODEL_EXECUTION.capacity-command_queue_topology",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|executor_capacity_command_queue_topology|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "S025",
+     "species": "executor_capacity_discriminator",
+     "title": "Capacity class G: command queue topology",
+     "verifier": "future.multistream_capacity_tree.classes",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "MULTISTREAM_CAPACITY_TREE class D, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: the matched ARM A pair: bytes identical, arithmetic stripped. If stripping arithmetic moves the time, the chain is arithmetic-bound rather than memory-bound.",
+     "evidence": [
+      "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+      "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+      "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_instruction_dependency_chain",
+     "id": "FT.MODEL_EXECUTION.capacity-instruction_dependency_chain",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|executor_capacity_instruction_dependency_chain|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "S025",
+     "species": "executor_capacity_discriminator",
+     "title": "Capacity class D: instruction dependency chain",
+     "verifier": "future.multistream_capacity_tree.classes",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "MULTISTREAM_CAPACITY_TREE class I, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: run the SAME kernel at batch>1 on synthetic input and compare GB/s per byte moved against the batch-1 rate.",
+     "evidence": [
+      "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+      "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+      "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_kernel_shape_underfill",
+     "id": "FT.MODEL_EXECUTION.capacity-kernel_shape_underfill",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|executor_capacity_kernel_shape_underfill|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "S025",
+     "species": "executor_capacity_discriminator",
+     "title": "Capacity class I: kernel shape underfill",
+     "verifier": "future.multistream_capacity_tree.classes",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "MULTISTREAM_CAPACITY_TREE class E, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: unroll the per-thread load stride on one matvec so each thread issues N independent loads before consuming any; bytes and arithmetic identical, output bit-identical.",
+     "evidence": [
+      "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+      "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+      "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_memory_level_parallelism",
+     "id": "FT.MODEL_EXECUTION.capacity-memory_level_parallelism",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|executor_capacity_memory_level_parallelism|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "S025",
+     "species": "executor_capacity_discriminator",
+     "title": "Capacity class E: memory level parallelism",
+     "verifier": "future.multistream_capacity_tree.classes",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "MULTISTREAM_CAPACITY_TREE class B, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: sweep threadgroup size and grid on ONE production matvec at fixed bytes and fixed arithmetic; if effective GB/s rises with occupancy alone the class is live.",
+     "evidence": [
+      "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+      "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+      "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_occupancy",
+     "id": "FT.MODEL_EXECUTION.capacity-occupancy",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|executor_capacity_occupancy|",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source_f": "S025",
+     "species": "executor_capacity_discriminator",
+     "title": "Capacity class B: occupancy",
+     "verifier": "future.multistream_capacity_tree.classes",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "bench_state": "UNKNOWN",
      "detail": "Flash critical path WAITING_FOR_COMPLETE_TOKEN; source-independent NX is SCAFFOLD_ONLY. Sleeps.",
      "evidence": [
       "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
@@ -1102,13 +1312,37 @@
     }
    ],
    "counts": {
-    "blocked": 1,
-    "next_work": 2,
+    "blocked": 7,
+    "next_work": 3,
     "open_questions": 0,
     "runnable_questions": 0
    },
    "name": "MODEL_EXECUTION",
    "next_work": [
+    {
+     "bench_state": "UNKNOWN",
+     "detail": "MULTISTREAM_CAPACITY_TREE class C, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: read the compiled pipeline's register footprint and max threads per threadgroup from the Metal reflection and compare against the occupancy sweep.",
+     "evidence": [
+      "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+      "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+      "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_register_limited_occupancy",
+     "id": "FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_EXECUTION|executor_capacity_register_limited_occupancy|",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "source_f": "S025",
+     "species": "executor_capacity_discriminator",
+     "title": "Capacity class C: register limited occupancy",
+     "verifier": "future.multistream_capacity_tree.classes"
+    },
     {
      "bench_state": "UNKNOWN",
      "detail": "fusion_simulation.py is executable. Run the simulation receipt refresh; do not claim token_ns.",
@@ -1988,7 +2222,7 @@
   "stale_entries": []
  },
  "gpu_authority": false,
- "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "head": "d6d14e9fd7255571ac832936c3d638d89df90074",
  "idle_proof": {
   "active": [
    "ACTIVE_BYTES",
@@ -2057,6 +2291,7 @@
   "next_work_available_lanes": [
    "ANALYSIS",
    "CPU",
+   "FPGA",
    "ODYSSEY",
    "REPRESENTATION",
    "SIMULATION",
@@ -2087,8 +2322,8 @@
   }
  },
  "n_frontiers": 22,
- "n_next_work": 32,
- "n_sleeping": 14,
+ "n_next_work": 33,
+ "n_sleeping": 20,
  "negative_findings": [
   "MetalContext reports no Metal-capable GPU on this host (Codex handoff / contract)",
   "xcrun cannot locate the Metal compiler under CommandLineTools",
@@ -2551,6 +2786,64 @@
    "title": "Drive the Odyssey Doctor and Gravity tools from the resident and route their receipts",
    "verification": null,
    "verifier": "future.odyssey_tool_driver.invoke",
+   "workspace": "repo-root"
+  },
+  {
+   "admission": {
+    "admitted": true,
+    "expected_information_gain": 3,
+    "reason": "novel enough: non-zero information gain, below redundancy threshold, not scar-dead",
+    "redundancy": 0.023529411764705882
+   },
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": null,
+   "candidate_status": "STATIC_ONLY",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "STATIC_ONLY",
+   "content_hash": "aca7476ab6640c88392443ddbc7435df6b8b90654f4ad4befd465fd381b6ed40",
+   "dependencies": [],
+   "description": "MULTISTREAM_CAPACITY_TREE class C, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: read the compiled pipeline's register footprint and max threads per threadgroup from the Metal reflection and compare against the occupancy sweep.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+    "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+    "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "executor_capacity_register_limited_occupancy",
+   "id": "FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|executor_capacity_register_limited_occupancy|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "CPU",
+    "ANALYSIS"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "S025",
+   "species": "executor_capacity_discriminator",
+   "status": "pending",
+   "title": "Capacity class C: register limited occupancy",
+   "verification": null,
+   "verifier": "future.multistream_capacity_tree.classes",
    "workspace": "repo-root"
   },
   {
@@ -3986,7 +4279,7 @@
    "CODEX_ACCELERATOR_HANDOFF.json": "disk:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
    "receipts/future/CLAUDE_GLOBAL_FRONTIER.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
    "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
-   "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "disk:/Users/scammermike/.claude-grok/worktrees/l36-torture-wiring-20260830-182109/receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+   "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/NEGATIVE_SCIENCE_INDEX.json",
    "receipts/future/ODYSSEY2_LAW_STORE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY2_LAW_STORE.json",
    "receipts/future/ODYSSEY3_ADVERSARY.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY3_ADVERSARY.json",
    "receipts/future/PROPAGATION_STATE.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/PROPAGATION_STATE.json",
@@ -4027,7 +4320,7 @@
   "workunit_emitted": "HCLI WorkUnit via tools.future.workunit_species.emit_hcli_workunit; extras: frontier, required_lanes, wake_condition, redundancy_key, expected_information_gain, hypothesis_family"
  },
  "schema": "hawking.future.frontiers.v1",
- "seal_sha256": "3962023f43fbf7912f62c468c4e922c1e7de794d65db1fbcd61c6050e37a871c",
+ "seal_sha256": "85be08fe18c92ef3f67134b0734245954b05250038615e01c770c31b1573001f",
  "sleeping": [
   {
    "assigned_backend": null,
@@ -4651,6 +4944,396 @@
      "synthetic result",
      "lease seizure / flock",
      "quiesce standing workers"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "b4a7ba87a25431153dd50aca4c954793759e334f6632b2d1192413e8320a0c75",
+   "dependencies": [],
+   "description": "MULTISTREAM_CAPACITY_TREE class F, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: vary only the per-launch working-set size at constant bytes and constant arithmetic and look for a knee.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+    "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+    "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "executor_capacity_cache_behaviour",
+   "id": "FT.MODEL_EXECUTION.capacity-cache_behaviour",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|executor_capacity_cache_behaviour|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "S025",
+   "species": "executor_capacity_discriminator",
+   "status": "blocked",
+   "title": "Capacity class F: cache behaviour",
+   "verification": null,
+   "verifier": "future.multistream_capacity_tree.classes",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers",
+     "invented hardware number"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "0cc8757d2bc3f35f30a002beab796c90e3a5ec341bea48be3a9b555efb5a3528",
+   "dependencies": [],
+   "description": "MULTISTREAM_CAPACITY_TREE class G, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: the same token issued across two command queues versus one, identical kernels and identical order, token output bit-identical. INTRA_TOKEN_CONCURRENCY_AB varied encoder topology within ONE queue and explicitly did not test this.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+    "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+    "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "executor_capacity_command_queue_topology",
+   "id": "FT.MODEL_EXECUTION.capacity-command_queue_topology",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|executor_capacity_command_queue_topology|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "S025",
+   "species": "executor_capacity_discriminator",
+   "status": "blocked",
+   "title": "Capacity class G: command queue topology",
+   "verification": null,
+   "verifier": "future.multistream_capacity_tree.classes",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers",
+     "invented hardware number"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "f7ab565f7f475561d9f8c15dd3f8e0a2068decca98c66fbb0d1ed6336ab07f1d",
+   "dependencies": [],
+   "description": "MULTISTREAM_CAPACITY_TREE class D, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: the matched ARM A pair: bytes identical, arithmetic stripped. If stripping arithmetic moves the time, the chain is arithmetic-bound rather than memory-bound.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+    "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+    "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "executor_capacity_instruction_dependency_chain",
+   "id": "FT.MODEL_EXECUTION.capacity-instruction_dependency_chain",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|executor_capacity_instruction_dependency_chain|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "S025",
+   "species": "executor_capacity_discriminator",
+   "status": "blocked",
+   "title": "Capacity class D: instruction dependency chain",
+   "verification": null,
+   "verifier": "future.multistream_capacity_tree.classes",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers",
+     "invented hardware number"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "3b63a8b385c7234938a39fe0e26ab893c35a6354007289bbff77903c99ec184b",
+   "dependencies": [],
+   "description": "MULTISTREAM_CAPACITY_TREE class I, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: run the SAME kernel at batch>1 on synthetic input and compare GB/s per byte moved against the batch-1 rate.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+    "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+    "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "executor_capacity_kernel_shape_underfill",
+   "id": "FT.MODEL_EXECUTION.capacity-kernel_shape_underfill",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|executor_capacity_kernel_shape_underfill|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "S025",
+   "species": "executor_capacity_discriminator",
+   "status": "blocked",
+   "title": "Capacity class I: kernel shape underfill",
+   "verification": null,
+   "verifier": "future.multistream_capacity_tree.classes",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers",
+     "invented hardware number"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "0eb0522989f3acd266d516ef63ade8e6823144a9355c7cea4678a422803915a1",
+   "dependencies": [],
+   "description": "MULTISTREAM_CAPACITY_TREE class E, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: unroll the per-thread load stride on one matvec so each thread issues N independent loads before consuming any; bytes and arithmetic identical, output bit-identical.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+    "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+    "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "executor_capacity_memory_level_parallelism",
+   "id": "FT.MODEL_EXECUTION.capacity-memory_level_parallelism",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|executor_capacity_memory_level_parallelism|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "S025",
+   "species": "executor_capacity_discriminator",
+   "status": "blocked",
+   "title": "Capacity class E: memory level parallelism",
+   "verification": null,
+   "verifier": "future.multistream_capacity_tree.classes",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers",
+     "invented hardware number"
+    ]
+   },
+   "workspace": "repo-root"
+  },
+  {
+   "assigned_backend": null,
+   "assigned_runtime": null,
+   "attempts": 0,
+   "backend_task_id": null,
+   "bench_state": "UNKNOWN",
+   "blocked_reason": "Metal-capable GPU present on the execution host (MetalContext); xcrun locates the Metal compiler (not CommandLineTools-missing); existing HCLI protected lease with a proven holder pid (read, never flock); qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+   "candidate_status": "SLEEPING",
+   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
+   "classification": "SLEEPING",
+   "content_hash": "bd56372d945ae6828086502c931a5d37e149f55931eefdd9aff2da92c7d80b5e",
+   "dependencies": [],
+   "description": "MULTISTREAM_CAPACITY_TREE class B, still OPEN. G009 measured ~361 GB/s at n=1 against 449-580 aggregate, so the machine has capacity one stream does not use; SINGLE_TOKEN_PARALLEL_SLACK killed the artificial-serialization explanation (11 edges, 11 true dependencies) and INTRA_TOKEN_CONCURRENCY_AB confirmed it from the other side (0.62 microseconds between arms). What remains is inside the kernels. Discriminator: sweep threadgroup size and grid on ONE production matvec at fixed bytes and fixed arithmetic; if effective GB/s rises with occupancy alone the class is live.",
+   "effect_class": "READ_ONLY",
+   "evidence_class": "STATIC_ONLY",
+   "evidence_parents": [
+    "receipts/future/MULTISTREAM_CAPACITY_TREE.json",
+    "receipts/future/RESIDENT_CONCURRENCY_MEASURED.json",
+    "receipts/future/SINGLE_TOKEN_PARALLEL_SLACK.json"
+   ],
+   "expected_information_gain": 3,
+   "failure_context": null,
+   "finished_at": null,
+   "frontier": "MODEL_EXECUTION",
+   "hypothesis_family": "executor_capacity_occupancy",
+   "id": "FT.MODEL_EXECUTION.capacity-occupancy",
+   "kind": "NEXT_WORK",
+   "preferred_backend": null,
+   "provider": "future.frontiers",
+   "ready_at": null,
+   "redundancy_key": "MODEL_EXECUTION|executor_capacity_occupancy|",
+   "repair_depth": 0,
+   "repair_exhausted": false,
+   "repair_reason": null,
+   "repair_root": null,
+   "repairs": null,
+   "required_lanes": [
+    "GPU_PROTECTED"
+   ],
+   "requires_quiescence": false,
+   "resource_class": "STATIC_ANALYSIS",
+   "role": "science",
+   "running_at": null,
+   "source_f": "S025",
+   "species": "executor_capacity_discriminator",
+   "status": "blocked",
+   "title": "Capacity class B: occupancy",
+   "verification": null,
+   "verifier": "future.multistream_capacity_tree.classes",
+   "wake_condition": {
+    "all_of": [
+     "Metal-capable GPU present on the execution host (MetalContext)",
+     "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+     "existing HCLI protected lease with a proven holder pid (read, never flock)",
+     "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+    ],
+    "never": [
+     "synthetic result",
+     "lease seizure / flock",
+     "quiesce standing workers",
+     "invented hardware number"
     ]
    },
    "workspace": "repo-root"

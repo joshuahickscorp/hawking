@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:33:53Z",
+  "recorded_at": "2026-09-01T05:39:05Z",
   "recorded_by": "tools/future/evidence_snapshot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -149,8 +149,8 @@
    "name": "FLASH_NOETIC_ROUTER_SELECTION.json",
    "sha256": "3f405e0b4339a28f13e74676e297c3a78cf7be32d1502ad41721fe54f0d7b6fa",
    "snapshot_path": "receipts/future/evidence/FLASH_NOETIC_ROUTER_SELECTION.json",
-   "source_mtime_epoch": 1787863204.339,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
+   "source_mtime_epoch": 1788227625.36,
+   "source_mtime_utc": "2026-09-01T01:53:45Z",
    "source_path": "receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json"
   },
   {
@@ -203,8 +203,8 @@
    "name": "FLASH_NEXT_FPGA_ORGAN_MAP.json",
    "sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0",
    "snapshot_path": "receipts/future/evidence/FLASH_NEXT_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1787863204.296,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
+   "source_mtime_epoch": 1788227625.353,
+   "source_mtime_utc": "2026-09-01T01:53:45Z",
    "source_path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
   },
   {
@@ -230,8 +230,8 @@
    "name": "QWEN27_FPGA_ORGAN_MAP.json",
    "sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655",
    "snapshot_path": "receipts/future/evidence/QWEN27_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1787863204.536,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
+   "source_mtime_epoch": 1788227625.37,
+   "source_mtime_utc": "2026-09-01T01:53:45Z",
    "source_path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json"
   },
   {
@@ -239,8 +239,8 @@
    "name": "QWEN38_ACCELERATOR_TRANSFER_MAP.json",
    "sha256": "d45413916025ccef9e8d178da9bc52d3423efbea7f614735d62fce770cba4c62",
    "snapshot_path": "receipts/future/evidence/QWEN38_ACCELERATOR_TRANSFER_MAP.json",
-   "source_mtime_epoch": 1787863204.542,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
+   "source_mtime_epoch": 1788227625.371,
+   "source_mtime_utc": "2026-09-01T01:53:45Z",
    "source_path": "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
   },
   {
@@ -266,8 +266,8 @@
    "name": "HCLI_FPGA_PREBOARD.json",
    "sha256": "554108a5652e94778af03c6eb566c95548d4ffe5260df005639e46684914020d",
    "snapshot_path": "receipts/future/evidence/HCLI_FPGA_PREBOARD.json",
-   "source_mtime_epoch": 1787863204.439,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
+   "source_mtime_epoch": 1788227625.366,
+   "source_mtime_utc": "2026-09-01T01:53:45Z",
    "source_path": "receipts/headless/HCLI_FPGA_PREBOARD.json"
   },
   {
@@ -338,17 +338,17 @@
    "name": "HCLI_ACCELERATOR_REGRESSION.json",
    "sha256": "5401696f43732a052a5935e2aa4ccce56e638a64b2737be739afc5c8ac2530d3",
    "snapshot_path": "receipts/future/evidence/HCLI_ACCELERATOR_REGRESSION.json",
-   "source_mtime_epoch": 1787863204.373,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
+   "source_mtime_epoch": 1788227625.361,
+   "source_mtime_utc": "2026-09-01T01:53:45Z",
    "source_path": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json"
   },
   {
-   "bytes": 162843,
+   "bytes": 164064,
    "name": "HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "sha256": "1bf477312c9ce8394e0c78ac5c44c06fc1b26c3fcdabc77f2a2b9b82a3793e4a",
+   "sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f",
    "snapshot_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_mtime_epoch": 1787863204.442,
-   "source_mtime_utc": "2026-08-27T20:40:04Z",
+   "source_mtime_epoch": 1788239427.766,
+   "source_mtime_utc": "2026-09-01T05:10:27Z",
    "source_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
   },
   {
@@ -439,6 +439,6 @@
  "purpose": "Pinned copy of the Codex receipts sidecar lanes read. Lanes run in sparse git worktrees where the live, uncommitted receipts are invisible; without this snapshot a lane would silently fall back to a fixture and its conclusions would be attached to nothing.",
  "read_only_guarantee": "Codex originals are opened read-only and never modified.",
  "schema": "hawking.future.evidence_snapshot.v1",
- "seal_sha256": "e2f2eece86dd4096ed0c0ad3b05ee38ef2f02bb6328e913b6d69cc1106093e69",
+ "seal_sha256": "0a8aa311f3fb181f1e594be5141dd3e0447eda63c5b123db11c7634dcd6b94cd",
  "version": 1
 }

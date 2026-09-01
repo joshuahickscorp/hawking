@@ -236,7 +236,8 @@ def conformance_t1(runs: list[dict[str, Any]]) -> dict[str, Any]:
                       "attention, but NONE of them is reachable through the C2M "
                       "frontend -- the T0 kernel parser handles 4 elementwise "
                       "expression forms and cannot express any of them",
-            "C2M-T3": "NOT CLAIMED: no real open CUDA project has been run",
+            "C2M-T3": "NOT CLAIMED: a bounded source slice and one translated kernel "
+                       "are present, but no project-level CUDA runtime has been run",
             "C2M-T4": "NOT CLAIMED: no AI workload",
             "C2M-T5": "NOT CLAIMED: nothing is production-supported",
         },

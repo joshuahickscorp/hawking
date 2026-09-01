@@ -1,0 +1,1 @@
+{"module": "static_skeleton.py", "entry_point": "build", "receipt": "receipts/future/STATIC_SKELETON.json", "routed_to_frontier": "FT.MODEL_EXECUTION.static-skeleton", "species": "PHYSICAL_GRAPH_SEARCH", "wall_seconds": 0.098, "evidence_class": "STATIC_ONLY"}

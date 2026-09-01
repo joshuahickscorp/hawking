@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.39712.receipt.json",
+    "workgraph.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "persist two independent logical agent graphs (organ ranking vs status challenge) so a process death cannot collapse them into one queue",
+  "frontier_id": "FT.HCLI_SELF.no-launch",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.39712",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.39712.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "e5ae5af859b625ed342099e36ba081b5a29e570994801c78706cea5b1e7380e1",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

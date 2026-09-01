@@ -20,8 +20,8 @@ use std::time::{Duration, Instant, SystemTime, UNIX_EPOCH};
 
 #[cfg(target_os = "macos")]
 use hawking_core::model::qwen38_hybrid_decode::{
-    generate_greedy, load_qwen38_tokenizer, render_qwen38_user_chat, Qwen38HybridDecodeSession,
-    Qwen38HybridWeights,
+    generate_greedy, generate_greedy_unmeasured, load_qwen38_tokenizer,
+    render_qwen38_user_chat, Qwen38HybridDecodeSession, Qwen38HybridWeights,
 };
 #[cfg(target_os = "macos")]
 use hawking_core::tokenizer::Tokenizer;
@@ -449,6 +449,10 @@ struct Body {
     started_unix_ns: u64,
     last_reload_error: Option<String>,
     genesis_system_contract: Value,
+    /// Explicit opt-in for the serving-only path that omits per-token timing
+    /// vectors and uses the plain Metal fence. Qualification callers keep the
+    /// measured path regardless of this setting.
+    serve_untimed: bool,
 }
 
 #[cfg(target_os = "macos")]
@@ -465,6 +469,10 @@ impl Body {
         if max_seq_len == 0 {
             return Err("max_seq_len must be positive".into());
         }
+        let serve_untimed = matches!(
+            env::var("HAWKING_QWEN38_SERVE_UNTIMED").as_deref(),
+            Ok("1")
+        );
         let tok = load_qwen38_tokenizer(tokenizer).map_err(|e| e.to_string())?;
         let t0 = Instant::now();
         eprintln!("genesis-resident: loading {}", artifact.display());
@@ -479,9 +487,10 @@ impl Body {
         }
         let load_ns = t0.elapsed().as_nanos() as u64;
         eprintln!(
-            "genesis-resident: body resident {:.3}s weight_bytes={}",
+            "genesis-resident: body resident {:.3}s weight_bytes={} timing_mode={}",
             load_ns as f64 / 1e9,
-            weights.resident_bytes()
+            weights.resident_bytes(),
+            if serve_untimed { "untimed_resident_fast" } else { "measured" }
         );
         let started_unix_ns = SystemTime::now()
             .duration_since(UNIX_EPOCH)
@@ -504,6 +513,7 @@ impl Body {
             started_unix_ns,
             last_reload_error: None,
             genesis_system_contract,
+            serve_untimed,
         })
     }
 
@@ -610,6 +620,12 @@ impl Body {
             "session_workspace_bytes": session_workspace_bytes,
             "session_serve_counts": self.session_serve_counts,
             "decode_concurrency": 1,
+            "decode_timing_mode": if self.serve_untimed {
+                "untimed_resident_fast"
+            } else {
+                "measured"
+            },
+            "decode_gpu_timings_available": !self.serve_untimed,
             "artifact": self.artifact,
             "artifact_sha": self.artifact_sha,
             "generation": self.generation,
@@ -693,7 +709,16 @@ impl Body {
                 });
             }
         };
-        let result = match generate_greedy(session, &prompt_ids, max_new) {
+        let timing_mode = if self.serve_untimed {
+            "untimed_resident_fast"
+        } else {
+            "measured"
+        };
+        let result = match if self.serve_untimed {
+            generate_greedy_unmeasured(session, &prompt_ids, max_new)
+        } else {
+            generate_greedy(session, &prompt_ids, max_new)
+        } {
             Ok(r) => r,
             Err(err) => {
                 return json!({
@@ -727,6 +752,8 @@ impl Body {
             "wall_ns": result.wall_ns,
             "prefill_wall_ns": result.prefill_wall_ns,
             "decode_wall_ns": result.decode_wall_ns,
+            "timing_mode": timing_mode,
+            "gpu_timings_available": !self.serve_untimed,
             "new_tokens": result.new_tokens(),
             "prompt_len": result.prompt_len,
             "serve_index": self.serve_count,

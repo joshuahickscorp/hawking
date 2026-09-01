@@ -24,7 +24,23 @@ BACKEND_CPU = "cpu"
 BACKEND_TOOL = "tool"
 
 
+def _redact_tool_value(value: Any, limit: int = 4000) -> Any:
+    """Bound what a tool's return puts in a WorkUnit record.
+
+    ``filesystem.read`` and ``tests.run`` return whole files and whole test
+    logs. The mission record is evidence, not a log file, and the same 4000
+    characters the cpu backend keeps is the right budget here too.
+    """
+    if isinstance(value, str):
+        return value if len(value) <= limit else value[:limit] + f"... [+{len(value) - limit} chars]"
+    return value
+
+
 def select_backend_name(wu: Any) -> str:
+    # A named tool is the strongest signal there is: the unit is a typed call,
+    # not cognition. It outranks a stale `provider` left on a requeued unit.
+    if str(getattr(wu, "tool", "") or "").strip():
+        return BACKEND_TOOL
     pref = str(
         getattr(wu, "provider", None)
         or getattr(wu, "preferred_backend", None)
@@ -48,10 +64,14 @@ class WorkUnitExecutor:
         engine: Any = None,
         grok_bridge: Any = None,
         providers: Optional[Mapping[str, Any]] = None,
+        tool_registry: Any = None,
+        repo_root: Optional[Union[str, Path]] = None,
     ) -> None:
         self.workspace = Path(workspace)
         self.engine = engine
         self._grok = grok_bridge
+        self._tools = tool_registry
+        self.repo_root = Path(repo_root) if repo_root else None
         self.providers = dict(providers or {})
 
     def grok_bridge(self):
@@ -62,12 +82,35 @@ class WorkUnitExecutor:
         self._grok = GrokBridge(self.workspace)
         return self._grok
 
+    def tool_registry(self):
+        """The registry, built lazily the way ``grok_bridge`` is.
+
+        Constructed here rather than threaded down from Mission so that wiring
+        the executor to its tools does not require every caller to learn about
+        registries. 41 typed tools existed with no call site anywhere in the
+        execution path -- ``ToolRegistry`` appeared zero times in mission.py,
+        executors.py, engine.py and resident.py -- which made the whole surface
+        a catalogue the resident could read about but never use.
+        """
+        if self._tools is not None:
+            return self._tools
+        from .tool_registry import default_tool_registry
+
+        self._tools = default_tool_registry(
+            self.workspace, repo_root=self.repo_root or self.workspace
+        )
+        return self._tools
+
     def execute(self, wu: Any, context: Optional[Dict[str, Any]] = None) -> Dict[str, Any]:
         context = dict(context or {})
         name = select_backend_name(wu)
         wu.assigned_backend = name
         if name == BACKEND_GROK:
             return self._run_grok(wu, context)
+        if name == BACKEND_TOOL and str(getattr(wu, "tool", "") or "").strip():
+            return self._run_tool(wu, context)
+        # `tool` without a named tool stays the historical alias for the
+        # verifier-command path, so existing units keep working.
         if name in (BACKEND_CPU, BACKEND_TOOL):
             return self._run_cpu(wu, context)
         provider = context.get("provider_instance") or self.providers.get(name)
@@ -278,6 +321,60 @@ class WorkUnitExecutor:
                 "exit_code": proc.returncode,
                 "command": cmd,
                 "output": output[-4000:],
+            },
+        }
+
+    def _run_tool(self, wu: Any, context: Dict[str, Any]) -> Dict[str, Any]:
+        """Invoke one typed tool for this WorkUnit.
+
+        Everything dangerous is already handled inside ``ToolRegistry.invoke``:
+        unknown tool, input-schema validation, the permission contract, and a
+        caller's timeout bounded by the tool's own. Re-implementing any of it
+        here would be a second opinion that can disagree with the first, so this
+        only routes and shapes the result like the other backends.
+
+        ``ok`` is the tool's own verdict; it is not softened. A refused tool is
+        a failed unit, which is what lets a resident notice it asked for
+        something it is not permitted to do.
+        """
+        name = str(getattr(wu, "tool", "") or "").strip()
+        args = getattr(wu, "tool_arguments", None) or {}
+        if not isinstance(args, Mapping):
+            return {
+                "backend": BACKEND_TOOL,
+                "validation": {
+                    "ok": False,
+                    "reason": "TOOL_ARGUMENTS_NOT_A_MAPPING",
+                    "tool": name,
+                },
+            }
+        try:
+            registry = self.tool_registry()
+        except Exception as exc:
+            # Fail closed and say why. A unit that silently becomes a no-op is
+            # worse than one that fails: the mission would count it as done.
+            return {
+                "backend": BACKEND_TOOL,
+                "validation": {
+                    "ok": False,
+                    "reason": f"TOOL_REGISTRY_UNAVAILABLE: {type(exc).__name__}: {exc}",
+                    "tool": name,
+                },
+            }
+        result = registry.invoke(name, dict(args))
+        payload = result.to_dict()
+        return {
+            "backend": BACKEND_TOOL,
+            "tool_result": payload,
+            "validation": {
+                "ok": bool(result.ok),
+                "tool": name,
+                "invocation_id": result.invocation_id,
+                "failure_class": result.failure_class,
+                "mutation": result.mutation,
+                "deterministic": result.deterministic,
+                "reason": result.error,
+                "output": _redact_tool_value(payload.get("value")),
             },
         }
 

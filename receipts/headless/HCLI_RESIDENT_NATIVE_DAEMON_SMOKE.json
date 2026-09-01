@@ -1,0 +1,160 @@
+{
+  "claim_boundary": "guarded resident qualification; model body opens only after host and runtime admission pass",
+  "finished_at": 1787872955.756258,
+  "preflight": {
+    "profile": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+    "profile_identity": {
+      "artifact_inventory": {
+        "artifact_bytes": 10554328856,
+        "artifact_bytes_exact": true,
+        "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+        "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+        "mix_id": "mix_all_mlp_affine_g64_ls",
+        "n_tensors": 755
+      },
+      "mode": "resident",
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "protocol": "hawking.qwen38.resident.v1",
+      "resident_identity": "sealed-3.14",
+      "runtime": "hawking-native"
+    },
+    "resident_memory": {
+      "free_bytes": 28606136320,
+      "pressure": "unknown",
+      "reasons": [
+        "swap 32117757050 exceeds ceiling 2147483648"
+      ],
+      "reserve_bytes": 15461882265,
+      "safe": false,
+      "swap_ceiling_bytes": 2147483648,
+      "swap_used_bytes": 32117757050,
+      "total_bytes": 103079215104
+    },
+    "runtime_gate": {
+      "allow": false,
+      "planned": 0,
+      "record": {
+        "admitted": false,
+        "details": {
+          "admitted": 0,
+          "currentAllocatedSize": 81920,
+          "extra": 1,
+          "free_bytes": 28566339584,
+          "headroom_frac": 0.1,
+          "increment_gpu_bytes": 12272315774,
+          "metal_source": "MTLDevice.recommendedMaxWorkingSetSize (measured)",
+          "model_bytes": 10554328856,
+          "next_gpu_cost_bytes": 12272315774,
+          "per_runtime_overhead_bytes": 1717986918,
+          "pressure": "unknown",
+          "recommendedMaxWorkingSetSize": 83494174720,
+          "reserve_bytes": 15461882265,
+          "swap_ceiling_bytes": 2147483648,
+          "swap_used_bytes": 32100979834,
+          "topology": "slot",
+          "total_bytes": 103079215104,
+          "usable_bytes": 75144757248,
+          "wired_limit": {
+            "in_effect": false,
+            "iogpu_wired_limit_mb": 0,
+            "note": "0 means the OS default applies. A nonzero value raises the working-set budget and would change every admission number below."
+          }
+        },
+        "gate": "host",
+        "index": 0,
+        "marginal_free_ram_cost_bytes": 0,
+        "reason": "swap 32100979834 bytes exceeds ceiling 2147483648 bytes"
+      },
+      "refusal_reason": "swap 32100979834 bytes exceeds ceiling 2147483648 bytes"
+    },
+    "safe_to_open_body": false,
+    "snapshot": {
+      "anonymous_bytes": 17454284800,
+      "at": "2026-08-27T23:22:34Z",
+      "compressed_bytes": 48193945600,
+      "file_backed_bytes": 13440466944,
+      "free_bytes": 28606136320,
+      "page_size": 16384,
+      "pressure": "unknown",
+      "swap_used_bytes": 32117757050,
+      "total_bytes": 103079215104,
+      "wired_bytes": 10398547968
+    }
+  },
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "qualification": {
+    "body": {
+      "body_id": "body-479ec8e9-8a99-47bd-918f-341d32692367",
+      "loaded": false,
+      "model": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+      "runtime_count": 1,
+      "schema": "hcli.agentos.resident_body.v1",
+      "status": "UNLOADED",
+      "unload_reason": "supervisor_evacuated",
+      "unloaded_at": 1787872955.545801,
+      "updated_at": 1787872955.545868,
+      "worker_pid": null
+    },
+    "checks": {
+      "behavior_recorded": true,
+      "body_not_loaded": true,
+      "body_unloaded": true,
+      "memory_guard_waited": true,
+      "model_load_disallowed": true,
+      "native_work_remained_queued": true,
+      "profile_uses_sealed_identity": true,
+      "supervisor_stopped": true,
+      "worker_not_started": true,
+      "worker_stopped": true
+    },
+    "claim_boundary": "sealed 3.8 profile and resident admission refusal only; native weights were not opened",
+    "launch_state": "STARTING",
+    "mode": "SAFE_MEMORY_GUARD",
+    "state": {
+      "behavior": {
+        "action": "WAIT_FOR_MEMORY",
+        "evidence_required_for_refill": true,
+        "model_load_allowed": false,
+        "reason": "swap 32100979834 exceeds ceiling 2147483648",
+        "schema": "hcli.agentos.resident_behavior.v1",
+        "unrelated_process_kill_allowed": false,
+        "updated_at": 1787872955.5452
+      },
+      "inbox_count": 1,
+      "memory": {
+        "free_bytes": 28531785728,
+        "pressure": "unknown",
+        "reasons": [
+          "swap 32100979834 exceeds ceiling 2147483648"
+        ],
+        "reserve_bytes": 15461882265,
+        "safe": false,
+        "swap_ceiling_bytes": 2147483648,
+        "swap_used_bytes": 32100979834,
+        "total_bytes": 103079215104
+      },
+      "resident_id": "resident-8a7ebe09-c6ec-438e-93af-005c4f9fe069"
+    },
+    "status": "PASSED",
+    "stopped": {
+      "body": {
+        "body_id": "body-479ec8e9-8a99-47bd-918f-341d32692367",
+        "loaded": false,
+        "model": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+        "runtime_count": 1,
+        "schema": "hcli.agentos.resident_body.v1",
+        "status": "UNLOADED",
+        "unload_reason": "supervisor_stopped",
+        "unloaded_at": 1787872955.702441,
+        "updated_at": 1787872955.7025301,
+        "worker_pid": null
+      },
+      "state": "STOPPED",
+      "supervisor_pid": null,
+      "worker_pid": null
+    }
+  },
+  "schema": "hcli.agentos.resident_native_smoke.v1",
+  "started_at": 1787872954.813317,
+  "status": "PASSED"
+}

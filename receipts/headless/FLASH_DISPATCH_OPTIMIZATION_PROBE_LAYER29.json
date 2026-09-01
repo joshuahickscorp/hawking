@@ -1,0 +1,27 @@
+{
+  "artifact_kind": "SOURCE",
+  "claim_boundary": "Bounded A/B of one exact source-BF16 Flash linear-attention layer; this is an optimization decision receipt, not complete-token, TPS, EBPW, or residence evidence.",
+  "layer": 29,
+  "machine": "Apple M3 Ultra",
+  "baseline": {
+    "receipt": "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER29_PREFIX_FED_NATIVE.json",
+    "dispatches": 35,
+    "command_buffers": 1,
+    "gpu_ns": 21630500,
+    "fallback_count": 0,
+    "output_state_sha256": "7a3c48e07a8aae60cd0f7e40bafed14d8ca8facf638fc8e00451875d5090997d"
+  },
+  "candidate": {
+    "receipt": "receipts/headless/FLASH_NOETIC_COMPLETE_LAYER29_PREFIX_FED_NATIVE_OPT.json",
+    "change": "concurrent group around independent QKV/Z/control projections",
+    "dispatches": 35,
+    "command_buffers": 1,
+    "gpu_ns": 95833250,
+    "fallback_count": 0,
+    "output_state_sha256": "7a3c48e07a8aae60cd0f7e40bafed14d8ca8facf638fc8e00451875d5090997d",
+    "parity": "PASS"
+  },
+  "decision": "REJECTED",
+  "reason": "Candidate preserved exact output but increased integrated GPU time by 4.43x; baseline remains production choice.",
+  "next": "Keep one ordered command buffer baseline; only promote fusions that reduce complete useful work under parity and protected measurement."
+}

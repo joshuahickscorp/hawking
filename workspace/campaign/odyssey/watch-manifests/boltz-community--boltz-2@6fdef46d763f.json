@@ -1,0 +1,19 @@
+{
+  "expected": 4348702182,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "boltz2_aff.ckpt",
+    "boltz2_conf.ckpt"
+  ],
+  "mode": "boltz",
+  "repo": "boltz-community/boltz-2",
+  "resolved_sha": "6fdef46d763fee7fbb83ca5501ccceff43b85607",
+  "revision": "6fdef46d763fee7fbb83ca5501ccceff43b85607",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 24,
+    "boltz2_aff.ckpt": 2062139170,
+    "boltz2_conf.ckpt": 2286561469
+  }
+}

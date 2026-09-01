@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T22:21:56Z",
+  "recorded_at": "2026-09-01T06:06:07Z",
   "recorded_by": "tools/future/model_bearing.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -114,7 +114,7 @@
   "workunit": "one CPU_ANALYSIS unit; the resident proposes a WorkUnit against the live frontier, tools admit or refuse, and the tape records whether the pick diverged and whether it ran"
  },
  "schema": "hawking.future.model_bearing.v1",
- "seal_sha256": "d2357d3819bbb538e8c7704e7b0148bc643c91a1da6d94f3ebf8d6742de36061",
+ "seal_sha256": "30eb9ad029d10aee123d025dd8cde94346c413071dd2f3ef808f8e0b351ad0b5",
  "separation": {
   "model_decided": null,
   "rule": "the model proposes; the tools decide. This receipt has a null model_decided column because --build did not ask.",
@@ -139,12 +139,12 @@
      "FT.GPU_KERNELS.static-warnings",
      "FT.HCLI_SELF.emit-workunits",
      "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+     "FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
      "FT.MODEL_REPRESENTATION.meta-gates-3-9",
      "FT.ODYSSEY_ADVERSARY.attacks",
-     "FT.ODYSSEY_TRANSFER.re-earn",
-     "FT.PHYSICAL_GRAPH.p6-projection"
+     "FT.ODYSSEY_TRANSFER.re-earn"
     ],
-    "n": 32,
+    "n": 33,
     "ok": true,
     "policy": "highest expected_information_gain then id (frontiers.next_work)",
     "source": "frontiers.next_work(THIS_HOST_LANES)"
@@ -204,12 +204,12 @@
     "FT.GPU_KERNELS.static-warnings",
     "FT.HCLI_SELF.emit-workunits",
     "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+    "FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
     "FT.MODEL_REPRESENTATION.meta-gates-3-9",
     "FT.ODYSSEY_ADVERSARY.attacks",
-    "FT.ODYSSEY_TRANSFER.re-earn",
-    "FT.PHYSICAL_GRAPH.p6-projection"
+    "FT.ODYSSEY_TRANSFER.re-earn"
    ],
-   "n": 32,
+   "n": 33,
    "ok": true,
    "policy": "highest expected_information_gain then id (frontiers.next_work)",
    "source": "frontiers.next_work(THIS_HOST_LANES)"

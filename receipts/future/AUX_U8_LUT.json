@@ -15,7 +15,7 @@
     "bandwidth_is_assumption": false,
     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
     "bandwidth_regime": "affine_q2_family",
-    "cited_token_ms": 28.722,
+    "cited_token_ms": 22.9024,
     "dispatch_class": "mlp_gqa_norm_fusion",
     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
     "dispatch_us_nominal": 6.25,
@@ -28,7 +28,7 @@
      0.0,
      0.0
     ],
-    "host_gap_floor_ms": 0.989,
+    "host_gap_floor_ms": 0.956,
     "incremental_byte_rate_gb_s": 0.0,
     "organ_average_gb_s": 344.1,
     "stream_billing_gb_s": 0.0,
@@ -72,20 +72,20 @@
     0.0
    ],
    "predicted_ms_saved": -0.0,
-   "predicted_token_ms": 28.722,
+   "predicted_token_ms": 22.9024,
    "predicted_token_ms_range": [
-    28.722,
-    28.722
+    22.9024,
+    22.9024
    ],
-   "predicted_tps": 34.816516955643756,
+   "predicted_tps": 43.66354617856644,
    "predicted_tps_range": [
-    34.816516955643756,
-    34.816516955643756
+    43.66354617856644,
+    43.66354617856644
    ],
    "retime_organ": false,
    "s020_section_20": {
     "bar_frac": 0.01,
-    "bar_ms": 0.28722000000000003,
+    "bar_ms": 0.229024,
     "clears_time_bar": false,
     "high_information_falsifier": false,
     "plausible_ms_saved": 0.0,
@@ -115,7 +115,7 @@
     "bandwidth_is_assumption": false,
     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
     "bandwidth_regime": "affine_q2_family",
-    "cited_token_ms": 28.722,
+    "cited_token_ms": 22.9024,
     "dispatch_class": "mlp_gqa_norm_fusion",
     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
     "dispatch_us_nominal": 6.25,
@@ -128,7 +128,7 @@
      0.0,
      7.7705
     ],
-    "host_gap_floor_ms": 0.989,
+    "host_gap_floor_ms": 0.956,
     "incremental_byte_rate_gb_s": 0.0,
     "organ_average_gb_s": 344.1,
     "stream_billing_gb_s": 0.0,
@@ -170,20 +170,20 @@
     7.7705
    ],
    "predicted_ms_saved": -1.942625,
-   "predicted_token_ms": 30.664625,
+   "predicted_token_ms": 24.845025,
    "predicted_token_ms_range": [
-    28.722,
-    36.4925
+    22.9024,
+    30.6729
    ],
-   "predicted_tps": 32.61086675607479,
+   "predicted_tps": 40.249506691983605,
    "predicted_tps_range": [
-    27.402891005001027,
-    34.816516955643756
+    32.60206892729413,
+    43.66354617856644
    ],
    "retime_organ": false,
    "s020_section_20": {
     "bar_frac": 0.01,
-    "bar_ms": 0.28722000000000003,
+    "bar_ms": 0.229024,
     "clears_time_bar": false,
     "high_information_falsifier": false,
     "plausible_ms_saved": 0.0,
@@ -218,7 +218,7 @@
     "bandwidth_is_assumption": false,
     "bandwidth_note": "production-shaped affine-Q2. The size curve saturates at 376.7 GB/s and does not rise toward 497.4. A 5 MB launch is 223.4 GB/s; that is a different regime (affine_q2_unamortized).",
     "bandwidth_regime": "affine_q2_family",
-    "cited_token_ms": 28.722,
+    "cited_token_ms": 22.9024,
     "dispatch_class": "mlp_gqa_norm_fusion",
     "dispatch_note": "measured class mlp_gqa_norm_fusion at 6.25 us; class-dependent, not a single marginal",
     "dispatch_us_nominal": 6.25,
@@ -231,7 +231,7 @@
      0.0,
      0.0
     ],
-    "host_gap_floor_ms": 0.989,
+    "host_gap_floor_ms": 0.956,
     "incremental_byte_rate_gb_s": 0.0,
     "organ_average_gb_s": 344.1,
     "stream_billing_gb_s": 0.0,
@@ -275,20 +275,20 @@
     0.0
    ],
    "predicted_ms_saved": -0.0,
-   "predicted_token_ms": 28.722,
+   "predicted_token_ms": 22.9024,
    "predicted_token_ms_range": [
-    28.722,
-    28.722
+    22.9024,
+    22.9024
    ],
-   "predicted_tps": 34.816516955643756,
+   "predicted_tps": 43.66354617856644,
    "predicted_tps_range": [
-    34.816516955643756,
-    34.816516955643756
+    43.66354617856644,
+    43.66354617856644
    ],
    "retime_organ": false,
    "s020_section_20": {
     "bar_frac": 0.01,
-    "bar_ms": 0.28722000000000003,
+    "bar_ms": 0.229024,
     "clears_time_bar": false,
     "high_information_falsifier": false,
     "plausible_ms_saved": 0.0,
@@ -1434,16 +1434,16 @@
   "absolutes_are_measured_under_load": true,
   "gpu_lane_lock_held": null,
   "lane": "aux_u8_lut",
-  "loadavg": "{ 8.19 6.61 6.17 }",
+  "loadavg": "{ 12.82 15.62 13.29 }",
   "measured_at": null,
   "measured_at_source": "RETROFIT_UNKNOWN",
-  "receipt_regenerated_at": "2026-08-31T10:31:56Z",
+  "receipt_regenerated_at": "2026-09-01T04:15:01Z",
   "why": "this receipt predates measurement provenance; the raw capture carries no timestamp, so the measurement time is genuinely unknown and is recorded as unknown rather than invented"
  },
  "native_down_proj_relfro": 0.02629999837482214,
  "recorded_by": "tools/future/aux_u8_lut.py",
  "schema": "hawking.future.aux_u8_lut.v1",
- "seal_sha256": "67b8be7b5055dd12a16e1de8a95ac0a9898883e61e5339155a13903de232a078",
+ "seal_sha256": "a61ff7127c24704a50e3b38be9fac9df898cfdb9431f89e8d8b89184eb00f301",
  "shader_invariants": {
   "binds_u8_aux": true,
   "exp_variant_uses_exp": true,

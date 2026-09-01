@@ -1,0 +1,91 @@
+{
+  "body": {
+    "bytes": 20480,
+    "dtype": "BF16",
+    "elements": 10240,
+    "format": "little-endian BF16 vector payload; one value per source element",
+    "label": "[D]",
+    "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-residual/flash-mlp-hyperconnection-hc-norm-l0-bf16.bin",
+    "sha256": "e1da29c3232c056fb6869275c5cbbe527d591b88dd967e747716e23f1a89a5bb"
+  },
+  "body_mutated": false,
+  "body_path": "/Users/scammermike/Downloads/hawking/.hcli/flash-residual/flash-mlp-hyperconnection-hc-norm-l0-bf16.bin",
+  "candidate_body_persisted": true,
+  "candidate_id": "source_bf16_exact",
+  "claim_boundary": "Exact pinned BF16 hc_norm source payload persisted as an independently loadable vector for the layer-0 MLP HyperConnection boundary. This qualifies source loading only; native grouped-RMSNorm execution, complete hyperconnection read/write parity, complete MoE/token runtime, Flash TPS, EBPW, and promotion remain separate gates.",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "component_kind": "mlp_hyperconnection_hc_norm",
+  "elapsed_s": 0.321,
+  "exact_source_payload": true,
+  "finished_at": 1787854141.872642,
+  "flash_tps": null,
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+  },
+  "model_loaded": false,
+  "native_loader": {
+    "candidate_body_persisted": true,
+    "candidate_id": "source_bf16_exact",
+    "dense_rematerialization": "forbidden",
+    "exact_source_payload": true,
+    "source_independent": true,
+    "status": "SOURCE_INDEPENDENT_EXACT_BF16_VECTOR_PERSISTED"
+  },
+  "next_action": "load this exact BF16 vector in the native grouped HyperConnection RMSNorm, then execute the source read/write equations with explicit stream and scaling parity",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_HC_NORM_BODY_L0.json",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hcli.agentos.flash_noetic_vector_body.v1",
+  "source_block": {
+    "bytes": 20480,
+    "data_offsets": [
+      1690260480,
+      1690280960
+    ],
+    "dtype": "BF16",
+    "label": "[V]",
+    "payload_sha256": "e1da29c3232c056fb6869275c5cbbe527d591b88dd967e747716e23f1a89a5bb",
+    "shape": [
+      10240
+    ],
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00003-of-00131.safetensors",
+    "shard_name": "model-00003-of-00131.safetensors",
+    "tensor_name": "model.language_model.layers.0.mlp_hyper_connection.hc_norm.weight"
+  },
+  "source_guard": {
+    "source_mutation": false,
+    "unchanged": true
+  },
+  "source_identity": {
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "source_independent": true,
+  "status": "PASSED",
+  "tensor_name": "model.language_model.layers.0.mlp_hyper_connection.hc_norm.weight",
+  "whole_model_capability": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

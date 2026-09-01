@@ -1,0 +1,654 @@
+{
+  "akb_registration": {
+    "civilization": "I-D_ACCELERATOR",
+    "evidence_domain": "accelerator",
+    "kernel_scope": "layer-25 GEMV, DeltaNet, routed/shared MoE and HyperConnection",
+    "machine_scope": "Apple M3 Ultra",
+    "program": "CUDA-capability translation / Apple Silicon repatriation",
+    "representation_scope": "source BF16 exact weights + f32 activations"
+  },
+  "artifact_kind": "SOURCE",
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "provenance": "Physical source-parity run records no independent quiescence sample.",
+    "recorded_at": "unix-ms:1787931243491",
+    "recorded_by": "flash_noetic_complete_layer25",
+    "rule": "S032 §3 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "state": "UNKNOWN"
+  },
+  "bytes": {
+    "active_representation": "source BF16 weights + f32 activations + device route IDs",
+    "active_selected_expert_weight_bytes_per_graph": 98304000,
+    "logical_active_weight_bytes_per_graph": 253097408,
+    "measurement_boundary": "logical tensor traffic from graph bindings; not a DRAM counter claim",
+    "source_layer_weight_bytes": 5187958208,
+    "source_payload_bytes_read": 5187958208
+  },
+  "claim_boundary": "This is one exact source-parity layer-25 execution on the explicitly identified state. It is not the 48-layer Flash token, not greedy decode, not official TPS, not EBPW qualification, and not multimodal completeness.",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "elapsed_wall_ns": 146653692458,
+  "execution": {
+    "command_buffers_per_rep": [
+      1
+    ],
+    "compute_encoders_per_rep": [
+      30
+    ],
+    "device": "Apple M3 Ultra",
+    "dispatches": 30,
+    "embedding_read_ns": 1177708,
+    "fallback_count": 0,
+    "graph_gpu_ns": [
+      21819624
+    ],
+    "graph_host_ns": [
+      111951458
+    ],
+    "host_activation_roundtrips": 0,
+    "native_source_bf16": true,
+    "provider": "apple_metal",
+    "single_ordered_token_command_buffer": true,
+    "source_cpu_oracle_ns": 1751773584,
+    "trace_mode": "off"
+  },
+  "flash_tps": null,
+  "input_contract": "FLASH_NEXT_PREFIX_FED_STATE",
+  "ledgers": {
+    "critical_path": "hawking.flash_layer0_critical_path.v1",
+    "critical_path_receipt_path": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-25/FLASH_LAYER25_CRITICAL_PATH.json",
+    "dispatch": "hawking.flash_layer0_dispatch_ledger.v1",
+    "dispatch_receipt_path": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-25/FLASH_LAYER25_DISPATCH_LEDGER.json"
+  },
+  "native_kernels": [
+    "gemv_native_bf16_seq",
+    "qwen_next_hyperconnection_grouped_rmsnorm",
+    "qwen_next_hyperconnection_silu_scale",
+    "qwen_next_hyperconnection_read_mix",
+    "qwen_next_qkv_split_rearrange_conv_l2",
+    "qwen_next_ba_split_to_decay_beta_source_bf16",
+    "qwen_next_gated_delta_decode_single",
+    "qwen_next_deltanet_source_bf16_gated_rmsnorm",
+    "qwen_next_hyperconnection_combine",
+    "moe_topk_gate",
+    "qwen_next_bf16_expert_gate_up_swiglu",
+    "qwen_next_bf16_expert_down",
+    "qwen_next_moe_weighted_sum",
+    "gemv_native_bf16_swiglu_seq",
+    "qwen_next_shared_expert_sigmoid_gate",
+    "qwen_next_moe_add_shared"
+  ],
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "all_stage_tolerance": 0.019999999552965164,
+    "final_output_hash": "99dba44ddc8e080a4acf1e5cf3631cc4dfa8eca97f9d3ed1c52d72b7f44e61a9",
+    "passed": true,
+    "repeated_deterministic": true,
+    "repeated_output_hashes": [
+      "99dba44ddc8e080a4acf1e5cf3631cc4dfa8eca97f9d3ed1c52d72b7f44e61a9"
+    ],
+    "route_ids_expected": [
+      445,
+      106,
+      150,
+      192,
+      321,
+      314,
+      370,
+      291,
+      303,
+      322
+    ],
+    "route_ids_match": true,
+    "route_ids_observed": [
+      445,
+      106,
+      150,
+      192,
+      321,
+      314,
+      370,
+      291,
+      303,
+      322
+    ],
+    "route_weights": {
+      "cosine": 0.9999999999998173,
+      "finite": true,
+      "length_match": true,
+      "max_abs_error": 1.341104507446289e-7,
+      "rmse": 6.274654094909903e-8,
+      "within_tolerance": true
+    },
+    "stages": [
+      {
+        "cosine": 0.9999999999999937,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 1.9073486328125e-6,
+        "rmse": 7.614507068483583e-8,
+        "stage": "attn_norm",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999937,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 9.5367431640625e-7,
+        "rmse": 5.9350716526131096e-8,
+        "stage": "attn_input",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999721,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 3.814697265625e-6,
+        "rmse": 2.7320418615068433e-7,
+        "stage": "qkv_projection",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.999999999999971,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 1.9073486328125e-6,
+        "rmse": 3.812258706514284e-7,
+        "stage": "z_projection",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999861,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 7.152557373046875e-7,
+        "rmse": 2.803332517367154e-7,
+        "stage": "b_projection",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999891,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 9.5367431640625e-7,
+        "rmse": 4.5099097342555393e-7,
+        "stage": "a_projection",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999599,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 2.2351741790771484e-8,
+        "rmse": 2.273839111591326e-9,
+        "stage": "repeated_query",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999479,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 2.086162567138672e-7,
+        "rmse": 2.6336199562641902e-8,
+        "stage": "repeated_key",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999863,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 7.450580596923828e-8,
+        "rmse": 3.1512599873390604e-9,
+        "stage": "convolved_value",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999724,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 5.364418029785156e-7,
+        "rmse": 1.7526282419380566e-7,
+        "stage": "decay",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999981,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 1.1920928955078125e-7,
+        "rmse": 4.751266655750322e-8,
+        "stage": "beta",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999998966,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 3.026798367500305e-9,
+        "rmse": 7.659607961947635e-11,
+        "stage": "recurrent_output",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999998679,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 1.6391277313232422e-7,
+        "rmse": 7.870500421405382e-9,
+        "stage": "gated_output",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.999999999999685,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 8.940696716308594e-8,
+        "rmse": 1.772075617234895e-8,
+        "stage": "attn_block_output",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999974,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 5.960464477539063e-8,
+        "rmse": 2.8231632253034105e-9,
+        "stage": "post_attn_state",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999982,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 1.9073486328125e-6,
+        "rmse": 8.015386106094414e-8,
+        "stage": "mlp_norm",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999918,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 9.5367431640625e-7,
+        "rmse": 6.48005971093524e-8,
+        "stage": "mlp_input",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999946,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 2.86102294921875e-6,
+        "rmse": 8.493661880493164e-7,
+        "stage": "router_logits",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999995905,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 1.955777406692505e-8,
+        "rmse": 4.9906765839936665e-9,
+        "stage": "routed_sum",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.999999999999798,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 8.381903171539307e-9,
+        "rmse": 1.681718747646275e-9,
+        "stage": "shared_gated_output",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.999999999999605,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 2.0954757928848267e-8,
+        "rmse": 5.2351801228982864e-9,
+        "stage": "moe_output",
+        "within_tolerance": true
+      },
+      {
+        "cosine": 0.9999999999999918,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 5.960464477539063e-8,
+        "rmse": 3.953769063744742e-9,
+        "stage": "final_state",
+        "within_tolerance": true
+      }
+    ]
+  },
+  "physical_graph": {
+    "dependencies": "ordered TokenCommandBuffer dispatch sequence",
+    "device_residency": "all activations, route IDs, recurrent state and expert weights remain device resident until post-fence verification",
+    "native_execution_observed": true,
+    "no_dense_expert_rematerialization": true,
+    "representation_identity": "source_bf16_exact",
+    "semantic_type": "PhysicalGraph",
+    "state_ownership": "Metal device buffers owned by this graph invocation"
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "EXACT_LAYER_SOURCE_PARITY",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "schema": "hawking.flash_noetic_complete_layer0_source_bf16.v1",
+  "source": {
+    "config_model_type": "qwen4_exp",
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "embedding": null,
+    "geometry": {
+      "experts": 512,
+      "hc_lowrank": 320,
+      "hidden": 2560,
+      "intermediate": 640,
+      "key_head_dim": 128,
+      "key_heads": 16,
+      "streams": 4,
+      "top_k": 10,
+      "value_head_dim": 128,
+      "value_heads": 48
+    },
+    "input_state": {
+      "bytes": 40960,
+      "kind": "f32_state",
+      "path": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-24/state.f32",
+      "sha256": "834ca7ce3f1063038a20cfd9aeb3a75c88341ecc30b0b02804b30535443b609f"
+    },
+    "layer_count": 48,
+    "layer_index": 25,
+    "layer_type": "linear_attention",
+    "manifest": {
+      "bytes": 360053432320,
+      "label": "[V]",
+      "n_files": 144,
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+    },
+    "output_state": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "kind": "f32_state",
+      "path": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-25/state.f32",
+      "sha256": "99dba44ddc8e080a4acf1e5cf3631cc4dfa8eca97f9d3ed1c52d72b7f44e61a9",
+      "source": "verified device-final-state snapshot from exact source-parity layer"
+    },
+    "tensors": [
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.attn_hyper_connection.hc_norm.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "6727fcba4775f1b467f3f1510c0c087ae0a12069f5204a2dcd1f5c35e785bb09",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.attn_hyper_connection.input_mix_weight_down.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "6e6b9a8fabc1c11103b15652bb9f3d19ebc38987e892fc00855fa8c88cd438be",
+        "shape": [
+          320,
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.attn_hyper_connection.input_mix_weight_up.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "fde73bfd76b0a2514e9df439acee5f12bb8123f1844c3a1c16ce3ff1c6f5e30b",
+        "shape": [
+          10240,
+          320
+        ]
+      },
+      {
+        "bytes": 81920,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.attn_hyper_connection.block_inject_weight.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "42a02a6001020d56c3f9b5babc836ddffc776b5f0a1fa35ae99c7c2db4a8d5ee",
+        "shape": [
+          4,
+          10240
+        ]
+      },
+      {
+        "bytes": 52428800,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.in_proj_qkv.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "bbb43183f4860335e15423b641a2432777426e38922aca34b3274d13075e530f",
+        "shape": [
+          10240,
+          2560
+        ]
+      },
+      {
+        "bytes": 31457280,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.in_proj_z.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "b8d44e05bea834e2ed7b4741daba17a2634bee4480286e6e9ac405734b4faae3",
+        "shape": [
+          6144,
+          2560
+        ]
+      },
+      {
+        "bytes": 245760,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.in_proj_b.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "750de80236af0b3ef5d580a1e4bb0a43c0969e66fa9b0a17b541bcc12732ba73",
+        "shape": [
+          48,
+          2560
+        ]
+      },
+      {
+        "bytes": 245760,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.in_proj_a.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "dd796830c8deadc42d1a6ab91f6b70ce862bac0ff31324bb20272f6d857b60ca",
+        "shape": [
+          48,
+          2560
+        ]
+      },
+      {
+        "bytes": 81920,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.conv1d.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "e42685851a73046d309509bd559da79494860a484a8b303519f95575a5864f73",
+        "shape": [
+          10240,
+          1,
+          4
+        ]
+      },
+      {
+        "bytes": 96,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.A_log",
+        "representation": "source_bf16_exact",
+        "sha256": "017c13076a058dc9f4eb4ad7487e2c8a524744cf5b10ce28e09a73fd54788227",
+        "shape": [
+          48
+        ]
+      },
+      {
+        "bytes": 96,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.dt_bias",
+        "representation": "source_bf16_exact",
+        "sha256": "b54a79dbf7a9ccd6f3deb486a7fca632bdca7d79fb84c25463ffd68aa13b1db5",
+        "shape": [
+          48
+        ]
+      },
+      {
+        "bytes": 256,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.norm.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "c16fef2b0ca68ec9974b6fa9a1aeb53a30a6eb08cd80c24ab72be2ab6401ac63",
+        "shape": [
+          128
+        ]
+      },
+      {
+        "bytes": 31457280,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.linear_attn.out_proj.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "14ae226c6f80d3902254d8b59fcd84a1d20c2f91597e4d86e2a1444025890b05",
+        "shape": [
+          2560,
+          6144
+        ]
+      },
+      {
+        "bytes": 2621440,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp.gate.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "4580b6ef10fc5d128eceae2ba14934c9c5465e10120ef825c5ad67e9bfb72534",
+        "shape": [
+          512,
+          2560
+        ]
+      },
+      {
+        "bytes": 3355443200,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp.experts.gate_up_proj",
+        "representation": "source_bf16_exact",
+        "sha256": "d40c54330289daf17d771906055f02e4555dd39a33e1a4a2f93efee2a01f59c4",
+        "shape": [
+          512,
+          1280,
+          2560
+        ]
+      },
+      {
+        "bytes": 1677721600,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp.experts.down_proj",
+        "representation": "source_bf16_exact",
+        "sha256": "0ba0dde1eb2fcf307847b8b6f93419e170ec81ced6dea62dc694d502ee5d2693",
+        "shape": [
+          512,
+          2560,
+          640
+        ]
+      },
+      {
+        "bytes": 3276800,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp.shared_expert.gate_proj.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "d88828bf81ce5f17c9422df4c5a6635b7f55af509578be79c82ef74c169a4600",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "bytes": 3276800,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp.shared_expert.up_proj.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "374f14871f28f5d27b5e7297d562eb93e57a0d72fd9b702db5cba0b07087f40a",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "bytes": 3276800,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp.shared_expert.down_proj.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "32ccaefa38f185917ca3ec60334ae8350dac8be8a9508fd99274711cd6260afc",
+        "shape": [
+          2560,
+          640
+        ]
+      },
+      {
+        "bytes": 5120,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp.shared_expert_gate.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "79ec5c17419dad01bf02624f31da4605424fe5681869d4eaff74c8cfac97da3d",
+        "shape": [
+          1,
+          2560
+        ]
+      },
+      {
+        "bytes": 20480,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp_hyper_connection.hc_norm.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "ba1b284d121e45bed24c0113bcde84edab5c5f4b73be4ae63eb594122b3962a8",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp_hyper_connection.input_mix_weight_down.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "a6e1e9734cb90459fdd3ee5e954af8827d854c73abaebb0f3a66bf7d635eb2be",
+        "shape": [
+          320,
+          10240
+        ]
+      },
+      {
+        "bytes": 6553600,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp_hyper_connection.input_mix_weight_up.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "f6752e198025a54bc748e9aa0da6c6b03d65af1562bd00b4ac2761527b8ed82b",
+        "shape": [
+          10240,
+          320
+        ]
+      },
+      {
+        "bytes": 81920,
+        "dtype": "BF16",
+        "name": "model.language_model.layers.25.mlp_hyper_connection.block_inject_weight.weight",
+        "representation": "source_bf16_exact",
+        "sha256": "4c2b6408e080913b533b939c51452d86d61e964d288d605ca995449dba2bc957",
+        "shape": [
+          4,
+          10240
+        ]
+      }
+    ]
+  },
+  "state": {
+    "causal_conv_state_bytes": 122880,
+    "recurrent_state_bytes": 3145728,
+    "reset_between_repetitions": true,
+    "state_update": "device_resident_in_place"
+  },
+  "status": "PASSED"
+}

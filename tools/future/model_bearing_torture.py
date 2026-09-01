@@ -1095,7 +1095,57 @@ def live_catalog() -> list[dict[str, Any]]:
             "dead": False,
         },
     ]
+    rows.extend(_staleness_frontier_rows())
     return rows
+
+
+def _staleness_frontier_rows() -> list[dict[str, Any]]:
+    """Real open work, read from disk, so the 30-minute clock has choices in it.
+
+    The last run exhausted the live menu in SEVEN cycles and then offered one
+    auto-generated health probe for the remaining forty-four. Divergence is
+    undefined on a menu of one, so 86% of the trial scored a choice nobody was
+    given.
+
+    These rows are not invented to pad the menu. BASELINE_STALENESS lists
+    receipts whose producer does not read the current baseline, and each is a
+    genuine open question - three checked by hand were all genuinely stale and
+    each moved a strategic number. If that receipt is absent, this returns
+    NOTHING rather than fabricating work: a padded catalog would be the same
+    defect as a padded timeline.
+    """
+    p = REPO / "receipts/future/BASELINE_STALENESS.json"
+    if not p.is_file():
+        return []
+    try:
+        doc = json.loads(p.read_text())
+        names = list(doc["report"]["needing_review"])
+    except (ValueError, OSError, KeyError, TypeError):
+        return []
+    out: list[dict[str, Any]] = []
+    for name in names:
+        stem = name[:-5] if name.endswith(".json") else name
+        short = stem.lower()[:34]
+        out.append({
+            "id": f"WU.STALE.{short}",
+            # Below every live row already in the catalog, so the first eight
+            # rows interpret() sees are unchanged and the required events still
+            # fire from the same units as before.
+            "expected_information_gain": 1,
+            "title": f"does {stem[:38]} still price against a dead baseline",
+            "description": (
+                f"BASELINE_STALENESS flagged {name}: its producer does not read "
+                "receipts/future/SEALED_DEFAULT_ABSOLUTE.json. Decide whether it "
+                "is a live consumer or a historical record."
+            ),
+            "frontier": "RECEIPT_INTEGRITY",
+            "hypothesis_family": "baseline_staleness",
+            "surface": "receipts",
+            "organ": "hawking",
+            "hawking_self": True,
+            "dead": False,
+        })
+    return out
 
 
 def scar_lookup() -> dict[str, dict[str, str]]:
@@ -1562,12 +1612,18 @@ def participation_report(
     mb_report: Mapping[str, Any] | None,
 ) -> dict[str, Any]:
     n_choose = len(chooses)
+    # A cycle with fewer than two options cannot show divergence. Counting it as
+    # agreement inflates the denominator with cycles that had no choice in them.
+    choosable = [c for c in chooses if (c.get("n_options") or 0) >= 2]
+    unchoosable = [c for c in chooses if (c.get("n_options") or 0) < 2]
     diverged = [c for c in chooses if c.get("diverged")]
     agreed = [c for c in chooses if not c.get("diverged") and c.get("model_id")]
     n_calls = len(calls)
     prompt_tokens = sum(int(c["prompt_tokens"]) for c in calls if isinstance(c.get("prompt_tokens"), int))
     gen_tokens = sum(int(c["generated_tokens"]) for c in calls if isinstance(c.get("generated_tokens"), int))
     frac = (len(diverged) / n_choose) if n_choose else 0.0
+    div_choosable = [c for c in choosable if c.get("diverged")]
+    frac_choosable = (len(div_choosable) / len(choosable)) if choosable else None
     model_ids = [c.get("model_id") for c in chooses if c.get("model_id")]
     policy_ids = [c.get("policy_id") for c in chooses if c.get("policy_id")]
     same_seq = model_ids == policy_ids and bool(model_ids)
@@ -1577,6 +1633,19 @@ def participation_report(
         "n_diverged_from_policy": len(diverged),
         "n_agreed_with_policy": len(agreed),
         "fraction_model_over_policy": round(frac, 4),
+        "n_cycles_with_a_real_choice": len(choosable),
+        "n_cycles_with_one_or_no_option": len(unchoosable),
+        "n_diverged_where_a_choice_existed": len(div_choosable),
+        "fraction_model_over_policy_where_a_choice_existed": (
+            round(frac_choosable, 4) if frac_choosable is not None else None),
+        "why_two_fractions": (
+            "divergence is UNDEFINED on a menu of one. The clock outran the real "
+            "catalog, so most cycles offered a single auto-generated probe and "
+            "counting them as agreement scores a choice nobody was given. The "
+            "second fraction is over cycles where two or more options existed; "
+            "null means there were none, which is a statement about the "
+            "FRONTIER, not about the resident."
+        ),
         "prompt_tokens": prompt_tokens,
         "generated_tokens": gen_tokens,
         "token_count_authority": "native-resident protocol fields; not a throughput claim",
@@ -1830,6 +1899,9 @@ def run_torture(
     tape.emit("work_refilled", {"unit_ids": list(queued), "source": "initial_live_catalog"}, cites=list(queued))
     decision_points: list[dict[str, Any]] = []
     launched_ids: list[str] = []
+    # How many times each unit has been SHOWN in the prompt window without being
+    # chosen. Sinks stale options so the question changes as the run proceeds.
+    shown_unchosen: dict[str, int] = {}
     killed_scars: set[str] = set()
     in_flight: list[dict[str, Any]] = []
     seen_calls: set[int] = set()
@@ -1913,7 +1985,30 @@ def run_torture(
                 tape.emit("work_refilled", {"unit_ids": list(queued)}, cites=list(queued))
 
             # Interpret / choose.
+            #
+            # THE WINDOW HAS TO MOVE OR THE QUESTION NEVER CHANGES. interpret()
+            # shows the model only the first PROMPT_ENTRY_CAP rows, so a catalog
+            # that is deep but statically ordered still asks ONE question: the
+            # 2026-09-01 run put 26 live units on the menu and the model was
+            # handed a BYTE-IDENTICAL prompt 23 times out of 29. A deterministic
+            # body re-asked an identical question answers it identically by
+            # construction, so those asks measured nothing.
+            #
+            # Units the model has already SEEN AND NOT CHOSEN sink; gain still
+            # ranks within a shown-count tier. This is not decoration - the set
+            # is unchanged and the policy reads the same rotated list, so
+            # divergence stays a fair comparison. It is the same rule the
+            # sovereign pack uses when it lists ALREADY RUN params.
             live_rows = [r for r in remaining if r["id"] in queued] or list(remaining)
+            live_rows = sorted(
+                live_rows,
+                key=lambda c: (shown_unchosen.get(str(c.get("id")), 0),
+                               -int(c.get("expected_information_gain") or 0),
+                               str(c.get("id"))),
+            )
+            for _r in live_rows[:mb.PROMPT_ENTRY_CAP]:
+                shown_unchosen[str(_r.get("id"))] = \
+                    shown_unchosen.get(str(_r.get("id")), 0) + 1
             policy = mb.fixed_policy_choose(live_rows, scar_pool=None)
             # Overlay local landed scars so policy skips closed families when index misses them.
             policy_dead = []
@@ -2088,6 +2183,7 @@ def run_torture(
                     if handle:
                         launched = uid
                         launched_ids.append(uid)
+                        shown_unchosen.pop(uid, None)
                         in_flight.append(handle)
                         tape.emit(
                             "workunit_launched",
@@ -2293,6 +2389,12 @@ def run_torture(
                     "policy_dead": bool(policy_dead and policy_id is None),
                     "reason": reason,
                     "verbatim": verbatim_choose,
+                    # DIVERGENCE IS UNDEFINED ON A MENU OF ONE. The 30-minute
+                    # clock outran the real catalog 6x: 7 real work units, then
+                    # 44 auto-generated health probes, so 86% of cycles offered
+                    # a single option. Scoring "the model never diverged" on
+                    # those is scoring a choice nobody was given.
+                    "n_options": len(remaining),
                 }
             )
             tape.emit(
@@ -2316,24 +2418,36 @@ def run_torture(
             if time.time() >= deadline:
                 break
             if not remaining and not in_flight:
-                # Refill a distinct Hawking-self inspection with a unique id.
-                new_id = f"WU.HAWKING.health_probe.{cycle:03d}"
-                remaining.append(
+                # END THE RUN. Do not manufacture work to fill the clock.
+                #
+                # This used to append WU.HAWKING.health_probe.NNN whenever the
+                # live catalog ran dry, which is how a 1800 s run produced 33
+                # launches from a 16-row catalog: 16 of them were fabricated
+                # probes. The trial then measured the padding rather than the
+                # autonomy, and "zero filler" could never hold no matter what
+                # the resident did.
+                #
+                # A catalog that sustains N cycles of real choice and then runs
+                # out is a true and useful measurement. A synthetic probe that
+                # keeps a clock ticking is not, and productive autonomy is
+                # exactly the law that forbids inventing low-information work.
+                # Reporting the exhaustion honestly is the correct behaviour;
+                # it is also what tells us the catalog needs real depth.
+                tape.emit(
+                    "work_exhausted",
                     {
-                        "id": new_id,
-                        "expected_information_gain": 2,
-                        "title": "health-probe the live resident without a second body",
-                        "description": "Hawking itself: pid, identity, fusion env still applied",
-                        "frontier": "HCLI_SELF",
-                        "hypothesis_family": "resident_health_probe",
-                        "surface": "hawking.resident",
-                        "organ": "hawking",
-                        "hawking_self": True,
-                        "dead": False,
-                    }
+                        "cycle": cycle,
+                        "elapsed_s": round(time.time() - t0, 3),
+                        "remaining_s": round(deadline - time.time(), 3),
+                        "reason": "live catalog empty and nothing in flight",
+                        "wake_condition": (
+                            "new real work in the catalog: a landed receipt, a "
+                            "staleness finding, or an HCLI_SELF unit the resident "
+                            "authors itself"
+                        ),
+                    },
                 )
-                queued = [new_id]
-                tape.emit("work_refilled", {"unit_ids": list(queued)}, cites=list(queued))
+                break
     finally:
         ingest_finished()
         # Stop the native body, then the CLI resident, then prove restorability.

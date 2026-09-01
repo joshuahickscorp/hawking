@@ -1,0 +1,46 @@
+{
+  "schema": "hawking.flash.expert_bank_routed_io_profile.v1",
+  "status": "PROFILE_ONLY",
+  "claim_boundary": "physical routed range-read profile for verified layer-44 route IDs; no compact-bank Metal execution or complete-token promotion",
+  "layer": 44,
+  "source": {
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "layer_receipt": "receipts/headless/FLASH_FAST_TIMING_L44_V3/group-44-44/receipt.json",
+    "route_ids": [
+      56,
+      263,
+      433,
+      209,
+      277,
+      12,
+      111,
+      373,
+      60,
+      392
+    ],
+    "gate_up_tensor": "model.language_model.layers.44.mlp.experts.gate_up_proj",
+    "down_tensor": "model.language_model.layers.44.mlp.experts.down_proj"
+  },
+  "full_expert_bank_bytes": 5033164800,
+  "selected_expert_bytes": 98304000,
+  "bytes_reduction": 4934860800,
+  "selected_fraction": 0.01953125,
+  "reduction_fraction": 0.98046875,
+  "physical_range_read": {
+    "bytes_read": 98304000,
+    "elapsed_ns": 926746292,
+    "gate_up_sha256": "a6f69a11184b74ef04152e874851514036f68de6221978f2af66c30d41d78918",
+    "down_sha256": "9874714edba919d1f64081347cbeb28ad34f397db7d46c286cc6afe471df2be6"
+  },
+  "next_gate": "compact routed expert-bank Metal buffers plus route-ID-to-slot LUT, then exact organ parity",
+  "promotion_allowed": false,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

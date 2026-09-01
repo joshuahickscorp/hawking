@@ -1,0 +1,41 @@
+{
+  "expected": 8639629983,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "added_tokens.json",
+    "chat_template.json",
+    "config.json",
+    "generation_config.json",
+    "model-00001-of-00002.safetensors",
+    "model-00002-of-00002.safetensors",
+    "model.safetensors.index.json",
+    "preprocessor_config.json",
+    "processor_config.json",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer.model",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "google/gemma-3-4b-it",
+  "resolved_sha": "093f9f388b31de276ce2de164bdc2081324b9767",
+  "revision": "093f9f388b31de276ce2de164bdc2081324b9767",
+  "sizes": {
+    ".gitattributes": 1760,
+    "README.md": 25122,
+    "added_tokens.json": 35,
+    "chat_template.json": 1615,
+    "config.json": 855,
+    "generation_config.json": 215,
+    "model-00001-of-00002.safetensors": 4961251752,
+    "model-00002-of-00002.safetensors": 3639026128,
+    "model.safetensors.index.json": 90558,
+    "preprocessor_config.json": 570,
+    "processor_config.json": 70,
+    "special_tokens_map.json": 662,
+    "tokenizer.json": 33384568,
+    "tokenizer.model": 4689074,
+    "tokenizer_config.json": 1156999
+  }
+}

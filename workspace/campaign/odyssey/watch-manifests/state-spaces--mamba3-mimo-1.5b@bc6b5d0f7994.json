@@ -1,0 +1,19 @@
+{
+  "expected": 2994284299,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "pytorch_model.bin"
+  ],
+  "mode": "all",
+  "repo": "state-spaces/mamba3-mimo-1.5b",
+  "resolved_sha": "bc6b5d0f7994fe4cb3478242e92da8daf9ee29ec",
+  "revision": "bc6b5d0f7994fe4cb3478242e92da8daf9ee29ec",
+  "sizes": {
+    ".gitattributes": 218,
+    "README.md": 2500,
+    "config.json": 674,
+    "pytorch_model.bin": 2994280907
+  }
+}

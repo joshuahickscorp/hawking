@@ -1,0 +1,1802 @@
+{
+ "architecture_families": {
+  "Dream": 1,
+  "UNKNOWN": 12,
+  "bitnet": 2,
+  "deepseek_v4": 1,
+  "depth_anything": 1,
+  "falcon_h1": 1,
+  "glm4_moe": 1,
+  "glm5_next": 1,
+  "granitemoehybrid": 2,
+  "illada": 1,
+  "inkling_mm_model": 1,
+  "jamba": 1,
+  "kimi_k3": 1,
+  "kimi_linear": 1,
+  "kimi_vl": 1,
+  "lfm2": 1,
+  "lfm2_moe": 1,
+  "llava_llama": 1,
+  "mistral3": 1,
+  "modernbert": 1,
+  "musicgen": 1,
+  "olmo3": 1,
+  "phi3": 1,
+  "phi4mm": 1,
+  "qwen2": 1,
+  "qwen3": 3,
+  "qwen3_moe": 2,
+  "qwen3_vl": 1,
+  "qwen3_vl_moe": 1,
+  "qwen4_exp": 1,
+  "rwkv7": 1,
+  "sam2_video": 1,
+  "smolvlm": 1,
+  "starcoder2": 1,
+  "t5": 1,
+  "timesfm": 1,
+  "vjepa2": 1,
+  "whisper": 1
+ },
+ "authority": "S027 \u00a71-\u00a73, \u00a748",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T22:50:42Z",
+  "recorded_by": "tools/future/specimen_registry.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "by_lifecycle": {
+  "COMPLETE_UNSEALED": 29,
+  "DISCOVERED": 6,
+  "DOWNLOADING": 11,
+  "FINGERPRINTED": 8
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "ids_by_lifecycle": {
+  "COMPLETE_UNSEALED": [
+   "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "arcinstitute--evo2_7b@bda0089f9258",
+   "bigcode--starcoder2-7b@bb9afde76d79",
+   "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "facebook--musicgen-large@15ccdc920998",
+   "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "google--flan-t5-large@0613663d0d48",
+   "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "lerobot--pi0_base@25c379b52ba2",
+   "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "zai-org--GLM-4.5-Air@a24ceef6ce4f"
+  ],
+  "DISCOVERED": [
+   "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "arcinstitute--evo2_40b@d529aa57c307",
+   "boltz-community--boltz-2@6fdef46d763f",
+   "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "nvidia--audio-flamingo-3@ee26c5842398",
+   "tencent--HunyuanVideo@6204ad6aea1a"
+  ],
+  "DOWNLOADING": [
+   "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "Qwen--Qwen3-14B@40c069824f42",
+   "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "facebook--blt-7b@b65201dce04b",
+   "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "nvidia--personaplex-7b-v1@fdaf4090a61c",
+   "stabilityai--stable-audio-open-1.0@f21265c1e271",
+   "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+  ],
+  "FINGERPRINTED": [
+   "Qwen--Qwen3-0.6B@c1899de289a0",
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+  ]
+ },
+ "incomplete_in_the_specimens_directory": {
+  "ids": [
+   "nvidia--audio-flamingo-3@ee26c5842398"
+  ],
+  "statement": "these sit in specimens/ - the directory for COMPLETED downloads - with a parseable config and NO weight file at all. Directory placement is not evidence of completeness, and anything reading specimens/ as a done-list would have counted them."
+ },
+ "lake": "/Volumes/corpdrive/hawking-modellake",
+ "lifecycle_is_derived_not_declared": "SEALED_SOURCE requires a manifest with a resolved sha and byte count; FINGERPRINTED additionally requires config.json to parse and name an architecture; DOWNLOADING is a partial/ directory with no manifest. A specimen nothing supports is DISCOVERED, and that is not a claim anything is ready.",
+ "lifecycle_states": [
+  "DISCOVERED",
+  "DOWNLOADING",
+  "COMPLETE_UNSEALED",
+  "SEALED_SOURCE",
+  "FINGERPRINTED"
+ ],
+ "n_families": 38,
+ "n_schedulable": 8,
+ "n_specimens": 54,
+ "obligation": "G100",
+ "seal_backlog": {
+  "all_shards_match_their_own_index": true,
+  "check_strength_mix": {
+   "INDEX_MATCHED": 12,
+   "WEIGHTS_PRESENT_ONLY": 17
+  },
+  "ids": [
+   "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "arcinstitute--evo2_7b@bda0089f9258",
+   "bigcode--starcoder2-7b@bb9afde76d79",
+   "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "facebook--musicgen-large@15ccdc920998",
+   "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "google--flan-t5-large@0613663d0d48",
+   "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "lerobot--pi0_base@25c379b52ba2",
+   "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "zai-org--GLM-4.5-Air@a24ceef6ce4f"
+  ],
+  "n_complete_unsealed": 29,
+  "n_sealed": 8,
+  "not_every_check_is_equally_strong": "INDEX_MATCHED compares the shard count to the specimen's own safetensors index. WEIGHTS_PRESENT_ONLY just says a weight file exists, which is what a non-safetensors layout allows. Sealing must verify bytes either way; this only says which are worth queueing first.",
+  "statement": "29 specimens have complete weight shards matching their own index and no manifest, against 8 sealed. They are one verification pass from SEALED_SOURCE - NOT re-downloads - and until that pass runs they are invisible to a scheduler that acts only on sealed material.",
+  "this_module_does_not_seal_them": "sealing verifies bytes and writes a manifest, which is a ModelLake responsibility. A registry that sealed specimens as a side effect of being read would be a mutation writer pretending to be an observer.",
+  "why_it_matters": "S027 \u00a72 assumes a newly sealed model becomes schedulable at once. The assumption holds; what is missing is that most of the library was never sealed, so the Odyssey's first cycle would see a small fraction of the specimens actually on disk."
+ },
+ "seal_sha256": "d223487b1c9882b4893163d5a8436c5c812c4e6759ebda1c4651e3b36955e856",
+ "shadowed_by_a_stale_partial_directory": [
+  {
+   "id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "partial_bytes": 305305,
+   "partial_fraction_of_specimen": 3e-06,
+   "partial_is_a_fragment": true,
+   "reading": "partial holds 305305 bytes against 96077777512 in specimens - under 1% - so it is a leftover fragment of a finished download, not a competing copy. It would still make a scheduler reading partial/ believe a download is in flight.",
+   "specimens_bytes": 96077777512
+  }
+ ],
+ "specimens": [
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "DreamModel"
+    ],
+    "hidden_size": 3584,
+    "model_type": "Dream",
+    "num_hidden_layers": 28
+   },
+   "id": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "reacquisition": null,
+   "repo": "Dream-org/Dream-v0-Instruct-7B",
+   "revision": "05334cb9faaf",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 4,
+    "expected_is_none_because": null,
+    "present": 4
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "ILLaDAForCausalLM"
+    ],
+    "hidden_size": 4096,
+    "model_type": "illada",
+    "num_hidden_layers": 32
+   },
+   "id": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "reacquisition": null,
+   "repo": "GSAI-ML/iLLaDA-8B-Base",
+   "revision": "a1b5b5f8a31a",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 4,
+    "expected_is_none_because": null,
+    "present": 4
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "SmolVLMForConditionalGeneration"
+    ],
+    "hidden_size": 2048,
+    "model_type": "smolvlm",
+    "num_hidden_layers": 24
+   },
+   "id": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "reacquisition": null,
+   "repo": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+   "revision": "482adb537c02",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 2,
+    "expected_is_none_because": null,
+    "present": 2
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Lfm2MoeForCausalLM"
+    ],
+    "hidden_size": 2048,
+    "model_type": "lfm2_moe",
+    "num_hidden_layers": 40
+   },
+   "id": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "reacquisition": null,
+   "repo": "LiquidAI/LFM2-24B-A2B",
+   "revision": "a3bbacd91a67",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Lfm2ForCausalLM"
+    ],
+    "hidden_size": 2048,
+    "model_type": "lfm2",
+    "num_hidden_layers": 30
+   },
+   "id": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "reacquisition": null,
+   "repo": "LiquidAI/LFM2.5-2.6B-Base",
+   "revision": "c57bdaed1ef1",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": "2026-08-25T04:14:38Z",
+   "architecture": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "hidden_size": 1024,
+    "model_type": "qwen3",
+    "num_hidden_layers": 28
+   },
+   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 10,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+   "reacquisition": "hf download Qwen/Qwen3-0.6B --revision c1899de289a04d12100db370d81485cdf75e47ca --local-dir <dest>",
+   "repo": "Qwen/Qwen3-0.6B",
+   "revision": "c1899de289a0",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": 1519280128
+  },
+  {
+   "acquired_at": "2026-08-25T00:18:28Z",
+   "architecture": {
+    "architectures": [
+     "Qwen3MoeForCausalLM"
+    ],
+    "hidden_size": 2048,
+    "model_type": "qwen3_moe",
+    "num_hidden_layers": 48
+   },
+   "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 26,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "reacquisition": "hf download Qwen/Qwen3-30B-A3B --revision ad44e777bcd18fa416d9da3bd8f70d33ebb85d39 --local-dir <dest>",
+   "repo": "Qwen/Qwen3-30B-A3B",
+   "revision": "ad44e777bcd1",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 16,
+    "expected_is_none_because": null,
+    "present": 16
+   },
+   "source_bytes": 61087084544
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "hidden_size": 1024,
+    "model_type": "qwen3",
+    "num_hidden_layers": 28
+   },
+   "id": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "reacquisition": null,
+   "repo": "Qwen/Qwen3-Embedding-0.6B",
+   "revision": "97b0c614be4d",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": "2026-08-25T04:35:58Z",
+   "architecture": {
+    "architectures": [
+     "Qwen3VLMoeForConditionalGeneration"
+    ],
+    "hidden_size": 2048,
+    "model_type": "qwen3_vl_moe",
+    "num_hidden_layers": 48
+   },
+   "id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 25,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "reacquisition": "hf download Qwen/Qwen3-VL-30B-A3B-Instruct --revision 9c4b90e1e4ba969fd3b5378b57d966d725f1b86c --local-dir <dest>",
+   "repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
+   "revision": "9c4b90e1e4ba",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 13,
+    "expected_is_none_because": null,
+    "present": 13
+   },
+   "source_bytes": 62153351168
+  },
+  {
+   "acquired_at": "2026-08-27T04:53:13Z",
+   "architecture": {
+    "architectures": [
+     "Qwen4ExpForConditionalGeneration"
+    ],
+    "hidden_size": 2560,
+    "model_type": "qwen4_exp",
+    "num_hidden_layers": 48
+   },
+   "id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 144,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "reacquisition": "hf download Qwen/Qwen3.8-Flash-Next --revision 34567a4712bc9766c4449e2e98e4468bfa24d915 --local-dir <dest>",
+   "repo": "Qwen/Qwen3.8-Flash-Next",
+   "revision": "34567a4712bc",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 131,
+    "expected_is_none_because": null,
+    "present": 131
+   },
+   "source_bytes": 360053432320
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Rwkv7ForCausalLM"
+    ],
+    "hidden_size": 4096,
+    "model_type": "rwkv7",
+    "num_hidden_layers": 61
+   },
+   "id": "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "reacquisition": null,
+   "repo": "RWKV/RWKV7-13.3B-20260805",
+   "revision": "64ffe5934178",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 6,
+    "expected_is_none_because": null,
+    "present": 6
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "lifecycle": "DISCOVERED",
+   "lifecycle_derived_from": "a directory exists and nothing on disk says more than that",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "reacquisition": null,
+   "repo": "Wan-AI/Wan2.2-T2V-A14B",
+   "revision": "c8c270b13ee0",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 2
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "JambaForCausalLM"
+    ],
+    "hidden_size": 2560,
+    "model_type": "jamba",
+    "num_hidden_layers": 28
+   },
+   "id": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "reacquisition": null,
+   "repo": "ai21labs/AI21-Jamba2-3B",
+   "revision": "525c6c8e1d9f",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 2,
+    "expected_is_none_because": null,
+    "present": 2
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Olmo3ForCausalLM"
+    ],
+    "hidden_size": 4096,
+    "model_type": "olmo3",
+    "num_hidden_layers": 32
+   },
+   "id": "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/allenai--Olmo-3-1025-7B@a81bae42db39",
+   "reacquisition": null,
+   "repo": "allenai/Olmo-3-1025-7B",
+   "revision": "a81bae42db39",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 3,
+    "expected_is_none_because": null,
+    "present": 3
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "ModernBertForMaskedLM"
+    ],
+    "hidden_size": 1024,
+    "model_type": "modernbert",
+    "num_hidden_layers": 28
+   },
+   "id": "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5",
+   "reacquisition": null,
+   "repo": "answerdotai/ModernBERT-large",
+   "revision": "45bb4654a4d5",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": null,
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "arcinstitute--evo2_40b@d529aa57c307",
+   "lifecycle": "DISCOVERED",
+   "lifecycle_derived_from": "config parses but no weight file is present",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_40b@d529aa57c307",
+   "reacquisition": null,
+   "repo": "arcinstitute/evo2_40b",
+   "revision": "d529aa57c307",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": null,
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "arcinstitute--evo2_7b@bda0089f9258",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/arcinstitute--evo2_7b@bda0089f9258",
+   "reacquisition": null,
+   "repo": "arcinstitute/evo2_7b",
+   "revision": "bda0089f9258",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Starcoder2ForCausalLM"
+    ],
+    "hidden_size": 4608,
+    "model_type": "starcoder2",
+    "num_hidden_layers": 32
+   },
+   "id": "bigcode--starcoder2-7b@bb9afde76d79",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/bigcode--starcoder2-7b@bb9afde76d79",
+   "reacquisition": null,
+   "repo": "bigcode/starcoder2-7b",
+   "revision": "bb9afde76d79",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 3,
+    "expected_is_none_because": null,
+    "present": 3
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "boltz-community--boltz-2@6fdef46d763f",
+   "lifecycle": "DISCOVERED",
+   "lifecycle_derived_from": "a directory exists and nothing on disk says more than that",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+   "reacquisition": null,
+   "repo": "boltz-community/boltz-2",
+   "revision": "6fdef46d763f",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 2
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": "2026-08-27T12:37:44Z",
+   "architecture": {
+    "architectures": [
+     "DeepseekV4ForCausalLM"
+    ],
+    "hidden_size": 4096,
+    "model_type": "deepseek_v4",
+    "num_hidden_layers": 43
+   },
+   "id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 73,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "reacquisition": "hf download deepseek-ai/DeepSeek-V4-Flash --revision 60d8d70770c6776ff598c94bb586a859a38244f1 --local-dir <dest>",
+   "repo": "deepseek-ai/DeepSeek-V4-Flash",
+   "revision": "60d8d70770c6",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 46,
+    "expected_is_none_because": null,
+    "present": 46
+   },
+   "source_bytes": 159630491648
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "DepthAnythingForDepthEstimation"
+    ],
+    "hidden_size": null,
+    "model_type": "depth_anything",
+    "num_hidden_layers": null
+   },
+   "id": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "reacquisition": null,
+   "repo": "depth-anything/Depth-Anything-V2-Large-hf",
+   "revision": "7581137eff8d",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "MusicgenForConditionalGeneration"
+    ],
+    "hidden_size": null,
+    "model_type": "musicgen",
+    "num_hidden_layers": null
+   },
+   "id": "facebook--musicgen-large@15ccdc920998",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--musicgen-large@15ccdc920998",
+   "reacquisition": null,
+   "repo": "facebook/musicgen-large",
+   "revision": "15ccdc920998",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 3
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Sam2VideoModel"
+    ],
+    "hidden_size": null,
+    "model_type": "sam2_video",
+    "num_hidden_layers": null
+   },
+   "id": "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "reacquisition": null,
+   "repo": "facebook/sam2.1-hiera-large",
+   "revision": "665f8e2ad61c",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "VJEPA2Model"
+    ],
+    "hidden_size": 1408,
+    "model_type": "vjepa2",
+    "num_hidden_layers": 40
+   },
+   "id": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "reacquisition": null,
+   "repo": "facebook/vjepa2-vitg-fpc64-256",
+   "revision": "875c192b7b70",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "T5ForConditionalGeneration"
+    ],
+    "hidden_size": null,
+    "model_type": "t5",
+    "num_hidden_layers": null
+   },
+   "id": "google--flan-t5-large@0613663d0d48",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48",
+   "reacquisition": null,
+   "repo": "google/flan-t5-large",
+   "revision": "0613663d0d48",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "TimesFmModelForPrediction"
+    ],
+    "hidden_size": 1280,
+    "model_type": "timesfm",
+    "num_hidden_layers": 50
+   },
+   "id": "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "reacquisition": null,
+   "repo": "google/timesfm-2.0-500m-pytorch",
+   "revision": "dc2443792ce5",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "GraniteMoeHybridForCausalLM"
+    ],
+    "hidden_size": 2048,
+    "model_type": "granitemoehybrid",
+    "num_hidden_layers": 40
+   },
+   "id": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "reacquisition": null,
+   "repo": "ibm-granite/granite-4.0-h-micro",
+   "revision": "d5f01a3ea75f",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 2,
+    "expected_is_none_because": null,
+    "present": 2
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "lifecycle": "DISCOVERED",
+   "lifecycle_derived_from": "a directory exists and nothing on disk says more than that",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "reacquisition": null,
+   "repo": "kyutai/moshika-pytorch-bf16",
+   "revision": "a49141e28b3d",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 2
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": null,
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "lerobot--pi0_base@25c379b52ba2",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/lerobot--pi0_base@25c379b52ba2",
+   "reacquisition": null,
+   "repo": "lerobot/pi0_base",
+   "revision": "25c379b52ba2",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Phi4MMForCausalLM"
+    ],
+    "hidden_size": 3072,
+    "model_type": "phi4mm",
+    "num_hidden_layers": 32
+   },
+   "id": "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "reacquisition": null,
+   "repo": "microsoft/Phi-4-multimodal-instruct",
+   "revision": "93f923e1a772",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 3,
+    "expected_is_none_because": null,
+    "present": 3
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Phi3ForCausalLM"
+    ],
+    "hidden_size": 5120,
+    "model_type": "phi3",
+    "num_hidden_layers": 40
+   },
+   "id": "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "reacquisition": null,
+   "repo": "microsoft/Phi-4-reasoning-plus",
+   "revision": "69baf8528e1b",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 6,
+    "expected_is_none_because": null,
+    "present": 6
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "BitNetForCausalLM"
+    ],
+    "hidden_size": 2560,
+    "model_type": "bitnet",
+    "num_hidden_layers": 30
+   },
+   "id": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "reacquisition": null,
+   "repo": "microsoft/bitnet-b1.58-2B-4T-bf16",
+   "revision": "276681394656",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "BitNetForCausalLM"
+    ],
+    "hidden_size": 2560,
+    "model_type": "bitnet",
+    "num_hidden_layers": 30
+   },
+   "id": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "reacquisition": null,
+   "repo": "microsoft/bitnet-b1.58-2B-4T",
+   "revision": "04c3b9ad9361",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": "2026-08-27T13:19:53Z",
+   "architecture": {
+    "architectures": [
+     "Mistral3ForConditionalGeneration"
+    ],
+    "hidden_size": 5120,
+    "model_type": "mistral3",
+    "num_hidden_layers": 40
+   },
+   "id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 25,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "reacquisition": "hf download mistralai/Mistral-Small-3.1-24B-Instruct-2503 --revision 68faf511d618ef198fef186659617cfd2eb8e33a --local-dir <dest>",
+   "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+   "revision": "68faf511d618",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": false,
+    "expected": 10,
+    "expected_is_none_because": null,
+    "present": 11
+   },
+   "source_bytes": 96077959168
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "KimiK3ForConditionalGeneration"
+    ],
+    "hidden_size": 7168,
+    "model_type": "kimi_k3",
+    "num_hidden_layers": 93
+   },
+   "id": "moonshotai--Kimi-K3@9f62e4e9fffb",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-K3@9f62e4e9fffb",
+   "reacquisition": null,
+   "repo": "moonshotai/Kimi-K3",
+   "revision": "9f62e4e9fffb",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 96,
+    "expected_is_none_because": null,
+    "present": 96
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": "2026-08-25T11:18:17Z",
+   "architecture": {
+    "architectures": [
+     "KimiVLForConditionalGeneration"
+    ],
+    "hidden_size": 2048,
+    "model_type": "kimi_vl",
+    "num_hidden_layers": 27
+   },
+   "id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 25,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "reacquisition": "hf download moonshotai/Kimi-VL-A3B-Instruct --revision 398eede0903cd983a2bfa0cc634e9ac1d843f375 --local-dir <dest>",
+   "repo": "moonshotai/Kimi-VL-A3B-Instruct",
+   "revision": "398eede0903c",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 7,
+    "expected_is_none_because": null,
+    "present": 7
+   },
+   "source_bytes": 32823230464
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "LlavaLlamaModel"
+    ],
+    "hidden_size": 3584,
+    "model_type": "llava_llama",
+    "num_hidden_layers": null
+   },
+   "id": "nvidia--audio-flamingo-3@ee26c5842398",
+   "lifecycle": "DISCOVERED",
+   "lifecycle_derived_from": "config parses but no weight file is present",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/nvidia--audio-flamingo-3@ee26c5842398",
+   "reacquisition": null,
+   "repo": "nvidia/audio-flamingo-3",
+   "revision": "ee26c5842398",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "WhisperForConditionalGeneration"
+    ],
+    "hidden_size": null,
+    "model_type": "whisper",
+    "num_hidden_layers": 32
+   },
+   "id": "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "reacquisition": null,
+   "repo": "openai/whisper-large-v3-turbo",
+   "revision": "41f01f3fe87f",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": null,
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "reacquisition": null,
+   "repo": "state-spaces/mamba3-mimo-1.5b",
+   "revision": "bc6b5d0f7994",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": null,
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "reacquisition": null,
+   "repo": "state-spaces/mamba3-siso-1.5b",
+   "revision": "5cfc721542ec",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "tencent--HunyuanVideo@6204ad6aea1a",
+   "lifecycle": "DISCOVERED",
+   "lifecycle_derived_from": "a directory exists and nothing on disk says more than that",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/tencent--HunyuanVideo@6204ad6aea1a",
+   "reacquisition": null,
+   "repo": "tencent/HunyuanVideo",
+   "revision": "6204ad6aea1a",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": "2026-08-25T00:25:05Z",
+   "architecture": {
+    "architectures": [
+     "FalconH1ForCausalLM"
+    ],
+    "hidden_size": 3072,
+    "model_type": "falcon_h1",
+    "num_hidden_layers": 44
+   },
+   "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "lifecycle": "FINGERPRINTED",
+   "lifecycle_derived_from": "a manifest records a resolved sha and byte count, and config.json names an architecture",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": 13,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "reacquisition": "hf download tiiuae/Falcon-H1-7B-Instruct --revision 41e72f27effbab80cd45b6e884688452253a3686 --local-dir <dest>",
+   "repo": "tiiuae/Falcon-H1-7B-Instruct",
+   "revision": "41e72f27effb",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 4,
+    "expected_is_none_because": null,
+    "present": 4
+   },
+   "source_bytes": 15183298560
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Glm4MoeForCausalLM"
+    ],
+    "hidden_size": 4096,
+    "model_type": "glm4_moe",
+    "num_hidden_layers": 46
+   },
+   "id": "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "lifecycle": "COMPLETE_UNSEALED",
+   "lifecycle_derived_from": "config parses and the weight shards match the specimen's own index, but no manifest seals them",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/specimens/zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "reacquisition": null,
+   "repo": "zai-org/GLM-4.5-Air",
+   "revision": "a24ceef6ce4f",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 47,
+    "expected_is_none_because": null,
+    "present": 47
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Qwen2ForCausalLM"
+    ],
+    "hidden_size": 8192,
+    "model_type": "qwen2",
+    "num_hidden_layers": 80
+   },
+   "id": "Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen2.5-72B-Instruct@495f39366efe",
+   "reacquisition": null,
+   "repo": "Qwen/Qwen2.5-72B-Instruct",
+   "revision": "495f39366efe",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 37,
+    "expected_is_none_because": null,
+    "present": 37
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "hidden_size": 5120,
+    "model_type": "qwen3",
+    "num_hidden_layers": 40
+   },
+   "id": "Qwen--Qwen3-14B@40c069824f42",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-14B@40c069824f42",
+   "reacquisition": null,
+   "repo": "Qwen/Qwen3-14B",
+   "revision": "40c069824f42",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": false,
+    "expected": 8,
+    "expected_is_none_because": null,
+    "present": 1
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Qwen3MoeForCausalLM"
+    ],
+    "hidden_size": 2048,
+    "model_type": "qwen3_moe",
+    "num_hidden_layers": 48
+   },
+   "id": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "reacquisition": null,
+   "repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+   "revision": "b2cff646eb4b",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Qwen3VLForConditionalGeneration"
+    ],
+    "hidden_size": 4096,
+    "model_type": "qwen3_vl",
+    "num_hidden_layers": 36
+   },
+   "id": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "reacquisition": null,
+   "repo": "Qwen/Qwen3-VL-8B-Instruct",
+   "revision": "0c351dd01ed8",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 4,
+    "expected_is_none_because": null,
+    "present": 4
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "facebook--blt-7b@b65201dce04b",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/facebook--blt-7b@b65201dce04b",
+   "reacquisition": null,
+   "repo": "facebook/blt-7b",
+   "revision": "b65201dce04b",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "GraniteMoeHybridForCausalLM"
+    ],
+    "hidden_size": 1536,
+    "model_type": "granitemoehybrid",
+    "num_hidden_layers": 40
+   },
+   "id": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "reacquisition": null,
+   "repo": "ibm-granite/granite-4.0-h-tiny",
+   "revision": "791e0d3d28c8",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 3,
+    "expected_is_none_because": null,
+    "present": 3
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "KimiLinearForCausalLM"
+    ],
+    "hidden_size": 2304,
+    "model_type": "kimi_linear",
+    "num_hidden_layers": 27
+   },
+   "id": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471",
+   "reacquisition": null,
+   "repo": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+   "revision": "e1df551a4471",
+   "shards": {
+    "check_strength": "INDEX_MATCHED",
+    "complete": true,
+    "expected": 20,
+    "expected_is_none_because": null,
+    "present": 20
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "nvidia--personaplex-7b-v1@fdaf4090a61c",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/nvidia--personaplex-7b-v1@fdaf4090a61c",
+   "reacquisition": null,
+   "repo": "nvidia/personaplex-7b-v1",
+   "revision": "fdaf4090a61c",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "hidden_size": null,
+    "model_type": null,
+    "num_hidden_layers": null
+   },
+   "id": "stabilityai--stable-audio-open-1.0@f21265c1e271",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/stabilityai--stable-audio-open-1.0@f21265c1e271",
+   "reacquisition": null,
+   "repo": "stabilityai/stable-audio-open-1.0",
+   "revision": "f21265c1e271",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "InklingForConditionalGeneration"
+    ],
+    "hidden_size": 4096,
+    "model_type": "inkling_mm_model",
+    "num_hidden_layers": 42
+   },
+   "id": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "reacquisition": null,
+   "repo": "thinkingmachines/Inkling-Small",
+   "revision": "8cc5877b44d3",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": false,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 0
+   },
+   "source_bytes": null
+  },
+  {
+   "acquired_at": null,
+   "architecture": {
+    "architectures": [
+     "Glm5NextForConditionalGeneration"
+    ],
+    "hidden_size": 4096,
+    "model_type": "glm5_next",
+    "num_hidden_layers": 45
+   },
+   "id": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "lifecycle": "DOWNLOADING",
+   "lifecycle_derived_from": "sits under partial/ with no sealed manifest",
+   "load_cost_is_unknown_because": "no load of this specimen has been timed. G102 owns that; a registry that guessed would be worse than one that says so.",
+   "measured_load_seconds": null,
+   "measured_warmup_seconds": null,
+   "n_files": null,
+   "path": "/Volumes/corpdrive/hawking-modellake/partial/zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+   "reacquisition": null,
+   "repo": "zai-org/GLM-5.3-Flash",
+   "revision": "04c4e9e95c5d",
+   "shards": {
+    "check_strength": "WEIGHTS_PRESENT_ONLY",
+    "complete": true,
+    "expected": null,
+    "expected_is_none_because": "no safetensors index on disk, so completeness is only 'at least one weight file exists' - a weaker test",
+    "present": 8
+   },
+   "source_bytes": null
+  }
+ ],
+ "states_not_derivable_here": {
+  "ACTIVE": "a live scheduler state, not a disk fact",
+  "DISK_WARM": "filesystem cache state is not observable from here",
+  "EVICTABLE": "a residency decision, which is G104",
+  "EXECUTION_WARM": "a live scheduler state, not a disk fact",
+  "LOADING": "a live scheduler state, not a disk fact",
+  "NR_AVAILABLE": "no NR index is written to the lake",
+  "NX_AVAILABLE": "no NX index is written to the lake",
+  "PARKED": "a live scheduler state, not a disk fact",
+  "UMA_RESIDENT": "a live scheduler state, not a disk fact"
+ },
+ "what_this_does_not_do": "it does not measure load cost, hold residency or choose what to load next - G102 and G104 own those. Every measured_load_seconds is null and says why, because a guessed load time is worse than an admitted unknown."
+}

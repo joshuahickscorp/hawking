@@ -1,0 +1,183 @@
+{
+  "schema": "hawking.flash.margin_residual_native_compare.v1",
+  "status": "BLOCKED_MARGIN_RESIDUAL_NATIVE_PARITY",
+  "dense_receipt": "receipts/headless/FLASH_DENSE_L0_L7_V1/FAST_CHAIN_SUMMARY.json",
+  "compact_receipt": "receipts/headless/FLASH_COMPACT_L0_L7_V1/FAST_CHAIN_SUMMARY.json",
+  "candidate_receipt": "receipts/headless/FLASH_MARGIN_RESIDUAL_NATIVE_L4_L6/FAST_CHAIN_SUMMARY.json",
+  "residual_receipt": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4.json",
+  "residual_receipt_sha256": "5fc4422723a3fd83c5a84ab2821815431f7f1d503045c5977215931e74801ee7",
+  "layers": [
+    4,
+    5,
+    6
+  ],
+  "comparisons": [
+    {
+      "layer": 4,
+      "dense_output_sha256": "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+      "compact_output_sha256": "ba01bdf781e839deb4f089f350c5608ce7cc420e985a966ae1bb79fe72053b3c",
+      "candidate_output_sha256": "588cc907d51c2cb3c0a82ecae88d423bcd0bba05abbebda0ed2f380408a14949",
+      "candidate_matches_dense_exact": false,
+      "candidate_matches_compact_exact": false,
+      "dense_route_ids": [
+        309,
+        252,
+        59,
+        106,
+        410,
+        475,
+        453,
+        41,
+        162,
+        108
+      ],
+      "compact_route_ids": [
+        309,
+        252,
+        59,
+        106,
+        410,
+        453,
+        475,
+        306,
+        41,
+        162
+      ],
+      "candidate_route_ids": [
+        309,
+        252,
+        59,
+        106,
+        410,
+        453,
+        475,
+        306,
+        41,
+        162
+      ],
+      "candidate_routes_match_dense": false,
+      "candidate_routes_match_compact": true,
+      "candidate_final_within_tolerance": true
+    },
+    {
+      "layer": 5,
+      "dense_output_sha256": "0b8a78620ab860a33065fefcc3d29c86d713e682cc5b5f666bf62b705d64464b",
+      "compact_output_sha256": "21706ce5f5c0b6320a7a6fdb4e4397f488a0ac0dd83651f6c0a98381fc444b58",
+      "candidate_output_sha256": "6b6e20139f2098fd7645d182ee170df46e9341b4e8a17d25c3e29c6a8013d6e2",
+      "candidate_matches_dense_exact": false,
+      "candidate_matches_compact_exact": false,
+      "dense_route_ids": [
+        510,
+        446,
+        484,
+        410,
+        397,
+        66,
+        236,
+        263,
+        256,
+        251
+      ],
+      "compact_route_ids": [
+        510,
+        446,
+        484,
+        397,
+        410,
+        236,
+        66,
+        263,
+        256,
+        314
+      ],
+      "candidate_route_ids": [
+        510,
+        446,
+        484,
+        397,
+        410,
+        236,
+        66,
+        263,
+        256,
+        314
+      ],
+      "candidate_routes_match_dense": false,
+      "candidate_routes_match_compact": true,
+      "candidate_final_within_tolerance": true
+    },
+    {
+      "layer": 6,
+      "dense_output_sha256": "7def080f05880fdcd2a5488cf3221c0ac6b72e8f0657648aa92566740883d07d",
+      "compact_output_sha256": "657b986da3fe91d2c3ca92ff4f4672cf86aa33402f4f095e4a5db5a4a414b016",
+      "candidate_output_sha256": "1bdb1cdd74dd54f6675e20c116762f53f3fb2b129522fcb4d5da01313293115c",
+      "candidate_matches_dense_exact": false,
+      "candidate_matches_compact_exact": false,
+      "dense_route_ids": [
+        223,
+        33,
+        283,
+        395,
+        256,
+        387,
+        221,
+        286,
+        80,
+        415
+      ],
+      "compact_route_ids": [
+        223,
+        33,
+        283,
+        395,
+        256,
+        387,
+        286,
+        221,
+        80,
+        415
+      ],
+      "candidate_route_ids": [
+        223,
+        33,
+        283,
+        395,
+        256,
+        387,
+        286,
+        221,
+        415,
+        80
+      ],
+      "candidate_routes_match_dense": false,
+      "candidate_routes_match_compact": false,
+      "candidate_final_within_tolerance": true
+    }
+  ],
+  "divergence": {
+    "first_route_id_mismatch_layer": 4,
+    "first_exact_fingerprint_mismatch_layer": 4,
+    "interpretation": "The oracle residual did not recover dense routing; the candidate remains an unpromoted diagnostic."
+  },
+  "source_payload": {
+    "dense_bytes": 15563874624,
+    "compact_bytes": 759292224,
+    "candidate_bytes": 759292224
+  },
+  "timing": {
+    "dense_wall_ns": 965483432333,
+    "compact_wall_ns": 72321522292,
+    "candidate_wall_ns": 86937462958,
+    "candidate_gpu_ns": 90505041
+  },
+  "claim_boundary": "Native compact continuation from an oracle-derived conditional residual was measured only for layers 4-6. It is not a learned/generalized residual, complete-token, capability, TPS, EBPW, or residency claim.",
+  "promotion_allowed": false,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T02:36:12.057237Z",
+    "recorded_by": "tools/flash_margin_residual_native_compare.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "bounded native seam comparison only; no complete-token promotion"
+  },
+  "seal_sha256": "fce048bbb2ca38404d9d64870abc25dde52679d2e2f980b68f2ef26662fd9567"
+}

@@ -1,9 +1,9 @@
 {
  "schema": "hawking.accelerator.receipt.v1",
- "generated_at": "2026-08-26T13:50:03Z",
+ "generated_at": "2026-08-27T23:41:23Z",
  "experiment_class": "ACCEL-STATE",
  "knowledge_level": "INSTANCE",
- "git_head": "48c05bcd86e802b0da860f3ab414c45689f2e540",
+ "git_head": "c5cb8a93d175d6947bcaa3e32965eb081611a920",
  "identities": {
   "experiment": {
    "id": "G060-AKB-DEVICE-GENOME",
@@ -39,18 +39,18 @@
   }
  },
  "result": {
-  "corpus_size": 104,
-  "receipts_yielding_laws": 33,
-  "laws": 34,
+  "corpus_size": 123,
+  "receipts_yielding_laws": 49,
+  "laws": 45,
   "entries_by_status": {
-   "ACTIVE": 29,
+   "ACTIVE": 40,
    "CONDITIONAL": 4,
    "REFUTED": 1
   },
-  "negative_results": 18,
-  "unextracted_count": 71,
+  "negative_results": 24,
+  "unextracted_count": 74,
   "unextracted_by_reason": {
-   "CAPABILITY_NOT_LAW": 31,
+   "CAPABILITY_NOT_LAW": 34,
    "METHOD_NOT_LAW": 1,
    "MOCK_NOT_PHYSICAL": 1,
    "MOCK_ONLY": 7,
@@ -59,7 +59,7 @@
    "SUBSUMED": 7,
    "SUPERSEDED_IN_FLIGHT": 14
   },
-  "supersession_modelled": 15,
+  "supersession_modelled": 25,
   "negative_control": [
    {
     "control": "UNSCOPED on SHAPE whose source receipt measured one shape",
@@ -79,12 +79,12 @@
    {
     "control": "ACTIVE on a source receipt carrying AMENDED_IN_PLACE_*",
     "what_it_claims": "that an amended receipt's law is current and servable",
-    "observed_refusal": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER: status ACTIVE but source ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json is superseded by ['ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best. If the amendment does not bear on THIS law, the amendment must say so by naming AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER in laws_unaffected."
+    "observed_refusal": "AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER: status ACTIVE but source ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json is superseded by ['ACCELERATOR_ORGAN_REPRESENTATION_FLOOR.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best. If the amendment does not bear on THIS law, the amendment must say so by naming AKB-ORGAN-FLOOR-DOES-NOT-TRANSFER in laws_unaffected; if it DOES bear on it and the law already carries the correction, name it in laws_reconciled and cite the amending receipt in the statement."
    },
    {
     "control": "ACTIVE on a receipt named by a later receipt's boundary_this_closes",
     "what_it_claims": "that a law closed by a later block is still current",
-    "observed_refusal": "AKB-SCAN-VS-CUMSUM: status ACTIVE but source ACCELERATOR_RUNTIME_GATE.json is superseded by ['ACCELERATOR_RUNTIME_EXECUTES.json#boundary_this_closes', 'ACCELERATOR_RUNTIME_GATE.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best. If the amendment does not bear on THIS law, the amendment must say so by naming AKB-SCAN-VS-CUMSUM in laws_unaffected."
+    "observed_refusal": "AKB-SCAN-VS-CUMSUM: status ACTIVE but source ACCELERATOR_RUNTIME_GATE.json is superseded by ['ACCELERATOR_RUNTIME_EXECUTES.json#boundary_this_closes', 'ACCELERATOR_RUNTIME_GATE.json#AMENDED_IN_PLACE_2026_08_25']. A law resting on an amended or closed receipt is CONDITIONAL at best. If the amendment does not bear on THIS law, the amendment must say so by naming AKB-SCAN-VS-CUMSUM in laws_unaffected; if it DOES bear on it and the law already carries the correction, name it in laws_reconciled and cite the amending receipt in the statement."
    },
    {
     "control": "evidence_class Measured on a source receipt with pass: false",

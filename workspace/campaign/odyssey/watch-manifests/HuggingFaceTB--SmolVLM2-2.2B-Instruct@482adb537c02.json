@@ -1,0 +1,43 @@
+{
+  "expected": 8992155310,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "added_tokens.json",
+    "chat_template.json",
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "model-00001-of-00002.safetensors",
+    "model-00002-of-00002.safetensors",
+    "model.safetensors.index.json",
+    "preprocessor_config.json",
+    "processor_config.json",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+  ],
+  "mode": "safe",
+  "repo": "HuggingFaceTB/SmolVLM2-2.2B-Instruct",
+  "resolved_sha": "482adb537c021c86670beed01cd58990d01e72e4",
+  "revision": "482adb537c021c86670beed01cd58990d01e72e4",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 11437,
+    "added_tokens.json": 4739,
+    "chat_template.json": 430,
+    "config.json": 3642,
+    "generation_config.json": 136,
+    "merges.txt": 466391,
+    "model-00001-of-00002.safetensors": 4959390584,
+    "model-00002-of-00002.safetensors": 4027833472,
+    "model.safetensors.index.json": 63881,
+    "preprocessor_config.json": 599,
+    "processor_config.json": 67,
+    "special_tokens_map.json": 868,
+    "tokenizer.json": 3548256,
+    "tokenizer_config.json": 28627,
+    "vocab.json": 800662
+  }
+}

@@ -23,7 +23,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:46:01Z",
+  "recorded_at": "2026-09-01T05:58:27Z",
   "recorded_by": "tools/future/teacher_corpus.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -555,22 +555,16 @@
  "negative_findings": [
   "contract named receipts/headless/QWEN80_CAPTURE_INDEX.json; the artifact lives at receipts/QWEN80_CAPTURE_INDEX.json",
   "contract named receipts/headless/QWEN80_CAPTURE_SPEED.json; the artifact lives at receipts/QWEN80_CAPTURE_SPEED.json",
-  "FLASH_ATTENTION_ROUTE_UNION_PARITY.json is not in HEAD; route-union shape recovered from lab/operators/q80_capture_index.py key_(layer,expert) and receipts/QWEN80_CAPTURE_INDEX.json (24,355 of 24,576 LE pairs)",
-  "FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json is not in HEAD; no L3/L4 Flash router sensitivity map was found under receipts/",
   "No GPU capture was executed. WorkUnits are pending. Existing teacher ledgers (GLM52 capsules, Qwen80 hidden files) were not re-read as row bytes because those capture blobs are not in this sparse worktree.",
   "HEAD missing: receipts/headless/QWEN80_CAPTURE_INDEX.json",
-  "HEAD missing: receipts/headless/QWEN80_CAPTURE_SPEED.json",
-  "HEAD missing: receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
-  "HEAD missing: receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json"
+  "HEAD missing: receipts/headless/QWEN80_CAPTURE_SPEED.json"
  ],
  "purpose": "Teacher-corpus contract: bind every capture to specimen/layer/surface/provenance, compute diversity, dedup, and structurally refuse a corpus that only meets its sample-count threshold by duplication, resampling, or synthesis.",
  "recovered_implementation": {
-  "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+  "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
   "missing_from_HEAD": [
    "receipts/headless/QWEN80_CAPTURE_INDEX.json",
-   "receipts/headless/QWEN80_CAPTURE_SPEED.json",
-   "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json",
-   "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json"
+   "receipts/headless/QWEN80_CAPTURE_SPEED.json"
   ],
   "note": "A path missing from this sparse worktree is not evidence it is absent from the civilization. Probes used git ls-tree HEAD.",
   "probe_results": [
@@ -650,12 +644,12 @@
     "path": "receipts/QWEN80_SOURCE_IDENTITY.json"
    },
    {
-    "in_HEAD": false,
+    "in_HEAD": true,
     "on_disk": true,
     "path": "receipts/headless/FLASH_ATTENTION_ROUTE_UNION_PARITY.json"
    },
    {
-    "in_HEAD": false,
+    "in_HEAD": true,
     "on_disk": true,
     "path": "receipts/headless/FLASH_ROUTER_SENSITIVITY_MAP_L3_L4.json"
    },
@@ -728,7 +722,7 @@
   ],
   "trees": {
    "hcli/agentos": {
-    "n_files": 43,
+    "n_files": 46,
     "sample": [
      "hcli/agentos/__init__.py",
      "hcli/agentos/accelerator_regression.py",
@@ -739,18 +733,18 @@
     ]
    },
    "tools/accelerator": {
-    "n_files": 56,
+    "n_files": 77,
     "sample": [
+     "tools/accelerator/accelerator_runner.py",
      "tools/accelerator/air.py",
      "tools/accelerator/akb.py",
-     "tools/accelerator/bench.py",
-     "tools/accelerator/bytes_atlas.py",
-     "tools/accelerator/c2m.py",
-     "tools/accelerator/c2m_idiom.py"
+     "tools/accelerator/ane_micrograph_author.py",
+     "tools/accelerator/ane_probe.swift",
+     "tools/accelerator/architecture_atlas.py"
     ]
    },
    "tools/headless": {
-    "n_files": 280,
+    "n_files": 282,
     "sample": [
      "tools/headless/action_handoff.py",
      "tools/headless/adversarial_sweep.py",
@@ -786,7 +780,7 @@
   "route_union_definition": "Sorted unique route_ids over all rows sharing (specimen, layer, surface). Membership is the intersection of the row's route_ids with that union. Recovered from Q80 key_(layer, expert), not from FLASH_ATTENTION_ROUTE_UNION_PARITY (that receipt is not in HEAD)."
  },
  "schema": "hawking.future.teacher_corpus.v1",
- "seal_sha256": "9d1cbe0d6a984187e6fafe179d95ce0321884bddcfdd0bc763968669a06115a2",
+ "seal_sha256": "15216cccccfd39b429391b3b9bcf4b49041cd1a77d4b1f1c8e532253d46fa7e0",
  "selftest": {
   "dedup_collision_groups": 4,
   "dedup_kept_from_duplicated": 4,

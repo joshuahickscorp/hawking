@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.63744.receipt.json",
+    "ngram_school.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "generate n-gram-school product-codebook candidates below Q4 without fitting weights, scored against the scar that just killed cross_expert_structure; this identity was not in the c",
+  "frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.63744",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.63744.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "679f41353e8545715318cd6c33cde9acc24d37cfdc29c9dab978b3999be7a603",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

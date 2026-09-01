@@ -1,0 +1,19 @@
+{
+  "expected": 2989542664,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "pytorch_model.bin"
+  ],
+  "mode": "all",
+  "repo": "state-spaces/mamba3-siso-1.5b",
+  "resolved_sha": "5cfc721542ec9ccee768088b2fd6b7e8101219d8",
+  "revision": "5cfc721542ec9ccee768088b2fd6b7e8101219d8",
+  "sizes": {
+    ".gitattributes": 218,
+    "README.md": 2489,
+    "config.json": 650,
+    "pytorch_model.bin": 2989539307
+  }
+}

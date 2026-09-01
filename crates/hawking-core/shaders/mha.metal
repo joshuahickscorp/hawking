@@ -680,6 +680,106 @@ kernel void mha_decode_f32(
     }
 }
 
+// Qwen3.8 GQA decode with the per-head sigmoid gate fused into the final
+// attention write. This is intentionally a separate kernel rather than a
+// generic ABI change: the q projection's second half is a Qwen-specific gate
+// and the ordinary MHA callers must retain their five-buffer contract.
+//
+// The attention reduction is kept in the same four phases and the same
+// left-to-right accumulation order as `mha_decode_f32`. The only additional
+// operation is the final multiply that used to be performed by
+// `qwen38_attention_apply_sigmoid_gate`, so the gated output can feed o_proj
+// without materializing the ungated attention tensor or launching another
+// device pass.
+//
+// Buffers 0..4 match `mha_decode_f32`; buffer 5 is Qwen3.8's raw q projection,
+// laid out as [head][2 * head_dim], with the gate in the second half.
+kernel void mha_decode_f32_qwen38_gated(
+    constant ArgbufMhaDecode& args   [[buffer(0)]],
+    device const float* q             [[buffer(1)]],
+    device const float* k_cache       [[buffer(2)]],
+    device const float* v_cache       [[buffer(3)]],
+    device       float* gated_out     [[buffer(4)]],
+    device const float* q_proj        [[buffer(5)]],
+    threadgroup  float* shmem         [[threadgroup(0)]],
+    uint tg_id   [[threadgroup_position_in_grid]],
+    uint tid     [[thread_position_in_threadgroup]],
+    uint tg_size [[threads_per_threadgroup]])
+{
+    const uint h      = tg_id;
+    const uint H_DIM  = args.head_dim;
+    const uint SEQ    = args.seq_len;
+    const uint NKV    = args.n_kv_heads;
+    const uint GROUP  = args.group_size;
+    const uint kv_h   = h / GROUP;
+    const float scale = args.scale;
+
+    threadgroup float* scores = shmem;
+    threadgroup float* red    = shmem + SEQ;
+
+    device const float* q_h = q + h * H_DIM;
+
+    // Phase 1: scores[t] = dot(q_h, K[t, kv_h]) * scale
+    for (uint t = tid; t < SEQ; t += tg_size) {
+        device const float* kt = k_cache + (t * NKV + kv_h) * H_DIM;
+        float acc = 0.0f;
+        for (uint i = 0; i < H_DIM; ++i) {
+            acc += q_h[i] * kt[i];
+        }
+        scores[t] = acc * scale;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 2: tree-reduce max(scores[0..SEQ])
+    float local_max = -INFINITY;
+    for (uint t = tid; t < SEQ; t += tg_size) {
+        local_max = max(local_max, scores[t]);
+    }
+    red[tid] = local_max;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) {
+            red[tid] = max(red[tid], red[tid + stride]);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float max_score = red[0];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 3: scores[t] = exp(scores[t] - max); reduce sum
+    float local_sum = 0.0f;
+    for (uint t = tid; t < SEQ; t += tg_size) {
+        float e = exp(scores[t] - max_score);
+        scores[t] = e;
+        local_sum += e;
+    }
+    red[tid] = local_sum;
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    for (uint stride = tg_size / 2u; stride > 0u; stride >>= 1) {
+        if (tid < stride) {
+            red[tid] += red[tid + stride];
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+    float inv_sum = 1.0f / red[0];
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    // Phase 4: direct gated write. Keep the original attention accumulation
+    // order; only the post-normalization sigmoid multiply is new.
+    device float* out_h = gated_out + h * H_DIM;
+    device const float* gate_h = q_proj + h * (2u * H_DIM) + H_DIM;
+    for (uint i = tid; i < H_DIM; i += tg_size) {
+        float acc = 0.0f;
+        for (uint t = 0; t < SEQ; ++t) {
+            device const float* vt = v_cache + (t * NKV + kv_h) * H_DIM;
+            acc += scores[t] * vt[i];
+        }
+        const float gate = gate_h[i];
+        const float sigmoid = 1.0f / (1.0f + exp(-gate));
+        out_h[i] = (acc * inv_sum) * sigmoid;
+    }
+}
+
 // ── mha_decode_flash_f32 ──────────────────────────────────────────────────
 // Phase 2.3 — GQA flash-style decode attention (online softmax).
 //

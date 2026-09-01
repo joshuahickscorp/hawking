@@ -1,0 +1,451 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T04:22:04Z",
+  "recorded_by": "tools/future/baseline_staleness.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "current_baseline": {
+  "gpu_ms_per_token": 21.9464,
+  "gpu_tps": 45.566,
+  "source": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json",
+  "wall_ms_per_token": 22.9024
+ },
+ "evidence_class": "DERIVED_FROM_RECEIPTS_AND_PRODUCER_SOURCE",
+ "found_by_hand_three_times_first": [
+  "GAP_LEDGER_60: gap to 60 was 10.6229 ms, is 5.2797",
+  "PATH_TO_71: best composed was 49.8 TPS, is 62.90",
+  "DELTANET_STATE_MACHINE_ECONOMICS: upper bound was 34.7% of the residual gap, is 114.6%"
+ ],
+ "obligation": "G138",
+ "question": "which receipts compute a current decision from a baseline the campaign has replaced?",
+ "report": {
+  "by_verdict": {
+   "CITES_BUT_READS_CURRENT": [
+    "BASELINE_STALENESS.json",
+    "GAP_LEDGER_60.json",
+    "GEOMETRY_TABLE.json",
+    "MAX_RESIDENT_PHYSICAL_ROOF.json"
+   ],
+   "HISTORICAL_OWNER": [
+    "BITCAST_DEQUANT_AB.json",
+    "OP_CLASS_ABLATION.json"
+   ],
+   "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE": [
+    "ACCELERATOR_WORKUNITS.json",
+    "FOLD_ADDQX_AB.json",
+    "HARNESS_RECONCILIATION.json",
+    "HCLI_COMPACTOR.json",
+    "MLP_DECODE_CHEAPEN.json",
+    "MLP_ISSUE_RATE_LADDER.json",
+    "MLP_STREAM_COUNT.json",
+    "PROTECTED_BITCAST_ABSOLUTE.json",
+    "RESIDENT_API_AUDIT.json",
+    "RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
+   ],
+   "PRODUCER_UNKNOWN": [
+    "TPS_ESCALATION_CLOCK_START.json"
+   ]
+  },
+  "clean": false,
+  "n_needing_review": 10,
+  "n_receipts_citing_a_superseded_value": 17,
+  "needing_review": [
+   "ACCELERATOR_WORKUNITS.json",
+   "FOLD_ADDQX_AB.json",
+   "HARNESS_RECONCILIATION.json",
+   "HCLI_COMPACTOR.json",
+   "MLP_DECODE_CHEAPEN.json",
+   "MLP_ISSUE_RATE_LADDER.json",
+   "MLP_STREAM_COUNT.json",
+   "PROTECTED_BITCAST_ABSOLUTE.json",
+   "RESIDENT_API_AUDIT.json",
+   "RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
+  ],
+  "reading": "17 receipts mention a superseded value and 10 need a human look: their producer does not read the current baseline. Three checked by hand were all genuinely stale and each moved a strategic number, so the base rate in this class is not low.",
+  "this_is_a_REVIEW_LIST_not_a_DEFECT_LIST": "the verdict is a FACT - this receipt carries a superseded value somewhere that is not obviously historical, and its producer does not read the current baseline. Some of these are correct as they are: a receipt that IS the old measurement legitimately records it, and HARNESS_RECONCILIATION exists precisely to hold both numbers side by side. Calling them all defects would be the same over-claiming this module is meant to catch."
+ },
+ "rows": [
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "28.722": [
+     ".gaps_closed[6]",
+     ".procedure.chain.note",
+     ".procedure.live_frontier.baseline_token_ms",
+     ".procedure.reprofile_trigger.baseline_token_ms",
+     ".procedure.reprofile_trigger.live_frontier.baseline_token_ms",
+     ".procedure.reprofile_trigger.reason"
+    ]
+   },
+   "producer": "tools/future/accelerator_workunits.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "ACCELERATOR_WORKUNITS.json",
+   "superseded_values_present": [
+    "28.722"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "27.2896": [
+     ".rows[1].superseded_values_present[1]",
+     ".rows[2].carried_as_history[0]",
+     ".rows[2].superseded_values_present[0]",
+     ".rows[6].superseded_values_present[0]",
+     ".rows[7].superseded_values_present[0]",
+     ".rows[8].superseded_values_present[0]"
+    ],
+    "28.722": [
+     ".rows[0].superseded_values_present[0]",
+     ".rows[1].superseded_values_present[0]",
+     ".rows[3].superseded_values_present[0]",
+     ".rows[5].superseded_values_present[0]",
+     ".rows[9].superseded_values_present[0]",
+     ".rows[10].superseded_values_present[0]"
+    ],
+    "36.644": [
+     ".rows[1].superseded_values_present[2]",
+     ".rows[2].carried_as_history[1]",
+     ".rows[2].superseded_values_present[1]",
+     ".rows[4].superseded_values_present[0]",
+     ".rows[6].superseded_values_present[1]",
+     ".rows[7].superseded_values_present[1]"
+    ]
+   },
+   "producer": "tools/future/baseline_staleness.py",
+   "producer_reads_current_baseline": true,
+   "receipt": "BASELINE_STALENESS.json",
+   "superseded_values_present": [
+    "28.722",
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "CITES_BUT_READS_CURRENT"
+  },
+  {
+   "carried_as_history": [
+    "27.2896",
+    "36.644"
+   ],
+   "occurrence_paths": {
+    "27.2896": [
+     ".complete_token.wall_ms_before"
+    ],
+    "36.644": [
+     ".complete_token.tps_before"
+    ]
+   },
+   "producer": "tools/future/bitcast_dequant_ab.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "BITCAST_DEQUANT_AB.json",
+   "superseded_values_present": [
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "HISTORICAL_OWNER"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "28.722": [
+     ".cited_diagnostic.note",
+     ".claim_boundary",
+     ".complete_token.stale_path_to_71_token_ms",
+     ".findings[2].what"
+    ]
+   },
+   "producer": "tools/future/fold_addqx_ab.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "FOLD_ADDQX_AB.json",
+   "superseded_values_present": [
+    "28.722"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "36.644": [
+     ".escalation_clock.started_at_tps"
+    ]
+   },
+   "producer": "tools/future/gap_ledger_60.py",
+   "producer_reads_current_baseline": true,
+   "receipt": "GAP_LEDGER_60.json",
+   "superseded_values_present": [
+    "36.644"
+   ],
+   "verdict": "CITES_BUT_READS_CURRENT"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "28.722": [
+     ".s016.cited_control.token_ms",
+     ".shapes[0].s016_projection.baseline_token_ms",
+     ".shapes[0].s016_projection.token_ms_projected",
+     ".shapes[1].s016_projection.baseline_token_ms",
+     ".shapes[2].s016_projection.baseline_token_ms",
+     ".shapes[3].s016_projection.baseline_token_ms"
+    ]
+   },
+   "producer": "tools/future/geometry_table.py",
+   "producer_reads_current_baseline": true,
+   "receipt": "GEOMETRY_TABLE.json",
+   "superseded_values_present": [
+    "28.722"
+   ],
+   "verdict": "CITES_BUT_READS_CURRENT"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "27.2896": [
+     ".harnesses.canonical.wall_ms"
+    ],
+    "36.644": [
+     ".what_is_promotable.wall_tps_range[0]"
+    ]
+   },
+   "producer": "tools/future/harness_reconciliation.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "HARNESS_RECONCILIATION.json",
+   "superseded_values_present": [
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "27.2896": [
+     ".compacted_kernel.measured_state.wall_ms_per_token"
+    ],
+    "36.644": [
+     ".compacted_kernel.measured_state.wall_tps"
+    ]
+   },
+   "producer": "tools/future/hcli_compactor.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "HCLI_COMPACTOR.json",
+   "superseded_values_present": [
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "27.2896": [
+     ".causal_residual.baseline_moved.current_body_ms",
+     ".citations_resolved.current_body_wall_ms",
+     ".prerequisites[2].value",
+     ".target.current_body_ms",
+     ".target.why_not_assumed"
+    ],
+    "36.644": [
+     ".causal_residual.baseline_moved.current_body_tps"
+    ]
+   },
+   "producer": "tools/future/terminal_speed_artifact.py",
+   "producer_reads_current_baseline": true,
+   "receipt": "MAX_RESIDENT_PHYSICAL_ROOF.json",
+   "superseded_values_present": [
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "CITES_BUT_READS_CURRENT"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "28.722": [
+     ".best_approx.projection.baseline_token_ms",
+     ".best_approx.projection.from",
+     ".best_exact.projection.baseline_token_ms",
+     ".best_exact.projection.from",
+     ".claim_boundary",
+     ".token_ms_baseline"
+    ]
+   },
+   "producer": "tools/future/mlp_decode_cheapen.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "MLP_DECODE_CHEAPEN.json",
+   "superseded_values_present": [
+    "28.722"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "28.722": [
+     ".ilp[0].projection.baseline_token_ms",
+     ".ilp[1].projection.baseline_token_ms",
+     ".ilp[2].projection.baseline_token_ms",
+     ".ladder[0].projection.baseline_token_ms",
+     ".ladder[0].projection.token_ms_projected",
+     ".ladder[1].projection.baseline_token_ms"
+    ]
+   },
+   "producer": "tools/future/mlp_issue_rate_ladder.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "MLP_ISSUE_RATE_LADDER.json",
+   "superseded_values_present": [
+    "28.722"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "28.722": [
+     ".cited.token_ms",
+     ".claim_boundary",
+     ".projection_mlp_2_2_2_32.baseline_token_ms",
+     ".projection_mlp_2_2_2_32.from",
+     ".projection_pack_6_32.baseline_token_ms",
+     ".projection_pack_6_32.from"
+    ]
+   },
+   "producer": "tools/future/mlp_stream_count.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "MLP_STREAM_COUNT.json",
+   "superseded_values_present": [
+    "28.722"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [
+    "27.2896",
+    "36.644"
+   ],
+   "occurrence_paths": {
+    "27.2896": [
+     ".token_projection.token_ms_before"
+    ],
+    "36.644": [
+     ".token_projection.tps_before"
+    ]
+   },
+   "producer": "tools/future/op_class_ablation.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "OP_CLASS_ABLATION.json",
+   "superseded_values_present": [
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "HISTORICAL_OWNER"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "27.2896": [
+     ".against_the_canonical_baseline.canonical_wall_ms"
+    ],
+    "36.644": [
+     ".against_the_canonical_baseline.canonical_tps"
+    ]
+   },
+   "producer": "tools/future/protected_bitcast_absolute.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "PROTECTED_BITCAST_ABSOLUTE.json",
+   "superseded_values_present": [
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "28.722": [
+     ".modules[153].docstring"
+    ]
+   },
+   "producer": "tools/future/resident_api.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "RESIDENT_API_AUDIT.json",
+   "superseded_values_present": [
+    "28.722"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [
+    "28.722"
+   ],
+   "occurrence_paths": {
+    "27.2896": [
+     ".ab.widen_f4_ms_per_token",
+     ".decode_wall_ms_per_token"
+    ],
+    "28.722": [
+     ".supersedes.stale_ladder_ms",
+     ".supersedes.why"
+    ],
+    "36.644": [
+     ".ab.widen_f4_tps",
+     ".decode_wall_tps"
+    ]
+   },
+   "producer": "tools/future/resident_reprofile.py",
+   "producer_reads_current_baseline": false,
+   "receipt": "RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+   "superseded_values_present": [
+    "28.722",
+    "27.2896",
+    "36.644"
+   ],
+   "verdict": "PRODUCER_DOES_NOT_READ_CURRENT_BASELINE"
+  },
+  {
+   "carried_as_history": [],
+   "occurrence_paths": {
+    "36.644": [
+     ".started_at_tps"
+    ]
+   },
+   "producer": null,
+   "producer_reads_current_baseline": null,
+   "receipt": "TPS_ESCALATION_CLOCK_START.json",
+   "superseded_values_present": [
+    "36.644"
+   ],
+   "verdict": "PRODUCER_UNKNOWN"
+  }
+ ],
+ "seal_sha256": "2a7798d29cdbc6768aab41ec8eafc42afd20cddfe0011615ce9f13b6313db140",
+ "superseded": [
+  {
+   "now": "21.9464 GPU ms (G131)",
+   "value": "28.722",
+   "was": "pre-widen_f4 token ms"
+  },
+  {
+   "now": "21.9464 GPU ms (G131), and the unit changed - wall is a joint claim about the resident AND the machine (G125)",
+   "value": "27.2896",
+   "was": "post-widen_f4 WALL ms per token"
+  },
+  {
+   "now": "45.566 GPU TPS (G131)",
+   "value": "36.644",
+   "was": "wall TPS at the pre-promotion baseline"
+  }
+ ],
+ "what_this_does_not_do": {
+  "a_mention_is_not_a_defect": "HISTORICAL_OWNER and CITES_BUT_READS_CURRENT are correct states. HARNESS_RECONCILIATION exists precisely to compare 27.2896 against 21.9464 and must keep both.",
+  "does_not_rewrite": true,
+  "producer_unknown_is_not_clean": "a receipt whose producer cannot be read is reported as PRODUCER_UNKNOWN, not as passing. An unreadable producer is an unanswered question, and calling it clean is how a stale ledger survives an audit.",
+  "why": "a receipt is regenerated by its own producer. Editing a value in place is the receipt-only fix this campaign forbids: the next run would put the dead number straight back."
+ }
+}

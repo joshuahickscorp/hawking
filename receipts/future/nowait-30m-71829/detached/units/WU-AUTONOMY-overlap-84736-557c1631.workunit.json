@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.84736.receipt.json",
+    "decode_civilization.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "decode_civilization.py already refuses to treat byte savings as a GO. Next unit is a refresh against current organ maps.",
+  "frontier_id": "FT.DECODING.cost-model",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.84736",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.84736.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "18abc16cedce595589549be7a2fd0311a53f323048032766e6ade7d7d154e91b",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

@@ -139,7 +139,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T03:14:43Z",
+  "recorded_at": "2026-09-01T06:00:20Z",
   "recorded_by": "tools/future/mlp_auxiliary_information.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -323,6 +323,19 @@
      "scar_id": "tools/headless/negative_science.py#QN-LOWRANK-HEALING",
      "source_path": "tools/headless/negative_science.py",
      "verdict": "NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the f16 scale/bias array of affine-Q2, not W and not a different codec."
+    },
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
+     "hypothesis_family": "kronecker",
+     "organ": "mlp",
+     "queried_organ": "mlp",
+     "queried_slug": "kronecker",
+     "reopen_condition": "unrecorded",
+     "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#KRONECKER",
+     "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE",
      "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the f16 scale/bias array of affine-Q2, not W and not a different codec."
     },
     {
@@ -829,7 +842,7 @@
   "reconstruction": "w = float(q)*scale + bias, q unsigned in {0,1,2,3}"
  },
  "schema": "hawking.future.mlp_auxiliary_information.v1",
- "seal_sha256": "63632721dc5f6776d089f2bfa58ec4ebd4513972641019435098926dd23bf691",
+ "seal_sha256": "2740db44328a996d26b18c78336e6dadb9a48e2ea9dcd649e5d02bc5cd897180",
  "version": 1,
  "what_this_does_not_prove": [
   "capability of u8 aux or of a larger group size (no generate gate)",

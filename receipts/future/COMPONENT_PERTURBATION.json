@@ -1,0 +1,46 @@
+{
+ "authority": "gate/up/down on a real layer only. Damage is applied to an in-memory copy; no artifact is written.",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T03:06:48Z",
+  "recorded_by": "tools/future/perturbation_workunit.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "inputs": {
+  "fraction": "0.01-0.95",
+  "kind": [
+   "zero",
+   "quantize",
+   "noise",
+   "low_rank"
+  ],
+  "layer": "0-63",
+  "side": [
+   "rows",
+   "cols"
+  ],
+  "tensor": [
+   "gate",
+   "up",
+   "down"
+  ]
+ },
+ "kinds": {
+  "low_rank": "best rank-10% approximation of the slice - is the information redundant rather than absent",
+  "noise": "Gaussian at the slice's own scale, so magnitude is not confounded with importance",
+  "quantize": "2-bit uniform within the slice's own range - can it be CHEAPER, which is the question a smaller representation actually asks",
+  "zero": "delete the slice - can this information be REMOVED"
+ },
+ "matched_by_construction": "fraction selects the same share of rows or columns in every kind, so two kinds at one fraction touch the same element count. Across DIFFERENT-SIZED tensors it does not, which is why elements_destroyed is reported on every point.",
+ "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+ "not_capability": "hidden-state cosine two layers downstream is not capability. FIDELITY_HIERARCHY forbids refusing a capability claim at this bar, and CAPABILITY_STAGES is where the deeper rungs live.",
+ "obligation": "G119",
+ "output_is": "one curve point: fraction, elements_destroyed and the hidden-state cosine two layers downstream, at the named kind",
+ "seal_sha256": "ccf6a4b1a495aa8dd1462d4787a73430e3ea54822d6f2c82089890c0e913a9f6",
+ "why_three_were_missing": "only zero existed, and zero can only answer whether information can be DELETED. A route to 2.0 BPW needs to know whether it can be CHEAPER, and those are different questions.",
+ "work_type": "PERTURB"
+}

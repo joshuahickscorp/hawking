@@ -20,7 +20,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:45:39Z",
+  "recorded_at": "2026-09-01T05:40:45Z",
   "recorded_by": "tools.future.protected_window.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -44,7 +44,7 @@
  ],
  "dry_run_stop": {
   "honest_on_this_machine": "stops at the lease request: no proven existing HCLI lease. later stages are still walked as STATIC_ONLY specs so restore is planned even when the lease is refused. flock is never taken.",
-  "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+  "reason": "injected: no lease",
   "stage_id": "establish_protected_lease",
   "stage_index": 6
  },
@@ -74,7 +74,7 @@
   "blocked physical work is emitted as SLEEPING WorkUnits that HCLI can wake; never a synthetic PROTECTED_ABSOLUTE result",
   "--dry-run walks all envelope stages against the real batch and real lock probe and reports the execution stop (lease on this host)"
  ],
- "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "integration": {
   "execute": "execute(*, explicit_execute=False, lease=None, contamination_class=None) -> None  # always raises WindowRefused",
   "load_staged_batch": "load_staged_batch(injected=None) -> dict  # Codex order, not a guess",
@@ -182,7 +182,7 @@
   "entry_point": "python3 tools/future/protected_window.py --dry-run",
   "evict_on_this_plan": true,
   "execution_stop": {
-   "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+   "reason": "injected: no lease",
    "stage_id": "establish_protected_lease",
    "stage_index": 6,
    "status": "REQUEST_EMITTED"
@@ -213,7 +213,7 @@
   ]
  },
  "schema": "hawking.future.protected_window.v1",
- "seal_sha256": "243bb85c1c038053f60133da26cf640ae77679c80c56b738eb43be2b68c9f10b",
+ "seal_sha256": "1b555457851e7035b0f4048fecae09e10bd2cc97059057448d803e9f73274a7b",
  "stages_declared": [
   "estimate_qualification_value",
   "decide_eviction",
@@ -233,18 +233,18 @@
   "STATIC_ONLY": "this sidecar. No GPU. Bench state UNKNOWN. Cannot promote."
  },
  "window": {
-  "batch_source": "codex_handoff:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json#current_staged_protected_batch",
+  "batch_source": "injected",
   "bench_state": "UNKNOWN",
   "dry_run": true,
   "evict": true,
   "execution_stop": {
-   "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+   "reason": "injected: no lease",
    "stage_id": "establish_protected_lease",
    "stage_index": 6,
    "status": "REQUEST_EMITTED"
   },
   "expected_decisions_changed_if_continue_dirty": 0,
-  "expected_decisions_changed_if_protected": 13,
+  "expected_decisions_changed_if_protected": 2,
   "gpu_authority": false,
   "lease_present": false,
   "measurement_class": "STATIC_ONLY",
@@ -262,18 +262,7 @@
   "planning_walk_complete": true,
   "qwen_singleton_order": [
    "qwen27-fast-profile",
-   "qwen27-pipeline-state-elision",
-   "qwen27-pipeline-cache-reuse",
-   "qwen27-pipeline-id-resolution",
-   "qwen27-commit-timing-elision",
-   "qwen27-encoder-label-elision",
-   "qwen27-affine2-splitk4",
-   "qwen27-q2f-splitk4",
-   "qwen27-q4-vecgroup-x64",
-   "qwen27-gqa-qkv-fusion",
-   "qwen27-attention-gate-fusion",
-   "qwen27-deltanet-inproj-fusion",
-   "qwen27-ba-delta-fusion"
+   "qwen27-affine2-splitk4"
   ],
   "resident_left_unloaded": false,
   "resumed_from_stage_count": 0,
@@ -286,14 +275,14 @@
     "name": "estimate_qualification_value",
     "payload": {
      "acquires_lease": false,
-     "batch_source": "codex_handoff:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json#current_staged_protected_batch",
+     "batch_source": "injected",
      "decision_targets_from_dirty_wins": [],
      "deferred": [],
      "executes_benchmark": false,
      "expected_decisions_changed_if_continue_dirty": 0,
-     "expected_decisions_changed_if_protected": 13,
+     "expected_decisions_changed_if_protected": 2,
      "from_dirty_wins": 0,
-     "from_undecided_batch": 13,
+     "from_undecided_batch": 2,
      "gpu_authority": false,
      "kind": "ESTIMATE",
      "measurement_class": "STATIC_ONLY",
@@ -301,7 +290,7 @@
      "n_deferred": 0,
      "n_dirty_wins": 0,
      "n_pending_dirty_in_batch": 0,
-     "n_runnable_batch_candidates": 13,
+     "n_runnable_batch_candidates": 2,
      "not_a_fabricated_speedup": true,
      "pending": [],
      "promotion_gate": "tools.future.contamination.assert_promotable refuses STATIC_ONLY and DIAGNOSTIC_RELATIVE; that is why continue-dirty is zero",
@@ -312,18 +301,7 @@
      "speedup_claimed": null,
      "undecided_batch_candidate_ids": [
       "qwen27-fast-profile",
-      "qwen27-pipeline-state-elision",
-      "qwen27-pipeline-cache-reuse",
-      "qwen27-pipeline-id-resolution",
-      "qwen27-commit-timing-elision",
-      "qwen27-encoder-label-elision",
-      "qwen27-affine2-splitk4",
-      "qwen27-q2f-splitk4",
-      "qwen27-q4-vecgroup-x64",
-      "qwen27-gqa-qkv-fusion",
-      "qwen27-attention-gate-fusion",
-      "qwen27-deltanet-inproj-fusion",
-      "qwen27-ba-delta-fusion"
+      "qwen27-affine2-splitk4"
      ],
      "window_justified": true,
      "window_justified_by_batch": true,
@@ -343,10 +321,10 @@
      "kind": "DECISION",
      "protected_evidence_requires": true,
      "quiesces_worker": false,
-     "reason": "protected evidence requires a window (dirty_decisions=0 batch_undecided=13); resident convenience cannot veto",
+     "reason": "protected evidence requires a window (dirty_decisions=0 batch_undecided=2); resident convenience cannot veto",
      "resident_convenience_read": {
-      "busy": null,
-      "convenience_weight": null,
+      "busy": true,
+      "convenience_weight": 1000000000,
       "cost_to_unload": null,
       "dirty_wins_per_hour": null,
       "hot": null,
@@ -358,7 +336,7 @@
      "self_preference_path": false,
      "signals_process": false
     },
-    "reason": "protected evidence requires a window (dirty_decisions=0 batch_undecided=13); resident convenience cannot veto",
+    "reason": "protected evidence requires a window (dirty_decisions=0 batch_undecided=2); resident convenience cannot veto",
     "status": "COMPLETED"
    },
    {
@@ -396,10 +374,12 @@
     "payload": {
      "acquires_lease": false,
      "executes_benchmark": false,
-     "frozen_work_ids": [],
+     "frozen_work_ids": [
+      "dirty.a"
+     ],
      "gpu_authority": false,
      "kind": "PLAN",
-     "n_frozen": 0,
+     "n_frozen": 1,
      "note": "GPU_DIRTY_OK / GPU_DECODE work is marked frozen in the ledger so GPU_EXCLUSIVE qualification can run. Integration point: workgraph.py / sandbox.py (concurrent, not imported).",
      "occupancy_state": "LOADED",
      "quiesces_worker": false,
@@ -452,19 +432,17 @@
      "never_seizure": true,
      "not_called": [
       "hcli.agentos.protected_accelerator_benchmark._try_lock",
-      "hcli.agentos.protected_accelerator_benchmark.run_protected_accelerator_benchmark",
-      "fcntl.flock",
-      "fcntl.LOCK_EX"
+      "fcntl.flock"
      ],
      "observed_present": false,
      "occupancy_state": "LOADED",
      "quiesces_worker": false,
-     "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+     "reason": "injected: no lease",
      "signals_process": false,
      "would_call_try_lock": false,
      "would_flock": false
     },
-    "reason": "protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure",
+    "reason": "injected: no lease",
     "status": "REQUEST_EMITTED"
    },
    {
@@ -475,25 +453,14 @@
      "acquires_lease": false,
      "batch_order": [
       "qwen27-fast-profile",
-      "qwen27-pipeline-state-elision",
-      "qwen27-pipeline-cache-reuse",
-      "qwen27-pipeline-id-resolution",
-      "qwen27-commit-timing-elision",
-      "qwen27-encoder-label-elision",
-      "qwen27-affine2-splitk4",
-      "qwen27-q2f-splitk4",
-      "qwen27-q4-vecgroup-x64",
-      "qwen27-gqa-qkv-fusion",
-      "qwen27-attention-gate-fusion",
-      "qwen27-deltanet-inproj-fusion",
-      "qwen27-ba-delta-fusion"
+      "qwen27-affine2-splitk4"
      ],
-     "batch_source": "codex_handoff:/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json#current_staged_protected_batch",
+     "batch_source": "injected",
      "executes_benchmark": false,
      "flash_runnable_now": false,
      "gpu_authority": false,
      "kind": "COMPOSE",
-     "n_batch": 13,
+     "n_batch": 2,
      "note": "batch order is Codex's staged protected batch. this sidecar composes qualification_pipeline and does not spawn protected_command",
      "occupancy_state": "LOADED",
      "qualification": {
@@ -502,32 +469,18 @@
       "dropped_ids": [],
       "executes_benchmark": false,
       "execution_stop": {
-       "reason": "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure",
+       "reason": "injected: no lease",
        "stage_id": "identify_lease_availability",
-       "stage_index": 1,
-       "status": "COMPLETED"
+       "stage_index": 1
       },
       "gpu_authority": false,
       "lease_present": false,
       "measurement_class": "STATIC_ONLY",
       "n_stages": 13,
-      "path_taken": "qp.run_pipeline(dry_run=True, live=True)",
+      "path_taken": "injected",
       "planning_walk_complete": true,
-      "schema": "hawking.future.qualification_pipeline.v1",
       "survivor_ids": [
-       "qwen27-affine2-splitk4",
-       "qwen27-attention-gate-fusion",
-       "qwen27-ba-delta-fusion",
-       "qwen27-commit-timing-elision",
-       "qwen27-deltanet-inproj-fusion",
-       "qwen27-encoder-label-elision",
-       "qwen27-fast-profile",
-       "qwen27-gqa-qkv-fusion",
-       "qwen27-pipeline-cache-reuse",
-       "qwen27-pipeline-id-resolution",
-       "qwen27-pipeline-state-elision",
-       "qwen27-q2f-splitk4",
-       "qwen27-q4-vecgroup-x64"
+       "qwen27-fast-profile"
       ]
      },
      "quiesces_worker": false,
@@ -544,7 +497,7 @@
      "executes_benchmark": false,
      "gpu_authority": false,
      "kind": "SPEC",
-     "n": 13,
+     "n": 2,
      "occupancy_state": "LOADED",
      "proposed_rows": [
       {
@@ -556,84 +509,7 @@
       },
       {
        "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-pipeline-state-elision",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-pipeline-cache-reuse",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-pipeline-id-resolution",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-commit-timing-elision",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-encoder-label-elision",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
        "candidate_id": "qwen27-affine2-splitk4",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-q2f-splitk4",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-q4-vecgroup-x64",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-gqa-qkv-fusion",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-attention-gate-fusion",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-deltanet-inproj-fusion",
-       "gpu_authority": false,
-       "measurement_class": "STATIC_ONLY",
-       "would_write": false
-      },
-      {
-       "bench_state": "UNKNOWN",
-       "candidate_id": "qwen27-ba-delta-fusion",
        "gpu_authority": false,
        "measurement_class": "STATIC_ONLY",
        "would_write": false

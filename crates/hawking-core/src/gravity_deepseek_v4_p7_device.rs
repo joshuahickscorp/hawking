@@ -42,14 +42,17 @@ use crate::metal::MetalContext;
 use crate::{Error, Result};
 
 const P7_MHC_PRE_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_pre_authority";
+const MHC_PRE_SIMD_KERNEL: &str = "deepseek_v4_mhc_pre_simdgroup_candidate";
 const P7_FFN_NORM_KERNEL: &str = "deepseek_v4_p7_ffn_rmsnorm_bf16_authority";
 const P7_MHC_POST_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_post_authority";
+const P7_MHC_PRE_SIMD_ENV: &str = "HAWKING_DSV4F_MHC_PRE_SIMD";
 
 /// Historical layer-0 convenience constant. Prefer the source contract's layer.
 pub const DSV4F_P7_DEFAULT_LAYER: usize = 0;
 const P7_POSITION0: usize = 0;
 const P7_POSITION1: usize = POSITION1;
 const P7_PRE_NORM_THREADS: u32 = 1;
+const P7_MHC_PRE_SIMD_THREADS: u32 = 24 * 32;
 const P7_POST_THREADS: u32 = 256;
 const P7_BASE_LAYER_COUNT: usize = 43;
 
@@ -152,6 +155,8 @@ pub struct DeepSeekV4P7BoundedDeviceExecutor {
     post_f32: metal::Buffer,
     comb_f32: metal::Buffer,
     ffn_norm_bf16: metal::Buffer,
+    mhc_pre_kernel: &'static str,
+    mhc_pre_threads: u32,
     post_threads: u32,
     p6: Box<dyn DeepSeekV4P7P6DeviceExecutor>,
 }
@@ -217,6 +222,23 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
             3 * size_of::<f32>(),
         )?;
 
+        // The exact one-thread kernel is the authority/default.  The SIMD
+        // candidate is deliberately explicit opt-in: its wide reductions
+        // re-associate FP32 sums and can only be admitted by a later bounded
+        // parity/coherence and protected-latency receipt.  `=0` therefore
+        // always restores the authority path.
+        let mhc_pre_simd = crate::env_on(P7_MHC_PRE_SIMD_ENV);
+        let mhc_pre_kernel = if mhc_pre_simd {
+            MHC_PRE_SIMD_KERNEL
+        } else {
+            P7_MHC_PRE_KERNEL
+        };
+        let mhc_pre_threads = if mhc_pre_simd {
+            P7_MHC_PRE_SIMD_THREADS
+        } else {
+            P7_PRE_NORM_THREADS
+        };
+
         let max_post_threads = metal
             .pipeline(P7_MHC_POST_KERNEL)?
             .max_total_threads_per_threadgroup() as u32;
@@ -225,11 +247,16 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
                 "P7 mHC-FFN-post kernel supports only {max_post_threads} threads"
             )));
         }
-        for kernel in [P7_MHC_PRE_KERNEL, P7_FFN_NORM_KERNEL] {
+        for kernel in [mhc_pre_kernel, P7_FFN_NORM_KERNEL] {
             let maximum = metal.pipeline(kernel)?.max_total_threads_per_threadgroup() as u32;
-            if maximum < P7_PRE_NORM_THREADS {
+            let required = if kernel == mhc_pre_kernel {
+                mhc_pre_threads
+            } else {
+                P7_PRE_NORM_THREADS
+            };
+            if maximum < required {
                 return Err(p7_device_error(format!(
-                    "P7 {kernel} does not support one authority thread"
+                    "P7 {kernel} supports only {maximum} threads; {required} required"
                 )));
             }
         }
@@ -248,6 +275,8 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
             post_f32: metal.new_buffer_checked(DSV4F_P7_MHC_POST_F32_BYTES)?,
             comb_f32: metal.new_buffer_checked(DSV4F_P7_MHC_COMB_F32_BYTES)?,
             ffn_norm_bf16: metal.new_buffer_checked(DSV4F_P7_FFN_NORM_BF16_BYTES)?,
+            mhc_pre_kernel,
+            mhc_pre_threads,
             post_threads: P7_POST_THREADS,
             p6,
         })
@@ -255,6 +284,18 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
 
     pub fn source_contract(&self) -> &DeepSeekV4P7FfnSourceContract {
         &self.source
+    }
+
+    /// Name of the selected mHC-pre kernel for a future physical receipt.
+    /// The authority name is returned unless `HAWKING_DSV4F_MHC_PRE_SIMD=1`
+    /// was explicitly present during preparation.
+    pub fn mhc_pre_kernel(&self) -> &'static str {
+        self.mhc_pre_kernel
+    }
+
+    /// Selected mHC-pre threadgroup width for trace/receipt attribution.
+    pub fn mhc_pre_threads(&self) -> u32 {
+        self.mhc_pre_threads
     }
 
     /// Execute directly from the reusable P4B executor's retained device
@@ -434,9 +475,9 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
         let sinkhorn_iters = HC_SINKHORN_ITERS as u32;
         attention.metal.dispatch_batch(|batch| {
             batch.dispatch_threads(
-                P7_MHC_PRE_KERNEL,
-                (1, 1, 1),
-                (P7_PRE_NORM_THREADS, 1, 1),
+                self.mhc_pre_kernel,
+                (self.mhc_pre_threads, 1, 1),
+                (self.mhc_pre_threads, 1, 1),
                 |encoder| {
                     encoder.set_buffer(0, Some(attention.attention_hc_post_bf16), 0);
                     encoder.set_buffer(1, Some(&self.hc_fn_f32), 0);
@@ -454,6 +495,10 @@ impl DeepSeekV4P7BoundedDeviceExecutor {
                     set_u32(encoder, 13, &sinkhorn_iters);
                     set_f32(encoder, 14, &RMS_NORM_EPS);
                     set_f32(encoder, 15, &HC_EPS);
+                    if self.mhc_pre_kernel == MHC_PRE_SIMD_KERNEL {
+                        let replicated_input = 0u32;
+                        set_u32(encoder, 16, &replicated_input);
+                    }
                 },
             )?;
             batch.dispatch_threads(

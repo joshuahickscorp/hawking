@@ -653,6 +653,9 @@ class GoalCompiler:
 PACKET_CHAR_CAP = 4000
 MAX_COMPILED_INVARIANTS = 4
 MAX_COMPILED_ACCEPTANCE = 4
+# ponytail: fixed ceiling, not "most relevant N" — good enough to stop a
+# repeat of a same-role dead end without turning NEIGHBORHOOD into an archive.
+MAX_SCAR_LINES = 3
 
 _DOCTRINE_SNIPPETS = (
     "MODELS THINK.",
@@ -998,12 +1001,37 @@ def _acceptance_for_unit(
     return list(dict.fromkeys(chosen))
 
 
+def _failure_why(context: Any) -> str:
+    """Best short causal string out of a WorkUnit's failure_context.
+
+    Mirrors the fields `workunit.failure_signature()` hashes (reason, error,
+    validation) — that triple is this codebase's established "what actually
+    went wrong" record, so this surfaces the same signal as readable text
+    instead of inventing a second causal schema.
+    """
+    if not isinstance(context, dict):
+        return ""
+    validation = context.get("validation")
+    if isinstance(validation, dict):
+        reason = validation.get("reason")
+        if reason:
+            return str(reason)
+    reason = context.get("reason")
+    if reason:
+        return str(reason)
+    error = context.get("error")
+    if error:
+        return str(error)
+    return ""
+
+
 def _neighborhood_lines(
     wu: WorkUnit,
     units: Optional[Dict[str, WorkUnit]],
 ) -> List[str]:
     lines: List[str] = []
     pool = units or {}
+    dep_ids = set(wu.dependencies or [])
     for dep_id in wu.dependencies or []:
         dep = pool.get(dep_id)
         if dep is None:
@@ -1018,7 +1046,41 @@ def _neighborhood_lines(
                     receipt = _sanitize_goal_header(str(value))
                     break
         status = getattr(dep, "status", "unknown") or "unknown"
-        lines.append(f"{dep_id} status={status} receipt={receipt}")
+        line = f"{dep_id} status={status} receipt={receipt}"
+        if status == "failed":
+            why = _failure_why(context)
+            if why:
+                line += f" why={_sanitize_goal_header(why[:120])}"
+        lines.append(line)
+
+    # Scars: same-role dead ends elsewhere in this mission that are NOT a
+    # direct dependency edge, so a repeat of the same mistake is visible even
+    # across DAG-sibling boundaries. Bounded (MAX_SCAR_LINES) on purpose —
+    # this is a pointer to the worst-case recent failures of this kind, not
+    # an archive of every failure the mission has ever produced.
+    scar_count = 0
+    for other_id, other in pool.items():
+        if scar_count >= MAX_SCAR_LINES:
+            break
+        if other_id == wu.id or other_id in dep_ids:
+            continue
+        if getattr(other, "status", None) != "failed":
+            continue
+        if str(getattr(other, "role", "") or "") != str(wu.role or ""):
+            continue
+        context = getattr(other, "failure_context", None) or {}
+        sig = context.get("failure_signature") if isinstance(context, dict) else None
+        line = f"{other_id} status=failed"
+        if sig:
+            line += f" sig={sig}"
+        why = _failure_why(context)
+        if why:
+            line += f" why={_sanitize_goal_header(why[:120])}"
+        if not sig and not why:
+            # Nothing causal to say beyond "it failed" — not worth a slot.
+            continue
+        lines.append(line)
+        scar_count += 1
     return lines
 
 

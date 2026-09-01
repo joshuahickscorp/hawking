@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.9344.receipt.json",
+    "turnaround.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "turnaround.py already times source_discovery/transform/verify/receipt/ledger/next_decision. Refresh. cargo/GPU phases stay UNKNOWN.",
+  "frontier_id": "FT.LATENCY.cpu-turnaround",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.9344",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.9344.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "45d44cf46bcf8be2106df4a025707bf1ad1012a547a4199048b3bffd67b3ffa7",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

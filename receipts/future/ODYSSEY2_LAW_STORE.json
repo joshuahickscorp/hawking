@@ -8,16 +8,31 @@
   "sum_actual_saved_experiments": 121,
   "sum_expected_saved_experiments": 219
  },
+ "alternatives": [
+  {
+   "consistent_with_claim": false,
+   "consistent_with_observation": true,
+   "hypothetical": "h"
+  }
+ ],
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T19:28:50Z",
+  "recorded_at": "2026-09-01T06:08:05Z",
   "recorded_by": "tools/future/odyssey2_law_store.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
+ "causality_verdict": "OVERREACHING",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claim_kind": "object_absence",
+ "confidence": {
+  "about": "a",
+  "level": "LOW",
+  "would_lower": "c",
+  "would_raise": "b"
+ },
  "counts": {
   "by_evidence_strength": {
    "ANECDOTE": 0,
@@ -36,6 +51,7 @@
   },
   "n_laws": 24
  },
+ "direct_observation": "schools.Flash.physical_status='metadata_only_weights_not_present'",
  "evidence_strengths": [
   "ANECDOTE",
   "STATIC",
@@ -57,6 +73,7 @@
   "ternary_factorization",
   "uniform_subbit_allocation"
  ],
+ "falsifier": "f",
  "gaps_closed": [
   "Law record with the Odyssey II field set, including scope and evidence_strength.",
   "Sequential scope lattice MODEL_LOCAL < ARCHITECTURE_FAMILY < BACKEND_FAMILY < MACHINE_LOCAL < GENERIC_CANDIDATE < GENERIC_VERIFIED.",
@@ -67,6 +84,7 @@
   "expected_saved_experiments vs actual_saved_experiments accounting (null until known; negative actual is legal).",
   "time_to_first_useful_executable_ns forced null: sidecar has no executable-timing authority."
  ],
+ "interpretation": "the law-store catalog records this field; it is not a measurement of whether Flash weights exist on disk",
  "lattice": [
   "MODEL_LOCAL",
   "ARCHITECTURE_FAMILY",
@@ -987,6 +1005,8 @@
   "time_to_first_useful_executable_ns is null on every law; a number here would be an executable-timing claim this lane cannot make."
  ],
  "odyssey": "II WHAT DID HAWKING ALREADY LEARN?",
+ "probe_kind": "metadata_field",
+ "probe_performed": "read SCHOOLS['Flash']['physical_status'] from the in-module catalog; no Path.exists, no hash of weight files",
  "promotion_rules": {
   "ARCHITECTURE_FAMILY": ">=2 distinct models in that architecture family",
   "BACKEND_FAMILY": ">=2 backends",
@@ -1114,7 +1134,7 @@
    "source_model": "Qwen3.8-27B"
   }
  },
- "seal_sha256": "5748b5e5f6cfbafcede51f1f29ab97c38cb51b32203797ee4e40b987c5003641",
+ "seal_sha256": "78c4d7c256e12e0d9d71ba8c54a9eff9cbf7b4a5deb29170735ee997cd129541",
  "seed_report": {
   "atlas_failed_keys": [
    "calibration_88_tokens",

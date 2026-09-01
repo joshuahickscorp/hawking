@@ -1,0 +1,18 @@
+{
+  "dependencies": [],
+  "evidence_class": "STATIC_ONLY",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+  "frontier_item": "FT.VERIFICATION.repro",
+  "gpu_authority": false,
+  "job_id": "WU-AUTONOMY-detach-FT-VERIFICATION-repro-22c5bb96",
+  "launch_refused": false,
+  "launched_at": 1788200133.208216,
+  "pid": 84625,
+  "required_schema": null,
+  "schema": "hawking.future.no_wait.handle.v1",
+  "start_token": "1788200133.262259",
+  "state": "RUNNING",
+  "terminal": null,
+  "timeout_s": 1778.647304058075,
+  "unit_id": "WU.AUTONOMY.detach.FT.VERIFICATION.repro"
+}

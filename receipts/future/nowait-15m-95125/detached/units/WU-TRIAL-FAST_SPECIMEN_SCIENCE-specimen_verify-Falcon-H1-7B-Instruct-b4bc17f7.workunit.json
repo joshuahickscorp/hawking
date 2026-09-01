@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/_bound_run.py",
+    "shell",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.receipt.json",
+    "[\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"/Users/scammermike/Downloads/hawking/tools/future/specimen_verify.py\", \"--verify\", \"tiiuae--Falcon-H1-7B-Instruct@41e72f27effb\", \"--max-seconds\", \"1800\"]"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "recompute every published digest for specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb and decide whole-tree verification offline",
+  "frontier_id": "FT.MODEL_CAPABILITY.hard-gates",
+  "gpu_authority": false,
+  "id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "3c155240cb9bbc0c97615f1ccb11eda2af9ff69ceaf196719bc1cea734468d28",
+  "timeout_s": 24.42581295967102,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

@@ -758,3 +758,82 @@ def test_build_records_unprobed_sealed_quality():
     assert "text" not in doc["chat_template"]
     assert doc["started_sealed_resident"] is False
     assert "tps" not in json.dumps(doc["quality_probes"])
+
+
+# --- G120: salvage is in the reply path, with provenance ----------------------
+
+def test_salvage_provenance_on_a_clean_reply_claims_nothing():
+    p = rp.salvage_provenance("a short clean answer.", "a short clean answer.",
+                              False)
+    assert p["degeneration_class"] == "none"
+    assert p["degeneration_start"] is None
+    assert p["salvaged"] is False
+    assert p["salvage_fraction"] == 1.0
+
+
+def test_salvage_provenance_records_where_the_loop_starts():
+    """A caller must be able to tell a two-sentence answer that was always short
+    from one carved out of a thousand-character loop."""
+    full = "good start. " + ("loop loop " * 40)
+    p = rp.salvage_provenance(full, "good start.", True)
+    assert p["degeneration_class"] == "tail_after_clean_prefix"
+    assert p["degeneration_start"] == len("good start.")
+    assert p["salvaged"] is True
+    assert 0.0 < p["salvage_fraction"] < 0.1
+    assert p["full_chars"] > p["salvaged_chars"]
+
+
+def test_a_wholly_degenerate_reply_is_classed_separately():
+    p = rp.salvage_provenance("loop loop loop", "", True)
+    assert p["degeneration_class"] == "whole_reply"
+    assert p["salvaged"] is False
+
+
+def test_the_two_hashes_differ_when_anything_was_dropped():
+    full = "good start. " + ("loop loop " * 40)
+    p = rp.salvage_provenance(full, "good start.", True)
+    assert p["full_reply_hash"] != p["clean_prefix_hash"]
+    same = rp.salvage_provenance("x", "x", False)
+    assert same["full_reply_hash"] == same["clean_prefix_hash"]
+
+
+def test_the_reply_path_calls_salvage_rather_than_leaving_it_to_the_caller():
+    import inspect
+    src = inspect.getsource(rp.finalize_generation)
+    assert "degenerate_prefix(answer)" in src, (
+        "salvage must happen in the provider, not be a library function every "
+        "consumer has to remember"
+    )
+    assert '"salvage": salvage_provenance' in src
+
+
+def test_reasoning_quality_rates_are_null_before_any_reply():
+    """A rate reported as 0.0 on zero requests reads as a failure when it is an
+    absence."""
+    class _Bare:
+        _quality_counts = {"replies": 0}
+        reasoning_quality = rp.ResidentProvider.reasoning_quality
+    q = _Bare().reasoning_quality()
+    assert q["replies"] == 0
+    assert q["degeneration_rate"] is None
+    assert q["salvage_rate"] is None
+
+
+def test_reasoning_quality_divides_by_replies():
+    class _Some:
+        _quality_counts = {"replies": 4, "clean": 3, "truncated": 1,
+                           "degenerate": 2, "salvaged": 1}
+        reasoning_quality = rp.ResidentProvider.reasoning_quality
+    q = _Some().reasoning_quality()
+    assert q["degeneration_rate"] == 0.5
+    assert q["salvage_rate"] == 0.25
+    assert q["clean_rate"] == 0.75
+
+
+def test_reasoning_quality_names_what_it_does_not_measure():
+    """Structured-reply rate and useful-hypothesis rate belong to the caller's
+    schema and mission. Inventing them here would double-count."""
+    class _Bare:
+        _quality_counts = {"replies": 0}
+        reasoning_quality = rp.ResidentProvider.reasoning_quality
+    assert "double-count" in _Bare().reasoning_quality()["not_measured_here"]

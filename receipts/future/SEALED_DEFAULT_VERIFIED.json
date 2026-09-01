@@ -1,0 +1,145 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T02:04:22Z",
+  "recorded_by": "tools/future/sealed_default_verified.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "checks": [
+  {
+   "evidence": "widen_f4",
+   "holds": true,
+   "id": "OPEN_READ_THE_PROMOTED_STATE_KERNEL_FROM_ENV"
+  },
+  {
+   "evidence": "widen_f4",
+   "holds": true,
+   "id": "THE_SEALED_CONFIG_DID_NOT_OVERWRITE_IT"
+  },
+  {
+   "evidence": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+   "holds": true,
+   "id": "THE_MEASURED_GATED_DELTA_KERNEL_WAS_ACTUALLY_LAUNCHED"
+  },
+  {
+   "evidence": 580,
+   "holds": true,
+   "id": "DISPATCH_COUNT_MATCHES_THE_MEASURED_GRAPH"
+  },
+  {
+   "evidence": {},
+   "holds": true,
+   "id": "NO_MATVEC_STAYED_ON_THE_NON_BITCAST_PATH"
+  },
+  {
+   "evidence": [
+    "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+    "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast",
+    "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast",
+    "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast",
+    "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast"
+   ],
+   "holds": true,
+   "id": "AT_LEAST_ONE_BITCAST_KERNEL_WAS_LAUNCHED"
+  },
+  {
+   "evidence": "fallbacks=0, dense_w=0",
+   "holds": true,
+   "id": "NO_FALLBACKS_AND_NO_DENSE_MATERIALIZATION"
+  },
+  {
+   "evidence": {
+    "lease_bitcast.baseline": true,
+    "lease_bitcast.coalesce_tg32": true,
+    "lease_bitcast.widen_f4": true,
+    "lease_control.baseline": true,
+    "lease_control.coalesce_tg32": true,
+    "lease_control.widen_f4": true
+   },
+   "holds": true,
+   "id": "TOKEN_IDENTICAL_TO_EVERY_LEASE_ARM"
+  },
+  {
+   "evidence": "7 reps, 32 tokens",
+   "holds": true,
+   "id": "EVERY_REP_PRODUCED_THE_SAME_TOKENS"
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "dispatch_identity": {
+  "bitcast_kernels_launched": {
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast": 4160,
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast": 4160,
+   "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast": 4225,
+   "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast": 3120,
+   "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast": 1040
+  },
+  "complete_token_dispatches_last": 580,
+  "dense_w_materialized": 0,
+  "dn_state_kernel_after_sealed_config": "widen_f4",
+  "dn_state_kernel_at_open": "widen_f4",
+  "excluded_as_not_a_matvec": [
+   "qwen_uniform_q4_embedding_lookup"
+  ],
+  "fallbacks": 0,
+  "launched_gated_delta_kernel": "qwen38_gated_delta_decode_vi_simd_ba_f4",
+  "non_bitcast_matvec_kernels_launched": {}
+ },
+ "inputs": [
+  "receipts/future/_G126_SEALED_DEFAULT_raw.json",
+  "receipts/future/_G095_LEASE_BITCAST_raw.json",
+  "receipts/future/_G095_LEASE_CTRL_raw.json",
+  "receipts/future/LEVER_PROMOTION_GATE.json"
+ ],
+ "obligation": "G126",
+ "part": "two of two - the gate licensed the flip, this verifies it landed",
+ "question": "with every lever unset, does the dispatcher actually launch the kernels the protected lease timed?",
+ "seal_sha256": "31dcf4f73af2b39acf651c709a9e13224c439d4b417e396e115cee355ba01264",
+ "token_identity": {
+  "all_reps_identical_to_each_other": true,
+  "identical_to": {
+   "lease_bitcast.baseline": true,
+   "lease_bitcast.coalesce_tg32": true,
+   "lease_bitcast.widen_f4": true,
+   "lease_control.baseline": true,
+   "lease_control.coalesce_tg32": true,
+   "lease_control.widen_f4": true
+  },
+  "identical_to_every_compared_arm": true,
+  "n_reps": 7,
+  "n_tokens": 32
+ },
+ "verdict": {
+  "n_checks": 9,
+  "the_protected_absolute_this_arm_carries": {
+   "gpu_ms": 22.01,
+   "note": "measured under a lease with the ModelLake supervisor stopped first. This receipt does not re-measure it; it shows that arm is now what you get with nothing set.",
+   "source": "receipts/future/PROTECTED_BITCAST_ABSOLUTE.json",
+   "wall_ms": 22.3347,
+   "wall_tps": 44.773
+  },
+  "verdict": "PROMOTED",
+  "what_is_now_the_default": [
+   "HAWKING_QWEN38_DN_STATE=widen_f4",
+   "HAWKING_AFFINE2_GEO=bitcast",
+   "HAWKING_Q4_UNPACK=bitcast"
+  ]
+ },
+ "what_this_run_does_not_claim": {
+  "evidence_class": "IDENTITY_ONLY_TIMINGS_ARE_CONTAMINATED",
+  "this_run_ms_per_token": [
+   36.6169,
+   36.3513,
+   35.778,
+   36.1226,
+   35.8938,
+   36.9149,
+   37.2246
+  ],
+  "why_they_are_not_promoted": "this verification executed alongside the live HCLI sovereign loop, reading 35.778-37.2246 ms against the lease's 22.01. Kernel identity and dispatch count are load-insensitive; milliseconds are not. Only the identity claims are made here."
+ },
+ "why_a_new_instrument_was_needed": "every existing A/B pins its arms with set_dn_state_kernel, so none of them can verify a DEFAULT - they overwrite the value under test before generating a token. ascension_qwen38_sealed_default unsets the levers, opens a session, applies the sealed fusion config MINUS the state-kernel pin, and reports what was launched."
+}

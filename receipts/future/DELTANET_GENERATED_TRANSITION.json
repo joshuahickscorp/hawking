@@ -20,7 +20,7 @@
   "gpu_authority": false,
   "machine": "Apple host; CPU operator fit / rollout, no GPU lease",
   "measurement_state": "DIAGNOSTIC_RELATIVE",
-  "recorded_at": "2026-08-31T07:36:10Z",
+  "recorded_at": "2026-09-01T05:22:51Z",
   "recorded_by": "tools/future/deltanet_generated_transition.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -65,7 +65,7 @@
     "bandwidth_is_assumption": false,
     "bandwidth_note": "nominal is the production DeltaNet organ rate (Q4). The high end is the LM head's demonstrated 497.4, also Q4, which DeltaNet has not been shown to reach. Including 497.4 in the range is an ASSUMPTION, not a prediction.",
     "bandwidth_regime": "production_deltanet",
-    "cited_token_ms": 28.722,
+    "cited_token_ms": 22.9024,
     "dispatch_class": "deltanet_ba",
     "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
     "dispatch_us_nominal": 2.884,
@@ -78,8 +78,13 @@
      0.0,
      0.0
     ],
-    "host_gap_floor_ms": 0.989,
-    "incremental_byte_rate_gb_s": 360.0
+    "host_gap_floor_ms": 0.956,
+    "incremental_byte_rate_gb_s": 1827.21,
+    "organ_average_gb_s": 360.0,
+    "stream_billing_gb_s": 1827.21,
+    "stream_class": "weight_codes",
+    "stream_on_critical_path": true,
+    "stream_rate_source": "ECONOMICS_CALIBRATION.json"
    },
    "bytes_added": {
     "embeddings": 0,
@@ -107,30 +112,31 @@
     0.0
    ],
    "predicted_ms_saved": -0.0,
-   "predicted_token_ms": 28.722,
+   "predicted_token_ms": 22.9024,
    "predicted_token_ms_range": [
-    28.722,
-    28.722
+    22.9024,
+    22.9024
    ],
-   "predicted_tps": 34.816516955643756,
+   "predicted_tps": 43.66354617856644,
    "predicted_tps_range": [
-    34.816516955643756,
-    34.816516955643756
+    43.66354617856644,
+    43.66354617856644
    ],
    "retime_organ": false,
    "s020_section_20": {
     "bar_frac": 0.01,
-    "bar_ms": 0.28722000000000003,
+    "bar_ms": 0.229024,
     "clears_time_bar": false,
     "high_information_falsifier": false,
     "plausible_ms_saved": 0.0,
     "reusable_family": false
    },
    "status": "REJECTED_DENSE_REMAT",
+   "stream_class": "weight_codes",
    "terms": {
-    "byte_added_ms": 5.941936,
+    "byte_added_ms": 1.1706902654867255,
     "byte_ms_delta": 0.0,
-    "byte_removed_ms": -5.941936,
+    "byte_removed_ms": -1.1706902654867255,
     "dispatch_ms_delta": 0.0,
     "flop_ms_delta": 0.0
    },
@@ -152,7 +158,7 @@
    "bandwidth_is_assumption": true,
    "bandwidth_note": "ASSUMPTION with a range, not a point estimate. A new representation is bounded below by the slowest measured affine-Q2 launch (223.4 GB/s at 5 MB) and above by the fastest demonstrated packed GEMV (497.4 GB/s, the LM head). The clean GEMV roof is excluded: nothing packed has been shown to reach it.",
    "bandwidth_regime": "unknown_new_representation",
-   "cited_token_ms": 28.722,
+   "cited_token_ms": 22.9024,
    "dispatch_class": "deltanet_ba",
    "dispatch_note": "measured class deltanet_ba at 2.884 us; class-dependent, not a single marginal",
    "dispatch_us_nominal": 2.884,
@@ -165,8 +171,13 @@
     0.0,
     0.0
    ],
-   "host_gap_floor_ms": 0.989,
-   "incremental_byte_rate_gb_s": 360.0
+   "host_gap_floor_ms": 0.956,
+   "incremental_byte_rate_gb_s": 1827.21,
+   "organ_average_gb_s": 360.0,
+   "stream_billing_gb_s": 1827.21,
+   "stream_class": "weight_codes",
+   "stream_on_critical_path": true,
+   "stream_rate_source": "ECONOMICS_CALIBRATION.json"
   },
   "bytes_added": {
    "embeddings": 49152,
@@ -197,29 +208,29 @@
   "ok": true,
   "organ": "deltanet",
   "physical_primitive": "TiledProjection",
-  "predicted_ms_delta": -5.790869111111111,
+  "predicted_ms_delta": -1.029768918339983,
   "predicted_ms_delta_range": [
-   -9.41639521575649,
-   -4.15298014314435
+   -1.0536868461645863,
+   -0.6917988413359625
   ],
-  "predicted_ms_saved": 5.790869111111111,
-  "predicted_token_ms": 22.93113088888889,
+  "predicted_ms_saved": 1.029768918339983,
+  "predicted_token_ms": 21.872631081660018,
   "predicted_token_ms_range": [
-   19.305604784243513,
-   24.56901985685565
+   21.848713153835412,
+   22.210601158664037
   ],
-  "predicted_tps": 43.608839217107366,
+  "predicted_tps": 45.719236806334195,
   "predicted_tps_range": [
-   40.701664365376125,
-   51.79842906636944
+   45.02354496649517,
+   45.7692859510335
   ],
   "retime_organ": false,
   "s020_section_20": {
    "bar_frac": 0.01,
-   "bar_ms": 0.28722000000000003,
+   "bar_ms": 0.229024,
    "clears_time_bar": true,
    "high_information_falsifier": false,
-   "plausible_ms_saved": 9.41639521575649,
+   "plausible_ms_saved": 1.0536868461645863,
    "reusable_family": true
   },
   "state_update": {
@@ -229,10 +240,11 @@
    "note": "S geometry is unchanged. The generator replaces the qkvz GEMV; gated-delta still consumes generated q,k,v in-register."
   },
   "status": "OPEN",
+  "stream_class": "weight_codes",
   "terms": {
-   "byte_added_ms": 0.012634888888888888,
-   "byte_ms_delta": -5.929301111111111,
-   "byte_removed_ms": -5.941936,
+   "byte_added_ms": 0.0024893471467428486,
+   "byte_ms_delta": -1.1682009183399829,
+   "byte_removed_ms": -1.1706902654867255,
    "dispatch_ms_delta": 0.138432,
    "flop_ms_delta": 0.0
   },
@@ -311,7 +323,7 @@
   "total_bytes_eliminated": 0
  },
  "schema": "hawking.future.deltanet_generated_transition.v1",
- "seal_sha256": "6954e9e7644b8311c2572907d97d03cddf079f6eaf4cfa7c2cf1c110818eb7c9",
+ "seal_sha256": "5a9fea61aae732d84093bfa6e886ffba011c6d50276795fb478383f10050f2b9",
  "selftest": {
   "bytes_added_total": 4548560,
   "bytes_removed_total": 2139096960,
@@ -360,11 +372,11 @@
   },
   "model_id": "qwen3.8-27b-sealed-3.14",
   "organ": "attention.linear_qkvz",
-  "pinned_revision": "99bb52631c1fe2e9a496f5cf255cb2cd7b0f0743",
+  "pinned_revision": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
   "protocol": "hawking.qwen38.resident.v1",
   "require_fusion_env": true,
   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",
-  "resident_binary_sha256": "39f3f28c0bf695f2f5c2e436bdb82a88f8406fb3f7a4b6f2588899350ebd78f8",
+  "resident_binary_sha256": "6a548bb54a092c77dcedbf15ead67120aa39b7961cfa5c0758a0af465936119d",
   "resident_identity": "sealed-3.14",
   "seal_source": "hcli/hawking-native.sealed-3.14.json",
   "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"

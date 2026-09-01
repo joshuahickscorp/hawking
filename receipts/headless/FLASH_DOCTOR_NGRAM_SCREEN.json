@@ -1,0 +1,79 @@
+{
+  "schema": "hawking.flash.doctor_ngram_screen.v1",
+  "status": "REAL_WEIGHT_STAGE_A_NGRAM_SCREEN",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "source": {
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "shards": 128,
+    "rows_read": 128,
+    "row_width": 160,
+    "sample": "first row of every ngram shard"
+  },
+  "population": {
+    "total_indexed_bytes": 102400491520,
+    "mean_pairwise_row_cosine": 0.0013096139929922714,
+    "min_pairwise_row_cosine": -0.30823928117752075,
+    "rank8_energy": 0.21284663677215576,
+    "mean_row_norm": 0.09556874632835388,
+    "row_sha256": "536b81ce4559bf718d4f848b1221764acb45f59e3f96306912673ecc1f6dd8ff"
+  },
+  "candidate_hypotheses": [
+    {
+      "name": "factorized_lookup",
+      "status": "UNTESTED",
+      "risk": "row sample does not represent token-frequency distribution"
+    },
+    {
+      "name": "product_codebook",
+      "status": "UNTESTED",
+      "risk": "collision semantics and lookup fidelity"
+    },
+    {
+      "name": "shard-local_quantization",
+      "status": "NEXT",
+      "risk": "activation/output sensitivity unknown"
+    }
+  ],
+  "quantization_screen": [
+    {
+      "candidate": "uniform_q4_g32",
+      "sample_cosine": 0.9952799081802368,
+      "sample_mae": 0.0006197482580319047,
+      "nominal_bpw": 4.5,
+      "native_ready": false
+    },
+    {
+      "candidate": "uniform_q4_g64",
+      "sample_cosine": 0.9942421913146973,
+      "sample_mae": 0.000691879540681839,
+      "nominal_bpw": 4.25,
+      "native_ready": false
+    },
+    {
+      "candidate": "uniform_q3_g32",
+      "sample_cosine": 0.9756762981414795,
+      "sample_mae": 0.0014342929935082793,
+      "nominal_bpw": 3.5,
+      "native_ready": false
+    },
+    {
+      "candidate": "uniform_q3_g64",
+      "sample_cosine": 0.9706083536148071,
+      "sample_mae": 0.0016047698445618153,
+      "nominal_bpw": 3.25,
+      "native_ready": false
+    }
+  ],
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-28T20:45:20Z",
+    "recorded_by": "tools/flash_doctor_ngram_screen.py",
+    "machine": "Apple M3 Ultra (range-read screen)",
+    "rule": "S032 \u00a73 -- no native timing or capability claim"
+  },
+  "claim_boundary": "One real row from each n-gram shard; this is a structural screen only. It does not measure token-frequency coverage, lookup fidelity, native execution, complete EBPW, TPS, or capability.",
+  "promotion_allowed": false,
+  "elapsed_ns": 11554667,
+  "seal_sha256": "35139a61c2e4a3de0550b5d785b6a517a9c960373218f2d5b230107aac14182b"
+}

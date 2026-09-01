@@ -1,13 +1,13 @@
 {
  "base_head": {
-  "sha": "163251f8a1f1b535b9d38b184c308808cef0719f",
-  "subject": "fix(gravity): the umbrella scar lived only in the receipt, so a rebuild deleted it"
+  "sha": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
+  "subject": "fix(G145): the resident refused to run at 42.6 GB free, because it was reading a boot high-water mark"
  },
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T16:36:26Z",
+  "recorded_at": "2026-09-01T05:26:32Z",
   "recorded_by": "tools/future/dirty_source_seal.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -565,7 +565,7 @@
   "land": "P-Q30, P-Q80, P-CACHE, P-INSTRUMENT, P-WORKLIST, P-FAST. P-CACHE changes production default (opt-out). Landing it does not promote the TPS numbers."
  },
  "schema": "hawking.future.dirty_source_seal.v1",
- "seal_sha256": "898ae0235727ce0e456b19d4d671924304544726cec63f44fdb3800f5cd153db",
+ "seal_sha256": "ded08e94fee031d61479f15737a9cd8214c31b341c2b38495748238e4d7bf3cf",
  "sealed_fusion_env": {
   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",

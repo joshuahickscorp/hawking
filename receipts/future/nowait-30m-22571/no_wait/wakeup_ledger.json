@@ -1,0 +1,51 @@
+{
+  "checksum_sha256": "560d89c9e44897ff57279282d0fa56c9459a859a300203d9140668956de5f0a1",
+  "cursor": {},
+  "dispatched": {},
+  "expectations": {
+    "WU.AUTONOMY.detach.FT.VERIFICATION.repro": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.detach.FT.VERIFICATION.repro.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-22571/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.detach.FT.VERIFICATION.repro",
+      "verifier": "WU.AUTONOMY.detach.FT.VERIFICATION.repro.verifier"
+    },
+    "WU.TORTURE.NO_WAIT.specimen_verify": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.TORTURE.NO_WAIT.specimen_verify.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-22571/WU.TORTURE.NO_WAIT.specimen_verify.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+      "verifier": "WU.TORTURE.NO_WAIT.specimen_verify.verifier"
+    }
+  },
+  "graph": {
+    "WU.AUTONOMY.detach.FT.VERIFICATION.repro": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.TORTURE.NO_WAIT.specimen_verify": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    }
+  },
+  "schema": "hawking.future.wakeup.ledger.v1",
+  "version": 1
+}

@@ -14,6 +14,22 @@ def test_the_real_ledger_is_defensible():
     assert validate(state(), GOAL) == []
 
 
+def test_canonical_roadmap_identity_is_bound_and_checked():
+    s = state()
+    assert s["roadmap_version"] == "H-ROADMAP_CRISPR_EXECUTION_SPECIFICATION_2026-08-27"
+    assert s["civilizational_coordinate"] == 0.7
+    s["roadmap_hash"] = "0" * 64
+    assert any("roadmap_hash" in problem for problem in validate(s, GOAL))
+
+
+def test_all_five_eras_and_twenty_five_programs_are_explicit():
+    s = state()
+    assert set(s["era_statuses"]) == {"I", "II", "III", "IV", "V"}
+    assert len(s["program_statuses"]) == 25
+    s["program_statuses"].pop("V-E_PERPETUAL_HAWKING")
+    assert any("25 canonical programs" in problem for problem in validate(s, GOAL))
+
+
 def test_inflating_completion_to_evidence_coverage_is_REFUSED():
     """The exact mistake the first build made: I-D 9/9 categories, 0/8 obligations,
     printed 100%."""

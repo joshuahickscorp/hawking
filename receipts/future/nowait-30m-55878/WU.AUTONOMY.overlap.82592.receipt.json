@@ -1,0 +1,1 @@
+{"module": "freshness.py", "entry_point": "build", "receipt": "receipts/future/DERIVED_FRESHNESS.json", "routed_to_frontier": "FT.EXPERIMENT_TURNAROUND.refresh", "species": "DERIVED_REFRESH", "wall_seconds": 1.931, "evidence_class": "STATIC_ONLY"}

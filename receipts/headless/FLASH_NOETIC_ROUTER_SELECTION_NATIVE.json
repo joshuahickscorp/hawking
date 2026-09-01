@@ -1,0 +1,547 @@
+{
+  "body_mutated": false,
+  "body_receipt": {
+    "label": "[V]",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_COMPONENT_FULL_BODY.json",
+    "schema": "hcli.agentos.flash_noetic_component_body.v1",
+    "sha256": "1e27185d55c2f8c08b5b7eff6b5db1c7f8df98c51f290e395c32d3c6ac22585c",
+    "status": "PASSED"
+  },
+  "candidate_body": {
+    "bytes": 696320,
+    "candidate_id": "independent_q4_g64",
+    "code_bytes": 655360,
+    "execution_input": true,
+    "label": "[D]",
+    "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-component/flash-router-independent-q4-g64-l0-r0-512.bin",
+    "scale_bytes": 40960,
+    "sha256": "54a03b2e7a32d592f9604fb9101649b680bebff374e6d9a971c3e93b9578b2b0",
+    "source_independent": true
+  },
+  "claim_boundary": "PASSED bounded native source-independent Flash router selection over a persisted Q4/G64 body, plus a separately guarded native BF16 source-authority matvec. Candidate-vs-source top-k parity remains explicit and is not qualified on mismatch; the native BF16 source authority is qualified only against the pinned reference selection. No whole-model loader, capability, complete-token runtime, EBPW, or Flash TPS claim is made.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "elapsed_s": 0.056268334,
+  "execution": {
+    "body_mutated": false,
+    "body_source_independent": true,
+    "model_loaded": false,
+    "native_selection_execution_observed": true,
+    "native_source_authority_execution_observed": true,
+    "operation": "persisted_Q4_G64_body -> native_Q4_Metal_matvec -> FP32_softmax/top_k; pinned_BF16_source_reference -> native_BF16_Metal_matvec -> FP32_softmax/top_k",
+    "provider": "apple-metal",
+    "selected_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "source_native_selected_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_payload_exact": true,
+    "source_reference_used_for_comparison": true,
+    "source_reference_used_for_execution": false,
+    "source_tensor_read_for_authority": true
+  },
+  "flash_tps": null,
+  "gpu_timing": {
+    "device": "Apple M3 Ultra",
+    "gpu_ns": [
+      451000,
+      445500,
+      449875,
+      447416,
+      449875,
+      475750,
+      450500
+    ],
+    "gpu_ns_max": 475750,
+    "gpu_ns_median": 449875,
+    "gpu_ns_min": 445500,
+    "host_wall_ns": [
+      670000,
+      648000,
+      721000,
+      868000,
+      668000,
+      2342000,
+      638000
+    ],
+    "host_wall_ns_max": 2342000,
+    "host_wall_ns_median": 670000,
+    "host_wall_ns_min": 638000,
+    "measured_runs": 7,
+    "memory_limits": {
+      "current_allocated_size": 3801088,
+      "has_unified_memory": true,
+      "max_buffer_length": 62620631040,
+      "recommended_max_working_set_size": 83494174720
+    },
+    "output_hashes": [
+      "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+      "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+      "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+      "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+      "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+      "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+      "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b"
+    ],
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+    "warmup_gpu_ns": [
+      470250,
+      455084
+    ],
+    "warmup_runs": 2
+  },
+  "input": {
+    "definition": "((index * 71) mod 509 - 254) / 509",
+    "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+    "label": "[V]",
+    "values": 2560
+  },
+  "kernel_receipt": {
+    "label": "[V]",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_COMPONENT_FULL_KERNEL_PARITY.json",
+    "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+    "sha256": "038f09d59cd9f99e2ff4124c1741dd3f5bb9bed21f7fe8974749cbca80f65b77",
+    "status": "PASSED"
+  },
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+  },
+  "model_loaded": false,
+  "native_kernel": {
+    "dispatches_per_selection": 1,
+    "grid": [
+      512,
+      1,
+      1
+    ],
+    "kernel": "qwen_uniform_q4_group64_matvec",
+    "kernel_registered": true,
+    "label": "[V]/[D]",
+    "selection_logits_are_gpu_output": true,
+    "shader_family": "qwen_uniform_q4.metal",
+    "threadgroup": [
+      1,
+      1,
+      1
+    ],
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "native_loader": {
+    "body_loaded_directly": true,
+    "dense_rematerialization": "forbidden",
+    "source_independent_execution": true,
+    "source_tensor_read_for_execution": false,
+    "status": "BOUNDED_NOETIC_PERSISTED_BODY_LOAD",
+    "whole_model_capability": "NOT_TESTED",
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "native_selection_execution_observed": true,
+  "native_source_authority_execution_observed": true,
+  "native_source_authority_kernel": {
+    "accumulation": "left_to_right_product_then_add",
+    "accumulator_dtype": "float32",
+    "dispatches_per_selection": 1,
+    "grid": [
+      512,
+      1,
+      1
+    ],
+    "kernel": "gemv_native_bf16_seq",
+    "kernel_registered": true,
+    "label": "[V]/[D]",
+    "shader_family": "matmul.metal",
+    "source_guard_unchanged": true,
+    "source_payload_exact": true,
+    "threadgroup": [
+      1,
+      1,
+      1
+    ],
+    "weight_dtype": "BF16"
+  },
+  "next_action": "persist or select a representation whose native candidate route matches the qualified BF16 source top-k, then connect that route to persisted expert bodies and a protected complete-token graph",
+  "noetic_ir": {
+    "complete_model": false,
+    "operations": [
+      "load_persisted_source_independent_router_body",
+      "execute_native_q4_g64_router_matvec",
+      "read_pinned_bf16_source_authority_block",
+      "execute_native_bf16_source_router_matvec",
+      "compute_fp32_router_softmax",
+      "select_router_top_k",
+      "normalize_selected_router_weights",
+      "emit_selected_expert_ids_and_weights"
+    ],
+    "schema": "hcli.noetic.ir.v1",
+    "semantic_type": "NoeticIR",
+    "source_independent": true
+  },
+  "noetic_representation": {
+    "candidate_body_persisted": true,
+    "candidate_id": "independent_q4_g64",
+    "code_dtype": "uint4_packed",
+    "dense_rematerialization": "forbidden",
+    "effective_bits_per_value": 4.25,
+    "group_size": 64,
+    "label": "[D]",
+    "layout": "row-major [row, column]",
+    "scale_dtype": "little_endian_float16"
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "cosine": 0.999999999999969,
+    "count": 512,
+    "finite": true,
+    "max_abs_error": 3.2782554626464844e-07,
+    "rmse": 7.296703861931736e-08,
+    "tolerance": 0.0020000000949949026,
+    "within_tolerance": true
+  },
+  "physical_graph": {
+    "compiler_stage": "HawkingAccelerator",
+    "component_scope": "full pinned Flash router matrix body through native Metal logits and derived FP32 selection; no token graph",
+    "device_placement": {
+      "candidates": [
+        "apple_metal",
+        "cpu"
+      ],
+      "selected": "apple_metal"
+    },
+    "fingerprint": "a53c75aaba9f0e71e5be5154dca549d93456cabf86e6d2c83c3ce42bdfec8658",
+    "native_kernel_execution_observed": true,
+    "promotion_allowed": false,
+    "schema": "hcli.physical_graph.v1",
+    "semantic_type": "PhysicalGraph",
+    "source_native_reference_parity_qualified": true,
+    "source_native_reference_parity_status": "MATCH",
+    "source_selection_parity_qualified": false,
+    "source_selection_parity_status": "MISMATCH"
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "BOUNDED_NATIVE_ROUTER_SELECTION",
+  "reference": {
+    "candidate_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "candidate_selection_ids_match": true,
+    "candidate_vs_source_native_ids_match": false,
+    "label": "[V]",
+    "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION.json",
+    "receipt_sha256": "e74dbac855f29b08839fd645a3424ad01f7460fc2a09353db8408a0a0a1ff4c8",
+    "source_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_native_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_native_selection_ids_match": true,
+    "source_selection_ids_match": true,
+    "source_top_k_overlap_count": 8,
+    "source_top_k_overlap_fraction": 0.8
+  },
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_noetic_router_selection_native.v1",
+  "selection": {
+    "expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "logits_sha256": "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+    "probabilities_finite": true,
+    "probability_vector_sha256": "17345dba97c5f3c864dd2b1657553f72d823c3f3b915115402ce35bc873b6ff8",
+    "router_probabilities": [
+      0.005038584116846323,
+      0.0048886919394135475,
+      0.004575581289827824,
+      0.00425849249586463,
+      0.004131815396249294,
+      0.00408391747623682,
+      0.003928018268197775,
+      0.003922441974282265,
+      0.0038831422571092844,
+      0.003794187679886818
+    ],
+    "selected_probability_sum": 0.042504869401454926,
+    "selected_weight_sum": 1.0000001192092896,
+    "selected_weights": [
+      0.11854133754968643,
+      0.11501486599445343,
+      0.10764840245246887,
+      0.10018834471702576,
+      0.09720804542303085,
+      0.09608116745948792,
+      0.09241337329149246,
+      0.09228217601776123,
+      0.09135758876800537,
+      0.08926478028297424
+    ]
+  },
+  "selection_config": {
+    "label": "[V]",
+    "norm_topk_prob": true,
+    "num_experts": 512,
+    "num_experts_per_tok": 10,
+    "router_probability": "softmax(router_logits, dtype=float32, dim=-1)",
+    "selection": "topk(router_probs, num_experts_per_tok)",
+    "stable_tie_break": "expert_id_ascending"
+  },
+  "semantic_type": "NoeticExecutableCandidate",
+  "source_block": {
+    "bytes": 2621440,
+    "dtype": "BF16",
+    "label": "[V]",
+    "payload_sha256": "966e4d1ca7c18994a9311e82f0074584fe09e65e81eb8ddefe0a4dceebfc6ac6",
+    "row_count": 512,
+    "row_start": 0,
+    "shape": [
+      512,
+      2560
+    ],
+    "shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00003-of-00131.safetensors",
+    "shard_name": "model-00003-of-00131.safetensors",
+    "tensor_name": "model.language_model.layers.0.mlp.gate.weight"
+  },
+  "source_gpu_timing": {
+    "device": "Apple M3 Ultra",
+    "gpu_ns": [
+      365166,
+      368959,
+      372041,
+      370666,
+      207041,
+      199666,
+      199500
+    ],
+    "gpu_ns_max": 372041,
+    "gpu_ns_median": 365166,
+    "gpu_ns_min": 199500,
+    "host_wall_ns": [
+      526000,
+      704000,
+      1528000,
+      617000,
+      430000,
+      391000,
+      397000
+    ],
+    "host_wall_ns_max": 1528000,
+    "host_wall_ns_median": 526000,
+    "host_wall_ns_min": 391000,
+    "measured_runs": 7,
+    "output_hashes": [
+      "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b",
+      "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b",
+      "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b",
+      "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b",
+      "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b",
+      "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b",
+      "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b"
+    ],
+    "source_data_offset": 1677724856,
+    "source_guard_unchanged": true,
+    "source_payload_sha256": "966e4d1ca7c18994a9311e82f0074584fe09e65e81eb8ddefe0a4dceebfc6ac6",
+    "source_shard": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/model-00003-of-00131.safetensors",
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime; host wall reported separately",
+    "warmup_gpu_ns": [
+      364459,
+      397834
+    ],
+    "warmup_runs": 2
+  },
+  "source_guard_unchanged": true,
+  "source_native_parity": {
+    "cosine": 1.0,
+    "count": 512,
+    "finite": true,
+    "max_abs_error": 0.0,
+    "rmse": 0.0,
+    "tolerance": 0.0020000000949949026,
+    "within_tolerance": true
+  },
+  "source_native_selection": {
+    "expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "logits_sha256": "a2bbe8f7ea1d3db3ef836db9b5ac35bcaadc0551e88d1294705d616029a3501b",
+    "probabilities_finite": true,
+    "probability_vector_sha256": "2e1344a358be1d6a6266dd5aa3611985235a1cabb7f851925a038099c3f92e21",
+    "router_probabilities": [
+      0.005116028245538473,
+      0.004751703701913357,
+      0.004427795298397541,
+      0.004394808318465948,
+      0.0042854417115449905,
+      0.004135333467274904,
+      0.00401542242616415,
+      0.0038680736906826496,
+      0.003757351078093052,
+      0.0037164681125432253
+    ],
+    "selected_probability_sum": 0.04246842488646507,
+    "selected_weight_sum": 1.0,
+    "selected_weights": [
+      0.12046663463115692,
+      0.11188791692256927,
+      0.1042608767747879,
+      0.1034841388463974,
+      0.10090889036655426,
+      0.09737430512905121,
+      0.09455077350139618,
+      0.0910811647772789,
+      0.08847399055957794,
+      0.0875113233923912
+    ]
+  },
+  "source_payload_exact": true,
+  "source_reference_parity": {
+    "expert_ids_exact_match": true,
+    "label": "[V]/[D]",
+    "native_source_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "qualification": "NATIVE_BF16_SOURCE_ROUTER_SELECTION",
+    "reference_source_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "status": "MATCH",
+    "top_k_overlap_count": 10,
+    "top_k_overlap_fraction": 1.0
+  },
+  "source_selection_parity": {
+    "candidate_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "candidate_reference_ids_match": true,
+    "expert_ids_exact_match": false,
+    "label": "[V]/[D]",
+    "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+    "source_expert_ids": [
+      29,
+      309,
+      455,
+      151,
+      500,
+      374,
+      15,
+      220,
+      37,
+      0
+    ],
+    "source_native_reference_ids_match": true,
+    "status": "MISMATCH",
+    "top_k_overlap_count": 8,
+    "top_k_overlap_fraction": 0.8
+  },
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

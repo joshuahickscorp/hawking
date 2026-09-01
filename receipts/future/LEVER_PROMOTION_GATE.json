@@ -1,0 +1,108 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T01:51:23Z",
+  "recorded_by": "tools/future/lever_promotion_gate.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "decision": {
+  "and_the_reason_it_gave_no_longer_holds": "both are opt-in env levers and production default is unchanged. Promotion needs a protected absolute measurement to replace receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json, and every window so far has had ModelLake downloads running - twice after they were SIGSTOPped and the supervisor respawned them.",
+  "gpu_ms_after": 22.01,
+  "ms_saved": 4.5311,
+  "n_preconditions": 7,
+  "sealed_default_after_ms": 22.3347,
+  "sealed_default_after_tps": 44.773,
+  "sealed_default_today_ms": 26.7447,
+  "sealed_default_today_tps": 37.391,
+  "still_short_of_60_by_ms": 5.668,
+  "still_short_of_71_by_ms": 8.2502,
+  "the_ledger_asked_for_exactly_this": "a protected reprofile with both levers set, replacing the resident token budget; then the default flips and this section empties",
+  "verdict": "LICENSED_TO_FLIP_THE_DEFAULTS",
+  "what_this_does_not_license": "calling the result PROMOTED. Flipping a default is a source change; promotion needs a post-flip run proving the SEALED DEFAULT actually dispatches the measured kernels. A default that silently fails to select its kernel reports the old number under a new label, and every downstream receipt inherits it."
+ },
+ "defaults_to_flip": [
+  {
+   "after": "WidenF4 always",
+   "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "lever": "HAWKING_QWEN38_DN_STATE",
+   "selector": "Qwen38DeltaNetStateKernel::from_env_with_fast",
+   "today": "Baseline unless the fast profile is on",
+   "value": "widen_f4"
+  },
+  {
+   "after": "Bitcast always",
+   "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "lever": "HAWKING_AFFINE2_GEO",
+   "selector": "Affine2Geo::from_env_with_fast",
+   "today": "Tpr64 unless the fast profile is on, and fast selects SplitK4 - so the fast profile is NOT the measured arm either",
+   "value": "bitcast"
+  },
+  {
+   "after": "true unless the env var says otherwise",
+   "file": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+   "lever": "HAWKING_Q4_UNPACK",
+   "selector": "qwen38_q4_bitcast_on",
+   "today": "false unless the env var is set",
+   "value": "bitcast"
+  }
+ ],
+ "evidence_class": "DERIVED_FROM_SEALED_RECEIPTS",
+ "inputs": [
+  "receipts/future/PROTECTED_BITCAST_ABSOLUTE.json",
+  "receipts/future/HARNESS_RECONCILIATION.json",
+  "receipts/future/DELTANET_WIDEN_AB.json",
+  "receipts/future/GAP_LEDGER_60.json"
+ ],
+ "no_new_measurement": "no GPU lease was taken by this module and no hardware number is claimed that was not measured by a cited receipt.",
+ "obligation": "G126",
+ "preconditions": [
+  {
+   "evidence": "SIGSTOP the ModelLake SUPERVISOR first (tools/odyssey/modellake_watch.py), then the hf download workers, measure, then SIGCONT in reverse order",
+   "holds": true,
+   "id": "PROTECTED_WINDOW_WITH_THE_SUPERVISOR_STOPPED_FIRST",
+   "why_it_matters": "two earlier attempts stopped only the workers. The supervisor respawned them mid-window and both windows had to be declared contaminated. Stopping the parent is the difference between a lease and a pause."
+  },
+  {
+   "evidence": "PROTECTED_ABSOLUTE",
+   "holds": true,
+   "id": "LEASE_EVIDENCE_CLASS_IS_PROTECTED_ABSOLUTE"
+  },
+  {
+   "evidence": "SIGSTOP and SIGCONT only. No download restarted from zero and no partial file was discarded.",
+   "holds": true,
+   "id": "NOTHING_WAS_KILLED_TO_GET_THE_WINDOW"
+  },
+  {
+   "evidence": "token_identical=True, fallbacks=0, n_tokens=32, reps=9",
+   "holds": true,
+   "id": "BITCAST_ARM_IS_TOKEN_IDENTICAL_WITH_ZERO_FALLBACKS"
+  },
+  {
+   "evidence": "628 -> 580 dispatches, 27.406541 -> 26.382083 ms",
+   "holds": true,
+   "id": "WIDEN_F4_ARM_IS_TOKEN_IDENTICAL_ON_THE_628_GRAPH"
+  },
+  {
+   "evidence": "the wall numbers differ by 0.5449 ms and 90.2% of that is host gap. The GPU halves differ by 0.0533 ms, which is 0.20%. These instruments agree about the resident and disagree about the machine.",
+   "holds": true,
+   "id": "THE_HARNESS_DISAGREEMENT_IS_NOT_AN_INSTRUMENT_CONFLICT"
+  },
+  {
+   "evidence": "lease control arm=widen_f4, dispatches=580 - the same 580 the widen A/B produced, so the bitcast saving is measured ON TOP of widen_f4 and the two must not be summed",
+   "holds": true,
+   "id": "WIDEN_F4_IS_THE_LEASE_CONTROL_NOT_AN_ADDEND"
+  }
+ ],
+ "question": "GAP_LEDGER_60 wrote its own promotion condition and the reason it was unmet. Are both now satisfied?",
+ "seal_sha256": "bd51673901472bfea8245810a31b7f6e3d725fd28ab863f5a6410e5727219244",
+ "the_double_count_this_refuses": {
+  "correct_saving_ms": 4.5311,
+  "tempting_wrong_sum_ms": 5.5556,
+  "what_widen_f4_is_worth_here": "it is already inside the 26.5410 ms control. Its value shows up as the control being 1.02 ms lower than the 628-dispatch incumbent, not as an addend to the bitcast delta.",
+  "why": "widen_f4 saves 1.0245 ms against the 628-dispatch incumbent. The bitcast lease then saves 4.5311 ms against a control that ALREADY has widen_f4 on - same 580 dispatches, same arm name. Summing them would claim 5.5556 ms and count the widen_f4 baseline shift twice."
+ }
+}

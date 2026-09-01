@@ -1,0 +1,85 @@
+{
+ "authority": "S026 \u00a721-\u00a733, \u00a752-\u00a753",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T22:46:01Z",
+  "recorded_by": "tools/future/odyssey_mission_controller.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "depth_policy": {
+  "cancel_descendants": "when a hypothesis dies its pending descendants die with it. Queued experiments are not executed merely because they were generated.",
+  "deep_if": "the specimen breaks them",
+  "ladder_rule": "most hypotheses must die before the expensive levels; that is the only way 48-hour science is honest rather than rushed",
+  "not_every_model_earns_an_nx": "a specimen may serve its purpose by falsifying a law, confirming transfer, exposing a representation family or generating a scar. Only Pareto-relevant survivors earn deep lowering.",
+  "per_specimen": [
+   "cheap fingerprint",
+   "Doctor",
+   "law and scar lookup",
+   "cheapest discriminators"
+  ],
+  "shallow_if": "the specimen reproduces existing laws",
+  "verification_ladder": [
+   "structural",
+   "organ",
+   "hidden",
+   "logits",
+   "short_mission",
+   "capability_subset",
+   "full_qualification"
+  ]
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "horizon": {
+  "cycle_hours": 48.0,
+  "elapsed_hours": null,
+  "how_to_start": "stamp the start receipt at launch; every horizon answer below becomes live the moment it exists",
+  "remaining_hours": null,
+  "state": "NOT_STARTED",
+  "why": "receipts/future/ODYSSEY_CYCLE_1_START.json is not on disk. The cycle has not been launched, and reporting 'hour 0 of 48' for a mission nobody started would be fake progress."
+ },
+ "long_work_requirements": [
+  "maximum_payoff",
+  "why_no_cheaper_proxy",
+  "what_runs_concurrently",
+  "early_stop_criterion"
+ ],
+ "obligation": "G099",
+ "odyssey_is_not_held_hostage_to_60_tps": "S026 \u00a733. The cycle starts when the launch-critical gates are green and the 60/71 campaign continues INSIDE it. If 60 lands six hours in, the resident migrates mid-cycle.",
+ "phase_entry": {
+  "ODYSSEY_I": false,
+  "ODYSSEY_II": false,
+  "ODYSSEY_III": false,
+  "entry_conditions": {
+   "ODYSSEY_I": "cycle start",
+   "ODYSSEY_II": "at least one law exists to test transfer on",
+   "ODYSSEY_III": "at least one law exists to attack"
+  },
+  "n_attackable_laws": 0,
+  "n_laws": 0,
+  "overlap_is_expected": "the phases are logical roles, not exclusive machine modes. I, II and III may run simultaneously on different specimens, and the 48-hour budget is WALL time, not the sum of 18 + 12 + 12."
+ },
+ "seal_contract": {
+  "must_contain": [
+   "laws",
+   "scars",
+   "transfers",
+   "counterexamples",
+   "best NXs",
+   "resident improvement",
+   "experiment-policy improvements"
+  ],
+  "no_false_completeness": "the seal must not claim every available model participated fully. Late arrivals are recorded as late, and unfinished high-value work moves to ODYSSEY_CYCLE_2 rather than being written off.",
+  "not_required_to_pass": "the cycle does NOT require every model to be perfectly optimized (S026 \u00a752). It requires real scoped laws, tested transfer, attacks, multiple specimens, reproducible evidence and no prompt-by-prompt human clocking.",
+  "seal_path": "receipts/future/ODYSSEY_CYCLE_1.json",
+  "sealed": false,
+  "the_cycle_is_a_checkpoint_not_a_death": "the mission does not stop at hour 48; cycle 2 begins from a much stronger prior with every cycle-1 law and scar available.",
+  "time_indexed_universe": "the cycle's specimen set is TIME-INDEXED. A model that seals at hour 47 may receive only a fingerprint, transfer probes and quick adversarial tests, and the cycle records that it JOINED LATE."
+ },
+ "seal_sha256": "523c1d7c05d9aea6df41259e461b25ab85f9ede4738ff378ca0365814845ae38",
+ "what_is_live_and_what_is_not": "the admission rules, phase-entry conditions, depth policy and seal contract are live and tested now. Every HORIZON answer is NOT_STARTED, because the cycle has not been launched and a controller reporting 'hour 0 of 48' for a mission nobody started would be reporting fake progress."
+}

@@ -1,0 +1,38 @@
+{
+  "schema": "hawking.flash.stateful_complete_token_acceptance.v1",
+  "status": "PASSED_STATEFUL_COMPLETE_TOKEN_ACCEPTED",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "source_session_receipt": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
+  "source_session_sha256": "e1105b44060cba79adc91adaa1e39209385218e2a21b0a3a2e36f4586cd4958d",
+  "prompt_token_ids": [5423, 799, 4581, 3817, 13],
+  "generated_token_ids": [2972],
+  "accepted_generation_tokens": 1,
+  "terminal": {
+    "prompt_final_receipt": "receipts/headless/flash_stateful_complete_token_session/terminal/prompt-final.state.terminal.json",
+    "predicted_token_id": 2972,
+    "candidate_is_terminal_argmax": true,
+    "causal_prompt_state_verified": true
+  },
+  "execution": {
+    "complete_48_layer_forward": true,
+    "stateful_linear_recurrence": true,
+    "stateful_full_attention_kv": true,
+    "process_boundary": "one native process",
+    "cross_species_activation_handoff": "host diagnostic vectors",
+    "oracle_wall_ns": 5780352190000,
+    "fallback_count": 0
+  },
+  "accepted_tps": null,
+  "complete_system_ebpw": null,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "unix-ms:1787962575097",
+    "recorded_by": "flash_stateful_complete_token_acceptance",
+    "machine": "Apple M3 Ultra",
+    "rule": "S032 §3 -- one accepted-token receipt; no protected TPS claim"
+  },
+  "promotion_allowed": false,
+  "claim_boundary": "The pinned tokenizer prompt completed all 48 Flash layers in the dense exact stateful oracle, and the native terminal argmax produced token 2972 as the first generated token. This closes one accepted-token prediction without claiming that token's continuation state was advanced; repeated accepted decode, TPS, EBPW, capability and HCLI residency remain open.",
+  "next": "Use the accepted token as the next session input in a route-safe persistent executor; measure repeated accepted decode and eliminate dense source-bank reloads."
+}

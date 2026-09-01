@@ -1,0 +1,151 @@
+{
+  "bench": {
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy",
+    "quiescence": null,
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "CUDA is not claimed on this run; this graph records accelerator laws transferable from the observed Apple Metal implementation.",
+  "cuda_execution_observed": false,
+  "diagnostic_source_execution": {
+    "additional_source_parity_layers": [
+      {
+        "layer_index": 2,
+        "observed": true,
+        "parity_passed": true,
+        "source_receipt": {
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_COMPLETE_LAYER2_NATIVE_PARITY.json",
+          "schema": "hawking.flash_noetic_complete_layer0_source_bf16.v1",
+          "sha256": "e3c60c6629f909bf698f77d3d6b67aa0863cbf6ca7b05aa5b7ba3f07c411557d",
+          "status": "PASSED"
+        }
+      }
+    ],
+    "claim_boundary": "A passed source-native Metal layer-0 parity receipt plus 1 additional eligible linear-attention layer receipt(s) establish bounded Apple implementation only; they prove neither CUDA execution nor a complete-token performance result.",
+    "observed": true,
+    "parity_passed": true,
+    "promotion_allowed": false,
+    "source_parity_layer_count": 2,
+    "source_receipt": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_COMPLETE_LAYER0_NATIVE_PARITY.json",
+      "schema": "hawking.flash_noetic_complete_layer0_source_bf16.v1",
+      "sha256": "9d3a037cbe3f2485e78f3bcedda81cd97cad47dcb44867b7e0f8ec0d1d82cdd5",
+      "status": "PASSED"
+    }
+  },
+  "edges": [
+    [
+      "grouped_rmsnorm",
+      "q4_g64_matvec"
+    ],
+    [
+      "q4_g64_matvec",
+      "fused_gate_up_swiglu"
+    ],
+    [
+      "fused_gate_up_swiglu",
+      "moe_weighted_sum"
+    ],
+    [
+      "moe_weighted_sum",
+      "moe_add_shared"
+    ],
+    [
+      "moe_add_shared",
+      "hyperconnection_read_write"
+    ],
+    [
+      "source_bf16_gemv",
+      "recurrent_state_update"
+    ],
+    [
+      "recurrent_state_update",
+      "source_native_moe_wave"
+    ],
+    [
+      "source_native_moe_wave",
+      "hyperconnection_read_write"
+    ]
+  ],
+  "execution_device": "Apple M3 Ultra",
+  "native_backend_observed": "apple_metal",
+  "nodes": [
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "grouped_rmsnorm",
+      "metal_status": "FUNCTIONAL",
+      "transfer_law": "one element per output with stream-local reduction"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "q4_g64_matvec",
+      "metal_status": "FUNCTIONAL",
+      "transfer_law": "grouped packed code/scale decode with resident activation"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "fused_gate_up_swiglu",
+      "metal_status": "FUNCTIONAL",
+      "transfer_law": "paired gate/up rows and device-local SiLU product"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "moe_weighted_sum",
+      "metal_status": "FUNCTIONAL",
+      "transfer_law": "selected-weight reduction over routed expert outputs"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "moe_add_shared",
+      "metal_status": "FUNCTIONAL",
+      "transfer_law": "elementwise routed-plus-shared join"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "hyperconnection_read_write",
+      "metal_status": "FUNCTIONAL",
+      "transfer_law": "grouped stream equations with explicit scale and broadcast"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "source_bf16_gemv",
+      "metal_status": "FUNCTIONAL",
+      "required_kernels": [
+        "gemv_native_bf16_seq"
+      ],
+      "transfer_law": "source BF16 weights multiply a device-resident activation without host weight conversion"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "recurrent_state_update",
+      "metal_status": "FUNCTIONAL",
+      "required_kernels": [
+        "qwen_next_ba_split_to_decay_beta_source_bf16",
+        "qwen_next_deltanet_source_bf16_gated_rmsnorm",
+        "qwen_next_gated_delta_decode_single",
+        "qwen_next_qkv_split_rearrange_conv_l2"
+      ],
+      "transfer_law": "causal convolution and DeltaNet state update remain device-resident across the graph"
+    },
+    {
+      "cuda_status": "UNOBSERVED",
+      "id": "source_native_moe_wave",
+      "metal_status": "FUNCTIONAL",
+      "required_kernels": [
+        "moe_topk_gate",
+        "qwen_next_bf16_expert_down",
+        "qwen_next_bf16_expert_gate_up_swiglu",
+        "qwen_next_moe_add_shared",
+        "qwen_next_moe_weighted_sum"
+      ],
+      "transfer_law": "router-selected experts execute from source BF16 storage without a host gather or dense expert rematerialization"
+    }
+  ],
+  "promotion_allowed": false,
+  "qualification": "TRANSFERABLE_ACCELERATOR_LAWS_ONLY",
+  "schema": "hcli.agentos.cuda_capability_graph.v1",
+  "status": "PARTIAL_TRANSFER_MAP"
+}

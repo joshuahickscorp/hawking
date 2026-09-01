@@ -36,18 +36,32 @@ def test_an_inner_loop_that_does_not_add_up_is_refused(monkeypatch, tmp_path):
         dh.accounting()
 
 
-def test_the_dequant_term_collapses_to_two_fma_per_group():
+def test_the_affine_is_amortised_over_the_CHUNK_not_the_group():
+    """The kernel strides col += 512, so a thread handles one 8-weight chunk of a
+    group and never returns to it. scale and bias are constant within the CHUNK.
+
+    Assuming the group was how the first version of this receipt claimed 1.939x
+    while describing the un-retiled loop.
+    """
     acc = dh.accounting()
-    assert acc["group_size"] == 64
-    assert acc["folded"]["dequant_fma"] == pytest.approx(2.0 * 8 / 64)
-    assert acc["decode_cheapening"] == pytest.approx(32.0, abs=0.1)
+    assert acc["folded"]["dequant_fma"] == pytest.approx(2.0)
+    assert acc["decode_cheapening"] == pytest.approx(4.0, abs=0.1)
+    assert "col += 512" in acc["amortised_over"]
+
+
+def test_the_retiling_variant_is_named_as_a_DIFFERENT_candidate():
+    acc = dh.accounting()
+    r = acc["a_retiling_would_do_better"]
+    assert r["total_arithmetic_cheapening"] > acc["total_arithmetic_cheapening"]
+    assert "DIFFERENT candidate" in r["but"]
+    assert "did not state" in r["but"]
 
 
 def test_it_clears_the_required_cheapening():
     doc = dh.build()
     m = doc["meets_the_requirement"]
     assert m["required_total_cheapening"] == 1.509
-    assert m["offered_total_cheapening"] == pytest.approx(1.9394, abs=1e-3)
+    assert m["offered_total_cheapening"] == pytest.approx(1.600, abs=1e-3)
     assert m["clears"] is True
 
 
@@ -86,3 +100,36 @@ def test_the_boundary_says_an_fma_count_is_not_a_gb_s():
     cb = dh.build()["claim_boundary"]
     assert "an FMA count is not a GB/s" in cb
     assert "candidate worth building, not a result" in cb
+
+
+def test_the_candidate_is_bracketed_on_the_MEASURED_ladder_not_guessed():
+    """The issue-rate ladder already swept FMA/byte on the real kernel."""
+    b = dh.ladder_bracket()
+    assert b["candidate_fma_per_weight_byte"] == pytest.approx(1.6667, abs=1e-3)
+    assert b["bracketed_by"] == ["k6", "k4"]
+    lo, hi = b["speedup_bracket"]
+    assert lo == pytest.approx(1.2679, abs=1e-3)
+    assert hi == pytest.approx(1.4256, abs=1e-3)
+
+
+def test_it_is_a_bracket_and_not_an_interpolated_point():
+    """The ladder's own verdict is that its shape is neither linear nor plateau."""
+    b = dh.ladder_bracket()
+    assert "false precision" in b["not_interpolated_because"]
+    assert "0.8712" in b["not_interpolated_because"]
+    lo, hi = b["mlp_ms_saved_bracket"]
+    assert lo < hi, "a bracket must have two ends"
+    assert lo == pytest.approx(3.3064, abs=1e-2)
+
+
+def test_the_knee_is_named_so_nobody_chases_past_it():
+    """k4 439.5 and k2 440.6 - halving the FMA again buys 0.25%."""
+    knee = dh.ladder_bracket()["the_knee"]
+    assert "439.5" in knee and "440.6" in knee
+    assert "0.25%" in knee
+    assert "just above the knee" in knee
+
+
+def test_the_ladder_arms_are_not_bit_identical_and_neither_is_this():
+    b = dh.ladder_bracket()
+    assert "not-identical" in b["ladder_arms_are_not_bit_identical"]

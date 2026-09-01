@@ -20,6 +20,17 @@ from hcli.verifier_pipeline import command_is_admissible
 from hcli.workunit import WorkUnit
 from hcli.agentos.runtime import AgentOS
 from hcli.agentos.background import BackgroundJob, BackgroundJobStore
+from hcli.agentos.resident import (
+    ResidentConfig,
+    ResidentBodyRegistry,
+    ResidentDaemon,
+    ResidentStore,
+    ResidentSupervisor,
+    admit_evidence_children,
+    memory_decision,
+    resident_behavior,
+    start_resident,
+)
 from hcli.agentos.states import AgentState, mission_state, workunit_state
 from hcli.providers import (
     Capability,
@@ -36,7 +47,15 @@ from hcli.providers import (
     RoleRouter,
     RuntimeGenome,
 )
-from hcli.physical_graph import PhysicalGraph, compile_physical_graph
+from hcli.physical_graph import (
+    DIAGNOSTIC_BENCHMARK_CLASSES,
+    NR_PRIMITIVES,
+    PhysicalGraph,
+    PROTECTED_BENCHMARK_CLASSES,
+    compile_physical_graph,
+    score_physical_candidates,
+)
+from hcli.ane_provider import ANEProvider
 from hcli.nomenclature import NOMENCLATURE_VERSION
 from hcli.result_envelope import ResultEnvelope, build_result_envelope
 from hcli.tool_registry import ToolContext, ToolRegistry, ToolResult, ToolSpec, default_tool_registry
@@ -60,6 +79,15 @@ __all__ = [
     "AgentOS",
     "BackgroundJob",
     "BackgroundJobStore",
+    "ResidentConfig",
+    "ResidentBodyRegistry",
+    "ResidentDaemon",
+    "ResidentStore",
+    "ResidentSupervisor",
+    "admit_evidence_children",
+    "memory_decision",
+    "resident_behavior",
+    "start_resident",
     "RECOVERY_GATE_SCHEMA",
     "run_recovery_gate",
     "RESEARCH_GATE_SCHEMA",
@@ -150,7 +178,12 @@ __all__ = [
     "RoleRouter",
     "RuntimeGenome",
     "PhysicalGraph",
+    "DIAGNOSTIC_BENCHMARK_CLASSES",
+    "NR_PRIMITIVES",
+    "PROTECTED_BENCHMARK_CLASSES",
     "compile_physical_graph",
+    "score_physical_candidates",
+    "ANEProvider",
     "NOMENCLATURE_VERSION",
     "ResultEnvelope",
     "build_result_envelope",

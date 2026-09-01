@@ -1,0 +1,1 @@
+{"module": "fpga_engines.py", "entry_point": "build", "receipt": "receipts/future/FPGA_ENGINE_SCHOOL.json", "routed_to_frontier": "FT.FPGA.engine-sim", "species": "FPGA_SIMULATION", "wall_seconds": 0.286, "evidence_class": "STATIC_ONLY"}

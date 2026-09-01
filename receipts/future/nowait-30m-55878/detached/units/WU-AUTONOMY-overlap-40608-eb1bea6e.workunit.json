@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.40608.receipt.json",
+    "flash_organ_pivot.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "rank remaining Flash organs by expected information gain per cost and refuse a nearby restatement of a killed family on layer_4.routed_experts.gate_up_proj",
+  "frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.40608",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.40608.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "e1475087689d56efc9e65004f54f851e4c1d0b0208d9279227b5ea4a91a71c98",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

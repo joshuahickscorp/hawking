@@ -1,0 +1,1696 @@
+{
+ "answer": "yes, now: a lake manifest appearing emits the six S027 \u00a722 triggers as WorkUnits through frontiers._item, with no conversational boundary. Before this consumer, MODEL_SEALED triggered nothing.",
+ "authority": "S027 \u00a72, \u00a721, \u00a722",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T06:06:44Z",
+  "recorded_by": "tools/future/modellake_events.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "dead_school_is_refused_not_created": true,
+ "detection": {
+  "authority": "a lake manifest with resolved_sha and bytes",
+  "complete_unsealed_do_not_emit": true,
+  "n_complete_unsealed": 29,
+  "n_sealed_on_disk": 8,
+  "n_sealed_registry": 8,
+  "not_authority": "a watcher download_exit or already_complete claim, a lifecycle label, or a human saying the model is ready",
+  "sealed_ids": [
+   "Qwen--Qwen3-0.6B@c1899de289a0",
+   "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+  ]
+ },
+ "emitted": [
+  {
+   "claimed_complete_in_log_tail": true,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "qwen3",
+   "n_units": 6,
+   "source_bytes": 1519280128,
+   "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.qwen3-0-6b-c1899de289a0.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.qwen3-0-6b-c1899de289a0.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-0-6b-c1899de289a0.law-and-scar-lookup",
+    "FT.MEMORY.seal.qwen3-0-6b-c1899de289a0.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-0-6b-c1899de289a0.workgraph-creation",
+    "FT.MEMORY.seal.qwen3-0-6b-c1899de289a0.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=qwen3; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.qwen3-0-6b-c1899de289a0.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|Qwen--Qwen3-0.6B@c1899de289a0",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen Qwen--Qwen3-0.6B@c1899de289a0 from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture qwen3 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.qwen3-0-6b-c1899de289a0.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|Qwen--Qwen3-0.6B@c1899de289a0",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen Qwen--Qwen3-0.6B@c1899de289a0",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-0-6b-c1899de289a0.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|Qwen--Qwen3-0.6B@c1899de289a0",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for Qwen--Qwen3-0.6B@c1899de289a0 before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 19.6 s (1.52 GB) at the quiet-cold rate; warm is 0.14 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.qwen3-0-6b-c1899de289a0.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|Qwen--Qwen3-0.6B@c1899de289a0",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for Qwen--Qwen3-0.6B@c1899de289a0",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-0-6b-c1899de289a0.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|Qwen--Qwen3-0.6B@c1899de289a0",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen Qwen--Qwen3-0.6B@c1899de289a0",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 0.33 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.qwen3-0-6b-c1899de289a0.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|Qwen--Qwen3-0.6B@c1899de289a0",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen Qwen--Qwen3-0.6B@c1899de289a0",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  },
+  {
+   "claimed_complete_in_log_tail": false,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "qwen3_moe",
+   "n_units": 6,
+   "source_bytes": 61087084544,
+   "specimen_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.qwen3-30b-a3b-ad44e777bcd1.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.qwen3-30b-a3b-ad44e777bcd1.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-30b-a3b-ad44e777bcd1.law-and-scar-lookup",
+    "FT.MEMORY.seal.qwen3-30b-a3b-ad44e777bcd1.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-30b-a3b-ad44e777bcd1.workgraph-creation",
+    "FT.MEMORY.seal.qwen3-30b-a3b-ad44e777bcd1.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=qwen3_moe; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.qwen3-30b-a3b-ad44e777bcd1.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen Qwen--Qwen3-30B-A3B@ad44e777bcd1 from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture qwen3_moe is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.qwen3-30b-a3b-ad44e777bcd1.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-30b-a3b-ad44e777bcd1.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for Qwen--Qwen3-30B-A3B@ad44e777bcd1 before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 786.2 s (61.09 GB) at the quiet-cold rate; warm is 5.55 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.qwen3-30b-a3b-ad44e777bcd1.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-30b-a3b-ad44e777bcd1.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 13.1 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.qwen3-30b-a3b-ad44e777bcd1.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  },
+  {
+   "claimed_complete_in_log_tail": false,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "qwen3_vl_moe",
+   "n_units": 6,
+   "source_bytes": 62153351168,
+   "specimen_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.law-and-scar-lookup",
+    "FT.MEMORY.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.workgraph-creation",
+    "FT.MEMORY.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=qwen3_vl_moe; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture qwen3_vl_moe is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 799.9 s (62.15 GB) at the quiet-cold rate; warm is 5.64 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 13.33 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.qwen3-vl-30b-a3b-instruct-9c4b90e1e4ba.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  },
+  {
+   "claimed_complete_in_log_tail": false,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "qwen4_exp",
+   "n_units": 6,
+   "source_bytes": 360053432320,
+   "specimen_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.qwen3-8-flash-next-34567a4712bc.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.qwen3-8-flash-next-34567a4712bc.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-8-flash-next-34567a4712bc.law-and-scar-lookup",
+    "FT.MEMORY.seal.qwen3-8-flash-next-34567a4712bc.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.qwen3-8-flash-next-34567a4712bc.workgraph-creation",
+    "FT.MEMORY.seal.qwen3-8-flash-next-34567a4712bc.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=qwen4_exp; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.qwen3-8-flash-next-34567a4712bc.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen Qwen--Qwen3.8-Flash-Next@34567a4712bc from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture qwen4_exp is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.qwen3-8-flash-next-34567a4712bc.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-8-flash-next-34567a4712bc.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for Qwen--Qwen3.8-Flash-Next@34567a4712bc before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 4633.9 s (360.05 GB) at the quiet-cold rate; warm is 32.69 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.qwen3-8-flash-next-34567a4712bc.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.qwen3-8-flash-next-34567a4712bc.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 77.23 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.qwen3-8-flash-next-34567a4712bc.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  },
+  {
+   "claimed_complete_in_log_tail": false,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "deepseek_v4",
+   "n_units": 6,
+   "source_bytes": 159630491648,
+   "specimen_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.deepseek-v4-flash-60d8d70770c6.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.deepseek-v4-flash-60d8d70770c6.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.deepseek-v4-flash-60d8d70770c6.law-and-scar-lookup",
+    "FT.MEMORY.seal.deepseek-v4-flash-60d8d70770c6.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.deepseek-v4-flash-60d8d70770c6.workgraph-creation",
+    "FT.MEMORY.seal.deepseek-v4-flash-60d8d70770c6.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=deepseek_v4; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.deepseek-v4-flash-60d8d70770c6.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6 from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture deepseek_v4 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.deepseek-v4-flash-60d8d70770c6.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.deepseek-v4-flash-60d8d70770c6.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6 before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 2054.4 s (159.63 GB) at the quiet-cold rate; warm is 14.49 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.deepseek-v4-flash-60d8d70770c6.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.deepseek-v4-flash-60d8d70770c6.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 34.24 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.deepseek-v4-flash-60d8d70770c6.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  },
+  {
+   "claimed_complete_in_log_tail": false,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "mistral3",
+   "n_units": 6,
+   "source_bytes": 96077959168,
+   "specimen_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.law-and-scar-lookup",
+    "FT.MEMORY.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.workgraph-creation",
+    "FT.MEMORY.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=mistral3; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618 from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture mistral3 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618 before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 1236.5 s (96.08 GB) at the quiet-cold rate; warm is 8.72 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 20.61 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.mistral-small-3-1-24b-instruct-2503-68faf511d618.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  },
+  {
+   "claimed_complete_in_log_tail": false,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "kimi_vl",
+   "n_units": 6,
+   "source_bytes": 32823230464,
+   "specimen_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.kimi-vl-a3b-instruct-398eede0903c.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.kimi-vl-a3b-instruct-398eede0903c.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.kimi-vl-a3b-instruct-398eede0903c.law-and-scar-lookup",
+    "FT.MEMORY.seal.kimi-vl-a3b-instruct-398eede0903c.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.kimi-vl-a3b-instruct-398eede0903c.workgraph-creation",
+    "FT.MEMORY.seal.kimi-vl-a3b-instruct-398eede0903c.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=kimi_vl; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.kimi-vl-a3b-instruct-398eede0903c.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen moonshotai--Kimi-VL-A3B-Instruct@398eede0903c from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture kimi_vl is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.kimi-vl-a3b-instruct-398eede0903c.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.kimi-vl-a3b-instruct-398eede0903c.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for moonshotai--Kimi-VL-A3B-Instruct@398eede0903c before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 422.4 s (32.82 GB) at the quiet-cold rate; warm is 2.98 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.kimi-vl-a3b-instruct-398eede0903c.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.kimi-vl-a3b-instruct-398eede0903c.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 7.04 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.kimi-vl-a3b-instruct-398eede0903c.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  },
+  {
+   "claimed_complete_in_log_tail": false,
+   "detection": "lake_manifest",
+   "lifecycle": "FINGERPRINTED",
+   "model_type": "falcon_h1",
+   "n_units": 6,
+   "source_bytes": 15183298560,
+   "specimen_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "unit_ids": [
+    "FT.MODEL_REPRESENTATION.seal.falcon-h1-7b-instruct-41e72f27effb.fingerprint",
+    "FT.MODEL_CAPABILITY.seal.falcon-h1-7b-instruct-41e72f27effb.role-evaluation",
+    "FT.ODYSSEY_TRANSFER.seal.falcon-h1-7b-instruct-41e72f27effb.law-and-scar-lookup",
+    "FT.MEMORY.seal.falcon-h1-7b-instruct-41e72f27effb.initial-economics",
+    "FT.ODYSSEY_TRANSFER.seal.falcon-h1-7b-instruct-41e72f27effb.workgraph-creation",
+    "FT.MEMORY.seal.falcon-h1-7b-instruct-41e72f27effb.possible-prefetch-or-load"
+   ],
+   "units": [
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "config.json on disk names model_type=falcon_h1; do not open weights. A fingerprint is architecture and size, not a tensor experiment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "modellake_seal_fingerprint",
+     "id": "FT.MODEL_REPRESENTATION.seal.falcon-h1-7b-instruct-41e72f27effb.fingerprint",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_REPRESENTATION|modellake_seal_fingerprint|tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Fingerprint sealed specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb from config.json",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "architecture falcon_h1 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MODEL_CAPABILITY",
+     "hypothesis_family": "modellake_seal_role",
+     "id": "FT.MODEL_CAPABILITY.seal.falcon-h1-7b-instruct-41e72f27effb.role-evaluation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MODEL_CAPABILITY|modellake_seal_role|tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Evaluate the role of sealed specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_laws_scars",
+     "id": "FT.ODYSSEY_TRANSFER.seal.falcon-h1-7b-instruct-41e72f27effb.law-and-scar-lookup",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_laws_scars|tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Look up transferable laws and scars for tiiuae--Falcon-H1-7B-Instruct@41e72f27effb before any load",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "measured cold load is 195.4 s (15.18 GB) at the quiet-cold rate; warm is 1.38 s. These are disk-read floors, not a full LOAD_SPECIMEN.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_economics",
+     "id": "FT.MEMORY.seal.falcon-h1-7b-instruct-41e72f27effb.initial-economics",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_economics|tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Compute initial load economics for tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "the sealed model becomes schedulable material at once. Add a bounded WorkGraph to the running mission; do not restart Odyssey and do not ask whether to look at it.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "ODYSSEY_TRANSFER",
+     "hypothesis_family": "modellake_seal_workgraph",
+     "id": "FT.ODYSSEY_TRANSFER.seal.falcon-h1-7b-instruct-41e72f27effb.workgraph-creation",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "ODYSSEY_TRANSFER|modellake_seal_workgraph|tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Create the arrival WorkGraph for sealed specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    },
+    {
+     "bench_state": "UNKNOWN",
+     "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
+     "detail": "cold load is 3.26 minutes. S027 \u00a78: do not wait until a model is needed to start loading it. Residency dominates download contention; this unit is the prefetch decision, not a GPU lease.",
+     "effect_class": "READ_ONLY",
+     "evidence": [
+      "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
+      "receipts/future/SPECIMEN_REGISTRY.json",
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+     ],
+     "evidence_class": "STATIC_ONLY",
+     "expected_information_gain": 3,
+     "frontier": "MEMORY",
+     "hypothesis_family": "modellake_seal_prefetch",
+     "id": "FT.MEMORY.seal.falcon-h1-7b-instruct-41e72f27effb.possible-prefetch-or-load",
+     "kind": "NEXT_WORK",
+     "redundancy_key": "MEMORY|modellake_seal_prefetch|tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "required_lanes": [
+      "CPU",
+      "ANALYSIS"
+     ],
+     "resource_class": "STATIC_ANALYSIS",
+     "source_f": "S027-22",
+     "species": "modellake-seal",
+     "title": "Consider prefetch or load of sealed specimen tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "verifier": "tools.future.modellake_events.consume",
+     "wake_all_of": [],
+     "wake_never": []
+    }
+   ]
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "human_notified": false,
+ "idempotent": true,
+ "is_this_wired": true,
+ "log_tail": {
+  "a_claim_is_not_a_seal": "download_exit and already_complete mean the watcher thinks bytes landed. Schedulable material requires the manifest.",
+  "claims_without_seal": [
+   "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+   "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
+   "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
+   "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
+   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
+   "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+   "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f",
+   "allenai--Olmo-3-1025-7B@a81bae42db39",
+   "answerdotai--ModernBERT-large@45bb4654a4d5",
+   "arcinstitute--evo2_40b@d529aa57c307",
+   "arcinstitute--evo2_7b@bda0089f9258",
+   "bigcode--starcoder2-7b@bb9afde76d79",
+   "boltz-community--boltz-2@6fdef46d763f",
+   "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+   "facebook--musicgen-large@15ccdc920998",
+   "facebook--sam2.1-hiera-large@665f8e2ad61c",
+   "facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
+   "google--flan-t5-large@0613663d0d48",
+   "google--timesfm-2.0-500m-pytorch@dc2443792ce5",
+   "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f",
+   "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
+   "kyutai--moshika-pytorch-bf16@a49141e28b3d",
+   "lerobot--pi0_base@25c379b52ba2",
+   "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
+   "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
+   "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
+   "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "nvidia--audio-flamingo-3@ee26c5842398",
+   "openai--whisper-large-v3-turbo@41f01f3fe87f",
+   "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
+   "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
+   "tencent--HunyuanVideo@6204ad6aea1a"
+  ],
+  "n_claims_without_seal": 35,
+  "n_completion_claims": 36,
+  "n_parseable_events": 312
+ },
+ "n_emitted_specimens": 8,
+ "n_emitted_units": 48,
+ "n_triggers_per_seal": 6,
+ "no_conversational_boundary": true,
+ "obligation": "G101",
+ "question": "When a model seals, does anything happen without a human noticing?",
+ "schema": "hawking.future.modellake_events.v1",
+ "seal_sha256": "132f573546f0216d402c6d2f764f164cf31bbb9393f2b6394dc2160fae92578f",
+ "seal_triggers": [
+  "fingerprint",
+  "role evaluation",
+  "law and scar lookup",
+  "initial economics",
+  "WorkGraph creation",
+  "possible prefetch or load"
+ ],
+ "through_frontiers_item": true,
+ "version": 1,
+ "watch_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/modellake-watch.jsonl",
+ "watch_log_relative_if_in_repo": "workspace/campaign/odyssey/downloads/modellake-watch.jsonl",
+ "what_the_view_still_says": "modellake_scheduler_view.seal_contract is_this_wired is still False: that module is the reader, this module is the consumer, and the view is not edited by this lane."
+}

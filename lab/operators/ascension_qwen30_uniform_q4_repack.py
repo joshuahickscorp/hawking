@@ -14,6 +14,7 @@ import json
 import math
 import os
 import struct
+import sys
 import tempfile
 import time
 from concurrent.futures import ProcessPoolExecutor, as_completed
@@ -23,23 +24,37 @@ from typing import Any, Mapping, Sequence
 
 import numpy as np
 
+REPO_ROOT = Path(__file__).resolve().parents[2]
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
 from lab.operators import ascension_qwen30_complete_gravity as complete
 from lab.receipts import seal
 
 
-MAIN_HAWKING = Path("/Users/scammermike/Downloads/hawking")
-MODEL_DIR = MAIN_HAWKING / (
-    "workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct"
+MAIN_HAWKING = REPO_ROOT
+MODEL_DIR = Path(
+    os.environ.get(
+        "QWEN30_REPACK_MODEL_DIR",
+        str(MAIN_HAWKING / "workspace/campaign/records/runs/qwen-30b/Qwen3-Coder-30B-A3B-Instruct"),
+    )
 )
-QWEN30_ROOT = MAIN_HAWKING / (
-    "workspace/campaign/records/ascension-sandbox/physical/qwen30"
+QWEN30_ROOT = Path(
+    os.environ.get(
+        "QWEN30_REPACK_CONTROL_ROOT",
+        str(MAIN_HAWKING / "workspace/campaign/records/ascension-sandbox/physical/qwen30"),
+    )
 )
-SOURCE_AUDIT = QWEN30_ROOT / "QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json"
-BASELINE_REVALIDATION = (
-    QWEN30_ROOT / "complete-gravity" / "QWEN30_CURRENT_SOURCE_SHARD_REVALIDATION.json"
+SOURCE_AUDIT = Path(
+    os.environ.get("QWEN30_REPACK_SOURCE_AUDIT", str(QWEN30_ROOT / "QWEN30_SOURCE_BODY_AUDIT_CANDIDATE.json"))
+)
+BASELINE_REVALIDATION = Path(
+    os.environ.get(
+        "QWEN30_REPACK_SOURCE_REVALIDATION",
+        str(QWEN30_ROOT / "complete-gravity" / "QWEN30_CURRENT_SOURCE_SHARD_REVALIDATION.json"),
+    )
 )
 DEFAULT_ROOT = (
-    QWEN30_ROOT / "quality-candidates" / "uniform-q4-group64-v1"
+    Path(os.environ.get("QWEN30_REPACK_OUTPUT_ROOT", str(QWEN30_ROOT / "quality-candidates" / "uniform-q4-group64-v1")))
 )
 
 MAGIC = b"HQ30UQ4\0"
@@ -48,9 +63,14 @@ GROUP_SIZE = 64
 CODE_BYTES_PER_GROUP = GROUP_SIZE // 2  # 4-bit nibbles
 SCHEMA = "hawking.ascension.qwen30_uniform_q4_group64_candidate.v1"
 TERMINAL_SCHEMA = "hawking.ascension.complete_binary_terminal_status.v1"
-BRANCH_ID = "qwen30-uniform-q4-group64-v1"
-ARTIFACT_PREFIX = "QWEN30_UNIFORM_Q4_GROUP64_V1"
-MODEL_ID = "Qwen3-Coder-30B-A3B-Instruct-uniform-q4-group64-v1"
+BRANCH_ID = os.environ.get("QWEN30_REPACK_BRANCH_ID", "qwen30-uniform-q4-group64-v1")
+ARTIFACT_PREFIX = os.environ.get("QWEN30_REPACK_ARTIFACT_PREFIX", "QWEN30_UNIFORM_Q4_GROUP64_V1")
+MODEL_ID = os.environ.get(
+    "QWEN30_REPACK_MODEL_ID", "Qwen3-Coder-30B-A3B-Instruct-uniform-q4-group64-v1"
+)
+SOURCE_REPOSITORY = os.environ.get(
+    "QWEN30_REPACK_SOURCE_REPOSITORY", "Qwen/Qwen3-Coder-30B-A3B-Instruct"
+)
 EXPECTED_TENSOR_COUNT = 18_867
 CANDIDATE_STATUS = "CANDIDATE_UNIFORM_Q4_GROUP64_DIAGNOSTIC_UNQUALIFIED"
 COMPLETE_CANDIDATE_PHASE = "EARNED_COMPLETE_PHYSICAL_UNIFORM_Q4_CANDIDATE_UNQUALIFIED"
@@ -332,7 +352,8 @@ def build(*, root: Path, workers: int, max_tensors: int | None) -> Path:
                 row = json.loads(line)
                 done[str(row["tensor_name"])] = row
 
-    ordered_names = sorted(weight_map.keys())
+    all_names = sorted(weight_map.keys())
+    ordered_names = all_names
     if max_tensors is not None:
         ordered_names = ordered_names[: max_tensors]
 
@@ -419,12 +440,33 @@ def build(*, root: Path, workers: int, max_tensors: int | None) -> Path:
                             },
                         )
 
-    if len(done) < len(ordered_names):
+    if max_tensors is not None and len(done) < len(all_names):
+        # A bounded batch is restartable progress only.  Never let a
+        # one-tensor (or otherwise truncated) diagnostic run manufacture an
+        # admission-shaped manifest claiming complete physical coverage.
+        _atomic_json(
+            status_path,
+            {
+                "schema": SCHEMA,
+                "recorded_at": _utc_now(),
+                "phase": "PARTIAL_UNIFORM_Q4_GROUP64_PROGRESS",
+                "branch_id": BRANCH_ID,
+                "planned_batch": len(ordered_names),
+                "total_tensors": len(all_names),
+                "completed_total": len(done),
+                "remaining_total": len(all_names) - len(done),
+                "workers": workers,
+                "complete_candidate": False,
+                "progress_path": str(progress_path),
+            },
+        )
+        return progress_path
+    if len(done) < len(all_names):
         raise UniformQ4Error(
-            f"incomplete pack: {len(done)} / {len(ordered_names)} tensors present"
+            f"incomplete pack: {len(done)} / {len(all_names)} tensors present"
         )
 
-    ordered = [done[name] for name in ordered_names]
+    ordered = [done[name] for name in all_names]
     # Drop resume-only quality placeholders from the mean if present.
     quality_rows = [
         row for row in ordered if isinstance(row.get("component_quality", {}).get("cosine"), float)
@@ -481,14 +523,14 @@ def build(*, root: Path, workers: int, max_tensors: int | None) -> Path:
                 "physical_direct_layout": True,
                 "training": "none",
                 "diagnostic_label": (
-                    "Lane-N highest-fidelity arm; uniform 4-bit group-64; "
+                    "Lane-N highest-fidelity arm uniform 4-bit group-64; "
                     "executes on Metal via qwen_uniform_q4_group64_matvec; "
                     "not a production promotion"
                 ),
             },
             "source": {
                 "model_dir": str(MODEL_DIR),
-                "repository": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+                "repository": SOURCE_REPOSITORY,
                 "tensor_count": len(ordered),
             },
             "source_body_audit_seal_sha256": audit["seal_sha256"],
@@ -504,7 +546,10 @@ def build(*, root: Path, workers: int, max_tensors: int | None) -> Path:
                     "Agent_OS_memory_bytes",
                 ],
                 "manifest_bytes_billed": manifest_bytes_estimate,
-                "passes_storage_threshold": True,
+                # This diagnostic arm is deliberately above the 1.5 bpw
+                # promotion threshold; the ledger must state the arithmetic
+                # truth so native admission can reject/accept deterministically.
+                "passes_storage_threshold": all_bytes <= (1.5 * float(elements) / 8.0),
                 "source_weight_elements": elements,
                 "tensor_payload_bytes": payload_bytes,
                 # Same ledger field as the binary baseline (exactly 1.5). This
@@ -536,20 +581,28 @@ def build(*, root: Path, workers: int, max_tensors: int | None) -> Path:
             "tensors": draft_tensors,
         }
 
-    # Two-pass seal so billed manifest bytes match the sealed document length.
-    draft = make_manifest(0)
-    sealed = seal(draft)
-    size1 = len(
-        json.dumps(sealed, indent=2, sort_keys=True, ensure_ascii=False).encode("utf-8")
+    # Solve the self-referential byte ledger by probing a bounded neighborhood
+    # around the sealed zero-billed estimate.  The billed value changes both
+    # its own JSON width and the exact bpw/all-bytes fields, so naive iteration
+    # can oscillate between adjacent candidates without visiting the fixed
+    # point.  Include _atomic_json's trailing newline in every measurement.
+    probe = seal(make_manifest(0))
+    estimate = len(
+        json.dumps(probe, indent=2, sort_keys=True, ensure_ascii=False).encode("utf-8")
     ) + 1
-    final = make_manifest(size1)
-    sealed_final = seal(final)
-    size2 = len(
-        json.dumps(sealed_final, indent=2, sort_keys=True, ensure_ascii=False).encode("utf-8")
-    ) + 1
-    if size2 != size1:
-        final = make_manifest(size2)
-        sealed_final = seal(final)
+    sealed_final: dict[str, Any] | None = None
+    for billed_manifest_bytes in range(max(0, estimate - 64), estimate + 65):
+        sealed = seal(make_manifest(billed_manifest_bytes))
+        measured_bytes = len(
+            json.dumps(sealed, indent=2, sort_keys=True, ensure_ascii=False).encode("utf-8")
+        ) + 1
+        if measured_bytes == billed_manifest_bytes:
+            sealed_final = sealed
+            break
+    if sealed_final is None:
+        raise UniformQ4Error(
+            f"manifest byte ledger has no fixed point near estimated size {estimate}"
+        )
     _atomic_json(manifest_path, sealed_final)
 
     terminal = seal(
@@ -608,7 +661,17 @@ def main() -> int:
     parser.add_argument("--max-tensors", type=int, default=None)
     args = parser.parse_args()
     path = build(root=args.root, workers=args.workers, max_tensors=args.max_tensors)
-    print(json.dumps({"manifest_path": str(path), "status": "ok"}, indent=2))
+    partial = path.name == f"{ARTIFACT_PREFIX}_PROGRESS.jsonl"
+    print(
+        json.dumps(
+            {
+                "manifest_path": str(path) if not partial else None,
+                "progress_path": str(path) if partial else None,
+                "status": "partial_progress" if partial else "ok",
+            },
+            indent=2,
+        )
+    )
     return 0
 
 

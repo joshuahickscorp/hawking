@@ -1,0 +1,1 @@
+{"module": "hmf_objects.py", "entry_point": "build", "receipt": "receipts/future/HMF_MANAGED_OBJECTS.json", "routed_to_frontier": "FT.MEMORY.hmf", "species": "HMF_COHERENCE", "wall_seconds": 0.004, "evidence_class": "STATIC_ONLY"}

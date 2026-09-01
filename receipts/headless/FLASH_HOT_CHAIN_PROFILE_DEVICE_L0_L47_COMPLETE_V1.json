@@ -1,0 +1,65 @@
+{
+  "schema": "hawking.flash_hot_chain_profile.v1",
+  "status": "MEASURED_CANDIDATE",
+  "benchmark_mode": "PROTECTED_FAST_CANDIDATE",
+  "source_receipt": "receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/FAST_CHAIN_SUMMARY.json",
+  "start_layer": 0,
+  "end_layer": 47,
+  "layer_count": 48,
+  "complete_wall_ns": 3236115154291,
+  "GPU_ns": 2282470974,
+  "average_wall_ns_per_layer": 67419065714,
+  "average_GPU_ns_per_layer": 47551478,
+  "p50_layer_ns": 37101958,
+  "p95_layer_ns": 41635500,
+  "max_layer_ns": 489085625,
+  "total_dispatches": 1068,
+  "dispatches_per_layer": 22,
+  "command_buffer_count": 48,
+  "synchronization_count": 48,
+  "host_roundtrip_count": 0,
+  "host_roundtrip_bytes": 0,
+  "host_roundtrip_ns": null,
+  "source_bytes_read": 9111506688,
+  "representation_bytes_read": null,
+  "device_bytes_uploaded": null,
+  "fallback_count": 0,
+  "state_residency_contract": {
+    "device_resident": true,
+    "host_roundtrip_required": false,
+    "description": "device final-state blit between layers; diagnostic parity reads are not activation handoffs"
+  },
+  "timing_decomposition_ns": {
+    "source_load_ns": 456183996042,
+    "representation_load_ns": 0,
+    "device_prepare_ns": 922385456,
+    "graph_setup_ns": 41881751,
+    "verification_ns": 0,
+    "checkpoint_ns": 4796458
+  },
+  "parity_verdict": "PASS",
+  "complete_token_terminal": {
+    "status": "PHYSICALLY_RECEIVED",
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L0_L47_COMPLETE_V1/terminal.json",
+    "token_id": 17
+  },
+  "capability_verdict_if_applicable": null,
+  "gate": {
+    "compact_routed_experts_multi_layer": true,
+    "zero_mandatory_host_handoff": true,
+    "long_lived_executor": true,
+    "protected_chain_minimum_8_layers": true,
+    "fastpath_exit_gate": true
+  },
+  "claim_boundary": "Exact 48-layer deep parity completed in one native process with compact routed-bank linear groups and dense full-attention organs; a native terminal token was physically received. TPS, EBPW, and resident promotion remain open.",
+  "next": "Run accepted-token/TPS and EBPW qualification, then test resident resource leases; do not infer promotion from this single token.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

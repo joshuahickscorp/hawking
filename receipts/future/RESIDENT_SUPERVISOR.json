@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T01:30:34Z",
+  "recorded_at": "2026-09-01T05:42:00Z",
   "recorded_by": "tools/future/resident_supervisor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -150,6 +150,7 @@
    "WORK_SCHEDULED",
    "WORK_SCHEDULED",
    "WORK_SCHEDULED",
+   "WORK_SCHEDULED",
    "WORK_REFILLED",
    "WORK_SCHEDULED",
    "WORK_SCHEDULED",
@@ -218,8 +219,8 @@
    "WORK_LAUNCHED",
    "STATUS"
   ],
-  "n_events": 73,
-  "n_queue_end": 24,
+  "n_events": 74,
+  "n_queue_end": 25,
   "n_ticks": 2,
   "passed": true
  },
@@ -334,10 +335,10 @@
    "passed": true
   },
   "never_vcs_mutation": {
-   "event_log": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-gcyss2cw/vcs/EVENT_LOG.jsonl",
-   "frontier_store": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-gcyss2cw/vcs/FRONTIER_STORE.json",
+   "event_log": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-t9ujvcpz/vcs/EVENT_LOG.jsonl",
+   "frontier_store": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-t9ujvcpz/vcs/FRONTIER_STORE.json",
    "git_is_event_log": false,
-   "mission": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-gcyss2cw/vcs/MISSION_STATE.json",
+   "mission": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-resident-sup-t9ujvcpz/vcs/MISSION_STATE.json",
    "passed": true,
    "phrase_absent": true
   },
@@ -416,7 +417,7 @@
   "workunit": "one CPU_ANALYSIS supervisor tick; dry or detached launch of admitted WorkUnits"
  },
  "schema": "hawking.future.resident_supervisor.v1",
- "seal_sha256": "ae283ac2d071e0e163caeb38a841e0e60a3392002ec06e04466921b857d5fa38",
+ "seal_sha256": "88dc1339b176008fa93764f03cb58ba1a50d0d5aedfd553832c274102862af12",
  "sigterm": "persists mission + frontier store + already-appended event log, then the loop exits",
  "sleeping_unit_fields": [
   "wake_condition",

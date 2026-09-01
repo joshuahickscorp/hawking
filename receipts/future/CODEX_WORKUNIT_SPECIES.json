@@ -98,7 +98,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:44:24Z",
+  "recorded_at": "2026-09-01T05:22:01Z",
   "recorded_by": "tools/future/codex_behaviors.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -405,7 +405,7 @@
   "workunit_emitted": "codex.metabolism.<cycle>.<SPECIES_ID> via hcli.workunit.WorkUnit"
  },
  "schema": "hawking.future.codex_behaviors.v1",
- "seal_sha256": "c24163096ead77c2419f60fd4b3dbc85a4601bdbc65a0ae522e743c2586a24b9",
+ "seal_sha256": "e7ea4fc936878b03788ea3deb75b58a3640e9dd73ae334a0efc6d10c9edde0eb",
  "sleeping": {
   "blockers": [
    "MetalContext reports no Metal-capable GPU for the current execution host",

@@ -23,6 +23,44 @@ def test_translates_the_four_supported_forms():
         assert t.tier == "C2M-T0"
 
 
+def test_translates_cuda_neutral_zero_literal_without_changing_the_operation():
+    """NVIDIA's canonical vectorAdd sample spells add as ``A[i] + B[i] + 0.0f``.
+
+    The trailing literal is an f32 identity, so the frontend may normalize it to
+    the already-supported add operation without inventing a new computation.
+    """
+    t = c2m.translate(k("if (i < n) c[i] = a[i] + b[i] + 0.0f;"), elements=64)
+    assert t.program.ops[0].kind == "add"
+
+
+def test_accepts_cuda_restrict_pointer_qualifier():
+    src = ("__global__ void t(const float * __restrict__ a, "
+           "const float * __restrict__ b, float * __restrict__ c, int n) { "
+           + IDX + " if (i < n) c[i] = a[i] + b[i]; }")
+    t = c2m.translate(src, elements=64)
+    assert t.program.ops[0].kind == "add"
+
+
+def test_neutral_literal_near_miss_stays_refused():
+    with pytest.raises(c2m.C2MRefusal, match="outside the C2M-T0 pattern set"):
+        c2m.translate(k("if (i < n) c[i] = a[i] + b[i] + 1.0f;"), elements=64)
+
+
+@pytest.mark.parametrize("expr,alpha", [("a[i] * -1", -1.0), ("2.0f * a[i]", 2.0)])
+def test_translates_numeric_scalar_elementwise_scale(expr, alpha):
+    t = c2m.translate(k(f"if (i < n) c[i] = {expr};",
+                        params="const float* a, float* c, int n"), elements=64)
+    assert t.program.ops[0].kind == "scale"
+    assert t.program.specialization["ALPHA"] == alpha
+
+
+def test_runtime_scalar_remains_refused_until_scalar_argument_plumbing_exists():
+    src = k("if (i < n) c[i] = a[i] * factor;",
+            params="const float* a, float* c, float factor, int n")
+    with pytest.raises(c2m.C2MRefusal, match="outside the C2M-T0 pattern set"):
+        c2m.translate(src, elements=64)
+
+
 @pytest.mark.parametrize("body,token", [
     ("__shared__ float s[4]; c[i] = a[i] + b[i];", "shared memory"),
     ("for (int j=0;j<4;j++) c[i] = a[i] + b[i];", "loops"),

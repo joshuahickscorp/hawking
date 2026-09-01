@@ -23,7 +23,7 @@ import sys
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import REPO, git  # noqa: E402
+from _common import REPO, git  # noqa: E402, require_known_flags
 
 BINARY = REPO / "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
 SOURCE = REPO / "crates/hawking-core/examples/ascension_qwen38_resident.rs"
@@ -164,6 +164,8 @@ def record() -> Path:
 
 
 if __name__ == "__main__":
+    from _common import require_known_flags
+    require_known_flags(["--build", "--record"])
     if "--record" in sys.argv:
         p = record()
         d = json.loads(p.read_text())

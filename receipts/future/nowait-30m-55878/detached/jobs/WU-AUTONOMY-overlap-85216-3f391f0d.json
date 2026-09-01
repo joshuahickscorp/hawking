@@ -1,0 +1,64 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.85216.receipt.json",
+    "cuda_lowbit_hypotheses.py"
+  ],
+  "attempts": 0,
+  "blocked_reason": "command touches GPU/accelerator (cuda); refuse launch",
+  "cancel_requested": false,
+  "crash_reason": "command touches GPU/accelerator (cuda); refuse launch",
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.85216.receipt.json",
+  "finished_at": 1788205531.61604,
+  "identity_status": "unknown",
+  "job_id": "WU-AUTONOMY-overlap-85216-3f391f0d",
+  "launch_refused": true,
+  "log_paths": {
+    "stderr": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/detached/logs/WU-AUTONOMY-overlap-85216-3f391f0d.stderr.log",
+    "stdout": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/detached/logs/WU-AUTONOMY-overlap-85216-3f391f0d.stdout.log"
+  },
+  "pgid": null,
+  "pid": null,
+  "resource_class": "STATIC_ANALYSIS",
+  "resource_lease": {
+    "held": false,
+    "kind": null,
+    "reason": "this lane never takes a GPU or bench lease; flock of the protected lock would be a seizure",
+    "refused": true
+  },
+  "result_location": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.85216.receipt.json",
+  "retry_policy": {
+    "max_attempts": 3,
+    "never_resume_mid_execution": true,
+    "never_retry_on": [
+      "cancelled",
+      "completed-with-receipt",
+      "completed-without-receipt",
+      "timed_out",
+      "unknown"
+    ],
+    "policy": "rerun",
+    "retry_on": [
+      "crashed"
+    ],
+    "source": "hcli/workunit.py RESUME_POLICY + DEFAULT_RETRY_BUDGET"
+  },
+  "returncode": null,
+  "running_at": null,
+  "schema": "hawking.future.detached.supervision.v1",
+  "start_token": null,
+  "started_at": 1788205531.61604,
+  "state": "SLEEPING",
+  "supervisor_pid": null,
+  "supervisor_start_token": null,
+  "terminal": null,
+  "timeout_s": 600.0,
+  "workunit_id": "WU.AUTONOMY.overlap.85216",
+  "workunit_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/detached/units/WU-AUTONOMY-overlap-85216-3f391f0d.workunit.json",
+  "workunit_seal_sha256": "9b438cd80a5775bb8620eb58d6ab8126c57e2f2c70b299b0d4953b3ddc8a0ab0",
+  "workunit_status": "SLEEPING"
+}

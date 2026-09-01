@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.92544.receipt.json",
+    "hmf_objects.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "HMF_MANAGED_OBJECTS.json is executable. Next: walk object_legal_transitions against current organ maps.",
+  "frontier_id": "FT.MEMORY.hmf",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.92544",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.92544.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "85fe2d2097b03f574be058c56bfe9ba7cd8c4eaf556ed4b140290b414d145d29",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

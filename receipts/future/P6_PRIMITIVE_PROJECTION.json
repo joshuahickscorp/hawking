@@ -33,12 +33,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:18:37Z",
+  "recorded_at": "2026-09-01T05:39:55Z",
   "recorded_by": "tools.future.p6_projection.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "grok/l36-torture-wiring-20260830-182109",
+ "branch": "odyssey-i",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
   "by_scope": {
@@ -65,10 +65,10 @@
  "evidence_inputs": {
   "architecture_atlas": {
    "consulted": [
-    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json"
+    "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json"
    ],
-   "evidence_source": "live_headless",
-   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+   "evidence_source": "pinned_snapshot",
+   "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
    "present": true
   },
   "evidence_snapshot_manifest": {
@@ -78,20 +78,22 @@
   },
   "front_g_p6": {
    "consulted": [
-    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json"
+    "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+    "receipts/future/evidence/ACCELERATOR_FRONT_G_P6.json"
    ],
    "evidence_source": "live_headless",
-   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+   "path": "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
    "present": true
   },
   "qualification_queue": {
    "consulted": [
-    "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
+    "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    ],
    "evidence_source": "live_headless",
    "n_candidates_in_queue": 49,
    "n_p6_p7": 15,
-   "path": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
    "present": true
   }
  },
@@ -113,14 +115,13 @@
   "FPGA form cites fpga_engines functional references; no HDL, no backend."
  ],
  "gpu_authority": false,
- "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "negative_findings": [
   "No protected GPU lease: every hardware quantity remains UNKNOWN.",
   "No FPGA board, bitstream, or cycle-accurate model; FPGA forms are hypotheses.",
   "fpga_engines has no SwiGLU/silu golden; fused gate/up/SwiGLU cites qgemv + routed_expert_accumulate only.",
   "Nothing here is GENERIC_VERIFIED; candidates are BLOCKED and unmeasured.",
-  "Sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
-  "FRONT_G_P6 is not in receipts/future/evidence/ (snapshot did not capture it)."
+  "Sidecar produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE."
  ],
  "not_an_fpga_backend": true,
  "odysseys": [
@@ -4957,7 +4958,7 @@
   "p6_projection_module_existed": false
  },
  "schema": "hawking.future.p6_projection.v1",
- "seal_sha256": "e9ceb38bcfa3b2c33bffbb2f9cc35a9886f0fcc4571744e001b3a5c2189b06a0",
+ "seal_sha256": "4b6250551cc04e2280c24e889b39519d01f90d6ea85f8edc1cf1cb3a31478799",
  "spatially_not_meaningful_ids": [
   "flash-p6-hash-single-command-buffer",
   "flash-p6-learned-reader-reuse"

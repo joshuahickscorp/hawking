@@ -1,0 +1,190 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T05:22:08Z",
+  "recorded_by": "tools/future/complete_ebpw.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. complete_ebpw is arithmetic over a candidate's declared parts and MIX_REPORT parent_params. ms figures are unique bytes times the stream-class ms/GB in ECONOMICS_CALIBRATION.json (weight_codes 0.547282, broadcast_aux 0.000). They are not a protected measurement and not a promise that a fit will hold capability. evidence_class is STATIC_ONLY. gpu_authority is false.",
+ "evidence_class": "STATIC_ONLY",
+ "incumbent": {
+  "affine_bytes": 5347795776,
+  "billed_ms": 5.190818,
+  "by_stream_class": {
+   "activation": {
+    "bytes": 0,
+    "gb": 0.0,
+    "ms": 0.0,
+    "ms_per_gb": 2.906132
+   },
+   "broadcast_aux": {
+    "bytes": 1069605696,
+    "gb": 1.069606,
+    "ms": 0.0,
+    "ms_per_gb": 0.0
+   },
+   "weight_codes": {
+    "bytes": 9484723160,
+    "gb": 9.484723,
+    "ms": 5.190818,
+    "ms_per_gb": 0.547282
+   }
+  },
+  "complete_ebpw": 3.139300850311054,
+  "complete_ebpw_matches_mix": true,
+  "f32_bytes": 10584840,
+  "flags": [],
+  "id": "incumbent_sealed_3_14",
+  "is_sub2_executable": false,
+  "mix_storage_bpw": 3.139300850311054,
+  "mlp_body_bpw": 2.5,
+  "mlp_elements": 17112760320,
+  "parent_params": 26895998464,
+  "parts": [
+   {
+    "bitwidth": 2.0,
+    "bytes": 4278190080,
+    "category": "regions",
+    "elements": 17112760320,
+    "gb": 4.27819,
+    "ms": 2.341376,
+    "ms_per_gb": 0.547282,
+    "name": "mlp_codes",
+    "stream_class": "weight_codes"
+   },
+   {
+    "bitwidth": 0.25,
+    "bytes": 534773760,
+    "category": "regions",
+    "elements": 17112760320,
+    "gb": 0.534774,
+    "ms": 0.0,
+    "ms_per_gb": 0.0,
+    "name": "mlp_scale",
+    "stream_class": "broadcast_aux"
+   },
+   {
+    "bitwidth": 0.25,
+    "bytes": 534773760,
+    "category": "regions",
+    "elements": 17112760320,
+    "gb": 0.534774,
+    "ms": 0.0,
+    "ms_per_gb": 0.0,
+    "name": "mlp_bias",
+    "stream_class": "broadcast_aux"
+   },
+   {
+    "bytes": 5195948240,
+    "category": "regions",
+    "gb": 5.195948,
+    "ms": 2.843649,
+    "ms_per_gb": 0.547282,
+    "name": "q4_attention_deltanet",
+    "stream_class": "weight_codes"
+   },
+   {
+    "bytes": 10584840,
+    "category": "regions",
+    "gb": 0.010585,
+    "ms": 0.005793,
+    "ms_per_gb": 0.547282,
+    "name": "f32",
+    "stream_class": "weight_codes"
+   },
+   {
+    "bytes": 58176,
+    "category": "metadata",
+    "gb": 5.8e-05,
+    "ms": 0.0,
+    "ms_per_gb": 0.0,
+    "name": "mlp_headers",
+    "stream_class": "broadcast_aux"
+   }
+  ],
+  "payload_bytes": 10554328856,
+  "q4_attention_deltanet_bytes": 5195948240,
+  "source": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+  "stored_bytes": 10554328856,
+  "why_the_resident_must_not_do_this_itself": "17.113e9 x 2.25 / 8 uses a rounded element count, the 2.25 coherent-class floor instead of the packed 2.5, and only the MLP body. The complete incumbent is 10554328856 payload bytes / 26895998464 params = 3.139301 BPW."
+ },
+ "load_bearing": [
+  {
+   "id": "payload_bytes",
+   "role": "incumbent storage payload / stated total",
+   "source": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+   "value": 10554328856
+  },
+  {
+   "id": "parent_params",
+   "role": "bpw denominator",
+   "source": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+   "value": 26895998464
+  },
+  {
+   "id": "complete_ebpw",
+   "role": "incumbent complete executable BPW",
+   "source": "derived: payload_bytes * 8 / parent_params",
+   "value": 3.139300850311054
+  },
+  {
+   "id": "weight_codes_ms_per_gb",
+   "role": "binding-stream time cost",
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json",
+   "value": 0.547282
+  },
+  {
+   "id": "broadcast_aux_ms_per_gb",
+   "role": "aux time cost; 0 means SIZE not TIME",
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json",
+   "value": 0.0
+  }
+ ],
+ "obligation": "complete executable BPW calculator; the resident must not compute a bit-per-weight figure itself",
+ "question": "What does a candidate representation actually cost, billing everything?",
+ "recorded_by": "tools/future/complete_ebpw.py",
+ "rules": {
+  "broadcast_aux_ms_per_gb": 0.0,
+  "dense_parent_rematerialization": "flag DENSE_PARENT_REMATERIALIZATION; complete_ebpw is the parent working set; is_sub2_executable is false",
+  "generator_codebook_lookup_table": "all bill",
+  "missing_input": "REFUSE; never default a missing part category to empty-as-zero",
+  "sub2_bpw": 2.0,
+  "unreconciled_stated_total": "REFUSE",
+  "weight_codes_ms_per_gb": 0.547282
+ },
+ "schema": "hawking.future.complete_ebpw.v1",
+ "seal_sha256": "b06a171c88caad2c6b08ab1c2a11b69e679fb6b2c3ff397442fdbb9fc3903ed0",
+ "selftest": {
+  "aux_only_cut_bytes_saved": 58176,
+  "aux_only_cut_ms_saved": 0.0,
+  "aux_only_cut_ms_saved_is_zero": true,
+  "dense_parent_rematerialization_flagged": true,
+  "incumbent_bpw": 3.139300850311054,
+  "incumbent_bpw_within_0_001_of_3_1393": true,
+  "remat_complete_ebpw_is_not_the_stored_figure": true,
+  "unreconciled_refused": true
+ },
+ "stream_rates": {
+  "activation": {
+   "ms_per_gb": 2.906132,
+   "on_critical_path": true,
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json"
+  },
+  "broadcast_aux": {
+   "ms_per_gb": 0.0,
+   "on_critical_path": false,
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json"
+  },
+  "weight_codes": {
+   "ms_per_gb": 0.547282,
+   "on_critical_path": true,
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json"
+  }
+ },
+ "version": 1,
+ "what_is_estimated": "ms of a candidate is unique declared bytes times the catalog stream-class rate, not a complete-token re-measure of a new packing. q4_bytes is billed as one declared weight_codes part because MIX_REPORT does not split q4 codes from q4 scale.",
+ "what_is_measured": "MIX_REPORT payload/params/affine/q4/f32 split and affine_bpw_billing; ECONOMICS_CALIBRATION stream-class ms/GB (weight_codes 0.547282, broadcast_aux 0.0)."
+}

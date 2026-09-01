@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:33:53Z",
+  "recorded_at": "2026-09-01T05:22:51Z",
   "recorded_by": "tools/future/decode_civilization.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -167,7 +167,7 @@
   "sidecar receipt under receipts/future (existing gravity modules write receipts/headless, Codex-owned)",
   "cost classes over FLASH_TOKEN_NS_BUDGET organ bytes plus Qwen3.8 hybrid state shapes, no nanoseconds"
  ],
- "head": "2dd9fc8c0a0113e389e25842bc832c1c1c7accb5",
+ "head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
  "integration": {
   "call": "accepted_complete_token_cost(plan: DecodePlan) -> float",
   "diagnostic_not_scoreboard": "raw_draft_throughput_units(plan) -> float",
@@ -320,7 +320,7 @@
   }
  ],
  "schema": "hawking.future.decode_civilization.v1",
- "seal_sha256": "370bda1a163b186755685e73aec89878b024acfeeccda93c58100f495dce0f44",
+ "seal_sha256": "fc17c20cef1f5b5a992393e32d6784d37b87437201aa5b8fb63e7d440318bf66",
  "selftest": {
   "checks": [
    {

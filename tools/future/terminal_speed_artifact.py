@@ -216,16 +216,42 @@ def which_receipt() -> dict[str, Any]:
 
 
 def dominant_remaining_costs() -> dict[str, Any]:
-    """Where the token actually goes, on the body that runs."""
-    doc = json.loads((REPO / "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json").read_text())
-    rows = sorted(doc["organs"]["rows"], key=lambda r: -float(r["gpu_ms"]))
-    total = float(doc["decode_gpu_ms_per_token"])
+    """Where the token actually goes, on the body that runs.
+
+    G133 re-measured the organ decomposition under the SEALED DEFAULT and it
+    reconciles to 0.47% of the protected token. The pre-promotion table summed
+    to 26.7013 ms against a 21.9464 ms body - 4.75 ms describing a body that no
+    longer runs - and reading it here put a stale organ table under a live
+    heading.
+    """
+    sealed = REPO / "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+    absolute = REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+    if sealed.is_file() and absolute.is_file():
+        sd = json.loads(sealed.read_text())
+        m = json.loads(absolute.read_text())["measured"]
+        rows = [{"organ": r["organ"], "gpu_ms": r["sealed_ms"],
+                 "dispatches": r.get("dispatches")}
+                for r in sorted(sd["table"], key=lambda r: -float(r["sealed_ms"]))]
+        total = float(m["gpu_ms_per_token"])
+        src = "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+        measured_on = ("sealed default, protected lease, supervisor stopped "
+                       "first, lane lock held")
+        wall = float(m["wall_ms_per_token"])
+        host = float(m["host_gap_ms"])
+    else:
+        doc = json.loads((REPO / "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json").read_text())
+        rows = sorted(doc["organs"]["rows"], key=lambda r: -float(r["gpu_ms"]))
+        total = float(doc["decode_gpu_ms_per_token"])
+        src = "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
+        measured_on = "PRE-PROMOTION FALLBACK: widen_f4, release profile"
+        wall = float(doc["decode_wall_ms_per_token"])
+        host = float(doc["host_gap_ms_per_token"])
     return {
-        "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
-        "measured_on": "widen_f4, release profile, ModelLake stopped, lane lock held",
+        "source": src,
+        "measured_on": measured_on,
         "token_gpu_ms": total,
-        "token_wall_ms": float(doc["decode_wall_ms_per_token"]),
-        "host_gap_ms": float(doc["host_gap_ms_per_token"]),
+        "token_wall_ms": wall,
+        "host_gap_ms": host,
         "rows": [
             {**r, "share_of_gpu": round(float(r["gpu_ms"]) / total, 4)} for r in rows
         ],

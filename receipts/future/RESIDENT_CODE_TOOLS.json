@@ -1,0 +1,153 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T05:41:45Z",
+  "recorded_by": "tools/future/resident_code_tools.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "cargo_target_dir": "workspace/ops/build/rust",
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. The hermetic proof is a real git worktree of a fixture repo, not of live Hawking and not a mock of git.",
+ "does_not_choose_science": true,
+ "gpu_authority": false,
+ "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
+ "hermetic_proof": {
+  "create": {
+   "not_sibling": true,
+   "ok": true,
+   "placement": ".worktrees/rct-proof",
+   "under_dot_worktrees": true
+  },
+  "diff": {
+   "nonempty": true,
+   "ok": true
+  },
+  "patch": {
+   "ok": true,
+   "paths": [
+    "scratch.py"
+   ]
+  },
+  "patch_outside_refused": true,
+  "real_not_mock": true,
+  "rollback": {
+   "ok": true,
+   "removed": true,
+   "restored": true
+  },
+  "run_outside_refused": true,
+  "test": {
+   "ok": true,
+   "returncode": 0
+  }
+ },
+ "land_never_red": true,
+ "land_proof": {
+  "committed": false,
+  "error": "gate is RED; not landed",
+  "known_red_refused": true,
+  "land_called": false,
+  "ok": false
+ },
+ "measurement_state": "STATIC_ONLY",
+ "n_operations": 10,
+ "never_deletes_uncommitted_work": true,
+ "never_sibling": true,
+ "not_a_new_agent_framework": true,
+ "operations": [
+  "SEARCH_CODE",
+  "READ_CODE",
+  "CREATE_WORKTREE",
+  "PATCH",
+  "BUILD",
+  "TEST",
+  "RUN",
+  "DIFF",
+  "LAND_THROUGH_GATE",
+  "ROLLBACK"
+ ],
+ "placement": "<repo>/.worktrees/<name>",
+ "purpose": "Bounded resident-callable API over existing search/read/worktree/patch/build/test/run/diff/gate/rollback. Machinery, not science.",
+ "recorded_by": "tools/future/resident_code_tools.py",
+ "recovered_implementation": [
+  {
+   "path": "hcli/tool_registry.py",
+   "present": true,
+   "what": "fs.search / fs.read / git.diff / tests.run"
+  },
+  {
+   "path": "hcli/mutation.py",
+   "present": true,
+   "what": "apply_mutation_operations, rollback_mutation, compile_python_file"
+  },
+  {
+   "path": "tools/future/sandbox.py",
+   "present": true,
+   "what": ".worktrees/ placement; init_fixture_repo for hermetic proofs"
+  },
+  {
+   "path": "tools/future/integration_gate.py",
+   "present": true,
+   "what": "check + land; this wrapper never passes known_red"
+  },
+  {
+   "path": "tools/grok_worktree_reaper.py",
+   "present": true,
+   "what": "cleanliness: empty porcelain; never force-delete"
+  },
+  {
+   "path": "tools/future/_common.py",
+   "present": true,
+   "what": "write_receipt, GIT_TIMEOUT_S, git --no-optional-locks"
+  }
+ ],
+ "refusals": [
+  "missing required inputs RAISE",
+  "PATCH and RUN RAISE on a path outside the worktree",
+  "LAND_THROUGH_GATE refuses known_red and does not call land() when check is red",
+  "ROLLBACK RAISE rather than git worktree remove a dirty tree"
+ ],
+ "schema": "hawking.future.resident_code_tools.v1",
+ "seal_sha256": "ed9e6fe0bd10f40e1d5188bfdce4d31698375b2b4fcfad05975649be3a2fbd8d",
+ "uniform_result": "every operation returns {ok, op, status, error, ...}; a failed build or test is a result, not an exception",
+ "version": 1,
+ "wraps": {
+  "BUILD": [
+   "cargo build --target-dir workspace/ops/build/rust",
+   "hcli.mutation.compile_python_file"
+  ],
+  "CREATE_WORKTREE": [
+   "git worktree add --detach under <repo>/.worktrees/<name>",
+   "tools.future.sandbox WORKTREES_DIRNAME placement rule"
+  ],
+  "DIFF": [
+   "hcli.tool_registry.default_tool_registry / git.diff"
+  ],
+  "LAND_THROUGH_GATE": [
+   "tools.future.integration_gate.check / land"
+  ],
+  "PATCH": [
+   "hcli.mutation.apply_mutation_operations"
+  ],
+  "READ_CODE": [
+   "hcli.tool_registry.default_tool_registry / fs.read",
+   "git show HEAD:<path> (sparse-absent files)"
+  ],
+  "ROLLBACK": [
+   "hcli.mutation.rollback_mutation",
+   "git worktree remove (refused when porcelain is dirty)"
+  ],
+  "RUN": [
+   "subprocess argv, cwd=worktree; no shell (hcli.tool_registry._run_readonly shape)"
+  ],
+  "SEARCH_CODE": [
+   "hcli.tool_registry.default_tool_registry / fs.search",
+   "git grep --no-optional-locks (sparse-absent files)"
+  ],
+  "TEST": [
+   "hcli.tool_registry.default_tool_registry / tests.run"
+  ]
+ }
+}

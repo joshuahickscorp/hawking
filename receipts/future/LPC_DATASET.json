@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:45:17Z",
+  "recorded_at": "2026-09-01T05:59:46Z",
   "recorded_by": "tools/future/lpc_dataset.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -80,7 +80,7 @@
   "held-out splits by architecture, organ, and device",
   "authority helper: PROTECTED_ABSOLUTE always outranks a model"
  ],
- "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "ingest": {
   "inventory": {
    "by_contamination": {
@@ -204,7 +204,7 @@
   "sources": [
    {
     "complete": 0,
-    "in_git_HEAD": false,
+    "in_git_HEAD": true,
     "invalid_null": 0,
     "loaded_from": "disk",
     "on_disk": true,
@@ -215,7 +215,7 @@
    },
    {
     "complete": 0,
-    "in_git_HEAD": false,
+    "in_git_HEAD": true,
     "invalid_null": 0,
     "loaded_from": "disk",
     "on_disk": true,
@@ -226,7 +226,7 @@
    },
    {
     "complete": 0,
-    "in_git_HEAD": false,
+    "in_git_HEAD": true,
     "invalid_null": 0,
     "loaded_from": "disk",
     "on_disk": true,
@@ -506,6 +506,6 @@
   ]
  },
  "schema": "hawking.future.lpc_dataset.v1",
- "seal_sha256": "b8af19860d3d2b6dc742b1e064fc2b59c7fe56e5ff552b5e3072242723bfcbf7",
+ "seal_sha256": "ef0f26ec046fe7c8e9627797c92d702637cf57cdc8c790190cc1d4450b348a4d",
  "version": 1
 }

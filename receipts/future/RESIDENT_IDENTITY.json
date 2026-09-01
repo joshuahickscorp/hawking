@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T09:54:38Z",
+  "recorded_at": "2026-09-01T05:41:53Z",
   "recorded_by": "tools/future/resident_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -25,7 +25,7 @@
    "executable_hash": {
     "by_role": {
      "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
-     "resident_binary": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+     "resident_binary": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37"
     },
     "seal_declared_sha256_16": "d34044cffae8f320",
     "seal_matching_role": "binary"
@@ -341,7 +341,7 @@
     "source": "ON_DISK"
    },
    "codex_accelerator_handoff": {
-    "in_git_head": false,
+    "in_git_head": true,
     "on_disk": true,
     "path": "CODEX_ACCELERATOR_HANDOFF.json",
     "source": "ON_DISK"
@@ -354,7 +354,7 @@
    },
    "qualification_queue": [
     {
-     "in_git_head": false,
+     "in_git_head": true,
      "on_disk": true,
      "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
      "source": "ON_DISK"
@@ -375,7 +375,7 @@
     "source": "ON_DISK"
    },
    "teacher_capture": {
-    "in_git_head": false,
+    "in_git_head": true,
     "on_disk": true,
     "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
     "source": "ON_DISK"
@@ -1278,14 +1278,14 @@
     "exists": true,
     "missing_evidence": [],
     "path": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
-    "sha256": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8",
+    "sha256": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37",
     "source_state": "COMPUTED"
    },
    "seal_runtime_binary": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_hybrid_greedy",
    "value": {
     "by_role": {
      "binary": "d34044cffae8f32055cca40aae27ec62beb44f043df081293126da89e51b8e76",
-     "resident_binary": "2d5fd0f157fb7987f307782d3a12abf2efadd6a0e14a787740e51adb101ac3f8"
+     "resident_binary": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37"
     },
     "note": "Two executables are declared. The resident seal's runtime_binary_sha256_16 matches 'binary' (hybrid greedy) when that file is present; resident_binary is a different artifact.",
     "seal_declared_sha256_16": "d34044cffae8f320",
@@ -1381,6 +1381,18 @@
       "n": 1
      },
      {
+      "family": "butterfly",
+      "n": 1
+     },
+     {
+      "family": "byte_count_times_organ_average",
+      "n": 1
+     },
+     {
+      "family": "bytes_traded_for_decode_arithmetic",
+      "n": 1
+     },
+     {
       "family": "cache_decoded_dense_w_to_avoid_re_decode",
       "n": 1
      },
@@ -1422,6 +1434,10 @@
      },
      {
       "family": "compression_scored_on_the_wrong_baseline_ranks_the_wrong_trajectory",
+      "n": 1
+     },
+     {
+      "family": "conditional_program",
       "n": 1
      },
      {
@@ -1473,7 +1489,15 @@
       "n": 1
      },
      {
+      "family": "dictionary_program",
+      "n": 1
+     },
+     {
       "family": "dispatch_count_reduction_as_a_proxy_objective_for_decode_speed",
+      "n": 1
+     },
+     {
+      "family": "distilled",
       "n": 1
      },
      {
@@ -1541,6 +1565,10 @@
       "n": 1
      },
      {
+      "family": "factorize_the_factors",
+      "n": 1
+     },
+     {
       "family": "ffn_block_256_sparsity",
       "n": 1
      },
@@ -1562,6 +1590,10 @@
      },
      {
       "family": "gemv_kernel_micro_opt_axis_on_qwen3_8",
+      "n": 1
+     },
+     {
+      "family": "generated_block",
       "n": 1
      },
      {
@@ -1618,7 +1650,7 @@
      },
      {
       "family": "kronecker",
-      "n": 4
+      "n": 5
      },
      {
       "family": "kv_working_set_eviction",
@@ -1669,7 +1701,15 @@
       "n": 1
      },
      {
+      "family": "mlp_function_replacement",
+      "n": 1
+     },
+     {
       "family": "moe_serial_route_dispatch",
+      "n": 1
+     },
+     {
+      "family": "monarch",
       "n": 1
      },
      {
@@ -1746,6 +1786,10 @@
      },
      {
       "family": "non_gemm_cpu_offload",
+      "n": 1
+     },
+     {
+      "family": "nonlinear_generator",
       "n": 1
      },
      {
@@ -1842,6 +1886,10 @@
      },
      {
       "family": "priority_zero_falsy_or_default",
+      "n": 1
+     },
+     {
+      "family": "product_dictionary",
       "n": 1
      },
      {
@@ -1962,6 +2010,14 @@
      },
      {
       "family": "receipts_ascent_2026_08_18_phase_b_hybrid_refuted_json",
+      "n": 1
+     },
+     {
+      "family": "receipts_future_mlp_issue_rate_ladder_json",
+      "n": 1
+     },
+     {
+      "family": "receipts_future_mlp_stream_count_json",
       "n": 1
      },
      {
@@ -2204,11 +2260,11 @@
      },
      {
       "model": "qwen3.8-27b",
-      "n": 42
+      "n": 55
      },
      {
       "model": "unrecorded",
-      "n": 85
+      "n": 87
      }
     ],
     "by_source": [
@@ -2262,11 +2318,95 @@
       "path": "receipts/ascent-2026-08-18/PHASE_B_HYBRID_REFUTED.json"
      },
      {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "receipts/future/AUX_CAPABILITY_SCREEN.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "receipts/future/AUX_U8_LUT.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "receipts/future/AUX_U8_NATIVE.json"
+     },
+     {
       "n_parsed": 7,
       "n_scars": 7,
       "n_unparsed": 0,
       "origin": "disk",
       "path": "receipts/future/CAMPAIGN_SCARS.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "receipts/future/DELTANET_GENERATED_TRANSITION.json"
+     },
+     {
+      "n_parsed": 2,
+      "n_scars": 2,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/ECONOMICS_CALIBRATION.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "receipts/future/MLP_FUNCTIONAL_RANK.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/MLP_ISSUE_RATE_LADDER.json"
+     },
+     {
+      "n_parsed": 6,
+      "n_scars": 6,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/MLP_NONLINEAR_PROGRAM.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "receipts/future/MLP_SHARED_PROGRAM.json"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "receipts/future/MLP_SPARSE_RESIDUAL.json"
+     },
+     {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/MLP_STREAM_COUNT.json"
+     },
+     {
+      "n_parsed": 5,
+      "n_scars": 5,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/MLP_STRUCTURED_OPERATOR.json"
      },
      {
       "n_parsed": 3,
@@ -2453,15 +2593,15 @@
      "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
      "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
     ],
-    "n_parsed": 656,
-    "n_refuse_eligible": 586,
-    "n_scars": 663,
-    "n_sources": 33,
-    "n_unparsed": 7
+    "n_parsed": 671,
+    "n_refuse_eligible": 599,
+    "n_scars": 685,
+    "n_sources": 45,
+    "n_unparsed": 14
    },
    "missing_evidence": [],
-   "n": 49,
-   "n_refuse_eligible": 34,
+   "n": 62,
+   "n_refuse_eligible": 47,
    "note": "compact projection of NEGATIVE_SCIENCE_INDEX; not the full corpus dump",
    "query": {
     "model": "qwen3.8-27b"
@@ -2627,6 +2767,110 @@
      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#SOURCE_INSTRUMENTED_RUNTIME_BINARY_STALE",
      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
      "verdict": "FALSIFIED"
+    },
+    {
+     "hypothesis_family": "bytes_traded_for_decode_arithmetic",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/ECONOMICS_CALIBRATION.json#BYTES_TRADED_FOR_DECODE_ARITHMETIC",
+     "source_path": "receipts/future/ECONOMICS_CALIBRATION.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "byte_count_times_organ_average",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/ECONOMICS_CALIBRATION.json#BYTE_COUNT_TIMES_ORGAN_AVERAGE",
+     "source_path": "receipts/future/ECONOMICS_CALIBRATION.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "conditional_program",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#CONDITIONAL_PROGRAM",
+     "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "dictionary_program",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#DICTIONARY_PROGRAM",
+     "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "factorize_the_factors",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#FACTORIZE_THE_FACTORS",
+     "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "generated_block",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#GENERATED_BLOCK",
+     "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "nonlinear_generator",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#NONLINEAR_GENERATOR",
+     "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "product_dictionary",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_NONLINEAR_PROGRAM.json#PRODUCT_DICTIONARY",
+     "source_path": "receipts/future/MLP_NONLINEAR_PROGRAM.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "butterfly",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#BUTTERFLY",
+     "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "distilled",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#DISTILLED",
+     "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "kronecker",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#KRONECKER",
+     "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "mlp_function_replacement",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MLP_FUNCTION_REPLACEMENT",
+     "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "monarch",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MONARCH",
+     "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
     },
     {
      "hypothesis_family": "catalog_addressing_not_primary_703_530_cause",
@@ -3403,7 +3647,7 @@
    "source": "ON_DISK"
   },
   "codex_accelerator_handoff": {
-   "in_git_head": false,
+   "in_git_head": true,
    "on_disk": true,
    "path": "CODEX_ACCELERATOR_HANDOFF.json",
    "role": "current_qwen27_incumbent_control_identity if present; this worktree copes with either ON_DISK or ABSENT and does not invent the block",
@@ -3507,7 +3751,7 @@
   }
  },
  "schema": "hawking.future.resident_identity.v1",
- "seal_sha256": "d47b8aa4d6704c48ca22c6f1365521335bcbe65fd5735ccb2a729dddec1dfe5e",
+ "seal_sha256": "d2c298266db7af22d6d920a81d48563f52f90fd6b21e9a544726191d317ed0e2",
  "status": "ACCEPTED",
  "version": 1,
  "work_unit": {

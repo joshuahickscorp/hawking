@@ -1,0 +1,66 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "attention": {
+    "distinct_kv_slots": true,
+    "first_step_parity": {
+      "final_state": {
+        "cosine": 0.9999999999999712,
+        "finite": true,
+        "max_abs_error": 3.4458935260772705e-8,
+        "rmse": 4.755846777328934e-9,
+        "within_tolerance": true
+      },
+      "query": {
+        "cosine": 0.9999999999999669,
+        "finite": true,
+        "max_abs_error": 1.430511474609375e-6,
+        "rmse": 2.7689673389752766e-7,
+        "within_tolerance": true
+      }
+    },
+    "full_attention_mlp_epilogue": true,
+    "layer": 3,
+    "receipt": "receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM_V2_ATTN.json",
+    "stateful_final_state": true,
+    "status": "PASSED_STATEFUL_KV_ORGAN"
+  },
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787952979456",
+    "recorded_by": "flash_stateful_cross_species_seam",
+    "rule": "S032 §3 -- seam timing is diagnostic; quiescence unknown",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "This proves a two-step cross-species seam: layers 0..2 DeltaNet state feeds layer 3 full attention with persistent KV slots and its HyperConnection/routed/shared-MoE MLP epilogue. The inter-module seam is still a host diagnostic copy; this does not prove device-only 48-layer integration, accepted generation, TPS, EBPW, or residency.",
+  "complete_system_ebpw": null,
+  "execution": {
+    "device_inter_layer_handoff": "host diagnostic copy between the independently exposed module seams",
+    "full_attention_mlp_epilogue": true,
+    "process_boundary": "one native process",
+    "stateful_attention_kv": true,
+    "stateful_linear_recurrence": true
+  },
+  "linear_prefix": {
+    "layer2_state_sha256": [
+      "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "4ce3e5369d50fc08be627f17cb9b35c32d4792b5a722af9cf343b5744eacf7d7"
+    ],
+    "layer_range": [
+      0,
+      2
+    ],
+    "state_count": 2
+  },
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Feed the full-organ final state through the next qualified Flash layer in the persistent 48-layer session, then remove the diagnostic host seam.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_cross_species_seam.v1",
+  "seal_sha256": "9e9188196ae46a5708ccc50f431ea8b43c4db22e11760173c92e493729766e84",
+  "status": "PASSED_CROSS_SPECIES_STATEFUL_SEAM",
+  "token_ids": [
+    248044,
+    248044
+  ]
+}

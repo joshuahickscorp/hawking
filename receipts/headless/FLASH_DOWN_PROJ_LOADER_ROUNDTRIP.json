@@ -1,0 +1,167 @@
+{
+  "body_mutated": false,
+  "candidate_id": "independent_q4_g64",
+  "candidate_label": "[D]",
+  "claim_boundary": "Bounded serialized descriptor and source-block loader round-trip only. This does not establish whole-model capability, native-kernel performance, complete-system EBPW, or Flash TPS.",
+  "comparison": {
+    "capability_parity": "NOT_TESTED",
+    "label": "[D]",
+    "same_dimensions": true,
+    "same_source_sample": true,
+    "whole_model_runtime": "NOT_TESTED"
+  },
+  "elapsed_s": 0.025,
+  "encoded_sample": {
+    "basis_bytes": 0,
+    "candidate_bytes": 680,
+    "candidate_sha256": "55e91b0991236134ed51ef569e1d558652d5c6fbd3d22c8eba4230ac6f1bac88",
+    "label": "[D]",
+    "packed_code_bytes": 640,
+    "scale_bytes": 40
+  },
+  "expert_index": 0,
+  "finished_at": 1787839949.700514,
+  "loader_roundtrip": {
+    "code_pack_unpack_parity": true,
+    "decoded_finite": true,
+    "decoded_shape": [
+      2,
+      640
+    ],
+    "descriptor_json_roundtrip": true,
+    "label": "[D]",
+    "reference_vector": {
+      "cosine": 0.9881348797778563,
+      "count": 2,
+      "finite": true,
+      "max_abs_error": 0.04673761874437332,
+      "mean_abs_error": 0.02512390911579132,
+      "rmse": 0.03314156294767416
+    },
+    "source_file_unchanged": true,
+    "source_payload_unchanged": true,
+    "status": "PASSED",
+    "weight_reconstruction": {
+      "cosine": 0.9941608220758373,
+      "count": 1280,
+      "finite": true,
+      "max_abs_error": 0.0033416748046875,
+      "mean_abs_error": 0.0012604014482349157,
+      "rmse": 0.0014853184331263653
+    }
+  },
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "manifest_path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "manifest_sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7",
+    "n_files": 144,
+    "n_sha256_verified": 132,
+    "n_size_only_verified": 12,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915"
+  },
+  "model_loaded": false,
+  "native_kernel": "NOT_TESTED",
+  "native_loader": "BOUNDED_DESCRIPTOR_ROUNDTRIP_ONLY",
+  "next_experiment": {
+    "action": "implement a native kernel against the serialized descriptor and compare protected complete-token behavior",
+    "id": "flash-routed-expert-native-kernel-parity",
+    "required_before_promotion": [
+      "native kernel",
+      "whole-model capability",
+      "protected complete-token timing",
+      "complete-system EBPW ledger"
+    ],
+    "source_mutation_allowed": false
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOWN_PROJ_LOADER_ROUNDTRIP.json",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation_descriptor": {
+    "candidate_id": "independent_q4_g64",
+    "full_transform_reference": {
+      "candidate_bytes": 445644800,
+      "candidate_sha256": "a09b24f721f522dd15c9a3b34038a0b85a98609e7f2efd36fa5deb870262cc08",
+      "effective_bits_per_value": 4.25,
+      "status": "FULL_TENSOR_TRANSFORM_ONLY"
+    },
+    "label": "[D]",
+    "loader_policy": {
+      "candidate_body_persisted_by_this_tool": false,
+      "dense_rematerialization": "forbidden",
+      "model_load": false,
+      "source_mutation": false,
+      "streaming_block_order": "expert ascending, row ascending, complete column rows"
+    },
+    "schema": "hcli.noetic.representation_descriptor.v1",
+    "source_tensor": {
+      "dtype": "BF16",
+      "group_size": 64,
+      "layout": "row-major [expert, row, column]",
+      "shape": [
+        512,
+        2560,
+        640
+      ],
+      "tensor_name": "model.language_model.layers.0.mlp.experts.down_proj"
+    },
+    "storage": {
+      "code_dtype": "uint4_packed",
+      "code_offset": 8,
+      "nibble_order": "low_nibble_then_high_nibble_row_major",
+      "scale_dtype": "little_endian_float16",
+      "scale_scope": "one_scale_per_64_values"
+    }
+  },
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "row_count": 2,
+  "row_start": 0,
+  "runtime_performance": "NOT_TESTED",
+  "schema": "hcli.agentos.flash_loader_roundtrip.v1",
+  "serialized_descriptor_sha256": "bc24dc572d5c69d5beba9395dd856531423fc09127a98c7dc9a2baaabcb06ef5",
+  "source_label": "[V]",
+  "source_sample": {
+    "bytes": 2560,
+    "expert_index": 0,
+    "label": "[V]",
+    "payload_sha256": "01be9607d9d026e94367e6ba45e7cabf1fb16de0960af01464a32cf89278fdc1",
+    "row_range": [
+      0,
+      2
+    ],
+    "shape": [
+      2,
+      640
+    ]
+  },
+  "status": "PASSED",
+  "tensor_name": "model.language_model.layers.0.mlp.experts.down_proj",
+  "transform_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOWN_PROJ_TENSOR_TRANSFORM_PARITY.json",
+  "transform_reference": {
+    "candidate": {
+      "candidate_bytes": 445644800,
+      "candidate_sha256": "a09b24f721f522dd15c9a3b34038a0b85a98609e7f2efd36fa5deb870262cc08",
+      "effective_bits_per_value": 4.25,
+      "id": "independent_q4_g64"
+    },
+    "label": "[V]",
+    "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DOWN_PROJ_TENSOR_TRANSFORM_PARITY.json",
+    "receipt_sha256": "0a7d11a100e15a75739e5e6b40daac5c7b021dc1e74f20e5d614818edef9aad5",
+    "source_tensor_payload_sha256": "db959307557f846713812ab2f4e3a8001097649d8f035e05f8ede54969ad7037"
+  },
+  "whole_model_capability": "NOT_TESTED",
+  "whole_model_runtime": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

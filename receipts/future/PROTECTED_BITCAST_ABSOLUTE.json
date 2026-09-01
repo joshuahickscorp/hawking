@@ -1,0 +1,73 @@
+{
+ "against_the_canonical_baseline": {
+  "canonical_tps": 36.644,
+  "canonical_wall_ms": 27.2896,
+  "carried_onto_the_canonical_baseline_ms": 22.7585,
+  "carried_onto_the_canonical_baseline_tps": 43.94,
+  "open_item": "the two harnesses should be reconciled before either absolute is promoted into PATH_TO_71 as the new baseline. Until then the levers are MEASURED and still not PROMOTED.",
+  "the_two_controls_differ_by_ms": 0.5449,
+  "this_lease_control_tps": 37.391,
+  "this_lease_control_wall_ms": 26.7447,
+  "tps_range": [
+   43.94,
+   44.773
+  ],
+  "why_two_numbers": "the canonical budget was produced by resident_reprofile.py and this lease by the organ profiler. They measure the same resident through different harnesses and their CONTROLS differ by 0.545 ms. Reporting one number would hide that, so the answer is a range and the harness disagreement is named as an open item."
+ },
+ "checkpoints_crossed": [
+  "40 TPS"
+ ],
+ "claim_boundary": "the window IS protected this time and the paired delta of 4.5311 ms is a protected absolute. What remains unpromoted is the BASELINE: two harnesses report controls 0.545 ms apart, and picking one silently would be choosing the flattering number.",
+ "default_is_unchanged": true,
+ "lease": {
+  "authority": "S027 \u00a728, and the user's own choice of SIGSTOP-measure-resume",
+  "evidence_class": "PROTECTED_ABSOLUTE",
+  "loadavg_at_close": "3.99",
+  "loadavg_at_open": "5.72",
+  "method": "SIGSTOP the ModelLake SUPERVISOR first (tools/odyssey/modellake_watch.py), then the hf download workers, measure, then SIGCONT in reverse order",
+  "nothing_was_killed": "SIGSTOP and SIGCONT only. No download restarted from zero and no partial file was discarded.",
+  "states_after_resume": "supervisor S, workers R and S",
+  "states_at_open": "supervisor T, both workers T",
+  "why_the_supervisor_first": "two earlier attempts stopped only the workers. The supervisor respawned them mid-window and both windows had to be declared contaminated. Stopping the parent is the difference between a lease and a pause."
+ },
+ "levers": [
+  "HAWKING_AFFINE2_GEO=bitcast",
+  "HAWKING_Q4_UNPACK=bitcast"
+ ],
+ "load_invariance": {
+  "agrees": true,
+  "protected_ms": 4.5311,
+  "reading": "the contaminated pairs put the combined saving at 4.5377 ms and the protected lease says 4.5311. They agree to 0.15%. This is the strongest evidence this campaign has for its own standing rule that RATIOS HOLD UNDER LOAD AND ABSOLUTES DO NOT - the rule has been used to license many claims and had not been checked against a protected window at this size before.",
+  "relative_difference": 0.00145,
+  "unprotected_combined_ms": 4.5377
+ },
+ "measured": {
+  "arm": "widen_f4",
+  "bitcast_gpu_ms": 22.01,
+  "bitcast_wall_ms": 22.3347,
+  "bitcast_wall_tps": 44.773,
+  "control_gpu_ms": 26.541,
+  "control_wall_ms": 26.7447,
+  "control_wall_tps": 37.391,
+  "dispatches": 580,
+  "fallbacks": 0,
+  "gpu_ms_saved": 4.5311,
+  "n_tokens": 32,
+  "reps": 9,
+  "speedup": 1.2059,
+  "token_identical": true
+ },
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g094-lease",
+  "loadavg": "{ 3.99 5.80 6.60 }",
+  "measured_at": "2026-08-31T22:39:49Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "obligation": "G095",
+ "recorded_by": "tools/future/protected_bitcast_absolute.py",
+ "seal_sha256": "657e28fe62ffb4eca411255941f6c85b13b591993360d404b5007974285c2a9b",
+ "still_short_of_60_by_ms": 5.668
+}

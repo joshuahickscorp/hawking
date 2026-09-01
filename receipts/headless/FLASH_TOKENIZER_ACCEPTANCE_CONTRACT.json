@@ -1,0 +1,60 @@
+{
+  "bench": {
+    "machine": "Apple M3 Ultra (tokenizer prerequisite; no model forward)",
+    "recorded_at": "unix-ms:1787954493061",
+    "recorded_by": "flash_tokenizer_acceptance_contract",
+    "rule": "S032 §3 -- tokenizer prerequisite timing only; no performance claim",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "Pinned Flash tokenizer encodes a prompt and decodes the native terminal token contract deterministically. The model forward/session acceptance loop is still absent; this does not claim accepted generation, TPS, EBPW, capability or residency.",
+  "execution": {
+    "accepted_generation_tokens": 0,
+    "accepted_tps": null,
+    "elapsed_wall_ns": 1233974041,
+    "fallback_count": 0,
+    "model_forward_executed": false,
+    "provider": "source_tokenizer"
+  },
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Bind this tokenizer contract to a stateful 48-layer forward and count accepted generated tokens.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "prompt": {
+    "encoded_count": 5,
+    "encoded_ids": [
+      5423,
+      799,
+      4581,
+      3817,
+      13
+    ],
+    "roundtrip_text": "Return one exact token.",
+    "text": "Return one exact token."
+  },
+  "schema": "hawking.flash.tokenizer_acceptance_contract.v1",
+  "seal_sha256": "08ce066d529ed9bc915f3c97287b674494e7b3b05e1c199718f85f3349363a99",
+  "status": "PASSED_TOKENIZER_SESSION_PREREQUISITE",
+  "terminal_token_contract": {
+    "decoded_one": [
+      "2",
+      ""
+    ],
+    "is_eog": [
+      false,
+      true
+    ],
+    "native_terminal_token_compatible": true,
+    "token_ids": [
+      17,
+      248044
+    ]
+  },
+  "tokenizer": {
+    "bos_id": null,
+    "control_token_count": 23,
+    "eos_id": null,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json",
+    "sha256": "0997f410c57a1f4e53b09e4be8f4a172d90edd9564368fb0847030937229b9f3",
+    "vocab_size": 248077
+  }
+}

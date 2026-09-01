@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.34112.receipt.json",
+    "ngram_school.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "ngram_school.py is executable; the next unit is a fresh candidate set scored against the negative index, not a GPU fit.",
+  "frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.34112",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.34112.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "8736e7fc549b70c31d1433a30dd224034adcf103b4c46b5d2650f50ea618818c",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

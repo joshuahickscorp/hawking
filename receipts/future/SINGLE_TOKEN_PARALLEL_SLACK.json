@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T18:51:43Z",
+  "recorded_at": "2026-08-31T22:30:41Z",
   "recorded_by": "tools/future/single_token_dag.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -210,8 +210,23 @@
    "that a different representation could not create new independence"
   ]
  },
+ "scars": [
+  {
+   "authority": "S026 \u00a74",
+   "family": "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK",
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "all 11 edges in the single-token data flow are TRUE dependencies and the critical path equals the total GPU work (26701300 ns each), so there is ZERO overlapable top-level work. The capacity that multi-session execution exposes is not sitting between reorderable token regions; it is inside kernel execution. Command-order permutations cannot reach it.",
+   "not": "a claim that the GPU is saturated, or that concurrency is impossible in principle. G009 measured 450-580 aggregate GB/s across independent sessions against ~361 for one. The capacity is real and this scar says only WHERE IT IS NOT.",
+   "object": "any candidate that reorders or overlaps top-level dispatches",
+   "organ": "whole token",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "reopen": "any change to the decode graph that introduces a genuinely independent top-level region - a second stream of work with no data dependency on the first, such as speculative drafting or a second sequence - makes this DAG stale and the scar void. Rebuilding this module recomputes the slack and raises if so.",
+   "requires": "a frontier unit that reorders top-level dispatches is refused at proposal time while this stands",
+   "status": "MEASURED_NEGATIVE"
+  }
+ ],
  "schema": "hawking.future.single_token_dag.v1",
- "seal_sha256": "e3636e883bdffdda423b110d5b7321f0cab6f2b931380e453efb6cf8c7ad0b51",
+ "seal_sha256": "528b938df33c1ca0ce422202852ccd71a4b2cd305ca37ceb1472e59213647195",
  "theoretically_overlapable_ns": 0,
  "total_gpu_work_ns": 26701300,
  "unknown_edges": [],

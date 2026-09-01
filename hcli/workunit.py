@@ -64,6 +64,12 @@ class WorkUnit:
     # persisted so a restart does not silently route a specialist unit through
     # the current resident.
     provider: Optional[str] = None
+    # A typed-tool call. Naming a tool is what routes this unit to the
+    # ToolRegistry instead of to cognition, so the resident can read, search,
+    # patch, build and test through the same permission contract everything
+    # else uses. `verifier` remains a shell command; this is not that.
+    tool: Optional[str] = None
+    tool_arguments: Optional[Dict[str, Any]] = None
 
     def __post_init__(self) -> None:
         self.resource_class = normalize_resource_class(self.resource_class)

@@ -1,0 +1,23 @@
+{
+  "schema": "hawking.future.specimen_load_rates.raw.v1",
+  "method": "sequential read of a specimen's weight files with buffering=0 in 8 MiB chunks, 3.003 GB per sample",
+  "volume": "/Volumes/corpdrive (APFS over USB)",
+  "samples": [
+    {"label": "contended_cold", "specimen": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "bytes": 3003121664, "seconds": 47.4673, "MB_per_s": 63.3,
+     "downloads_running": true},
+    {"label": "contended_warm", "specimen": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+     "bytes": 3003121664, "seconds": 0.2733, "MB_per_s": 10987.3,
+     "downloads_running": true},
+    {"label": "quiet_cold", "specimen": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "bytes": 3003121664, "seconds": 39.2415, "MB_per_s": 76.5,
+     "downloads_running": false},
+    {"label": "quiet_warm", "specimen": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+     "bytes": 3003121664, "seconds": 0.2726, "MB_per_s": 11015.1,
+     "downloads_running": false},
+    {"label": "quiet_cold_2", "specimen": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+     "bytes": 3003121664, "seconds": 38.051, "MB_per_s": 78.9,
+     "downloads_running": false}
+  ],
+  "lease": "the quiet samples ran with the ModelLake supervisor and both hf download workers SIGSTOPped, then resumed"
+}

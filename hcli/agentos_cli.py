@@ -70,6 +70,58 @@ def build_parser() -> argparse.ArgumentParser:
     status = sub.add_parser("status", help="show mission, provider, tool, and recovery state")
     _add_paths(status)
 
+    resident = sub.add_parser(
+        "resident",
+        help="run HCLI as a durable, memory-aware resident daemon",
+    )
+    resident_sub = resident.add_subparsers(dest="resident_command")
+    resident_start = resident_sub.add_parser("start", help="start or attach to the resident supervisor")
+    resident_start.add_argument("--workspace", default=os.getcwd())
+    resident_start.add_argument("--repo-root", default=None)
+    resident_start.add_argument("--goal", required=True)
+    resident_start.add_argument("--model", default=None)
+    resident_start.add_argument("--runtime-count", type=int, default=1)
+    resident_start.add_argument("--interval-s", type=float, default=30.0)
+    resident_start.add_argument("--evacuation-grace-s", type=float, default=10.0)
+    resident_start.add_argument("--max-restarts", type=int, default=3)
+    resident_start.add_argument("--reserve-bytes", type=int, default=None)
+    resident_start.add_argument("--swap-ceiling-bytes", type=int, default=None)
+    resident_status = resident_sub.add_parser("status", help="show resident state without opening a model")
+    resident_status.add_argument("--workspace", default=os.getcwd())
+    resident_stop = resident_sub.add_parser("stop", help="stop the owned supervisor and worker")
+    resident_stop.add_argument("--workspace", default=os.getcwd())
+    resident_clean = resident_sub.add_parser(
+        "clean-room",
+        help="evacuate the owned worker and hold before model loading",
+    )
+    resident_clean.add_argument("--workspace", default=os.getcwd())
+    resident_clean.add_argument("--reason", default="protected experiment")
+    resident_resume = resident_sub.add_parser(
+        "resume",
+        help="release a clean-room pause and re-probe memory",
+    )
+    resident_resume.add_argument("--workspace", default=os.getcwd())
+    resident_queue = resident_sub.add_parser(
+        "queue",
+        help="queue one WorkUnit without loading a model",
+    )
+    resident_queue.add_argument("--workspace", default=os.getcwd())
+    resident_queue.add_argument("--id", required=True)
+    resident_queue.add_argument("--role", default="research")
+    resident_queue.add_argument("--description", required=True)
+    resident_queue.add_argument("--depends-on", action="append", default=[])
+    resident_queue.add_argument("--resource-class", default="LIGHT_CONTROL")
+    resident_queue.add_argument("--verifier", default=None)
+    resident_queue.add_argument("--preferred-backend", default=None)
+    resident_queue.add_argument("--provider", default=None)
+    resident_child = resident_sub.add_parser("child", help="launch one durable child under this resident")
+    resident_child.add_argument("--workspace", default=os.getcwd())
+    resident_child.add_argument("--cwd", default=None)
+    resident_child.add_argument("--label", default=None)
+    resident_child.add_argument("--timeout-s", type=float, default=None)
+    resident_child.add_argument("--non-resumable", action="store_true")
+    resident_child.add_argument("argv", nargs=argparse.REMAINDER)
+
     checkpoint = sub.add_parser("checkpoint", help="persist an evidence-backed program checkpoint")
     _add_paths(checkpoint)
     checkpoint.add_argument("--network", action="store_true", help="perform bounded public connectivity probes")
@@ -394,6 +446,55 @@ def build_parser() -> argparse.ArgumentParser:
     )
     fpga_preboard.add_argument("--repo-root", default=None)
     fpga_preboard.add_argument("--emit", default=None)
+
+    architecture_atlas = sub.add_parser(
+        "architecture-atlas",
+        help="emit or validate the cross-architecture Hawking accelerator atlas",
+    )
+    architecture_atlas.add_argument("--repo-root", default=None)
+    architecture_atlas.add_argument("--emit", default=None)
+    architecture_atlas.add_argument("--validate", default=None)
+
+    architecture_queue = sub.add_parser(
+        "architecture-queue",
+        help="compile the architecture atlas into Accelerator specs and HCLI WorkUnits",
+    )
+    architecture_queue.add_argument("--repo-root", default=None)
+    architecture_queue.add_argument("--emit", default=None)
+    architecture_queue.add_argument("--validate", default=None)
+    architecture_queue.add_argument("--model", default=None)
+    architecture_queue.add_argument("--backend", default=None)
+
+    physical_queue = sub.add_parser(
+        "accelerator-physical-queue",
+        help="compile or validate the concrete Qwen27/Flash physical qualification frontier",
+    )
+    physical_queue.add_argument("--repo-root", default=None)
+    physical_queue.add_argument("--emit", default=None)
+    physical_queue.add_argument("--validate", default=None)
+    physical_queue.add_argument("--model", choices=("Qwen27", "Flash"), default=None)
+    physical_queue.add_argument("--queue", default=None, help="existing queue JSON to advance")
+    physical_queue.add_argument("--candidate-id", default=None)
+    physical_queue.add_argument("--advance-status", default=None)
+    physical_queue.add_argument("--evidence", action="append", default=[])
+    physical_queue.add_argument("--blocked-reason", default=None)
+    physical_queue.add_argument("--measurements", default=None, help="JSON object containing recorded physical metrics")
+    physical_queue.add_argument("--receipt", default=None, help="protected HCLI receipt to import as measurements")
+
+    qwen27_budget = sub.add_parser(
+        "qwen27-token-budget",
+        help="emit the plan-only Qwen27 token/byte budget from sealed static receipts",
+    )
+    qwen27_budget.add_argument("--repo-root", default=None)
+    qwen27_budget.add_argument("--emit", default=None)
+
+    architecture_audit = sub.add_parser(
+        "architecture-audit",
+        help="audit canonical accelerator atlas, queue, and repatriation invariants",
+    )
+    architecture_audit.add_argument("--repo-root", default=None)
+    architecture_audit.add_argument("--emit", default=None)
+    architecture_audit.add_argument("--validate", default=None)
 
     protected_bench_watch = sub.add_parser(
         "protected-bench-watch",
@@ -912,6 +1013,155 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             _emit(report)
             return 0 if report.get("status") == "PASSED" else 1
 
+        if args.command == "architecture-atlas":
+            from tools.accelerator.architecture_atlas import build_atlas, emit_atlas, validate_atlas
+
+            if args.validate:
+                path = Path(args.validate).expanduser()
+                atlas = json.loads(path.read_text(encoding="utf-8"))
+                _emit(validate_atlas(atlas))
+                return 0
+            destination = emit_atlas(repo_root=args.repo_root, output=args.emit)
+            _emit({
+                "status": "PASSED",
+                "path": str(destination),
+                "fingerprint": build_atlas(repo_root=args.repo_root)["fingerprint"],
+            })
+            return 0
+
+        if args.command == "architecture-queue":
+            from tools.accelerator.accelerator_runner import (
+                build_compiled_queue,
+                emit_compiled_queue,
+                validate_compiled_queue,
+            )
+
+            if args.validate:
+                path = Path(args.validate).expanduser()
+                queue = json.loads(path.read_text(encoding="utf-8"))
+                _emit(validate_compiled_queue(queue))
+                return 0
+            destination = emit_compiled_queue(
+                repo_root=args.repo_root,
+                output=args.emit,
+                model=args.model,
+                backend=args.backend,
+            )
+            queue = build_compiled_queue(
+                repo_root=args.repo_root,
+                model=args.model,
+                backend=args.backend,
+            )
+            _emit({
+                "status": "PASSED",
+                "path": str(destination),
+                "fingerprint": queue["fingerprint"],
+                "specs": queue["counts"]["specs"],
+                "work_units": queue["counts"]["work_units"],
+            })
+            return 0
+
+        if args.command == "accelerator-physical-queue":
+            from tools.accelerator.physical_qualification import (
+                STATUSES,
+                emit_advanced_queue,
+                build_queue,
+                emit_queue,
+                validate_queue,
+            )
+
+            if any(value is not None for value in (args.candidate_id, args.advance_status, args.queue, args.measurements, args.receipt)):
+                if not args.queue or not args.candidate_id or not args.advance_status:
+                    raise ValueError("--queue, --candidate-id, and --advance-status are required together")
+                if args.validate or args.model:
+                    raise ValueError("queue advancement cannot be combined with --validate or --model")
+                if args.advance_status not in STATUSES:
+                    raise ValueError(f"invalid target status {args.advance_status!r}")
+                measurements = None
+                if args.measurements:
+                    measurements = json.loads(Path(args.measurements).expanduser().read_text(encoding="utf-8"))
+                destination = emit_advanced_queue(
+                    queue_path=args.queue,
+                    candidate_id=args.candidate_id,
+                    status=args.advance_status,
+                    evidence=args.evidence,
+                    blocked_reason=args.blocked_reason,
+                    measurements=measurements,
+                    receipt=args.receipt,
+                    output=args.emit,
+                    repo_root=args.repo_root,
+                )
+                updated = json.loads(destination.read_text(encoding="utf-8"))
+                _emit({
+                    "status": "PASSED",
+                    "path": str(destination),
+                    "candidate_id": args.candidate_id,
+                    "candidate_status": args.advance_status,
+                    "fingerprint": updated["fingerprint"],
+                    "ready": updated["counts"]["ready"],
+                    "work_units": updated["counts"]["work_units"],
+                })
+                return 0
+            if args.queue:
+                raise ValueError("--queue requires --candidate-id and --advance-status")
+            if args.validate:
+                path = Path(args.validate).expanduser()
+                queue = json.loads(path.read_text(encoding="utf-8"))
+                _emit(validate_queue(queue))
+                return 0
+            destination = emit_queue(
+                repo_root=args.repo_root,
+                output=args.emit,
+                model=args.model,
+            )
+            queue = build_queue(model=args.model)
+            _emit({
+                "status": "PASSED",
+                "path": str(destination),
+                "fingerprint": queue["fingerprint"],
+                "candidates": queue["counts"]["candidates"],
+                "ready": queue["counts"]["ready"],
+                "work_units": queue["counts"]["work_units"],
+            })
+            return 0
+
+        if args.command == "qwen27-token-budget":
+            from tools.accelerator.qwen27_token_budget import build_budget, emit_budget
+
+            destination = emit_budget(repo_root=args.repo_root, output=args.emit)
+            budget = build_budget(repo_root=args.repo_root)
+            _emit({
+                "status": "PASSED",
+                "path": str(destination),
+                "schema": budget["schema"],
+                "source_active_weight_bytes_per_token": budget["source_byte_denominator"]["active_weight_bytes_per_token"],
+                "promotion_allowed": budget["promotion_allowed"],
+                "claim_boundary": budget["claim_boundary"],
+            })
+            return 0
+
+        if args.command == "architecture-audit":
+            from tools.accelerator.repatriation_audit import (
+                build_audit,
+                emit_audit,
+                validate_audit,
+            )
+
+            if args.validate:
+                path = Path(args.validate).expanduser()
+                audit = json.loads(path.read_text(encoding="utf-8"))
+                _emit(validate_audit(audit))
+                return 0
+            destination = emit_audit(repo_root=args.repo_root, output=args.emit)
+            audit = build_audit(repo_root=args.repo_root)
+            _emit({
+                "status": "PASSED" if audit["passed"] else "FAILED",
+                "path": str(destination),
+                "fingerprint": audit["fingerprint"],
+                "checks": len(audit["checks"]),
+            })
+            return 0 if audit["passed"] else 1
+
         if args.command == "protected-bench-watch":
             from hcli.agentos.protected_benchmark_watcher import run_protected_benchmark_watcher
 
@@ -969,6 +1219,68 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
             _emit(report)
             return 0
 
+        if args.command == "resident":
+            from hcli.agentos.resident import ResidentDaemon, start_resident
+
+            if args.resident_command == "start":
+                _emit(start_resident(
+                    args.workspace,
+                    goal=args.goal,
+                    model=args.model,
+                    repo_root=args.repo_root,
+                    runtime_count=args.runtime_count,
+                    interval_s=args.interval_s,
+                    evacuation_grace_s=args.evacuation_grace_s,
+                    max_restarts=args.max_restarts,
+                    reserve_bytes=args.reserve_bytes,
+                    swap_ceiling_bytes=args.swap_ceiling_bytes,
+                ))
+                return 0
+            if args.resident_command == "status":
+                _emit(ResidentDaemon(args.workspace).status())
+                return 0
+            if args.resident_command == "stop":
+                _emit(ResidentDaemon(args.workspace).request_stop())
+                return 0
+            if args.resident_command == "clean-room":
+                _emit(ResidentDaemon(args.workspace).request_clean_room(args.reason))
+                return 0
+            if args.resident_command == "resume":
+                _emit(ResidentDaemon(args.workspace).resume_clean_room())
+                return 0
+            if args.resident_command == "queue":
+                from hcli.workunit import WorkUnit
+
+                _emit(ResidentDaemon(args.workspace).enqueue_workunit(
+                    WorkUnit(
+                        id=args.id,
+                        role=args.role,
+                        description=args.description,
+                        dependencies=list(args.depends_on),
+                        resource_class=args.resource_class,
+                        verifier=args.verifier,
+                        preferred_backend=args.preferred_backend,
+                        provider=args.provider,
+                    )
+                ))
+                return 0
+            if args.resident_command == "child":
+                argv_value = list(args.argv)
+                if argv_value and argv_value[0] == "--":
+                    argv_value = argv_value[1:]
+                if not argv_value:
+                    raise ValueError("resident child requires argv after --")
+                _emit(ResidentDaemon(args.workspace).launch_child(
+                    argv_value,
+                    cwd=args.cwd,
+                    label=args.label,
+                    timeout_s=args.timeout_s,
+                    resumable=not args.non_resumable,
+                ))
+                return 0
+            _emit({"schema": "hcli.agentos.resident_cli.v1", "status": "NO_COMMAND"})
+            return 0
+
         agent = _agent(args.workspace, args.repo_root)
         if args.command == "tools":
             _emit({"schema": "hcli.agentos.tool_catalog.v1", "tools": agent.tools.discover(role=args.role)})
@@ -1018,3 +1330,7 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
 
 
 __all__ = ["build_parser", "main"]
+
+
+if __name__ == "__main__":  # `python -m hcli.agentos_cli` used to exit 0 in silence
+    raise SystemExit(main())

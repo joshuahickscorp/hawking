@@ -1,0 +1,121 @@
+{
+ "arms": {
+  "arm_a_stripped": {
+   "computes_the_right_answer": true,
+   "gb_s": 502.3561169461261,
+   "over_production": 1.5128,
+   "rep_spread": 1.0212221379833206
+  },
+  "bitcast": {
+   "computes_the_right_answer": true,
+   "gb_s": 404.3963702359347,
+   "over_production": 1.2178,
+   "rep_spread": 1.0119562415180243
+  },
+  "hoist": {
+   "computes_the_right_answer": true,
+   "gb_s": 318.72325168023315,
+   "over_production": 0.9598,
+   "rep_spread": 1.009256704980843
+  },
+  "noaffine": {
+   "computes_the_right_answer": false,
+   "gb_s": 333.0678624813154,
+   "over_production": 1.003,
+   "rep_spread": 1.011832
+  },
+  "noconv": {
+   "computes_the_right_answer": false,
+   "gb_s": 436.14725732450165,
+   "over_production": 1.3134,
+   "rep_spread": 1.0221037426132633
+  },
+  "nounpack": {
+   "computes_the_right_answer": false,
+   "gb_s": 438.3391475409836,
+   "over_production": 1.32,
+   "rep_spread": 1.0359682894409346
+  },
+  "production": {
+   "computes_the_right_answer": true,
+   "gb_s": 332.07511177347243,
+   "over_production": 1.0,
+   "rep_spread": 1.0086249099498903
+  }
+ },
+ "authority": "S026 \u00a74, \u00a75, \u00a710, \u00a711",
+ "bitcast_candidate": {
+  "bit_identical": false,
+  "bitcast_gb_s": 404.3963702359347,
+  "exact_in_the_reals": true,
+  "fp_reading": "NOT bit-identical - the two FMAs run on refolded constants - but the error is at f32 epsilon, rel_fro under 2e-07 on every projection. Same tolerance class the hoist reached.",
+  "kernel": "alu_roofline_affine_q2_geo_tpr64_tg128_bitcast",
+  "max_abs_err": 2.384185791015625e-07,
+  "max_rel_fro": 1.509315843406896e-07,
+  "production_gb_s": 332.07511177347243,
+  "speedup_over_production": 1.2178,
+  "the_first_version_was_fast_and_wrong": "bit 21 is 0.25 of the significand and the exponent is 2^1, so the step is 0.5 per code, not 0.25. The first build used 4 and -8 instead of 2 and -4, measured 1.225x, and returned garbage at rel_fro 1.26. The speed was real and the answer was not. This is what the output comparison is for.",
+  "transform": "q unpacked into an f32 mantissa (f = 2 + q/2) so no int-to-float convert runs; the affine is refolded per group as w = (2*scale)*f + (bias - 4*scale)"
+ },
+ "decomposition": {
+  "affine_fma_alone": {
+   "measured_directly_by": "noaffine",
+   "share_of_arithmetic": 0.0088,
+   "share_of_production_time": 0.003
+  },
+  "arithmetic_share_of_production_time": 0.339,
+  "classes": {
+   "both_fmas": {
+    "share_of_arithmetic": 0.2848,
+    "share_of_production_time": 0.0965
+   },
+   "shift_and_mask": {
+    "share_of_arithmetic": 0.296,
+    "share_of_production_time": 0.1003
+   },
+   "uint_to_float_convert": {
+    "share_of_arithmetic": 0.4191,
+    "share_of_production_time": 0.1421
+   }
+  },
+  "largest_class": "uint_to_float_convert",
+  "method": "times normalised to production. unpack = noconv - arm_a (noconv keeps only shift+mask); fmas = nounpack - arm_a (nounpack keeps only the two FMAs); convert = arithmetic - unpack - fmas. The decomposition ASSUMES the classes are additive, which is checked only by the residual coming out positive and by noaffine agreeing with the FMA term's scale.",
+  "no_single_class_dominates": true,
+  "why_the_hoist_bought_nothing": "the affine FMA it removed is 1.8% of this kernel's arithmetic and 0.6% of its time. The measured hoist is 0.96x - slightly SLOWER, because its per-chunk fixup costs more than the FMA it saves."
+ },
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g094-opclass",
+  "loadavg": "{ 13.30 11.06 10.14 }",
+  "measured_at": "2026-08-31T21:41:37Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "obligation": "G094",
+ "question": "which internal physical resource does the q2 MLP matvec spend its arithmetic on, given that removing one FMA per weight bought nothing",
+ "recorded_by": "tools/future/op_class_ablation.py",
+ "scar": {
+  "id": "REMOVING_ONE_OP_CLASS_IS_NOT_A_LEVER_WHEN_FOUR_SHARE_THE_COST",
+  "reopen": "the split is kernel-specific. The q4 DeltaNet matvec has a different code width and a different unpack, so it needs its own ladder before anyone assumes convert dominates there too.",
+  "statement": "this kernel's arithmetic splits 29/44/27 across unpack, convert and FMA. Attacking any one without measuring the split first risks the hoist's outcome: a correct, well-built, useless kernel. MEASURE THE SPLIT BEFORE CHOOSING THE TARGET."
+ },
+ "seal_sha256": "b6245ef4759bf4e6ba8db72f16970e66dbbe443c6ddd917b2539fbbc8e519444",
+ "token_projection": {
+  "evidence_class": "PROSPECTIVE",
+  "measured_kernel_speedup": 1.2178,
+  "ms_saved_if_it_lands": 2.7985,
+  "organ_ms_today": 15.6473,
+  "organs_this_kernel_runs": [
+   "mlp_gate_up",
+   "mlp_down"
+  ],
+  "token_ms_after": 24.4911,
+  "token_ms_before": 27.2896,
+  "tps_after": 40.831,
+  "tps_before": 36.644,
+  "tps_gain": 4.187,
+  "what_would_make_it_measured": "edit the q2 affine matvec in the resident shader, re-run the resident token budget under a protected lease, and compare complete-token wall TPS - not this kernel's GB/s",
+  "why_prospective": "the speedup is MEASURED on the production kernel in an isolated harness with production's own bytes and layout. It is a projection only in that the kernel has not yet been changed in the resident and the resident has not been re-measured. Nothing about the organ census or the arithmetic is assumed."
+ }
+}

@@ -107,6 +107,28 @@ class TestDoesNotDuplicateSchedulerOrSession(unittest.TestCase):
 
 
 class TestPoolPicksMlxForMlxDir(unittest.TestCase):
+    # These pins used to leak: set inline with no teardown, a 64 GiB swap
+    # ceiling escaped into the rest of the process and every later test that
+    # relied on the 2 GiB default silently measured the wrong gate. Save and
+    # restore the same way RuntimePoolTestCase does.
+    _ENV = (
+        "HCLI_DISABLE_SIGNAL_HOOKS",
+        "HCLI_SWAP_CEILING_GIB",
+        "HCLI_RESIDENT_RUNTIME_LIMIT",
+    )
+
+    def setUp(self):
+        saved = {k: os.environ.get(k) for k in self._ENV}
+
+        def restore():
+            for k, v in saved.items():
+                if v is None:
+                    os.environ.pop(k, None)
+                else:
+                    os.environ[k] = v
+
+        self.addCleanup(restore)
+
     def test_make_backend_via_pool_is_mlx(self):
         with tempfile.TemporaryDirectory() as tmp:
             model = _fake_mlx_dir(Path(tmp) / "4bit")

@@ -10,7 +10,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:57:14Z",
+  "recorded_at": "2026-09-01T05:10:30Z",
   "recorded_by": "tools/future/abliteration.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -474,7 +474,7 @@
   ]
  },
  "schema": "hawking.future.abliteration.v1",
- "seal_sha256": "7c9e2fe7d8729003adf3b935cee139f4589f445093fdf21d355042fc36944d20",
+ "seal_sha256": "a7e18c6aed75a19f645223139778f0eb0697699ca3754dd5fa94f130e81f2b46",
  "selection_demo": {
   "claim": "candidate direction selected under completion+harmless+loss gates; this is not an uncensoring result",
   "discarded": [

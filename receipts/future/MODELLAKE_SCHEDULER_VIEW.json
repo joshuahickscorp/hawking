@@ -1,0 +1,96 @@
+{
+ "arrivals": {
+  "active": [
+   {
+    "already_sealed": false,
+    "id": "Qwen--Qwen3-14B@40c069824f42",
+    "known_to_registry": true,
+    "lifecycle": "DOWNLOADING",
+    "model_type": "qwen3"
+   },
+   {
+    "already_sealed": false,
+    "id": "thinkingmachines--Inkling-Small@8cc5877b44d3",
+    "known_to_registry": true,
+    "lifecycle": "DOWNLOADING",
+    "model_type": "inkling_mm_model"
+   },
+   {
+    "already_sealed": false,
+    "id": "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
+    "known_to_registry": true,
+    "lifecycle": "DOWNLOADING",
+    "model_type": "glm5_next"
+   }
+  ],
+  "n_active": 3,
+  "n_unknown_to_registry": 0,
+  "unknown_means": "the download has not written a directory the registry can see yet, which is normal early in a job and is NOT an error"
+ },
+ "authority": "S027 \u00a72, \u00a721, \u00a722",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T22:53:42Z",
+  "recorded_by": "tools/future/modellake_scheduler_view.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "eta": {
+  "covers_active_jobs_only": [
+   "Qwen--Qwen3-14B@40c069824f42",
+   "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+  ],
+  "does_not_cover": "queued specimens the watcher has not admitted yet, so the real time to a full library is longer than this",
+  "hours": 1.03,
+  "is_an_estimate_because": "the rate is a median of recent samples and will not hold: it varies with the host, the file mix and disk contention. This is a planning number, not a promise.",
+  "remaining_bytes": 889863454261,
+  "rx_bytes_per_sec_median": 240646532,
+  "seconds": 3698
+ },
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "live": {
+  "active_jobs": [
+   "Qwen--Qwen3-14B@40c069824f42",
+   "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+  ],
+  "active_remaining_bytes": 889863454261,
+  "free_bytes": 1346910912512,
+  "p0_done": true,
+  "rate_is_none_because": null,
+  "rx_bytes_per_sec_median": 240646532,
+  "rx_samples_used": 12,
+  "sample_age_s": 10.8,
+  "sample_ts": "2026-08-31T22:53:08.750858+00:00",
+  "stale": false,
+  "stale_threshold_s": 900.0
+ },
+ "obligation": "G101",
+ "registry_join": {
+  "n_schedulable": 8,
+  "n_specimens_known": 54
+ },
+ "seal_contract": {
+  "event": "MODEL_SEALED(model_id)",
+  "honest_status": "DECLARED, NOT WIRED. The watcher emits download_exit and already_complete events and the registry derives SEALED_SOURCE from a manifest, so both halves exist - but nothing today turns the first into the second and then into a WorkGraph. Claiming otherwise would be the fake completion this campaign forbids.",
+  "is_this_wired": false,
+  "must_trigger": [
+   "fingerprint",
+   "role evaluation",
+   "law and scar lookup",
+   "initial economics",
+   "WorkGraph creation",
+   "possible prefetch or load"
+  ],
+  "no_conversational_boundary": "the sealed model becomes schedulable material at once; nobody is asked whether to look at it",
+  "what_wiring_it_needs": "a consumer that tails this log, detects a manifest appearing, and emits the six triggers as WorkUnits through the frontier layer - the same path the causal pattern library already uses"
+ },
+ "seal_sha256": "7ed9a319e7cc3d22adee8db7d08cab0b52db9aa23e3d2512c8d1bd07261a3183",
+ "the_watcher_already_wrote_all_of_this": "active jobs, remaining bytes, free space and network throughput were being appended every few seconds and nothing consumed them. The gap S027 \u00a72 names was never missing data; it was a missing reader.",
+ "watch_log": "workspace/campaign/odyssey/downloads/modellake-watch.jsonl"
+}

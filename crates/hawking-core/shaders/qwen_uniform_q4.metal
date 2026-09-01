@@ -180,6 +180,43 @@ static inline float qwen_uniform_q4_unpack8(
 
 // Geometry-sweep winner for Q4 gate [512, 2048]: 64 threads/row, 128-thread
 // TG, 2 rows/TG. Packed decode stays in registers. Grid: ceil(rows/2)*128.
+
+// ── bitcast unpack ──────────────────────────────────────────────────────────
+// A nibble placed at bits 19-22 of an f32 whose exponent field is 0x40000000
+// yields EXACTLY f = 2.0 + q/8 (the nibble is q*2^19/2^23 = q/16 of the
+// significand, doubled by the 2^1 exponent). So q = 8*(f - 2) and the
+// production weight (q - 8)*scale becomes
+//     (8*scale)*f + (-24*scale)
+// with both constants folded ONCE PER GROUP. This removes the int-to-float
+// convert AND the -8 zero point.
+//
+// MEASURED BIT-IDENTICAL to qwen_uniform_q4_unpack8 on a real qkvz projection -
+// rel_fro 0.0, max_abs 0.0 - because production's `sum += w*x` is already
+// FP-contracted to an FMA, so both paths run the same instruction on values
+// that are exactly representable. Bit-identity on one projection is not a proof
+// for all inputs, so the resident A/B still compares tokens.
+//
+// Do NOT extract the nibble with a pre-shift of the whole word: `packed` is a
+// full 32-bit word of eight nibbles, so (packed << 19) discards bits 13 and up.
+// That version measured 1.40x and returned garbage at rel_fro 0.877.
+static inline float qwen_uniform_q4_unpack8_bitcast(
+    uint packed,
+    float s8,
+    float b24,
+    device const float* x,
+    uint col)
+{
+    float sum = 0.0f;
+    for (uint i = 0u; i < 4u; ++i) {
+        const uint byte = (packed >> (8u * i)) & 0xffu;
+        const float fl = as_type<float>(0x40000000u | ((byte & 0x0fu) << 19u));
+        const float fh = as_type<float>(0x40000000u | ((byte >> 4u) << 19u));
+        sum = fma(fma(s8, fl, b24), x[col + 2u * i], sum);
+        sum = fma(fma(s8, fh, b24), x[col + 2u * i + 1u], sum);
+    }
+    return sum;
+}
+
 kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128(
     device const uchar* codes       [[buffer(0)]],
     device const half* scales       [[buffer(1)]],
@@ -1901,6 +1938,169 @@ kernel void qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128(
             k_out[tid - q_rows] = sum;
         } else {
             v_out[tid - q_rows - k_rows] = sum;
+        }
+    }
+}
+
+// ── bitcast siblings of the three kernels the resident dispatches ──
+kernel void qwen_uniform_q4_group64_matvec_geo_tpr64_tg128_bitcast(
+    device const uchar* codes       [[buffer(0)]],
+    device const half* scales       [[buffer(1)]],
+    device const float* input       [[buffer(2)]],
+    device float* output            [[buffer(3)]],
+    constant uint& rows             [[buffer(4)]],
+    constant uint& cols             [[buffer(5)]],
+    constant uint& groups_per_row   [[buffer(6)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows) {
+        const uint rgb0 = row * groups_per_row;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint local = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (local >> 1u)));
+            acc += qwen_uniform_q4_unpack8_bitcast(packed, scale * 8.0f, scale * -24.0f, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
+
+kernel void qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128_bitcast(
+    device const uchar* q_codes     [[buffer(0)]],
+    device const half*  q_scales    [[buffer(1)]],
+    device const uchar* k_codes     [[buffer(2)]],
+    device const half*  k_scales    [[buffer(3)]],
+    device const uchar* v_codes     [[buffer(4)]],
+    device const half*  v_scales    [[buffer(5)]],
+    device const float* input       [[buffer(6)]],
+    device float*       q_out       [[buffer(7)]],
+    device float*       k_out       [[buffer(8)]],
+    device float*       v_out       [[buffer(9)]],
+    constant uint& q_rows           [[buffer(10)]],
+    constant uint& k_rows           [[buffer(11)]],
+    constant uint& v_rows           [[buffer(12)]],
+    constant uint& cols             [[buffer(13)]],
+    constant uint& groups_per_row   [[buffer(14)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint tid = group_id * 2u + team;
+    const uint total = q_rows + k_rows + v_rows;
+    float acc = 0.0f;
+    if (tid < total) {
+        device const uchar* codes;
+        device const half* scales;
+        uint local;
+        if (tid < q_rows) {
+            codes = q_codes; scales = q_scales; local = tid;
+        } else if (tid < q_rows + k_rows) {
+            codes = k_codes; scales = k_scales; local = tid - q_rows;
+        } else {
+            codes = v_codes; scales = v_scales; local = tid - q_rows - k_rows;
+        }
+        const uint rgb0 = local * groups_per_row;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint lo = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (lo >> 1u)));
+            acc += qwen_uniform_q4_unpack8_bitcast(packed, scale * 8.0f, scale * -24.0f, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && tid < total) {
+        const float sum = red[team * kSplit] + red[team * kSplit + 1u];
+        if (tid < q_rows) {
+            q_out[tid] = sum;
+        } else if (tid < q_rows + k_rows) {
+            k_out[tid - q_rows] = sum;
+        } else {
+            v_out[tid - q_rows - k_rows] = sum;
+        }
+    }
+}
+
+kernel void qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128_bitcast(
+    device const uchar* a_codes     [[buffer(0)]],
+    device const half*  a_scales    [[buffer(1)]],
+    device const uchar* b_codes     [[buffer(2)]],
+    device const half*  b_scales    [[buffer(3)]],
+    device const float* input       [[buffer(4)]],
+    device float*       a_out       [[buffer(5)]],
+    device float*       b_out       [[buffer(6)]],
+    constant uint& a_rows           [[buffer(7)]],
+    constant uint& b_rows           [[buffer(8)]],
+    constant uint& cols             [[buffer(9)]],
+    constant uint& groups_per_row   [[buffer(10)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint tid = group_id * 2u + team;
+    const uint total = a_rows + b_rows;
+    float acc = 0.0f;
+    if (tid < total) {
+        const bool is_a = tid < a_rows;
+        const uint local = is_a ? tid : (tid - a_rows);
+        device const uchar* codes = is_a ? a_codes : b_codes;
+        device const half* scales = is_a ? a_scales : b_scales;
+        const uint rgb0 = local * groups_per_row;
+        for (uint col = lane_in_row * 8u; col < cols; col += 512u) {
+            const uint group = col / QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint lo = col - group * QWEN_UNIFORM_Q4_GROUP_SIZE;
+            const uint rgb = rgb0 + group;
+            const float scale = float(scales[rgb]);
+            const uint packed = *((device const uint*)(codes
+                + rgb * QWEN_UNIFORM_Q4_CODE_BYTES_PER_GROUP + (lo >> 1u)));
+            acc += qwen_uniform_q4_unpack8_bitcast(packed, scale * 8.0f, scale * -24.0f, input, col);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && tid < total) {
+        const float sum = red[team * kSplit] + red[team * kSplit + 1u];
+        if (tid < a_rows) {
+            a_out[tid] = sum;
+        } else {
+            b_out[tid - a_rows] = sum;
         }
     }
 }

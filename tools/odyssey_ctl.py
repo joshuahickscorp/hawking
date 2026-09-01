@@ -1314,8 +1314,17 @@ def complete(*, obligation_id: str, patient_id: str, mechanism_id: str,
         match_i = i
         break
     if match_i is not None:
-        merged = dict(entries[match_i])
+        existing = entries[match_i]
+        merged = dict(existing)
         merged.update(row)
+        # A match means patient/mechanism/sha/status are ALL unchanged, i.e.
+        # nothing was re-verified — only the caller's idea of "now" (and
+        # hence source_revision, which defaults to the current HEAD) moved.
+        # Restamping it would make the field lie about when this completion
+        # was actually established; keep the revision it was first verified
+        # at unless it was never recorded.
+        if existing.get("source_revision"):
+            merged["source_revision"] = existing["source_revision"]
         entries[match_i] = merged
         row = merged
     else:
@@ -1351,6 +1360,15 @@ def rebuild_completions(*, completed_at: str | None = None,
         (rec_dir / fname).is_file() for _, _, fname in COMPLETION_BACKFILL
     )
     backfill_keys = {(p, m) for p, m, _ in COMPLETION_BACKFILL}
+    # A rebuild is a re-derivation, not a re-verification: an entry whose
+    # sha256 does not change did not get re-verified just because the
+    # caller's HEAD moved, so its source_revision (the commit that actually
+    # produced it) must survive the strip-and-recreate below.
+    prior_revision = {
+        (e.get("patient_id"), e.get("mechanism_id"), e.get("receipt_sha256")): e.get("source_revision")
+        for e in (doc.get("entries") or [])
+        if e.get("source_revision")
+    }
     # Sparse worktrees omit receipts/; do not strip sealed backfill entries.
     if have_backfill_files:
         kept = [
@@ -1371,6 +1389,8 @@ def rebuild_completions(*, completed_at: str | None = None,
         except ValueError:
             rel = f"receipts/odyssey-i/{fname}"
         tags = gravity_tags_from_receipt(rec_path) if mechanism_id.startswith("gravity-") else {}
+        sha = file_sha256(rec_path)
+        revision = prior_revision.get((patient_id, mechanism_id, sha), head)
         complete(
             obligation_id=f"{patient_id}:{mechanism_id}",
             patient_id=patient_id,
@@ -1378,8 +1398,8 @@ def rebuild_completions(*, completed_at: str | None = None,
             status="VERIFIED",
             completed_at=stamp,
             receipt_ref=rel.replace("\\", "/"),
-            receipt_sha256=file_sha256(rec_path),
-            source_revision=head,
+            receipt_sha256=sha,
+            source_revision=revision,
             supersedes=None,
             reopen_if=None,
             index=doc,
@@ -7244,6 +7264,44 @@ def _self_check() -> int:
             for e in (d.get("entries") or [])
         }
         assert sig(rebuilt) == sig(rebuilt2), "rebuild is not idempotent"
+        # sig() above is blind to source_revision BY CONSTRUCTION, and within
+        # this test rebuilt/rebuilt2 share one git_head() call anyway, so
+        # neither form can see the real defect: two rebuilds separated by a
+        # real commit restamped every unchanged VERIFIED entry to the new
+        # HEAD. Reproduced directly against complete(), which is where the
+        # restamp actually happens, with two source_revisions standing in for
+        # "before" and "after" a commit.
+        sr_doc = {"entries": []}
+        sr_row = complete(
+            obligation_id="SR:mech", patient_id="SR", mechanism_id="mech",
+            status="VERIFIED", completed_at="t0",
+            receipt_ref="r.json", receipt_sha256="deadbeef",
+            source_revision="before", index=sr_doc, persist=False,
+        )
+        assert sr_row["source_revision"] == "before", sr_row
+        # A second call with the SAME sha/status (nothing re-verified) but a
+        # NEW source_revision (a commit landed since) must NOT overwrite the
+        # revision the entry was actually verified at.
+        sr_row2 = complete(
+            obligation_id="SR:mech", patient_id="SR", mechanism_id="mech",
+            status="VERIFIED", completed_at="t0",
+            receipt_ref="r.json", receipt_sha256="deadbeef",
+            source_revision="after", index=sr_doc, persist=False,
+        )
+        assert sr_row2["source_revision"] == "before", (
+            "complete() restamped source_revision on an unchanged entry",
+            sr_row2,
+        )
+        # The negative control: when the sha genuinely changes (real new
+        # evidence), the new source_revision MUST be recorded — this is not
+        # "never update", it is "don't restamp a no-op".
+        sr_row3 = complete(
+            obligation_id="SR:mech", patient_id="SR", mechanism_id="mech",
+            status="VERIFIED", completed_at="t1",
+            receipt_ref="r.json", receipt_sha256="cafefeed",
+            source_revision="after", index=sr_doc, persist=False,
+        )
+        assert sr_row3["source_revision"] == "after", sr_row3
 
     # persist the canonical index from real receipts (scheduler source of truth)
     # Sparse worktrees may omit receipts/; never strip the live index then.

@@ -20,7 +20,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T12:12:47Z",
+  "recorded_at": "2026-09-01T05:56:45Z",
   "recorded_by": "tools/future/sleeping_specimens.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -70,11 +70,12 @@
  "live_acquisition_classes": {
   "Qwen--Qwen3-14B@40c069824f42": "DEFERABLE_PARALLEL",
   "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b": "DEFERABLE_PARALLEL",
-  "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8": "DEFERABLE_PARALLEL",
+  "facebook--blt-7b@b65201dce04b": "DEFERABLE_PARALLEL",
+  "stabilityai--stable-audio-open-1.0@f21265c1e271": "DEFERABLE_PARALLEL",
   "thinkingmachines--Inkling-Small@8cc5877b44d3": "DEFERABLE_PARALLEL",
   "zai-org--GLM-5.3-Flash@04c4e9e95c5d": "DEFERABLE_PARALLEL"
  },
- "n_sleeping": 5,
+ "n_sleeping": 6,
  "negative_findings": [
   "the live gate still requires 16/16; GATE_CONSUMES_DEPENDENCY_CLASS is false until an explicit edit of launch_verdict",
   "this lane does not kill, restart, or re-hash the live downloads",
@@ -112,7 +113,7 @@
   "workunit": "one IO_HEAVY SLEEPING_SPECIMEN_WU per pending acquisition; wakes on SEALED_SOURCE_READY"
  },
  "schema": "hawking.future.sleeping_specimens.v1",
- "seal_sha256": "da8feefdbdb3559734b9099a2506a8623481d2c31072479fead2089de44a3f39",
+ "seal_sha256": "8a6da7c22d1ac538d8c5ba0274979dabc8d10c2e7c2ac2f770afa4f6262eb56e",
  "sleeping_units": [
   {
    "acquisition_state": "active",
@@ -144,60 +145,12 @@
     "tag": "Qwen--Qwen3-14B@40c069824f42"
    },
    "pids": [
-    3668
+    1688
    ],
    "required_by_first_workgraph": false,
    "species": "SLEEPING_SPECIMEN_WU",
    "status": "sleeping",
    "target_revision": "40c069824f4251a91eefaf281ebe4c544efd3e18",
-   "wake_condition": "SEALED_SOURCE_READY"
-  },
-  {
-   "acquisition_state": "active",
-   "blocked_reason": "SLEEPING_SPECIMEN_WU: thinkingmachines--Inkling-Small@8cc5877b44d3 is active; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
-   "classification": "SLEEPING",
-   "dependency_class": "DEFERABLE_PARALLEL",
-   "early_metadata": {
-    "architecture_family": "inkling_mm",
-    "architectures": [
-     "InklingForConditionalGeneration"
-    ],
-    "is_sealed_specimen": false,
-    "model_type": "inkling_mm_model",
-    "weights_opened": false
-   },
-   "expected_bytes": 531944668170,
-   "expected_role_candidates": [
-    {
-     "role": "multimodal_vl_candidate",
-     "status": "CANDIDATE",
-     "why": "config declares a vision tower or VL architecture"
-    },
-    {
-     "role": "moe_candidate",
-     "status": "CANDIDATE",
-     "why": "config/index names experts or a router"
-    },
-    {
-     "role": "heterogeneous_frontier_candidate",
-     "status": "CANDIDATE",
-     "why": "architecture_family=inkling_mm"
-    }
-   ],
-   "id": "odyssey-i.sleeping.thinkingmachines--Inkling-Small@8cc5877b44d3",
-   "modellake_identity": {
-    "destination": "/Volumes/corpdrive/hawking-modellake/partial/thinkingmachines--Inkling-Small@8cc5877b44d3",
-    "repo": "thinkingmachines/Inkling-Small",
-    "revision": "8cc5877b44d343f88b92086aa1fb72897950f06a",
-    "tag": "thinkingmachines--Inkling-Small@8cc5877b44d3"
-   },
-   "pids": [
-    3667
-   ],
-   "required_by_first_workgraph": false,
-   "species": "SLEEPING_SPECIMEN_WU",
-   "status": "sleeping",
-   "target_revision": "8cc5877b44d343f88b92086aa1fb72897950f06a",
    "wake_condition": "SEALED_SOURCE_READY"
   },
   {
@@ -240,7 +193,7 @@
     "tag": "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
    },
    "pids": [
-    3666
+    1630
    ],
    "required_by_first_workgraph": false,
    "species": "SLEEPING_SPECIMEN_WU",
@@ -250,38 +203,36 @@
   },
   {
    "acquisition_state": "absent",
-   "blocked_reason": "SLEEPING_SPECIMEN_WU: Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8 is absent; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: facebook--blt-7b@b65201dce04b is absent; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
    "classification": "SLEEPING",
    "dependency_class": "DEFERABLE_PARALLEL",
    "early_metadata": {
-    "architecture_family": "qwen3_vl",
-    "architectures": [
-     "Qwen3VLForConditionalGeneration"
-    ],
+    "architecture_family": null,
+    "architectures": null,
     "is_sealed_specimen": false,
-    "model_type": "qwen3_vl",
+    "model_type": null,
     "weights_opened": false
    },
-   "expected_bytes": 17545915883,
+   "expected_bytes": 21505352836,
    "expected_role_candidates": [
     {
-     "role": "multimodal_vl_candidate",
+     "role": "deferred_lake_entry",
      "status": "CANDIDATE",
-     "why": "config declares a vision tower or VL architecture"
+     "why": "no first-wave role matches"
     }
    ],
-   "id": "odyssey-i.sleeping.Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
+   "id": "odyssey-i.sleeping.facebook--blt-7b@b65201dce04b",
    "modellake_identity": {
-    "destination": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
-    "repo": "Qwen/Qwen3-VL-8B-Instruct",
-    "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
-    "tag": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8"
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/facebook--blt-7b@b65201dce04b",
+    "repo": "facebook/blt-7b",
+    "revision": "b65201dce04b0a824f0dedeb13bb16fc3a918048",
+    "tag": "facebook--blt-7b@b65201dce04b"
    },
    "pids": [],
    "required_by_first_workgraph": false,
    "species": "SLEEPING_SPECIMEN_WU",
    "status": "sleeping",
-   "target_revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+   "target_revision": "b65201dce04b0a824f0dedeb13bb16fc3a918048",
    "wake_condition": "SEALED_SOURCE_READY"
   },
   {
@@ -319,6 +270,86 @@
    "status": "sleeping",
    "target_revision": "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
    "wake_condition": "SEALED_SOURCE_READY"
+  },
+  {
+   "acquisition_state": "absent",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: thinkingmachines--Inkling-Small@8cc5877b44d3 is absent; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "classification": "SLEEPING",
+   "dependency_class": "DEFERABLE_PARALLEL",
+   "early_metadata": {
+    "architecture_family": "inkling_mm",
+    "architectures": [
+     "InklingForConditionalGeneration"
+    ],
+    "is_sealed_specimen": false,
+    "model_type": "inkling_mm_model",
+    "weights_opened": false
+   },
+   "expected_bytes": 531944668170,
+   "expected_role_candidates": [
+    {
+     "role": "multimodal_vl_candidate",
+     "status": "CANDIDATE",
+     "why": "config declares a vision tower or VL architecture"
+    },
+    {
+     "role": "moe_candidate",
+     "status": "CANDIDATE",
+     "why": "config/index names experts or a router"
+    },
+    {
+     "role": "heterogeneous_frontier_candidate",
+     "status": "CANDIDATE",
+     "why": "architecture_family=inkling_mm"
+    }
+   ],
+   "id": "odyssey-i.sleeping.thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "modellake_identity": {
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/thinkingmachines--Inkling-Small@8cc5877b44d3",
+    "repo": "thinkingmachines/Inkling-Small",
+    "revision": "8cc5877b44d343f88b92086aa1fb72897950f06a",
+    "tag": "thinkingmachines--Inkling-Small@8cc5877b44d3"
+   },
+   "pids": [],
+   "required_by_first_workgraph": false,
+   "species": "SLEEPING_SPECIMEN_WU",
+   "status": "sleeping",
+   "target_revision": "8cc5877b44d343f88b92086aa1fb72897950f06a",
+   "wake_condition": "SEALED_SOURCE_READY"
+  },
+  {
+   "acquisition_state": "absent",
+   "blocked_reason": "SLEEPING_SPECIMEN_WU: stabilityai--stable-audio-open-1.0@f21265c1e271 is absent; wakes on SEALED_SOURCE_READY. Not a synthetic result.",
+   "classification": "SLEEPING",
+   "dependency_class": "DEFERABLE_PARALLEL",
+   "early_metadata": {
+    "architecture_family": null,
+    "architectures": null,
+    "is_sealed_specimen": false,
+    "model_type": null,
+    "weights_opened": false
+   },
+   "expected_bytes": 10149568008,
+   "expected_role_candidates": [
+    {
+     "role": "deferred_lake_entry",
+     "status": "CANDIDATE",
+     "why": "no first-wave role matches"
+    }
+   ],
+   "id": "odyssey-i.sleeping.stabilityai--stable-audio-open-1.0@f21265c1e271",
+   "modellake_identity": {
+    "destination": "/Volumes/corpdrive/hawking-modellake/partial/stabilityai--stable-audio-open-1.0@f21265c1e271",
+    "repo": "stabilityai/stable-audio-open-1.0",
+    "revision": "f21265c1e2710b3bd2386596943f0007f55f802e",
+    "tag": "stabilityai--stable-audio-open-1.0@f21265c1e271"
+   },
+   "pids": [],
+   "required_by_first_workgraph": false,
+   "species": "SLEEPING_SPECIMEN_WU",
+   "status": "sleeping",
+   "target_revision": "f21265c1e2710b3bd2386596943f0007f55f802e",
+   "wake_condition": "SEALED_SOURCE_READY"
   }
  ],
  "species": "SLEEPING_SPECIMEN_WU",
@@ -327,7 +358,6 @@
  "watcher_probe": {
   "active_jobs": [
    "Qwen--Qwen3-14B@40c069824f42",
-   "thinkingmachines--Inkling-Small@8cc5877b44d3",
    "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
   ],
   "did_not_kill_downloads": true,
@@ -337,13 +367,14 @@
   "path": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/modellake-watch.jsonl",
   "pending_jobs": [
    "Qwen--Qwen3-14B@40c069824f42",
-   "thinkingmachines--Inkling-Small@8cc5877b44d3",
    "zai-org--GLM-5.3-Flash@04c4e9e95c5d",
-   "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
-   "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+   "facebook--blt-7b@b65201dce04b",
+   "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+   "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "stabilityai--stable-audio-open-1.0@f21265c1e271"
   ],
   "read_only": true,
   "source": "watcher_sample.active_jobs UNION recent download_started minus complete",
-  "ts": "2026-08-31T12:12:35.615341+00:00"
+  "ts": "2026-09-01T05:56:34.408830+00:00"
  }
 }

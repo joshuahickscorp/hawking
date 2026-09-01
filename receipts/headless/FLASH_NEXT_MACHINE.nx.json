@@ -1,0 +1,301 @@
+{
+  "schema": "hawking.flash.nx_genome.v1",
+  "nx_kind": "hawking.nos.flash_noetic_executable_genome",
+  "status": "SEALED_METADATA_ONLY_NOT_FOR_PROMOTION",
+  "compiled_for_machine_genome": {
+    "chipset": "Apple M3 Ultra",
+    "gpu_cores": 60,
+    "unified_memory_bytes": 103079215104,
+    "metal_family": "Metal 4",
+    "genome_digest": "c2aa9de99036e68c98647d9b96ce43dcf2c0f816e3d41a1fe4d83e082d6b1e18"
+  },
+  "lowers_nr": {
+    "path": "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json",
+    "sha256": "727d9ad25a261ea13c46cd8877e36168b0a6e13aa2b19be1fab03f9ce6dfe8fa",
+    "nr_kind": "hawking.nos.noetic_representation",
+    "complete_bits_per_weight": null
+  },
+  "physical_program": {
+    "executor": [
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_fast_chain.rs",
+        "sha256": "4ee029679f2a0c632cb1bb439d2e0e96abe9328af8f461fd8d6e065587cb9611",
+        "bytes": 9794
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+        "sha256": "dfee4a223c0cb0995563d38f17bc23058a60c73522fae790b5039f27d5a7c586",
+        "bytes": 135628
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_full_attention_layer3.rs",
+        "sha256": "9f2e283695de0ee2a762e5e56c5e63e54d96ca9303d1a32ce9cfce9393f66ff0",
+        "bytes": 53809
+      }
+    ],
+    "metal_sources": [
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/affine2_group32_matvec.metal",
+        "sha256": "4542d714c647a16db12586d3c20940e11e79ee660cf3b0ebca02a4dcab4e4bd5",
+        "bytes": 62217
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/attn.metal",
+        "sha256": "683b8a40ff76b807b8dc121c14e5051d0ba820c2c5fa09a4916400e045e5eccf",
+        "bytes": 30307
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/bandwidth_roof.metal",
+        "sha256": "5689dc3b7008fc871a14e3932b0d1f6f1888e56d69ba7252da143645e32b4aee",
+        "bytes": 12286
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/bytes_frontier.metal",
+        "sha256": "533d6e1f70c4a710f8adc5bd2f32a7c1dd729c36a164a645b44fd3dd28885945",
+        "bytes": 27943
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/common.metal",
+        "sha256": "e7748737286f662a85300833cd89a049d4af053157ee4e1e71aff8347a1bcc37",
+        "bytes": 75553
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/deepseek_v4_mhc_control_exp.metal",
+        "sha256": "e24d08181779d7eee8950f392143e4e17cee5b90e194f6120d82f70e01986655",
+        "bytes": 18486
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/deepseek_v4_p7.metal",
+        "sha256": "4458e6c3057a323623e8458ba76f290357041f1c8862c5fe1b6a1bc1b4214acc",
+        "bytes": 11356
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/dsv4f_activation_x_batch.metal",
+        "sha256": "d769c70138e9cd9f421ca30962604ba664eb2d4670bc6a27dd5ed622d620126b",
+        "bytes": 15518
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/dsv4f_native_token_graph.metal",
+        "sha256": "76212fd34b9776262431f7c81cfa8257795e48763755adfe3d8fee1ca156fc9f",
+        "bytes": 26299
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/gk_family.metal",
+        "sha256": "7425f649ab573e70b8aa812facbfd7534bf4de7347b7563e9d45ba7b040e8fb5",
+        "bytes": 28210
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/gravity_pq.metal",
+        "sha256": "1bf75da0032505bd22ee172f23da13f6daddba05a1090d9b771126178e91b890",
+        "bytes": 83504
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/hybrid_operator.metal",
+        "sha256": "d4f0aab3db8f2bcdb36acdba4670bfc72f00694f2890abfe29e1b90e7d63ae8d",
+        "bytes": 25844
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/matmul.metal",
+        "sha256": "c3e2001c5ba14c281e740120a63ed4cce84acb8f30b3dee377d3d93433c02c3b",
+        "bytes": 112300
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/megakernel_qwen3b.metal",
+        "sha256": "7215cfc08a1090b10ae51860d28d56cb554c0eae1971bec462b4098d920e8e6c",
+        "bytes": 50158
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/mha.metal",
+        "sha256": "a2717a7f09f74245d05e228578e5460f30c0bb102f6382dfc78a93ca51138ed5",
+        "bytes": 71096
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/moe.metal",
+        "sha256": "4262a9fe6a11dbaeb0c327333e67f665f8ffe119f4de0ebdfc073fcf0bb57c3f",
+        "bytes": 100524
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/q80_codec_activity.metal",
+        "sha256": "e8cc1859946c423c4161cabaab139b14a7ee87fd6a0062ceb6e32a90501cee8a",
+        "bytes": 7335
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/q80_matvec_geometry_gen.metal",
+        "sha256": "484f3f9d493d5d61142ff3f5f30e60fceb7d2c4a7d1104ef939b911e5dca8d2e",
+        "bytes": 25942
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/q80_mixed_decode.metal",
+        "sha256": "28580af822f2ba543c740eef04172383a7c8987c7d5cd650d48cf6b42a4cebd3",
+        "bytes": 187590
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/quant.metal",
+        "sha256": "e8a4685c2822296f48f4fc5f21262ff69a5ed4c1def684d20f773bbf81968c25",
+        "bytes": 323949
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen30_device_expert_table.metal",
+        "sha256": "423332ecf801a52a09f799a91b70419507e681b585c644c3923a68c469543cef",
+        "bytes": 67969
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen30_quality_repack_sparse_gate_up.metal",
+        "sha256": "b1a8e5286cdab1657f261787c05fe5367bef68f28d92f613f0424791a839a306",
+        "bytes": 4284
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen38_device_activations.metal",
+        "sha256": "fd86dd516f94936c442814311ba20ebcff638d60c6c7702ccb5fdc3e8c89bfab",
+        "bytes": 39561
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_all_ten_routed_expert_wave.metal",
+        "sha256": "07e7807b21c05b5b88f5b2f1ab3f4025e50788291a66dfa91292a995d7a9195d",
+        "bytes": 9534
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_device_activations.metal",
+        "sha256": "d389f1acef6923caf8fcb93d52db5c77c803ccd2da2a31cb58280c98becb7315",
+        "bytes": 30488
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_device_expert_table.metal",
+        "sha256": "7d7d7b3854b839270a330da96b7cecb9ddfee3c25a131eebc35132816e728988",
+        "bytes": 16514
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_direct_packed_attention_stage.metal",
+        "sha256": "d46156114538516fd48f283b9252ddbe944f41bec4560bf81fb940bdd540e923",
+        "bytes": 7924
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_direct_packed_terminal_head_preflight.metal",
+        "sha256": "4e5ab9a3305795090080278a8c229d55495279f9e5038418ab9522538ca38389",
+        "bytes": 7178
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_gqa_kv_cache_preflight.metal",
+        "sha256": "8e6f389ea980a85368f442ffbaffbfe42c87a4f24ba705fde7f2dd321de9c43f",
+        "bytes": 5609
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_moe_wave_aggregate_second_residual.metal",
+        "sha256": "963e97427801dd4b6e0c66a96fb06569cab8fbfc1c6c45fe6d7305f61bc49c32",
+        "bytes": 2439
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_postnorm_router_top10.metal",
+        "sha256": "c69e43ca2a5e3d03621deed52ab3fc8c1a089313f1a28f431b88a024c5ab943b",
+        "bytes": 8444
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_routed_expert_wave.metal",
+        "sha256": "b4b284ee5393d758ef1645d7788c5715fce5bf52f1a2b88816111f40da7baaaf",
+        "bytes": 6553
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen80_shared_expert_wave.metal",
+        "sha256": "9dc98c625a3e0826c1596139fa00a85a4670af0ee900dd67d907c23c866f1e7c",
+        "bytes": 7901
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_binary.metal",
+        "sha256": "a51539b798ce77a72bd72691638b30fd9a1c992757b66ff264012fb38d9c4710",
+        "bytes": 30503
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_binary_precision_safe_tiled_candidate.metal",
+        "sha256": "6e1f389e834e5c455c3559f3c0ef398553f3c15e5c901ba3aeff29cd2026a7c8",
+        "bytes": 3993
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_complete_runtime.metal",
+        "sha256": "ed591165f293d8c22b1ba9d024083afbb55fecd27ced3f46b87ec03676169e8d",
+        "bytes": 11603
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_direct_packed_gate_up_pair.metal",
+        "sha256": "8bd18a7cb21b27d6e32aeeb0270cbd383526f0107732757bd77c191b0566c938",
+        "bytes": 3256
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_direct_packed_gate_up_swiglu_fused.metal",
+        "sha256": "2280b5f34e45a724d51582ba99c80b5190db4fc5b903a5e7745f27aecc50ba16",
+        "bytes": 4078
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_direct_packed_gate_up_swiglu_paired_scalar_order.metal",
+        "sha256": "7b8793eff7753add9bd04ec9ed113e0bebef277bf0605d7a074fa687637e7445",
+        "bytes": 3679
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_next.metal",
+        "sha256": "dcdde3d6717de17314874e8ff7531d1d1fa3125a00a6a917428f2550a044bc64",
+        "bytes": 42080
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_uniform_q4.metal",
+        "sha256": "676a6a520b67bb31af0b6614698efe13653bf1141a946005d71e47e5ae27e15f",
+        "bytes": 84374
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/qwen_uniform_qn.metal",
+        "sha256": "4c183a01d5a21380df6b5b1a44639d5f30ddba5a1616737d00a8dd569c461f51",
+        "bytes": 3515
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/rwkv7.metal",
+        "sha256": "8a00ceee2548e047f984f57b0ce71538551f66505370eac79486a2ac4f9d094f",
+        "bytes": 42640
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/sample.metal",
+        "sha256": "ac8241f9c37d3dad0db5b884da1897f0147aef7de0a71198efda09a7cab7debe",
+        "bytes": 16579
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/shared_basis_kernel.metal",
+        "sha256": "5b2484309cbc97707c636ae9664eec6c301c53ee822988a1dcbaf391a28d0bcd",
+        "bytes": 37157
+      },
+      {
+        "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/shaders/strand_bitslice.metal",
+        "sha256": "8aee574fddd64b72e11596c2727b5e3916e3da59aa4c96dac705e84f55518dee",
+        "bytes": 55431
+      }
+    ],
+    "source_binding": "exact Flash fast-chain executor plus both organ executors; shader files are content-bound",
+    "device": "Metal",
+    "cuda": "HARDWARE_BLOCKED",
+    "host_activation_roundtrips": 0,
+    "dispatch_policy": "grouped structural chain; device-resident activation handoff"
+  },
+  "qualification": {
+    "profile": "receipts/headless/FLASH_HOT_CHAIN_PROFILE_DEVICE_L0_L47_COMPLETE_V1.json",
+    "profile_sha256": "6ccc015d4db4cf2b5e69cc2d5a01dee40eaa1886b0cc460c30ca06aec2719fa1",
+    "stateful_linear_organ": "receipts/headless/FLASH_STATEFUL_LINEAR_ORGAN.json",
+    "stateful_linear_organ_sha256": "177a37324f4b6251ba809506ce1fbdd66b10a3cf2e36a6af29dc4cb1011baa7c",
+    "stateful_attention_organ": "receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN.json",
+    "stateful_attention_organ_sha256": "b220cc8b5b2fadcfe65fe223f33b60f34ec0064fdc55eb2e540485ff078c2b10",
+    "stateful_linear_prefix_session": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json",
+    "stateful_linear_prefix_session_sha256": "4648d586dfca77062caaa580cbd93338b2136136aad2b25a3b6cacaf203a8014",
+    "organ_census": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+    "organ_census_sha256": "0dfa458cbd44c7993a8d649381f27d5bd38b28abd5610d019fa5378e3895f96e",
+    "complete_layers": 48,
+    "terminal_token": "physically received",
+    "accepted_multitoken_tps": null,
+    "complete_system_ebpw": null,
+    "resident_promotion": false
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-28T00:00:00Z",
+    "recorded_by": "tools/flash_nx_genome.py metadata seal",
+    "machine": "Apple M3 Ultra (machine genome recorded above)",
+    "rule": "S032 \u00a73 -- NX metadata seal is not a performance benchmark; timing state is UNKNOWN",
+    "provenance": "No performance claim is made by this descriptor; the referenced protected profile carries its own benchmark state."
+  },
+  "claim_boundary": "Machine-bound Flash NX metadata seal only. It binds source, shaders, NR, and machine genome; it is not a promoted resident executable until accepted multi-token TPS, EBPW, capability, and residency evidence exist.",
+  "seal_sha256": "b43595259c316d27830f84d8b2ee1029c833e6a01672bf78ac83f26498128a33"
+}

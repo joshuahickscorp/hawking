@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T11:18:44Z",
+  "recorded_at": "2026-09-01T05:58:04Z",
   "recorded_by": "tools/future/status_causality.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -355,7 +355,7 @@
   {
    "calls_emit": true,
    "emit_fn": "run_static_preflight",
-   "gap": null,
+   "gap": "emits a campaign-consequential status without probe_performed, direct_observation, interpretation, confidence, and alternatives on the stamped row",
    "in_this_lane_write_scope": false,
    "module": "tools/future/qualification_pipeline.py",
    "name": "qualification_pipeline",
@@ -365,9 +365,9 @@
     "STATIC_ONLY"
    ],
    "receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
-   "receipt_has_five_fields": true,
+   "receipt_has_five_fields": false,
    "receipt_state": "readable",
-   "records_five_fields": true,
+   "records_five_fields": false,
    "selection": "verdict decides whether physical work proceeds",
    "source_state": "readable",
    "unreadable": false,
@@ -419,10 +419,11 @@
  "gpu_authority": false,
  "law": "A STATUS MAY ASSERT ONLY WHAT ITS ACTUAL PROBE ESTABLISHES. STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
  "n_gates": 18,
- "n_not_recording": 1,
- "n_recording": 17,
+ "n_not_recording": 2,
+ "n_recording": 16,
  "n_unreadable": 0,
  "not_recording_five_fields": [
+  "qualification_pipeline",
   "flash_meta_teacher_capture_boundary"
  ],
  "obligation": "G007",
@@ -608,10 +609,14 @@
   "flash_nx_audit",
   "odyssey2_law_store",
   "contamination",
-  "qualification_pipeline",
   "protected_scheduler"
  ],
  "remainder": [
+  {
+   "module": "tools/future/qualification_pipeline.py",
+   "name": "qualification_pipeline",
+   "why_not_wired": "emits a campaign-consequential status without probe_performed, direct_observation, interpretation, confidence, and alternatives on the stamped row"
+  },
   {
    "module": "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
    "name": "flash_meta_teacher_capture_boundary",
@@ -620,7 +625,7 @@
  ],
  "s015": "AMENDMENT S015 (2026-08-30): Codex is stood down. The sidecar write partition is dissolved: crates/, hcli/, tools/ and receipts/ are writable, and 'is this Codex's surface?' no longer gates work. mutation_surface.CODEX_OWNED remains as history and does not gate this lane. What S015 does not change: no fake completion, no hardware measurement without hardware, no self-certification, evidence still decides promotion, and every gate must still measure what it claims.",
  "schema": "hawking.future.status_causality_coverage.v1",
- "seal_sha256": "25fd22b023771a080ca1f73376c0a282f2a1f5c0a3d245f499feaa8c15b7c6ce",
+ "seal_sha256": "f9366837d18679e4c94d208a11772bd2ce9244d3b6d3fb2d8bb5f300fa000b50",
  "selection_rule": "A module is a consequential gate when its emitted status changes what the campaign does next: whether Odyssey may launch, whether a commit may land, whether a resident/native/autonomy/modellake/vmcp/recovery/research qualification is PASSED, whether a specimen is WHOLE_TREE_VERIFIED, whether a protected window is RUNNABLE, or whether a scanned status was treated as a blocker. Included: (1) every path named in the G007 obligation (odyssey_launch criteria, integration_gate, resident and native gates under hcli/agentos, specimen verification); (2) every hcli/agentos module whose filename matches *gate*.py or that defines run_*_gate (autonomy, modellake, vmcp, native_mission, recovery, research); (3) every receipt already reached by status_causality.scan via KNOWN_RECEIPT_PATHS, except AUTONOMY_SCARS which is an adjudication schema not a gate; (4) qualification_pipeline and protected_scheduler, whose RUNNABLE/REFUSED/BLOCKED verdicts decide whether physical work proceeds. Excluded, and not as a trick to inflate coverage: Metal kernel names containing 'gate', crate tests named *_gate.rs, lab/operators hardware TPS gates, example benches \u2014 those do not decide campaign next-step. This tuple is the list. The rule above is how it was chosen.",
  "sibling_coverage_available": false,
  "unreadable": [],

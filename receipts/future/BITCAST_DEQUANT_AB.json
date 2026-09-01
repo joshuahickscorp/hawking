@@ -1,0 +1,121 @@
+{
+ "candidate": "bitcast dequant",
+ "claim_boundary": {
+  "evidence_class": "DIAGNOSTIC_RELATIVE",
+  "what_is_measured": "the RELATIVE: 3.8541 ms and 1.1705x between two back-to-back runs of the same graph on the same machine, token-identical",
+  "what_is_not": "the ABSOLUTE. Neither of the two paired runs had a protected window: ModelLake downloads ran through the first, and in the second they were SIGSTOPped and the supervisor RESPAWNED them mid-run. The control's own wall moves 2.3% between the two windows while the ratio moves 0.1%, so no single absolute here is promotable and the TPS-after figure is a range, not a number.",
+  "what_would_promote_it": "re-run tools/future/resident_reprofile.py under a real protected lease with the lever set, and let that receipt replace RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json as the absolute"
+ },
+ "complete_token": {
+  "checkpoint_crossed": "40 TPS",
+  "host_gap_ms_carried_unchanged": 0.6953,
+  "still_short_of_60_by_ms": 6.7688,
+  "tps_after": 42.67,
+  "tps_before": 36.644,
+  "tps_gain": 6.026,
+  "wall_ms_after": 23.4355,
+  "wall_ms_before": 27.2896,
+  "why_the_host_gap_carries": "the candidate changes the body of two kernels and nothing else. Dispatch count is 580 in both arms and the kernel-set difference is exactly the two swapped names, so there is no mechanism by which host time would move. This is an assumption the matched pair CONSTRAINS, not one it proves; a protected reprofile would settle it."
+ },
+ "default_is_unchanged": true,
+ "fp_boundary": {
+  "bit_identical_weights": false,
+  "reading": "the refolded affine is exact in the reals but the two FMAs run on different constants, so the dequantised weights differ at f32 epsilon - measured rel_fro 1.5e-07 in the isolated harness. The resident A/B then produced IDENTICAL token ids over 32 greedy tokens with zero fallbacks, which is the property that actually matters. Token identity over 32 tokens is not a proof of identity over all inputs; it is the same bar every landed lever in this campaign has cleared.",
+  "risk": "greedy argmax can flip on a near-tie. This has not been observed here, and a longer or adversarial prompt set would tighten it.",
+  "token_identical": true
+ },
+ "independent_runs": {
+  "bitcast_wall_tps_range": [
+   43.588,
+   43.613
+  ],
+  "control_wall_range": [
+   26.6326,
+   26.6806
+  ],
+  "control_wall_spread": 0.0018,
+  "gpu_speedup_range": [
+   1.1705,
+   1.1715
+  ],
+  "gpu_speedup_spread": 0.00085,
+  "reading": "the RATIO agrees to 0.09% across the two windows while the CONTROL's own absolute moves by 0.18%. Ratios hold under load and absolutes do not, measured here rather than assumed.",
+  "runs": [
+   {
+    "bitcast_gpu_ms": 22.6021,
+    "bitcast_wall_ms": 22.9288,
+    "bitcast_wall_tps": 43.613,
+    "control_gpu_ms": 26.4562,
+    "control_wall_ms": 26.6326,
+    "control_wall_tps": 37.548,
+    "gpu_ms_saved": 3.8541,
+    "gpu_speedup": 1.1705,
+    "run": "run_1",
+    "wall_ms_saved": 3.7038
+   },
+   {
+    "bitcast_gpu_ms": 22.6071,
+    "bitcast_wall_ms": 22.9419,
+    "bitcast_wall_tps": 43.588,
+    "control_gpu_ms": 26.4833,
+    "control_wall_ms": 26.6806,
+    "control_wall_tps": 37.48,
+    "gpu_ms_saved": 3.8761,
+    "gpu_speedup": 1.1715,
+    "run": "run_2",
+    "wall_ms_saved": 3.7387
+   }
+  ]
+ },
+ "kernels": [
+  "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+  "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+ ],
+ "lever": "HAWKING_AFFINE2_GEO=bitcast (Affine2Geo::Bitcast)",
+ "matched_pair": {
+  "dense_w_materialized": 0,
+  "dispatches": 580,
+  "fallbacks": 0,
+  "kernels_swapped": {
+   "qwen_affine_q2_group32_matvec_geo_tpr64_tg128": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast",
+   "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast"
+  },
+  "n_tokens": 32,
+  "nothing_else_changed": "the dispatched-kernel sets differ by exactly these two names and nothing else, so the 580-dispatch graph is identical apart from the unpack",
+  "reps": 9,
+  "token_ids_identical": true
+ },
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g094-prot",
+  "loadavg": "{ 7.31 6.80 7.38 }",
+  "measured_at": "2026-08-31T22:08:54Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "obligation": "G094",
+ "projection_vs_graph": {
+  "do_not_invert_this": "this does NOT license scaling isolated numbers up by a fudge factor. Two observations are not a law, and the mechanism - whatever the graph-level fold is - has not been identified.",
+  "graph_over_prediction": 1.3772,
+  "isolated_kernel_speedup": 1.2178,
+  "measured_ms_saved_in_the_graph": 3.8541,
+  "predicted_ms_saved": 2.7985,
+  "q2_organ_ms_from_census": 15.6473,
+  "reading": "the graph delivered 37.7% MORE than the isolated harness predicted. widen_f4 did the same thing - its isolated cut was 0.7046 ms and the graph gave 1.0245 ms. An isolated organ measurement appears to be a LOWER bound on the graph-level win for this class of change, which is the safe direction for a projection to be wrong in, but it means the projection is not a tight estimate."
+ },
+ "recorded_by": "tools/future/bitcast_dequant_ab.py",
+ "seal_sha256": "0a0054685f025142bb01caccc2c80ff936a897e2b9261c7e4e23433c25db27ef",
+ "timing": {
+  "arm": "widen_f4",
+  "bitcast_gpu_ms_per_token": 22.6021,
+  "bitcast_rep_spread": 1.0037,
+  "control_gpu_ms_per_token": 26.4562,
+  "control_rep_spread": 1.0048,
+  "ms_saved": 3.8541,
+  "speedup": 1.1705,
+  "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime"
+ },
+ "transform": "q unpacked straight into an f32 mantissa (f = 2 + q/2) so no int-to-float convert runs; the affine refolds per group as w = (2*scale)*f + (bias - 4*scale)",
+ "why_this_class": "receipts/future/OP_CLASS_ABLATION.json measured the convert at 44% of this kernel's arithmetic against 1.8% for the affine FMA. The hoist and fold_addqx both attacked the 1.8%."
+}

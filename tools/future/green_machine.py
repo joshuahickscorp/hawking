@@ -1246,4 +1246,6 @@ def main() -> int:
 
 
 if __name__ == "__main__":
+    from _common import require_known_flags
+    require_known_flags(["--ioreport-worker"])
     raise SystemExit(main())

@@ -2,11 +2,11 @@
  "causal_residual": {
   "baseline_moved": {
    "computed_against_ms": 29.0434,
-   "current_body_gpu_ms": 26.5943,
-   "current_body_ms": 27.2896,
-   "current_body_tps": 36.644,
-   "measured_by": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
-   "ms_removed_since": 1.7538,
+   "current_body_gpu_ms": 21.9464,
+   "current_body_ms": 22.9024,
+   "current_body_tps": 43.664,
+   "measured_by": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json",
+   "ms_removed_since": 6.141,
    "what_is_still_from_the_old_census": "the PER-ORGAN ms in ORGANS are from the pre-widen_f4 region trace. The new census has eight rows (it separates mlp_gate_up from mlp_down and carries a q4_remainder and a sampling row) and does not map one-to-one onto the old four, so remapping it is a separate piece of work rather than a substitution. The organ SHARES remain the best available reading; the token TOTAL is now measured on the body that runs."
   },
   "byte_coverage": 0.99972,
@@ -117,16 +117,18 @@
   {
    "id": "current_body_wall_ms",
    "path": [
-    "decode_wall_ms_per_token"
+    "measured",
+    "wall_ms_per_token"
    ],
-   "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
+   "source": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
   },
   {
    "id": "current_body_gpu_ms",
    "path": [
-    "decode_gpu_ms_per_token"
+    "measured",
+    "gpu_ms_per_token"
    ],
-   "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
+   "source": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
   },
   {
    "id": "host_gap_worth_tps",
@@ -139,8 +141,8 @@
  ],
  "citations_resolved": {
   "clean_gemv_gb_s": 703.5,
-  "current_body_gpu_ms": 26.5943,
-  "current_body_wall_ms": 27.2896,
+  "current_body_gpu_ms": 21.9464,
+  "current_body_wall_ms": 22.9024,
   "demonstrated_gb_s": 497.4,
   "entropy_floor_bytes": 277697891.2457967,
   "group_size_1024_bytes": 1002700800.0,

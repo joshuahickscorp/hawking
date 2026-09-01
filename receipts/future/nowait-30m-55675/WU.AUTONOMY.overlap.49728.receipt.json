@@ -1,0 +1,1 @@
+{"module": "negative_index.py", "entry_point": "build", "receipt": "receipts/future/NEGATIVE_SCIENCE_INDEX.json", "routed_to_frontier": "FT.VERIFICATION.negative-index", "species": "UPDATE_SCAR", "wall_seconds": 0.102, "evidence_class": "STATIC_ONLY"}

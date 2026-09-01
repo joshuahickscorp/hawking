@@ -897,7 +897,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T14:45:30Z",
+  "recorded_at": "2026-09-01T05:19:25Z",
   "recorded_by": "tools/future/capability_information_map.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1169,7 +1169,7 @@
   "used_for_this_map": "CPU consume of the same packed tensors the resident uploads. GPU generate was not required for the organ-level probe and is UNMEASURED as a generate identity gate."
  },
  "schema": "hawking.future.capability_information_map.v1",
- "seal_sha256": "fb19a2f6555d727f818c844c77f6aa9b1401dc2db621562119381767350ed8ed",
+ "seal_sha256": "dc244835bb6408df9e9eef7426ce3526775abcde74e2f4ec5c7818d44e6ba6e5",
  "sensitivity": {
   "any_supported": true,
   "baseline_argmax": 579,

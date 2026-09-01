@@ -86,13 +86,68 @@ def default_repo_root() -> Path:
     return find_repo_root(Path(__file__))
 
 
-def swap_used_bytes() -> int:
+def swap_highwater_bytes() -> int:
+    """Swapfile ALLOCATION, not swap in use.
+
+    ``vm.swapusage used=`` is the high-water mark of the backing store. macOS
+    grows the swapfile and effectively never shrinks it, so once a host has
+    paged out 12 GiB this reads ~12 GiB forever -- at 73% free RAM, with
+    swapouts flat. Comparing a monotone high-water mark against a ceiling is a
+    latch by construction: it admits until the first heavy job, then refuses
+    for the rest of the boot. Use :func:`swap_pressure_bytes` for admission.
+    """
     out = _run_cmd(["sysctl", "-n", "vm.swapusage"]) or ""
     m = re.search(r"used\s*=\s*([\d.]+)([MG])", out)
     if not m:
         return 0
     v = float(m.group(1))
     return int(v * (GIB if m.group(2) == "G" else MIB))
+
+
+# Previous (swapouts, monotonic) sample, so consecutive probes yield a rate.
+_LAST_SWAPOUTS: Optional[Tuple[int, float]] = None
+
+
+def swap_pressure_bytes(counts: Optional[Dict[str, int]] = None) -> int:
+    """Bytes paged out since the previous probe -- live swap pressure.
+
+    macOS exposes no "swap bytes currently in use" counter, so the honest live
+    signal is the ``Swapouts`` rate. A host that is not paging out reports 0
+    however large its swapfile has grown; a host that is thrashing reports the
+    bytes it just wrote. The first probe in a process has no baseline and
+    reports 0 -- free RAM and kernel pressure still gate that call.
+    """
+    global _LAST_SWAPOUTS
+    raw = counts if counts is not None else _parse_vm_stat()
+    swapouts = raw.get("Swapouts")
+    if swapouts is None:
+        return 0
+    now = time.monotonic()
+    previous = _LAST_SWAPOUTS
+    _LAST_SWAPOUTS = (swapouts, now)
+    if previous is None or swapouts < previous[0]:
+        return 0
+    return (swapouts - previous[0]) * _get_page_size()
+
+
+def _pressure_label(out: Optional[str]) -> str:
+    """macOS ``memory_pressure -Q`` reports a free percentage, not a word.
+
+    The previous parser scanned for "low"/"normal"/"high", none of which
+    appear in that output, so every probe on this platform resolved to
+    "unknown" and the pressure gate never fired.
+    """
+    if not out:
+        return "unknown"
+    m = re.search(r"free percentage:\s*(\d+)", out, re.IGNORECASE)
+    if not m:
+        return "unknown"
+    free_pct = int(m.group(1))
+    if free_pct < 15:
+        return "high"
+    if free_pct < 30:
+        return "warn"
+    return "normal"
 
 
 def host_snapshot() -> Dict[str, Any]:
@@ -109,16 +164,7 @@ def host_snapshot() -> Dict[str, Any]:
         + counts.get("Pages inactive", 0)
         + counts.get("Pages speculative", 0)
     )
-    pressure = "unknown"
-    pressure_out = _run_cmd(["memory_pressure", "-Q"])
-    if pressure_out:
-        low = pressure_out.lower()
-        if "low" in low:
-            pressure = "low"
-        elif "normal" in low:
-            pressure = "normal"
-        elif "high" in low:
-            pressure = "high"
+    pressure = _pressure_label(_run_cmd(["memory_pressure", "-Q"]))
     return {
         "total_bytes": total,
         "free_bytes": free,
@@ -126,7 +172,8 @@ def host_snapshot() -> Dict[str, Any]:
         "compressed_bytes": counts.get("Pages occupied by compressor", 0),
         "file_backed_bytes": counts.get("File-backed pages", 0),
         "anonymous_bytes": counts.get("Anonymous pages", 0),
-        "swap_used_bytes": swap_used_bytes(),
+        "swap_used_bytes": swap_pressure_bytes(raw),
+        "swap_highwater_bytes": swap_highwater_bytes(),
         "page_size": page,
         "pressure": pressure,
         "at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),

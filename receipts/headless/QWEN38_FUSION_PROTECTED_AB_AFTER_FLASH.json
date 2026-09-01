@@ -1,0 +1,966 @@
+{
+  "control": {
+    "fusion_env": {
+      "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+    }
+  },
+  "control_result": {
+    "aggregate": {
+      "complete_wall_ns": {
+        "all": [
+          721637083.0,
+          722285792.0,
+          722628167.0,
+          725408625.0,
+          725424292.0,
+          726092541.0,
+          726861292.0
+        ],
+        "max": 726861292.0,
+        "median": 725408625.0,
+        "min": 721637083.0,
+        "n": 7,
+        "spread_pct": 0.72
+      },
+      "complete_wall_ns_per_token": {
+        "all": [
+          120272847.16666667,
+          120380965.33333333,
+          120438027.83333333,
+          120901437.5,
+          120904048.66666667,
+          121015423.5,
+          121143548.66666667
+        ],
+        "max": 121143548.66666667,
+        "median": 120901437.5,
+        "min": 120272847.16666667,
+        "n": 7,
+        "spread_pct": 0.72
+      },
+      "decode": [
+        {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 134699289,
+          "steps": 5,
+          "wall_ns": 140623667,
+          "wall_ns_per_step": 28124733.4
+        },
+        {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 135359581,
+          "steps": 5,
+          "wall_ns": 140614959,
+          "wall_ns_per_step": 28122991.8
+        },
+        {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 135895205,
+          "steps": 5,
+          "wall_ns": 140983250,
+          "wall_ns_per_step": 28196650.0
+        },
+        {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 136131539,
+          "steps": 5,
+          "wall_ns": 141339167,
+          "wall_ns_per_step": 28267833.4
+        },
+        {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 135491330,
+          "steps": 5,
+          "wall_ns": 140513083,
+          "wall_ns_per_step": 28102616.6
+        },
+        {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 134993039,
+          "steps": 5,
+          "wall_ns": 140720375,
+          "wall_ns_per_step": 28144075.0
+        },
+        {
+          "dispatches": 3140,
+          "generated_tokens_after_prefill": 5,
+          "gpu_ns": 136949039,
+          "steps": 5,
+          "wall_ns": 142077666,
+          "wall_ns_per_step": 28415533.2
+        }
+      ],
+      "decode_steps": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "dispatches": {
+        "all": [
+          15700.0,
+          15700.0,
+          15700.0,
+          15700.0,
+          15700.0,
+          15700.0,
+          15700.0
+        ],
+        "max": 15700.0,
+        "median": 15700.0,
+        "min": 15700.0,
+        "n": 7,
+        "spread_pct": 0.0
+      },
+      "dispatches_per_token": {
+        "all": [
+          2616.6666666666665,
+          2616.6666666666665,
+          2616.6666666666665,
+          2616.6666666666665,
+          2616.6666666666665,
+          2616.6666666666665,
+          2616.6666666666665
+        ],
+        "max": 2616.6666666666665,
+        "median": 2616.6666666666665,
+        "min": 2616.6666666666665,
+        "n": 7,
+        "spread_pct": 0.0
+      },
+      "generated_token_ids": [
+        [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ],
+        [
+          39,
+          14006,
+          42,
+          1658,
+          8116,
+          248046
+        ]
+      ],
+      "generated_token_ids_exact_and_stable": true,
+      "generated_tokens": {
+        "all": [
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0,
+          6.0
+        ],
+        "max": 6.0,
+        "median": 6.0,
+        "min": 6.0,
+        "n": 7,
+        "spread_pct": 0.0
+      },
+      "gpu_ns": {
+        "all": [
+          674926821.0,
+          676294905.0,
+          677357362.0,
+          677520571.0,
+          678493489.0,
+          679565112.0,
+          679703738.0
+        ],
+        "max": 679703738.0,
+        "median": 677520571.0,
+        "min": 674926821.0,
+        "n": 7,
+        "spread_pct": 0.705
+      },
+      "gpu_ns_per_token": {
+        "all": [
+          112487803.5,
+          112715817.5,
+          112892893.66666667,
+          112920095.16666667,
+          113082248.16666667,
+          113260852.0,
+          113283956.33333333
+        ],
+        "max": 113283956.33333333,
+        "median": 112920095.16666667,
+        "min": 112487803.5,
+        "n": 7,
+        "spread_pct": 0.705
+      },
+      "kernel_genome_exact_and_stable": false,
+      "kernel_genomes": [
+        {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              9600
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              4875
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              4800
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              4800
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              3600
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              3600
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              3600
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              3600
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              3600
+            ],
+            [
+              "mha_decode_f32",
+              1200
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              1200
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              1200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              1200
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              75
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              75
+            ],
+            [
+              "sample_argmax_f32",
+              75
+            ]
+          ],
+          "trace_enabled": true
+        },
+        {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              12800
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              6500
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              6400
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              6400
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              4800
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              4800
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              4800
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              4800
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              4800
+            ],
+            [
+              "mha_decode_f32",
+              1600
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              1600
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              1600
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              1600
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              100
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              100
+            ],
+            [
+              "sample_argmax_f32",
+              100
+            ]
+          ],
+          "trace_enabled": true
+        },
+        {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              16000
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              8125
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              8000
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              8000
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              6000
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              6000
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              6000
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              6000
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              6000
+            ],
+            [
+              "mha_decode_f32",
+              2000
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              2000
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              2000
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              2000
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              125
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              125
+            ],
+            [
+              "sample_argmax_f32",
+              125
+            ]
+          ],
+          "trace_enabled": true
+        },
+        {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              19200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              9750
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              9600
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              9600
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              7200
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              7200
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              7200
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              7200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              7200
+            ],
+            [
+              "mha_decode_f32",
+              2400
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              2400
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              2400
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              2400
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              150
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              150
+            ],
+            [
+              "sample_argmax_f32",
+              150
+            ]
+          ],
+          "trace_enabled": true
+        },
+        {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              22400
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              11375
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              11200
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              11200
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              8400
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              8400
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              8400
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              8400
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              8400
+            ],
+            [
+              "mha_decode_f32",
+              2800
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              2800
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              2800
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              2800
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              175
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              175
+            ],
+            [
+              "sample_argmax_f32",
+              175
+            ]
+          ],
+          "trace_enabled": true
+        },
+        {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              25600
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              13000
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              12800
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              12800
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              9600
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              9600
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              9600
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              9600
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              9600
+            ],
+            [
+              "mha_decode_f32",
+              3200
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              3200
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              3200
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              3200
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              200
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              200
+            ],
+            [
+              "sample_argmax_f32",
+              200
+            ]
+          ],
+          "trace_enabled": true
+        },
+        {
+          "exact_when_trace_enabled": true,
+          "histogram": [
+            [
+              "qwen80_add_residual_rmsnorm_tg",
+              28800
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_geo_tpr64_tg128",
+              14625
+            ],
+            [
+              "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+              14400
+            ],
+            [
+              "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+              14400
+            ],
+            [
+              "qwen38_gated_delta_decode_vi_simd",
+              10800
+            ],
+            [
+              "qwen38_qkvz_rearrange_conv_l2_f32",
+              10800
+            ],
+            [
+              "qwen80_ba_to_decay_beta_f32",
+              10800
+            ],
+            [
+              "qwen80_deltanet_gated_rmsnorm_tg",
+              10800
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_pair_concat_geo_tpr64_tg128",
+              10800
+            ],
+            [
+              "mha_decode_f32",
+              3600
+            ],
+            [
+              "qwen38_attention_apply_sigmoid_gate",
+              3600
+            ],
+            [
+              "qwen38_gqa_qk_norm_rope_cache_tg",
+              3600
+            ],
+            [
+              "qwen_uniform_q4_group64_matvec_qkv_geo_tpr64_tg128",
+              3600
+            ],
+            [
+              "qwen80_residual_rmsnorm_tg",
+              225
+            ],
+            [
+              "qwen_uniform_q4_embedding_lookup",
+              225
+            ],
+            [
+              "sample_argmax_f32",
+              225
+            ]
+          ],
+          "trace_enabled": true
+        }
+      ],
+      "prefill": [
+        {
+          "dispatches": 12560,
+          "gpu_ns": 543794200,
+          "steps": 20,
+          "wall_ns": 565901583,
+          "wall_ns_per_step": 28295079.15
+        },
+        {
+          "dispatches": 12560,
+          "gpu_ns": 544344157,
+          "steps": 20,
+          "wall_ns": 565975083,
+          "wall_ns_per_step": 28298754.15
+        },
+        {
+          "dispatches": 12560,
+          "gpu_ns": 540399700,
+          "steps": 20,
+          "wall_ns": 562400792,
+          "wall_ns_per_step": 28120039.6
+        },
+        {
+          "dispatches": 12560,
+          "gpu_ns": 541389032,
+          "steps": 20,
+          "wall_ns": 562840875,
+          "wall_ns_per_step": 28142043.75
+        },
+        {
+          "dispatches": 12560,
+          "gpu_ns": 541866032,
+          "steps": 20,
+          "wall_ns": 562798709,
+          "wall_ns_per_step": 28139935.45
+        },
+        {
+          "dispatches": 12560,
+          "gpu_ns": 539933782,
+          "steps": 20,
+          "wall_ns": 564642834,
+          "wall_ns_per_step": 28232141.7
+        },
+        {
+          "dispatches": 12560,
+          "gpu_ns": 542616073,
+          "steps": 20,
+          "wall_ns": 564582459,
+          "wall_ns_per_step": 28229122.95
+        }
+      ],
+      "prefill_steps": {
+        "all": [],
+        "max": null,
+        "median": null,
+        "min": null,
+        "n": 0,
+        "spread_pct": null
+      },
+      "wall_minus_gpu_ns_per_token": {
+        "all": [
+          30761430.0,
+          31484429.0,
+          32147970.0,
+          32281887.0,
+          32789222.0,
+          32852511.0,
+          35274804.0
+        ],
+        "max": 35274804.0,
+        "median": 32281887.0,
+        "min": 30761430.0,
+        "n": 7,
+        "spread_pct": 13.981
+      }
+    },
+    "checks": {
+      "all_measurements_ok": true,
+      "all_requested_measurements_completed": true,
+      "capability_sanity": true,
+      "exact_kernel_genome_recorded": true,
+      "no_connector_restart": true,
+      "no_unqualified_promotion": true,
+      "one_persistent_pid_when_declared": true,
+      "profile_or_resident_started": true,
+      "required_physical_metrics_present": true,
+      "zero_fallbacks": true
+    },
+    "identity": {
+      "child_fusion_env_overrides": {},
+      "child_runtime_env_overrides": {
+        "HAWKING_TRACE_DISPATCH": "1"
+      },
+      "profile": {
+        "architecture": "unknown",
+        "artifact_inventory": {
+          "artifact_bytes": 10554328856,
+          "artifact_bytes_exact": true,
+          "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+          "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+          "mix_id": "mix_all_mlp_affine_g64_ls",
+          "n_tensors": 755
+        },
+        "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+        "binary": "/Users/scammermike/Downloads/hawking/.hcli/instrumented/ascension_qwen38_resident",
+        "binary_sha256_16": "f18da6ed64ed77d0",
+        "capabilities": {},
+        "compiler": {
+          "language": "rust",
+          "profile": "release-fast",
+          "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+        },
+        "current_runtime": {
+          "complete_tps_current_measured": 24.4086,
+          "complete_tps_historical_qualified": 34.0,
+          "fallbacks": 0
+        },
+        "executable_profile": "release-fast",
+        "fallbacks": [
+          "transformers tokenizer fallback when unavailable"
+        ],
+        "family": "qwen3.8",
+        "fusion_env": {
+          "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+          "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+          "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+          "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+        },
+        "generation": {
+          "do_sample": false,
+          "enable_thinking": false,
+          "max_new_tokens": 2048,
+          "temperature": 0.0,
+          "top_k": 1,
+          "top_p": 1.0
+        },
+        "hot_bytes": null,
+        "limits": {
+          "context": 8192,
+          "max_new_tokens": 2048
+        },
+        "machine_genome": {},
+        "max_seq_len": 8192,
+        "mode": "resident",
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "param_class": "?B",
+        "physical_ebpw": 3.1393,
+        "profile_schema": "hcli.provider.profile.v1",
+        "prompt_contract": {
+          "fallback_template": "qwen_closed_think",
+          "renderer": "qwen-chat-template-or-closed-think-fallback",
+          "token_count_authority": "native-resident"
+        },
+        "protocol": "hawking.qwen38.resident.v1",
+        "provider": "native",
+        "qualification": "capability 30/43 historical sealed contract",
+        "quantisation": "unknown",
+        "receipts": [
+          "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+          "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+        ],
+        "representation": {
+          "kind": "native-packed",
+          "physical_ebpw": 3.1393,
+          "weights_loaded_once": true
+        },
+        "require_fusion_env": true,
+        "resident_identity": "sealed-3.14",
+        "runtime": "hawking-native",
+        "runtime_env": {
+          "HAWKING_TRACE_DISPATCH": "1"
+        },
+        "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+        "tokenizer_sha256_16": "0997f410c57a1f4e"
+      }
+    },
+    "label": "CONTROL_SWIGLU",
+    "measurement_verdict": "INCONCLUSIVE",
+    "protected_window": false,
+    "qualification": false,
+    "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_FUSION_PROTECTED_AB_CONTROL_SWIGLU.json",
+    "required_metrics": {
+      "all_required_metrics_present": true,
+      "fields": {
+        "complete_wall_ns_per_token": true,
+        "decode": true,
+        "dispatches_per_token": true,
+        "gpu_ns_per_token": true,
+        "kernel_genome": true,
+        "prefill": true,
+        "wall_minus_gpu_ns_per_token": true
+      },
+      "missing_for_generic_provider_is_explicit": true
+    },
+    "returncode": 0,
+    "status": "PASSED"
+  },
+  "experiment_contract": {
+    "one_control_then_one_mutation": true,
+    "promotion_allowed": false,
+    "protected_quiet_window_required": true,
+    "same_prompt": true,
+    "same_token_limit": true,
+    "source_and_profile_unchanged": true
+  },
+  "hypothesis": "The current swiglu fusion is the strongest source-selected MLP path; changing only HAWKING_QWEN38_FUSE_MLP to pair should increase the source-derived dispatch count and may explain part of the historical/current throughput gap.",
+  "mutation": {
+    "fusion_env_override": {
+      "HAWKING_QWEN38_FUSE_MLP": "pair"
+    }
+  },
+  "next_action": "retain the control receipt and do not run the mutation until a protected complete-token control is accepted",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "predicted_observation": "The pair arm has more MLP dispatch work than the swiglu control; physical wall/GPU/dispatch differences must be measured in matched quiet windows.",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.qwen38_fusion_protected_ab.v1",
+  "started_at": 1787834574.81687,
+  "status": "INCONCLUSIVE",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

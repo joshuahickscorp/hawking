@@ -1,0 +1,1 @@
+{"module": "p6_projection.py", "entry_point": "build", "receipt": "receipts/future/P6_PRIMITIVE_PROJECTION.json", "routed_to_frontier": "FT.PHYSICAL_GRAPH.p6-projection", "species": "SEARCH_ARCHITECTURE_LAWS", "wall_seconds": 0.066, "evidence_class": "STATIC_ONLY"}

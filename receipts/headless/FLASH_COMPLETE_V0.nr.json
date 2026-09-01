@@ -1,0 +1,171 @@
+{
+  "nr_version": "1.0.0",
+  "nr_kind": "hawking.nos.noetic_representation",
+  "artifact_kind": "NR",
+  "schema": "hawking.flash.complete_nr.v0",
+  "status": "COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION",
+  "semantic_provenance": {
+    "parent_model": "Qwen/Qwen3.8-Flash-Next",
+    "parent_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "parameter_count": 179999981564,
+    "source_parameter_bytes_indexed": 359999963128,
+    "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+    "census_sha256": "5ff766e18f7316005ece2808b43d938c1c728139b2c335556f71dbf344d4555d",
+    "doctor_nr_sha256": "727d9ad25a261ea13c46cd8877e36168b0a6e13aa2b19be1fab03f9ce6dfe8fa",
+    "doctor_bank_screen_sha256": "0135684bfb3debd0e6e294e43e17eff2cd3c7c255511c8953a840d913f99457d",
+    "doctor_ngram_screen_sha256": "43e2b619d2b592f6799c9e52084736490bdf8e33ad4a3dba7ebbfe800fb96617"
+  },
+  "representation": {
+    "scope": "complete 48-layer Flash model",
+    "complete_bits_per_weight": 16.0,
+    "parts": [
+      {
+        "family": "embedding_lm_head",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "complete terminal control exists"
+      },
+      {
+        "family": "ngram_embedding",
+        "representation": "factorized_lookup_candidate",
+        "runtime_required": true,
+        "qualification": "large 128-shard n-gram table inventoried; lookup/factorization fidelity and native path remain open"
+      },
+      {
+        "family": "norm",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract"
+      },
+      {
+        "family": "linear_attention_hyperconnection",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "48-layer source parity and stateful organ/prefix evidence"
+      },
+      {
+        "family": "full_attention",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "all full-attention source organs and KV organ evidence"
+      },
+      {
+        "family": "mlp_hyperconnection",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract"
+      },
+      {
+        "family": "shared_expert",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract"
+      },
+      {
+        "family": "routed_experts",
+        "representation": "route_conditioned_compact_candidate",
+        "runtime_required": true,
+        "qualification": "compact routed-bank exact parity on verified layers; dynamic complete-bank storage not yet qualified"
+      },
+      {
+        "family": "other",
+        "representation": "source_bf16_exact",
+        "runtime_required": true,
+        "qualification": "source graph contract"
+      }
+    ],
+    "family_source_bytes": {
+      "routed_experts": 246625075200,
+      "ngram_embedding": 102400491520,
+      "linear_attention_hyperconnection": 4820291328,
+      "embedding_lm_head": 2564759064,
+      "full_attention": 1337609728,
+      "mlp_hyperconnection": 1311502048,
+      "shared_expert": 481940480,
+      "other": 457917440,
+      "norm": 376320
+    },
+    "candidate_variants": [
+      {
+        "name": "exact_control",
+        "complete_bits_per_weight": 16.0,
+        "runtime_ready": true,
+        "capability_status": "source-control-only"
+      },
+      {
+        "name": "route_conditioned_compact_experts_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "not-yet-qualified",
+        "open": "dynamic expert-bank representation and accepted-token accounting",
+        "bank_screen": "cross-expert sharing hypothesis is weak in sampled real weights; pursue active-route storage, not unconditional shared basis"
+      },
+      {
+        "name": "ngram_factorized_lookup_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "not-yet-qualified",
+        "open": "n-gram table information floor, collision/lookup semantics, and native compact lookup"
+      },
+      {
+        "name": "ngram_uniform_q4_g32_v0",
+        "complete_bits_per_weight": null,
+        "runtime_ready": false,
+        "capability_status": "stage-a-only",
+        "nominal_bpw": 4.5,
+        "sample_cosine": 0.9952799081802368,
+        "open": "activation/output sensitivity and native compact lookup"
+      }
+    ],
+    "portable_identity": {
+      "census": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+      "doctor": "receipts/headless/FLASH_GRAVITY_DOCTOR_CYCLE.nr.json"
+    }
+  },
+  "kernel_requirements": [
+    {
+      "requires": "source_bf16_gemv_family",
+      "applies_to": "exact fallback organs"
+    },
+    {
+      "requires": "grouped_absmax_decoder",
+      "applies_to": "future compact routed-expert candidates only"
+    },
+    {
+      "requires": "route_conditioned_expert_selection",
+      "applies_to": "routed expert family"
+    },
+    {
+      "requires": "gated_delta_recurrence",
+      "applies_to": "linear-attention state"
+    },
+    {
+      "requires": "causal_attention_kv_state",
+      "applies_to": "full-attention state"
+    }
+  ],
+  "promotion": {
+    "allowed": false,
+    "blockers": [
+      "complete accepted-token session",
+      "complete candidate byte ledger",
+      "capability suite",
+      "machine-bound NX compilation"
+    ]
+  },
+  "negative_science": [
+    {
+      "receipt": "receipts/headless/FLASH_DOCTOR_EXPERT_BANK_SCREEN.json",
+      "finding": 0.003477525221917917,
+      "law": "do not assume routed experts share a low-dimensional basis; sampled gate-up expert cosine was near zero"
+    },
+    {
+      "receipt": "receipts/headless/FLASH_DOCTOR_NGRAM_SCREEN.json",
+      "finding": 0.0013096139929922714,
+      "law": "do not assume n-gram shards share a low-dimensional basis; shard-row similarity was near zero"
+    }
+  ],
+  "claim_boundary": "Complete heterogeneous portable NR candidate and exact control composition. It does not claim a compact complete representation, accepted-token TPS, EBPW, capability preservation, or machine execution.",
+  "next": "compile exact-control NX first, then replace only Pareto-surviving organs and measure complete accepted-token impact",
+  "seal_sha256": "ad0244ab310e1f4e841c58561ad8774e68b073e7670803a28c0f2a932fa7edf9"
+}

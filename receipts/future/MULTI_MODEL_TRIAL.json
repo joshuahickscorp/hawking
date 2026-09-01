@@ -1,0 +1,123 @@
+{
+ "authority": "S027 \u00a767-\u00a769, S026 \u00a745-\u00a747",
+ "loads_are_bounded_slices": "each load reads 512 MiB of the specimen's real weight files from the real volume - real disk work at a comparable size, not a sleep pretending to be I/O. Nothing claims a full model was made resident.",
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": false,
+  "lane": "g105-trial",
+  "loadavg": "{ 13.25 10.39 9.14 }",
+  "measured_at": "2026-09-01T01:36:08Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "obligation": "G105",
+ "one_hour": {
+  "budget_seconds": 3600.0,
+  "checks": {
+   "assigned_roles": true,
+   "chose_a_specimen": true,
+   "loaded_real_bytes": true,
+   "no_snapshot_showed_runnable_work_while_idle": true,
+   "prefetched_a_next_specimen": true,
+   "recorded_a_snapshot_per_decision": true,
+   "suppressed_a_dead_question_without_loading": true,
+   "used_more_than_one_specimen": true
+  },
+  "cold_MB_per_s_mean": 117.2,
+  "elapsed_seconds": 3600.15,
+  "judged_from": "the snapshots recorded AT each scheduling decision, which carry runnable and blocked counts with reasons and the live memory state. Nothing here is inferred from work that appeared later.",
+  "min_cold_samples_required": 3,
+  "n_cold": 1,
+  "n_distinct_specimens": 3,
+  "n_events": 15364,
+  "n_loads": 5600,
+  "n_prefetched": 2,
+  "n_questions_suppressed": 3732,
+  "n_snapshots": 9332,
+  "n_warm": 5597,
+  "passed": true,
+  "passed_is_over_testable_checks_only": "2 check(s) could not be evaluated in this trial and are listed rather than counted as passes",
+  "prefetched_MB_per_s_mean": 5808.8,
+  "trial": "receipts/future/_G105_TRIAL_1h.json",
+  "untestable_in_this_trial": [
+   "warm_reload_was_faster_than_cold",
+   "prefetch_beat_cold"
+  ],
+  "warm_MB_per_s_mean": 11057.6,
+  "why_three_states": "was_warm is the SCHEDULER'S belief. A prefetched specimen sits in the OS page cache without the scheduler counting it resident, and a truly untouched one is neither. Collapsing these into two made the cold mean look fast and hid whether prefetch did anything.",
+  "why_untestable": "only 1 of 5600 loads were first-touch. After the first pass the OS page cache holds every specimen the trial touched and nothing here can purge it, so a warm-vs-cold comparison would compare two cached reads differing by noise. The 142x warm-over-cold figure belongs to receipts/future/SPECIMEN_LOAD_COST.json, which measured it under controlled conditions; this trial must not restate it from noise."
+ },
+ "questions": [
+  {
+   "family": "unpack_convert_cost",
+   "gain": 1.0,
+   "id": "Q.transfer.unpack_convert",
+   "wants": "transfer"
+  },
+  {
+   "family": "arithmetic_ceiling_transfer",
+   "gain": 1.2,
+   "id": "Q.adversary.arithmetic_ceiling",
+   "wants": "adversary"
+  },
+  {
+   "family": "low_rank",
+   "gain": 2.0,
+   "id": "Q.dead.low_rank",
+   "wants": "transfer"
+  },
+  {
+   "family": "sub_bit",
+   "gain": 2.0,
+   "id": "Q.dead.subbit",
+   "wants": "adversary"
+  },
+  {
+   "family": "state_machine_recurrence",
+   "gain": 1.1,
+   "id": "Q.discovery.state_machine",
+   "wants": "adversary"
+  }
+ ],
+ "recorded_by": "tools/future/multi_model_trial.py",
+ "seal_sha256": "ad43e193fe2df009f7398102230025df070b637111148b29dbc36e7ed5a3256f",
+ "slice_bytes": 536870912,
+ "ten_minute": {
+  "budget_seconds": 600.0,
+  "checks": {
+   "assigned_roles": true,
+   "chose_a_specimen": true,
+   "loaded_real_bytes": true,
+   "no_snapshot_showed_runnable_work_while_idle": true,
+   "prefetched_a_next_specimen": true,
+   "recorded_a_snapshot_per_decision": true,
+   "suppressed_a_dead_question_without_loading": true,
+   "used_more_than_one_specimen": true
+  },
+  "cold_MB_per_s_mean": 10248.8,
+  "elapsed_seconds": 600.37,
+  "judged_from": "the snapshots recorded AT each scheduling decision, which carry runnable and blocked counts with reasons and the live memory state. Nothing here is inferred from work that appeared later.",
+  "min_cold_samples_required": 3,
+  "n_cold": 1,
+  "n_distinct_specimens": 3,
+  "n_events": 2575,
+  "n_loads": 961,
+  "n_prefetched": 2,
+  "n_questions_suppressed": 640,
+  "n_snapshots": 1601,
+  "n_warm": 958,
+  "passed": true,
+  "passed_is_over_testable_checks_only": "2 check(s) could not be evaluated in this trial and are listed rather than counted as passes",
+  "prefetched_MB_per_s_mean": 11206.5,
+  "trial": "receipts/future/_G105_TRIAL_10m.json",
+  "untestable_in_this_trial": [
+   "warm_reload_was_faster_than_cold",
+   "prefetch_beat_cold"
+  ],
+  "warm_MB_per_s_mean": 11290.0,
+  "why_three_states": "was_warm is the SCHEDULER'S belief. A prefetched specimen sits in the OS page cache without the scheduler counting it resident, and a truly untouched one is neither. Collapsing these into two made the cold mean look fast and hid whether prefetch did anything.",
+  "why_untestable": "only 1 of 961 loads were first-touch. After the first pass the OS page cache holds every specimen the trial touched and nothing here can purge it, so a warm-vs-cold comparison would compare two cached reads differing by noise. The 142x warm-over-cold figure belongs to receipts/future/SPECIMEN_LOAD_COST.json, which measured it under controlled conditions; this trial must not restate it from noise."
+ },
+ "what_it_does_not_demonstrate": "LOAD behaviour. After the first pass the OS page cache holds every specimen the trial touched, so all but the first few loads run at cache speed and the trial cannot exercise cold-load scheduling. Cold and warm rates are measured properly in receipts/future/SPECIMEN_LOAD_COST.json under a lease; this trial must not restate them from its own cached reads.",
+ "what_this_trial_demonstrates": "SCHEDULING behaviour: choosing a specimen, suppressing a scarred question without loading, prefetching the next, evicting under pressure, and recording an eligibility snapshot at every decision."
+}

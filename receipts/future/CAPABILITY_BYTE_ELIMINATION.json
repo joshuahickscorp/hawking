@@ -1,0 +1,1760 @@
+{
+ "answer": "On the named region(s) useful capability still holds through 15.67 MB and the change lives in [15.67, 19.15] MB (sum of per-region intervals; not a joint destruction). The 0.99 cosine bar licensed 27.7 MB globally. The campaign needs 1773 MB. The capability bar does not license that \u2014 19.15 MB on the named tensors is not 1773 MB, and it is no more than cosine licensed globally. FAST_CAPABILITY was FLAT on 2 named region(s) (the Paris argmax survived); the cliff is LOGIT_TOKEN (2 region(s)). A negative at campaign scale is a real finding.",
+ "bars_reused": {
+  "hidden_cosine_bar": 0.99,
+  "logit_kl_bar": 0.1,
+  "note": "hidden cosine is reused as CONTEXT only. LOGIT_TOKEN pass is KL <= 0.1 and top-5 agreement >= 0.8. Argmax identity is recorded and is not the pass criterion.",
+  "top_k": 5,
+  "top_k_agree_bar": 0.8
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T03:12:16Z",
+  "recorded_by": "tools/future/capability_byte_elimination.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "caller_supplies_region": true,
+ "capture": {
+  "baseline_argmax": 11751,
+  "blocked": false,
+  "logits_status": "MEASURED",
+  "n_layers": 64,
+  "n_tokens": 5,
+  "ok": true,
+  "prompt": "The capital of France is",
+  "real_forward_pass": true,
+  "reason": null,
+  "synthetic": false,
+  "synthetic_substituted": false,
+  "token_ids": [
+   760,
+   6511,
+   314,
+   9338,
+   369
+  ]
+ },
+ "chooses_region": false,
+ "claim_boundary": "Static sidecar artifact. No hardware measurement and no generate gate. Activations are a CPU replay of sealed-3.14 packed weights via capability_information_map.capture_real_prefix / replay_prompt_from. Isotropic Gaussian x is refused. LOGIT_TOKEN reuses capability_stages bars (KL 0.1, top-5 agreement 0.8); FAST_CAPABILITY is a single-argmax predicate on real tokenizer ids. LOCAL_FUNCTIONAL_FIDELITY (cosine 0.99) is CONTEXT and is not the verdict. Physical ms figures are ESTIMATED_FROM_CITED_MS from ORGAN_DECOMPOSITION_SEALED.json, pro-rated by byte share of the region's census, never MEASURED. The caller names the region; a default --build list is not a scientific pick. A FLAT curve is a result. evidence_class STATIC_ONLY. gpu_authority false.",
+ "comparison": {
+  "campaign_need_mb": 1773.0,
+  "campaign_need_source": "tools/future/fidelity_hierarchy.py; 60 TPS byte need cited by S030 / G108",
+  "capability_bar_licensed_bytes_hi": 19149009,
+  "capability_bar_licensed_mb_hi": 19.149009,
+  "capability_bar_still_holds_bytes": 15667371,
+  "capability_bar_still_holds_mb": 15.667371,
+  "cosine_bar": 0.99,
+  "cosine_bar_licensed_bytes": 27688960,
+  "cosine_bar_licensed_mb": 27.68896,
+  "cosine_bar_source": "receipts/future/CAPABILITY_INFORMATION_MAP.json",
+  "curve_shape": "cliff",
+  "fast_capability_flat_held_regions": 2,
+  "logit_token_cliff_regions": 2,
+  "named_regions_are_not_a_global_allocation": true,
+  "reading": "On the named region(s) useful capability still holds through 15.67 MB and the change lives in [15.67, 19.15] MB (sum of per-region intervals; not a joint destruction). The 0.99 cosine bar licensed 27.7 MB globally. The campaign needs 1773 MB. The capability bar does not license that \u2014 19.15 MB on the named tensors is not 1773 MB, and it is no more than cosine licensed globally. FAST_CAPABILITY was FLAT on 2 named region(s) (the Paris argmax survived); the cliff is LOGIT_TOKEN (2 region(s)). A negative at campaign scale is a real finding.",
+  "shortfall_vs_campaign_x": 92.58964785070602
+ },
+ "context_level": "LOCAL_FUNCTIONAL_FIDELITY",
+ "cosine_is_not_the_verdict": true,
+ "default_build_regions": [
+  {
+   "block": "all",
+   "id": "L63.mlp.gate",
+   "layer": 63,
+   "organ": "mlp.gate"
+  },
+  {
+   "block": "all",
+   "id": "L63.mlp.down",
+   "layer": 63,
+   "organ": "mlp.down"
+  }
+ ],
+ "default_build_regions_are_not_a_scientific_pick": true,
+ "evidence_class": "STATIC_ONLY",
+ "fast_probes": [
+  {
+   "expect_argmax_in": [
+    11751,
+    57590
+   ],
+   "id": "fact-capital",
+   "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+   "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+   "prompt": "The capital of France is",
+   "token_ids": [
+    760,
+    6511,
+    314,
+    9338,
+    369
+   ],
+   "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json"
+  }
+ ],
+ "fast_probes_are_real_tokenizer_ids": true,
+ "gpu_authority": false,
+ "obligation": "G109",
+ "parent_payload_bytes": 10554328856,
+ "purpose": "Per-region progressive-destruction search for the capability BOUNDARY: which information can disappear while useful capability remains. Not a cosine-0.99 threshold.",
+ "question": "WHICH INFORMATION CAN DISAPPEAR WHILE USEFUL CAPABILITY REMAINS?",
+ "regions": [
+  {
+   "bracket": {
+    "hi": 0.4375,
+    "lo": 0.375
+   },
+   "budget": 8,
+   "cliff_found": true,
+   "cosine_is_not_the_verdict": true,
+   "detected_interval": {
+    "delta": 1.0,
+    "hi": 0.5,
+    "left_value": 1.0,
+    "lo": 0.25,
+    "right_value": 0.0
+   },
+   "kind": "BOUNDARY_INTERVAL",
+   "licensed_bytes": {
+    "destruction_hi": 0.4375,
+    "destruction_lo": 0.375,
+    "hi": 12185733,
+    "hi_mb": 12.185733,
+    "kind": "BOUNDARY_INTERVAL",
+    "lo": 10444914,
+    "lo_mb": 10.444914,
+    "reading": "capability changes in the destruction interval [0.375, 0.4375], which is [10.4449, 12.1857] MB of this region"
+   },
+   "message": "cliff bracketed in [0.375, 0.4375]",
+   "n_cache_hits": 0,
+   "n_evaluated": 7,
+   "n_measured": 7,
+   "n_not_run": 0,
+   "per_level": {
+    "FAST_CAPABILITY": {
+     "hi": 27853103,
+     "hi_mb": 27.853103,
+     "kind": "FLAT",
+     "lo": 27853103,
+     "lo_mb": 27.853103,
+     "reading": "FAST_CAPABILITY never broke across the sweep"
+    },
+    "LOGIT_TOKEN": {
+     "destruction_hi": 0.4375,
+     "destruction_lo": 0.375,
+     "hi": 12185733,
+     "hi_mb": 12.185733,
+     "kind": "BOUNDARY_INTERVAL",
+     "lo": 10444914,
+     "lo_mb": 10.444914,
+     "reading": "LOGIT_TOKEN changes in [0.375, 0.4375], [10.4449, 12.1857] MB of this region"
+    }
+   },
+   "points": [
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 1.0,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 1.000000 >= bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "PASS",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.0,
+       "logits_cosine": 1.0,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 1.0,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.000000 (bar 0.1) top-5 agreement 1.0000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "PASS"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 0,
+     "bytes_gone_mb": 0.0,
+     "cached": false,
+     "capability_verdict": "PASS",
+     "component": "L63.mlp.gate",
+     "destruction": 0.0,
+     "layer": 63,
+     "level": 0.0,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_gate_up",
+      "cited_organ_ms": 7.1706,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.0,
+      "not": "MEASURED",
+      "organ_active_bytes": 3565197184,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 0,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 1.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9881744311814799,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.988174 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.03415565981950086,
+       "logits_cosine": 0.9966330834917253,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.034156 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "PASS"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 6963276,
+     "bytes_gone_mb": 6.963276,
+     "cached": false,
+     "capability_verdict": "PASS",
+     "component": "L63.mlp.gate",
+     "destruction": 0.25,
+     "layer": 63,
+     "level": 0.25,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_gate_up",
+      "cited_organ_ms": 7.1706,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.014005078627819313,
+      "not": "MEASURED",
+      "organ_active_bytes": 3565197184,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 6963276,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 1.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9776875599246327,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.977688 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.09851763562796366,
+       "logits_cosine": 0.9941179204408485,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 1.0,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.098518 (bar 0.1) top-5 agreement 1.0000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "PASS"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 10444914,
+     "bytes_gone_mb": 10.444914,
+     "cached": false,
+     "capability_verdict": "PASS",
+     "component": "L63.mlp.gate",
+     "destruction": 0.375,
+     "layer": 63,
+     "level": 0.375,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_gate_up",
+      "cited_organ_ms": 7.1706,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.021007617941728972,
+      "not": "MEASURED",
+      "organ_active_bytes": 3565197184,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 10444914,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "refine",
+     "status": "OK",
+     "value": 1.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9657382736577096,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.965738 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.16261468884975816,
+       "logits_cosine": 0.9903872973643478,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 1.0,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.162615 (bar 0.1) top-5 agreement 1.0000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 12185733,
+     "bytes_gone_mb": 12.185733,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.gate",
+     "destruction": 0.4375,
+     "layer": 63,
+     "level": 0.4375,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_gate_up",
+      "cited_organ_ms": 7.1706,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.0245088875986838,
+      "not": "MEASURED",
+      "organ_active_bytes": 3565197184,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 12185733,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "refine",
+     "status": "OK",
+     "value": 0.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9515797328970683,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.951580 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.5259486671375795,
+       "logits_cosine": 0.9889201476577139,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.525949 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 13926552,
+     "bytes_gone_mb": 13.926552,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.gate",
+     "destruction": 0.5,
+     "layer": 63,
+     "level": 0.5,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_gate_up",
+      "cited_organ_ms": 7.1706,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.028010157255638626,
+      "not": "MEASURED",
+      "organ_active_bytes": 3565197184,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 13926552,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 0.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9110917165920477,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.911092 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.40831694267413393,
+       "logits_cosine": 0.9800403433676051,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 1.0,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.408317 (bar 0.1) top-5 agreement 1.0000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 20889827,
+     "bytes_gone_mb": 20.889827,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.gate",
+     "destruction": 0.75,
+     "layer": 63,
+     "level": 0.75,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_gate_up",
+      "cited_organ_ms": 7.1706,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.04201523387218069,
+      "not": "MEASURED",
+      "organ_active_bytes": 3565197184,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 20889827,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 0.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.8495151047591762,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.849515 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.5598897599616549,
+       "logits_cosine": 0.969089243993949,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.559890 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 27853103,
+     "bytes_gone_mb": 27.853103,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.gate",
+     "destruction": 1.0,
+     "layer": 63,
+     "level": 1.0,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_gate_up",
+      "cited_organ_ms": 7.1706,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.0560203125,
+      "not": "MEASURED",
+      "organ_active_bytes": 3565197184,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 27853103,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 0.0
+    }
+   ],
+   "region": {
+    "block": "all",
+    "id": "L63.mlp.gate",
+    "layer": 63,
+    "organ": "mlp.gate"
+   },
+   "region_bytes": 27853103,
+   "region_bytes_mb": 27.853103,
+   "resolution": 0.1,
+   "resolution_met": true,
+   "search_range": [
+    0.0,
+    1.0
+   ],
+   "why": "largest coarse adjacent jump was 1 of span 1, then binary-refined"
+  },
+  {
+   "bracket": {
+    "hi": 0.25,
+    "lo": 0.1875
+   },
+   "budget": 8,
+   "cliff_found": true,
+   "cosine_is_not_the_verdict": true,
+   "detected_interval": {
+    "delta": 1.0,
+    "hi": 0.25,
+    "left_value": 1.0,
+    "lo": 0.0,
+    "right_value": 0.0
+   },
+   "kind": "BOUNDARY_INTERVAL",
+   "licensed_bytes": {
+    "destruction_hi": 0.25,
+    "destruction_lo": 0.1875,
+    "hi": 6963276,
+    "hi_mb": 6.963276,
+    "kind": "BOUNDARY_INTERVAL",
+    "lo": 5222457,
+    "lo_mb": 5.222457,
+    "reading": "capability changes in the destruction interval [0.1875, 0.25], which is [5.2225, 6.9633] MB of this region"
+   },
+   "message": "cliff bracketed in [0.1875, 0.25]",
+   "n_cache_hits": 0,
+   "n_evaluated": 7,
+   "n_measured": 7,
+   "n_not_run": 0,
+   "per_level": {
+    "FAST_CAPABILITY": {
+     "hi": 27853103,
+     "hi_mb": 27.853103,
+     "kind": "FLAT",
+     "lo": 27853103,
+     "lo_mb": 27.853103,
+     "reading": "FAST_CAPABILITY never broke across the sweep"
+    },
+    "LOGIT_TOKEN": {
+     "destruction_hi": 0.25,
+     "destruction_lo": 0.1875,
+     "hi": 6963276,
+     "hi_mb": 6.963276,
+     "kind": "BOUNDARY_INTERVAL",
+     "lo": 5222457,
+     "lo_mb": 5.222457,
+     "reading": "LOGIT_TOKEN changes in [0.1875, 0.25], [5.2225, 6.9633] MB of this region"
+    }
+   },
+   "points": [
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 1.0,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 1.000000 >= bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "PASS",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.0,
+       "logits_cosine": 1.0,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 1.0,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.000000 (bar 0.1) top-5 agreement 1.0000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "PASS"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 0,
+     "bytes_gone_mb": 0.0,
+     "cached": false,
+     "capability_verdict": "PASS",
+     "component": "L63.mlp.down",
+     "destruction": 0.0,
+     "layer": 63,
+     "level": 0.0,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_down",
+      "cited_organ_ms": 4.5854,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.0,
+      "not": "MEASURED",
+      "organ_active_bytes": 1782598592,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 0,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 1.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9863413398505257,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.986341 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.026508234434904743,
+       "logits_cosine": 0.9963097204598911,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.026508 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "PASS"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 3481638,
+     "bytes_gone_mb": 3.481638,
+     "cached": false,
+     "capability_verdict": "PASS",
+     "component": "L63.mlp.down",
+     "destruction": 0.125,
+     "layer": 63,
+     "level": 0.125,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_down",
+      "cited_organ_ms": 4.5854,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.008955859696539016,
+      "not": "MEASURED",
+      "organ_active_bytes": 1782598592,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 3481638,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "refine",
+     "status": "OK",
+     "value": 1.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9786985398626189,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.978699 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.029793526775573707,
+       "logits_cosine": 0.9953478401195129,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.029794 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "PASS"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 5222457,
+     "bytes_gone_mb": 5.222457,
+     "cached": false,
+     "capability_verdict": "PASS",
+     "component": "L63.mlp.down",
+     "destruction": 0.1875,
+     "layer": 63,
+     "level": 0.1875,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_down",
+      "cited_organ_ms": 4.5854,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.013433789544808526,
+      "not": "MEASURED",
+      "organ_active_bytes": 1782598592,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 5222457,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "refine",
+     "status": "OK",
+     "value": 1.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.9360804133338169,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.936080 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.1472097084322779,
+       "logits_cosine": 0.9854427792915597,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.147210 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 6963276,
+     "bytes_gone_mb": 6.963276,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.down",
+     "destruction": 0.25,
+     "layer": 63,
+     "level": 0.25,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_down",
+      "cited_organ_ms": 4.5854,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.01791171939307803,
+      "not": "MEASURED",
+      "organ_active_bytes": 1782598592,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 6963276,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 0.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.916397834413136,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.916398 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.31444299494188954,
+       "logits_cosine": 0.9828681474727677,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.314443 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 13926552,
+     "bytes_gone_mb": 13.926552,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.down",
+     "destruction": 0.5,
+     "layer": 63,
+     "level": 0.5,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_down",
+      "cited_organ_ms": 4.5854,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.03582343878615606,
+      "not": "MEASURED",
+      "organ_active_bytes": 1782598592,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 13926552,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 0.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.880753860702904,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.880754 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.3139542363410267,
+       "logits_cosine": 0.975932518171062,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.313954 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 20889827,
+     "bytes_gone_mb": 20.889827,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.down",
+     "destruction": 0.75,
+     "layer": 63,
+     "level": 0.75,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_down",
+      "cited_organ_ms": 4.5854,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.053735155606921964,
+      "not": "MEASURED",
+      "organ_active_bytes": 1782598592,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 20889827,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 0.0
+    },
+    {
+     "FAST_CAPABILITY": {
+      "incumbent_argmax": 11751,
+      "measurement": {
+       "argmax": 11751,
+       "items": [
+        {
+         "argmax": 11751,
+         "expect_argmax_in": [
+          11751,
+          57590
+         ],
+         "id": "fact-capital",
+         "origin": "resident_provider.PROMPT_FRANCE, single-argmax completion form; tokenizer.json of the sealed artifact",
+         "passed": true,
+         "predicate": "next-token argmax is a Paris token (\u0120Paris=11751 or Paris=57590)",
+         "prompt": "The capital of France is",
+         "token_ids": [
+          760,
+          6511,
+          314,
+          9338,
+          369
+         ]
+        }
+       ],
+       "n_passed": 1,
+       "n_probes": 1
+      },
+      "reason": "1/1 single-argmax probes passed",
+      "stage": "FAST_CAPABILITY",
+      "verdict": "PASS"
+     },
+     "LOCAL_FUNCTIONAL_FIDELITY": {
+      "measurement": {
+       "bar": 0.99,
+       "cosine": 0.8495151047591762,
+       "instrument": "LOCAL_FUNCTIONAL_FIDELITY",
+       "n": 5120,
+       "wrapped": "capability_information_map._cosine"
+      },
+      "not_the_verdict": true,
+      "reason": "hidden-state cosine 0.849515 < bar 0.99",
+      "role": "CONTEXT",
+      "stage": "LOCAL_FUNCTIONAL_FIDELITY",
+      "verdict": "FAIL",
+      "why_not_the_verdict": "S030 \u00a73 / S031 \u00a79: hidden-state cosine is LOCAL_FUNCTIONAL_FIDELITY, not capability. CAPABILITY_INFORMATION_MAP licensed 27.7 MB on this bar; that is the defect this module exists to stop."
+     },
+     "LOGIT_TOKEN": {
+      "bars_reused": {
+       "logit_kl_bar": 0.1,
+       "top_k": 5,
+       "top_k_agree_bar": 0.8
+      },
+      "measurement": {
+       "argmax_a": 11751,
+       "argmax_agreement": 1.0,
+       "argmax_b": 11751,
+       "argmax_is_not_parity": true,
+       "kl_bar": 0.1,
+       "kl_nats": 0.5598897599616549,
+       "logits_cosine": 0.969089243993949,
+       "n_rows": 1,
+       "parity_quantities": [
+        "kl_nats",
+        "top_k_agreement"
+       ],
+       "top_k": 5,
+       "top_k_agreement": 0.8,
+       "top_k_bar": 0.8,
+       "wrapped": "aux_capability_screen.report_logit_parity"
+      },
+      "reason": "KL 0.559890 (bar 0.1) top-5 agreement 0.8000 (bar 0.8) argmax_agreement 1.0 (argmax is not the pass criterion)",
+      "stage": "LOGIT_TOKEN",
+      "verdict": "FAIL"
+     },
+     "argmax_candidate": 11751,
+     "argmax_incumbent": 11751,
+     "axis": "output_rows",
+     "bytes_gone": 27853103,
+     "bytes_gone_mb": 27.853103,
+     "cached": false,
+     "capability_verdict": "FAIL",
+     "component": "L63.mlp.down",
+     "destruction": 1.0,
+     "layer": 63,
+     "level": 1.0,
+     "logits_status": "MEASURED",
+     "measured_at_level": "CAPABILITY",
+     "ms_gone": {
+      "cited_organ": "mlp_down",
+      "cited_organ_ms": 4.5854,
+      "label": "ESTIMATED_FROM_CITED_MS",
+      "ms": 0.071646875,
+      "not": "MEASURED",
+      "organ_active_bytes": 1782598592,
+      "pro_rated_by": "byte_share_of_organ",
+      "region_bytes_gone": 27853103,
+      "source": "receipts/future/ORGAN_DECOMPOSITION_SEALED.json"
+     },
+     "perturbation_type": "zero_fraction",
+     "region_bytes": 27853103,
+     "source": "coarse",
+     "status": "OK",
+     "value": 0.0
+    }
+   ],
+   "region": {
+    "block": "all",
+    "id": "L63.mlp.down",
+    "layer": 63,
+    "organ": "mlp.down"
+   },
+   "region_bytes": 27853103,
+   "region_bytes_mb": 27.853103,
+   "resolution": 0.1,
+   "resolution_met": true,
+   "search_range": [
+    0.0,
+    1.0
+   ],
+   "why": "largest coarse adjacent jump was 1 of span 1, then binary-refined"
+  }
+ ],
+ "reused_not_rebuilt": {
+  "bytes": "MLP_BYTE_CENSUS.json via complete_ebpw.mix_report parent total",
+  "judges": "capability_stages.run_logit_token, run_local_functional_fidelity; aux_capability_screen bars",
+  "ms": "ORGAN_DECOMPOSITION_SEALED.json, pro-rated, ESTIMATED_FROM_CITED_MS",
+  "replay": "capability_information_map.capture_real_prefix, replay_prompt_from, lm_head_gemv, refuse_synthetic_activations",
+  "search": "capability_curve.sweep (coarse, detect, refine)"
+ },
+ "schema": "hawking.future.capability_byte_elimination.v1",
+ "seal_sha256": "ea7051d853e9c62f50b9348d01ad543b0419874727d565a5895c68ba3aa9932c",
+ "the_wrong_bar": {
+  "bar": "hidden cosine 0.99",
+  "campaign_need_mb": 1773.0,
+  "licensed_bytes": 27688960,
+  "licensed_mb": 27.68896,
+  "n_sampled_regions": 36,
+  "share_of_token": 0.0028028380503877935,
+  "shortfall": "64x",
+  "source": "receipts/future/CAPABILITY_INFORMATION_MAP.json",
+  "why_it_is_the_wrong_question": "it asked which information can disappear while hidden-state cosine stays above 0.99. That is LOCAL_FUNCTIONAL_FIDELITY, not capability."
+ },
+ "verdict_levels": [
+  "LOGIT_TOKEN",
+  "FAST_CAPABILITY"
+ ],
+ "version": 1,
+ "what_this_does_not_prove": [
+  "that unnamed regions match the named ones (they are UNMEASURED)",
+  "GPU generate identity of a packed kernel",
+  "that a FLAT last-layer MLP tensor licenses 1773 MB globally",
+  "HCLI mission competence or EXPENSIVE_QUALIFICATION",
+  "that cosine 0.99 is a capability bar (it is not)"
+ ]
+}

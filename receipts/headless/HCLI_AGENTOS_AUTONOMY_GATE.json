@@ -1,4 +1,12 @@
 {
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "a1_three_real_workunits": true,
     "a2_ten_real_workunits": true,
@@ -8,8 +16,20 @@
     "all_requested_stages_passed": true
   },
   "claim_boundary": "native cognition proposes; typed tools, persisted WorkUnits, and fixed verifiers decide; no sovereignty claim",
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
+  "direct_observation": "stage_status={'A1_three_workunits': 'PASSED', 'A2_ten_workunits': 'PASSED', 'A3_resident_kill': 'PASSED', 'A4_hcli_process_kill': 'PASSED', 'A5_post_mutation_crash': 'PASSED'}; checks={a1_three_real_workunits=True, a2_ten_real_workunits=True, a3_resident_recovery=True, a4_process_recovery=True, a5_idempotency=True, all_requested_stages_passed=True}; unmet=[]; error=None",
   "elapsed_s": 441.355,
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "finished_at": 1787796641.9716952,
+  "interpretation": "all_requested_stages_passed is True from the named A1-A5 stage statuses",
+  "probe_kind": "measured_flags",
+  "probe_performed": "autonomy A1-A5: run_census_mission (3 then >=10 WorkUnits), run_resident_kill, run_process_kill, run_idempotency_crash; stages_requested='all' profile=/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
   "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
   "qualification": "LIVE_AGENTOS_AUTONOMY_CONTROL_PLANE",
   "repo_root": "/Users/scammermike/Downloads/hawking",

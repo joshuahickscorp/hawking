@@ -1,0 +1,233 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787955982501",
+    "recorded_by": "flash_stateful_layer3_layer11_bridge",
+    "rule": "S032 §3 -- bounded stateful bridge; no complete-token performance claim",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "Two token steps traverse layers 0..2 stateful DeltaNet, layer 3 stateful full-attention KV plus MLP/MoE, layers 4..6 stateful DeltaNet with device inter-layer handoffs, layer 7 stateful full-attention KV plus MLP/MoE, layers 8..10 stateful DeltaNet with device inter-layer handoffs, and layer 11 stateful full-attention KV plus MLP/MoE. Cross-species seams remain host diagnostic copies; this does not prove device-only 48-layer integration, tokenizer acceptance, TPS, EBPW, or residency.",
+  "complete_system_ebpw": null,
+  "execution": {
+    "layer10_to_layer11_handoff": "host diagnostic copy",
+    "layer3_to_layer4_handoff": "host diagnostic copy",
+    "layer4_to_layer6_handoffs": "device resident",
+    "layer6_to_layer7_handoff": "host diagnostic copy",
+    "layer7_to_layer8_handoff": "host diagnostic copy",
+    "layer8_to_layer10_handoffs": "device resident",
+    "linear_context_reused": true,
+    "linear_weights_reused": true,
+    "process_boundary": "one native process"
+  },
+  "layer11": {
+    "final_state_count": 2,
+    "final_state_sha256": [
+      "7552abb9b6961fdd048388361b349c38aebf0adfdf7aa25a6f7636a0f2963374",
+      "ab8bac562a126cdf9a3035a6de03b4f849c49fd23a04a33a4299e8daf2296043"
+    ],
+    "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE_L11_ATTN.json"
+  },
+  "layer3": {
+    "final_state_count": 2,
+    "final_state_sha256": [
+      "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+      "ed176ce5428dbb3cd40860dd91178d68fd0386abe3375cb0ff16ad402e8ec551"
+    ],
+    "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE_L3_ATTN.json"
+  },
+  "layer7": {
+    "final_state_count": 2,
+    "final_state_sha256": [
+      "a14f7db1fd0fc0762d41dde15579c322b96ad90ea53864fc3ad16e1c5188d15a",
+      "9820c6731db1967f5145bea0ea689fe99b9ef5536767f7b3aaeadb3dc904d252"
+    ],
+    "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER11_BRIDGE_L7_ATTN.json"
+  },
+  "linear_4_6": {
+    "layer6_final_state_sha256": [
+      "a813ba5af87a5f13f8d7ca847cf7217ed80e01bac3c2bb12d780d0b91dbaf617",
+      "fcdf67ac94d23e629122147d942b1b5bf206fc64021b25d8db5f87c1d99ec42f"
+    ],
+    "layers": [
+      4,
+      5,
+      6
+    ],
+    "species": "linear_attention",
+    "stateful_recurrence": true,
+    "steps": [
+      {
+        "device_inter_layer_handoff": false,
+        "dispatches": 20,
+        "final_state_sha256": "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+        "finite": true,
+        "gpu_ns": 30761791,
+        "input_state_sha256": "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+        "layer": 4,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 39377584
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "89d0c8b721a716b72c255630ce48fed652ab2d1ea97cb1260a15243bb0bee42a",
+        "finite": true,
+        "gpu_ns": 27139041,
+        "input_state_sha256": "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+        "layer": 5,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 27667750
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "a813ba5af87a5f13f8d7ca847cf7217ed80e01bac3c2bb12d780d0b91dbaf617",
+        "finite": true,
+        "gpu_ns": 27499250,
+        "input_state_sha256": "89d0c8b721a716b72c255630ce48fed652ab2d1ea97cb1260a15243bb0bee42a",
+        "layer": 6,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 27873167
+      },
+      {
+        "device_inter_layer_handoff": false,
+        "dispatches": 20,
+        "final_state_sha256": "3d85152f1fc5cfd300aba5e4cd37b696e40ed46a0a81de556d95ab0109c23662",
+        "finite": true,
+        "gpu_ns": 25309874,
+        "input_state_sha256": "ed176ce5428dbb3cd40860dd91178d68fd0386abe3375cb0ff16ad402e8ec551",
+        "layer": 4,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25615167
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "ea6264f5c46dce7fc5ac0fcdbfe631a22515f4bfc8e2b8a2c95d30899ef0f5df",
+        "finite": true,
+        "gpu_ns": 24700375,
+        "input_state_sha256": "3d85152f1fc5cfd300aba5e4cd37b696e40ed46a0a81de556d95ab0109c23662",
+        "layer": 5,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25002042
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "fcdf67ac94d23e629122147d942b1b5bf206fc64021b25d8db5f87c1d99ec42f",
+        "finite": true,
+        "gpu_ns": 24804875,
+        "input_state_sha256": "ea6264f5c46dce7fc5ac0fcdbfe631a22515f4bfc8e2b8a2c95d30899ef0f5df",
+        "layer": 6,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25105208
+      }
+    ]
+  },
+  "linear_8_10": {
+    "layer10_final_state_sha256": [
+      "be7be8f01508da0c45f178bc7331a8644a5904b5fa6455fe707f1bc0fa00ddf5",
+      "ee95a4e1f44f007f312d4e1d0a93b2fa0cfa70b88a27f54e04c90aac4eaff4c2"
+    ],
+    "layers": [
+      8,
+      9,
+      10
+    ],
+    "species": "linear_attention",
+    "stateful_recurrence": true,
+    "steps": [
+      {
+        "device_inter_layer_handoff": false,
+        "dispatches": 20,
+        "final_state_sha256": "06ffc3c0f923ad2518f1aab20d431cc892bd4e847e9890ff5b46a5c834c2baf8",
+        "finite": true,
+        "gpu_ns": 31009708,
+        "input_state_sha256": "a14f7db1fd0fc0762d41dde15579c322b96ad90ea53864fc3ad16e1c5188d15a",
+        "layer": 8,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 40487375
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "f9f5d04c1027b454b524c01a99dd8a9627151a8a5d89b598f0e80948288614df",
+        "finite": true,
+        "gpu_ns": 27608416,
+        "input_state_sha256": "06ffc3c0f923ad2518f1aab20d431cc892bd4e847e9890ff5b46a5c834c2baf8",
+        "layer": 9,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 28110250
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "be7be8f01508da0c45f178bc7331a8644a5904b5fa6455fe707f1bc0fa00ddf5",
+        "finite": true,
+        "gpu_ns": 28054416,
+        "input_state_sha256": "f9f5d04c1027b454b524c01a99dd8a9627151a8a5d89b598f0e80948288614df",
+        "layer": 10,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 28456458
+      },
+      {
+        "device_inter_layer_handoff": false,
+        "dispatches": 20,
+        "final_state_sha256": "4ed91478a84fb3588d22db648c9d9d1e96d907e977ba9c084caec5443fce1f91",
+        "finite": true,
+        "gpu_ns": 24796416,
+        "input_state_sha256": "9820c6731db1967f5145bea0ea689fe99b9ef5536767f7b3aaeadb3dc904d252",
+        "layer": 8,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25111458
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "209018f3e2234553bd2246eeb23518d5777c3b9350c59ff7629f15b9f3f1b974",
+        "finite": true,
+        "gpu_ns": 25352791,
+        "input_state_sha256": "4ed91478a84fb3588d22db648c9d9d1e96d907e977ba9c084caec5443fce1f91",
+        "layer": 9,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25704542
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "ee95a4e1f44f007f312d4e1d0a93b2fa0cfa70b88a27f54e04c90aac4eaff4c2",
+        "finite": true,
+        "gpu_ns": 25196500,
+        "input_state_sha256": "209018f3e2234553bd2246eeb23518d5777c3b9350c59ff7629f15b9f3f1b974",
+        "layer": 10,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25562875
+      }
+    ]
+  },
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Continue the same state arena through the remaining structural boundaries, then replace the diagnostic species seams with device-resident handoff.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_layer3_layer11_bridge.v3",
+  "seal_sha256": "3c86961bb0084dcac43e32aa0dfaade3528d1312ee6797b0669f19c389cead97",
+  "status": "PASSED_STATEFUL_CROSS_SPECIES_CHAIN",
+  "token_ids": [
+    248044,
+    248044
+  ]
+}

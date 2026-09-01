@@ -1,0 +1,190 @@
+{
+  "schema": "hawking.flash.doctor_expert_bank_screen.v1",
+  "status": "REAL_WEIGHT_STAGE_A_SCREEN",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "source": {
+    "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "layer": 44,
+    "gate_up_tensor": "model.language_model.layers.44.mlp.experts.gate_up_proj",
+    "down_tensor": "model.language_model.layers.44.mlp.experts.down_proj",
+    "expert_count": 512,
+    "experts_sampled": [
+      0,
+      16,
+      32,
+      49,
+      65,
+      82,
+      98,
+      115,
+      131,
+      148,
+      164,
+      181,
+      197,
+      214,
+      230,
+      247,
+      263,
+      280,
+      296,
+      313,
+      329,
+      346,
+      362,
+      379,
+      395,
+      412,
+      428,
+      445,
+      461,
+      478,
+      494,
+      511
+    ],
+    "rows": 64,
+    "cols": 512
+  },
+  "population": {
+    "cross_expert_gate_up_mean_cosine": 0.003477525221917917,
+    "cross_expert_gate_up_min_cosine": -0.014670680277049541,
+    "sampled_population_rank": {
+      "rank_1_energy": 0.037366386502981186,
+      "rank_4_energy": 0.1449218988418579,
+      "rank_8_energy": 0.28315895795822144,
+      "singular_values": [
+        2.5210654735565186,
+        2.4839284420013428,
+        2.473764181137085,
+        2.4505224227905273,
+        2.4387497901916504,
+        2.426645040512085,
+        2.4191482067108154,
+        2.4134645462036133,
+        2.392263889312744,
+        2.3860416412353516,
+        2.3717668056488037,
+        2.370114326477051,
+        2.3534493446350098,
+        2.344954252243042,
+        2.3380839824676514,
+        2.337388038635254,
+        2.326796770095825,
+        2.318748950958252,
+        2.308328628540039,
+        2.2998416423797607,
+        2.2925968170166016,
+        2.2850968837738037,
+        2.279573440551758,
+        2.2748682498931885,
+        2.2668707370758057,
+        2.259420156478882,
+        2.2501816749572754,
+        2.242875576019287,
+        2.23276948928833,
+        2.212498903274536,
+        2.1973071098327637,
+        2.1802236460644053e-08
+      ]
+    }
+  },
+  "candidate_rows": [
+    {
+      "tensor": "gate_up_proj",
+      "candidate": "source_bf16_exact",
+      "sample_cosine": 1.0,
+      "sample_mae": 0.0,
+      "active_bpw": 16.0,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "candidate": "uniform_q4_g64",
+      "sample_cosine": 0.9943029284477234,
+      "sample_mae": 0.0011909245513379574,
+      "active_bpw": 4.25,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "candidate": "uniform_q4_g128",
+      "sample_cosine": 0.9932440519332886,
+      "sample_mae": 0.001308425678871572,
+      "active_bpw": 4.125,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "candidate": "uniform_q3_g64",
+      "sample_cosine": 0.970318615436554,
+      "sample_mae": 0.002779829315841198,
+      "active_bpw": 3.25,
+      "native_ready": false
+    },
+    {
+      "tensor": "gate_up_proj",
+      "candidate": "uniform_q3_g128",
+      "sample_cosine": 0.9649156928062439,
+      "sample_mae": 0.003046575002372265,
+      "active_bpw": 3.125,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "candidate": "source_bf16_exact",
+      "sample_cosine": 1.0,
+      "sample_mae": 0.0,
+      "active_bpw": 16.0,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "candidate": "uniform_q4_g64",
+      "sample_cosine": 0.9942029118537903,
+      "sample_mae": 0.0011830029543489218,
+      "active_bpw": 4.25,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "candidate": "uniform_q4_g128",
+      "sample_cosine": 0.9931315183639526,
+      "sample_mae": 0.0012964463094249368,
+      "active_bpw": 4.125,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "candidate": "uniform_q3_g64",
+      "sample_cosine": 0.9700421094894409,
+      "sample_mae": 0.002744484692811966,
+      "active_bpw": 3.25,
+      "native_ready": false
+    },
+    {
+      "tensor": "down_proj",
+      "candidate": "uniform_q3_g128",
+      "sample_cosine": 0.9648778438568115,
+      "sample_mae": 0.003005215898156166,
+      "active_bpw": 3.125,
+      "native_ready": false
+    }
+  ],
+  "doctor_funnel": {
+    "stage": "A",
+    "next": "fit shared-basis/archetype candidates over the bank, then native-organ qualify only survivors",
+    "early_rejection": "any candidate below 0.99 sampled cosine or requiring dense rematerialization is not promoted"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-28T20:43:43Z",
+    "recorded_by": "tools/flash_doctor_bank_screen.py",
+    "machine": "Apple M3 Ultra (CPU/header/range-read screen)",
+    "rule": "S032 \u00a73 -- no native timing or capability claim"
+  },
+  "claim_boundary": "Stage-A sampled real-weight population screen across a bounded expert subset. It does not establish all-expert similarity, activation fidelity, native compact execution, complete EBPW, TPS, capability, or promotion.",
+  "promotion_allowed": false,
+  "elapsed_ns": 36684709,
+  "seal_sha256": "c7d5262fffc08a541fb983962a7356ca0e34a427defda34555896801d37a5d29"
+}

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T00:11:38Z",
+  "recorded_at": "2026-09-01T05:58:28Z",
   "recorded_by": "tools/future/tps_gap.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -376,7 +376,7 @@
   "workunit": "WU.PROFILE_HOST_CEREMONY.tps_gap; one CPU_ANALYSIS unit; then stop"
  },
  "schema": "hawking.future.tps_gap.v1",
- "seal_sha256": "771c03e1412c860f130ed9d0958cad91dbbcce2f7c857077bed31b50bb2d7c29",
+ "seal_sha256": "f915e62e3f315cefb84026ee393c6bdd340c4677e6ea75447da0f11626dd8b2c",
  "self_timing": {
   "cited_generation_clocks": {
    "complete_ns": null,

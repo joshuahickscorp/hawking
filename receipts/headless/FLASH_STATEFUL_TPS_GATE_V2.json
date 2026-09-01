@@ -1,0 +1,101 @@
+{
+  "schema": "hawking.flash.stateful_tps_gate.v1",
+  "status": "BLOCKED_FIRST_PHYSICAL_BOUNDARY",
+  "generated_at": "2026-08-28T20:53:48.223952Z",
+  "source_files": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_fast_chain.rs",
+      "sha256": "4ee029679f2a0c632cb1bb439d2e0e96abe9328af8f461fd8d6e065587cb9611"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+      "sha256": "dfee4a223c0cb0995563d38f17bc23058a60c73522fae790b5039f27d5a7c586"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_full_attention_layer3.rs",
+      "sha256": "9f2e283695de0ee2a762e5e56c5e63e54d96ca9303d1a32ce9cfce9393f66ff0"
+    }
+  ],
+  "source_checks": {
+    "tokenizer_or_prompt_loop": {
+      "tokenizer": true,
+      "generate": false,
+      "max_new_tokens": false
+    },
+    "persistent_full_attention_kv": {
+      "kv_cache": true,
+      "key_cache": true,
+      "position": true
+    },
+    "persistent_linear_recurrence": {
+      "reset_states": true,
+      "recurrent_state": true
+    },
+    "terminal_probe_only": {
+      "FIRST_COMPLETE_TOKEN_TERMINAL_PROBE": false,
+      "terminal::run_with": true
+    }
+  },
+  "qualified_state_organs": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LINEAR_ORGAN.json",
+      "sha256": "177a37324f4b6251ba809506ce1fbdd66b10a3cf2e36a6af29dc4cb1011baa7c",
+      "status": "PASSED_STATEFUL_ORGAN",
+      "schema": "hawking.flash.stateful_linear_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN.json",
+      "sha256": "b220cc8b5b2fadcfe65fe223f33b60f34ec0064fdc55eb2e540485ff078c2b10",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN_V2.json",
+      "sha256": "526f8aa129b647acc63ca3bc4e758686818710c8bb16c577c0e4d1e6eb4e01a2",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json",
+      "sha256": "4648d586dfca77062caaa580cbd93338b2136136aad2b25a3b6cacaf203a8014",
+      "status": "PASSED_STATEFUL_PREFIX_SESSION",
+      "schema": "hawking.flash.stateful_linear_prefix_session.v1"
+    }
+  ],
+  "first_physical_failure_boundary": {
+    "stage": "token_acceptance_loop",
+    "status": "MISSING",
+    "evidence": "flash_fast_chain.rs invokes one terminal readout after layer 47; it has no tokenizer/session generation loop"
+  },
+  "blockers": [
+    {
+      "stage": "token_acceptance_loop",
+      "status": "MISSING",
+      "evidence": "flash_fast_chain.rs invokes one terminal readout after layer 47; it has no tokenizer/session generation loop"
+    },
+    {
+      "stage": "full_attention_state",
+      "status": "MISSING",
+      "evidence": "flash_full_attention_layer3.rs encodes position 0 and a one-key attention cache per organ invocation; no persistent KV cache"
+    },
+    {
+      "stage": "linear_recurrence_state",
+      "status": "ORGAN_AND_PREFIX_QUALIFIED",
+      "evidence": "FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json proves recurrent state across layers 0..2 and two token steps; complete 48-layer executor still does not expose the session"
+    }
+  ],
+  "accepted_tokens": 0,
+  "accepted_tps": null,
+  "complete_system_ebpw": null,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-28T20:53:48Z",
+    "recorded_by": "tools/flash_stateful_gate.py",
+    "machine": "Apple M3 Ultra (source audit; no multi-token benchmark run)",
+    "rule": "S032 \u00a73 -- no performance claim; state is UNKNOWN",
+    "provenance": "source audit only; no synthetic token loop was timed"
+  },
+  "claim_boundary": "No accepted multi-token TPS or EBPW claim. Linear recurrence is qualified as an isolated organ and a layers-0..2 prefix session; full-attention KV persistence is qualified as an isolated organ. The complete executor still lacks 48-layer orchestration, layer-3 KV integration, and a tokenizer/session acceptance loop.",
+  "next_action": "Extend the prefix session through the layer-3 full-attention boundary, then continue to a complete 48-layer accepted-token loop with deterministic oracle accounting.",
+  "seal_sha256": "c9b382b3d1f23185eece881a2163458a2a958c8f7d3d8962be6bdb083943d521"
+}

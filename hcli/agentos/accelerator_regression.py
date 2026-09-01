@@ -264,8 +264,14 @@ def _run_one_request(
     native_metrics = native_metrics if isinstance(native_metrics, Mapping) else {}
     native_gpu_per_token = native_metrics.get("gpu_ns_per_generated_token")
     native_wall_minus_gpu = native_metrics.get("wall_minus_gpu_ns")
+    native_wall_minus_gpu_per_token = native_metrics.get("wall_minus_gpu_ns_per_generated_token")
     native_dispatches_per_token = native_metrics.get("dispatches_per_generated_token")
     native_dispatches = native_metrics.get("dispatches")
+    native_active_bytes = native_metrics.get("active_bytes_per_token")
+    native_active_weight_bytes = native_metrics.get("active_weight_bytes_per_generated_token")
+    native_resident_weight_bytes = native_metrics.get("resident_weight_bytes")
+    native_workspace_resident_bytes = native_metrics.get("workspace_resident_bytes")
+    native_active_bytes_scope = native_metrics.get("active_bytes_scope")
     native_prefill = native_metrics.get("prefill")
     native_decode = native_metrics.get("decode")
     native_prefill_steps = native_metrics.get("prefill_steps")
@@ -294,6 +300,19 @@ def _run_one_request(
         if generated_i and generated_i > 0
         else None
     )
+    native_wall_minus_gpu_per_token = (
+        native_wall_minus_gpu_per_token
+        if native_wall_minus_gpu_per_token is not None
+        else round(native_wall_minus_gpu / generated_i, 3)
+        if isinstance(native_wall_minus_gpu, (int, float)) and generated_i and generated_i > 0
+        else None
+    )
+    complete_wall_minus_gpu_per_token = (
+        round(wall_ns_per_token - native_gpu_per_token, 3)
+        if isinstance(wall_ns_per_token, (int, float))
+        and isinstance(native_gpu_per_token, (int, float))
+        else None
+    )
     return {
         "request": {"max_tokens": max_new_tokens, "prompt": prompt},
         "ok": raw is not None and error is None,
@@ -308,8 +327,28 @@ def _run_one_request(
         "native_generation_wall_ns": native_metrics.get("generation_wall_ns"),
         "gpu_ns_per_token": native_gpu_per_token,
         "wall_minus_gpu_ns": native_wall_minus_gpu,
+        "wall_minus_gpu_ns_per_token": complete_wall_minus_gpu_per_token,
+        "wall_minus_gpu_metric_source": (
+            "derived_complete_wall_minus_gpu"
+            if complete_wall_minus_gpu_per_token is not None
+            else None
+        ),
+        "native_wall_minus_gpu_ns": native_wall_minus_gpu,
+        "native_wall_minus_gpu_ns_per_token": native_wall_minus_gpu_per_token,
+        "native_wall_minus_gpu_metric_source": (
+            "native_wall_minus_gpu_ns_per_generated_token"
+            if native_metrics.get("wall_minus_gpu_ns_per_generated_token") is not None
+            else "derived_from_native_wall_minus_gpu_ns"
+            if native_wall_minus_gpu_per_token is not None
+            else None
+        ),
         "dispatches": native_dispatches,
         "dispatches_per_token": native_dispatches_per_token,
+        "active_bytes_per_token": native_active_bytes,
+        "active_weight_bytes_per_generated_token": native_active_weight_bytes,
+        "active_bytes_scope": native_active_bytes_scope,
+        "resident_weight_bytes": native_resident_weight_bytes,
+        "workspace_resident_bytes": native_workspace_resident_bytes,
         "prefill_steps": native_prefill_steps,
         "decode_steps": native_decode_steps,
         "prefill_metrics": _safe(native_prefill) if native_prefill else None,
@@ -319,7 +358,11 @@ def _run_one_request(
         "metric_absence_reasons": {
             "gpu_ns_per_token": None if native_gpu_per_token is not None else "native provider did not declare GPU timestamps",
             "wall_minus_gpu_ns": None if native_wall_minus_gpu is not None else "native provider did not declare GPU timestamps",
+            "complete_wall_minus_gpu_ns_per_token": None if complete_wall_minus_gpu_per_token is not None else "complete wall or GPU per-token scope unavailable",
             "dispatches": None if native_dispatches is not None else "native provider did not declare dispatch counts",
+            "active_bytes_per_token": None if native_active_bytes is not None or native_active_weight_bytes is not None else "native provider did not declare packed active weight payload accounting",
+            "resident_weight_bytes": None if native_resident_weight_bytes is not None else "native provider did not declare resident weight bytes",
+            "workspace_resident_bytes": None if native_workspace_resident_bytes is not None else "native provider did not declare workspace resident bytes",
             "prefill_steps": None if native_prefill_steps is not None else "native provider did not declare a prefill/decode phase split",
             "kernel_genome": None if native_kernel_genome is not None else "native provider did not declare kernel identity telemetry",
         },

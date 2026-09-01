@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.50080.receipt.json",
+    "static_kernel_verify.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F018 ABI findings were adjudicated. Preflight still carries WARNINGs/UNVERIFIABLE. CPU triage against CLAUDE_SIDECAR_ABI_ADJUDICATION.",
+  "frontier_id": "FT.GPU_KERNELS.static-warnings",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.50080",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.50080.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "826fd652177c5f7fd24f96e72649a7e9b712b85ec129726a10fa17c28dedf2ad",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

@@ -1,0 +1,158 @@
+{
+ "authority": "S026 \u00a744",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T22:41:32Z",
+  "recorded_by": "tools/future/mission_class.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "classes": [
+  "LAUNCH_CRITICAL",
+  "TPS_CRITICAL",
+  "PROMOTION_CRITICAL",
+  "DEFERRED"
+ ],
+ "classified": [
+  {
+   "id": "G015",
+   "matched": "torture passed",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DERIVED",
+   "why": "the obligation's own text makes it a precondition for autonomous operation"
+  },
+  {
+   "id": "G021",
+   "matched": "git history",
+   "mission_class": "DEFERRED",
+   "source": "DERIVED",
+   "why": "housekeeping: it changes no measurement and blocks no experiment"
+  },
+  {
+   "id": "G036",
+   "matched": "power torture",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DERIVED",
+   "why": "the obligation's own text makes it a precondition for autonomous operation"
+  },
+  {
+   "id": "G053",
+   "matched": "state machine, not four matrices",
+   "mission_class": "TPS_CRITICAL",
+   "source": "DERIVED",
+   "why": "the obligation targets resident token time"
+  },
+  {
+   "id": "G097",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G098",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G099",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G100",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G101",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G102",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G103",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G104",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G105",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  },
+  {
+   "id": "G106",
+   "mission_class": "LAUNCH_CRITICAL",
+   "source": "DECLARED",
+   "why": "the obligation states its own class"
+  }
+ ],
+ "derivation_is_from_the_text_not_from_importance": "an obligation that declares a class keeps it. One that does not is matched against what its own text says it blocks - an autonomy trial, a token-time target, a promotion, or housekeeping. No rule here encodes a judgement about how important an obligation feels.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "launch_gate": {
+  "blocking_ids": [
+   "G015",
+   "G036",
+   "G097",
+   "G098",
+   "G099",
+   "G100",
+   "G101",
+   "G102",
+   "G103",
+   "G104",
+   "G105",
+   "G106"
+  ],
+  "by_class": {
+   "DEFERRED": [
+    "G021"
+   ],
+   "LAUNCH_CRITICAL": [
+    "G015",
+    "G036",
+    "G097",
+    "G098",
+    "G099",
+    "G100",
+    "G101",
+    "G102",
+    "G103",
+    "G104",
+    "G105",
+    "G106"
+   ],
+   "TPS_CRITICAL": [
+    "G053"
+   ]
+  },
+  "green": false,
+  "n_blocking": 12,
+  "n_unmet_total": 14,
+  "rule": "Odyssey launch consults LAUNCH_CRITICAL and UNCLASSIFIED only. TPS_CRITICAL, PROMOTION_CRITICAL and DEFERRED obligations stay open and keep being worked; they do not hold the launch.",
+  "what_this_changes": "14 obligations are unmet and 12 of them block launch. Before this classifier the answer was that all 14 did, which is the ceremonial gate S026 \u00a744 named."
+ },
+ "obligation": "G098",
+ "seal_sha256": "9981fe6a97b16c9c8a1047c4bb7f7c90195b7ebf4e1f5c864edae45270c2afeb",
+ "unclassified_blocks_rather_than_defers": "the default is BLOCKING. A classifier whose unknown case defers is a classifier that empties the gate as soon as it stops understanding the ledger."
+}

@@ -1,0 +1,4719 @@
+{
+ "authority": {
+  "may": [
+   "propose hypotheses and experiments",
+   "request perturbation experiments on any MLP tensor and layer",
+   "request deterministic computation",
+   "request a receipt be read"
+  ],
+  "may_not": [
+   "delete or overwrite any artifact",
+   "modify the canonical worktree directly",
+   "claim a hardware number it did not receive from a tool"
+  ]
+ },
+ "created_unix": 1788225013.993709,
+ "executable_work_types": [
+  "COMPUTE",
+  "PERTURB",
+  "READ_RECEIPT"
+ ],
+ "frontier": "SUB2_EBPW",
+ "harness_defects_found_and_fixed": [
+  "validate() omitted n_accepted on the parse-failure path; the first unparsed reply crashed the loop",
+  "a 2667-char context pack made the body restate the pack instead of answering; 14 consecutive echoes, byte-identical under greedy decoding because the pack never changed"
+ ],
+ "hypotheses": [
+  {
+   "claim": "the up code is partly predictable from the gate code at the same position, so joint coding beats marginal",
+   "evidence": "mutual information 0.00059 bits per weight pair across layers 0/21/42/63",
+   "id": "H1.gate_up_mutual_information",
+   "proposer": "resident",
+   "verdict": "REFUTED"
+  },
+  {
+   "claim": "the SwiGLU gate is control and deserves literal storage; up and down are linear bulk and can be generated or shared",
+   "evidence": "receipts/future/FUNCTIONAL_ROLE_PROBE.json - gate never exceeds 1.31x up per matched element, and down is most sensitive at 9 of 12 points",
+   "id": "H2.functional_role_gate_dominant",
+   "proposer": "resident",
+   "verdict": "REFUTED"
+  }
+ ],
+ "iterations": [
+  {
+   "ask_seconds": 77.7,
+   "belief_update": "The model's reliance on the first layer's row-wise features is confirmed by the significant drop in accuracy after perturbing the 'up' gate.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb the 'down' gate in the first layer and observe if the performance drop is comparable to the 'up' gate perturbation.",
+     "claim": "The 'up' gate in the first layer is the primary driver of the model's performance on the current task.",
+     "id": "x"
+    }
+   ],
+   "n": 1,
+   "parsed": true,
+   "reply_chars": 1343,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.5,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 44.3,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1343,
+   "t_s": 77.7,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 40.8,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 2,
+   "parsed": false,
+   "reply_chars": 946,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 946,
+   "t_s": 118.5,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 64.9,
+   "belief_update": "The 0.00590 cosine shift from 40% row zeroing suggests a non-linear or spatially distributed dependency that is not captured by simple linear or global metrics, requiring a finer-grained or directional perturbation to isolate the specific mechanism.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 10% of the gate tensor's rows in layer 0 and measure the hidden state two layers later; if the cosine shift is significantly smaller than 0.00590, the hypothesis is false.",
+     "claim": "The 0.00590 cosine shift is caused by a specific subset of rows in the gate tensor that have a disproportionately high impact on the hidden state, rather than a uniform or linear effect across all rows.",
+     "id": "y"
+    }
+   ],
+   "n": 3,
+   "parsed": true,
+   "reply_chars": 1159,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0003362691576549448,
+      "elements_destroyed": 8913920,
+      "fraction": 0.1,
+      "hidden_cosine_after_2_layers": 0.999663730842345,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 41.7,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 42.4,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'rows', 'fraction': 0.1} -> damage 0.0003362691576549448"
+   ],
+   "salvaged_chars": 1159,
+   "t_s": 183.4,
+   "terse_retry_used": false,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 70.0,
+   "belief_update": "The 0.00590 damage from 40% row zeroing suggests a 10x linear scaling, implying 10% damage is ~0.00059, which is slightly higher than the 0.000336 observed, indicating a non-linear or sub-linear relationship that might allow for larger perturbations in specific subspaces without hitting the 2.5 BPW threshold.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb gate L0 rows 0.5 and check if damage is > 0.0035",
+     "claim": "The 10% gate row perturbation is 1.7x less than the linear prediction,, suggesting a 50% pert might be 1.7x less than 0.0059 (0.0035) which is still safe for 2.5 BPW",
+     "id": "h1"
+    },
+    {
+     "cheapest_falsifier": "Perturb gate L0 rows 0.5 and check if damage is > 0.0035",
+     "claim": "The 10% gate row pert is 1.7x less than linear, suggesting 50% gate row pert is 1.7x less than 0.0059 (0.0035) which is still safe for 2.5 BPW",
+     "id": "h2"
+    }
+   ],
+   "n": 4,
+   "parsed": true,
+   "reply_chars": 1322,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 38.4,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 38.8,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1322,
+   "t_s": 253.4,
+   "terse_retry_used": false,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 78.5,
+   "belief_update": "The 0.5 row perturbation on the gate layer at L0 is the most significant known factor, so I am testing the 0.5 column perturbation on the up layer at L0 to isolate the interaction between the 0.5 perturbation and the up layer.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "The 0.5 row perturbation on the gate layer at L0 is the most significant known factor, so I am testing the  0.5 column perturbation on the up layer at L0 to isolate the interaction between the 0.5 perturbation and the up layer.",
+     "claim": "The 0.5 row perturbation on the gate layer at L0 is the most significant known factor, so I am testing the 0.5 column perturbation on the up layer at L0 to isolate the interaction between the 0.5 perturbation and the up layer.",
+     "id": "x"
+    }
+   ],
+   "n": 5,
+   "parsed": true,
+   "reply_chars": 718,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 38.4,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 39.0,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 718,
+   "t_s": 331.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 100.8,
+   "belief_update": "The 0.5 row perturbation on the gate layer at L0 is the most significant factor, suggesting the gate is the primary bottleneck for information flow.",
+   "degenerated": true,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "If the 0.5 row perturbation on the gate layer at L0 is not the most significant factor, the hypothesis is false.",
+     "claim": "The 0.5 row perturbation on the gate layer at L0 is the most significant factor, suggesting the gate is the primary bottleneck for information flow.",
+     "id": "x"
+    }
+   ],
+   "n": 6,
+   "parsed": true,
+   "reply_chars": 1960,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 45.1,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 45.9,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 636,
+   "t_s": 432.7,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 67.5,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a 2.5x sensitivity factor, implying 20% row zeroing is the critical threshold for 2.0 BPW, which is untested in the 0.01-0.95 range.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "PERTURB up/L0/rows/0.2",
+     "claim": "20% row zeroing of the 'up' tensor at layer 0 will achieve 2.0 BPW",
+     "id": "y"
+    }
+   ],
+   "n": 7,
+   "parsed": true,
+   "reply_chars": 609,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.2,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0007021354973953953,
+      "elements_destroyed": 17827840,
+      "fraction": 0.2,
+      "hidden_cosine_after_2_layers": 0.9992978645026046,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 42.0,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 42.6,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.2} -> damage 0.0007021354973953953"
+   ],
+   "salvaged_chars": 609,
+   "t_s": 500.2,
+   "terse_retry_used": false,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 83.1,
+   "belief_update": "The repeated 0.5 up/row run suggests a potential logging error, so I will test the untested 'down' tensor to verify if the 2-layer effect is directional or symmetric.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "If the 2-layer output changes significantly after perturbing the 'down' tensor, the hypothesis is false.",
+     "claim": "The 'down' tensor is the primary driver of the 2-layer output, and 'up' is merely a secondary or redundant component.",
+     "id": "x"
+    }
+   ],
+   "n": 8,
+   "parsed": true,
+   "reply_chars": 833,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.002692618854423401,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9973073811455766,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 42.3,
+      "shape": [
+       5120,
+       17408
+      ],
+      "side": "rows",
+      "tensor": "down",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.0,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'down', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.002692618854423401"
+   ],
+   "salvaged_chars": 833,
+   "t_s": 583.3,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 78.9,
+   "belief_update": "The 0.5 fraction perturbation on gate L0 rows is the most significant, suggesting the gate is the primary control mechanism for the system's state.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "The 0.5 fraction perturbation on gate L0 rows is the most significant, suggesting the gate is the primary control mechanism for the system's state.",
+     "claim": "The 0.5 fraction perturbation on gate L0 rows is the most significant, suggesting the gate is the primary control mechanism for the system's state.",
+     "id": "x"
+    }
+   ],
+   "n": 9,
+   "parsed": true,
+   "reply_chars": 778,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00018141200163390714,
+      "elements_destroyed": 8912896,
+      "fraction": 0.1,
+      "hidden_cosine_after_2_layers": 0.9998185879983661,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 38.8,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 39.4,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.1} -> damage 0.00018141200163390714"
+   ],
+   "salvaged_chars": 778,
+   "t_s": 662.2,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 64.8,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a 12.5x sensitivity to row-wise perturbations compared to column-wise, indicating that row-wise operations are the primary driver of the 2.508137 BPW floor.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb gate L0 rows 0.1 and check if damage is 0.00018141200163390714",
+     "claim": "Row-wise perturbations are 12.5x more sensitive than column-wise perturb due to the 0.005905 vs 0.00018141200163390714 ratio",
+     "id": "row-sensitivity"
+    }
+   ],
+   "n": 10,
+   "parsed": true,
+   "reply_chars": 796,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0003362691576549448,
+      "elements_destroyed": 8913920,
+      "fraction": 0.1,
+      "hidden_cosine_after_2_layers": 0.999663730842345,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 37.9,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 38.3,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'rows', 'fraction': 0.1} -> damage 0.0003362691576549448"
+   ],
+   "salvaged_chars": 796,
+   "t_s": 727.0,
+   "terse_retry_used": false,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 76.5,
+   "belief_update": "The 0.5 row/col perturbations on L0 up suggest a high sensitivity to the full input dimension, while the 0.1 gate row test suggests a low sensitivity to the gate mechanism, indicating a potential interaction between the input and gate layers.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "A 0.5 gate row test on L0 up",
+     "claim": "The 0.5 row/col perturbations on L0 up are causing a high sensitivity to the full input dimension, which is not being captured by the 0.1 gate row test.",
+     "id": "x"
+    }
+   ],
+   "n": 11,
+   "parsed": true,
+   "reply_chars": 1012,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 35.6,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 36.0,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1012,
+   "t_s": 803.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 40.9,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 12,
+   "parsed": false,
+   "reply_chars": 928,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 928,
+   "t_s": 844.3,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 13,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 886.8,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 14,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 929.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.6,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 15,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 971.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 16,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1014.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 17,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1056.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.4,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 18,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1099.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 19,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1141.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 20,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1184.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 21,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1226.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 22,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1269.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 23,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1311.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.7,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 24,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1354.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.7,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 25,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1397.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.7,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 26,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1440.0,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.6,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 27,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1482.7,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.7,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 28,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1525.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.6,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 29,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1567.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.6,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 30,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1610.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.6,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 31,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1653.2,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.6,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 32,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1695.8,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 58.7,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 33,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1754.5,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 34,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1797.1,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 54.4,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 35,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1851.4,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 36,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1893.9,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 47.1,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 37,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1941.0,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 44.0,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 38,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 1985.0,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 39,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2027.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.4,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 40,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2070.0,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 41,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2112.5,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 42,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2155.0,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 43,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2197.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 44,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2240.1,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 45,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2282.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 46,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2325.1,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 47,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2367.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 48,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2410.1,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 49,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2452.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 50,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2495.1,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 51,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2537.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 52,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2580.1,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 53,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2622.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 54,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2665.1,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "ask_seconds": 42.5,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 55,
+   "parsed": false,
+   "reply_chars": 1409,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1409,
+   "t_s": 2707.6,
+   "terse_retry_used": true,
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the hypothesis that 'up' tensor rows are disproportionately critical due to their interaction with the 'gate' tensor's non-uniform distribution, which is not captured by the previous 40% row zeroing test."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 61.0,
+   "belief_update": "The 0.00590 cosine shift from 40% row zeroing suggests a non-linear, high-sensitivity interaction in the 'up' tensor that is likely masked by the 'gate' tensor's non-uniform distribution, requiring a specific 'up' perturbation to reveal the true capability bottleneck.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 50% of 'up' tensor rows at layer 0 and measure the hidden state two layers later; if the cosine shift is significantly larger than 0.00590, the hypothesis is confirmed.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "up-gate-interaction"
+    }
+   ],
+   "n": 1,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1134,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 36.7,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 37.1,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1134,
+   "t_s": 61.0,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "type": "PERTURB",
+     "why": "To test if the 'down' tensor's role in the 'up' vs 'gate' interaction is as significant as the 'up' tensor's, which would indicate a specific 'up' vs 'gate' interaction rather a general 'up' vs 'gate' mismatch."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 67.1,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a test of the 'down' tensor's role in this interaction to determine if the damage is due to a specific 'up' row or a general 'up' vs 'gate' mismatch.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 'down' tensor at layer 0 with 0.5 fraction to see if the damage is significantly different from the 'up' perturbation, indicating a specific 'up' vs 'gate' interaction rather a general 'up' vs 'gate' mismatch.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "up-gate-interaction"
+    }
+   ],
+   "n": 2,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1227,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.002692618854423401,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9973073811455766,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 37.9,
+      "shape": [
+       5120,
+       17408
+      ],
+      "side": "rows",
+      "tensor": "down",
+      "work_type": "PERTURB"
+     },
+     "seconds": 38.3,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'down', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.002692618854423401"
+   ],
+   "salvaged_chars": 1227,
+   "t_s": 128.1,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the 'up-gate-interaction' hypothesis by measuring the damage from 50% row zeroing in the 'up' tensor, which is the primary driver of the hidden state's 2 stability."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 72.7,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in the 'up' tensor (implied by the 0.002692 damage from 50% 'down' zeroing) suggests 'up' is the primary driver of the hidden state's 2-layer stability, and the 'up-gate-interaction' hypothesis is likely correct as 'up' rows are non-uniformly critical due to their interaction with the 'gate' tensor's non-uniform distribution.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 'up' tensor at layer 0 with 0.5 fraction of rows and measure the hidden state two layers later; if the damage is significantly less than 0.005905 (e.g., < 0.001), the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "up-gate-interaction"
+    }
+   ],
+   "n": 3,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1214,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 42.5,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.2,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1214,
+   "t_s": 200.7,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 63.7,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 4,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 3013,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 3013,
+   "t_s": 264.4,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the 'up-gate-interaction' hypothesis by zeroing 50% of 'up' tensor's rows in L0 and measuring the hidden state two layers later, which will reveal if the 'up' tensor's row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution."
+    }
+   ],
+   "admit": {
+    "extra": [
+     "live_hypotheses.cheest_falsifier"
+    ],
+    "missing": [
+     "live_hypotheses.cheapest_falsifier"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 69.8,
+   "belief_update": "The 0.005905 cosine shift from 40% row zeroing in L0 suggests a non-uniform, high-magnitude row distribution in the 'up' tensor that is currently masking the true impact of the 'gate' tensor's non-uniform distribution on the final output.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "up-gate-interaction"
+    }
+   ],
+   "n": 5,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1262,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 42.2,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 42.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1262,
+   "t_s": 334.2,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the 'up-gate-interaction' hypothesis by isolating the column structure of the 'up' tensor, which is the only untested dimension in the current hypothesis, and to determine if the non-linear interaction is row-specific or column-specific."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 63.4,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a test of the 'up' tensor's column structure to isolate the specific interaction mechanism.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 50% of the 'up' tensor's columns in layer 0 and measuring the hidden state two layers later; if the damage is significantly different from the 0.005905 row damage, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "up-gate-interaction"
+    }
+   ],
+   "n": 6,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1181,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 35.4,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 35.8,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 1181,
+   "t_s": 397.7,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 63.1,
+   "belief_update": null,
+   "degenerated": true,
+   "live_hypotheses": null,
+   "n": 7,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 2157,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 2155,
+   "t_s": 460.8,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 61.1,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 8,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 3202,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 3202,
+   "t_s": 521.9,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the hypothesis that the 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, by zeroing 50% of the 'up' tensor's rows in L0 and measuring the hidden state two layers later."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 71.7,
+   "belief_update": "The 0.005905 cosine shift from 40% row zeroing in L0 suggests a non-uniform, high-magnitude contribution to the hidden state, likely from a specific subset of rows or a specific interaction with the gate tensor, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 50% of the 'up' tensor's rows in L0 and measuring the hidden state two layers later; if the cosine shift is significantly larger than 0.005905, the hypothesis is supported; if it is significantly smaller, the hypothesis is falsified.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 9,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1321,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.0,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1321,
+   "t_s": 593.6,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.4,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "type": "PERTURB",
+     "why": "To test if the 'down' tensor's specific row values are also disproportionately critical to the final output, and to determine if the 0.005905 damage from 'up' is a result of 'up' alone or a combined 'up'/'down' effect."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 70.7,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a test of the 'down' tensor's role in this specific interaction to determine if the damage is a result of 'up' alone or a combined 'up'/'down' effect.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 40% of the 'up' tensor's output rows in a layer where the 'gate' tensor is uniform (or has a uniform distribution) and measuring the hidden state two layers later; if the damage is significantly lower than 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 10,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1249,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.4,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0024993117160853062,
+      "elements_destroyed": 35651584,
+      "fraction": 0.4,
+      "hidden_cosine_after_2_layers": 0.9975006882839147,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 39.8,
+      "shape": [
+       5120,
+       17408
+      ],
+      "side": "rows",
+      "tensor": "down",
+      "work_type": "PERTURB"
+     },
+     "seconds": 40.3,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'down', 'layer': 0, 'side': 'rows', 'fraction': 0.4} -> damage 0.0024993117160853062"
+   ],
+   "salvaged_chars": 1249,
+   "t_s": 664.3,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the non-uniform importance hypothesis by perturbing the 'up' tensor's columns, which are the other dimension of the tensor, and measuring the hidden state two layers later."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 67.2,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-uniform importance distribution, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 11,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 996,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 40.1,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 40.8,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 996,
+   "t_s": 731.5,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 43.4,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 12,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 965,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 965,
+   "t_s": 774.9,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the non-uniform hypothesis by zeroing 50% of 'up' L0 rows and measuring the hidden state two layers later; if the cosine shift is significantly larger than 0.00590, the non-uniform hypothesis is confirmed; if it is similar, the uniform hypothesis is correct."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 65.5,
+   "belief_update": "The 0.00590 cosine shift from 40% row zeroing in 'up' L0 suggests a non-uniform, high-magnitude row distribution that is currently masking the true structural dependency, rather a uniform importance as previously hypothesized.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 50% of 'up' L0 rows and measuring the hidden state two layers later; if the cosine shift is significantly larger than 0.00590, the non-uniform hypothesis is confirmed; if it is similar, the uniform hypothesis is correct.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 13,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1180,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 38.8,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 39.2,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1180,
+   "t_s": 840.4,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "type": "PERTURB",
+     "why": "To isolate the interaction between 'up' and 'gate' by perturbing 'gate' directly, which is the other half of the suspected non-linear interaction, and measure the resulting damage to the hidden state two layers later."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 68.5,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a specific perturbation of 'gate' to isolate the interaction's contribution to the 3.139301 BPW.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 'gate' at layer 0 with 0.5 fraction rows and measure the hidden state two layers later; if the damage is significantly larger than 0.005905, the hypothesis is confirmed; if it is significantly smaller, the hypothesis is falsified.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 14,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1184,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 40.3,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 40.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1184,
+   "t_s": 908.9,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 52.0,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 15,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 1511,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1511,
+   "t_s": 960.9,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To isolate the specific rows in the 'up' tensor that are disproportionately critical to the final output, as suggested by the 0.00590 cosine shift from 40% row zeroing."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 68.5,
+   "belief_update": "The 0.00590 cosine shift from 40% row zeroing suggests the 'up' tensor's row structure is non-uniform, but the 0.5 fraction is too coarse to isolate the specific rows interacting with the 'gate' tensor's non-uniform distribution.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 10% of the 'up' tensor's rows in layer 0 and measuring the hidden state two layers later; if the cosine shift is less than 0.001, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 16,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1019,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0003362691576549448,
+      "elements_destroyed": 8913920,
+      "fraction": 0.1,
+      "hidden_cosine_after_2_layers": 0.999663730842345,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 42.6,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.3,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.1} -> damage 0.0003362691576549448"
+   ],
+   "salvaged_chars": 1019,
+   "t_s": 1029.4,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the non-linear hypothesis by zeroing 50% of 'up' L0 rows, which is a larger perturbation than the 40% that caused 0.005905 damage, to see if the damage scales linearly or non-linearly."
+    }
+   ],
+   "admit": {
+    "extra": [
+     "live_hypotheses.cheest_falsifier"
+    ],
+    "missing": [
+     "live_hypotheses.cheapest_falsifier"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 71.3,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-linear, high-sensitivity interaction with 'gate' L0, as 10% zeroing only caused 0.000336 damage, indicating a threshold or multiplicative effect rather than linear importance.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 17,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1099,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 40.7,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 41.4,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1099,
+   "t_s": 1100.7,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "type": "PERTURB",
+     "why": "Testing the 'down' tensor's row sensitivity at the same layer and fraction as the 'up' tensor's previous test will reveal if the non-linearity is a specific property of the 'up'/'gate' interaction or a general property of the layer's row-wise interactions, which is crucial for determining the next step in the search for a lower BPW."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 73.8,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a test of the 'down' tensor's role in this specific interaction to determine if the damage is a local artifact or a global structural dependency.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 'down' at layer 0 with 0.5 fraction rows to see if the damage is significantly different, indicating that the 'up'/'gate' interaction is not the sole driver of the non-linearity.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 18,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1298,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.002692618854423401,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9973073811455766,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.0,
+      "shape": [
+       5120,
+       17408
+      ],
+      "side": "rows",
+      "tensor": "down",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'down', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.002692618854423401"
+   ],
+   "salvaged_chars": 1298,
+   "t_s": 1174.6,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test if the 'up' tensor's column values are disproportionately critical to the final output, given the non-uniform damage from row zeroing."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 73.0,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-uniform importance distribution, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 19,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1089,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.0,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 1089,
+   "t_s": 1247.6,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the hypothesis that the 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 68.5,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-uniform, high-impact row distribution in the 'up' tensor, likely correlated with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 50% of the 'up' tensor's rows in layer 0 and measuring the hidden state two layers later; if the damage is significantly less than 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 20,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1109,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 39.4,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 39.9,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1109,
+   "t_s": 1316.1,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the hypothesis of row-specific criticality in the 'up' tensor by perturbing 50% of its rows and measuring the resulting damage."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 70.1,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a specific perturbation of 'up' to test the hypothesis of row-specific criticality.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 50% of 'up' tensor's rows at layer 0 and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 21,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1021,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 42.4,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.3,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1021,
+   "t_s": 1386.2,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "type": "PERTURB",
+     "why": "To test the non-linear interaction hypothesis by perturbing the 'gate' tensor directly, which is the other component in the suspected interaction, and measure the resulting damage to the hidden state two layers later."
+    }
+   ],
+   "admit": {
+    "extra": [
+     "live_hypotheses.cheest_falsifier"
+    ],
+    "missing": [
+     "live_hypotheses.cheapest_falsifier"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 73.1,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a specific perturbation of 'gate' to isolate the interaction's contribution to the 2.508137 BPW floor.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 22,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1174,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.0,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1174,
+   "t_s": 1459.3,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "Testing the non-uniform hypothesis by perturbing a smaller fraction of the 'up' tensor's columns to see if the damage is significantly less than 0.005905, which would indicate a non-uniform importance distribution."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 69.9,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-uniform importance distribution in the 'up' tensor, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 10% of the 'up' tensor's rows in layer 0 and measure the hidden state two layers later; if the damage is significantly less than 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 23,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1051,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00018141200163390714,
+      "elements_destroyed": 8912896,
+      "fraction": 0.1,
+      "hidden_cosine_after_2_layers": 0.9998185879983661,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 40.9,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 41.4,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.1} -> damage 0.00018141200163390714"
+   ],
+   "salvaged_chars": 1051,
+   "t_s": 1529.3,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "gate"
+     },
+     "type": "PERTURB",
+     "why": "Testing the 'gate' tensor's column dimension to verify if the non-uniform distribution hypothesis holds for the column dimension, which is the only untested dimension for 'gate' at L0."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 86.2,
+   "belief_update": "The repeated 'up/L0/row/0.5' run suggests a lack of new data, so I will pivot to the 'gate' tensor's columns to test if the non-uniform distribution hypothesis holds for the column dimension.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "If 'gate/L0/cols/0.5' shows a significantly different impact than 'gate/L0/rows/0.5', the hypothesis is false as the interaction is not symmetric.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 24,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": "terse",
+   "reply_chars": 1274,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0017027174887448426,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9982972825112552,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 38.7,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 39.2,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0017027174887448426"
+   ],
+   "salvaged_chars": 1274,
+   "t_s": 1615.5,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 47.2,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 25,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 1169,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1169,
+   "t_s": 1662.7,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "Testing the 50% fraction of 'up' L0 rows to determine if the 0.00590 cosine shift from 40% zeroing is a threshold or a linear trend, which is the cheapest falsifier for the non-uniform hypothesis."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 67.7,
+   "belief_update": "The 0.00590 cosine shift from 40% row zeroing in L0 suggests a non-uniform, high-magnitude distribution in the 'up' tensor that is currently masking the true structural dependency, rather than a uniform importance.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 50% of 'up' L0 rows (the untested 50% fraction) and observing if the cosine shift exceeds 0.00590, which would confirm the non-uniform hypothesis over the 40% baseline.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 26,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1046,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 41.3,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 42.0,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1046,
+   "t_s": 1730.4,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "type": "PERTURB",
+     "why": "To test the 'up' tensor's specific row importance hypothesis by comparing the effect of perturbing the 'down' tensor at L0 with 0.5 rows."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 89.6,
+   "belief_update": "The repeated 0.5 up/L0/row runs suggest a lack of diversity in the experimental design, so I will test the 'down' tensor to verify if the 'up' tensor's importance is a result of a specific interaction or a general structural dependency.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "If perturbing the 'down' tensor at L0 with 0.5 rows produces a similar magnitude of change to the 'up' tensor, the hypothesis is false as it implies a uniform importance across all rows rather a specific interaction.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 27,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": "terse",
+   "reply_chars": 1426,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.002692618854423401,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9973073811455766,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 40.4,
+      "shape": [
+       5120,
+       17408
+      ],
+      "side": "rows",
+      "tensor": "down",
+      "work_type": "PERTURB"
+     },
+     "seconds": 41.1,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'down', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.002692618854423401"
+   ],
+   "salvaged_chars": 1426,
+   "t_s": 1820.1,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the non-uniform importance hypothesis by perturbing the 'up' tensor's columns, which are the other dimension of the tensor, and measuring the hidden state two layers later."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 70.1,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-uniform importance distribution, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 28,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 996,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.0,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.8,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 996,
+   "t_s": 1890.1,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 54.2,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 29,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 1267,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1267,
+   "t_s": 1944.4,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the hypothesis that the 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, by zeroing 50% of the 'up' tensor's rows in L0 and measuring the hidden state two layers later"
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 65.1,
+   "belief_update": "The 0.005905 cosine shift from 40% row zeroing in L0 confirms that the 'up' tensor's row values are disproportionately critical to the final output, as the 'gate' tensor's non-uniform distribution ampl the impact of specific row values on the hidden state two layers later, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 50% of the 'up' tensor's rows in L0 and measuring the hidden state two layers later; if the cosine shift is significantly larger than 0.005905, the hypothesis is confirmed; if it is significantly smaller, the hypothesis is falsified",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 30,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1311,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 37.7,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 38.1,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1311,
+   "t_s": 2009.5,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "type": "PERTURB",
+     "why": "Testing the 'down' tensor's role in the same layer as the 'up' and 'gate' tensors to determine if the 0.005905 damage from 'up' row zeroing is a local artifact of the 'up'/'gate' interaction or part of a larger, non-local structural dependency that involves all three tensors."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 65.2,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a test of the 'down' tensor's role in this specific interaction to determine if the damage is a local artifact or a global structural dependency.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 'down' at layer 0 with 0.5 fraction rows to see if the damage magnitude changes significantly, indicating that the 'up'/'gate' interaction is part of a larger, non-local structural dependency.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 31,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1254,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.002692618854423401,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9973073811455766,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 36.5,
+      "shape": [
+       5120,
+       17408
+      ],
+      "side": "rows",
+      "tensor": "down",
+      "work_type": "PERTURB"
+     },
+     "seconds": 36.9,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'down', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.002692618854423401"
+   ],
+   "salvaged_chars": 1254,
+   "t_s": 2074.7,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the hypothesis that the 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 66.8,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in the 'up' tensor suggests a non-uniform importance distribution, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 50% of the 'up' tensor's columns in layer 0 and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 32,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1219,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 38.3,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 38.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 1219,
+   "t_s": 2141.5,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 48.4,
+   "belief_update": null,
+   "degenerated": false,
+   "live_hypotheses": null,
+   "n": 33,
+   "n_unlaunched": 0,
+   "parsed": false,
+   "reask_kind": "terse",
+   "reply_chars": 1070,
+   "results": [],
+   "results_summary": [
+    "no work was accepted from that turn"
+   ],
+   "salvaged_chars": 1070,
+   "t_s": 2189.9,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 0,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test if the 'up' tensor's column values are disproportionately critical to the final output, given the non-uniform contribution suggested by the 0.005905 cosine shift from 40% row zeroing."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 70.7,
+   "belief_update": "The 0.005905 cosine shift from 40% row zeroing in L0 suggests a non-uniform, high-magnitude contribution to the hidden state, likely from a specific subset of rows or columns, rather than a uniform importance across the entire tensor.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Zeroing 50% of the 'up' tensor's columns in layer 0 and measuring the hidden state two layers later; if the cosine shift is significantly larger than 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 34,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1139,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "kind": "zero",
+      "kind_detail": {
+       "kind": "zero",
+       "of": 5120,
+       "selected": 2560
+      },
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.0,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.9,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 1139,
+   "t_s": 2260.7,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "type": "PERTURB",
+     "why": "To test if the 'gate' tensor's non-uniform distribution is the primary driver of the 'up' tensor's row importance, as per hypothesis x."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 86.4,
+   "belief_update": "The repeated 'up/L0/cols/0.5' runs suggest a lack of progress in the 'up' tensor's column direction, so I will pivot to the 'gate' tensor to test if its non-uniform distribution is the primary driver of the 'up' tensor's row importance.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "If perturbing the 'gate' tensor's rows (or columns) at L0 has a significantly larger effect on the final output than perturbing the 'up' tensor's rows (or columns) at L0, the 'gate' tensor is the primary driver of the 'up' tensor's row importance.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 35,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": "terse",
+   "reply_chars": 1117,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "gate"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "kind": "zero",
+      "kind_detail": {
+       "kind": "zero",
+       "of": 17408,
+       "selected": 8704
+      },
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 39.6,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "gate",
+      "work_type": "PERTURB"
+     },
+     "seconds": 40.1,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'gate', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1117,
+   "t_s": 2347.1,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the 'up' tensor's row importance against the 'gate' tensor's row importance, which is the primary determinant of the final output."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [
+     "belief_update",
+     "live_hypotheses",
+     "selected_work",
+     "escalation_needed"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "malformed",
+     "ok": false,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 83.7,
+   "belief_update": "The 0.5 perturbation of gate/L0/rows suggests that the gate tensor's row structure is a primary determinant of the final output, potentially overriding the 'up' tensor's row importance.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "A 0.5 perturbation of up/L0/rows shows a significantly larger change in the final output than the 0.5 perturbation of gate/L0/rows, indicating that the 'up' tensor's rows are the primary determinant of the final output.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 36,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": "terse",
+   "reply_chars": 1283,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "kind": "zero",
+      "kind_detail": {
+       "kind": "zero",
+       "of": 17408,
+       "selected": 8704
+      },
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 37.2,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 37.6,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1283,
+   "t_s": 2430.8,
+   "terse_retry_used": true,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the non-linear, high-sensitivity interaction hypothesis by measuring the damage from a smaller, more targeted perturbation of the 'up' tensor's rows."
+    }
+   ],
+   "admit": {
+    "extra": [
+     "live_hypotheses.cheest_falsifier"
+    ],
+    "missing": [
+     "live_hypotheses.cheapest_falsifier"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 70.7,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a finer-grained perturbation to map the specific interaction structure.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 37,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1015,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.1,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0003362691576549448,
+      "elements_destroyed": 8913920,
+      "fraction": 0.1,
+      "hidden_cosine_after_2_layers": 0.999663730842345,
+      "kind": "zero",
+      "kind_detail": {
+       "kind": "zero",
+       "of": 17408,
+       "selected": 1741
+      },
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.2,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 44.0,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.1} -> damage 0.0003362691576549448"
+   ],
+   "salvaged_chars": 1015,
+   "t_s": 2501.5,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test the hypothesis that the 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows."
+    }
+   ],
+   "admit": {
+    "extra": [
+     "live_hypotheses.cheest_falsifier"
+    ],
+    "missing": [
+     "live_hypotheses.cheapest_falsifier"
+    ],
+    "ok": false,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 71.8,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-uniform, high-magnitude row distribution that is disproportionately critical to the final output, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 38,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1076,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.00355803382550679,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9964419661744932,
+      "kind": "zero",
+      "kind_detail": {
+       "kind": "zero",
+       "of": 17408,
+       "selected": 8704
+      },
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 42.7,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "rows",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 43.6,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.00355803382550679"
+   ],
+   "salvaged_chars": 1076,
+   "t_s": 2573.4,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "type": "PERTURB",
+     "why": "To test if the 'down' tensor has a similar or different impact on the hidden state two layers later, which would indicate if the 'up'/'gate' interaction is the sole source of the non-linearity or if 'down' is also involved."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 74.4,
+   "belief_update": "The 0.005905 damage from 40% row zeroing suggests a non-linear, high-sensitivity interaction between 'up' and 'gate' that is not captured by uniform importance, requiring a test of the 'down' tensor's role in this interaction to find the true bottleneck.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb the 'down' tensor at layer 0 with 0.5 fraction rows to see if it has a similar or different impact on the hidden state two layers later, which would indicate if the 'up'/'gate' interaction is the sole source of the non-linearity or if 'down' is also involved.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 39,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1208,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "rows",
+      "tensor": "down"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.002692618854423401,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9973073811455766,
+      "kind": "zero",
+      "kind_detail": {
+       "kind": "zero",
+       "of": 5120,
+       "selected": 2560
+      },
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 43.9,
+      "shape": [
+       5120,
+       17408
+      ],
+      "side": "rows",
+      "tensor": "down",
+      "work_type": "PERTURB"
+     },
+     "seconds": 44.7,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'down', 'layer': 0, 'side': 'rows', 'fraction': 0.5} -> damage 0.002692618854423401"
+   ],
+   "salvaged_chars": 1208,
+   "t_s": 2647.8,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  },
+  {
+   "accepted": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "type": "PERTURB",
+     "why": "To test if the 'up' tensor's column values are disproportionately critical to the final output, given the non-uniform damage from row zeroing."
+    }
+   ],
+   "admit": {
+    "extra": [],
+    "missing": [],
+    "ok": true,
+    "parse": {
+     "kind": "json_object",
+     "ok": true,
+     "recovered": false,
+     "source_type": "str"
+    }
+   },
+   "ask_seconds": 69.3,
+   "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-uniform importance distribution, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
+   "degenerated": false,
+   "live_hypotheses": [
+    {
+     "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+     "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+     "id": "x"
+    }
+   ],
+   "n": 40,
+   "n_unlaunched": 0,
+   "parsed": true,
+   "reask_kind": null,
+   "reply_chars": 1089,
+   "results": [
+    {
+     "params": {
+      "fraction": 0.5,
+      "layer": 0,
+      "side": "cols",
+      "tensor": "up"
+     },
+     "ran": true,
+     "result": {
+      "damage": 0.0015314526796854633,
+      "elements_destroyed": 44564480,
+      "fraction": 0.5,
+      "hidden_cosine_after_2_layers": 0.9984685473203145,
+      "kind": "zero",
+      "kind_detail": {
+       "kind": "zero",
+       "of": 5120,
+       "selected": 2560
+      },
+      "layer": 0,
+      "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+      "not_capability": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
+      "seconds": 39.6,
+      "shape": [
+       17408,
+       5120
+      ],
+      "side": "cols",
+      "tensor": "up",
+      "work_type": "PERTURB"
+     },
+     "seconds": 40.3,
+     "stderr_tail": null,
+     "type": "PERTURB"
+    }
+   ],
+   "results_summary": [
+    "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
+   ],
+   "salvaged_chars": 1089,
+   "t_s": 2717.1,
+   "terse_retry_used": false,
+   "unlaunched": [],
+   "validation": {
+    "n_accepted": 1,
+    "n_rejected": 0,
+    "rejected": []
+   }
+  }
+ ],
+ "live_hypotheses": [
+  {
+   "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
+   "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
+   "id": "x"
+  }
+ ],
+ "measured_state": {
+  "basis": "GPU",
+  "complete_bpw": 3.139301,
+  "conventional_floor_bpw_if_every_untested_move_worked": 2.508137,
+  "mlp_elements": 17112760320,
+  "payload_bytes": 10554328856,
+  "refreshed_from": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json",
+  "refreshed_unix": 1788236273.617277,
+  "source": [
+   "receipts/future/REPRESENTATION_FLOOR.json",
+   "receipts/future/GAP_LEDGER_60.json"
+  ],
+  "storage_bpw": 3.139300850311054,
+  "token_ms": 21.9464,
+  "tps": 45.566
+ },
+ "objective": "Discover the lowest capability-preserving complete EBPW for the current dense resident. First milestone: 2.0 complete EBPW or less.",
+ "observations": [
+  {
+   "id": "O1.local_robustness",
+   "interpretation": "NONE RECORDED - this is evidence, not a conclusion",
+   "source": "receipts/future/FUNCTIONAL_ROLE_PROBE.json",
+   "text": "zeroing 40% of a tensor's output rows - about 35.6 million elements - moves the hidden state two layers later by 0.005905 of cosine"
+  }
+ ],
+ "resident_mode": "ACTIVE_ORCHESTRATOR",
+ "scars": [
+  "MLP 2-bit codes carry ~1.87 bits entropy per 2 stored bits",
+  "affine groups 256 and 1024: CAPABILITY REFUTED",
+  "shared linear low-rank across MLP factors: REFUTED at relative L2 0.9",
+  "auxiliary broadcast bytes bill 0.000 ms/GB - smaller, not faster",
+  "only weight codes bill time, at 0.547282 ms/GB",
+  "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK",
+  "REMOVING_ONE_OP_CLASS_IS_NOT_A_LEVER_WHEN_FOUR_SHARE_THE_COST"
+ ],
+ "scars_bind_methods_not_goals": "a scar constrains the method it measured, at the scope it measured. It does not forbid the objective.",
+ "schema": "hawking.future.hcli_mission_kernel.v1",
+ "tried_params": [
+  "up/L0/rows/0.5",
+  "gate/L0/rows/0.1",
+  "gate/L0/rows/0.5",
+  "up/L0/cols/0.5",
+  "up/L0/rows/0.5",
+  "up/L0/rows/0.2",
+  "down/L0/rows/0.5",
+  "up/L0/cols/0.1",
+  "gate/L0/rows/0.1",
+  "gate/L0/rows/0.5",
+  "up/L0/rows/0.5",
+  "down/L0/rows/0.5",
+  "up/L0/rows/0.5",
+  "up/L0/rows/0.5",
+  "up/L0/cols/0.5",
+  "up/L0/rows/0.5",
+  "down/L0/rows/0.4",
+  "up/L0/cols/0.5",
+  "up/L0/rows/0.5",
+  "gate/L0/rows/0.5",
+  "up/L0/rows/0.1",
+  "up/L0/rows/0.5",
+  "down/L0/rows/0.5",
+  "up/L0/cols/0.5",
+  "up/L0/rows/0.5",
+  "up/L0/rows/0.5",
+  "gate/L0/rows/0.5",
+  "up/L0/cols/0.1",
+  "gate/L0/cols/0.5",
+  "up/L0/rows/0.5",
+  "down/L0/rows/0.5",
+  "up/L0/cols/0.5",
+  "up/L0/rows/0.5",
+  "down/L0/rows/0.5",
+  "up/L0/cols/0.5",
+  "up/L0/cols/0.5",
+  "gate/L0/rows/0.5",
+  "up/L0/rows/0.5",
+  "up/L0/rows/0.1",
+  "up/L0/rows/0.5",
+  "down/L0/rows/0.5",
+  "up/L0/cols/0.5"
+ ],
+ "updated_unix": 1788236273.6172779
+}

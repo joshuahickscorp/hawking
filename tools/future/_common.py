@@ -12,7 +12,7 @@ import os
 import subprocess
 import time
 from pathlib import Path
-from typing import Any
+from typing import Iterable, Sequence,  Any
 
 REPO = Path(__file__).resolve().parents[2]
 RECEIPTS = REPO / "receipts" / "future"
@@ -78,6 +78,48 @@ def seal(doc: dict[str, Any]) -> dict[str, Any]:
     return doc
 
 
+class ReceiptPathCollision(ValueError):
+    """Two producers, one path. The later writer would destroy the earlier one."""
+
+
+def _refuse_foreign_overwrite(out: Path, doc: dict[str, Any], recorded_by: str) -> None:
+    """A receipt path belongs to ONE producer.
+
+    tps_budget.py and causal_budget_71.py both wrote
+    RESIDENT_71TPS_CAUSAL_BUDGET.json with different schemas. The later writer
+    won and silently destroyed every citation resolving against `ladder[]` and
+    `measured_now` - four rows of the roof-anchor audit stopped resolving, and
+    the audit honestly reported "field is not a resolvable path in this receipt"
+    about a field that HAD been resolvable the day it was written. Nothing
+    raised. The overwrite is a WRITE, and writes succeed.
+
+    An overwrite by the same producer, or a schema-compatible one, is normal
+    regeneration and is allowed. A DIFFERENT producer writing a DIFFERENT schema
+    over an existing receipt is the collision, and it raises.
+    """
+    if not out.is_file():
+        return
+    try:
+        prior = json.loads(out.read_text())
+    except (ValueError, OSError):
+        return  # unreadable prior is not evidence of ownership
+    if not isinstance(prior, dict):
+        return
+    prior_by = prior.get("recorded_by") or (prior.get("bench") or {}).get("recorded_by")
+    if not prior_by or prior_by == recorded_by:
+        return
+    prior_schema = prior.get("schema")
+    new_schema = doc.get("schema")
+    if prior_schema is None or new_schema is None or prior_schema == new_schema:
+        return
+    raise ReceiptPathCollision(
+        f"{out.name} was written by {prior_by} with schema {prior_schema!r}; "
+        f"{recorded_by} would overwrite it with schema {new_schema!r}. A receipt "
+        "path belongs to one producer - give this one its own name rather than "
+        "destroying the other's citations."
+    )
+
+
 def write_receipt(name: str, doc: dict[str, Any], recorded_by: str) -> Path:
     """Validate, seal and write a sidecar receipt. Returns its path."""
     doc.setdefault("bench", bench_block(recorded_by))
@@ -86,6 +128,7 @@ def write_receipt(name: str, doc: dict[str, Any], recorded_by: str) -> Path:
     seal(doc)
     RECEIPTS.mkdir(parents=True, exist_ok=True)
     out = RECEIPTS / name
+    _refuse_foreign_overwrite(out, doc, recorded_by)
     out.write_text(json.dumps(doc, indent=1, sort_keys=True) + "\n")
     return out
 
@@ -266,3 +309,31 @@ def newest_mtime(root: Path, skip: tuple[str, ...] = ()) -> tuple[float, str | N
             if m > best:
                 best, who = m, os.path.relpath(p, REPO)
     return best, who
+
+
+class UnknownFlag(SystemExit):
+    """A CLI was handed a flag it does not implement."""
+
+
+def require_known_flags(known: "Iterable[str]", argv: "Sequence[str] | None" = None) -> None:
+    """Refuse an unrecognised flag instead of ignoring it.
+
+    Modules that dispatch with `if "--record" in sys.argv` treat every other
+    argument as absent. So `--build` - the verb most of tools/future uses -
+    printed a freshly computed table, exited 0, and WROTE NOTHING. The terminal
+    showed current numbers while the receipt on disk stayed stale, and that cost
+    two silently-stale receipts before it was noticed (path_to_71,
+    causal_budget_71).
+
+    A tool that reports success without doing the work is the failure this
+    campaign keeps finding in its own checks. Call this first in __main__.
+    """
+    import sys as _sys
+    args = list(argv if argv is not None else _sys.argv[1:])
+    ok = set(known)
+    bad = [a for a in args if a.startswith("-") and a.split("=", 1)[0] not in ok]
+    if bad:
+        raise UnknownFlag(
+            f"unknown flag(s) {bad}; known flags are {sorted(ok)}. Refusing "
+            "rather than running with the argument silently ignored."
+        )

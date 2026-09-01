@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.14976.receipt.json",
+    "fpga_engines.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "FPGA is Accelerator/Physical Compiler/Fusion, not its own civilization. No HDL emit. No board.",
+  "frontier_id": "FT.FPGA.engine-sim",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.14976",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.14976.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "650384f232118f62d1d45988e502dd6e234ffa4b8a027f42599d6487e2b91d52",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

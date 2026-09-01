@@ -1,0 +1,133 @@
+{
+  "schema": "hawking.flash.fast_compact_parity.v1",
+  "status": "PASSED_FAST_COMPACT_PARITY",
+  "dense_receipt": "receipts/headless/FLASH_DENSE_L0_L2_V1/FAST_CHAIN_SUMMARY.json",
+  "dense_receipt_sha256": "c6a736321ba9d2c9b9b1c4edd52de039e84c3ec9bdcb68313eb63d203647dd31",
+  "compact_receipt": "receipts/headless/FLASH_COMPACT_L0_L2_V1/FAST_CHAIN_SUMMARY.json",
+  "compact_receipt_sha256": "2535f876b7384fd1e50e7bc570d0dcd3749c9f4da305521ddd3ac46d42d5dac9",
+  "layers": [
+    0,
+    1,
+    2
+  ],
+  "comparisons": [
+    {
+      "layer": 0,
+      "dense_output_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+      "compact_output_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+      "exact_fingerprint_match": true,
+      "dense_route_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "compact_route_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 1,
+      "dense_output_sha256": "5eb2ef9e2044cc1d258ed06ffce4f064e6e18b2f2907a14127bff22b9a90e91b",
+      "compact_output_sha256": "5eb2ef9e2044cc1d258ed06ffce4f064e6e18b2f2907a14127bff22b9a90e91b",
+      "exact_fingerprint_match": true,
+      "dense_route_ids": [
+        320,
+        19,
+        157,
+        46,
+        149,
+        131,
+        151,
+        367,
+        165,
+        452
+      ],
+      "compact_route_ids": [
+        320,
+        19,
+        157,
+        46,
+        149,
+        131,
+        151,
+        367,
+        165,
+        452
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 2,
+      "dense_output_sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "compact_output_sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "exact_fingerprint_match": true,
+      "dense_route_ids": [
+        75,
+        12,
+        209,
+        4,
+        9,
+        222,
+        5,
+        272,
+        114,
+        269
+      ],
+      "compact_route_ids": [
+        75,
+        12,
+        209,
+        4,
+        9,
+        222,
+        5,
+        272,
+        114,
+        269
+      ],
+      "route_ids_match": true
+    }
+  ],
+  "source_payload": {
+    "dense_bytes": 15563874624,
+    "compact_bytes": 759292224,
+    "bytes_saved": 14804582400,
+    "reduction_fraction": 0.9512144474082856
+  },
+  "timing": {
+    "dense_wall_ns": 263943260750,
+    "compact_wall_ns": 42667789709,
+    "wall_reduction_fraction": 0.8383448412823323,
+    "dense_gpu_ns": 261707333,
+    "compact_gpu_ns": 90323457,
+    "gpu_reduction_fraction": 0.6548684518519013,
+    "interpretation": "bounded three-layer device-resident prefix; no complete-token/TPS claim"
+  },
+  "claim_boundary": "Per-layer compact route-before-payload execution exactly matched the dense device-resident control for every audited layer, including router IDs. This is bounded prefix evidence, not complete-model TPS, EBPW, or residency promotion.",
+  "next": "Extend compact route-before-payload through the layer-3 full-attention seam and compare against the dense control.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T01:28:52.093617Z",
+    "recorded_by": "tools/flash_fast_compact_compare.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "bounded parity/source-read comparison only; no TPS or residency claim"
+  },
+  "seal_sha256": "1e71b681cb2c3b3caf8057b8d5e2db1e2ad63735d7fc4f1eb9a6ec4abb6f32fd"
+}

@@ -389,3 +389,58 @@ def test_counts_are_derived_from_recovered_identities(book, doc):
     assert proof["n_exhausted"] == len(proof["exhausted"])
     assert proof["n_frontiers"] == len(fr.FRONTIER_NAMES)
     assert proof["n_active"] + proof["n_blocked"] + proof["n_exhausted"] == len(fr.FRONTIER_NAMES)
+
+
+def test_a_dispatch_reordering_unit_is_refused_at_proposal_time():
+    """S026 §4: the scar must bite before GPU time is spent, not after."""
+    with pytest.raises(fr.DeadSchoolRefused, match="zero overlapable"):
+        fr._item(
+            id="FT.MODEL_EXECUTION.test.reorder",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Permute the dispatch order of the token graph",
+            detail="sweep command-order permutations for overlap",
+            required_lanes=(),
+            gain=5,
+            species="probe",
+            verifier="x",
+            evidence=(),
+        )
+
+
+def test_the_refusal_reads_the_hypothesis_family_too():
+    with pytest.raises(fr.DeadSchoolRefused):
+        fr._item(
+            id="FT.MODEL_EXECUTION.test.family",
+            frontier="MODEL_EXECUTION",
+            kind="NEXT_WORK",
+            title="Try a different launch shape",
+            detail="nothing suspicious in this text",
+            required_lanes=(),
+            gain=5,
+            species="probe",
+            verifier="x",
+            evidence=(),
+            hypothesis_family="top-level overlap",
+        )
+
+
+def test_asking_whether_the_scar_still_holds_is_not_refused():
+    """It closes a school, not a word. Questions stay legal."""
+    item = fr._item(
+        id="FT.MODEL_EXECUTION.test.question",
+        frontier="MODEL_EXECUTION",
+        kind="OPEN_QUESTION",
+        title="Does dispatch reordering have slack once drafting exists?",
+        detail="the scar's own reopen condition names speculative drafting",
+        required_lanes=(),
+        gain=5,
+        species="question",
+        verifier="x",
+        evidence=(),
+    )
+    assert item["id"].endswith("test.question")
+
+
+def test_the_live_catalog_contains_no_unit_from_the_dead_school():
+    assert len(fr._catalog()) > 0

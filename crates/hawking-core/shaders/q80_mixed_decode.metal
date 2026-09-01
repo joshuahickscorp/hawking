@@ -1311,6 +1311,109 @@ kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128(
     }
 }
 
+
+// ── bitcast unpack ──────────────────────────────────────────────────────────
+// The op-class ablation (receipts/future/OP_CLASS_ABLATION.json) put the
+// uint-to-float convert at 44% of this kernel's arithmetic and 15% of its total
+// time - the largest single class, and 25x the affine FMA that fold_addqx and
+// the dequant hoist both attacked.
+//
+// A 2-bit code needs no convert. Placing q at bits 21-22 of an f32 whose
+// exponent field is 0x40000000 yields EXACTLY f = 2.0 + 0.5*q:
+//     q=0 -> 0x40000000 = 2.0      q=2 -> 0x40400000 = 3.0
+//     q=1 -> 0x40200000 = 2.5      q=3 -> 0x40600000 = 3.5
+// (bit 21 is 2^21/2^23 = 0.25 of the significand and the exponent is 2^1, so
+// the step is 0.5 per code - getting that factor wrong yields a kernel that is
+// fast and completely wrong.)
+//
+// So q = 2*(f - 2) and w = q*scale + bias becomes
+//     w = (2*scale)*f + (bias - 4*scale)
+// with both constants folded ONCE PER GROUP from the same half scale and bias
+// production already loads. Per weight this trades a convert for an OR.
+//
+// NOT bit-identical to affine_q2_unpack8 - the FMAs run on refolded constants -
+// but measured at rel_fro 1.5e-07, max_abs 2.4e-07 on real captured
+// activations. Opt-in via HAWKING_AFFINE2_GEO=bitcast; production default is
+// unchanged until a resident measurement promotes it.
+static inline float affine_q2_unpack8_bitcast(
+    uint packed16, float s2, float b4,
+    device const float* x, uint col)
+{
+    float sum = 0.0f;
+    for (uint i = 0u; i < 8u; ++i) {
+        const uint bits = 0x40000000u | (((packed16 >> (2u * i)) & 3u) << 21u);
+        const float w = fma(s2, as_type<float>(bits), b4);
+        sum = fma(w, x[col + i], sum);
+    }
+    return sum;
+}
+
+static inline float affine_q2_geo_acc_g32_bitcast(
+    device const uchar* codes,
+    device const half* scales,
+    device const half* biases,
+    device const float* input,
+    uint row,
+    uint cols,
+    uint lane_in_row)
+{
+    const uint groups_per_row = cols >> 5u;
+    float acc = 0.0f;
+    for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+        const uint group = col >> 5u;
+        const uint local = col & 31u;
+        const uint rgb = row * groups_per_row + group;
+        const float scale = float(scales[rgb]);
+        const float bias = float(biases[rgb]);
+        const uint packed16 = uint(*((device const ushort*)(codes + rgb * 8u + (local >> 2u))));
+        acc += affine_q2_unpack8_bitcast(
+            packed16, scale * 2.0f, fma(scale, -4.0f, bias), input, col);
+    }
+    return acc;
+}
+
+static inline float affine_q2_geo_acc_g64_bitcast(
+    device const uchar* codes,
+    device const half* scales,
+    device const half* biases,
+    device const float* input,
+    uint row,
+    uint cols,
+    uint lane_in_row)
+{
+    const uint groups_per_row = cols >> 6u;
+    float acc = 0.0f;
+    for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+        const uint group = col >> 6u;
+        const uint local = col & 63u;
+        const uint rgb = row * groups_per_row + group;
+        const float scale = float(scales[rgb]);
+        const float bias = float(biases[rgb]);
+        const uint packed16 = uint(*((device const ushort*)(codes + rgb * 16u + (local >> 2u))));
+        acc += affine_q2_unpack8_bitcast(
+            packed16, scale * 2.0f, fma(scale, -4.0f, bias), input, col);
+    }
+    return acc;
+}
+
+/// Dual-projection bitcast for the fused gate_up path. Both projections share
+/// the same x load; only the codes and per-group constants differ.
+static inline void affine_q2_unpack8_dual_g64_bitcast(
+    uint gpacked, float g_s2, float g_b4,
+    uint upacked, float u_s2, float u_b4,
+    device const float* x, uint col,
+    thread float& acc_g, thread float& acc_u)
+{
+    for (uint i = 0u; i < 8u; ++i) {
+        const uint sh = 2u * i;
+        const float xv = x[col + i];
+        const uint gb = 0x40000000u | (((gpacked >> sh) & 3u) << 21u);
+        const uint ub = 0x40000000u | (((upacked >> sh) & 3u) << 21u);
+        acc_g = fma(fma(g_s2, as_type<float>(gb), g_b4), xv, acc_g);
+        acc_u = fma(fma(u_s2, as_type<float>(ub), u_b4), xv, acc_u);
+    }
+}
+
 // Same launch geometry and binds as geo_tpr64. Unpack is fold_addqx.
 // Opt-in sibling; production decode stays on geo_tpr64 unless selected.
 kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_fold_addqx(
@@ -1653,6 +1756,103 @@ kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_fold_ad
             affine_q2_unpack8_dual_g64_fold_addqx(
                 gpacked, float(gate_scales[rgb]), float(gate_biases[rgb]),
                 upacked, float(up_scales[rgb]), float(up_biases[rgb]),
+                input, col, acc_g, acc_u);
+        }
+    }
+    acc_g = simd_sum(acc_g);
+    acc_u = simd_sum(acc_u);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc_g;
+        red[4u + simd_id] = acc_u;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        const uint t = team * kSplit;
+        const float g = red[t] + red[t + 1u];
+        const float u = red[4u + t] + red[4u + t + 1u];
+        act_out[row] = (g / (1.0f + exp(-g))) * u;
+    }
+}
+
+
+// Same launch geometry and binds as geo_tpr64. Unpack is bitcast.
+// Opt-in sibling; production decode stays on geo_tpr64 unless selected.
+kernel void qwen_affine_q2_group32_matvec_geo_tpr64_tg128_bitcast(
+    device const uchar* codes       [[buffer(0)]],
+    device const half*  scales      [[buffer(1)]],
+    device const half*  biases      [[buffer(2)]],
+    device const float* input       [[buffer(3)]],
+    device float*       output      [[buffer(4)]],
+    constant uint& rows             [[buffer(5)]],
+    constant uint& cols             [[buffer(6)]],
+    constant uint& group_size       [[buffer(7)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[4];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc = 0.0f;
+    if (row < rows && affine_q2_group_ok(group_size, cols)) {
+        if (group_size == 32u) {
+            acc = affine_q2_geo_acc_g32_bitcast(
+                codes, scales, biases, input, row, cols, lane_in_row);
+        } else {
+            acc = affine_q2_geo_acc_g64_bitcast(
+                codes, scales, biases, input, row, cols, lane_in_row);
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u) {
+        red[simd_id] = acc;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (split == 0u && simd_lane == 0u && row < rows) {
+        output[row] = red[team * kSplit] + red[team * kSplit + 1u];
+    }
+}
+
+kernel void qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128_bitcast(
+    device const uchar* gate_codes  [[buffer(0)]],
+    device const half*  gate_scales [[buffer(1)]],
+    device const half*  gate_biases [[buffer(2)]],
+    device const uchar* up_codes    [[buffer(3)]],
+    device const half*  up_scales   [[buffer(4)]],
+    device const half*  up_biases   [[buffer(5)]],
+    device const float* input       [[buffer(6)]],
+    device float*       act_out     [[buffer(7)]],
+    constant uint& rows             [[buffer(8)]],
+    constant uint& cols             [[buffer(9)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    threadgroup float red[8];
+    constexpr uint kSplit = 2u;
+    const uint team = simd_id / kSplit;
+    const uint split = simd_id % kSplit;
+    const uint lane_in_row = split * 32u + simd_lane;
+    const uint row = group_id * 2u + team;
+    float acc_g = 0.0f;
+    float acc_u = 0.0f;
+    if (row < rows && (cols % 64u) == 0u) {
+        const uint groups_per_row = cols >> 6u;
+        for (uint col = lane_in_row * 8u; col + 8u <= cols; col += 512u) {
+            const uint group = col >> 6u;
+            const uint local = col & 63u;
+            const uint rgb = row * groups_per_row + group;
+            const uint byte0 = rgb * 16u + (local >> 2u);
+            const uint gpacked = uint(*((device const ushort*)(gate_codes + byte0)));
+            const uint upacked = uint(*((device const ushort*)(up_codes + byte0)));
+            const float gs = float(gate_scales[rgb]);
+            const float us = float(up_scales[rgb]);
+            affine_q2_unpack8_dual_g64_bitcast(
+                gpacked, gs * 2.0f, fma(gs, -4.0f, float(gate_biases[rgb])),
+                upacked, us * 2.0f, fma(us, -4.0f, float(up_biases[rgb])),
                 input, col, acc_g, acc_u);
         }
     }

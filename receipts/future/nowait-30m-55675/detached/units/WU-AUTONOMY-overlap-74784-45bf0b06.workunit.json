@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.74784.receipt.json",
+    "nr_nx_generic.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "drive the generic NR\u2192NX pipeline on the cheapest whole-tree specimen the compiler can see; if the compiler is not importable, record a staged REFUSAL naming the first real blocker ",
+  "frontier_id": "FT.GPU_KERNELS.flash-nx",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.74784",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.74784.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "87cacc394c9cabba469596c1306d4b0d83c2e0c31bfbd526ea99cbbc672f0b87",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

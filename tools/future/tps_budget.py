@@ -33,7 +33,14 @@ from tools.future._common import (
     write_receipt,
 )
 
-RECEIPT = "RESIDENT_71TPS_CAUSAL_BUDGET.json"
+# G129: this used to be RESIDENT_71TPS_CAUSAL_BUDGET.json, the SAME PATH
+# causal_budget_71.py writes with a different schema. The later writer won and
+# silently destroyed every citation that resolved against `ladder[]` and
+# `measured_now` - four rows of the roof-anchor audit stopped resolving and the
+# module honestly recorded "field is not a resolvable path in this receipt"
+# about a field that HAD been resolvable. Two producers, one path, no collision
+# check. This one now writes its own.
+RECEIPT = "RESIDENT_71TPS_BUDGET_STATIC.json"
 SCHEMA = "hawking.future.tps_budget.v1"
 VERSION = 1
 RECORDED_BY = "tools/future/tps_budget.py"

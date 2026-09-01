@@ -49,7 +49,10 @@ use crate::metal::{CommandBatch, MetalBatchTiming, MetalContext};
 use crate::{Error, Result};
 
 const LAYER0: usize = 0;
-const HC_KERNEL: &str = "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority";
+const HC_AUTHORITY_KERNEL: &str = "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority";
+const HC_SIMD_KERNEL: &str = "deepseek_v4_mhc_pre_simdgroup_candidate";
+const HC_SIMD_ENV: &str = "HAWKING_DSV4F_MHC_PRE_SIMD";
+const HC_SIMD_THREADS: u32 = 24 * 32;
 const RMS_KERNEL: &str = "deepseek_v4_p3a_rmsnorm_bf16_authority";
 const QAT_KERNEL: &str = "deepseek_v4_act_quant_bf16_ue8m0_authority";
 const FP8_KERNEL: &str = "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority";
@@ -163,6 +166,8 @@ pub struct DeepSeekV4Layer0P4bDeviceExecutor {
     source_bindings: DeepSeekV4P4bDeviceSourceBindings,
     context_queue_identity: usize,
     phase: DeepSeekV4P4bDevicePhase,
+    hc_pre_kernel: &'static str,
+    hc_pre_threads: u32,
     hc_fn: metal::Buffer,
     hc_scale: metal::Buffer,
     hc_base: metal::Buffer,
@@ -266,21 +271,33 @@ impl DeepSeekV4Layer0P4bDeviceExecutor {
             WO_B_ROWS,
             WO_B_COLS,
         )?;
-        for kernel in [
-            HC_KERNEL,
-            RMS_KERNEL,
-            QAT_KERNEL,
-            FP8_KERNEL,
-            CAST_KERNEL,
-            PER_HEAD_KERNEL,
-            KV_QAT_KERNEL,
-            ROPE_KERNEL,
-            CACHE_KERNEL,
-            SPARSE_KERNEL,
-            WO_A_KERNEL,
-            HC_POST_KERNEL,
+        let hc_pre_simd = crate::env_on(HC_SIMD_ENV);
+        let hc_pre_kernel = if hc_pre_simd {
+            HC_SIMD_KERNEL
+        } else {
+            HC_AUTHORITY_KERNEL
+        };
+        let hc_pre_threads = if hc_pre_simd { HC_SIMD_THREADS } else { 1 };
+        for (kernel, required_threads) in [
+            (hc_pre_kernel, hc_pre_threads),
+            (RMS_KERNEL, 1),
+            (QAT_KERNEL, 32),
+            (FP8_KERNEL, 256),
+            (CAST_KERNEL, 256),
+            (PER_HEAD_KERNEL, 64),
+            (KV_QAT_KERNEL, 32),
+            (ROPE_KERNEL, 256),
+            (CACHE_KERNEL, 256),
+            (SPARSE_KERNEL, 64),
+            (WO_A_KERNEL, 256),
+            (HC_POST_KERNEL, 256),
         ] {
-            metal.pipeline(kernel)?;
+            let maximum = metal.pipeline(kernel)?.max_total_threads_per_threadgroup() as u32;
+            if maximum < required_threads {
+                return Err(p4b_error(format!(
+                    "P4B {kernel} supports only {maximum} threads; {required_threads} required"
+                )));
+            }
         }
         let source_bindings = DeepSeekV4P4bDeviceSourceBindings {
             artifact_manifest_seal_sha256: reader.manifest_seal_sha256().to_owned(),
@@ -302,6 +319,8 @@ impl DeepSeekV4Layer0P4bDeviceExecutor {
             source_bindings,
             context_queue_identity: context_queue_identity(metal),
             phase: DeepSeekV4P4bDevicePhase::Prepared,
+            hc_pre_kernel,
+            hc_pre_threads,
             hc_fn: metal.new_buffer_with_bytes_checked(&hc_fn)?,
             hc_scale: metal.new_buffer_with_bytes_checked(&hc_scale)?,
             hc_base: metal.new_buffer_with_bytes_checked(&hc_base)?,
@@ -355,6 +374,12 @@ impl DeepSeekV4Layer0P4bDeviceExecutor {
     pub const fn parity_classification(&self) -> DeepSeekV4P4bParityClassification {
         DeepSeekV4P4bParityClassification::NumericParityV21Only
     }
+    pub const fn hc_pre_kernel(&self) -> &'static str {
+        self.hc_pre_kernel
+    }
+    pub const fn hc_pre_threads(&self) -> u32 {
+        self.hc_pre_threads
+    }
 
     /// Execute P0 cache write followed by P1 causal cache read and complete
     /// attention tail.  The one CB contains ordered encoders only; no
@@ -385,6 +410,8 @@ impl DeepSeekV4Layer0P4bDeviceExecutor {
             dispatch_hc(
                 batch,
                 &self.p0,
+                self.hc_pre_kernel,
+                self.hc_pre_threads,
                 &self.hc_fn,
                 &self.hc_scale,
                 &self.hc_base,
@@ -452,6 +479,8 @@ impl DeepSeekV4Layer0P4bDeviceExecutor {
             dispatch_hc(
                 batch,
                 &self.p1,
+                self.hc_pre_kernel,
+                self.hc_pre_threads,
                 &self.hc_fn,
                 &self.hc_scale,
                 &self.hc_base,
@@ -760,6 +789,8 @@ fn new_kv_scratch(metal: &MetalContext) -> Result<KvScratch> {
 fn dispatch_hc(
     batch: &mut CommandBatch<'_>,
     state: &HcState,
+    kernel: &'static str,
+    threads: u32,
     hc_fn: &metal::Buffer,
     hc_scale: &metal::Buffer,
     hc_base: &metal::Buffer,
@@ -770,7 +801,7 @@ fn dispatch_hc(
     norm_eps: f32,
     hc_eps: f32,
 ) -> Result<()> {
-    batch.dispatch_threads(HC_KERNEL, (1, 1, 1), (1, 1, 1), |e| {
+    batch.dispatch_threads(kernel, (threads, 1, 1), (threads, 1, 1), |e| {
         e.set_buffer(0, Some(&state.embed), 0);
         e.set_buffer(1, Some(hc_fn), 0);
         e.set_buffer(2, Some(hc_scale), 0);
@@ -787,6 +818,10 @@ fn dispatch_hc(
         set_u32(e, 13, &sinkhorn);
         set_f32(e, 14, &norm_eps);
         set_f32(e, 15, &hc_eps);
+        if kernel == HC_SIMD_KERNEL {
+            let replicated_input = 1u32;
+            set_u32(e, 16, &replicated_input);
+        }
     })
 }
 

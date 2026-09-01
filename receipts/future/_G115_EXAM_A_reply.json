@@ -1,0 +1,49 @@
+{
+ "asked_unix": 1788232574.2135732,
+ "seconds": 34.1,
+ "pack_chars": 2003,
+ "reply_chars": 1662,
+ "reply_raw": "{\n\"routes\": [\n{\n\"id\": \"moew\",\n\"claim\": \"The dense body can be represented as a Mixture of Experts with non-uniform activation frequencies to exploit the 1.44 BPW MoE lower bound.\",\n\"evidence_status\": \"UNTESTED\",\n\"cheapest_falsifier\": \"Train a 4-expert MoE with 25% activation rate and measure if the 1.44 BPW target is reached while maintaining the 0.0059 hidden cosine.\"\n},\n{\n\"id\": \"sparse\",\n\"claim\": \"The dense body can be represented as a sparse matrix with 60% zero entries to reduce the 3.139301 BPW by 40% without requiring a dense parent.\",\n\"\"evidence_status\": \"UNTESTED\",\n\"cheapest_falsifier\": \"Train a 60% sparse matrix and measure if the 1.156560 BPW target is reached while maintaining the 0.0059 hidden cosine\"\n},\n{\n\"id\": \"lowrank\",\n\"claim\": \"The dense body can be represented as a low-rank matrix with 8-64 rank to reduce the 3.139301 BPW by 50% without requiring a dense parent\",\n\"evidence_status\": \"REFUTED_IN_PART\",\n\"cheapest_falsifier\": \"Train a 8-rank matrix and measure if the 1.569650 BPW target is reached while maintaining the 0.0059 hidden cosine\"\n},\n{\n\"id\": \"entropy\",\n\"claim\": \"The dense body can be represented as an entropy-coded 2-bit code stream to reduce the 3.139301 BPW by 30% without requiring a dense parent\",\n\"evidence_status\": \"REFUTED_IN_PART\",\n\"cheapest_falsifier\": \"Train a 2-bit entropy-coded code stream and measure if the 1.87 BPW target is reached while maintaining the 0.0059 hidden cosine\"\n}\n],\n\"which_first\": \"moew\",\n\"why_first\": \"The 1.44 BPW MoE lower bound is the lowest known target and the 40% row destruction tolerance suggests that non-uniform activation is the key to unlocking the 1.44 BPW target\"\n}\n</code>",
+ "admit": {
+  "ok": true,
+  "missing": [],
+  "extra": [],
+  "parse": {
+   "ok": true,
+   "kind": "malformed",
+   "recovered": true,
+   "source_type": "str"
+  }
+ },
+ "value": {
+  "routes": [
+   {
+    "id": "moew",
+    "claim": "The dense body can be represented as a Mixture of Experts with non-uniform activation frequencies to exploit the 1.44 BPW MoE lower bound.",
+    "evidence_status": "UNTESTED",
+    "cheapest_falsifier": "Train a 4-expert MoE with 25% activation rate and measure if the 1.44 BPW target is reached while maintaining the 0.0059 hidden cosine."
+   },
+   {
+    "id": "sparse",
+    "claim": "The dense body can be represented as a sparse matrix with 60% zero entries to reduce the 3.139301 BPW by 40% without requiring a dense parent.",
+    "evidence_status": "UNTESTED",
+    "cheapest_falsifier": "Train a 60% sparse matrix and measure if the 1.156560 BPW target is reached while maintaining the 0.0059 hidden cosine"
+   },
+   {
+    "id": "lowrank",
+    "claim": "The dense body can be represented as a low-rank matrix with 8-64 rank to reduce the 3.139301 BPW by 50% without requiring a dense parent",
+    "evidence_status": "REFUTED_IN_PART",
+    "cheapest_falsifier": "Train a 8-rank matrix and measure if the 1.569650 BPW target is reached while maintaining the 0.0059 hidden cosine"
+   },
+   {
+    "id": "entropy",
+    "claim": "The dense body can be represented as an entropy-coded 2-bit code stream to reduce the 3.139301 BPW by 30% without requiring a dense parent",
+    "evidence_status": "REFUTED_IN_PART",
+    "cheapest_falsifier": "Train a 2-bit entropy-coded code stream and measure if the 1.87 BPW target is reached while maintaining the 0.0059 hidden cosine"
+   }
+  ],
+  "which_first": "moew",
+  "why_first": "The 1.44 BPW MoE lower bound is the lowest known target and the 40% row destruction tolerance suggests that non-uniform activation is the key to unlocking the 1.44 BPW target"
+ },
+ "re_admitted_after_the_doubled_quote_repair": true
+}

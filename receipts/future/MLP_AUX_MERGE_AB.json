@@ -1,0 +1,747 @@
+{
+ "absolute_gb_s_are_measured_under_load": true,
+ "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+ "aux_repack_on_disk": false,
+ "bytes_per_thread_iteration_held": 38,
+ "cited": {
+  "everything_else_ms": 4.881,
+  "from": "receipts/future/MLP_STREAM_COUNT.json, receipts/future/ORGAN_DECOMPOSITION_SEALED.json",
+  "gap_to_60_ms": 5.2797,
+  "mlp_ms": 11.756,
+  "probe_incumbent_gb_s": 308.3,
+  "probe_merged_gb_s": 526.6,
+  "probe_ratio": 1.708,
+  "token_ms": 21.9464
+ },
+ "claim_boundary": "One representative MLP layer (gate+up+down) on sealed-3.14, SELF_MEASURED_DIRTY. GPU time is MTLCommandBuffer GPUStartTime/GPUEndTime for an isolated command buffer of three geo_tpr64_tg128 dispatches. Unique payload bytes (codes+scales+biases of the launched tensors) are the GB/s numerator on both arms; counted traffic per thread-iteration is 38 B on both arms (A: 2+2+2+32, B: 2+4+32). ARM A is the production unpack body; ARM B is that body with scale and bias loaded as one half2. The host interleaves the two existing planes in memory and does not rewrite any artifact on disk. Both orderings (A then B, B then A) run in one process after warmup 60. Absolute GB/s is measured-under-load; the claim is the back-to-back ratio. Does not change the production decode path. Does not promote. FMA count, total issue rate, dependency chains, register pressure and stream count are REFUTED elsewhere.",
+ "codec": "HGRAVF01 affine2 q2 group64",
+ "concurrent_load": {
+  "loadavg": "{ 13.29 11.48 10.68 }",
+  "note": "absolute GB/s is measured-under-load; verdict uses back-to-back ratios",
+  "top_cpu": [
+   {
+    "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+    "cpu_pct": 147.8,
+    "pid": 77305,
+    "rss_kib": 20672
+   },
+   {
+    "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "cpu_pct": 98.8,
+    "pid": 96744,
+    "rss_kib": 4475024
+   },
+   {
+    "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+    "cpu_pct": 81.7,
+    "pid": 77296,
+    "rss_kib": 31136
+   },
+   {
+    "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+    "cpu_pct": 30.5,
+    "pid": 180,
+    "rss_kib": 62896
+   },
+   {
+    "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "cpu_pct": 29.5,
+    "pid": 96622,
+    "rss_kib": 23421632
+   },
+   {
+    "comm": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+    "cpu_pct": 14.2,
+    "pid": 96556,
+    "rss_kib": 32592
+   },
+   {
+    "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.174/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+    "cpu_pct": 11.3,
+    "pid": 38785,
+    "rss_kib": 82640
+   },
+   {
+    "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+    "cpu_pct": 6.5,
+    "pid": 91782,
+    "rss_kib": 243520
+   },
+   {
+    "comm": "powermetrics",
+    "cpu_pct": 5.6,
+    "pid": 25867,
+    "rss_kib": 2512
+   },
+   {
+    "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+    "cpu_pct": 5.3,
+    "pid": 87998,
+    "rss_kib": 184800
+   },
+   {
+    "comm": "/Applications/Claude.app/Contents/Frameworks/Claude Helper.app/Contents/MacOS/Claude Helper",
+    "cpu_pct": 5.2,
+    "pid": 85908,
+    "rss_kib": 77168
+   },
+   {
+    "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.174/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+    "cpu_pct": 5.1,
+    "pid": 38845,
+    "rss_kib": 527936
+   }
+  ],
+  "uptime": "23:08  up 6 days,  3:05, 3 users, load averages: 13.29 11.48 10.68"
+ },
+ "concurrent_load_end": {
+  "loadavg": "{ 13.29 11.48 10.68 }",
+  "note": "absolute GB/s is measured-under-load; verdict uses back-to-back ratios",
+  "top_cpu": [
+   {
+    "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "cpu_pct": 100.0,
+    "pid": 96744,
+    "rss_kib": 4459824
+   },
+   {
+    "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/StorageManagementService",
+    "cpu_pct": 96.4,
+    "pid": 77296,
+    "rss_kib": 30848
+   },
+   {
+    "comm": "/System/Library/PrivateFrameworks/StorageManagement.framework/PlugIns/ApplicationsStorageExtension.appex/Contents/MacOS/ApplicationsStorageExtension",
+    "cpu_pct": 79.0,
+    "pid": 77305,
+    "rss_kib": 19584
+   },
+   {
+    "comm": "/System/Library/ExtensionKit/Extensions/Storage.appex/Contents/MacOS/Storage",
+    "cpu_pct": 54.5,
+    "pid": 77282,
+    "rss_kib": 66176
+   },
+   {
+    "comm": "/opt/homebrew/Cellar/python@3.14/3.14.6/Frameworks/Python.framework/Versions/3.14/Resources/Python.app/Contents/MacOS/Python",
+    "cpu_pct": 44.3,
+    "pid": 96622,
+    "rss_kib": 20880256
+   },
+   {
+    "comm": "/System/Library/PrivateFrameworks/SkyLight.framework/Resources/WindowServer",
+    "cpu_pct": 31.3,
+    "pid": 180,
+    "rss_kib": 62272
+   },
+   {
+    "comm": "/System/Library/Frameworks/CoreSpotlight.framework/spotlightknowledged",
+    "cpu_pct": 19.8,
+    "pid": 96556,
+    "rss_kib": 20800
+   },
+   {
+    "comm": "workspace/ops/build/rust/release-fast/examples/mlp_aux_merge_ab",
+    "cpu_pct": 16.5,
+    "pid": 96879,
+    "rss_kib": 174272
+   },
+   {
+    "comm": "/System/Library/Frameworks/Metal.framework/Versions/A/XPCServices/MTLCompilerService.xpc/Contents/MacOS/MTLCompilerService",
+    "cpu_pct": 13.9,
+    "pid": 96913,
+    "rss_kib": 34272
+   },
+   {
+    "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.174/Helpers/Codex (Service).app/Contents/MacOS/Codex (Service)",
+    "cpu_pct": 11.7,
+    "pid": 38785,
+    "rss_kib": 82384
+   },
+   {
+    "comm": "/Applications/ChatGPT.app/Contents/Frameworks/Codex Framework.framework/Versions/151.0.7922.174/Helpers/Codex (Renderer).app/Contents/MacOS/Codex (Renderer)",
+    "cpu_pct": 8.8,
+    "pid": 38845,
+    "rss_kib": 527808
+   },
+   {
+    "comm": "/Library/Frameworks/Python.framework/Versions/3.12/Resources/Python.app/Contents/MacOS/Python",
+    "cpu_pct": 7.2,
+    "pid": 91782,
+    "rss_kib": 70880
+   }
+  ],
+  "uptime": "23:08  up 6 days,  3:05, 3 users, load averages: 13.29 11.48 10.68"
+ },
+ "dispatches": 3,
+ "does_not_promote": true,
+ "evidence_class": "SELF_MEASURED_DIRTY",
+ "fast_math": false,
+ "finding": "Verdict NO_LIFT. Merged/incumbent = 1.0088x (AB 1.0101x, BA 1.0094x) on unique payload 328.2 -> 331.1 GB/s, 254.624 -> 252.333 us, 38 B/iter both arms. Output bit-identical. merged/incumbent = 1.0088x, within 1.08 of 1.00; the 1.708x stripped-probe lift does not survive on real arithmetic. Does not promote.",
+ "geometry": "geo_tpr64_tg128",
+ "git_head": "11ae98e8e412e1375c2c5c4b116a050e447dcf66",
+ "gpu_authority": false,
+ "incumbent": {
+  "bytes_per_stream": [
+   2,
+   2,
+   2,
+   32
+  ],
+  "bytes_per_thread_iteration": 38,
+  "command_buffers": 1,
+  "dispatches": 3,
+  "effective_gb_s": 328.2,
+  "encoders": 1,
+  "gpu_ns_max": 261374,
+  "gpu_ns_median": 254624,
+  "gpu_ns_min": 252750,
+  "gpu_ns_reps": [
+   254499,
+   253958,
+   252750,
+   255166,
+   255499,
+   261374,
+   256375,
+   254624,
+   254875,
+   254500,
+   253624,
+   254874,
+   252874,
+   253499,
+   254624,
+   253499,
+   255624,
+   255708
+  ],
+  "gpu_us_median": 254.624,
+  "id": "incumbent",
+  "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+  "occupancy": {
+   "gpu_cores": 60,
+   "max_total_threads_per_threadgroup": 1024,
+   "occupancy_of_max_threads": 0.125,
+   "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+   "registers_per_thread": null,
+   "thread_execution_width": 32,
+   "threadgroups": 8704,
+   "threadgroups_per_core": 145.06666666666666,
+   "threads_per_threadgroup": 128
+  },
+  "rep_spread": 1.0341206726013847,
+  "steady_state": true,
+  "stream_count": 4,
+  "threads_per_threadgroup": 128,
+  "unique_payload_bytes": 83558400,
+  "weight_bytes": 83558400
+ },
+ "incumbent_bytes_per_stream": [
+  2,
+  2,
+  2,
+  32
+ ],
+ "judgement": {
+  "bit_identical": true,
+  "bytes_per_thread_iteration": 38,
+  "does_not_promote": true,
+  "incumbent_gb_s": 328.2,
+  "incumbent_rep_spread": 1.0341206726013847,
+  "incumbent_us": 254.624,
+  "merged_gb_s": 331.1,
+  "merged_rep_spread": 1.014269447297803,
+  "merged_us": 252.333,
+  "order_ab_ratio": 1.0101,
+  "order_ba_ratio": 1.0094,
+  "orderings_agree": true,
+  "probe_ratio": 1.708,
+  "probe_survives_slack": 1.12,
+  "ratio_merged_over_incumbent": 1.0088,
+  "same_ratio_bar": 1.08,
+  "unique_payload_bytes": 83558400,
+  "verdict": "NO_LIFT",
+  "vs_probe_ratio": 0.5907,
+  "why": "merged/incumbent = 1.0088x, within 1.08 of 1.00; the 1.708x stripped-probe lift does not survive on real arithmetic"
+ },
+ "layer": 0,
+ "loadavg_close": "{ 13.29 11.48 10.68 }",
+ "loadavg_open": "{ 13.29 11.48 10.68 }",
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "mlpaux",
+  "loadavg": "{ 13.29 11.48 10.68 }",
+  "measured_at": "2026-09-01T03:08:32Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "merged": {
+  "bytes_per_stream": [
+   2,
+   4,
+   32
+  ],
+  "bytes_per_thread_iteration": 38,
+  "command_buffers": 1,
+  "dispatches": 3,
+  "effective_gb_s": 331.1,
+  "encoders": 1,
+  "gpu_ns_max": 254750,
+  "gpu_ns_median": 252333,
+  "gpu_ns_min": 251166,
+  "gpu_ns_reps": [
+   251166,
+   252874,
+   252125,
+   251624,
+   252333,
+   252624,
+   253041,
+   254750,
+   252249,
+   252624,
+   252166,
+   252333,
+   251624,
+   253541,
+   251916,
+   251375,
+   253624,
+   252125
+  ],
+  "gpu_us_median": 252.333,
+  "id": "merged",
+  "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_aux_merge",
+  "occupancy": {
+   "gpu_cores": 60,
+   "max_total_threads_per_threadgroup": 1024,
+   "occupancy_of_max_threads": 0.125,
+   "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+   "registers_per_thread": null,
+   "thread_execution_width": 32,
+   "threadgroups": 8704,
+   "threadgroups_per_core": 145.06666666666666,
+   "threads_per_threadgroup": 128
+  },
+  "rep_spread": 1.014269447297803,
+  "steady_state": true,
+  "stream_count": 3,
+  "threads_per_threadgroup": 128,
+  "unique_payload_bytes": 83558400,
+  "weight_bytes": 83558400
+ },
+ "merged_bytes_per_stream": [
+  2,
+  4,
+  32
+ ],
+ "min_warmup": 60,
+ "order_ab": {
+  "incumbent": {
+   "bytes_per_stream": [
+    2,
+    2,
+    2,
+    32
+   ],
+   "bytes_per_thread_iteration": 38,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 327.8,
+   "encoders": 1,
+   "gpu_ns_max": 261374,
+   "gpu_ns_median": 254875,
+   "gpu_ns_min": 252750,
+   "gpu_ns_reps": [
+    254499,
+    253958,
+    252750,
+    255166,
+    255499,
+    261374,
+    256375,
+    254624,
+    254875
+   ],
+   "gpu_us_median": 254.875,
+   "id": "incumbent",
+   "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+   "occupancy": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "rep_spread": 1.0341206726013847,
+   "steady_state": true,
+   "stream_count": 4,
+   "threads_per_threadgroup": 128,
+   "unique_payload_bytes": 83558400,
+   "weight_bytes": 83558400
+  },
+  "merged": {
+   "bytes_per_stream": [
+    2,
+    4,
+    32
+   ],
+   "bytes_per_thread_iteration": 38,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 331.1,
+   "encoders": 1,
+   "gpu_ns_max": 254750,
+   "gpu_ns_median": 252333,
+   "gpu_ns_min": 251166,
+   "gpu_ns_reps": [
+    251166,
+    252874,
+    252125,
+    251624,
+    252333,
+    252624,
+    253041,
+    254750,
+    252249
+   ],
+   "gpu_us_median": 252.333,
+   "id": "merged",
+   "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_aux_merge",
+   "occupancy": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "rep_spread": 1.014269447297803,
+   "steady_state": true,
+   "stream_count": 3,
+   "threads_per_threadgroup": 128,
+   "unique_payload_bytes": 83558400,
+   "weight_bytes": 83558400
+  },
+  "ratio_merged_over_incumbent": 1.0101,
+  "sequence": [
+   "incumbent",
+   "merged"
+  ]
+ },
+ "order_ba": {
+  "incumbent": {
+   "bytes_per_stream": [
+    2,
+    2,
+    2,
+    32
+   ],
+   "bytes_per_thread_iteration": 38,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 328.3,
+   "encoders": 1,
+   "gpu_ns_max": 255708,
+   "gpu_ns_median": 254500,
+   "gpu_ns_min": 252874,
+   "gpu_ns_reps": [
+    254500,
+    253624,
+    254874,
+    252874,
+    253499,
+    254624,
+    253499,
+    255624,
+    255708
+   ],
+   "gpu_us_median": 254.5,
+   "id": "incumbent",
+   "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+   "occupancy": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "rep_spread": 1.0112071624603558,
+   "steady_state": true,
+   "stream_count": 4,
+   "threads_per_threadgroup": 128,
+   "unique_payload_bytes": 83558400,
+   "weight_bytes": 83558400
+  },
+  "merged": {
+   "bytes_per_stream": [
+    2,
+    4,
+    32
+   ],
+   "bytes_per_thread_iteration": 38,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 331.4,
+   "encoders": 1,
+   "gpu_ns_max": 253624,
+   "gpu_ns_median": 252166,
+   "gpu_ns_min": 251375,
+   "gpu_ns_reps": [
+    252624,
+    252166,
+    252333,
+    251624,
+    253541,
+    251916,
+    251375,
+    253624,
+    252125
+   ],
+   "gpu_us_median": 252.166,
+   "id": "merged",
+   "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_aux_merge",
+   "occupancy": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "rep_spread": 1.0089467926404774,
+   "steady_state": true,
+   "stream_count": 3,
+   "threads_per_threadgroup": 128,
+   "unique_payload_bytes": 83558400,
+   "weight_bytes": 83558400
+  },
+  "ratio_merged_over_incumbent": 1.0094,
+  "sequence": [
+   "merged",
+   "incumbent"
+  ]
+ },
+ "output_compare": {
+  "bit_identical": true,
+  "max_abs_err": 0.0,
+  "n_bit_exact": 39936,
+  "n_compared": 39936,
+  "per_projection": [
+   {
+    "bit_identical": true,
+    "max_abs_err": 0.0,
+    "n_bit_exact": 17408,
+    "n_compared": 17408,
+    "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+    "rel_fro": 0.0
+   },
+   {
+    "bit_identical": true,
+    "max_abs_err": 0.0,
+    "n_bit_exact": 17408,
+    "n_compared": 17408,
+    "name": "language_model.model.layers.0.mlp.up_proj.weight",
+    "rel_fro": 0.0
+   },
+   {
+    "bit_identical": true,
+    "max_abs_err": 0.0,
+    "n_bit_exact": 5120,
+    "n_compared": 5120,
+    "name": "language_model.model.layers.0.mlp.down_proj.weight",
+    "rel_fro": 0.0
+   }
+  ],
+  "rel_fro": 0.0
+ },
+ "pooled": {
+  "incumbent": {
+   "bytes_per_stream": [
+    2,
+    2,
+    2,
+    32
+   ],
+   "bytes_per_thread_iteration": 38,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 328.2,
+   "encoders": 1,
+   "gpu_ns_max": 261374,
+   "gpu_ns_median": 254624,
+   "gpu_ns_min": 252750,
+   "gpu_ns_reps": [
+    254499,
+    253958,
+    252750,
+    255166,
+    255499,
+    261374,
+    256375,
+    254624,
+    254875,
+    254500,
+    253624,
+    254874,
+    252874,
+    253499,
+    254624,
+    253499,
+    255624,
+    255708
+   ],
+   "gpu_us_median": 254.624,
+   "id": "incumbent",
+   "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128",
+   "occupancy": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "rep_spread": 1.0341206726013847,
+   "steady_state": true,
+   "stream_count": 4,
+   "threads_per_threadgroup": 128,
+   "unique_payload_bytes": 83558400,
+   "weight_bytes": 83558400
+  },
+  "merged": {
+   "bytes_per_stream": [
+    2,
+    4,
+    32
+   ],
+   "bytes_per_thread_iteration": 38,
+   "command_buffers": 1,
+   "dispatches": 3,
+   "effective_gb_s": 331.1,
+   "encoders": 1,
+   "gpu_ns_max": 254750,
+   "gpu_ns_median": 252333,
+   "gpu_ns_min": 251166,
+   "gpu_ns_reps": [
+    251166,
+    252874,
+    252125,
+    251624,
+    252333,
+    252624,
+    253041,
+    254750,
+    252249,
+    252624,
+    252166,
+    252333,
+    251624,
+    253541,
+    251916,
+    251375,
+    253624,
+    252125
+   ],
+   "gpu_us_median": 252.333,
+   "id": "merged",
+   "kernel": "qwen_affine_q2_group32_matvec_geo_tpr64_tg128_aux_merge",
+   "occupancy": {
+    "gpu_cores": 60,
+    "max_total_threads_per_threadgroup": 1024,
+    "occupancy_of_max_threads": 0.125,
+    "registers_note": "Metal pipeline state does not report register count on this toolchain; xcrun metal is not on PATH",
+    "registers_per_thread": null,
+    "thread_execution_width": 32,
+    "threadgroups": 8704,
+    "threadgroups_per_core": 145.06666666666666,
+    "threads_per_threadgroup": 128
+   },
+   "rep_spread": 1.014269447297803,
+   "steady_state": true,
+   "stream_count": 3,
+   "threads_per_threadgroup": 128,
+   "unique_payload_bytes": 83558400,
+   "weight_bytes": 83558400
+  },
+  "ratio_merged_over_incumbent": 1.0088,
+  "sequence": []
+ },
+ "production_shader_untouched": true,
+ "projections": [
+  {
+   "bias_bytes": 2785280,
+   "code_bytes": 22282240,
+   "cols": 5120,
+   "group_size": 64,
+   "merged_aux_bytes": 5570560,
+   "name": "language_model.model.layers.0.mlp.gate_proj.weight",
+   "rows": 17408,
+   "scale_bytes": 2785280,
+   "weight_bytes": 27852800
+  },
+  {
+   "bias_bytes": 2785280,
+   "code_bytes": 22282240,
+   "cols": 5120,
+   "group_size": 64,
+   "merged_aux_bytes": 5570560,
+   "name": "language_model.model.layers.0.mlp.up_proj.weight",
+   "rows": 17408,
+   "scale_bytes": 2785280,
+   "weight_bytes": 27852800
+  },
+  {
+   "bias_bytes": 2785280,
+   "code_bytes": 22282240,
+   "cols": 17408,
+   "group_size": 64,
+   "merged_aux_bytes": 5570560,
+   "name": "language_model.model.layers.0.mlp.down_proj.weight",
+   "rows": 5120,
+   "scale_bytes": 2785280,
+   "weight_bytes": 27852800
+  }
+ ],
+ "recorded_by": "tools/future/mlp_aux_merge_ab.py",
+ "refuted_elsewhere": [
+  "fma_count",
+  "total_issue_rate",
+  "dependency_chains",
+  "register_pressure",
+  "stream_count"
+ ],
+ "reps": 9,
+ "same_ratio": 1.08,
+ "scar": "WARMUP_5_LEAVES_THE_FIRST_MEASURED_ARM_OUTSIDE_STEADY_STATE",
+ "schema": "hawking.future.mlp_aux_merge_ab.v1",
+ "seal_sha256": "71aec8d3f38089cf51b83383c504fa20de8c12d205cbaafce5438d3361c099b2",
+ "source": "crates/hawking-core/examples/mlp_aux_merge_ab.rs; region GPU timestamps (MTLCommandBuffer GPUStartTime/GPUEndTime); one representative MLP layer of sealed-3.14; production unpack body vs the same body with scale+bias as one half2",
+ "steady_state_max_spread": 1.1,
+ "timing": "MTLCommandBuffer GPUStartTime/GPUEndTime",
+ "took_gpu_lease": true,
+ "unique_payload_bytes": 83558400,
+ "verdict": "NO_LIFT",
+ "version": 1,
+ "warmup": 60,
+ "weight_bytes": 83558400
+}

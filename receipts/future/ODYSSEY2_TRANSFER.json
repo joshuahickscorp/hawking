@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T12:08:04Z",
+  "recorded_at": "2026-09-01T06:08:06Z",
   "recorded_by": "tools/future/odyssey2_transfer.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -543,7 +543,7 @@
   "specimen_verify": "WHOLE_TREE_VERIFIED rows \u2014 consumed"
  },
  "schema": "hawking.future.odyssey2_transfer.v1",
- "seal_sha256": "b158821f9b1d048aab6e935ffbc23999b6beab810c89b2e18bdfd889c9266ed1",
+ "seal_sha256": "f5be92f8cc59e7535c2f3f808d79781a0208a6fae7f258900529729eb169c00d",
  "sealed_specimens": {
   "Falcon-H1-7B-Instruct": {
    "alias": "Falcon-H1-7B-Instruct",

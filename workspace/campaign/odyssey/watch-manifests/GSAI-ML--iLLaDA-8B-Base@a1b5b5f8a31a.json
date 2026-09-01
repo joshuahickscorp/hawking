@@ -1,0 +1,43 @@
+{
+  "expected": 16512918618,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "SECURITY.md",
+    "chat_template.jinja",
+    "config.json",
+    "configuration_illada.py",
+    "generation_config.json",
+    "model-00001-of-00004.safetensors",
+    "model-00002-of-00004.safetensors",
+    "model-00003-of-00004.safetensors",
+    "model-00004-of-00004.safetensors",
+    "model.safetensors.index.json",
+    "modeling_illada.py",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "GSAI-ML/iLLaDA-8B-Base",
+  "resolved_sha": "a1b5b5f8a31a3854a46205ee584178c04b45ec9a",
+  "revision": "a1b5b5f8a31a3854a46205ee584178c04b45ec9a",
+  "sizes": {
+    ".gitattributes": 1570,
+    "README.md": 2341,
+    "SECURITY.md": 1647,
+    "chat_template.jinja": 477,
+    "config.json": 944,
+    "configuration_illada.py": 3003,
+    "generation_config.json": 111,
+    "model-00001-of-00004.safetensors": 4962001760,
+    "model-00002-of-00004.safetensors": 4915916160,
+    "model-00003-of-00004.safetensors": 4999819336,
+    "model-00004-of-00004.safetensors": 1623221024,
+    "model.safetensors.index.json": 23986,
+    "modeling_illada.py": 22286,
+    "special_tokens_map.json": 563,
+    "tokenizer.json": 11880930,
+    "tokenizer_config.json": 22480
+  }
+}

@@ -1,4 +1,11 @@
 {
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
   "auth": {
     "credential_values_recorded": false,
     "github_auth_available": true,
@@ -134,6 +141,7 @@
       "tool": "huggingface.download"
     }
   ],
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "github_repository": true,
     "github_search": true,
@@ -144,10 +152,22 @@
     "web_search": true
   },
   "claim_boundary": "This gate proves bounded public research and metadata acquisition through typed tools; it does not authorize external writes or model-weight acquisition.",
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
   "credentials_secret_free": true,
+  "direct_observation": "calls=[{'tool': 'web.search', 'ok': True, 'failure_class': None, 'download_performed': None, 'atomic_publish': None}, {'tool': 'web.fetch', 'ok': True, 'failure_class': None, 'download_performed': None, 'atomic_publish': None}, {'tool': 'github.search', 'ok': True, 'failure_class': None, 'download_performed': None, 'atomic_publish': None}, {'tool': 'github.fetch', 'ok': True, 'failure_class': None, 'download_performed': None, 'atomic_publish': None}, {'tool': 'huggingface.resolve', 'ok': True, 'failure_class': None, 'download_performed': None, 'atomic_publish': None}, {'tool': 'huggingface.fetch_file', 'ok': True, 'failure_class': None, 'download_performed': None, 'atomic_publish': None}, {'tool': 'huggingface.download', 'ok': True, 'failure_class': None, 'download_performed': True, 'atomic_publish': True}]; resolved_revision='f5d08274bafd880402bd16f5e3e6c514136ec06c'; auth={'credential_values_recorded': False, 'github_auth_available': True, 'github_authenticated': False, 'huggingface_authenticated': True}; credentials_secret_free=True; checks={github_repository=True, github_search=True, huggingface_download=True, huggingface_file=True, huggingface_resolve=True, official_fetch=True, web_search=True}; unmet=[]",
   "download_destination": "/Users/scammermike/Downloads/hawking/hcli-hf-metadata-sht4vm_5/config.json",
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "finished_at": 1787788140.308616,
+  "interpretation": "bounded public research tools returned source-backed metadata and the receipt was credential-free",
   "next_action": "feed source-backed hypotheses to Doctor/VMCP and validate them with protected local measurements",
+  "probe_kind": "measured_flags",
+  "probe_performed": "ToolRegistry research seam: web.search, official web.fetch, github.search, github.fetch, huggingface.resolve, huggingface.fetch_file, huggingface.download of one metadata file with expected_sha256; credential-shaped-string scan of the receipt",
   "qualification": "RESEARCH_OPERATIONAL",
   "receipt_path": "/Users/scammermike/Downloads/hawking/.hcli/receipts/research-gate.json",
   "repo_root": "/Users/scammermike/Downloads/hawking",

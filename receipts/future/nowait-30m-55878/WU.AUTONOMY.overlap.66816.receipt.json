@@ -1,0 +1,1 @@
+{"module": "odyssey_launch.py", "entry_point": "build", "receipt": "receipts/future/ODYSSEY_LAUNCH_GATE.json", "routed_to_frontier": "FT.ODYSSEY_TRANSFER.re-earn", "species": "ODYSSEY_LAUNCH_GATE", "wall_seconds": 3.677, "evidence_class": "STATIC_ONLY"}

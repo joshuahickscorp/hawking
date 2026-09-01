@@ -1,15 +1,27 @@
 from __future__ import annotations
 
 import argparse
+import hashlib
+import json
 import os
 import shutil
 import sys
 from datetime import datetime, timezone
 from pathlib import Path
-from typing import List, Optional, Tuple
+from typing import List, Optional, Tuple, Union
 
 
 MAX_RUNTIME_COUNT = 8
+
+# Written into the build dir by install_shims, read on startup. The stamped
+# copy has no .git, so the identity of what was deployed has to be recorded
+# at install time; nothing about the copy itself can answer "from where".
+INSTALL_STAMP = "install.json"
+
+# Rollback window kept by install_shims. 3 = the build going live, the one it
+# replaces, and one more to fall back to. 60 accumulated snapshots (the state
+# this reaping was written for) never helped anyone.
+KEEP_BUILDS = 3
 
 # Delegation verbs dispatch BEFORE parse_haider_args, the same way
 # `install-shims` already does. The single-shot positional grammar
@@ -161,6 +173,53 @@ def _shim_python() -> str:
     return sys.executable
 
 
+def package_digest(pkg: Union[str, Path]) -> str:
+    """Content hash of the ``*.py`` under a package dir.
+
+    Bytes, not mtimes: a checkout or a rebase rewrites mtimes without
+    changing a line, and a staleness warning that cries wolf gets ignored.
+    ~2.5MB over ~110 files, ~6ms. ``__pycache__`` is not walked (it is also
+    what ``install_shims`` refuses to copy).
+    """
+    h = hashlib.sha256()
+    root = Path(pkg)
+    for path in sorted(root.rglob("*.py")):
+        if "__pycache__" in path.parts:
+            continue
+        h.update(str(path.relative_to(root)).encode("utf-8"))
+        h.update(path.read_bytes())
+    return h.hexdigest()
+
+
+def warn_if_stale() -> None:
+    """One line when the running stamped copy no longer matches its source.
+
+    `hcli` execs the deployed snapshot under ~/.local/share/hcli/current,
+    so an install left behind by four days of repo work runs code nobody is
+    editing any more and says nothing about it. Silent when the digests
+    agree, and silent from an editable checkout (no stamp file at all).
+    Reinstalling here would be worse than the drift: running a command must
+    not rewrite the install underneath it.
+    """
+    try:
+        stamp = json.loads(
+            (Path(__file__).resolve().parent.parent / INSTALL_STAMP).read_text(
+                encoding="utf-8"
+            )
+        )
+        src = Path(stamp["source"])
+        if not src.is_dir() or package_digest(src) == stamp["digest"]:
+            return
+    except (OSError, ValueError, KeyError):
+        return
+    print(
+        f"[hcli] STALE: running the {stamp.get('installed', '?')} snapshot of "
+        f"{src}, which has changed since. Fix: cd {src.parent} && "
+        f"PYTHONPATH=. {sys.executable} -m hcli install-shims",
+        file=sys.stderr,
+    )
+
+
 def install_shims(home: Optional[str] = None) -> int:
     """Install `hcli` and `jhcli` shims plus a timestamped package copy.
 
@@ -180,12 +239,38 @@ def install_shims(home: Optional[str] = None) -> int:
         dest_pkg,
         ignore=shutil.ignore_patterns("__pycache__", "*.pyc", "*.pyo"),
     )
+    (dest_root / INSTALL_STAMP).write_text(
+        json.dumps(
+            {"source": str(src), "digest": package_digest(src), "installed": stamp},
+            indent=2,
+        )
+        + "\n",
+        encoding="utf-8",
+    )
     current = share / "current"
     if current.is_symlink() or current.is_file():
         current.unlink()
     elif current.exists():
         raise RuntimeError(f"Refusing to replace non-symlink {current}")
     current.symlink_to(dest_root)
+
+    # Reap old snapshots. Names sort by timestamp, so newest-first slicing is
+    # the age order. The live target is never removed even if something else
+    # left the symlink pointing at an older build, and a symlinked build-*
+    # entry is skipped rather than followed.
+    live = current.resolve()
+    builds = sorted(
+        (p for p in share.glob("build-*") if p.is_dir() and not p.is_symlink()),
+        reverse=True,
+    )
+    reaped = 0
+    for old in builds[KEEP_BUILDS:]:
+        if old == live:
+            continue
+        shutil.rmtree(old)
+        reaped += 1
+    if reaped:
+        print(f"reaped {reaped} old snapshot(s), kept {KEEP_BUILDS}")
 
     python = _shim_python()
     script = (
@@ -208,6 +293,7 @@ def install_shims(home: Optional[str] = None) -> int:
 
 def main(argv: Optional[List[str]] = None) -> int:
     raw = list(sys.argv[1:] if argv is None else argv)
+    warn_if_stale()
     if raw and raw[0] in ("install-shims", "--install-shims"):
         home = None
         if len(raw) >= 3 and raw[1] == "--home":
@@ -233,6 +319,10 @@ def main(argv: Optional[List[str]] = None) -> int:
         from .agentos_cli import main as agentos_main
 
         return agentos_main(raw[1:])
+    if raw and raw[0] in ("resident", "daemon"):
+        from .agentos.resident import main as resident_main
+
+        return resident_main(raw[1:])
 
     args = parse_haider_args(raw)
     if args.debug:

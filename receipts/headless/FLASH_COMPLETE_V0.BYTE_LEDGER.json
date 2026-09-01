@@ -1,0 +1,41 @@
+{
+  "schema": "hawking.flash.complete_byte_ledger.v1",
+  "status": "MEASURED_EXACT_CONTROL_WITH_ROUTE_IO_PROFILE",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "source_index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
+  "nr_sha256": "3023992485e8e2c6577051c8a5b72c35663af0a783f51f11e4fb0a1f6e92908f",
+  "denominator": {
+    "source_parameter_equivalent": 179999981564,
+    "rule": "BF16 source bytes / 2"
+  },
+  "complete_exact_control": {
+    "runtime_required_bytes": 359999963128,
+    "complete_ebpw": 16.0,
+    "representation": "source_bf16_exact fallback for every family"
+  },
+  "measured_fastpath_profile": {
+    "receipt": "receipts/headless/FLASH_HOT_CHAIN_PROFILE_DEVICE_L0_L47_COMPLETE_V1.json",
+    "source_bytes_read": 9111506688,
+    "active_bytes_per_token_profile": 9111506688,
+    "active_fraction_of_indexed_source": 0.025309743392280162,
+    "complete_ebpw": null,
+    "note": "physical profile read volume, not a compact NX storage claim"
+  },
+  "routed_expert_sensitivity": {
+    "full_family_bytes": 246625075200,
+    "ten_of_512_route_fraction_bytes": 4816896000.0,
+    "complete_storage_bytes": null,
+    "note": "active route estimate only; dynamic all-expert representation remains open"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-28T20:45:51Z",
+    "recorded_by": "tools/flash_complete_byte_ledger.py",
+    "machine": "Apple M3 Ultra (profile receipt binding)",
+    "rule": "S032 \u00a73 -- ledger records exact bytes and profiled reads; no unmeasured compact EBPW"
+  },
+  "promotion_allowed": false,
+  "claim_boundary": "Exact complete-control byte ledger is closed at 16.0 EBPW; the route profile is measured I/O only and does not establish a smaller complete NX. Compact EBPW remains open until dynamic routing, storage, and accepted-token execution are qualified.",
+  "next": "compile and execute a complete candidate, then replace one family at a time using measured complete-token Pareto results",
+  "seal_sha256": "986cae2eb7b0204ecca71e369a3b98cbfb3f4bc0151f3443936586472dbb1289"
+}

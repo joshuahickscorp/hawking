@@ -1,0 +1,83 @@
+{
+  "schema": "hawking.flash.route_union_parity.v1",
+  "status": "PASSED_ROUTE_UNION_PARITY",
+  "dense_receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_DENSE_AUDIT.json",
+  "dense_receipt_sha256": "0de988470fd5202888d03143f1c7a1479caa5c47ce83cfcdc8601fe3b2243a85",
+  "union_receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_UNION.json",
+  "union_receipt_sha256": "faffd7ac7fc9d6eb6a85f3a23a74a57958ce8007ea6f9618f0f0ad5f46ee97a3",
+  "comparisons": [
+    {
+      "layer": 0,
+      "step": 0,
+      "token_id": 5423,
+      "dense_final_state_sha256": "66998b218d1deb493837909d75b80161d323722b8e3b0eb0fb9e7435b0b8448f",
+      "union_final_state_sha256": "66998b218d1deb493837909d75b80161d323722b8e3b0eb0fb9e7435b0b8448f",
+      "exact_fingerprint_match": true
+    },
+    {
+      "layer": 0,
+      "step": 1,
+      "token_id": 799,
+      "dense_final_state_sha256": "2edef81a214851735d78fa133fdba63f867cbfd9ff79b0fc83c3fcba27d323a1",
+      "union_final_state_sha256": "2edef81a214851735d78fa133fdba63f867cbfd9ff79b0fc83c3fcba27d323a1",
+      "exact_fingerprint_match": true
+    },
+    {
+      "layer": 1,
+      "step": 0,
+      "token_id": 5423,
+      "dense_final_state_sha256": "88dfbff4cc48de1e9b2e2dc26f7b3531e06790782956ef7b2a39cf4909091e91",
+      "union_final_state_sha256": "88dfbff4cc48de1e9b2e2dc26f7b3531e06790782956ef7b2a39cf4909091e91",
+      "exact_fingerprint_match": true
+    },
+    {
+      "layer": 1,
+      "step": 1,
+      "token_id": 799,
+      "dense_final_state_sha256": "38c640acfe87ed6e2a28b89a7e251980e1e797626366ffd499480335325a727d",
+      "union_final_state_sha256": "38c640acfe87ed6e2a28b89a7e251980e1e797626366ffd499480335325a727d",
+      "exact_fingerprint_match": true
+    },
+    {
+      "layer": 2,
+      "step": 0,
+      "token_id": 5423,
+      "dense_final_state_sha256": "501e24a8309416cf441826d345ddf530d24bf7f792ff069a90128a820768acfc",
+      "union_final_state_sha256": "501e24a8309416cf441826d345ddf530d24bf7f792ff069a90128a820768acfc",
+      "exact_fingerprint_match": true
+    },
+    {
+      "layer": 2,
+      "step": 1,
+      "token_id": 799,
+      "dense_final_state_sha256": "b1c0f061dd0f249f9ddf28fa477f6e8dff5c3be735e7d3f3e3b03dc45168b4fb",
+      "union_final_state_sha256": "b1c0f061dd0f249f9ddf28fa477f6e8dff5c3be735e7d3f3e3b03dc45168b4fb",
+      "exact_fingerprint_match": true
+    }
+  ],
+  "source_payload": {
+    "dense_bytes": 15563889984,
+    "route_union_bytes": 1014897984,
+    "bytes_saved": 14548992000,
+    "reduction_fraction": 0.9347914958893094
+  },
+  "timing": {
+    "dense_wall_ns": 562128376,
+    "route_union_wall_ns": 179084873,
+    "wall_reduction_fraction": 0.6814164154559599,
+    "dense_gpu_ns": 331903538,
+    "route_union_gpu_ns": 162977540,
+    "gpu_reduction_fraction": 0.5089611247229308,
+    "interpretation": "bounded two-token prefix comparison; includes source preparation and execution, not a complete-token benchmark"
+  },
+  "claim_boundary": "The dense and route-union compact executors produced identical final-state fingerprints for every audited layer/token pair. The route union is exact for this bounded token window; this is not complete-model TPS, EBPW, or residency evidence.",
+  "next": "Extend route-union planning across full Flash species seams, then compare complete accepted-token wall time.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T01:03:48.440153Z",
+    "recorded_by": "tools/flash_route_union_compare.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "parity and source-read comparison only; no TPS or residency claim"
+  },
+  "seal_sha256": "94bc06cca5fa5ef678b9d0f183a51bb84da111b35481f3e7e1138ec98c77215c"
+}

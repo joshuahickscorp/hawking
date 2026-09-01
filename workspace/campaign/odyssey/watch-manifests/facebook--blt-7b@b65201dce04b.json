@@ -1,0 +1,29 @@
+{
+  "expected": 21505352836,
+  "files": [
+    ".gitattributes",
+    "LICENSE",
+    "README.md",
+    "config.json",
+    "entropy_model/consolidated.pth",
+    "entropy_model/consolidated_with_rope.pth",
+    "entropy_model/params.json",
+    "model.safetensors",
+    "train_args.json"
+  ],
+  "mode": "blt",
+  "repo": "facebook/blt-7b",
+  "resolved_sha": "b65201dce04b0a824f0dedeb13bb16fc3a918048",
+  "revision": "b65201dce04b0a824f0dedeb13bb16fc3a918048",
+  "sizes": {
+    ".gitattributes": 1519,
+    "LICENSE": 11538,
+    "README.md": 2076,
+    "config.json": 3281,
+    "entropy_model/consolidated.pth": 199064782,
+    "entropy_model/consolidated_with_rope.pth": 199065036,
+    "entropy_model/params.json": 4062,
+    "model.safetensors": 21107192576,
+    "train_args.json": 7966
+  }
+}

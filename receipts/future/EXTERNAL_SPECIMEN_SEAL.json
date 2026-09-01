@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:44:16Z",
+  "recorded_at": "2026-09-01T05:26:38Z",
   "recorded_by": "tools/future/external_specimen_seal.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -314,7 +314,7 @@
   "workunit": "one CPU_ANALYSIS unit; recover verification, hash only small non-weight files, emit the tree digest; never take a GPU lease"
  },
  "schema": "hawking.future.external_specimen_seal.v1",
- "seal_sha256": "87f9a5ab2405e67c74071a1227636fe1766f1dbe23fe6ca80d7845bb5402cbee",
+ "seal_sha256": "49dcd384c0b454e368ebb8e095e3f0d25d9539961f13888ebecda7edb1d9d86e",
  "sha256_sources": {
   "recomputed_here": 12,
   "recovered_from_verification_actual": 19,
@@ -340,11 +340,11 @@
  "verification": {
   "bytes_hashed": 55586059240,
   "n_files": 31,
-  "recorded_at": "2026-08-30T14:39:43Z",
+  "recorded_at": "2026-08-31T19:55:14Z",
   "source_receipt": "receipts/future/SPECIMEN_VERIFICATION.json",
   "status": "WHOLE_TREE_VERIFIED",
   "verified": 31,
-  "wall_seconds": 1318.92,
+  "wall_seconds": 882.72,
   "whole_tree_verified": true
  },
  "version": 1

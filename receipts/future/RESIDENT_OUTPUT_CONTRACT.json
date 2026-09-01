@@ -1,0 +1,749 @@
+{
+ "answer": "Not through this contract. admit() never raises, always returns RESULT_KEYS, fills the schema shape so selected_work is always a list, and names the exact missing fields for a narrow re-ask. hcli_sovereign.py is live and is not edited here; adoption is a later step.",
+ "authority": "S033; live hcli_sovereign.validate crash shapes",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T05:41:53Z",
+  "recorded_by": "tools/future/resident_output_contract.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "live_crashes_this_admits": {
+  "dict_where_list_belongs": "selected_work as a dict is coerced to a one-element list; the live loop crashed slicing a dict",
+  "missing_key": "missing_required_fields: value still has every schema key",
+  "parse_failure_omitted_fields": "parse_failure_omits_nothing / none / empty_string: the result still carries every RESULT_KEY; the live loop crashed on a shape that omitted counts"
+ },
+ "n_named_shapes": 20,
+ "named_always_same_keyset": true,
+ "named_n_raised": 0,
+ "named_selected_work_always_list": true,
+ "named_shapes": [
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "valid_json",
+   "ok": true,
+   "parse_kind": "json_object",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "malformed_json",
+   "ok": false,
+   "parse_kind": "malformed",
+   "parse_ok": false,
+   "reask_fields": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "truncated_json",
+   "ok": false,
+   "parse_kind": "truncated",
+   "parse_ok": true,
+   "reask_fields": [
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "prose_tail",
+   "ok": true,
+   "parse_kind": "prose_tail",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "corrupt_tail",
+   "ok": true,
+   "parse_kind": "corrupt_tail",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [
+    "selected_work"
+   ],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "dict_where_list_belongs",
+   "ok": true,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [
+    "selected_work.params"
+   ],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "list_where_dict_belongs",
+   "ok": true,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "missing_required_fields",
+   "ok": false,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [
+    "commentary"
+   ],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "extra_fields",
+   "ok": true,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "null_values",
+   "ok": false,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "unicode",
+   "ok": true,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [
+    "junk"
+   ],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "deeply_nested_junk",
+   "ok": true,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "empty_string",
+   "ok": false,
+   "parse_kind": "empty",
+   "parse_ok": false,
+   "reask_fields": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "none",
+   "ok": false,
+   "parse_kind": "none",
+   "parse_ok": false,
+   "reask_fields": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "fenced_json",
+   "ok": true,
+   "parse_kind": "fenced",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "whitespace_only",
+   "ok": false,
+   "parse_kind": "empty",
+   "parse_ok": false,
+   "reask_fields": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [
+    "<root>"
+   ],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "json_array_at_top",
+   "ok": true,
+   "parse_kind": "already_array",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [],
+   "name": "bytes_utf8",
+   "ok": true,
+   "parse_kind": "json_object",
+   "parse_ok": true,
+   "reask_fields": [],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "name": "parse_failure_omits_nothing",
+   "ok": false,
+   "parse_kind": "non_json",
+   "parse_ok": false,
+   "reask_fields": [
+    "belief_update",
+    "live_hypotheses",
+    "selected_work",
+    "escalation_needed"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  },
+  {
+   "coerced": [],
+   "extra": [],
+   "keys": [
+    "ok",
+    "value",
+    "missing",
+    "extra",
+    "coerced",
+    "errors",
+    "parse",
+    "schema_id",
+    "reask"
+   ],
+   "missing": [
+    "live_hypotheses.cheapest_falsifier",
+    "selected_work"
+   ],
+   "name": "partially_valid",
+   "ok": false,
+   "parse_kind": "already_object",
+   "parse_ok": true,
+   "reask_fields": [
+    "live_hypotheses.cheapest_falsifier",
+    "selected_work"
+   ],
+   "selected_work_is_list": true,
+   "value_keys": [
+    "belief_update",
+    "escalation_needed",
+    "live_hypotheses",
+    "selected_work"
+   ]
+  }
+ ],
+ "narrow_reask_example": {
+  "missing": [
+   "live_hypotheses.cheapest_falsifier",
+   "selected_work"
+  ],
+  "needed": true,
+  "reask_fields": [
+   "live_hypotheses.cheapest_falsifier",
+   "selected_work"
+  ],
+  "shape": "partially_valid"
+ },
+ "obligation": "RESIDENT_OUTPUT_CONTRACT",
+ "parse_keys": [
+  "ok",
+  "kind",
+  "recovered",
+  "source_type"
+ ],
+ "property_probe": {
+  "always_same_keyset": true,
+  "kinds": {
+   "already_object": 101,
+   "already_scalar": 11,
+   "corrupt_tail": 9,
+   "empty": 15,
+   "fenced": 11,
+   "json_array": 4,
+   "json_object": 37,
+   "json_scalar": 7,
+   "malformed": 24,
+   "non_json": 2,
+   "none": 11,
+   "prose_tail": 16,
+   "truncated": 8
+  },
+  "n": 256,
+  "n_key_mismatch": 0,
+  "n_raised": 0,
+  "never_raised": true,
+  "seed": 0
+ },
+ "question": "Can any malformed model reply crash or stall the sovereign loop?",
+ "reask_keys": [
+  "needed",
+  "fields",
+  "prompt_fragment"
+ ],
+ "resident_callable": {
+  "entry_point": "tools.future.resident_output_contract.admit",
+  "fails_closed": "never raises; missing fields named on the result",
+  "receipt": "receipts/future/RESIDENT_OUTPUT_CONTRACT.json",
+  "schema": "tools.future.resident_output_contract.SOVEREIGN_REPLY_SCHEMA"
+ },
+ "result_keys": [
+  "ok",
+  "value",
+  "missing",
+  "extra",
+  "coerced",
+  "errors",
+  "parse",
+  "schema_id",
+  "reask"
+ ],
+ "schema": "hawking.future.resident_output_contract.v1",
+ "seal_sha256": "df2a25e05a6b519a2e263791723834ded2eace0570c0ef238c0c843092dde8c4",
+ "untested": [
+  "whether the live hcli_sovereign loop has adopted admit(); it has not",
+  "whether a terse re-ask that names only missing fields changes the body's next reply (UNTESTED)"
+ ],
+ "what_this_does_not_do": "choose a hypothesis, a tensor, a layer, a fraction, or a next experiment. It admits a shape. Scientific selection stays with the resident."
+}

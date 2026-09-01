@@ -71,3 +71,33 @@ def test_every_rung_above_now_is_labelled_a_target():
     for r in cb.ladder():
         if r["rung"] != "measured now":
             assert r["class"] != "MEASURED"
+
+
+def test_the_body_citation_points_at_the_promoted_absolute():
+    """This module was never DRIFTED - its expect matched its source exactly. It
+    cited a SUPERSEDED source, which no drift check can catch."""
+    ids = {c["id"]: c for c in cb.CITATIONS}
+    for cid in ("current_body_wall_ms", "current_body_gpu_ms"):
+        assert ids[cid]["source"] == "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+
+
+def test_the_source_string_is_derived_from_the_citation_not_typed():
+    """A hard-coded source string outlives the citation it describes, and this
+    one did: the numbers moved and the line still named the old receipt."""
+    b = cb.causal_residual()["baseline_moved"]
+    ids = {c["id"]: c for c in cb.CITATIONS}
+    assert b["measured_by"] == ids["current_body_wall_ms"]["source"]
+    from pathlib import Path
+    src = Path(cb.__file__).read_text()
+    assert '"measured_by": "receipts/' not in src
+
+
+def test_an_unknown_flag_refuses_rather_than_writing_nothing():
+    """Third module found with this trap: --build printed a fresh table, exited
+    0 and wrote NOTHING."""
+    import subprocess, sys as _s
+    from pathlib import Path
+    r = subprocess.run([_s.executable, str(Path(cb.__file__)), "--bogus"],
+                       capture_output=True, text=True)
+    assert r.returncode != 0
+    assert "unknown flag" in (r.stdout + r.stderr)

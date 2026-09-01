@@ -25,7 +25,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T07:57:47Z",
+  "recorded_at": "2026-09-01T06:03:30Z",
   "recorded_by": "tools/future/mlp_sparse_residual.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -173,19 +173,19 @@
       "id": "shared_input_r64_uniform_k0",
       "live": false,
       "net_bytes": -5305164608,
-      "predicted_ms_delta": -15.4175,
+      "predicted_ms_delta": -2.9034,
       "predicted_ms_delta_range": [
-       -23.7474,
-       -10.6658
+       -2.9629,
+       -2.0634
       ],
-      "predicted_ms_saved": 15.4175,
-      "predicted_token_ms": 13.3045,
-      "predicted_tps": 75.163,
+      "predicted_ms_saved": 2.9034,
+      "predicted_token_ms": 19.999,
+      "predicted_tps": 50.003,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.7474,
+       "plausible_ms_saved": 2.9629,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -195,9 +195,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1239,
-       "byte_ms_delta": -15.4175,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0233,
+       "byte_ms_delta": -2.9034,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.0,
        "flop_ms_delta": 0.0
       },
@@ -209,7 +209,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5305164608,
-      "predicted_ms_saved": 15.4175,
+      "predicted_ms_saved": 2.9034,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -320,19 +320,19 @@
       "id": "shared_input_r64_capability_k0",
       "live": false,
       "net_bytes": -5305164608,
-      "predicted_ms_delta": -15.4175,
+      "predicted_ms_delta": -2.9034,
       "predicted_ms_delta_range": [
-       -23.7474,
-       -10.6658
+       -2.9629,
+       -2.0634
       ],
-      "predicted_ms_saved": 15.4175,
-      "predicted_token_ms": 13.3045,
-      "predicted_tps": 75.163,
+      "predicted_ms_saved": 2.9034,
+      "predicted_token_ms": 19.999,
+      "predicted_tps": 50.003,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.7474,
+       "plausible_ms_saved": 2.9629,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -342,9 +342,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1239,
-       "byte_ms_delta": -15.4175,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0233,
+       "byte_ms_delta": -2.9034,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.0,
        "flop_ms_delta": 0.0
       },
@@ -356,7 +356,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5305164608,
-      "predicted_ms_saved": 15.4175,
+      "predicted_ms_saved": 2.9034,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -467,19 +467,19 @@
       "id": "shared_input_r64_uniform_k1",
       "live": false,
       "net_bytes": -5304508992,
-      "predicted_ms_delta": -15.0153,
+      "predicted_ms_delta": -2.5028,
       "predicted_ms_delta_range": [
-       -23.3444,
-       -10.2633
+       -2.5625,
+       -1.662
       ],
-      "predicted_ms_saved": 15.0153,
-      "predicted_token_ms": 13.7067,
-      "predicted_tps": 72.957,
+      "predicted_ms_saved": 2.5028,
+      "predicted_token_ms": 20.3996,
+      "predicted_tps": 49.02,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3444,
+       "plausible_ms_saved": 2.5625,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -489,9 +489,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1258,
-       "byte_ms_delta": -15.4156,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0237,
+       "byte_ms_delta": -2.9031,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0003
       },
@@ -503,7 +503,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5304508992,
-      "predicted_ms_saved": 15.0153,
+      "predicted_ms_saved": 2.5028,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -614,19 +614,19 @@
       "id": "shared_input_r64_capability_k1",
       "live": false,
       "net_bytes": -5304508992,
-      "predicted_ms_delta": -15.0153,
+      "predicted_ms_delta": -2.5028,
       "predicted_ms_delta_range": [
-       -23.3444,
-       -10.2633
+       -2.5625,
+       -1.662
       ],
-      "predicted_ms_saved": 15.0153,
-      "predicted_token_ms": 13.7067,
-      "predicted_tps": 72.957,
+      "predicted_ms_saved": 2.5028,
+      "predicted_token_ms": 20.3996,
+      "predicted_tps": 49.02,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3444,
+       "plausible_ms_saved": 2.5625,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -636,9 +636,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1258,
-       "byte_ms_delta": -15.4156,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0237,
+       "byte_ms_delta": -2.9031,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0003
       },
@@ -650,7 +650,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5304508992,
-      "predicted_ms_saved": 15.0153,
+      "predicted_ms_saved": 2.5028,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -761,19 +761,19 @@
       "id": "shared_input_r64_uniform_k4",
       "live": false,
       "net_bytes": -5302542144,
-      "predicted_ms_delta": -15.0087,
+      "predicted_ms_delta": -2.5008,
       "predicted_ms_delta_range": [
-       -23.3356,
-       -10.2558
+       -2.5614,
+       -1.6577
       ],
-      "predicted_ms_saved": 15.0087,
-      "predicted_token_ms": 13.7133,
-      "predicted_tps": 72.922,
+      "predicted_ms_saved": 2.5008,
+      "predicted_token_ms": 20.4016,
+      "predicted_tps": 49.016,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3356,
+       "plausible_ms_saved": 2.5614,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -783,9 +783,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1315,
-       "byte_ms_delta": -15.4099,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0248,
+       "byte_ms_delta": -2.902,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0012
       },
@@ -797,7 +797,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5302542144,
-      "predicted_ms_saved": 15.0087,
+      "predicted_ms_saved": 2.5008,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -908,19 +908,19 @@
       "id": "shared_input_r64_capability_k4",
       "live": false,
       "net_bytes": -5302542144,
-      "predicted_ms_delta": -15.0087,
+      "predicted_ms_delta": -2.5008,
       "predicted_ms_delta_range": [
-       -23.3356,
-       -10.2558
+       -2.5614,
+       -1.6577
       ],
-      "predicted_ms_saved": 15.0087,
-      "predicted_token_ms": 13.7133,
-      "predicted_tps": 72.922,
+      "predicted_ms_saved": 2.5008,
+      "predicted_token_ms": 20.4016,
+      "predicted_tps": 49.016,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3356,
+       "plausible_ms_saved": 2.5614,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -930,9 +930,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1315,
-       "byte_ms_delta": -15.4099,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0248,
+       "byte_ms_delta": -2.902,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0012
       },
@@ -944,7 +944,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5302542144,
-      "predicted_ms_saved": 15.0087,
+      "predicted_ms_saved": 2.5008,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -1055,19 +1055,19 @@
       "id": "shared_input_r64_uniform_k8",
       "live": false,
       "net_bytes": -5299919680,
-      "predicted_ms_delta": -14.9999,
+      "predicted_ms_delta": -2.4982,
       "predicted_ms_delta_range": [
-       -23.3239,
-       -10.2457
+       -2.5599,
+       -1.6519
       ],
-      "predicted_ms_saved": 14.9999,
-      "predicted_token_ms": 13.7221,
-      "predicted_tps": 72.875,
+      "predicted_ms_saved": 2.4982,
+      "predicted_token_ms": 20.4042,
+      "predicted_tps": 49.009,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3239,
+       "plausible_ms_saved": 2.5599,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -1077,9 +1077,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1391,
-       "byte_ms_delta": -15.4023,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0262,
+       "byte_ms_delta": -2.9006,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0024
       },
@@ -1091,7 +1091,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5299919680,
-      "predicted_ms_saved": 14.9999,
+      "predicted_ms_saved": 2.4982,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -1202,19 +1202,19 @@
       "id": "shared_input_r64_capability_k8",
       "live": false,
       "net_bytes": -5299919680,
-      "predicted_ms_delta": -14.9999,
+      "predicted_ms_delta": -2.4982,
       "predicted_ms_delta_range": [
-       -23.3239,
-       -10.2457
+       -2.5599,
+       -1.6519
       ],
-      "predicted_ms_saved": 14.9999,
-      "predicted_token_ms": 13.7221,
-      "predicted_tps": 72.875,
+      "predicted_ms_saved": 2.4982,
+      "predicted_token_ms": 20.4042,
+      "predicted_tps": 49.009,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3239,
+       "plausible_ms_saved": 2.5599,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -1224,9 +1224,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1391,
-       "byte_ms_delta": -15.4023,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0262,
+       "byte_ms_delta": -2.9006,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0024
       },
@@ -1238,7 +1238,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5299919680,
-      "predicted_ms_saved": 14.9999,
+      "predicted_ms_saved": 2.4982,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -1349,19 +1349,19 @@
       "id": "shared_input_r64_uniform_k22",
       "live": false,
       "net_bytes": -5290741056,
-      "predicted_ms_delta": -14.969,
+      "predicted_ms_delta": -2.489,
       "predicted_ms_delta_range": [
-       -23.2828,
-       -10.2106
+       -2.5548,
+       -1.6316
       ],
-      "predicted_ms_saved": 14.969,
-      "predicted_token_ms": 13.753,
-      "predicted_tps": 72.712,
+      "predicted_ms_saved": 2.489,
+      "predicted_token_ms": 20.4134,
+      "predicted_tps": 48.987,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.2828,
+       "plausible_ms_saved": 2.5548,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -1371,9 +1371,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1658,
-       "byte_ms_delta": -15.3756,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0312,
+       "byte_ms_delta": -2.8955,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0065
       },
@@ -1385,7 +1385,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5290741056,
-      "predicted_ms_saved": 14.969,
+      "predicted_ms_saved": 2.489,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -1496,19 +1496,19 @@
       "id": "shared_input_r64_capability_k22",
       "live": false,
       "net_bytes": -5290741056,
-      "predicted_ms_delta": -14.969,
+      "predicted_ms_delta": -2.489,
       "predicted_ms_delta_range": [
-       -23.2828,
-       -10.2106
+       -2.5548,
+       -1.6316
       ],
-      "predicted_ms_saved": 14.969,
-      "predicted_token_ms": 13.753,
-      "predicted_tps": 72.712,
+      "predicted_ms_saved": 2.489,
+      "predicted_token_ms": 20.4134,
+      "predicted_tps": 48.987,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.2828,
+       "plausible_ms_saved": 2.5548,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -1518,9 +1518,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1658,
-       "byte_ms_delta": -15.3756,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0312,
+       "byte_ms_delta": -2.8955,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0065
       },
@@ -1532,7 +1532,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5290741056,
-      "predicted_ms_saved": 14.969,
+      "predicted_ms_saved": 2.489,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -1643,19 +1643,19 @@
       "id": "shared_input_r64_uniform_k81",
       "live": false,
       "net_bytes": -5252059712,
-      "predicted_ms_delta": -14.8391,
+      "predicted_ms_delta": -2.4503,
       "predicted_ms_delta_range": [
-       -23.1097,
-       -10.0626
+       -2.5332,
+       -1.5464
       ],
-      "predicted_ms_saved": 14.8391,
-      "predicted_token_ms": 13.8829,
-      "predicted_tps": 72.031,
+      "predicted_ms_saved": 2.4503,
+      "predicted_token_ms": 20.4521,
+      "predicted_tps": 48.895,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.1097,
+       "plausible_ms_saved": 2.5332,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -1665,9 +1665,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.2782,
-       "byte_ms_delta": -15.2632,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0524,
+       "byte_ms_delta": -2.8744,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0241
       },
@@ -1679,7 +1679,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5252059712,
-      "predicted_ms_saved": 14.8391,
+      "predicted_ms_saved": 2.4503,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -1790,19 +1790,19 @@
       "id": "shared_input_r64_capability_k81",
       "live": false,
       "net_bytes": -5252059712,
-      "predicted_ms_delta": -14.8391,
+      "predicted_ms_delta": -2.4503,
       "predicted_ms_delta_range": [
-       -23.1097,
-       -10.0626
+       -2.5332,
+       -1.5464
       ],
-      "predicted_ms_saved": 14.8391,
-      "predicted_token_ms": 13.8829,
-      "predicted_tps": 72.031,
+      "predicted_ms_saved": 2.4503,
+      "predicted_token_ms": 20.4521,
+      "predicted_tps": 48.895,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.1097,
+       "plausible_ms_saved": 2.5332,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -1812,9 +1812,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.2782,
-       "byte_ms_delta": -15.2632,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0524,
+       "byte_ms_delta": -2.8744,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0241
       },
@@ -1826,7 +1826,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5252059712,
-      "predicted_ms_saved": 14.8391,
+      "predicted_ms_saved": 2.4503,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -1937,19 +1937,19 @@
       "id": "shared_input_r64_uniform_k244",
       "live": false,
       "net_bytes": -5145194304,
-      "predicted_ms_delta": -14.48,
+      "predicted_ms_delta": -2.3433,
       "predicted_ms_delta_range": [
-       -22.6313,
-       -9.6537
+       -2.4735,
+       -1.3108
       ],
-      "predicted_ms_saved": 14.48,
-      "predicted_token_ms": 14.242,
-      "predicted_tps": 70.215,
+      "predicted_ms_saved": 2.3433,
+      "predicted_token_ms": 20.5591,
+      "predicted_tps": 48.64,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.6313,
+       "plausible_ms_saved": 2.4735,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -1959,9 +1959,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.5888,
-       "byte_ms_delta": -14.9526,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1109,
+       "byte_ms_delta": -2.8159,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0726
       },
@@ -1973,7 +1973,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5145194304,
-      "predicted_ms_saved": 14.48,
+      "predicted_ms_saved": 2.3433,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -2084,19 +2084,19 @@
       "id": "shared_input_r64_capability_k244",
       "live": false,
       "net_bytes": -5145194304,
-      "predicted_ms_delta": -14.48,
+      "predicted_ms_delta": -2.3433,
       "predicted_ms_delta_range": [
-       -22.6313,
-       -9.6537
+       -2.4735,
+       -1.3108
       ],
-      "predicted_ms_saved": 14.48,
-      "predicted_token_ms": 14.242,
-      "predicted_tps": 70.215,
+      "predicted_ms_saved": 2.3433,
+      "predicted_token_ms": 20.5591,
+      "predicted_tps": 48.64,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.6313,
+       "plausible_ms_saved": 2.4735,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -2106,9 +2106,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.5888,
-       "byte_ms_delta": -14.9526,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1109,
+       "byte_ms_delta": -2.8159,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0726
       },
@@ -2120,7 +2120,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5145194304,
-      "predicted_ms_saved": 14.48,
+      "predicted_ms_saved": 2.3433,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -2231,19 +2231,19 @@
       "id": "shared_input_r64_uniform_k407",
       "live": false,
       "net_bytes": -5038328896,
-      "predicted_ms_delta": -14.1209,
+      "predicted_ms_delta": -2.2363,
       "predicted_ms_delta_range": [
-       -22.1529,
-       -9.2449
+       -2.4138,
+       -1.0752
       ],
-      "predicted_ms_saved": 14.1209,
-      "predicted_token_ms": 14.6011,
-      "predicted_tps": 68.488,
+      "predicted_ms_saved": 2.2363,
+      "predicted_token_ms": 20.6661,
+      "predicted_tps": 48.388,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.1529,
+       "plausible_ms_saved": 2.4138,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -2253,9 +2253,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.8994,
-       "byte_ms_delta": -14.642,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1694,
+       "byte_ms_delta": -2.7574,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.1211
       },
@@ -2267,7 +2267,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5038328896,
-      "predicted_ms_saved": 14.1209,
+      "predicted_ms_saved": 2.2363,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -2378,19 +2378,19 @@
       "id": "shared_input_r64_capability_k407",
       "live": false,
       "net_bytes": -5038328896,
-      "predicted_ms_delta": -14.1209,
+      "predicted_ms_delta": -2.2363,
       "predicted_ms_delta_range": [
-       -22.1529,
-       -9.2449
+       -2.4138,
+       -1.0752
       ],
-      "predicted_ms_saved": 14.1209,
-      "predicted_token_ms": 14.6011,
-      "predicted_tps": 68.488,
+      "predicted_ms_saved": 2.2363,
+      "predicted_token_ms": 20.6661,
+      "predicted_tps": 48.388,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.1529,
+       "plausible_ms_saved": 2.4138,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -2400,9 +2400,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.8994,
-       "byte_ms_delta": -14.642,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1694,
+       "byte_ms_delta": -2.7574,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.1211
       },
@@ -2414,7 +2414,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5038328896,
-      "predicted_ms_saved": 14.1209,
+      "predicted_ms_saved": 2.2363,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -2525,19 +2525,19 @@
       "id": "shared_input_r64_uniform_k815",
       "live": false,
       "net_bytes": -4770837568,
-      "predicted_ms_delta": -13.2222,
+      "predicted_ms_delta": -1.9685,
       "predicted_ms_delta_range": [
-       -20.9556,
-       -8.2214
+       -2.2645,
+       -0.4855
       ],
-      "predicted_ms_saved": 13.2222,
-      "predicted_token_ms": 15.4998,
-      "predicted_tps": 64.517,
+      "predicted_ms_saved": 1.9685,
+      "predicted_token_ms": 20.9339,
+      "predicted_tps": 47.769,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 20.9556,
+       "plausible_ms_saved": 2.2645,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -2547,9 +2547,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 1.6767,
-       "byte_ms_delta": -13.8647,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.3158,
+       "byte_ms_delta": -2.611,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.2425
       },
@@ -2561,7 +2561,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4770837568,
-      "predicted_ms_saved": 13.2222,
+      "predicted_ms_saved": 1.9685,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -2672,19 +2672,19 @@
       "id": "shared_input_r64_capability_k815",
       "live": false,
       "net_bytes": -4770837568,
-      "predicted_ms_delta": -13.2222,
+      "predicted_ms_delta": -1.9685,
       "predicted_ms_delta_range": [
-       -20.9556,
-       -8.2214
+       -2.2645,
+       -0.4855
       ],
-      "predicted_ms_saved": 13.2222,
-      "predicted_token_ms": 15.4998,
-      "predicted_tps": 64.517,
+      "predicted_ms_saved": 1.9685,
+      "predicted_token_ms": 20.9339,
+      "predicted_tps": 47.769,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 20.9556,
+       "plausible_ms_saved": 2.2645,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -2694,9 +2694,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 1.6767,
-       "byte_ms_delta": -13.8647,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.3158,
+       "byte_ms_delta": -2.611,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.2425
       },
@@ -2708,7 +2708,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4770837568,
-      "predicted_ms_saved": 13.2222,
+      "predicted_ms_saved": 1.9685,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -2819,19 +2819,19 @@
       "id": "shared_input_r64_uniform_k2039",
       "live": false,
       "net_bytes": -3968363584,
-      "predicted_ms_delta": -10.5258,
+      "predicted_ms_delta": -1.165,
       "predicted_ms_delta_range": [
-       -17.3635,
-       -5.1511
+       -1.8163,
+       1.2836
       ],
-      "predicted_ms_saved": 10.5258,
-      "predicted_token_ms": 18.1962,
-      "predicted_tps": 54.957,
+      "predicted_ms_saved": 1.165,
+      "predicted_token_ms": 21.7374,
+      "predicted_tps": 46.004,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 17.3635,
+       "plausible_ms_saved": 1.8163,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -2841,9 +2841,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 4.0088,
-       "byte_ms_delta": -11.5326,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.7549,
+       "byte_ms_delta": -2.1718,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.6068
       },
@@ -2855,7 +2855,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -3968363584,
-      "predicted_ms_saved": 10.5258,
+      "predicted_ms_saved": 1.165,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -2966,19 +2966,19 @@
       "id": "shared_input_r64_capability_k2039",
       "live": false,
       "net_bytes": -3968363584,
-      "predicted_ms_delta": -10.5258,
+      "predicted_ms_delta": -1.165,
       "predicted_ms_delta_range": [
-       -17.3635,
-       -5.1511
+       -1.8163,
+       1.2836
       ],
-      "predicted_ms_saved": 10.5258,
-      "predicted_token_ms": 18.1962,
-      "predicted_tps": 54.957,
+      "predicted_ms_saved": 1.165,
+      "predicted_token_ms": 21.7374,
+      "predicted_tps": 46.004,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 17.3635,
+       "plausible_ms_saved": 1.8163,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -2988,9 +2988,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 4.0088,
-       "byte_ms_delta": -11.5326,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.7549,
+       "byte_ms_delta": -2.1718,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.6068
       },
@@ -3002,7 +3002,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -3968363584,
-      "predicted_ms_saved": 10.5258,
+      "predicted_ms_saved": 1.165,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -3874,19 +3874,19 @@
       "id": "shared_output_r64_uniform_k0",
       "live": false,
       "net_bytes": -5305164608,
-      "predicted_ms_delta": -15.4175,
+      "predicted_ms_delta": -2.9034,
       "predicted_ms_delta_range": [
-       -23.7474,
-       -10.6658
+       -2.9629,
+       -2.0634
       ],
-      "predicted_ms_saved": 15.4175,
-      "predicted_token_ms": 13.3045,
-      "predicted_tps": 75.163,
+      "predicted_ms_saved": 2.9034,
+      "predicted_token_ms": 19.999,
+      "predicted_tps": 50.003,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.7474,
+       "plausible_ms_saved": 2.9629,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -3896,9 +3896,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1239,
-       "byte_ms_delta": -15.4175,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0233,
+       "byte_ms_delta": -2.9034,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.0,
        "flop_ms_delta": 0.0
       },
@@ -3910,7 +3910,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5305164608,
-      "predicted_ms_saved": 15.4175,
+      "predicted_ms_saved": 2.9034,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -4021,19 +4021,19 @@
       "id": "shared_output_r64_capability_k0",
       "live": false,
       "net_bytes": -5305164608,
-      "predicted_ms_delta": -15.4175,
+      "predicted_ms_delta": -2.9034,
       "predicted_ms_delta_range": [
-       -23.7474,
-       -10.6658
+       -2.9629,
+       -2.0634
       ],
-      "predicted_ms_saved": 15.4175,
-      "predicted_token_ms": 13.3045,
-      "predicted_tps": 75.163,
+      "predicted_ms_saved": 2.9034,
+      "predicted_token_ms": 19.999,
+      "predicted_tps": 50.003,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.7474,
+       "plausible_ms_saved": 2.9629,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -4043,9 +4043,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1239,
-       "byte_ms_delta": -15.4175,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0233,
+       "byte_ms_delta": -2.9034,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.0,
        "flop_ms_delta": 0.0
       },
@@ -4057,7 +4057,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5305164608,
-      "predicted_ms_saved": 15.4175,
+      "predicted_ms_saved": 2.9034,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -4168,19 +4168,19 @@
       "id": "shared_output_r64_uniform_k1",
       "live": false,
       "net_bytes": -5304508992,
-      "predicted_ms_delta": -15.0153,
+      "predicted_ms_delta": -2.5028,
       "predicted_ms_delta_range": [
-       -23.3444,
-       -10.2633
+       -2.5625,
+       -1.662
       ],
-      "predicted_ms_saved": 15.0153,
-      "predicted_token_ms": 13.7067,
-      "predicted_tps": 72.957,
+      "predicted_ms_saved": 2.5028,
+      "predicted_token_ms": 20.3996,
+      "predicted_tps": 49.02,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3444,
+       "plausible_ms_saved": 2.5625,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -4190,9 +4190,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1258,
-       "byte_ms_delta": -15.4156,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0237,
+       "byte_ms_delta": -2.9031,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0003
       },
@@ -4204,7 +4204,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5304508992,
-      "predicted_ms_saved": 15.0153,
+      "predicted_ms_saved": 2.5028,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -4315,19 +4315,19 @@
       "id": "shared_output_r64_capability_k1",
       "live": false,
       "net_bytes": -5304508992,
-      "predicted_ms_delta": -15.0153,
+      "predicted_ms_delta": -2.5028,
       "predicted_ms_delta_range": [
-       -23.3444,
-       -10.2633
+       -2.5625,
+       -1.662
       ],
-      "predicted_ms_saved": 15.0153,
-      "predicted_token_ms": 13.7067,
-      "predicted_tps": 72.957,
+      "predicted_ms_saved": 2.5028,
+      "predicted_token_ms": 20.3996,
+      "predicted_tps": 49.02,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3444,
+       "plausible_ms_saved": 2.5625,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -4337,9 +4337,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1258,
-       "byte_ms_delta": -15.4156,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0237,
+       "byte_ms_delta": -2.9031,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0003
       },
@@ -4351,7 +4351,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5304508992,
-      "predicted_ms_saved": 15.0153,
+      "predicted_ms_saved": 2.5028,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -4462,19 +4462,19 @@
       "id": "shared_output_r64_uniform_k4",
       "live": false,
       "net_bytes": -5302542144,
-      "predicted_ms_delta": -15.0087,
+      "predicted_ms_delta": -2.5008,
       "predicted_ms_delta_range": [
-       -23.3356,
-       -10.2558
+       -2.5614,
+       -1.6577
       ],
-      "predicted_ms_saved": 15.0087,
-      "predicted_token_ms": 13.7133,
-      "predicted_tps": 72.922,
+      "predicted_ms_saved": 2.5008,
+      "predicted_token_ms": 20.4016,
+      "predicted_tps": 49.016,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3356,
+       "plausible_ms_saved": 2.5614,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -4484,9 +4484,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1315,
-       "byte_ms_delta": -15.4099,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0248,
+       "byte_ms_delta": -2.902,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0012
       },
@@ -4498,7 +4498,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5302542144,
-      "predicted_ms_saved": 15.0087,
+      "predicted_ms_saved": 2.5008,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -4609,19 +4609,19 @@
       "id": "shared_output_r64_capability_k4",
       "live": false,
       "net_bytes": -5302542144,
-      "predicted_ms_delta": -15.0087,
+      "predicted_ms_delta": -2.5008,
       "predicted_ms_delta_range": [
-       -23.3356,
-       -10.2558
+       -2.5614,
+       -1.6577
       ],
-      "predicted_ms_saved": 15.0087,
-      "predicted_token_ms": 13.7133,
-      "predicted_tps": 72.922,
+      "predicted_ms_saved": 2.5008,
+      "predicted_token_ms": 20.4016,
+      "predicted_tps": 49.016,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3356,
+       "plausible_ms_saved": 2.5614,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -4631,9 +4631,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1315,
-       "byte_ms_delta": -15.4099,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0248,
+       "byte_ms_delta": -2.902,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0012
       },
@@ -4645,7 +4645,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5302542144,
-      "predicted_ms_saved": 15.0087,
+      "predicted_ms_saved": 2.5008,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -4756,19 +4756,19 @@
       "id": "shared_output_r64_uniform_k8",
       "live": false,
       "net_bytes": -5299919680,
-      "predicted_ms_delta": -14.9999,
+      "predicted_ms_delta": -2.4982,
       "predicted_ms_delta_range": [
-       -23.3239,
-       -10.2457
+       -2.5599,
+       -1.6519
       ],
-      "predicted_ms_saved": 14.9999,
-      "predicted_token_ms": 13.7221,
-      "predicted_tps": 72.875,
+      "predicted_ms_saved": 2.4982,
+      "predicted_token_ms": 20.4042,
+      "predicted_tps": 49.009,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3239,
+       "plausible_ms_saved": 2.5599,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -4778,9 +4778,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1391,
-       "byte_ms_delta": -15.4023,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0262,
+       "byte_ms_delta": -2.9006,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0024
       },
@@ -4792,7 +4792,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5299919680,
-      "predicted_ms_saved": 14.9999,
+      "predicted_ms_saved": 2.4982,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -4903,19 +4903,19 @@
       "id": "shared_output_r64_capability_k8",
       "live": false,
       "net_bytes": -5299919680,
-      "predicted_ms_delta": -14.9999,
+      "predicted_ms_delta": -2.4982,
       "predicted_ms_delta_range": [
-       -23.3239,
-       -10.2457
+       -2.5599,
+       -1.6519
       ],
-      "predicted_ms_saved": 14.9999,
-      "predicted_token_ms": 13.7221,
-      "predicted_tps": 72.875,
+      "predicted_ms_saved": 2.4982,
+      "predicted_token_ms": 20.4042,
+      "predicted_tps": 49.009,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.3239,
+       "plausible_ms_saved": 2.5599,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -4925,9 +4925,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1391,
-       "byte_ms_delta": -15.4023,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0262,
+       "byte_ms_delta": -2.9006,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0024
       },
@@ -4939,7 +4939,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5299919680,
-      "predicted_ms_saved": 14.9999,
+      "predicted_ms_saved": 2.4982,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -5050,19 +5050,19 @@
       "id": "shared_output_r64_uniform_k22",
       "live": false,
       "net_bytes": -5290741056,
-      "predicted_ms_delta": -14.969,
+      "predicted_ms_delta": -2.489,
       "predicted_ms_delta_range": [
-       -23.2828,
-       -10.2106
+       -2.5548,
+       -1.6316
       ],
-      "predicted_ms_saved": 14.969,
-      "predicted_token_ms": 13.753,
-      "predicted_tps": 72.712,
+      "predicted_ms_saved": 2.489,
+      "predicted_token_ms": 20.4134,
+      "predicted_tps": 48.987,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.2828,
+       "plausible_ms_saved": 2.5548,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -5072,9 +5072,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1658,
-       "byte_ms_delta": -15.3756,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0312,
+       "byte_ms_delta": -2.8955,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0065
       },
@@ -5086,7 +5086,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5290741056,
-      "predicted_ms_saved": 14.969,
+      "predicted_ms_saved": 2.489,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -5197,19 +5197,19 @@
       "id": "shared_output_r64_capability_k22",
       "live": false,
       "net_bytes": -5290741056,
-      "predicted_ms_delta": -14.969,
+      "predicted_ms_delta": -2.489,
       "predicted_ms_delta_range": [
-       -23.2828,
-       -10.2106
+       -2.5548,
+       -1.6316
       ],
-      "predicted_ms_saved": 14.969,
-      "predicted_token_ms": 13.753,
-      "predicted_tps": 72.712,
+      "predicted_ms_saved": 2.489,
+      "predicted_token_ms": 20.4134,
+      "predicted_tps": 48.987,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.2828,
+       "plausible_ms_saved": 2.5548,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -5219,9 +5219,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1658,
-       "byte_ms_delta": -15.3756,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0312,
+       "byte_ms_delta": -2.8955,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0065
       },
@@ -5233,7 +5233,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5290741056,
-      "predicted_ms_saved": 14.969,
+      "predicted_ms_saved": 2.489,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -5344,19 +5344,19 @@
       "id": "shared_output_r64_uniform_k81",
       "live": false,
       "net_bytes": -5252059712,
-      "predicted_ms_delta": -14.8391,
+      "predicted_ms_delta": -2.4503,
       "predicted_ms_delta_range": [
-       -23.1097,
-       -10.0626
+       -2.5332,
+       -1.5464
       ],
-      "predicted_ms_saved": 14.8391,
-      "predicted_token_ms": 13.8829,
-      "predicted_tps": 72.031,
+      "predicted_ms_saved": 2.4503,
+      "predicted_token_ms": 20.4521,
+      "predicted_tps": 48.895,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.1097,
+       "plausible_ms_saved": 2.5332,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -5366,9 +5366,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.2782,
-       "byte_ms_delta": -15.2632,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0524,
+       "byte_ms_delta": -2.8744,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0241
       },
@@ -5380,7 +5380,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5252059712,
-      "predicted_ms_saved": 14.8391,
+      "predicted_ms_saved": 2.4503,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -5491,19 +5491,19 @@
       "id": "shared_output_r64_capability_k81",
       "live": false,
       "net_bytes": -5252059712,
-      "predicted_ms_delta": -14.8391,
+      "predicted_ms_delta": -2.4503,
       "predicted_ms_delta_range": [
-       -23.1097,
-       -10.0626
+       -2.5332,
+       -1.5464
       ],
-      "predicted_ms_saved": 14.8391,
-      "predicted_token_ms": 13.8829,
-      "predicted_tps": 72.031,
+      "predicted_ms_saved": 2.4503,
+      "predicted_token_ms": 20.4521,
+      "predicted_tps": 48.895,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.1097,
+       "plausible_ms_saved": 2.5332,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -5513,9 +5513,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.2782,
-       "byte_ms_delta": -15.2632,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0524,
+       "byte_ms_delta": -2.8744,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0241
       },
@@ -5527,7 +5527,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5252059712,
-      "predicted_ms_saved": 14.8391,
+      "predicted_ms_saved": 2.4503,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -5638,19 +5638,19 @@
       "id": "shared_output_r64_uniform_k244",
       "live": false,
       "net_bytes": -5145194304,
-      "predicted_ms_delta": -14.48,
+      "predicted_ms_delta": -2.3433,
       "predicted_ms_delta_range": [
-       -22.6313,
-       -9.6537
+       -2.4735,
+       -1.3108
       ],
-      "predicted_ms_saved": 14.48,
-      "predicted_token_ms": 14.242,
-      "predicted_tps": 70.215,
+      "predicted_ms_saved": 2.3433,
+      "predicted_token_ms": 20.5591,
+      "predicted_tps": 48.64,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.6313,
+       "plausible_ms_saved": 2.4735,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -5660,9 +5660,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.5888,
-       "byte_ms_delta": -14.9526,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1109,
+       "byte_ms_delta": -2.8159,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0726
       },
@@ -5674,7 +5674,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5145194304,
-      "predicted_ms_saved": 14.48,
+      "predicted_ms_saved": 2.3433,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -5785,19 +5785,19 @@
       "id": "shared_output_r64_capability_k244",
       "live": false,
       "net_bytes": -5145194304,
-      "predicted_ms_delta": -14.48,
+      "predicted_ms_delta": -2.3433,
       "predicted_ms_delta_range": [
-       -22.6313,
-       -9.6537
+       -2.4735,
+       -1.3108
       ],
-      "predicted_ms_saved": 14.48,
-      "predicted_token_ms": 14.242,
-      "predicted_tps": 70.215,
+      "predicted_ms_saved": 2.3433,
+      "predicted_token_ms": 20.5591,
+      "predicted_tps": 48.64,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.6313,
+       "plausible_ms_saved": 2.4735,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -5807,9 +5807,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.5888,
-       "byte_ms_delta": -14.9526,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1109,
+       "byte_ms_delta": -2.8159,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0726
       },
@@ -5821,7 +5821,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5145194304,
-      "predicted_ms_saved": 14.48,
+      "predicted_ms_saved": 2.3433,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -5932,19 +5932,19 @@
       "id": "shared_output_r64_uniform_k407",
       "live": false,
       "net_bytes": -5038328896,
-      "predicted_ms_delta": -14.1209,
+      "predicted_ms_delta": -2.2363,
       "predicted_ms_delta_range": [
-       -22.1529,
-       -9.2449
+       -2.4138,
+       -1.0752
       ],
-      "predicted_ms_saved": 14.1209,
-      "predicted_token_ms": 14.6011,
-      "predicted_tps": 68.488,
+      "predicted_ms_saved": 2.2363,
+      "predicted_token_ms": 20.6661,
+      "predicted_tps": 48.388,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.1529,
+       "plausible_ms_saved": 2.4138,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -5954,9 +5954,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.8994,
-       "byte_ms_delta": -14.642,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1694,
+       "byte_ms_delta": -2.7574,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.1211
       },
@@ -5968,7 +5968,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5038328896,
-      "predicted_ms_saved": 14.1209,
+      "predicted_ms_saved": 2.2363,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -6079,19 +6079,19 @@
       "id": "shared_output_r64_capability_k407",
       "live": false,
       "net_bytes": -5038328896,
-      "predicted_ms_delta": -14.1209,
+      "predicted_ms_delta": -2.2363,
       "predicted_ms_delta_range": [
-       -22.1529,
-       -9.2449
+       -2.4138,
+       -1.0752
       ],
-      "predicted_ms_saved": 14.1209,
-      "predicted_token_ms": 14.6011,
-      "predicted_tps": 68.488,
+      "predicted_ms_saved": 2.2363,
+      "predicted_token_ms": 20.6661,
+      "predicted_tps": 48.388,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.1529,
+       "plausible_ms_saved": 2.4138,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -6101,9 +6101,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.8994,
-       "byte_ms_delta": -14.642,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1694,
+       "byte_ms_delta": -2.7574,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.1211
       },
@@ -6115,7 +6115,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5038328896,
-      "predicted_ms_saved": 14.1209,
+      "predicted_ms_saved": 2.2363,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -6226,19 +6226,19 @@
       "id": "shared_output_r64_uniform_k815",
       "live": false,
       "net_bytes": -4770837568,
-      "predicted_ms_delta": -13.2222,
+      "predicted_ms_delta": -1.9685,
       "predicted_ms_delta_range": [
-       -20.9556,
-       -8.2214
+       -2.2645,
+       -0.4855
       ],
-      "predicted_ms_saved": 13.2222,
-      "predicted_token_ms": 15.4998,
-      "predicted_tps": 64.517,
+      "predicted_ms_saved": 1.9685,
+      "predicted_token_ms": 20.9339,
+      "predicted_tps": 47.769,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 20.9556,
+       "plausible_ms_saved": 2.2645,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -6248,9 +6248,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 1.6767,
-       "byte_ms_delta": -13.8647,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.3158,
+       "byte_ms_delta": -2.611,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.2425
       },
@@ -6262,7 +6262,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4770837568,
-      "predicted_ms_saved": 13.2222,
+      "predicted_ms_saved": 1.9685,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -6373,19 +6373,19 @@
       "id": "shared_output_r64_capability_k815",
       "live": false,
       "net_bytes": -4770837568,
-      "predicted_ms_delta": -13.2222,
+      "predicted_ms_delta": -1.9685,
       "predicted_ms_delta_range": [
-       -20.9556,
-       -8.2214
+       -2.2645,
+       -0.4855
       ],
-      "predicted_ms_saved": 13.2222,
-      "predicted_token_ms": 15.4998,
-      "predicted_tps": 64.517,
+      "predicted_ms_saved": 1.9685,
+      "predicted_token_ms": 20.9339,
+      "predicted_tps": 47.769,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 20.9556,
+       "plausible_ms_saved": 2.2645,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -6395,9 +6395,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 1.6767,
-       "byte_ms_delta": -13.8647,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.3158,
+       "byte_ms_delta": -2.611,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.2425
       },
@@ -6409,7 +6409,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4770837568,
-      "predicted_ms_saved": 13.2222,
+      "predicted_ms_saved": 1.9685,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -6520,19 +6520,19 @@
       "id": "shared_output_r64_uniform_k2039",
       "live": false,
       "net_bytes": -3968363584,
-      "predicted_ms_delta": -10.5258,
+      "predicted_ms_delta": -1.165,
       "predicted_ms_delta_range": [
-       -17.3635,
-       -5.1511
+       -1.8163,
+       1.2836
       ],
-      "predicted_ms_saved": 10.5258,
-      "predicted_token_ms": 18.1962,
-      "predicted_tps": 54.957,
+      "predicted_ms_saved": 1.165,
+      "predicted_token_ms": 21.7374,
+      "predicted_tps": 46.004,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 17.3635,
+       "plausible_ms_saved": 1.8163,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -6542,9 +6542,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 4.0088,
-       "byte_ms_delta": -11.5326,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.7549,
+       "byte_ms_delta": -2.1718,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.6068
       },
@@ -6556,7 +6556,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -3968363584,
-      "predicted_ms_saved": 10.5258,
+      "predicted_ms_saved": 1.165,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -6667,19 +6667,19 @@
       "id": "shared_output_r64_capability_k2039",
       "live": false,
       "net_bytes": -3968363584,
-      "predicted_ms_delta": -10.5258,
+      "predicted_ms_delta": -1.165,
       "predicted_ms_delta_range": [
-       -17.3635,
-       -5.1511
+       -1.8163,
+       1.2836
       ],
-      "predicted_ms_saved": 10.5258,
-      "predicted_token_ms": 18.1962,
-      "predicted_tps": 54.957,
+      "predicted_ms_saved": 1.165,
+      "predicted_token_ms": 21.7374,
+      "predicted_tps": 46.004,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 17.3635,
+       "plausible_ms_saved": 1.8163,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -6689,9 +6689,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 4.0088,
-       "byte_ms_delta": -11.5326,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.7549,
+       "byte_ms_delta": -2.1718,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.6068
       },
@@ -6703,7 +6703,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -3968363584,
-      "predicted_ms_saved": 10.5258,
+      "predicted_ms_saved": 1.165,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -7577,19 +7577,19 @@
       "id": "shared_both_r64_uniform_k0",
       "live": false,
       "net_bytes": -5345928000,
-      "predicted_ms_delta": -15.536,
+      "predicted_ms_delta": -2.9257,
       "predicted_ms_delta_range": [
-       -23.9298,
-       -10.7477
+       -2.9856,
+       -2.0793
       ],
-      "predicted_ms_saved": 15.536,
-      "predicted_token_ms": 13.186,
-      "predicted_tps": 75.838,
+      "predicted_ms_saved": 2.9257,
+      "predicted_token_ms": 19.9767,
+      "predicted_tps": 50.058,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.9298,
+       "plausible_ms_saved": 2.9856,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -7599,9 +7599,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0054,
-       "byte_ms_delta": -15.536,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.001,
+       "byte_ms_delta": -2.9257,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.0,
        "flop_ms_delta": 0.0
       },
@@ -7613,7 +7613,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5345928000,
-      "predicted_ms_saved": 15.536,
+      "predicted_ms_saved": 2.9257,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -7724,19 +7724,19 @@
       "id": "shared_both_r64_capability_k0",
       "live": false,
       "net_bytes": -5345928000,
-      "predicted_ms_delta": -15.536,
+      "predicted_ms_delta": -2.9257,
       "predicted_ms_delta_range": [
-       -23.9298,
-       -10.7477
+       -2.9856,
+       -2.0793
       ],
-      "predicted_ms_saved": 15.536,
-      "predicted_token_ms": 13.186,
-      "predicted_tps": 75.838,
+      "predicted_ms_saved": 2.9257,
+      "predicted_token_ms": 19.9767,
+      "predicted_tps": 50.058,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.9298,
+       "plausible_ms_saved": 2.9856,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -7746,9 +7746,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0054,
-       "byte_ms_delta": -15.536,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.001,
+       "byte_ms_delta": -2.9257,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.0,
        "flop_ms_delta": 0.0
       },
@@ -7760,7 +7760,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5345928000,
-      "predicted_ms_saved": 15.536,
+      "predicted_ms_saved": 2.9257,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -7871,19 +7871,19 @@
       "id": "shared_both_r64_uniform_k1",
       "live": false,
       "net_bytes": -5345272384,
-      "predicted_ms_delta": -15.1338,
+      "predicted_ms_delta": -2.5251,
       "predicted_ms_delta_range": [
-       -23.5269,
-       -10.3452
+       -2.5853,
+       -1.6778
       ],
-      "predicted_ms_saved": 15.1338,
-      "predicted_token_ms": 13.5882,
-      "predicted_tps": 73.593,
+      "predicted_ms_saved": 2.5251,
+      "predicted_token_ms": 20.3773,
+      "predicted_tps": 49.074,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.5269,
+       "plausible_ms_saved": 2.5853,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -7893,9 +7893,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0073,
-       "byte_ms_delta": -15.5341,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0014,
+       "byte_ms_delta": -2.9254,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0003
       },
@@ -7907,7 +7907,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5345272384,
-      "predicted_ms_saved": 15.1338,
+      "predicted_ms_saved": 2.5251,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -8018,19 +8018,19 @@
       "id": "shared_both_r64_capability_k1",
       "live": false,
       "net_bytes": -5345272384,
-      "predicted_ms_delta": -15.1338,
+      "predicted_ms_delta": -2.5251,
       "predicted_ms_delta_range": [
-       -23.5269,
-       -10.3452
+       -2.5853,
+       -1.6778
       ],
-      "predicted_ms_saved": 15.1338,
-      "predicted_token_ms": 13.5882,
-      "predicted_tps": 73.593,
+      "predicted_ms_saved": 2.5251,
+      "predicted_token_ms": 20.3773,
+      "predicted_tps": 49.074,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.5269,
+       "plausible_ms_saved": 2.5853,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -8040,9 +8040,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0073,
-       "byte_ms_delta": -15.5341,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0014,
+       "byte_ms_delta": -2.9254,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0003
       },
@@ -8054,7 +8054,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5345272384,
-      "predicted_ms_saved": 15.1338,
+      "predicted_ms_saved": 2.5251,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -8165,19 +8165,19 @@
       "id": "shared_both_r64_uniform_k4",
       "live": false,
       "net_bytes": -5343305536,
-      "predicted_ms_delta": -15.1272,
+      "predicted_ms_delta": -2.5231,
       "predicted_ms_delta_range": [
-       -23.5181,
-       -10.3377
+       -2.5842,
+       -1.6735
       ],
-      "predicted_ms_saved": 15.1272,
-      "predicted_token_ms": 13.5948,
-      "predicted_tps": 73.557,
+      "predicted_ms_saved": 2.5231,
+      "predicted_token_ms": 20.3793,
+      "predicted_tps": 49.069,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.5181,
+       "plausible_ms_saved": 2.5842,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -8187,9 +8187,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.013,
-       "byte_ms_delta": -15.5284,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0025,
+       "byte_ms_delta": -2.9243,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0012
       },
@@ -8201,7 +8201,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5343305536,
-      "predicted_ms_saved": 15.1272,
+      "predicted_ms_saved": 2.5231,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -8312,19 +8312,19 @@
       "id": "shared_both_r64_capability_k4",
       "live": false,
       "net_bytes": -5343305536,
-      "predicted_ms_delta": -15.1272,
+      "predicted_ms_delta": -2.5231,
       "predicted_ms_delta_range": [
-       -23.5181,
-       -10.3377
+       -2.5842,
+       -1.6735
       ],
-      "predicted_ms_saved": 15.1272,
-      "predicted_token_ms": 13.5948,
-      "predicted_tps": 73.557,
+      "predicted_ms_saved": 2.5231,
+      "predicted_token_ms": 20.3793,
+      "predicted_tps": 49.069,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.5181,
+       "plausible_ms_saved": 2.5842,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -8334,9 +8334,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.013,
-       "byte_ms_delta": -15.5284,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0025,
+       "byte_ms_delta": -2.9243,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0012
       },
@@ -8348,7 +8348,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5343305536,
-      "predicted_ms_saved": 15.1272,
+      "predicted_ms_saved": 2.5231,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -8459,19 +8459,19 @@
       "id": "shared_both_r64_uniform_k8",
       "live": false,
       "net_bytes": -5340683072,
-      "predicted_ms_delta": -15.1183,
+      "predicted_ms_delta": -2.5205,
       "predicted_ms_delta_range": [
-       -23.5064,
-       -10.3277
+       -2.5827,
+       -1.6677
       ],
-      "predicted_ms_saved": 15.1183,
-      "predicted_token_ms": 13.6037,
-      "predicted_tps": 73.51,
+      "predicted_ms_saved": 2.5205,
+      "predicted_token_ms": 20.3819,
+      "predicted_tps": 49.063,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.5064,
+       "plausible_ms_saved": 2.5827,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -8481,9 +8481,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0207,
-       "byte_ms_delta": -15.5207,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0039,
+       "byte_ms_delta": -2.9229,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0024
       },
@@ -8495,7 +8495,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5340683072,
-      "predicted_ms_saved": 15.1183,
+      "predicted_ms_saved": 2.5205,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -8606,19 +8606,19 @@
       "id": "shared_both_r64_capability_k8",
       "live": false,
       "net_bytes": -5340683072,
-      "predicted_ms_delta": -15.1183,
+      "predicted_ms_delta": -2.5205,
       "predicted_ms_delta_range": [
-       -23.5064,
-       -10.3277
+       -2.5827,
+       -1.6677
       ],
-      "predicted_ms_saved": 15.1183,
-      "predicted_token_ms": 13.6037,
-      "predicted_tps": 73.51,
+      "predicted_ms_saved": 2.5205,
+      "predicted_token_ms": 20.3819,
+      "predicted_tps": 49.063,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.5064,
+       "plausible_ms_saved": 2.5827,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -8628,9 +8628,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0207,
-       "byte_ms_delta": -15.5207,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0039,
+       "byte_ms_delta": -2.9229,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0024
       },
@@ -8642,7 +8642,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5340683072,
-      "predicted_ms_saved": 15.1183,
+      "predicted_ms_saved": 2.5205,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -8753,19 +8753,19 @@
       "id": "shared_both_r64_uniform_k22",
       "live": false,
       "net_bytes": -5331504448,
-      "predicted_ms_delta": -15.0875,
+      "predicted_ms_delta": -2.5113,
       "predicted_ms_delta_range": [
-       -23.4653,
-       -10.2926
+       -2.5776,
+       -1.6475
       ],
-      "predicted_ms_saved": 15.0875,
-      "predicted_token_ms": 13.6345,
-      "predicted_tps": 73.343,
+      "predicted_ms_saved": 2.5113,
+      "predicted_token_ms": 20.3911,
+      "predicted_tps": 49.041,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.4653,
+       "plausible_ms_saved": 2.5776,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -8775,9 +8775,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0473,
-       "byte_ms_delta": -15.4941,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0089,
+       "byte_ms_delta": -2.9178,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0065
       },
@@ -8789,7 +8789,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5331504448,
-      "predicted_ms_saved": 15.0875,
+      "predicted_ms_saved": 2.5113,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -8900,19 +8900,19 @@
       "id": "shared_both_r64_capability_k22",
       "live": false,
       "net_bytes": -5331504448,
-      "predicted_ms_delta": -15.0875,
+      "predicted_ms_delta": -2.5113,
       "predicted_ms_delta_range": [
-       -23.4653,
-       -10.2926
+       -2.5776,
+       -1.6475
       ],
-      "predicted_ms_saved": 15.0875,
-      "predicted_token_ms": 13.6345,
-      "predicted_tps": 73.343,
+      "predicted_ms_saved": 2.5113,
+      "predicted_token_ms": 20.3911,
+      "predicted_tps": 49.041,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.4653,
+       "plausible_ms_saved": 2.5776,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -8922,9 +8922,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.0473,
-       "byte_ms_delta": -15.4941,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0089,
+       "byte_ms_delta": -2.9178,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0065
       },
@@ -8936,7 +8936,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5331504448,
-      "predicted_ms_saved": 15.0875,
+      "predicted_ms_saved": 2.5113,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -9047,19 +9047,19 @@
       "id": "shared_both_r64_uniform_k81",
       "live": false,
       "net_bytes": -5292823104,
-      "predicted_ms_delta": -14.9575,
+      "predicted_ms_delta": -2.4726,
       "predicted_ms_delta_range": [
-       -23.2921,
-       -10.1446
+       -2.556,
+       -1.5622
       ],
-      "predicted_ms_saved": 14.9575,
-      "predicted_token_ms": 13.7645,
-      "predicted_tps": 72.651,
+      "predicted_ms_saved": 2.4726,
+      "predicted_token_ms": 20.4298,
+      "predicted_tps": 48.948,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.2921,
+       "plausible_ms_saved": 2.556,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -9069,9 +9069,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1598,
-       "byte_ms_delta": -15.3816,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0301,
+       "byte_ms_delta": -2.8967,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0241
       },
@@ -9083,7 +9083,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5292823104,
-      "predicted_ms_saved": 14.9575,
+      "predicted_ms_saved": 2.4726,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -9194,19 +9194,19 @@
       "id": "shared_both_r64_capability_k81",
       "live": false,
       "net_bytes": -5292823104,
-      "predicted_ms_delta": -14.9575,
+      "predicted_ms_delta": -2.4726,
       "predicted_ms_delta_range": [
-       -23.2921,
-       -10.1446
+       -2.556,
+       -1.5622
       ],
-      "predicted_ms_saved": 14.9575,
-      "predicted_token_ms": 13.7645,
-      "predicted_tps": 72.651,
+      "predicted_ms_saved": 2.4726,
+      "predicted_token_ms": 20.4298,
+      "predicted_tps": 48.948,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 23.2921,
+       "plausible_ms_saved": 2.556,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -9216,9 +9216,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.1598,
-       "byte_ms_delta": -15.3816,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0301,
+       "byte_ms_delta": -2.8967,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0241
       },
@@ -9230,7 +9230,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5292823104,
-      "predicted_ms_saved": 14.9575,
+      "predicted_ms_saved": 2.4726,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -9341,19 +9341,19 @@
       "id": "shared_both_r64_uniform_k244",
       "live": false,
       "net_bytes": -5185957696,
-      "predicted_ms_delta": -14.5985,
+      "predicted_ms_delta": -2.3656,
       "predicted_ms_delta_range": [
-       -22.8138,
-       -9.7357
+       -2.4963,
+       -1.3266
       ],
-      "predicted_ms_saved": 14.5985,
-      "predicted_token_ms": 14.1235,
-      "predicted_tps": 70.804,
+      "predicted_ms_saved": 2.3656,
+      "predicted_token_ms": 20.5368,
+      "predicted_tps": 48.693,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.8138,
+       "plausible_ms_saved": 2.4963,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -9363,9 +9363,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.4703,
-       "byte_ms_delta": -15.0711,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0886,
+       "byte_ms_delta": -2.8382,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0726
       },
@@ -9377,7 +9377,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5185957696,
-      "predicted_ms_saved": 14.5985,
+      "predicted_ms_saved": 2.3656,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -9488,19 +9488,19 @@
       "id": "shared_both_r64_capability_k244",
       "live": false,
       "net_bytes": -5185957696,
-      "predicted_ms_delta": -14.5985,
+      "predicted_ms_delta": -2.3656,
       "predicted_ms_delta_range": [
-       -22.8138,
-       -9.7357
+       -2.4963,
+       -1.3266
       ],
-      "predicted_ms_saved": 14.5985,
-      "predicted_token_ms": 14.1235,
-      "predicted_tps": 70.804,
+      "predicted_ms_saved": 2.3656,
+      "predicted_token_ms": 20.5368,
+      "predicted_tps": 48.693,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.8138,
+       "plausible_ms_saved": 2.4963,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -9510,9 +9510,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.4703,
-       "byte_ms_delta": -15.0711,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.0886,
+       "byte_ms_delta": -2.8382,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.0726
       },
@@ -9524,7 +9524,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5185957696,
-      "predicted_ms_saved": 14.5985,
+      "predicted_ms_saved": 2.3656,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -9635,19 +9635,19 @@
       "id": "shared_both_r64_uniform_k407",
       "live": false,
       "net_bytes": -5079092288,
-      "predicted_ms_delta": -14.2394,
+      "predicted_ms_delta": -2.2586,
       "predicted_ms_delta_range": [
-       -22.3354,
-       -9.3268
+       -2.4366,
+       -1.091
       ],
-      "predicted_ms_saved": 14.2394,
-      "predicted_token_ms": 14.4826,
-      "predicted_tps": 69.048,
+      "predicted_ms_saved": 2.2586,
+      "predicted_token_ms": 20.6438,
+      "predicted_tps": 48.441,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.3354,
+       "plausible_ms_saved": 2.4366,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -9657,9 +9657,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.7809,
-       "byte_ms_delta": -14.7605,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1471,
+       "byte_ms_delta": -2.7797,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.1211
       },
@@ -9671,7 +9671,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5079092288,
-      "predicted_ms_saved": 14.2394,
+      "predicted_ms_saved": 2.2586,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -9782,19 +9782,19 @@
       "id": "shared_both_r64_capability_k407",
       "live": false,
       "net_bytes": -5079092288,
-      "predicted_ms_delta": -14.2394,
+      "predicted_ms_delta": -2.2586,
       "predicted_ms_delta_range": [
-       -22.3354,
-       -9.3268
+       -2.4366,
+       -1.091
       ],
-      "predicted_ms_saved": 14.2394,
-      "predicted_token_ms": 14.4826,
-      "predicted_tps": 69.048,
+      "predicted_ms_saved": 2.2586,
+      "predicted_token_ms": 20.6438,
+      "predicted_tps": 48.441,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 22.3354,
+       "plausible_ms_saved": 2.4366,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -9804,9 +9804,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 0.7809,
-       "byte_ms_delta": -14.7605,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.1471,
+       "byte_ms_delta": -2.7797,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.1211
       },
@@ -9818,7 +9818,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -5079092288,
-      "predicted_ms_saved": 14.2394,
+      "predicted_ms_saved": 2.2586,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -9929,19 +9929,19 @@
       "id": "shared_both_r64_uniform_k815",
       "live": false,
       "net_bytes": -4811600960,
-      "predicted_ms_delta": -13.3406,
+      "predicted_ms_delta": -1.9908,
       "predicted_ms_delta_range": [
-       -21.1381,
-       -8.3034
+       -2.2872,
+       -0.5013
       ],
-      "predicted_ms_saved": 13.3406,
-      "predicted_token_ms": 15.3814,
-      "predicted_tps": 65.014,
+      "predicted_ms_saved": 1.9908,
+      "predicted_token_ms": 20.9116,
+      "predicted_tps": 47.82,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 21.1381,
+       "plausible_ms_saved": 2.2872,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -9951,9 +9951,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 1.5583,
-       "byte_ms_delta": -13.9831,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.2935,
+       "byte_ms_delta": -2.6333,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.2425
       },
@@ -9965,7 +9965,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4811600960,
-      "predicted_ms_saved": 13.3406,
+      "predicted_ms_saved": 1.9908,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -10076,19 +10076,19 @@
       "id": "shared_both_r64_capability_k815",
       "live": false,
       "net_bytes": -4811600960,
-      "predicted_ms_delta": -13.3406,
+      "predicted_ms_delta": -1.9908,
       "predicted_ms_delta_range": [
-       -21.1381,
-       -8.3034
+       -2.2872,
+       -0.5013
       ],
-      "predicted_ms_saved": 13.3406,
-      "predicted_token_ms": 15.3814,
-      "predicted_tps": 65.014,
+      "predicted_ms_saved": 1.9908,
+      "predicted_token_ms": 20.9116,
+      "predicted_tps": 47.82,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 21.1381,
+       "plausible_ms_saved": 2.2872,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -10098,9 +10098,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 1.5583,
-       "byte_ms_delta": -13.9831,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.2935,
+       "byte_ms_delta": -2.6333,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.2425
       },
@@ -10112,7 +10112,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4811600960,
-      "predicted_ms_saved": 13.3406,
+      "predicted_ms_saved": 1.9908,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -10223,19 +10223,19 @@
       "id": "shared_both_r64_uniform_k2039",
       "live": false,
       "net_bytes": -4009126976,
-      "predicted_ms_delta": -10.6443,
+      "predicted_ms_delta": -1.1874,
       "predicted_ms_delta_range": [
-       -17.546,
-       -5.2331
+       -1.839,
+       1.2677
       ],
-      "predicted_ms_saved": 10.6443,
-      "predicted_token_ms": 18.0777,
-      "predicted_tps": 55.317,
+      "predicted_ms_saved": 1.1874,
+      "predicted_token_ms": 21.715,
+      "predicted_tps": 46.051,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 17.546,
+       "plausible_ms_saved": 1.839,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -10245,9 +10245,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 3.8903,
-       "byte_ms_delta": -11.6511,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.7326,
+       "byte_ms_delta": -2.1941,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.6068
       },
@@ -10259,7 +10259,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4009126976,
-      "predicted_ms_saved": 10.6443,
+      "predicted_ms_saved": 1.1874,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -10370,19 +10370,19 @@
       "id": "shared_both_r64_capability_k2039",
       "live": false,
       "net_bytes": -4009126976,
-      "predicted_ms_delta": -10.6443,
+      "predicted_ms_delta": -1.1874,
       "predicted_ms_delta_range": [
-       -17.546,
-       -5.2331
+       -1.839,
+       1.2677
       ],
-      "predicted_ms_saved": 10.6443,
-      "predicted_token_ms": 18.0777,
-      "predicted_tps": 55.317,
+      "predicted_ms_saved": 1.1874,
+      "predicted_token_ms": 21.715,
+      "predicted_tps": 46.051,
       "s020_section_20": {
-       "bar_ms": 0.2872,
+       "bar_ms": 0.229,
        "clears_time_bar": true,
        "high_information_falsifier": true,
-       "plausible_ms_saved": 17.546,
+       "plausible_ms_saved": 1.839,
        "reusable_family": true
       },
       "status": "MEASURED_NEGATIVE",
@@ -10392,9 +10392,9 @@
        "note": "MATERIAL means >= 1 ms of token time, or >= 5% of organ bytes, or a reusable family, or a decisive falsifier. Quoted from the lane contract over cited organ times; not a hardware measurement."
       },
       "terms": {
-       "byte_added_ms": 3.8903,
-       "byte_ms_delta": -11.6511,
-       "byte_removed_ms": -15.5414,
+       "byte_added_ms": 0.7326,
+       "byte_ms_delta": -2.1941,
+       "byte_removed_ms": -2.9268,
        "dispatch_ms_delta": 0.4,
        "flop_ms_delta": 0.6068
       },
@@ -10406,7 +10406,7 @@
      "economics_if_function_held": {
       "clears_time_bar": true,
       "net_bytes": -4009126976,
-      "predicted_ms_saved": 10.6443,
+      "predicted_ms_saved": 1.1874,
       "verdict": "MATERIAL"
      },
      "error_authority": "held_out_relative_l2",
@@ -13645,7 +13645,7 @@
   "every sweep point scored by executable_economics",
   "train-set figure cannot be reported as held-out (loud exception)"
  ],
- "git_head": "cc140bb3639a9ac7f3abf6518dcb824a96357272",
+ "git_head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
  "gpu_authority": false,
  "index": {
   "cousins_not_this_object": [
@@ -13661,9 +13661,16 @@
    {
     "hypothesis_family": "function_replacement",
     "model": "qwen3.8-27b",
-    "n_hits": 0,
+    "n_hits": 1,
     "organ": "mlp",
-    "top": []
+    "top": [
+     {
+      "hypothesis_family": "mlp_function_replacement",
+      "level": "MODEL_SPECIFIC",
+      "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MLP_FUNCTION_REPLACEMENT",
+      "verdict": "MEASURED_NEGATIVE"
+     }
+    ]
    },
    {
     "hypothesis_family": "shared_input_transforms",
@@ -13782,7 +13789,7 @@
   "status": "RESIDUAL_RESCUE_CLOSED",
   "why": "Some concentration exists, but even an oracle residual at the 5% MLP-byte MATERIAL bar cannot push held-out relative L2 below 0.25. A residual large enough to carry F is no longer sparse."
  },
- "seal_sha256": "c9fbeab169dc0dc4b95664bfc9b12bc94c5a9454ea913551687193130d809945",
+ "seal_sha256": "f3f3105cccf6de6925b1bea7ab7658a4d3453335a3267c4b2abf928ed8fe5070",
  "selftest": {
   "dense_fixture_gini": 0.401721,
   "held_out_leak_codes": [
@@ -13798,7 +13805,7 @@
   "unbilled_index_bytes_zero_refused": true,
   "unbilled_residual_index_refused": true
  },
- "token_ms_cited": 28.722,
+ "token_ms_cited": 22.9024,
  "version": 1,
  "what_this_does_not_prove": [
   "that a structured nonlinear bulk (Monarch/butterfly/distilled SwiGLU) cannot have a sparse residual \u2014 those bulks are untested",

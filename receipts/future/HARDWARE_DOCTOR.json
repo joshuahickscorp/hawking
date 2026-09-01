@@ -93,7 +93,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:17:56Z",
+  "recorded_at": "2026-09-01T05:30:16Z",
   "recorded_by": "tools/future/hardware_doctor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1369,7 +1369,7 @@
   },
   {
    "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-   "present": false,
+   "present": true,
    "what": "frontier F012 cites experiment_queue and cheapest_falsifier; file is NOT in this HEAD"
   },
   {
@@ -1396,11 +1396,11 @@
   "index_present": true,
   "missing": [],
   "n_dead": 51,
-  "n_scars": 653,
+  "n_scars": 685,
   "source_used": "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
  },
  "schema": "hawking.future.hardware_doctor.v1",
- "seal_sha256": "875c3384464fb96644384bc8b2fc9443bba4263928ca79b2c43ad172d226bf8c",
+ "seal_sha256": "a03ecfc1dcf229bf2c1abe64f93d5ccad34eda3607c647110480cd3c8110c900",
  "simulator_ladder": [
   {
    "available": true,

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T03:23:22Z",
+  "recorded_at": "2026-09-01T05:17:50Z",
   "recorded_by": "tools/future/campaign_scars.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -395,6 +395,6 @@
  ],
  "scars_missing_required_fields": [],
  "schema": "hawking.future.campaign_scars.v1",
- "seal_sha256": "aae016eaa94f4cfdc5f6724d524125bbb56fb6e317115799c0f70278e1ffc4a6",
+ "seal_sha256": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
  "version": 1
 }

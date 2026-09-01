@@ -112,11 +112,30 @@ def test_every_section_cites_a_receipt_on_disk():
 
 
 def test_the_dominant_costs_are_measured_on_the_current_body():
+    """27.2896 was the pre-promotion WALL figure. The point of this test is that
+    the table describes the body that RUNS, so it reads the live absolute rather
+    than pinning yesterday's number - the pre-promotion organ table summed to
+    26.7013 ms against a 21.9464 ms body and would have failed this on its own
+    terms."""
+    import json as _j
     d = tsa.dominant_remaining_costs()
-    assert d["token_wall_ms"] == pytest.approx(27.2896, abs=1e-3)
+    m = _j.loads(
+        (tsa.REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json").read_text()
+    )["measured"]
+    assert d["token_wall_ms"] == pytest.approx(m["wall_ms_per_token"], abs=1e-3)
+    assert d["token_gpu_ms"] == pytest.approx(m["gpu_ms_per_token"], abs=1e-3)
     shares = {r["organ"]: r["share_of_gpu"] for r in d["rows"]}
     assert shares["mlp_gate_up"] > shares["deltanet"], "MLP must still lead"
     assert sum(shares.values()) == pytest.approx(1.0, abs=0.05)
+
+
+def test_the_organ_rows_reconcile_with_the_token_they_decompose():
+    """The pre-promotion table was 4.75 ms ABOVE its own baseline. A
+    decomposition that does not sum to its total is not a decomposition."""
+    d = tsa.dominant_remaining_costs()
+    total = sum(float(r["gpu_ms"]) for r in d["rows"])
+    assert abs(total - d["token_gpu_ms"]) / d["token_gpu_ms"] < 0.02
+    assert "ORGAN_DECOMPOSITION_SEALED" in d["source"]
 
 
 def test_the_hardware_requirement_does_not_infer_traffic_from_the_catalog():

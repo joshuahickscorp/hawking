@@ -1,0 +1,8 @@
+{
+  "schema": "hawking.flash.detached_process.v1",
+  "pid": 55551,
+  "started_unix_ns": 1787941074347674000,
+  "status": "COMPLETE",
+  "monitor_pid": 55552,
+  "completed_unix_ns": 1787941314110952000
+}

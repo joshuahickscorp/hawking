@@ -1,0 +1,41 @@
+{
+  "base_state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L12_L15/layer-15/state.f32",
+  "claim_boundary": "This proves only a single-process contiguous source-BF16 layer seam with explicit state files. It does not prove a streamed whole-token runtime, device-resident chain, TPS, EBPW, or HCLI residence.",
+  "complete_token": "UNQUALIFIED",
+  "device_residency": "UNQUALIFIED",
+  "elapsed_wall_ns": 670080921500,
+  "end_layer": 19,
+  "layers": [
+    {
+      "layer": 16,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-16/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-16/state.f32"
+    },
+    {
+      "layer": 17,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-17/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-17/state.f32"
+    },
+    {
+      "layer": 18,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-18/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-18/state.f32"
+    },
+    {
+      "layer": 19,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-19/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L16_L19/layer-19/state.f32"
+    }
+  ],
+  "process_boundary": "single_os_process",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_source_bf16_single_process_chain.v1",
+  "start_layer": 16,
+  "state_handoff": "explicit_f32_host_snapshot_between_layer_command_buffers",
+  "status": "PASSED",
+  "terminal_receipt": null
+}

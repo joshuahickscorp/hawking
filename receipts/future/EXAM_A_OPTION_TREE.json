@@ -1,0 +1,85 @@
+{
+ "admit": {
+  "extra": [],
+  "missing": [],
+  "ok": true,
+  "parse": {
+   "kind": "malformed",
+   "ok": true,
+   "recovered": true,
+   "source_type": "str"
+  }
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T03:21:14Z",
+  "recorded_by": "tools/future/exam_a_option_tree.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "claude_did_not_edit_the_content": "routes are recorded verbatim from the admitted reply. A vague route is recorded as vague.",
+ "exam": "A - sub-2 capability-preserving executable discovery",
+ "grade": {
+  "acceptance_met": true,
+  "every_route_carries_both": true,
+  "n_routes": 4,
+  "n_routes_with_status_and_falsifier": 4,
+  "re_proposed_refuted_classes_UNAWARE": {},
+  "resident_generated_the_tree": true,
+  "revisited_refuted_classes_KNOWINGLY": {
+   "entropy_coding_the_code_stream": [
+    "entropy"
+   ]
+  },
+  "scar_feed_held": true,
+  "the_grade_is_not_hit_rate": "S033: useful falsifiable options times cheap adjudication times fast belief update. Four routes of which three are wrong but all four are cheaply killable beats one vague route pointing the right way.",
+  "what_acceptance_is_not": "reaching 2.0. G115 passes on a tree the RESIDENT generated where every route carries an evidence status and a cheapest falsifier.",
+  "which_first": "moew",
+  "which_first_is_one_of_its_own_routes": true,
+  "why_knowing_revisits_are_not_a_failure": "a route that names a refuted class and marks it REFUTED is the scar working. Counting it against the resident would punish it for recording what it knows."
+ },
+ "inputs": [
+  "receipts/future/HCLI_MISSION_KERNEL.json",
+  "receipts/future/_G115_EXAM_A_reply.json"
+ ],
+ "obligation": "G115",
+ "pack_chars": 2003,
+ "pack_contains_no_answer": {
+  "clean": true,
+  "leaked": [],
+  "route_ids_checked": 4
+ },
+ "question": "does the resident generate the option tree itself?",
+ "routes": [
+  {
+   "cheapest_falsifier": "Train a 4-expert MoE with 25% activation rate and measure if the 1.44 BPW target is reached while maintaining the 0.0059 hidden cosine.",
+   "claim": "The dense body can be represented as a Mixture of Experts with non-uniform activation frequencies to exploit the 1.44 BPW MoE lower bound.",
+   "evidence_status": "UNTESTED",
+   "id": "moew"
+  },
+  {
+   "cheapest_falsifier": "Train a 60% sparse matrix and measure if the 1.156560 BPW target is reached while maintaining the 0.0059 hidden cosine",
+   "claim": "The dense body can be represented as a sparse matrix with 60% zero entries to reduce the 3.139301 BPW by 40% without requiring a dense parent.",
+   "evidence_status": "UNTESTED",
+   "id": "sparse"
+  },
+  {
+   "cheapest_falsifier": "Train a 8-rank matrix and measure if the 1.569650 BPW target is reached while maintaining the 0.0059 hidden cosine",
+   "claim": "The dense body can be represented as a low-rank matrix with 8-64 rank to reduce the 3.139301 BPW by 50% without requiring a dense parent",
+   "evidence_status": "REFUTED_IN_PART",
+   "id": "lowrank"
+  },
+  {
+   "cheapest_falsifier": "Train a 2-bit entropy-coded code stream and measure if the 1.87 BPW target is reached while maintaining the 0.0059 hidden cosine",
+   "claim": "The dense body can be represented as an entropy-coded 2-bit code stream to reduce the 3.139301 BPW by 30% without requiring a dense parent",
+   "evidence_status": "REFUTED_IN_PART",
+   "id": "entropy"
+  }
+ ],
+ "seal_sha256": "f7fb7433fba814098058809376cd48d701ea9d9443199945f2f8dbe78e27a4ff",
+ "which_first": "moew",
+ "why_first": "The 1.44 BPW MoE lower bound is the lowest known target and the 40% row destruction tolerance suggests that non-uniform activation is the key to unlocking the 1.44 BPW target"
+}

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:47:27Z",
+  "recorded_at": "2026-09-01T05:58:26Z",
   "recorded_by": "tools/future/super_resident.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -324,21 +324,21 @@
      "recovery": "disk",
      "rel": "CODEX_ACCELERATOR_HANDOFF.json",
      "source": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
-     "tracked_in_head": false
+     "tracked_in_head": true
     },
     "nx": {
      "present": true,
      "recovery": "disk",
      "rel": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
      "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json",
-     "tracked_in_head": false
+     "tracked_in_head": true
     },
     "stateful": {
      "present": true,
      "recovery": "disk",
      "rel": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
      "source": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json",
-     "tracked_in_head": false
+     "tracked_in_head": true
     }
    },
    "headline": "Flash does NOT clear SANDBOX_RESIDENT_FLOOR today: source-independent NX is SCAFFOLD_ONLY and the stateful gate has one accepted token, not repeated accepted-token decode.",
@@ -665,7 +665,7 @@
      "recovery": "disk",
      "rel": "CODEX_ACCELERATOR_HANDOFF.json",
      "source": "/Users/scammermike/Downloads/hawking/CODEX_ACCELERATOR_HANDOFF.json",
-     "tracked_in_head": false
+     "tracked_in_head": true
     },
     "identity": {
      "present": true,
@@ -963,7 +963,7 @@
   ]
  },
  "schema": "hawking.future.super_resident.v1",
- "seal_sha256": "b23c4428b471db8de0fe47c94a25836f2256e60bab286a06b813df8a6841ec9c",
+ "seal_sha256": "5be22a2f70c0d5423fb21186cdb88371b6a835e55439ec599a152e4e4a475c9a",
  "started_model_process": false,
  "status": {
   "flash": {

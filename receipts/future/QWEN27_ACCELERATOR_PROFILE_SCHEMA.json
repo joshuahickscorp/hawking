@@ -9,7 +9,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:45:39Z",
+  "recorded_at": "2026-09-01T05:41:04Z",
   "recorded_by": "tools/future/qwen27_profile_schema.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -917,7 +917,7 @@
   ],
   "note": "12 READY_PROTECTED candidates recovered from the untracked qualification queue. This schema exists so those candidates become comparable rather than informally ranked.",
   "presence": {
-   "in_git_head": false,
+   "in_git_head": true,
    "on_disk": true,
    "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
    "source": "ON_DISK"
@@ -927,21 +927,21 @@
  "recovered_implementation": {
   "paths": [
    {
-    "in_git_head": false,
+    "in_git_head": true,
     "on_disk": true,
     "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
     "role": "token_ns_budget",
     "source": "ON_DISK"
    },
    {
-    "in_git_head": false,
+    "in_git_head": true,
     "on_disk": true,
     "path": "tools/accelerator/qwen27_token_budget.py",
     "role": "token_budget_tool",
     "source": "ON_DISK"
    },
    {
-    "in_git_head": false,
+    "in_git_head": true,
     "on_disk": true,
     "path": "tools/accelerator/test_qwen27_token_budget.py",
     "role": "token_budget_test",
@@ -962,7 +962,7 @@
     "source": "ON_DISK"
    },
    {
-    "in_git_head": false,
+    "in_git_head": true,
     "on_disk": true,
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
     "role": "qualification_queue",
@@ -1065,7 +1065,7 @@
   "EXPERIMENT"
  ],
  "schema": "hawking.future.qwen27_profile.v1",
- "seal_sha256": "1c5509f9a2cb7316ac196e7e16ed41e5721ed8586b0f744fa30ac4d322fadaea",
+ "seal_sha256": "43307e47fe91c02ded0d245d0132f8993d037ab9109898096e374fb270344deb",
  "section_fields": {
   "active_byte_model": [
    "active_weight_bytes_per_token",
@@ -1329,7 +1329,7 @@
   "load": "ON_DISK",
   "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
   "presence": {
-   "in_git_head": false,
+   "in_git_head": true,
    "on_disk": true,
    "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
    "source": "ON_DISK"

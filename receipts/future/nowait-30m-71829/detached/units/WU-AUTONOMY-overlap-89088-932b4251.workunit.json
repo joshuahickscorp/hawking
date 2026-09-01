@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.89088.receipt.json",
+    "succession.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "resident_install.py bind_winner / validate_contract. Must not launch, install, or unload a resident.",
+  "frontier_id": "FT.CHILD_RESIDENT.install-dry-run",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.89088",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.89088.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "723783a159c4d8c6694b2aa0f6d825fd23290179d306f38091b0eb86b7f11736",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

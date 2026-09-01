@@ -1,0 +1,1632 @@
+{
+  "body_mutated": false,
+  "claim_boundary": "PASSED bounded exact Qwen3.8-Flash-Next HyperConnection read/write equations around a device-resident layer-0 routed-plus-shared MoE candidate. hc_norm BF16 payload and equations are exact; all expert/hyper/shared matrices are persisted Q4/G64 candidate bodies; current native route selection source parity is mismatched (8/10 overlap), so source BF16 output parity, complete model/layer/token, TPS, EBPW, and promotion remain unqualified.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_expert_runtime": "NOT_TESTED",
+  "complete_layer0_moe_candidate": true,
+  "complete_moe_combine": true,
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "dependencies": {
+    "block_inject_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_BLOCK_INJECT_BODY_L0_R0_4.json",
+      "schema": "hcli.agentos.flash_noetic_component_body.v1",
+      "sha256": "602db4dd0ae58fd5bfa514eb11ae0728d5159ccde5a89e7d3dde15d4de124711",
+      "status": "PASSED"
+    },
+    "campaign_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+      "schema": "hcli.agentos.flash_noetic_component_campaign.v1",
+      "sha256": "71496df4075a437b561efb22aacca3e46dfaceef4681927fc5f0af3d79e60fd4",
+      "status": "PASSED"
+    },
+    "hc_norm_vector_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_HC_NORM_BODY_L0.json",
+      "schema": "hcli.agentos.flash_noetic_vector_body.v1",
+      "sha256": "20c576335255ce0c18eaaddfb48e648662731850ec9b8d89c2910fb3a5d233cb",
+      "status": "PASSED"
+    },
+    "input_mix_down_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_INPUT_DOWN_BODY_L0_R0_320.json",
+      "schema": "hcli.agentos.flash_noetic_component_body.v1",
+      "sha256": "645db531d322e0802f48787f5d433013d79013ee6092420d227653f3d9bff28d",
+      "status": "PASSED"
+    },
+    "input_mix_up_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_INPUT_UP_BODY_L0_R0_10240.json",
+      "schema": "hcli.agentos.flash_noetic_component_body.v1",
+      "sha256": "b51414ffaac3d50813ff3f88644ace2de1a64dd9700e9d413ae0b5d880da8a01",
+      "status": "PASSED"
+    },
+    "routed_expert_receipts": [
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E29_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "cdd0aff0cfe2c29123e043bd94c44302f696b4eb0b43ce3c9279a7e0f0b753b9",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E29_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "556705410b3910bcc26fb128ea7b7449bfc1e04e780fecd27e86d7841e026058",
+          "status": "PASSED"
+        },
+        "expert_index": 29,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e29-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "066d6364c8270f2b54ba862acc629333198f45116c0bcd081be142a493f056e5",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E29_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "49b4d22ee7585f1b5eee04c269a5b942695aee9e2e31b76ce5f4d784ee23f382",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E309_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "50f7f8eb11bbc58ade592e52a3b1aaf390f4012dc4cb6ec789bae4de090c0c94",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E309_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "9e8ef74b2402598e4c01e69595380c6e2110ef6cd4ba7dce268966667feb11b9",
+          "status": "PASSED"
+        },
+        "expert_index": 309,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e309-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "e00035f05085a3fbc98fee6289259725a90e0b8527d8fc4e4d3397c52f89dde8",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E309_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "7c88649437d2c099d80f34fcf24bb9e86fa34260ae0c3ee8eb6abd6478046033",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E455_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "0334c8c137b42eca7f750fb19c6f2d989b34b30df03c2ce533c84feb2da75f4c",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E455_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "2f052cf74e488aaa66c6c363c5e7243bcf5b4d1192c0de7f286225a24aafaac8",
+          "status": "PASSED"
+        },
+        "expert_index": 455,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e455-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "967bd5011598ef1e3dc9a67b95f3bdc1519b1c10471036fe42caf841ea922eb0",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E455_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "3ba91bb4673b1a20c2fc83ed196f27589fdbe80687770d4b29f35bf19e6dd3a1",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E374_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "9ef4d2742357cb76a853812b8ebe5261705cd5613523c6031cd241dcbb60815d",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E374_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "fbb79722b2ed6211a049cc293ace5e21aaf4699b9d890dc8e6ce21a08639d725",
+          "status": "PASSED"
+        },
+        "expert_index": 374,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e374-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "19f0b51ad9c50583171c8a5e0686ded17e23467ba8bc45f4a8d356339c3d0087",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E374_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "39404f19fc8314d4db45c8d923e75a33d646b8d8c28ce1efc56610000af16f75",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E151_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "83d34b8b1e068977fd0e6ec8a5974910a48a4cd44a7758010ec2aa81c86bffa0",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E151_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "b0c8b2b7b74febe385694711096c70678fc1f023ccf6f0e1865964e068c3279f",
+          "status": "PASSED"
+        },
+        "expert_index": 151,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e151-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "e39b0e2b3fb4853cf5b37ee22497b3ce0c1834a2b4a7beb71e956d35874b5bc3",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E151_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "08b24ee34ed81a47222c707b87c77be807ec1a9b843080183229446f975369df",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E93_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "3db82485941d6d323b8f09e5b802644680402a133b52b6bc2d85ace0235ef133",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E93_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "1ed235c3024c73d581a3d91d0a824df3d75c6ad45becbb90eeca2a31d26537d5",
+          "status": "PASSED"
+        },
+        "expert_index": 93,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e93-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "e7621b94045e0d1657492ae1a2fcfd7c7704de6a859de2f5ef3bad8966973401",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E93_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "3ea65dc8e2a980a50bfc168251e1862c75c8d6f903ed2447e931b20780e84422",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E0_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "d13eb9b2344cd3c43a3e74d8090763ecc84941643a81f2df6d33449cb7ab4004",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E0_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "a8a5a2477701e0dcdc896e71334fd42555c08e2e371becbf7ec702e7eda2352e",
+          "status": "PASSED"
+        },
+        "expert_index": 0,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e0-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "79bb4d85c9473ca6b6c008f13cd310c906802f0714e98a537d850ec7a5e39073",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E0_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "cf2966122c6f06a543f63bdcec6d45849084b45726b0f183b882feb36c47cf29",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E500_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "44f0bf9494597cc6bdc89dc1fbd9e44a1ca7101906cf775ccc2a88ba369e7879",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E500_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "7749a1d760a464f0cd162defe18602a85aae6a09907e47bdefda9ca31de7f657",
+          "status": "PASSED"
+        },
+        "expert_index": 500,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e500-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "545d68f62b794fcfbe375781dacde86063c9022c0aa1bbc0b15442249f5a6396",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E500_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "f1f2f2600776c9444e5b7dac6b88123f122ed15b78d46926deb38761b6093e4a",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E149_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "c49d59ee34534f2fbd517adb201b79ef1c387c264e910616ce75879850436a03",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E149_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "fbd3cc235d1d40620efbc23600c74a92a95d8dcba4c646aa4eba2a360ea03360",
+          "status": "PASSED"
+        },
+        "expert_index": 149,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e149-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "bc77012542678b57fde77c1caabcce2f159cc81c5fe16d6a5d20cc5fa212aaa5",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E149_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "233380d96b3e48b48e2b5d9b1850fb606736f4c470725a3bd57fceba2df571a2",
+          "status": "PASSED"
+        }
+      },
+      {
+        "down_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_BODY_E220_R0_2560.json",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "f4fc20970b0e23ed166fbf276c69a424218010ce1859100b17914f598b151b7a",
+          "status": "PASSED"
+        },
+        "down_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_DOWN_KERNEL_E220_R0_2560_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "a2921bf4f94dc0878e956ba04dd33134ec5f1a3a71f7ba3a9724bbcdc501eb60",
+          "status": "PASSED"
+        },
+        "expert_index": 220,
+        "gate_up_body_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e220-r0-1280.bin",
+          "schema": "hcli.agentos.flash_noetic_component_body.v1",
+          "sha256": "4d0451ac280911bad06f2c69f15f63b6dce152e0efa21bf69bf1423730113d67",
+          "status": "PASSED"
+        },
+        "gate_up_kernel_receipt": {
+          "label": "[V]",
+          "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E220_R0_1280_PARITY.json",
+          "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+          "sha256": "fa14be3c27ab2cc85d4a227b7b924c325b68b647ffafb9556d937de34f8fb89a",
+          "status": "PASSED"
+        }
+      }
+    ],
+    "router_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+      "schema": "hawking.flash_noetic_router_selection_native.v1",
+      "sha256": "d583456dcfcb6be7d3ae0d81b09c5d195c5ab6197d4a16557c39744e97409fe3",
+      "status": "PASSED"
+    },
+    "shared_down_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_DOWN_BODY_L0_R0_2560.json",
+      "schema": "hcli.agentos.flash_noetic_component_body.v1",
+      "sha256": "d086014742aac2a5a6b20e99cc884772c32091b573effad8d29d4652810b8644",
+      "status": "PASSED"
+    },
+    "shared_gate_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_GATE_BODY_L0_R0_640.json",
+      "schema": "hcli.agentos.flash_noetic_component_body.v1",
+      "sha256": "65bf22eea80cb4c7bedac503c5cf78e4b2646cc69f2ab5258587e8dba1e39f1a",
+      "status": "PASSED"
+    },
+    "shared_scalar_gate_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_SCALAR_GATE_BODY_L0_R0_1.json",
+      "schema": "hcli.agentos.flash_noetic_component_body.v1",
+      "sha256": "93937a1c31d1dba1b286e6f63a6d6755488351b373e3a40f3c32c81f5f28b32e",
+      "status": "PASSED"
+    },
+    "shared_up_receipt": {
+      "label": "[V]",
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_UP_BODY_L0_R0_640.json",
+      "schema": "hcli.agentos.flash_noetic_component_body.v1",
+      "sha256": "7edb2c0fe6f2d5180fdd3bc60aa086b34c92bd1786efc842e0a6b67ebd88ef3d",
+      "status": "PASSED"
+    }
+  },
+  "device_intermediate_no_host_roundtrip": true,
+  "elapsed_s": 1.701748583,
+  "exact_hyperconnection_semantics_observed": true,
+  "execution": {
+    "body_mutated": false,
+    "complete_layer0_moe_candidate": true,
+    "complete_moe_combine": true,
+    "complete_token_runtime": false,
+    "device_intermediate_no_host_roundtrip": true,
+    "dispatches_per_graph": 33,
+    "exact_hyperconnection_semantics_observed": true,
+    "hc_norm_loaded": true,
+    "hc_norm_source_payload_exact": true,
+    "measured_graphs": 3,
+    "model_loaded": false,
+    "native_hyperconnection_read_observed": true,
+    "native_hyperconnection_write_observed": true,
+    "native_moe_shared_add_observed": true,
+    "native_moe_weighted_sum_observed": true,
+    "native_routed_expert_down_projection_observed": true,
+    "native_routed_expert_gate_up_swiglu_observed": true,
+    "native_shared_expert_down_projection_observed": true,
+    "native_shared_expert_gate_up_swiglu_observed": true,
+    "native_shared_expert_sigmoid_gate_observed": true,
+    "operation": "exact HyperConnection read -> normalized top-10 routed experts + sigmoid-gated shared expert -> device-resident MoE weighted sum/add -> exact HyperConnection write",
+    "provider": "apple-metal",
+    "routed_expert_count": 10,
+    "routed_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "selected_weight_sum": 1.0000001192092896,
+    "source_hc_norm_payload_loaded": true,
+    "source_reference_used_for_execution": false,
+    "total_measured_dispatches": 99,
+    "verification_reads_after_graph": true
+  },
+  "flash_tps": null,
+  "gpu_timing": {
+    "block_inject_gpu_ns": [
+      963834,
+      972041,
+      941041
+    ],
+    "block_inject_gpu_ns_median": 963834,
+    "combine_gpu_ns": [
+      5916,
+      6250,
+      5750
+    ],
+    "combine_gpu_ns_median": 5916,
+    "device": "Apple M3 Ultra",
+    "dispatches_per_graph": 33,
+    "graph_gpu_ns": [
+      3256918,
+      3287416,
+      3243500
+    ],
+    "graph_gpu_ns_median": 3256918,
+    "graph_host_wall_ns": [
+      12632000,
+      12188000,
+      10868000
+    ],
+    "graph_host_wall_ns_median": 12188000,
+    "hc_norm_gpu_ns": [
+      182959,
+      184584,
+      183209
+    ],
+    "hc_norm_gpu_ns_median": 183209,
+    "input_mix_down_gpu_ns": [
+      1000334,
+      998250,
+      997334
+    ],
+    "input_mix_down_gpu_ns_median": 998250,
+    "input_mix_up_gpu_ns": [
+      34000,
+      34875,
+      35041
+    ],
+    "input_mix_up_gpu_ns_median": 34875,
+    "measured_runs": 3,
+    "memory_limits": {
+      "current_allocated_size": 475136,
+      "has_unified_memory": true,
+      "max_buffer_length": 62620631040,
+      "recommended_max_working_set_size": 83494174720
+    },
+    "moe_add_shared_gpu_ns": [
+      4416,
+      4584,
+      4334
+    ],
+    "moe_add_shared_gpu_ns_median": 4416,
+    "read_mix_gpu_ns": [
+      5209,
+      5334,
+      5125
+    ],
+    "read_mix_gpu_ns_median": 5209,
+    "read_silu_scaled_gpu_ns": [
+      4500,
+      3750,
+      4500
+    ],
+    "read_silu_scaled_gpu_ns_median": 4500,
+    "routed_experts": [
+      {
+        "down_projection_gpu_ns": [
+          64875,
+          65166,
+          66041
+        ],
+        "down_projection_gpu_ns_median": 65166,
+        "expert_index": 29,
+        "gate_up_swiglu_gpu_ns": [
+          10000,
+          9666,
+          10375
+        ],
+        "gate_up_swiglu_gpu_ns_median": 10000
+      },
+      {
+        "down_projection_gpu_ns": [
+          65416,
+          65125,
+          66250
+        ],
+        "down_projection_gpu_ns_median": 65416,
+        "expert_index": 309,
+        "gate_up_swiglu_gpu_ns": [
+          9416,
+          9625,
+          10000
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9625
+      },
+      {
+        "down_projection_gpu_ns": [
+          64875,
+          64709,
+          65791
+        ],
+        "down_projection_gpu_ns_median": 64875,
+        "expert_index": 455,
+        "gate_up_swiglu_gpu_ns": [
+          9916,
+          10000,
+          10334
+        ],
+        "gate_up_swiglu_gpu_ns_median": 10000
+      },
+      {
+        "down_projection_gpu_ns": [
+          64834,
+          64791,
+          65625
+        ],
+        "down_projection_gpu_ns_median": 64834,
+        "expert_index": 374,
+        "gate_up_swiglu_gpu_ns": [
+          9500,
+          9416,
+          9541
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9500
+      },
+      {
+        "down_projection_gpu_ns": [
+          65000,
+          64541,
+          65041
+        ],
+        "down_projection_gpu_ns_median": 65000,
+        "expert_index": 151,
+        "gate_up_swiglu_gpu_ns": [
+          9834,
+          9375,
+          10000
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9834
+      },
+      {
+        "down_projection_gpu_ns": [
+          65000,
+          64875,
+          65000
+        ],
+        "down_projection_gpu_ns_median": 65000,
+        "expert_index": 93,
+        "gate_up_swiglu_gpu_ns": [
+          9459,
+          9250,
+          10000
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9459
+      },
+      {
+        "down_projection_gpu_ns": [
+          65125,
+          65500,
+          64916
+        ],
+        "down_projection_gpu_ns_median": 65125,
+        "expert_index": 0,
+        "gate_up_swiglu_gpu_ns": [
+          9834,
+          8875,
+          9416
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9416
+      },
+      {
+        "down_projection_gpu_ns": [
+          64541,
+          64875,
+          65000
+        ],
+        "down_projection_gpu_ns_median": 64875,
+        "expert_index": 500,
+        "gate_up_swiglu_gpu_ns": [
+          9416,
+          10084,
+          9709
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9709
+      },
+      {
+        "down_projection_gpu_ns": [
+          64875,
+          77166,
+          64959
+        ],
+        "down_projection_gpu_ns_median": 64959,
+        "expert_index": 149,
+        "gate_up_swiglu_gpu_ns": [
+          9250,
+          9750,
+          9709
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9709
+      },
+      {
+        "down_projection_gpu_ns": [
+          65375,
+          65334,
+          64750
+        ],
+        "down_projection_gpu_ns_median": 65334,
+        "expert_index": 220,
+        "gate_up_swiglu_gpu_ns": [
+          9500,
+          9709,
+          9875
+        ],
+        "gate_up_swiglu_gpu_ns_median": 9709
+      }
+    ],
+    "routed_weighted_sum_gpu_ns": [
+      6875,
+      7166,
+      6416
+    ],
+    "routed_weighted_sum_gpu_ns_median": 6875,
+    "shared_down_gpu_ns": [
+      64500,
+      65416,
+      65209
+    ],
+    "shared_down_gpu_ns_median": 65209,
+    "shared_gate_up_gpu_ns": [
+      9000,
+      9459,
+      10500
+    ],
+    "shared_gate_up_gpu_ns_median": 9459,
+    "shared_scalar_gate_gpu_ns": [
+      224459,
+      233166,
+      228125
+    ],
+    "shared_scalar_gate_gpu_ns_median": 228125,
+    "shared_sigmoid_gate_gpu_ns": [
+      4875,
+      4709,
+      4584
+    ],
+    "shared_sigmoid_gate_gpu_ns_median": 4709,
+    "stage_output_hashes": {
+      "block_inject": [
+        "c20e699db76f4f23e4253609451731e6ccb46ce9ad86e3e57c5565164ce248e3",
+        "c20e699db76f4f23e4253609451731e6ccb46ce9ad86e3e57c5565164ce248e3",
+        "c20e699db76f4f23e4253609451731e6ccb46ce9ad86e3e57c5565164ce248e3"
+      ],
+      "combined_residual": [
+        "275d0168949d7940eb5491ee41a50d4f3de7c4d94623ee83743eb151bc923a36",
+        "275d0168949d7940eb5491ee41a50d4f3de7c4d94623ee83743eb151bc923a36",
+        "275d0168949d7940eb5491ee41a50d4f3de7c4d94623ee83743eb151bc923a36"
+      ],
+      "hc_norm": [
+        "7979f2dd41aad27416e8fba5afc554d3b9b5c8c6eedbd632749266f0fd6e4415",
+        "7979f2dd41aad27416e8fba5afc554d3b9b5c8c6eedbd632749266f0fd6e4415",
+        "7979f2dd41aad27416e8fba5afc554d3b9b5c8c6eedbd632749266f0fd6e4415"
+      ],
+      "input_mix_down": [
+        "87c75a6995436ba0b89ca0fde54055928247b0f82c4bb4418d72d3d25e3eea2c",
+        "87c75a6995436ba0b89ca0fde54055928247b0f82c4bb4418d72d3d25e3eea2c",
+        "87c75a6995436ba0b89ca0fde54055928247b0f82c4bb4418d72d3d25e3eea2c"
+      ],
+      "input_mix_up": [
+        "216b602fc5fa8cda4928e709cff64d6d1ae1da4422b1c68e71ede8d5f162e724",
+        "216b602fc5fa8cda4928e709cff64d6d1ae1da4422b1c68e71ede8d5f162e724",
+        "216b602fc5fa8cda4928e709cff64d6d1ae1da4422b1c68e71ede8d5f162e724"
+      ],
+      "moe_output": [
+        "99852385444393b6f67e16b726c734fc06739d0119375023fa5a316e79e13e38",
+        "99852385444393b6f67e16b726c734fc06739d0119375023fa5a316e79e13e38",
+        "99852385444393b6f67e16b726c734fc06739d0119375023fa5a316e79e13e38"
+      ],
+      "read_mix": [
+        "35b7e2da1574d3f8d04ad652dafe1269a30d3096640f6f4e51708b01e98bdfc3",
+        "35b7e2da1574d3f8d04ad652dafe1269a30d3096640f6f4e51708b01e98bdfc3",
+        "35b7e2da1574d3f8d04ad652dafe1269a30d3096640f6f4e51708b01e98bdfc3"
+      ],
+      "read_silu_scaled": [
+        "d37a3d5e9430db1803c20a35bc00c3b0447ee59cb1f8b775d382673483969d19",
+        "d37a3d5e9430db1803c20a35bc00c3b0447ee59cb1f8b775d382673483969d19",
+        "d37a3d5e9430db1803c20a35bc00c3b0447ee59cb1f8b775d382673483969d19"
+      ],
+      "routed_experts": [
+        {
+          "down": [
+            "0aaba3ad6673e626bf3b66a5675fd94a97f79bd2a0d10ca275fa6cc8978efd2d",
+            "0aaba3ad6673e626bf3b66a5675fd94a97f79bd2a0d10ca275fa6cc8978efd2d",
+            "0aaba3ad6673e626bf3b66a5675fd94a97f79bd2a0d10ca275fa6cc8978efd2d"
+          ],
+          "expert_index": 29,
+          "gate_up_swiglu": [
+            "228d6442a269ea5b5455ab20f5fc2a83931be2f00e7dbeacafb5db157187bc5a",
+            "228d6442a269ea5b5455ab20f5fc2a83931be2f00e7dbeacafb5db157187bc5a",
+            "228d6442a269ea5b5455ab20f5fc2a83931be2f00e7dbeacafb5db157187bc5a"
+          ]
+        },
+        {
+          "down": [
+            "9583d73a389c2365b97790a17fa1df303d160ea25dd334af5ebf0b83ffe31654",
+            "9583d73a389c2365b97790a17fa1df303d160ea25dd334af5ebf0b83ffe31654",
+            "9583d73a389c2365b97790a17fa1df303d160ea25dd334af5ebf0b83ffe31654"
+          ],
+          "expert_index": 309,
+          "gate_up_swiglu": [
+            "b50271187e6b2cb0c48041f63d418fb8579680c300b19543d70be1f614ac7ebc",
+            "b50271187e6b2cb0c48041f63d418fb8579680c300b19543d70be1f614ac7ebc",
+            "b50271187e6b2cb0c48041f63d418fb8579680c300b19543d70be1f614ac7ebc"
+          ]
+        },
+        {
+          "down": [
+            "6958faafa7828b34ff38cc76c8b00dc6f3825b77483a7ca1dcc34113ad7fe452",
+            "6958faafa7828b34ff38cc76c8b00dc6f3825b77483a7ca1dcc34113ad7fe452",
+            "6958faafa7828b34ff38cc76c8b00dc6f3825b77483a7ca1dcc34113ad7fe452"
+          ],
+          "expert_index": 455,
+          "gate_up_swiglu": [
+            "a7e3b98a16f5f5351050c97a995d47ce2c762ef9353d1782f5792e9ef10756cf",
+            "a7e3b98a16f5f5351050c97a995d47ce2c762ef9353d1782f5792e9ef10756cf",
+            "a7e3b98a16f5f5351050c97a995d47ce2c762ef9353d1782f5792e9ef10756cf"
+          ]
+        },
+        {
+          "down": [
+            "62376864c3928f0ea300f37629e07ceff41e3b4767f35f5f367c75b599c29a27",
+            "62376864c3928f0ea300f37629e07ceff41e3b4767f35f5f367c75b599c29a27",
+            "62376864c3928f0ea300f37629e07ceff41e3b4767f35f5f367c75b599c29a27"
+          ],
+          "expert_index": 374,
+          "gate_up_swiglu": [
+            "bcbfe3d2a4dfce7a2513108ce1707d8f49cda927849a032663feb52aac04d50e",
+            "bcbfe3d2a4dfce7a2513108ce1707d8f49cda927849a032663feb52aac04d50e",
+            "bcbfe3d2a4dfce7a2513108ce1707d8f49cda927849a032663feb52aac04d50e"
+          ]
+        },
+        {
+          "down": [
+            "93d89191d7b401d08107cde94e3a01f3c2eaeab6ef9c1785a8177c87ba19036b",
+            "93d89191d7b401d08107cde94e3a01f3c2eaeab6ef9c1785a8177c87ba19036b",
+            "93d89191d7b401d08107cde94e3a01f3c2eaeab6ef9c1785a8177c87ba19036b"
+          ],
+          "expert_index": 151,
+          "gate_up_swiglu": [
+            "72d5978fb295d05232e259f1db87e837eba2b40caf3c6cd3bfd83ab83d877834",
+            "72d5978fb295d05232e259f1db87e837eba2b40caf3c6cd3bfd83ab83d877834",
+            "72d5978fb295d05232e259f1db87e837eba2b40caf3c6cd3bfd83ab83d877834"
+          ]
+        },
+        {
+          "down": [
+            "a3cd96e841d964ace26fc14365689699f07a8a24b3b5958accc0696165543711",
+            "a3cd96e841d964ace26fc14365689699f07a8a24b3b5958accc0696165543711",
+            "a3cd96e841d964ace26fc14365689699f07a8a24b3b5958accc0696165543711"
+          ],
+          "expert_index": 93,
+          "gate_up_swiglu": [
+            "c1840c3a4ef889c8bbfaf779352902be10f5ecd2a66522208994fca09200b3c4",
+            "c1840c3a4ef889c8bbfaf779352902be10f5ecd2a66522208994fca09200b3c4",
+            "c1840c3a4ef889c8bbfaf779352902be10f5ecd2a66522208994fca09200b3c4"
+          ]
+        },
+        {
+          "down": [
+            "8ce519d8e3b160f5d476ce0b92ab445f2a7478586b7a83854151c808ddb9dcc4",
+            "8ce519d8e3b160f5d476ce0b92ab445f2a7478586b7a83854151c808ddb9dcc4",
+            "8ce519d8e3b160f5d476ce0b92ab445f2a7478586b7a83854151c808ddb9dcc4"
+          ],
+          "expert_index": 0,
+          "gate_up_swiglu": [
+            "fae282e06b5125be5dfb683ad8b730bca49a2e6de973d9e3d60697581cd663a2",
+            "fae282e06b5125be5dfb683ad8b730bca49a2e6de973d9e3d60697581cd663a2",
+            "fae282e06b5125be5dfb683ad8b730bca49a2e6de973d9e3d60697581cd663a2"
+          ]
+        },
+        {
+          "down": [
+            "3b908dda0d41d8a37270f45f1091c8b38372f3015f5e74f404a28d3f8581a460",
+            "3b908dda0d41d8a37270f45f1091c8b38372f3015f5e74f404a28d3f8581a460",
+            "3b908dda0d41d8a37270f45f1091c8b38372f3015f5e74f404a28d3f8581a460"
+          ],
+          "expert_index": 500,
+          "gate_up_swiglu": [
+            "333afa2e11c04b1995a9e4c699eb3723ce3d53129dd40c991907495455b9db45",
+            "333afa2e11c04b1995a9e4c699eb3723ce3d53129dd40c991907495455b9db45",
+            "333afa2e11c04b1995a9e4c699eb3723ce3d53129dd40c991907495455b9db45"
+          ]
+        },
+        {
+          "down": [
+            "c43b5a0900b2044f6d2417394898111c0d334ee6e7f88846e42ea9331246df1e",
+            "c43b5a0900b2044f6d2417394898111c0d334ee6e7f88846e42ea9331246df1e",
+            "c43b5a0900b2044f6d2417394898111c0d334ee6e7f88846e42ea9331246df1e"
+          ],
+          "expert_index": 149,
+          "gate_up_swiglu": [
+            "f85a65df7d596adf57db734488650b90528c36b4f08c6a9c8d28d089094e85d2",
+            "f85a65df7d596adf57db734488650b90528c36b4f08c6a9c8d28d089094e85d2",
+            "f85a65df7d596adf57db734488650b90528c36b4f08c6a9c8d28d089094e85d2"
+          ]
+        },
+        {
+          "down": [
+            "13b25a9142283aa857f91e886f82e543ab6276cc0fa20ad0a0e2cd1d89481b4f",
+            "13b25a9142283aa857f91e886f82e543ab6276cc0fa20ad0a0e2cd1d89481b4f",
+            "13b25a9142283aa857f91e886f82e543ab6276cc0fa20ad0a0e2cd1d89481b4f"
+          ],
+          "expert_index": 220,
+          "gate_up_swiglu": [
+            "a600007b77d8977256a817818b7ae92e4491f4d7537214ad96da34cb6270cec4",
+            "a600007b77d8977256a817818b7ae92e4491f4d7537214ad96da34cb6270cec4",
+            "a600007b77d8977256a817818b7ae92e4491f4d7537214ad96da34cb6270cec4"
+          ]
+        }
+      ],
+      "routed_weighted_sum": [
+        "5f05f949a948d65d3b9aee636e6b321108338147d4bfadefeee7a56bd8b16545",
+        "5f05f949a948d65d3b9aee636e6b321108338147d4bfadefeee7a56bd8b16545",
+        "5f05f949a948d65d3b9aee636e6b321108338147d4bfadefeee7a56bd8b16545"
+      ],
+      "shared_block_output": [
+        "16f466759ae5aeadc4cccbdb441eb5004a10a475d183e0e4f27d3476867f7951",
+        "16f466759ae5aeadc4cccbdb441eb5004a10a475d183e0e4f27d3476867f7951",
+        "16f466759ae5aeadc4cccbdb441eb5004a10a475d183e0e4f27d3476867f7951"
+      ],
+      "shared_down": [
+        "b8e0a786abf4f8dcff3e12b27e75d06d6464c24b0aa445cf65ce3b8582d5c930",
+        "b8e0a786abf4f8dcff3e12b27e75d06d6464c24b0aa445cf65ce3b8582d5c930",
+        "b8e0a786abf4f8dcff3e12b27e75d06d6464c24b0aa445cf65ce3b8582d5c930"
+      ],
+      "shared_gate_up_swiglu": [
+        "7df73d3377e9593edcfb3c3238834ba1fea6a4eb36afc059919178387a8dc7f1",
+        "7df73d3377e9593edcfb3c3238834ba1fea6a4eb36afc059919178387a8dc7f1",
+        "7df73d3377e9593edcfb3c3238834ba1fea6a4eb36afc059919178387a8dc7f1"
+      ],
+      "shared_scalar_gate": [
+        "d251d2f8c2d726d05d2b2f20f6a47c3ccbbf617fafd77b3f232024d4f12d5ece",
+        "d251d2f8c2d726d05d2b2f20f6a47c3ccbbf617fafd77b3f232024d4f12d5ece",
+        "d251d2f8c2d726d05d2b2f20f6a47c3ccbbf617fafd77b3f232024d4f12d5ece"
+      ]
+    },
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for every native exact-boundary and selected-routed-MoE dispatch; host wall is reported separately",
+    "warmup_graph_gpu_ns": [
+      4663672,
+      3243295
+    ],
+    "warmup_runs": 2
+  },
+  "hc_norm_loaded": true,
+  "input": {
+    "projection_dtype": "F32 activation at native Q4/G64 matrix boundaries",
+    "residual_state": {
+      "definition": "((index * 71) mod 509 - 254) / 509",
+      "deterministic_sha256": "6ae0743a61852fe8b5ae5aa8be548d6d4773e6e108ec43962011c0d931878378",
+      "label": "[V]",
+      "values": 10240
+    },
+    "stream_layout": "four contiguous 2560-wide streams; read and write preserve source stream order"
+  },
+  "layer": 0,
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+  },
+  "model_loaded": false,
+  "native_hyperconnection_read_observed": true,
+  "native_hyperconnection_write_observed": true,
+  "native_moe_shared_add_observed": true,
+  "native_moe_weighted_sum_observed": true,
+  "native_routed_expert_down_projection_observed": true,
+  "native_routed_expert_gate_up_swiglu_observed": true,
+  "native_shared_expert_down_projection_observed": true,
+  "native_shared_expert_gate_up_swiglu_observed": true,
+  "native_shared_expert_sigmoid_gate_observed": true,
+  "next_action": "close source router/top-k parity, then qualify source BF16 activation/output parity and extend the exact layer-0 candidate through attention/state before attempting a complete-token baseline",
+  "noetic_ir": {
+    "complete_layer0_moe_candidate": true,
+    "complete_model": false,
+    "complete_moe_combine": true,
+    "complete_token": false,
+    "exact_hyperconnection_equations": true,
+    "operations": [
+      "load_exact_pinned_mlp_hyperconnection_hc_norm_bf16_vector",
+      "execute_native_grouped_rmsnorm_per_hyperconnection_stream",
+      "execute_native_q4_g64_input_mix_down",
+      "execute_native_silu_after_hc_count_scaling",
+      "execute_native_q4_g64_input_mix_up",
+      "execute_native_hyperconnection_read_mean_of_sigmoid_gated_normalized_streams",
+      "execute_native_shared_expert_gate_up_swiglu_on_exact_read_input",
+      "execute_native_shared_expert_down_projection",
+      "execute_native_sigmoid_shared_expert_gate",
+      "load_native_router_selection",
+      "load_full_selected_routed_expert_bodies",
+      "execute_native_routed_gate_up_swiglu_per_selected_expert",
+      "execute_native_routed_down_projection_per_selected_expert",
+      "execute_native_device_resident_weighted_sum",
+      "execute_native_moe_shared_add",
+      "execute_native_q4_g64_block_inject_on_exact_normalized_state",
+      "execute_native_hyperconnection_write_broadcast_with_two_sigmoid_gate",
+      "emit_bounded_exact_layer0_routed_shared_moe_candidate"
+    ],
+    "representation": "source_bf16_exact_hc_norm_plus_independent_q4_g64_matrices",
+    "schema": "hcli.noetic.ir.v1",
+    "semantic_type": "NoeticIR",
+    "source_independent": true
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "block_inject": {
+      "cosine": 0.9999999999999933,
+      "count": 4,
+      "finite": true,
+      "max_abs_error": 3.814697265625e-06,
+      "rmse": 1.9450439528999553e-06,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "candidate_space": "CPU reference uses the same persisted Q4/G64 matrix bodies and exact BF16 hc_norm vector; all native stages are compared after the graph",
+    "combined_residual": {
+      "cosine": 0.9999999999999939,
+      "count": 10240,
+      "finite": true,
+      "max_abs_error": 8.940696716308594e-08,
+      "rmse": 1.5183682873818763e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "hc_norm": {
+      "cosine": 0.9999999999999998,
+      "count": 10240,
+      "finite": true,
+      "max_abs_error": 0.0,
+      "rmse": 0.0,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "input_mix_down": {
+      "cosine": 0.9999999999999734,
+      "count": 320,
+      "finite": true,
+      "max_abs_error": 1.1444091796875e-05,
+      "rmse": 3.3537870944657635e-06,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "input_mix_up": {
+      "cosine": 0.9999999999999555,
+      "count": 10240,
+      "finite": true,
+      "max_abs_error": 1.9073486328125e-05,
+      "rmse": 1.4978041906430414e-06,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "moe_output": {
+      "cosine": 0.9999999999994333,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 8.475035429000854e-08,
+      "rmse": 1.5218577603198962e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "read_mix": {
+      "cosine": 0.9999999999999849,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 2.1457672119140625e-06,
+      "rmse": 9.969340301203788e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "read_silu_scaled": {
+      "cosine": 0.9999999999999655,
+      "count": 320,
+      "finite": true,
+      "max_abs_error": 2.86102294921875e-06,
+      "rmse": 5.671719160018772e-07,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "routed_experts": [
+      {
+        "down": {
+          "cosine": 0.999999999998796,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 1.6391277313232422e-07,
+          "rmse": 3.615973250759563e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 29,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999989592,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 1.2516975402832031e-06,
+          "rmse": 1.167470181653751e-07,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999993283,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 1.1548399925231934e-07,
+          "rmse": 3.2250182905540517e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 309,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999994101,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 6.556510925292969e-07,
+          "rmse": 8.915595664403558e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999991034,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 5.364418029785156e-07,
+          "rmse": 3.840346369625286e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 455,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999993112,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 9.5367431640625e-07,
+          "rmse": 1.0882156847617215e-07,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999993662,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 1.2479722499847412e-07,
+          "rmse": 2.990905295099822e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 374,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999993793,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 7.152557373046875e-07,
+          "rmse": 8.69895163290215e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999995445,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 1.6763806343078613e-07,
+          "rmse": 4.4250774685478874e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 151,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999995753,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 1.430511474609375e-06,
+          "rmse": 1.2392065988544861e-07,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999987337,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 2.682209014892578e-07,
+          "rmse": 4.8929473074587143e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 93,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999987935,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 1.4603137969970703e-06,
+          "rmse": 1.3863904549383125e-07,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999990005,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 1.7508864402770996e-07,
+          "rmse": 4.5622838767859195e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 0,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999990387,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 1.1026859283447266e-06,
+          "rmse": 1.3460498404246518e-07,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999992357,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 1.4528632164001465e-07,
+          "rmse": 3.0884070668581194e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 500,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999992703,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 7.450580596923828e-07,
+          "rmse": 9.105383800670846e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999991503,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 1.5087425708770752e-07,
+          "rmse": 3.9126197547959354e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 149,
+        "gate_up_swiglu": {
+          "cosine": 0.9999999999992255,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 1.1920928955078125e-06,
+          "rmse": 1.133976448982123e-07,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      },
+      {
+        "down": {
+          "cosine": 0.9999999999990854,
+          "count": 2560,
+          "finite": true,
+          "max_abs_error": 3.129243850708008e-07,
+          "rmse": 4.5097390819945835e-08,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        },
+        "expert_index": 220,
+        "gate_up_swiglu": {
+          "cosine": 0.999999999999147,
+          "count": 640,
+          "finite": true,
+          "max_abs_error": 1.1920928955078125e-06,
+          "rmse": 1.335440648049071e-07,
+          "tolerance": 0.0020000000949949026,
+          "within_tolerance": true
+        }
+      }
+    ],
+    "routed_weighted_sum": {
+      "cosine": 0.9999999999993335,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 4.516914486885071e-08,
+      "rmse": 1.2343634383896025e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "shared_block_output": {
+      "cosine": 0.9999999999995393,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 8.381903171539307e-08,
+      "rmse": 8.696819124509827e-09,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "shared_down": {
+      "cosine": 0.9999999999995434,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 1.6391277313232422e-07,
+      "rmse": 1.63534830250362e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "shared_gate_up_swiglu": {
+      "cosine": 0.9999999999995571,
+      "count": 640,
+      "finite": true,
+      "max_abs_error": 8.344650268554688e-07,
+      "rmse": 6.23811089738673e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "shared_scalar_gate": {
+      "cosine": 1.0,
+      "count": 1,
+      "finite": true,
+      "max_abs_error": 5.960464477539063e-08,
+      "rmse": 5.960464477539063e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    }
+  },
+  "physical_graph": {
+    "compiler_stage": "HawkingAccelerator",
+    "component_scope": "layer-0 exact Qwen3.8-Flash-Next HyperConnection read/write equations around the complete selected routed-plus-shared MoE candidate block",
+    "device_intermediate_no_host_roundtrip": true,
+    "dispatches_per_graph": 33,
+    "edges": [
+      [
+        "residual_input",
+        "hc_norm"
+      ],
+      [
+        "hc_norm_weight",
+        "hc_norm"
+      ],
+      [
+        "hc_norm",
+        "read_low_rank_down"
+      ],
+      [
+        "read_low_rank_down",
+        "read_silu_scaled"
+      ],
+      [
+        "read_silu_scaled",
+        "read_gate_logits"
+      ],
+      [
+        "hc_norm",
+        "mixed_block_input"
+      ],
+      [
+        "read_gate_logits",
+        "mixed_block_input"
+      ],
+      [
+        "mixed_block_input",
+        "shared_gate_up_swiglu"
+      ],
+      [
+        "shared_gate_up_swiglu",
+        "shared_down"
+      ],
+      [
+        "mixed_block_input",
+        "shared_down"
+      ],
+      [
+        "shared_down",
+        "shared_block_output"
+      ],
+      [
+        "mixed_block_input",
+        "shared_block_output"
+      ],
+      [
+        "mixed_block_input",
+        "routed_gate_up_outputs"
+      ],
+      [
+        "routed_gate_up_outputs",
+        "routed_down_outputs"
+      ],
+      [
+        "selected_weights",
+        "routed_weighted_sum"
+      ],
+      [
+        "routed_down_outputs",
+        "routed_weighted_sum"
+      ],
+      [
+        "routed_weighted_sum",
+        "moe_output"
+      ],
+      [
+        "shared_block_output",
+        "moe_output"
+      ],
+      [
+        "hc_norm",
+        "block_inject_logits"
+      ],
+      [
+        "residual_input",
+        "combined_residual"
+      ],
+      [
+        "moe_output",
+        "combined_residual"
+      ],
+      [
+        "block_inject_logits",
+        "combined_residual"
+      ]
+    ],
+    "execution_provider": {
+      "candidates": [
+        "apple_metal",
+        "cpu"
+      ],
+      "selected": "apple_metal"
+    },
+    "fingerprint": "3ba3809684a0016f2b3a656b0cdb821c4866c778257593166e4ac33e4816fb23",
+    "native_kernel_execution_observed": true,
+    "native_kernels": [
+      "qwen_next_hyperconnection_grouped_rmsnorm",
+      "qwen_uniform_q4_group64_matvec",
+      "qwen_next_hyperconnection_silu_scale",
+      "qwen_next_hyperconnection_read_mix",
+      "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "qwen_next_shared_expert_sigmoid_gate",
+      "qwen_next_moe_weighted_sum",
+      "qwen_next_moe_add_shared",
+      "qwen_next_hyperconnection_combine"
+    ],
+    "nodes": [
+      {
+        "device_resident": true,
+        "dtype": "F32",
+        "id": "residual_input",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "dtype": "BF16",
+        "id": "hc_norm_weight",
+        "representation": "source_bf16_exact",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "hc_norm",
+        "kernel": "qwen_next_hyperconnection_grouped_rmsnorm",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "read_low_rank_down",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          320
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "read_silu_scaled",
+        "kernel": "qwen_next_hyperconnection_silu_scale",
+        "shape": [
+          320
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "read_gate_logits",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "mixed_block_input",
+        "kernel": "qwen_next_hyperconnection_read_mix",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_gate_up_swiglu",
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "shape": [
+          640
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_down",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_block_output",
+        "kernel": "qwen_next_shared_expert_sigmoid_gate",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "routed_gate_up_outputs",
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "shape": [
+          10,
+          640
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "routed_down_outputs",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          10,
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "dtype": "F32",
+        "id": "selected_weights",
+        "shape": [
+          10
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "routed_weighted_sum",
+        "kernel": "qwen_next_moe_weighted_sum",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "moe_output",
+        "kernel": "qwen_next_moe_add_shared",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "block_inject_logits",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          4
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "combined_residual",
+        "kernel": "qwen_next_hyperconnection_combine",
+        "shape": [
+          10240
+        ]
+      }
+    ],
+    "promotion_allowed": false,
+    "routed_expert_count": 10,
+    "routed_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "schema": "hcli.physical_graph.v1",
+    "semantic_type": "PhysicalGraph",
+    "verification_reads_after_graph": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "EXACT_QWEN38_FLASH_NEXT_HYPERCONNECTION_READ_WRITE_AROUND_LAYER0_ROUTED_SHARED_MOE_CANDIDATE",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "routed_expert_count": 10,
+  "routed_expert_ids": [
+    29,
+    309,
+    455,
+    374,
+    151,
+    93,
+    0,
+    500,
+    149,
+    220
+  ],
+  "schema": "hawking.flash_noetic_exact_hyperconnection_native.v1",
+  "selected_weight_sum": 1.0000001192092896,
+  "semantic_type": "NoeticExecutable",
+  "semantics": {
+    "hc_norm": "grouped RMSNorm per stream with exact persisted BF16 weight and eps=1e-6",
+    "moe": "normalized source-selected top-10 routed expert outputs are weighted and summed, then the sigmoid-gated shared expert output is added on-device",
+    "read_scaling": "input_mix_weight_down output divided by hc_count before SiLU",
+    "read_stream_indexing": "contiguous stream-major [stream, hidden] with mean across stream axis",
+    "routed_selection": "the persisted router receipt supplies ten selected expert IDs and normalized selected weights; source selection parity is reported separately",
+    "status": "EXACT_SOURCE_EQUATIONS_BOUND_TO_PINNED_TENSOR_LAYOUT",
+    "weight_numeric_boundary": "hyperconnection, routed-expert, and shared-expert matrices are persisted Q4/G64 candidates; equations and device graph are exact, source BF16 activation parity remains unqualified",
+    "write_routing": "one shared block output broadcast to every stream; no guessed stream replacement",
+    "write_scaling": "block_inject_weight output divided by hc_count before sigmoid, then multiplied by 2"
+  },
+  "source_hc_norm_payload_exact": true,
+  "source_independent_execution": true,
+  "source_reference": {
+    "combine": "residual + block_output broadcast over streams * (2 * sigmoid(block_inject_weight(normalized) / hc_count))",
+    "hc_count": 4,
+    "hc_norm": "grouped RMSNorm over four contiguous 2560-wide streams; output = x * rsqrt(mean(x^2)+1e-6) * (1 + BF16 weight)",
+    "hidden_size": 2560,
+    "implementation": "Qwen3_8_FlashNextHyperConnection",
+    "lowrank_size": 320,
+    "mix": "normalized -> SiLU(input_mix_weight_down(normalized) / hc_count) -> sigmoid(input_mix_weight_up(...)); mean over streams of gate * normalized",
+    "rms_norm_eps": 9.999999974752427e-07
+  },
+  "source_selection_parity": {
+    "candidate_reference_ids_match": true,
+    "expert_ids_exact_match": false,
+    "label": "[V]/[D]",
+    "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+    "status": "MISMATCH",
+    "top_k_overlap_count": 8,
+    "top_k_overlap_fraction": 0.8
+  },
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

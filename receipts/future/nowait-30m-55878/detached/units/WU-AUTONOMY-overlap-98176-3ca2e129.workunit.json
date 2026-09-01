@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.98176.receipt.json",
+    "workunit_species.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "A subsystem is not operational until the resident can discover, invoke, schedule and verify it. This unit is that wiring, via the landed species constructor.",
+  "frontier_id": "FT.HCLI_SELF.emit-workunits",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.98176",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.98176.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "3c569618e8b9373bd85beeb6cfbbbe8c35bcc77d412d789f839739e5ed8121f3",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

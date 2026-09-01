@@ -1,0 +1,449 @@
+{
+  "claim_boundary": "bounded HCLI resident control-plane qualification only; no Qwen load, GPU, or performance claim",
+  "crash_recovery": {
+    "calls": [
+      {
+        "at": 1787872665.8391051,
+        "id": "first",
+        "pid": 83871
+      },
+      {
+        "at": 1787872665.87573,
+        "id": "slow",
+        "pid": 83871
+      },
+      {
+        "at": 1787872666.078544,
+        "id": "slow",
+        "pid": 83891
+      }
+    ],
+    "checks": {
+      "completed_work_not_rerun": true,
+      "failure_streak_cleared_after_recovery": true,
+      "first_unit_completed_before_and_after": true,
+      "mission_continued": true,
+      "mission_finished_after_recovery": true,
+      "mission_started": true,
+      "next_unit_completed": true,
+      "restart_provenance_durable": true,
+      "restart_recorded": true,
+      "same_mission_id": true,
+      "slow_unit_active": true,
+      "supervisor_reconciled_recovered_worker": true,
+      "supervisor_started": true,
+      "supervisor_survived_worker_kill": true,
+      "unfinished_work_recovered": true,
+      "worker_registered": true,
+      "worker_relaunched": true,
+      "worker_sigkill_delivered": true
+    },
+    "claim_boundary": "supervisor/mission durability qualification with deterministic AgentOS worker; no model-body or GPU performance claim",
+    "gate": "RESIDENT_CRASH_RECOVERY",
+    "initial_generation": 1,
+    "killed_worker_pid": 83871,
+    "mission": {
+      "accepted_count": 2,
+      "cancel_reason": null,
+      "checkpoint_id": "fb577644-1505-45f2-be3e-3a4a149a1597:1787872666.113948",
+      "child_pids": [],
+      "compiled": {
+        "acceptance_criteria": [
+          "an independent check of the requested behavior can fail; restating the request is not acceptance"
+        ],
+        "goal_summary": "qualify resident worker crash recovery",
+        "invariants": [],
+        "referenced_files": []
+      },
+      "evidence": [
+        {
+          "accepted": true,
+          "at": 1787872665.872214,
+          "child_workunits": [],
+          "unit_id": "first",
+          "validation": {
+            "acceptance_source": "workunit_verifier",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/first-completed'\"'\"').is_file()'",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          }
+        },
+        {
+          "accepted": true,
+          "at": 1787872666.111398,
+          "child_workunits": [],
+          "unit_id": "slow",
+          "validation": {
+            "acceptance_source": "workunit_verifier",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/slow-resumed'\"'\"').is_file()'",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          }
+        }
+      ],
+      "goal": "qualify resident worker crash recovery",
+      "id": "fb577644-1505-45f2-be3e-3a4a149a1597",
+      "in_flight": [],
+      "last_checkpoint": 1787872666.1139479,
+      "no_progress_threshold": 3,
+      "no_progress_warning": null,
+      "phase": "completed",
+      "session_id": "fb577644-1505-45f2-be3e-3a4a149a1597",
+      "started_at": 1787872666.057961,
+      "strategy": "default",
+      "units": {
+        "first": {
+          "assigned_backend": "qwen",
+          "assigned_runtime": null,
+          "attempts": 1,
+          "backend_task_id": null,
+          "classification": null,
+          "content_hash": "1959da3e97b67baa819bddc2b2c5d2befcc76a87b256bb81859aaabbd20399e5",
+          "dependencies": [],
+          "description": "Create the durable pre-crash qualification marker.",
+          "effect_class": null,
+          "failure_context": null,
+          "finished_at": 1787872665.8724532,
+          "id": "first",
+          "preferred_backend": null,
+          "provider": null,
+          "ready_at": 1787872665.8174138,
+          "repair_depth": 0,
+          "repair_exhausted": false,
+          "repair_reason": null,
+          "repair_root": null,
+          "repairs": null,
+          "resource_class": "TEST",
+          "role": "test",
+          "running_at": 1787872665.8380501,
+          "status": "completed",
+          "verification": {
+            "acceptance_source": "workunit_verifier",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/first-completed'\"'\"').is_file()'",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          },
+          "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/first-completed'\"'\"').is_file()'",
+          "workspace": null
+        },
+        "slow": {
+          "assigned_backend": "qwen",
+          "assigned_runtime": null,
+          "attempts": 1,
+          "backend_task_id": null,
+          "classification": null,
+          "content_hash": "82c194cc43f11bdf1cd9ae9680cdb7bb074afef95f32cad696bde40fa6a1d26f",
+          "dependencies": [
+            "first"
+          ],
+          "description": "Hold an active bounded unit long enough to qualify worker crash recovery.",
+          "effect_class": null,
+          "failure_context": {
+            "reason": "process_death",
+            "resume_policy": "rerun"
+          },
+          "finished_at": 1787872666.1116312,
+          "id": "slow",
+          "preferred_backend": null,
+          "provider": null,
+          "ready_at": 1787872666.0570009,
+          "repair_depth": 0,
+          "repair_exhausted": false,
+          "repair_reason": null,
+          "repair_root": null,
+          "repairs": null,
+          "resource_class": "TEST",
+          "role": "test",
+          "running_at": 1787872666.077645,
+          "status": "completed",
+          "verification": {
+            "acceptance_source": "workunit_verifier",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/slow-resumed'\"'\"').is_file()'",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          },
+          "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/slow-resumed'\"'\"').is_file()'",
+          "workspace": null
+        }
+      },
+      "version": 1
+    },
+    "mission_id": "fb577644-1505-45f2-be3e-3a4a149a1597",
+    "schema": "hcli.agentos.resident_qualification.v1",
+    "state": {
+      "behavior": {
+        "action": "WAIT_FOR_WORK",
+        "evidence_required_for_refill": true,
+        "model_load_allowed": false,
+        "reason": "mission is idle; no model-free busywork is authorized",
+        "schema": "hcli.agentos.resident_behavior.v1",
+        "unrelated_process_kill_allowed": false,
+        "updated_at": 1787872666.238073
+      },
+      "clean_room_reason": null,
+      "clean_room_requested": false,
+      "config": {
+        "auto_restart": true,
+        "evacuation_grace_s": 0.5,
+        "goal": "qualify resident worker crash recovery",
+        "interval_s": 0.1,
+        "max_restarts": 3,
+        "model": null,
+        "repo_root": null,
+        "reserve_bytes": null,
+        "runtime_count": 1,
+        "swap_ceiling_bytes": null,
+        "workspace": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf"
+      },
+      "cycles": 2,
+      "error": null,
+      "failure_streak": 0,
+      "generation": 2,
+      "heartbeat_at": 1787872666.230526,
+      "inbox_count": 0,
+      "last_event": "mission_idle",
+      "logical_session": null,
+      "memory": {
+        "free_bytes": 1,
+        "pressure": "qualification_override",
+        "reasons": [],
+        "reserve_bytes": 0,
+        "safe": true,
+        "swap_ceiling_bytes": null,
+        "swap_used_bytes": 0,
+        "total_bytes": 1
+      },
+      "mission_id": "fb577644-1505-45f2-be3e-3a4a149a1597",
+      "resident_id": "resident-72585f18-939f-4293-b07a-1d0226d9ea3f",
+      "restart_count": 1,
+      "schema": "hcli.agentos.resident_daemon.v1",
+      "state": "IDLE",
+      "stop_requested": false,
+      "supervisor_pid": 83869,
+      "supervisor_start_token": "1787872665.578803",
+      "updated_at": 1787872666.238625,
+      "worker_live": false,
+      "worker_pid": null,
+      "worker_result": {
+        "accepted": 2,
+        "cancelled": false,
+        "evidence": [
+          {
+            "accepted": true,
+            "at": 1787872665.872214,
+            "child_workunits": [],
+            "unit_id": "first",
+            "validation": {
+              "acceptance_source": "workunit_verifier",
+              "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/first-completed'\"'\"').is_file()'",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            }
+          },
+          {
+            "accepted": true,
+            "at": 1787872666.111398,
+            "child_workunits": [],
+            "unit_id": "slow",
+            "validation": {
+              "acceptance_source": "workunit_verifier",
+              "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'from pathlib import Path; assert Path('\"'\"'/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf/.hcli/qualification/slow-resumed'\"'\"').is_file()'",
+              "exit_code": 0,
+              "ok": true,
+              "output": ""
+            }
+          }
+        ],
+        "failed_units": [],
+        "mission_id": "fb577644-1505-45f2-be3e-3a4a149a1597",
+        "no_progress_warning": null,
+        "reason": null,
+        "state": "VERIFIED",
+        "status": "completed",
+        "verdict": "ACCEPT"
+      },
+      "worker_returncode": 0,
+      "worker_start_token": null,
+      "worker_started_at": 1787872665.906708
+    },
+    "status": "PASSED",
+    "supervisor_pid": 83869,
+    "supervisor_returncode": 0,
+    "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-crash-recovery-mpwvmotf"
+  },
+  "generated_at": 1787872666.366166,
+  "real_mission": {
+    "checks": {
+      "child_completed": true,
+      "child_receipt_exists": true,
+      "evidence_child_admitted": true,
+      "first_mission_completed": true,
+      "mission_receipt_exists": true,
+      "no_duplicate_completed_work": true,
+      "same_mission_id": true,
+      "source_receipt_exists": true,
+      "source_search_found_supervisor": true,
+      "typed_source_search_passed": true
+    },
+    "claim_boundary": "HCLI control-plane and deterministic source/test qualification; no model-body or GPU performance claim",
+    "engine_calls": [
+      "source-inspect",
+      "receipt-continuation"
+    ],
+    "first_result": {
+      "accepted": 1,
+      "cancelled": false,
+      "evidence": [
+        {
+          "accepted": true,
+          "at": 1787872665.461643,
+          "child_workunits": [
+            {
+              "dependencies": [
+                "source-inspect"
+              ],
+              "description": "Re-read the source/test receipt and compile the resident implementation.",
+              "id": "receipt-continuation",
+              "resource_class": "TEST",
+              "role": "verification",
+              "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'import json; from pathlib import Path; p=Path('\"'\"'/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/qualification/child_continuation.json'\"'\"'); d=json.loads(p.read_text()); assert d['\"'\"'compile_returncode'\"'\"']==0; assert d['\"'\"'parent_receipt_sha256'\"'\"']'"
+            }
+          ],
+          "unit_id": "source-inspect",
+          "validation": {
+            "acceptance_source": "workunit_verifier",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'import json; from pathlib import Path; p=Path('\"'\"'/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/qualification/source_test.json'\"'\"'); d=json.loads(p.read_text()); assert d['\"'\"'tests_passed'\"'\"'] is True; assert d['\"'\"'source_sha256'\"'\"']=='\"'\"'1ea6609a8d35effb4b2d2ae0e279c204fbbeebbacdcbf72360d5e12c609ac14c'\"'\"'; assert all(d['\"'\"'required_symbols'\"'\"'].values())'",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          }
+        }
+      ],
+      "failed_units": [],
+      "mission_id": "662d8ba9-c183-4c23-ab32-fdc44358d53d",
+      "no_progress_warning": null,
+      "reason": null,
+      "state": "VERIFIED",
+      "status": "completed",
+      "verdict": "ACCEPT"
+    },
+    "gate": "DURABLE_REAL_MISSION",
+    "mission_id_after_refill": "662d8ba9-c183-4c23-ab32-fdc44358d53d",
+    "mission_id_before_refill": "662d8ba9-c183-4c23-ab32-fdc44358d53d",
+    "receipts": {
+      "child_continuation": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/qualification/child_continuation.json",
+      "mission_state": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/mission/state.json",
+      "source_test": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/qualification/source_test.json",
+      "tool_receipt_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/receipts/tools"
+    },
+    "refill": [
+      {
+        "id": "receipt-continuation",
+        "parent_id": "source-inspect",
+        "reason": "verified parent evidence",
+        "status": "ADMITTED"
+      }
+    ],
+    "schema": "hcli.agentos.resident_qualification.v1",
+    "second_result": {
+      "accepted": 2,
+      "cancelled": false,
+      "evidence": [
+        {
+          "accepted": true,
+          "at": 1787872665.461643,
+          "child_workunits": [
+            {
+              "dependencies": [
+                "source-inspect"
+              ],
+              "description": "Re-read the source/test receipt and compile the resident implementation.",
+              "id": "receipt-continuation",
+              "resource_class": "TEST",
+              "role": "verification",
+              "verifier": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'import json; from pathlib import Path; p=Path('\"'\"'/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/qualification/child_continuation.json'\"'\"'); d=json.loads(p.read_text()); assert d['\"'\"'compile_returncode'\"'\"']==0; assert d['\"'\"'parent_receipt_sha256'\"'\"']'"
+            }
+          ],
+          "unit_id": "source-inspect",
+          "validation": {
+            "acceptance_source": "workunit_verifier",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'import json; from pathlib import Path; p=Path('\"'\"'/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/qualification/source_test.json'\"'\"'); d=json.loads(p.read_text()); assert d['\"'\"'tests_passed'\"'\"'] is True; assert d['\"'\"'source_sha256'\"'\"']=='\"'\"'1ea6609a8d35effb4b2d2ae0e279c204fbbeebbacdcbf72360d5e12c609ac14c'\"'\"'; assert all(d['\"'\"'required_symbols'\"'\"'].values())'",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          }
+        },
+        {
+          "accepted": true,
+          "at": 1787872665.5711622,
+          "child_workunits": [],
+          "unit_id": "receipt-continuation",
+          "validation": {
+            "acceptance_source": "workunit_verifier",
+            "command": "/opt/homebrew/opt/python@3.14/bin/python3.14 -c 'import json; from pathlib import Path; p=Path('\"'\"'/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/qualification/child_continuation.json'\"'\"'); d=json.loads(p.read_text()); assert d['\"'\"'compile_returncode'\"'\"']==0; assert d['\"'\"'parent_receipt_sha256'\"'\"']'",
+            "exit_code": 0,
+            "ok": true,
+            "output": ""
+          }
+        }
+      ],
+      "failed_units": [],
+      "mission_id": "662d8ba9-c183-4c23-ab32-fdc44358d53d",
+      "no_progress_warning": null,
+      "reason": null,
+      "state": "VERIFIED",
+      "status": "completed",
+      "verdict": "ACCEPT"
+    },
+    "status": "PASSED",
+    "tool_search": {
+      "artifact": null,
+      "deterministic": true,
+      "elapsed_s": 0.0006499290466308594,
+      "error": null,
+      "failure_class": null,
+      "finished_at": 1787872664.804045,
+      "invocation_id": "tool-aeefaf9d-4847-4708-89ed-3a75c46d1de7",
+      "mutation": "read_only",
+      "ok": true,
+      "provenance": {
+        "observed_at": 1787872664.804045,
+        "receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h/.hcli/receipts/tools/tool-aeefaf9d-4847-4708-89ed-3a75c46d1de7.json",
+        "source": "hcli.tool_registry"
+      },
+      "schema": "hcli.agentos.tool.result.v1",
+      "started_at": 1787872664.803395,
+      "tool": "filesystem.search",
+      "value": {
+        "files_seen": 1,
+        "matches": [
+          {
+            "line": 826,
+            "path": "/Users/scammermike/Downloads/hawking/hcli/agentos/resident.py",
+            "text": "class ResidentSupervisor:"
+          }
+        ],
+        "pattern": "class ResidentSupervisor",
+        "root": "/Users/scammermike/Downloads/hawking/hcli/agentos",
+        "truncated": false
+      }
+    },
+    "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hcli-resident-real-mission-z2tlm7_h"
+  },
+  "schema": "hcli.agentos.resident_qualification.v1",
+  "status": "PASSED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

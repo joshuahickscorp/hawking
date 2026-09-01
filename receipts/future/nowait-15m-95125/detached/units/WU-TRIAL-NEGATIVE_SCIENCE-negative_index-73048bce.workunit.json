@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.NEGATIVE_SCIENCE.negative_index.receipt.json",
+    "negative_index.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "rebuild the scar index that prunes work before it is scheduled",
+  "frontier_id": "FT.VERIFICATION.negative-index",
+  "gpu_authority": false,
+  "id": "WU.TRIAL.NEGATIVE_SCIENCE.negative_index",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.NEGATIVE_SCIENCE.negative_index.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "987c6d3ad39ec0175ddf86e7279e3ee4f6d26658335cb47e12d02c14a07ae343",
+  "timeout_s": 24.36357808113098,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

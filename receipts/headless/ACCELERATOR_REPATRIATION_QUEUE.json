@@ -1,0 +1,1588 @@
+{
+  "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+  "atlas_schema": "hawking.accelerator.architecture_atlas.v1",
+  "bench": {
+    "machine": "planning artifact; no physical benchmark was executed",
+    "provenance": "This artifact contains hypotheses and schema metadata, not a benchmark result",
+    "quiescence": null,
+    "recorded_at": "2026-08-29T00:00:00Z",
+    "recorded_by": "architecture-atlas planning artifact",
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "This compiled queue is a durable set of hypotheses and HCLI work proposals. It contains no physical timing, capability, or hardware claim.",
+  "counts": {
+    "blocked": 3,
+    "ready": 6,
+    "specs": 9,
+    "work_units": 6
+  },
+  "experiment_spec_schema": "hawking.accelerator.experiment_spec.v1",
+  "fingerprint": "2614343a763063e3812f0d9a5fbc786385a88d9e183708f347667124097e4e5b",
+  "funnel": {
+    "diagnostic_relative_interleaved_ab": [
+      "flash-semantic-transport-hwir",
+      "qwen27-async-double-buffer",
+      "qwen27-graph-replay-token-skeleton",
+      "qwen27-layout-algebra-mlp",
+      "qwen27-move-or-recompute-boundary",
+      "qwen27-stationary-packed-weight"
+    ],
+    "promotion": [],
+    "promotion_rule": "only a protected complete-token receipt may move an id beyond the queue",
+    "protected_absolute_complete_wall_with_capability_gate": [
+      "qwen27-async-double-buffer",
+      "qwen27-graph-replay-token-skeleton",
+      "qwen27-layout-algebra-mlp",
+      "qwen27-move-or-recompute-boundary",
+      "qwen27-stationary-packed-weight"
+    ],
+    "structural_compile_and_negative_controls": [
+      "flash-semantic-transport-hwir",
+      "qwen27-async-double-buffer",
+      "qwen27-graph-replay-token-skeleton",
+      "qwen27-layout-algebra-mlp",
+      "qwen27-move-or-recompute-boundary",
+      "qwen27-stationary-packed-weight"
+    ]
+  },
+  "runner_policy": {
+    "commands_are_argv_only": true,
+    "interrupted_jobs_rerun_from_start": true,
+    "physical_start_requires_explicit_execute": true,
+    "physical_start_requires_quiescence": true,
+    "planning_is_side_effect_free": true,
+    "protected_benchmark_uses_existing_hcli_lease": true
+  },
+  "schema": "hawking.accelerator.repatriation_queue_compiled.v1",
+  "selection": {
+    "backend": null,
+    "model": null,
+    "ordering": "ready first, then expected value score descending, then experiment id"
+  },
+  "specs": [
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "metal",
+      "behavior_id": "move_or_recompute",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "costed dependency planner chooses resident/recompute/prefetch by complete boundary cost",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json"
+      ],
+      "control": "framework-prescribed movement",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        },
+        "host_ceremony": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        },
+        "state_movement": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        },
+        "synchronization": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "select the lowest complete dependency cost"
+        }
+      },
+      "expected_value_score": 1000.0,
+      "experiment_id": "qwen27-move-or-recompute-boundary",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "MoveOrRecompute",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-27B",
+      "nr_identity": "NR_REPATRIATION:move_or_recompute",
+      "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+      "organ": "all",
+      "organ_range": {
+        "organ": "all",
+        "range": "whole-body",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "tools/accelerator/fusion_planner.py",
+        "hcli/physical_graph.py"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": null,
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "READY",
+      "target": {
+        "backend": "metal",
+        "model_identity": "Qwen3.8-27B",
+        "nr_identity": "NR_REPATRIATION:move_or_recompute",
+        "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+        "organ": "all",
+        "organ_range": {
+          "organ": "all",
+          "range": "whole-body",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "metal",
+      "behavior_id": "graph_replay",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "replay static token graph with dynamic token/position slots",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json"
+      ],
+      "control": "current persistent executor with per-step command encoding",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        },
+        "host_ceremony": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        },
+        "state_movement": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        },
+        "synchronization": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reuse command topology and reduce rebuilds"
+        }
+      },
+      "expected_value_score": 625.0,
+      "experiment_id": "qwen27-graph-replay-token-skeleton",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "GraphReplay",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-27B",
+      "nr_identity": "NR_REPATRIATION:graph_replay",
+      "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+      "organ": "decode",
+      "organ_range": {
+        "organ": "decode",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "receipts/headless/ACCELERATOR_GRAPH_SUBMISSION.json",
+        "hcli/physical_graph.py"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": null,
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "READY",
+      "target": {
+        "backend": "metal",
+        "model_identity": "Qwen3.8-27B",
+        "nr_identity": "NR_REPATRIATION:graph_replay",
+        "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+        "organ": "decode",
+        "organ_range": {
+          "organ": "decode",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "metal",
+      "behavior_id": "layout_algebra",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "parameterized packed GEMV layout/tile/lane mapping",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json"
+      ],
+      "control": "sealed resident Qwen27 GeoTpr64Tg128 path",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        },
+        "host_ceremony": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        },
+        "state_movement": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        },
+        "synchronization": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "reduce strided movement and tails through shape-aware mapping"
+        }
+      },
+      "expected_value_score": 625.0,
+      "experiment_id": "qwen27-layout-algebra-mlp",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "LayoutTransform",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-27B",
+      "nr_identity": "NR_REPATRIATION:layout_algebra",
+      "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+      "organ": "mlp",
+      "organ_range": {
+        "organ": "mlp",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "tools/accelerator/air.py",
+        "tools/accelerator/kernel_forge.py",
+        "crates/hawking-core/src/model/qwen38_hybrid_decode.rs"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": null,
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "READY",
+      "target": {
+        "backend": "metal",
+        "model_identity": "Qwen3.8-27B",
+        "nr_identity": "NR_REPATRIATION:layout_algebra",
+        "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+        "organ": "mlp",
+        "organ_range": {
+          "organ": "mlp",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "metal",
+      "behavior_id": "stationary_representation",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "keep packed representation resident and expose runtime active bytes separately",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json"
+      ],
+      "control": "same-source packed path with no active-byte instrumentation",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        },
+        "host_ceremony": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        },
+        "state_movement": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        },
+        "synchronization": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid repeated operand movement"
+        }
+      },
+      "expected_value_score": 625.0,
+      "experiment_id": "qwen27-stationary-packed-weight",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "StationaryRepresentation",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-27B",
+      "nr_identity": "NR_REPATRIATION:stationary_representation",
+      "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+      "organ": "mlp",
+      "organ_range": {
+        "organ": "mlp",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+        "receipts/headless/ACCELERATOR_DEVICE_RESIDENT.json",
+        "receipts/headless/ACCELERATOR_TOKEN_BYTE_ATLAS_628.json"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": null,
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "READY",
+      "target": {
+        "backend": "metal",
+        "model_identity": "Qwen3.8-27B",
+        "nr_identity": "NR_REPATRIATION:stationary_representation",
+        "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+        "organ": "mlp",
+        "organ_range": {
+          "organ": "mlp",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "fpga",
+      "behavior_id": "semantic_transport",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "typed route metadata/activation/partial-reduction edges in HWIR",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "fpga-preboard",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json"
+      ],
+      "control": "untyped partition boundary",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        },
+        "host_ceremony": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        },
+        "state_movement": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        },
+        "synchronization": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "avoid untyped copies and choose topology-aware movement"
+        }
+      },
+      "expected_value_score": 468.75,
+      "experiment_id": "flash-semantic-transport-hwir",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "SemanticTransportEdge",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-Flash-Next",
+      "nr_identity": "NR_REPATRIATION:semantic_transport",
+      "nx_identity": "FLASH_NEXT_NX_PROTECTED_NOT_YET_QUALIFIED",
+      "organ": "route_and_state",
+      "organ_range": {
+        "organ": "route_and_state",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": false,
+        "requires_quiescence": false,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "tools/accelerator/fusion_planner.py",
+        "hcli/agentos/fpga_preboard.py",
+        "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": null,
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "READY",
+      "target": {
+        "backend": "fpga",
+        "model_identity": "Qwen3.8-Flash-Next",
+        "nr_identity": "NR_REPATRIATION:semantic_transport",
+        "nx_identity": "FLASH_NEXT_NX_PROTECTED_NOT_YET_QUALIFIED",
+        "organ": "route_and_state",
+        "organ_range": {
+          "organ": "route_and_state",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "metal",
+      "behavior_id": "async_double_buffer",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "overlap next packed tile staging with current projection when ownership permits",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json"
+      ],
+      "control": "current serial projection and command-buffer boundary",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        },
+        "host_ceremony": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        },
+        "state_movement": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        },
+        "synchronization": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "hide movement behind independent work"
+        }
+      },
+      "expected_value_score": 320.0,
+      "experiment_id": "qwen27-async-double-buffer",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "DoubleBufferedTile",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-27B",
+      "nr_identity": "NR_REPATRIATION:async_double_buffer",
+      "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+      "organ": "mlp",
+      "organ_range": {
+        "organ": "mlp",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "tools/accelerator/fusion_planner.py",
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": null,
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "READY",
+      "target": {
+        "backend": "metal",
+        "model_identity": "Qwen3.8-27B",
+        "nr_identity": "NR_REPATRIATION:async_double_buffer",
+        "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+        "organ": "mlp",
+        "organ_range": {
+          "organ": "mlp",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "metal",
+      "behavior_id": "local_state_machine",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "persistent DeltaNet state machine with checkpoint-bisection verifier",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "fpga-preboard",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/flash-local-state-machine.json"
+      ],
+      "control": "current Flash stateful seam",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        },
+        "host_ceremony": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        },
+        "state_movement": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        },
+        "synchronization": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "keep mutable sequence state resident and ordered"
+        }
+      },
+      "expected_value_score": 833.333,
+      "experiment_id": "flash-local-state-machine",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "LocalStateMachine",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-Flash-Next",
+      "nr_identity": "NR_REPATRIATION:local_state_machine",
+      "nx_identity": "FLASH_NEXT_NX_PROTECTED_NOT_YET_QUALIFIED",
+      "organ": "deltanet",
+      "organ_range": {
+        "organ": "deltanet",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-local-state-machine.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM.json",
+        "hcli/physical_graph.py",
+        "hcli/agentos/fpga_preboard.py"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": "requires the Flash protected complete-token runtime lane",
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "BLOCKED",
+      "target": {
+        "backend": "metal",
+        "model_identity": "Qwen3.8-Flash-Next",
+        "nr_identity": "NR_REPATRIATION:local_state_machine",
+        "nx_identity": "FLASH_NEXT_NX_PROTECTED_NOT_YET_QUALIFIED",
+        "organ": "deltanet",
+        "organ_range": {
+          "organ": "deltanet",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "metal",
+      "behavior_id": "direct_routed_accumulate",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "route-before-payload with selected-expert direct weighted accumulation",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "fpga-preboard",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/flash-direct-routed-accumulate.json"
+      ],
+      "control": "current Flash routed-expert component graph",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        },
+        "flops": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        },
+        "host_ceremony": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        },
+        "state_movement": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        },
+        "synchronization": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "skip inactive experts and eliminate staging copies"
+        }
+      },
+      "expected_value_score": 300.0,
+      "experiment_id": "flash-direct-routed-accumulate",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "DirectRoutedAccumulate",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-Flash-Next",
+      "nr_identity": "NR_REPATRIATION:direct_routed_accumulate",
+      "nx_identity": "FLASH_NEXT_NX_PROTECTED_NOT_YET_QUALIFIED",
+      "organ": "moe",
+      "organ_range": {
+        "organ": "moe",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-direct-routed-accumulate.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "receipts/headless/FLASH_NOETIC_ROUTED_EXPERT_COMPONENT_CAMPAIGN.json",
+        "hcli/agentos/flash_executable.py"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": "Flash native full-model executable/weights are not available in the current protected lane; retain as detached queue work",
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": true,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "BLOCKED",
+      "target": {
+        "backend": "metal",
+        "model_identity": "Qwen3.8-Flash-Next",
+        "nr_identity": "NR_REPATRIATION:direct_routed_accumulate",
+        "nx_identity": "FLASH_NEXT_NX_PROTECTED_NOT_YET_QUALIFIED",
+        "organ": "moe",
+        "organ_range": {
+          "organ": "moe",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    },
+    {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "backend": "ane",
+      "behavior_id": "npu_regular_island",
+      "benchmark_mode": "complete_useful_wall_ns_authority",
+      "candidate": "public Core ML/ML Program regular island with explicit transfer accounting",
+      "claim_boundary": "This is an executable hypothesis specification. It is not a performance result, capability result, or source-product claim.",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "fpga-preboard",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/ane-regular-island-probe.json"
+      ],
+      "control": "Metal normalization path",
+      "expected_effect": {
+        "active_bytes": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        },
+        "dispatches": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        },
+        "experiment_turnaround_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        },
+        "flops": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        },
+        "host_ceremony": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        },
+        "state_movement": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        },
+        "synchronization": {
+          "direction": "INCREASE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        },
+        "token_ns": {
+          "direction": "REDUCE",
+          "measurement": "measure",
+          "mechanism": "offload regular islands only when the boundary wins"
+        }
+      },
+      "expected_value_score": 101.25,
+      "experiment_id": "ane-regular-island-probe",
+      "falsifier": "no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "kernel_lowering": "ConditionalPhysicalProgram",
+      "metrics": [
+        "complete_useful_wall_ns",
+        "gpu_ns",
+        "active_bytes_per_token",
+        "dispatches",
+        "synchronization_ns",
+        "host_ceremony_ns",
+        "fallback_count",
+        "capability_verified"
+      ],
+      "model_identity": "Qwen3.8-27B",
+      "nr_identity": "NR_REPATRIATION:npu_regular_island",
+      "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+      "organ": "normalization",
+      "organ_range": {
+        "organ": "normalization",
+        "range": "whole-organ",
+        "selection": "candidate-defined; no implicit full-model claim"
+      },
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/ane-regular-island-probe.json",
+      "promotion": {
+        "required_benchmark_class": "QUALIFIED_PROTECTED",
+        "required_evidence_class": "HAWKING_PROTECTED_VERIFIED",
+        "requires_complete_active_bytes_or_explicit_absence": true,
+        "requires_independent_capability": true,
+        "requires_zero_fallback": true
+      },
+      "runner": {
+        "detached": true,
+        "lease": "HCLI/Accelerator physical-window lease",
+        "protected_window": true,
+        "requires_quiescence": true,
+        "resumable": true,
+        "shell": false
+      },
+      "schema": "hawking.accelerator.experiment_spec.v1",
+      "source_evidence": [
+        "receipts/headless/APPLE_ANE_ATLAS.json",
+        "hcli/ane_provider.py"
+      ],
+      "state_session_inputs": {
+        "blocked_reason": "public ANE compile/runtime measurement is not available in this process; plan-only until the public path is executable",
+        "dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling",
+          "variable_state"
+        ],
+        "memory_tier_is_executable_identity": true,
+        "route_before_payload": false,
+        "session": "persistent_token_session",
+        "state_residency": "resident_when_valid; explicit owner and checkpoint boundary"
+      },
+      "status": "BLOCKED",
+      "target": {
+        "backend": "ane",
+        "model_identity": "Qwen3.8-27B",
+        "nr_identity": "NR_REPATRIATION:npu_regular_island",
+        "nx_identity": "QWEN27_NX_CURRENT_SEALED_3.14",
+        "organ": "normalization",
+        "organ_range": {
+          "organ": "normalization",
+          "range": "whole-organ",
+          "selection": "candidate-defined; no implicit full-model claim"
+        }
+      },
+      "verification_mode": "structural_then_diagnostic_then_protected"
+    }
+  ],
+  "version": 1,
+  "work_units": [
+    {
+      "assigned_backend": null,
+      "assigned_runtime": null,
+      "attempts": 0,
+      "backend_task_id": null,
+      "behavior_id": "move_or_recompute",
+      "claim_boundary": "WorkUnit is a proposal; verifier and protected receipt remain authoritative",
+      "classification": null,
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json"
+      ],
+      "content_hash": "97c8705601aba2439656e0035a52fa8c8d1fc0adecad6286efb9e5a2516584a5",
+      "dependencies": [],
+      "description": "Run costed dependency planner chooses resident/recompute/prefetch by complete boundary cost on Qwen3.8-27B/metal for all. Control: framework-prescribed movement. Falsifier: no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "effect_class": "REVERSIBLE",
+      "experiment_id": "qwen27-move-or-recompute-boundary",
+      "failure_context": null,
+      "finished_at": null,
+      "id": "accelerator.qwen27-move-or-recompute-boundary",
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-move-or-recompute-boundary.json",
+      "preferred_backend": "metal",
+      "provider": "accelerator_runner",
+      "ready_at": null,
+      "repair_depth": 0,
+      "repair_exhausted": false,
+      "repair_reason": null,
+      "repair_root": null,
+      "repairs": null,
+      "requires_quiescence": true,
+      "resource_class": "GPU_EXCLUSIVE",
+      "role": "accelerator_repatriation",
+      "running_at": null,
+      "status": "pending",
+      "verification": null,
+      "verifier": "accelerator.repatriation.qwen27-move-or-recompute-boundary",
+      "workspace": "repo-root"
+    },
+    {
+      "assigned_backend": null,
+      "assigned_runtime": null,
+      "attempts": 0,
+      "backend_task_id": null,
+      "behavior_id": "graph_replay",
+      "claim_boundary": "WorkUnit is a proposal; verifier and protected receipt remain authoritative",
+      "classification": null,
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json"
+      ],
+      "content_hash": "bf099ba985de4caa68df8ecd22ba9e161c2e42a65845b8d9553874e43a5819e7",
+      "dependencies": [],
+      "description": "Run replay static token graph with dynamic token/position slots on Qwen3.8-27B/metal for decode. Control: current persistent executor with per-step command encoding. Falsifier: no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "effect_class": "REVERSIBLE",
+      "experiment_id": "qwen27-graph-replay-token-skeleton",
+      "failure_context": null,
+      "finished_at": null,
+      "id": "accelerator.qwen27-graph-replay-token-skeleton",
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-graph-replay-token-skeleton.json",
+      "preferred_backend": "metal",
+      "provider": "accelerator_runner",
+      "ready_at": null,
+      "repair_depth": 0,
+      "repair_exhausted": false,
+      "repair_reason": null,
+      "repair_root": null,
+      "repairs": null,
+      "requires_quiescence": true,
+      "resource_class": "GPU_EXCLUSIVE",
+      "role": "accelerator_repatriation",
+      "running_at": null,
+      "status": "pending",
+      "verification": null,
+      "verifier": "accelerator.repatriation.qwen27-graph-replay-token-skeleton",
+      "workspace": "repo-root"
+    },
+    {
+      "assigned_backend": null,
+      "assigned_runtime": null,
+      "attempts": 0,
+      "backend_task_id": null,
+      "behavior_id": "layout_algebra",
+      "claim_boundary": "WorkUnit is a proposal; verifier and protected receipt remain authoritative",
+      "classification": null,
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json"
+      ],
+      "content_hash": "0ba22af3bf18b8d6f2796c932cdfeb969600e3a048bbe69bed8f314013e79994",
+      "dependencies": [],
+      "description": "Run parameterized packed GEMV layout/tile/lane mapping on Qwen3.8-27B/metal for mlp. Control: sealed resident Qwen27 GeoTpr64Tg128 path. Falsifier: no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "effect_class": "REVERSIBLE",
+      "experiment_id": "qwen27-layout-algebra-mlp",
+      "failure_context": null,
+      "finished_at": null,
+      "id": "accelerator.qwen27-layout-algebra-mlp",
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-layout-algebra-mlp.json",
+      "preferred_backend": "metal",
+      "provider": "accelerator_runner",
+      "ready_at": null,
+      "repair_depth": 0,
+      "repair_exhausted": false,
+      "repair_reason": null,
+      "repair_root": null,
+      "repairs": null,
+      "requires_quiescence": true,
+      "resource_class": "GPU_EXCLUSIVE",
+      "role": "accelerator_repatriation",
+      "running_at": null,
+      "status": "pending",
+      "verification": null,
+      "verifier": "accelerator.repatriation.qwen27-layout-algebra-mlp",
+      "workspace": "repo-root"
+    },
+    {
+      "assigned_backend": null,
+      "assigned_runtime": null,
+      "attempts": 0,
+      "backend_task_id": null,
+      "behavior_id": "stationary_representation",
+      "claim_boundary": "WorkUnit is a proposal; verifier and protected receipt remain authoritative",
+      "classification": null,
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json"
+      ],
+      "content_hash": "3ec2381f31bd7745b8b549470f2ca2471df50a769abe43c745c6a7460e560442",
+      "dependencies": [],
+      "description": "Run keep packed representation resident and expose runtime active bytes separately on Qwen3.8-27B/metal for mlp. Control: same-source packed path with no active-byte instrumentation. Falsifier: no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "effect_class": "REVERSIBLE",
+      "experiment_id": "qwen27-stationary-packed-weight",
+      "failure_context": null,
+      "finished_at": null,
+      "id": "accelerator.qwen27-stationary-packed-weight",
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-stationary-packed-weight.json",
+      "preferred_backend": "metal",
+      "provider": "accelerator_runner",
+      "ready_at": null,
+      "repair_depth": 0,
+      "repair_exhausted": false,
+      "repair_reason": null,
+      "repair_root": null,
+      "repairs": null,
+      "requires_quiescence": true,
+      "resource_class": "GPU_EXCLUSIVE",
+      "role": "accelerator_repatriation",
+      "running_at": null,
+      "status": "pending",
+      "verification": null,
+      "verifier": "accelerator.repatriation.qwen27-stationary-packed-weight",
+      "workspace": "repo-root"
+    },
+    {
+      "assigned_backend": null,
+      "assigned_runtime": null,
+      "attempts": 0,
+      "backend_task_id": null,
+      "behavior_id": "semantic_transport",
+      "claim_boundary": "WorkUnit is a proposal; verifier and protected receipt remain authoritative",
+      "classification": null,
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "fpga-preboard",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json"
+      ],
+      "content_hash": "e7d5672f6003cedb60c3b739e737681d6ffafe7bfd2eb17789a8ed8197cf415e",
+      "dependencies": [],
+      "description": "Run typed route metadata/activation/partial-reduction edges in HWIR on Qwen3.8-Flash-Next/fpga for route_and_state. Control: untyped partition boundary. Falsifier: no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "effect_class": "REVERSIBLE",
+      "experiment_id": "flash-semantic-transport-hwir",
+      "failure_context": null,
+      "finished_at": null,
+      "id": "accelerator.flash-semantic-transport-hwir",
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/flash-semantic-transport-hwir.json",
+      "preferred_backend": "fpga",
+      "provider": "accelerator_runner",
+      "ready_at": null,
+      "repair_depth": 0,
+      "repair_exhausted": false,
+      "repair_reason": null,
+      "repair_root": null,
+      "repairs": null,
+      "requires_quiescence": false,
+      "resource_class": "COMPILE",
+      "role": "accelerator_repatriation",
+      "running_at": null,
+      "status": "pending",
+      "verification": null,
+      "verifier": "accelerator.repatriation.flash-semantic-transport-hwir",
+      "workspace": "repo-root"
+    },
+    {
+      "assigned_backend": null,
+      "assigned_runtime": null,
+      "attempts": 0,
+      "backend_task_id": null,
+      "behavior_id": "async_double_buffer",
+      "claim_boundary": "WorkUnit is a proposal; verifier and protected receipt remain authoritative",
+      "classification": null,
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "protected-accelerator-bench",
+        "--profile",
+        "hcli/hawking-native.sealed-3.14.json",
+        "--max-new-tokens",
+        "32",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json"
+      ],
+      "content_hash": "00d0c2e9915b8aa8f3d218369abcebbf78ad24d9719bf57fabfc04678a7de7f0",
+      "dependencies": [],
+      "description": "Run overlap next packed tile staging with current projection when ownership permits on Qwen3.8-27B/metal for mlp. Control: current serial projection and command-buffer boundary. Falsifier: no protected complete-wall improvement with identical oracle/output, zero fallback, and complete metric accounting",
+      "effect_class": "REVERSIBLE",
+      "experiment_id": "qwen27-async-double-buffer",
+      "failure_context": null,
+      "finished_at": null,
+      "id": "accelerator.qwen27-async-double-buffer",
+      "output_receipt_path": "receipts/headless/ACCELERATOR_REPATRIATION/qwen27-async-double-buffer.json",
+      "preferred_backend": "metal",
+      "provider": "accelerator_runner",
+      "ready_at": null,
+      "repair_depth": 0,
+      "repair_exhausted": false,
+      "repair_reason": null,
+      "repair_root": null,
+      "repairs": null,
+      "requires_quiescence": true,
+      "resource_class": "GPU_EXCLUSIVE",
+      "role": "accelerator_repatriation",
+      "running_at": null,
+      "status": "pending",
+      "verification": null,
+      "verifier": "accelerator.repatriation.qwen27-async-double-buffer",
+      "workspace": "repo-root"
+    }
+  ]
+}

@@ -1,0 +1,305 @@
+{
+  "base_state": null,
+  "claim_boundary": "This proves only a single-process contiguous source-BF16 layer seam with explicit state files. It does not prove a streamed whole-token runtime, device-resident chain, TPS, EBPW, or HCLI residence.",
+  "complete_token": "UNQUALIFIED",
+  "device_residency": "UNQUALIFIED",
+  "elapsed_wall_ns": 8825486814000,
+  "end_layer": 47,
+  "layers": [
+    {
+      "layer": 0,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-0/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-0/state.f32"
+    },
+    {
+      "layer": 1,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-1/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-1/state.f32"
+    },
+    {
+      "layer": 2,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-2/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-2/state.f32"
+    },
+    {
+      "layer": 3,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-3/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-3/state.f32"
+    },
+    {
+      "layer": 4,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-4/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-4/state.f32"
+    },
+    {
+      "layer": 5,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-5/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-5/state.f32"
+    },
+    {
+      "layer": 6,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-6/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-6/state.f32"
+    },
+    {
+      "layer": 7,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-7/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-7/state.f32"
+    },
+    {
+      "layer": 8,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-8/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-8/state.f32"
+    },
+    {
+      "layer": 9,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-9/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-9/state.f32"
+    },
+    {
+      "layer": 10,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-10/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-10/state.f32"
+    },
+    {
+      "layer": 11,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-11/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-11/state.f32"
+    },
+    {
+      "layer": 12,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-12/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-12/state.f32"
+    },
+    {
+      "layer": 13,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-13/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-13/state.f32"
+    },
+    {
+      "layer": 14,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-14/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-14/state.f32"
+    },
+    {
+      "layer": 15,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-15/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-15/state.f32"
+    },
+    {
+      "layer": 16,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-16/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-16/state.f32"
+    },
+    {
+      "layer": 17,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-17/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-17/state.f32"
+    },
+    {
+      "layer": 18,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-18/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-18/state.f32"
+    },
+    {
+      "layer": 19,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-19/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-19/state.f32"
+    },
+    {
+      "layer": 20,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-20/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-20/state.f32"
+    },
+    {
+      "layer": 21,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-21/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-21/state.f32"
+    },
+    {
+      "layer": 22,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-22/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-22/state.f32"
+    },
+    {
+      "layer": 23,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-23/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-23/state.f32"
+    },
+    {
+      "layer": 24,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-24/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-24/state.f32"
+    },
+    {
+      "layer": 25,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-25/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-25/state.f32"
+    },
+    {
+      "layer": 26,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-26/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-26/state.f32"
+    },
+    {
+      "layer": 27,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-27/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-27/state.f32"
+    },
+    {
+      "layer": 28,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-28/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-28/state.f32"
+    },
+    {
+      "layer": 29,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-29/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-29/state.f32"
+    },
+    {
+      "layer": 30,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-30/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-30/state.f32"
+    },
+    {
+      "layer": 31,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-31/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-31/state.f32"
+    },
+    {
+      "layer": 32,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-32/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-32/state.f32"
+    },
+    {
+      "layer": 33,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-33/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-33/state.f32"
+    },
+    {
+      "layer": 34,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-34/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-34/state.f32"
+    },
+    {
+      "layer": 35,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-35/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-35/state.f32"
+    },
+    {
+      "layer": 36,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-36/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-36/state.f32"
+    },
+    {
+      "layer": 37,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-37/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-37/state.f32"
+    },
+    {
+      "layer": 38,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-38/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-38/state.f32"
+    },
+    {
+      "layer": 39,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-39/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-39/state.f32"
+    },
+    {
+      "layer": 40,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-40/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-40/state.f32"
+    },
+    {
+      "layer": 41,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-41/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-41/state.f32"
+    },
+    {
+      "layer": 42,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-42/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-42/state.f32"
+    },
+    {
+      "layer": 43,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-43/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-43/state.f32"
+    },
+    {
+      "layer": 44,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-44/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-44/state.f32"
+    },
+    {
+      "layer": 45,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-45/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-45/state.f32"
+    },
+    {
+      "layer": 46,
+      "layer_type": "linear_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-46/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-46/state.f32"
+    },
+    {
+      "layer": 47,
+      "layer_type": "full_attention",
+      "receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-47/receipt.json",
+      "state": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/layer-47/state.f32"
+    }
+  ],
+  "process_boundary": "single_os_process",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_source_bf16_single_process_chain.v1",
+  "start_layer": 0,
+  "state_handoff": "explicit_f32_host_snapshot_between_layer_command_buffers",
+  "status": "PASSED",
+  "terminal_receipt": "receipts/headless/FLASH_SINGLE_PROCESS_CHAIN_L0_L47/terminal.json"
+}

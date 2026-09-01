@@ -1,0 +1,25 @@
+{
+  "expected": 4138867523,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "model.safetensors",
+    "notebook.ipynb",
+    "notebook_finetuning.ipynb",
+    "video_preprocessor_config.json"
+  ],
+  "mode": "safe",
+  "repo": "facebook/vjepa2-vitg-fpc64-256",
+  "resolved_sha": "875c192b7b704b87d1e1d99345769632dd5f739a",
+  "revision": "875c192b7b704b87d1e1d99345769632dd5f739a",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 3209,
+    "config.json": 801,
+    "model.safetensors": 4138311608,
+    "notebook.ipynb": 4302,
+    "notebook_finetuning.ipynb": 544786,
+    "video_preprocessor_config.json": 1298
+  }
+}

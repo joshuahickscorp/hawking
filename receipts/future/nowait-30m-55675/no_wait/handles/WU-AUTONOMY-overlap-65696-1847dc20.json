@@ -1,0 +1,18 @@
+{
+  "dependencies": [],
+  "evidence_class": "STATIC_ONLY",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.65696.receipt.json",
+  "frontier_item": "FT.HCLI_SELF.emit-workunits",
+  "gpu_authority": false,
+  "job_id": "WU-AUTONOMY-overlap-65696-1847dc20",
+  "launch_refused": false,
+  "launched_at": 1788202801.193856,
+  "pid": 99062,
+  "required_schema": null,
+  "schema": "hawking.future.no_wait.handle.v1",
+  "start_token": "1788202801.252928",
+  "state": "RUNNING",
+  "terminal": null,
+  "timeout_s": 600.0,
+  "unit_id": "WU.AUTONOMY.overlap.65696"
+}

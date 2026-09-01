@@ -1,0 +1,114 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787966433644",
+    "recorded_by": "flash_stateful_attention_probe",
+    "rule": "S032 §3 -- stateful organ timing; quiescence unknown",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "This proves persistent multi-position KV cache writes and the full-attention HyperConnection/routed/shared-MoE MLP epilogue, with first-step final-state parity. It does not prove cross-species state handoff, full-model token acceptance, complete-model TPS, EBPW, or resident promotion.",
+  "complete_system_ebpw": null,
+  "distinct_kv_slots": true,
+  "execution": {
+    "compact_expert_count": 15,
+    "context_reused": true,
+    "device": "Apple M3 Ultra",
+    "expert_bank_mode": "route_union_compact",
+    "first_input_bytes": 5120,
+    "first_input_sha256": "ab04433a80171d997c9d9ffd9ff4bebcca1e119e9de43665d20a7e5c63971cf4",
+    "full_attention_mlp_epilogue": true,
+    "input_kind": "repeated_bos_embedding",
+    "kv_cache_reused": true,
+    "kv_cache_slots": 2,
+    "process_boundary": "one native process",
+    "provider": "apple_metal",
+    "source_payload_bytes_read": 285963264,
+    "weights_reused": true
+  },
+  "layer": 3,
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Feed this final state through the next qualified Flash layer in the persistent 48-layer session, then remove the diagnostic host seam.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_attention_organ_probe.v1",
+  "seal_sha256": "47ad0fba73d189ae4140637ba5e525e52d9a139c786097c94f0d5da18fa28d8d",
+  "stateful_final_state": true,
+  "status": "PASSED_STATEFUL_KV_ORGAN",
+  "steps": [
+    {
+      "attention_sha256": "fe73b4efa02f4356a384ce4f8c4d6e8f9f4dd10f0617469038763eb120ab1666",
+      "dispatches": 29,
+      "embedding_bytes": 5120,
+      "embedding_sha256": "ab04433a80171d997c9d9ffd9ff4bebcca1e119e9de43665d20a7e5c63971cf4",
+      "final_state_sha256": "e68ac16b53aa138a5d8e1b111cf2e12bb9caa086ec65bc0b625093f1ae560a5c",
+      "finite": true,
+      "first_step_parity": {
+        "final_state": {
+          "cosine": 0.9999999999997007,
+          "finite": true,
+          "max_abs_error": 1.0132789611816406e-6,
+          "rmse": 1.7399132371864014e-7,
+          "within_tolerance": true
+        },
+        "query": {
+          "cosine": 0.9999999999999452,
+          "finite": true,
+          "max_abs_error": 1.6689300537109375e-6,
+          "rmse": 3.676140049649718e-7,
+          "within_tolerance": true
+        }
+      },
+      "gpu_ns": 6309999,
+      "key_slot_sha256": "13fbef8867fde2b7ece07c5601d3d18528dd6cbc31842b9aae03295dd5cd9264",
+      "route_ids": [
+        419,
+        45,
+        275,
+        248,
+        339,
+        437,
+        412,
+        317,
+        434,
+        467
+      ],
+      "sequence_length": 1,
+      "step": 0,
+      "token_id": 5423,
+      "wall_ns": 36419459
+    },
+    {
+      "attention_sha256": "9c01000d11e36e5d76dbed35cd0985e225a973e7347a11642ad4695133770066",
+      "dispatches": 29,
+      "embedding_bytes": 5120,
+      "embedding_sha256": "6a7ebf6f6e8be4bde837c1a1dad66c10d3fc926765d4daabd599f6951073f8dc",
+      "final_state_sha256": "0a416434b67ca9f8ada8e41f892b01fa1929530437cd68c032b7d28b21fe08c1",
+      "finite": true,
+      "first_step_parity": null,
+      "gpu_ns": 6165124,
+      "key_slot_sha256": "c7c7d9035cbea1d0865776c876fa6f88a646d0a607cb2e2d87fe399677705ef4",
+      "route_ids": [
+        419,
+        275,
+        77,
+        45,
+        471,
+        437,
+        339,
+        300,
+        326,
+        302
+      ],
+      "sequence_length": 2,
+      "step": 1,
+      "token_id": 799,
+      "wall_ns": 6567416
+    }
+  ],
+  "token_ids": [
+    5423,
+    799
+  ]
+}

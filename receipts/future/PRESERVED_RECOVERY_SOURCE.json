@@ -1,0 +1,78 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T03:35:00Z",
+  "recorded_by": "tools/future/source_safety.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "checks": [
+  "unreachable_commits",
+  "dirty_paths",
+  "external_clone",
+  "preservation"
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "DERIVED_FROM_GIT",
+ "nothing_deleted": true,
+ "obligation": "G117",
+ "question": "may this be deleted, and what would be lost if it were?",
+ "registered_sources": [
+  {
+   "gate": {
+    "blocking_failures": [
+     "dirty_paths"
+    ],
+    "decision": "REFUSED",
+    "failures": [
+     {
+      "check": "unreachable_commits",
+      "detail": "HEAD 2f670c240 is not an ancestor of main",
+      "recoverable_anyway": true
+     },
+     {
+      "check": "dirty_paths",
+      "detail": "517 dirty, 4061 untracked",
+      "recoverable_anyway": false
+     },
+     {
+      "check": "external_clone",
+      "detail": "separate .git; invisible to `git worktree list` from canonical",
+      "recoverable_anyway": true
+     }
+    ]
+   },
+   "id": "hawking-copy",
+   "kind": "separate_clone",
+   "path": "~/Downloads/hawking-copy",
+   "preservation": {
+    "history_recoverable": true,
+    "preserved_ref": "refs/preserved/hawking-copy-head",
+    "preserved_sha": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+    "registered": true,
+    "why": "commits are fetched to the preserved ref so history survives the directory. Uncommitted and untracked working files are NOT captured, so the directory is not deletable.",
+    "working_files_preserved": false
+   },
+   "preserved_ref": "refs/preserved/hawking-copy-head",
+   "state": {
+    "branches": 55,
+    "dirty_paths": 517,
+    "exists": true,
+    "external_clone": true,
+    "git_common_dir": "/Users/scammermike/Downloads/hawking-copy/.git",
+    "head": "2f670c2406d22e7eef50a3d6eff7daf954facc77",
+    "head_object_in_canonical": true,
+    "head_reachable_from_canonical": false,
+    "is_git": true,
+    "path": "/Users/scammermike/Downloads/hawking-copy",
+    "untracked": 4061
+   },
+   "why_it_matters": "a separate .git, not a worktree, so `git worktree list` from canonical does not show it and it reads as an unrelated folder"
+  }
+ ],
+ "seal_sha256": "58d0c1e6ea4e7531885b6f83c7ae1a260f5915192cdd01e5371019174a9faef7",
+ "the_gate_is_a_refusal_not_a_warning": "require_safe_to_delete RAISES. A gate that logs and continues is not a gate, and autonomous cleanup authority is exactly the setting where nobody reads the log.",
+ "why_17_gb_is_still_on_disk": "hawking-copy's COMMITS are recoverable from refs/preserved/hawking-copy-head, but its 517 dirty and 4061 untracked files are not captured anywhere. History preserved is not work preserved, and treating them as the same would license the deletion this gate exists to stop."
+}

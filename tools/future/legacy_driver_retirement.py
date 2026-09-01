@@ -25,7 +25,7 @@ import time
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import REPO, git  # noqa: E402
+from _common import REPO, git  # noqa: E402, require_known_flags
 
 LABEL = "com.hawking.odyssey"
 DRIVER = REPO / "tools" / "odyssey_driver.sh"
@@ -245,6 +245,8 @@ def record(execute: bool = False) -> Path:
 
 
 if __name__ == "__main__":
+    from _common import require_known_flags
+    require_known_flags(["--build", "--execute", "--record"])
     ex = "--execute" in sys.argv
     if "--record" in sys.argv or ex:
         p = record(execute=ex)

@@ -1,0 +1,1 @@
+{"module": "turnaround.py", "entry_point": "build", "receipt": "receipts/future/EXPERIMENT_TURNAROUND.json", "routed_to_frontier": "FT.LATENCY.cpu-turnaround", "species": "PROFILE_HOST_CEREMONY", "wall_seconds": 7.606, "evidence_class": "STATIC_ONLY"}

@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.flash_complete_token_native_attempt.v1",
+  "status": "BLOCKED",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "representation": "source_bf16_exact",
+  "attempt": {
+    "binary": "workspace/ops/build/rust/debug/examples/ascension_qwen38_hybrid_greedy",
+    "artifact_root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "tokenizer": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc/tokenizer.json",
+    "raw_prompt": "Say hi.",
+    "max_new_tokens": 1,
+    "max_seq_len": 8,
+    "prompt_tokens": 3
+  },
+  "execution": {
+    "device": "Apple M3 Ultra",
+    "provider": "apple_metal",
+    "dispatches": 0,
+    "fallback_count": 0,
+    "physical_receipt": false
+  },
+  "first_physical_failure_boundary": {
+    "stage": "whole_token_weight_loader",
+    "error": "cannot read .../Qwen--Qwen3.8-Flash-Next@34567a4712bc/manifest.json: No such file or directory",
+    "cause": "ascension_qwen38_hybrid_greedy accepts a packed HQ38/Q4 catalog, while the pinned Flash specimen is source safetensors without a catalog manifest",
+    "next_action": "add a source-BF16 whole-token loader/executor or produce a measured source-to-NX representation; do not relabel the raw specimen as HQ38"
+  },
+  "complete_token_runtime": "NOT_EXECUTED",
+  "flash_tps": null,
+  "complete_system_ebpw": null,
+  "promotion_allowed": false,
+  "claim_boundary": "This is an exact one-token native execution attempt and failure receipt. It proves the current packed runtime cannot open the raw source-BF16 Flash specimen; it does not prove model failure or complete-token capability.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

@@ -1,0 +1,1 @@
+{"module": "repro_science.py", "entry_point": "build", "receipt": "receipts/future/REPRO_SCIENCE.json", "routed_to_frontier": "FT.VERIFICATION.repro", "species": "INDEPENDENT_REPRODUCTION", "wall_seconds": 0.055, "evidence_class": "STATIC_ONLY"}

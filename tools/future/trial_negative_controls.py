@@ -18,7 +18,7 @@ from typing import Any, Callable
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
 import autonomy_trial as at  # noqa: E402
-from _common import REPO  # noqa: E402
+from _common import REPO  # noqa: E402, require_known_flags
 
 # Lowercase "30m" is the tracked spelling. An earlier invocation passed
 # AUTONOMY_TIMELINE_30M.json and macOS, being case-insensitive, silently resolved
@@ -195,6 +195,8 @@ def record() -> Path:
 
 
 if __name__ == "__main__":
+    from _common import require_known_flags
+    require_known_flags(["--build", "--record"])
     doc = run()
     if "--record" in sys.argv:
         print(f"wrote {record()}")

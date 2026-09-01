@@ -1,0 +1,130 @@
+{
+  "schema": "hawking.flash.route_stability_audit.v1",
+  "status": "ROUTE_UNSAFE_FOR_COMPACT_REUSE",
+  "source_receipt": "receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_SESSION_REUSE.json",
+  "source_receipt_sha256": "b8adb4d7982465b95cd02906584aaab0b5fc06d7e3d4bf6371cb8450801de85e",
+  "layers": [
+    {
+      "layer": 0,
+      "initial_loaded_experts": [
+        37,
+        95,
+        99,
+        270,
+        290,
+        309,
+        316,
+        348,
+        353,
+        393
+      ],
+      "compact_experts": 10,
+      "dense_experts": 512,
+      "compact_bank_fraction": 0.01953125,
+      "later_steps": [
+        {
+          "step": 1,
+          "token_id": 799,
+          "missing_experts": [
+            20,
+            46,
+            79,
+            111,
+            149,
+            188,
+            226,
+            234,
+            242,
+            464
+          ]
+        }
+      ],
+      "route_stable": false
+    },
+    {
+      "layer": 1,
+      "initial_loaded_experts": [
+        19,
+        60,
+        86,
+        131,
+        157,
+        165,
+        225,
+        319,
+        320,
+        345
+      ],
+      "compact_experts": 10,
+      "dense_experts": 512,
+      "compact_bank_fraction": 0.01953125,
+      "later_steps": [
+        {
+          "step": 1,
+          "token_id": 799,
+          "missing_experts": [
+            71,
+            161,
+            251,
+            261,
+            264,
+            445,
+            447,
+            483
+          ]
+        }
+      ],
+      "route_stable": false
+    },
+    {
+      "layer": 2,
+      "initial_loaded_experts": [
+        12,
+        16,
+        22,
+        42,
+        49,
+        75,
+        87,
+        209,
+        257,
+        287
+      ],
+      "compact_experts": 10,
+      "dense_experts": 512,
+      "compact_bank_fraction": 0.01953125,
+      "later_steps": [
+        {
+          "step": 1,
+          "token_id": 799,
+          "missing_experts": [
+            10,
+            28,
+            101,
+            139,
+            180,
+            251,
+            431
+          ]
+        }
+      ],
+      "route_stable": false
+    }
+  ],
+  "summary": {
+    "layers_audited": 3,
+    "steps_audited": 6,
+    "unmapped_route_count": 25,
+    "compact_reuse_allowed": false
+  },
+  "claim_boundary": "Later token router selections escape the first-token compact bank. Compact reuse would omit required expert payloads and is not exact; use a route union or dense fallback.",
+  "next": "Build a route-union compact loader across a verified token window; retain dense execution until union parity is proven.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T01:04:48.598128Z",
+    "recorded_by": "tools/flash_route_stability.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "route safety evidence only; no TPS or residency claim"
+  },
+  "seal_sha256": "d249ad41294d4d7869dc1284a1202e11e7f204a5219fad79b92121bcfca86f32"
+}

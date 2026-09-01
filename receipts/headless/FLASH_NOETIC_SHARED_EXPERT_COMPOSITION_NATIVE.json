@@ -1,0 +1,472 @@
+{
+  "body_mutated": false,
+  "claim_boundary": "PASSED bounded native layer-0 shared-expert candidate graph: full independent Q4/G64 gate_proj and up_proj feed native gate_up_swiglu, the device-resident 640-value activation feeds full independent Q4/G64 down_proj, and a full independent Q4/G64 shared_expert_gate logit is consumed by native sigmoid gating. This does not establish BF16 source-output parity, routed-expert/MoE combine, norms, hyperconnections, attention, recurrent state, MTP, lm_head, complete-model capability, complete-token runtime, Flash TPS, or EBPW.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_expert_runtime": "NOT_TESTED",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "component_receipt_policy": {
+    "directory": "/Users/scammermike/Downloads/hawking/receipts/headless",
+    "down_body": "FLASH_NOETIC_SHARED_EXPERT_DOWN_BODY_L0_R0_2560.json",
+    "gate_body": "FLASH_NOETIC_SHARED_EXPERT_GATE_BODY_L0_R0_640.json",
+    "scalar_gate_body": "FLASH_NOETIC_SHARED_EXPERT_SCALAR_GATE_BODY_L0_R0_1.json",
+    "up_body": "FLASH_NOETIC_SHARED_EXPERT_UP_BODY_L0_R0_640.json"
+  },
+  "components": {
+    "shared_down_proj": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_DOWN_BODY_L0_R0_2560.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "d086014742aac2a5a6b20e99cc884772c32091b573effad8d29d4652810b8644",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 870400,
+        "label": "[D]",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-down-q4-g64.bin",
+        "sha256": "da418fcbdb62de967cc85d31b4849959b7a80ed73a0f3cb6be214345cf5a4a4f",
+        "shape": [
+          2560,
+          640
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "shared_expert_gate": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_SCALAR_GATE_BODY_L0_R0_1.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "93937a1c31d1dba1b286e6f63a6d6755488351b373e3a40f3c32c81f5f28b32e",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 1360,
+        "label": "[D]",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-scalar-gate-q4-g64.bin",
+        "sha256": "5608198fd80e57318e4b14e92261ca1a191c8c71c4233d7084a74e14ecac5044",
+        "shape": [
+          1,
+          2560
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "shared_gate_proj": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_GATE_BODY_L0_R0_640.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "65bf22eea80cb4c7bedac503c5cf78e4b2646cc69f2ab5258587e8dba1e39f1a",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 870400,
+        "label": "[D]",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-gate-q4-g64.bin",
+        "sha256": "095da6e8efc3a93ae15a8411507e45c7ee75fba399498be512e7057b6bf938b3",
+        "shape": [
+          640,
+          2560
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "shared_up_proj": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_UP_BODY_L0_R0_640.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "7edb2c0fe6f2d5180fdd3bc60aa086b34c92bd1786efc842e0a6b67ebd88ef3d",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 870400,
+        "label": "[D]",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-up-q4-g64.bin",
+        "sha256": "66358f0b7a756bc5c8a948cd57f4bc77368e0858c4ff0e9acebd8d162e09663e",
+        "shape": [
+          640,
+          2560
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    }
+  },
+  "elapsed_s": 0.110899083,
+  "execution": {
+    "body_mutated": false,
+    "complete_moe_combine": false,
+    "complete_shared_expert_candidate_graph": true,
+    "complete_token_runtime": false,
+    "device_intermediate_no_host_roundtrip": true,
+    "dispatches_per_graph": 4,
+    "measured_graphs": 3,
+    "model_loaded": false,
+    "native_shared_expert_down_projection_observed": true,
+    "native_shared_expert_gate_up_swiglu_observed": true,
+    "native_shared_expert_scalar_gate_observed": true,
+    "native_shared_expert_sigmoid_gate_observed": true,
+    "operation": "full layer-0 shared_expert gate_proj + up_proj -> native gate_up_swiglu -> device-resident down_proj -> native shared_expert_gate matvec -> native sigmoid gate",
+    "provider": "apple-metal",
+    "shared_expert_hidden": 2560,
+    "shared_expert_intermediate": 640,
+    "source_reference_used_for_execution": false,
+    "total_measured_dispatches": 12,
+    "verification_reads_after_graph": true
+  },
+  "flash_tps": null,
+  "gpu_timing": {
+    "device": "Apple M3 Ultra",
+    "dispatches_per_graph": 4,
+    "down_gpu_ns": [
+      115459,
+      114875,
+      113834
+    ],
+    "down_gpu_ns_median": 114875,
+    "gate_up_gpu_ns": [
+      16291,
+      15625,
+      15750
+    ],
+    "gate_up_gpu_ns_median": 15750,
+    "graph_gpu_ns": [
+      534834,
+      537084,
+      530959
+    ],
+    "graph_gpu_ns_median": 534834,
+    "graph_host_wall_ns": [
+      1604000,
+      1633000,
+      1630000
+    ],
+    "graph_host_wall_ns_median": 1630000,
+    "measured_runs": 3,
+    "memory_limits": {
+      "current_allocated_size": 3129344,
+      "has_unified_memory": true,
+      "max_buffer_length": 62620631040,
+      "recommended_max_working_set_size": 83494174720
+    },
+    "output_hashes": [
+      "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650",
+      "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650",
+      "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650"
+    ],
+    "scalar_gate_gpu_ns": [
+      395250,
+      399250,
+      392875
+    ],
+    "scalar_gate_gpu_ns_median": 395250,
+    "sigmoid_gate_gpu_ns": [
+      7834,
+      7334,
+      8500
+    ],
+    "sigmoid_gate_gpu_ns_median": 7834,
+    "stage_output_hashes": {
+      "down": [
+        "42aa45db2e76aff5fe535af0e50270c3f11ecd5dad9b1865bcb45fc86ead7a62",
+        "42aa45db2e76aff5fe535af0e50270c3f11ecd5dad9b1865bcb45fc86ead7a62",
+        "42aa45db2e76aff5fe535af0e50270c3f11ecd5dad9b1865bcb45fc86ead7a62"
+      ],
+      "gate_up": [
+        "178ef1b8702f39e1a755fce2788bd787437bfd38623b7986e7d694fa772665ec",
+        "178ef1b8702f39e1a755fce2788bd787437bfd38623b7986e7d694fa772665ec",
+        "178ef1b8702f39e1a755fce2788bd787437bfd38623b7986e7d694fa772665ec"
+      ],
+      "gated_output": [
+        "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650",
+        "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650",
+        "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650"
+      ],
+      "scalar_gate": [
+        "3728ddb8e6c561ab179d7147aae833c7bfe717fc34d811119c79bc384b365511",
+        "3728ddb8e6c561ab179d7147aae833c7bfe717fc34d811119c79bc384b365511",
+        "3728ddb8e6c561ab179d7147aae833c7bfe717fc34d811119c79bc384b365511"
+      ]
+    },
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for all four native shared-expert dispatches; host wall is reported separately",
+    "warmup_graph_gpu_ns": [
+      556209
+    ],
+    "warmup_runs": 1
+  },
+  "input": {
+    "definition": "((index * 71) mod 509 - 254) / 509",
+    "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+    "label": "[V]",
+    "values": 2560
+  },
+  "intermediates": {
+    "down": {
+      "consumer": "qwen_next_shared_expert_sigmoid_gate",
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "producer": "qwen_uniform_q4_group64_matvec",
+      "semantic_type": "NoeticActivationBuffer",
+      "shape": [
+        2560
+      ]
+    },
+    "gate_up": {
+      "consumer": "qwen_uniform_q4_group64_matvec",
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "producer": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "semantic_type": "NoeticActivationBuffer",
+      "shape": [
+        640
+      ]
+    },
+    "scalar_gate": {
+      "consumer": "qwen_next_shared_expert_sigmoid_gate",
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "producer": "qwen_uniform_q4_group64_matvec",
+      "semantic_type": "NoeticGateLogit",
+      "shape": [
+        1
+      ]
+    }
+  },
+  "layer": 0,
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+  },
+  "model_loaded": false,
+  "native_shared_expert_composition_observed": true,
+  "native_shared_expert_down_projection_observed": true,
+  "native_shared_expert_gate_up_swiglu_observed": true,
+  "native_shared_expert_scalar_gate_observed": true,
+  "native_shared_expert_sigmoid_gate_observed": true,
+  "next_action": "compose this bounded shared-expert candidate with the already observed routed-expert output and residual boundary; keep protected complete-token Flash TPS and EBPW unmeasured until the remaining native organs are capability-qualified",
+  "noetic_ir": {
+    "complete_model": false,
+    "complete_moe_combine": false,
+    "complete_shared_expert_candidate_graph": true,
+    "complete_token": false,
+    "operations": [
+      "load_source_independent_shared_expert_gate_proj_body",
+      "load_source_independent_shared_expert_up_proj_body",
+      "execute_native_q4_g64_gate_up_swiglu",
+      "retain_640_value_activation_on_device",
+      "load_source_independent_shared_expert_down_proj_body",
+      "execute_native_q4_g64_down_projection",
+      "load_source_independent_shared_expert_scalar_gate_body",
+      "execute_native_q4_g64_scalar_gate_matvec",
+      "execute_native_sigmoid_shared_expert_gate",
+      "emit_bounded_shared_expert_output"
+    ],
+    "representation": "independent_q4_g64",
+    "schema": "hcli.noetic.ir.v1",
+    "semantic_type": "NoeticIR",
+    "source_independent": true
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "candidate_space": "CPU reference uses the same persisted Q4/G64 candidate bodies; source BF16 activation parity remains a separate unqualified boundary",
+    "down_projection": {
+      "cosine": 0.9999999999993144,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 2.7939677238464355e-08,
+      "rmse": 3.1951573443351966e-09,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "expected_sigmoid_gate": 0.5005532503128052,
+    "gate_up_swiglu": {
+      "cosine": 0.9999999999992534,
+      "count": 640,
+      "finite": true,
+      "max_abs_error": 1.4156103134155273e-07,
+      "rmse": 1.375387449207283e-08,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "scalar_gate": {
+      "cosine": 1.0,
+      "count": 1,
+      "finite": true,
+      "max_abs_error": 4.6566128730773926e-09,
+      "rmse": 4.6566128730773926e-09,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "sigmoid_gated_output": {
+      "cosine": 0.9999999999993143,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 1.4435499906539917e-08,
+      "rmse": 1.6010428124400114e-09,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    }
+  },
+  "physical_graph": {
+    "compiler_stage": "HawkingAccelerator",
+    "component_scope": "layer-0 shared expert only: independent Q4/G64 gate/up -> native SwiGLU -> device-resident down projection -> independent Q4/G64 scalar gate -> native sigmoid gate",
+    "device_intermediate_no_host_roundtrip": true,
+    "device_placement": {
+      "candidates": [
+        "apple_metal",
+        "cpu"
+      ],
+      "selected": "apple_metal"
+    },
+    "dispatches_per_graph": 4,
+    "edges": [
+      [
+        "input",
+        "shared_gate_proj"
+      ],
+      [
+        "input",
+        "shared_up_proj"
+      ],
+      [
+        "shared_gate_proj",
+        "shared_gate_up_swiglu"
+      ],
+      [
+        "shared_up_proj",
+        "shared_gate_up_swiglu"
+      ],
+      [
+        "shared_gate_up_swiglu",
+        "shared_down_proj"
+      ],
+      [
+        "input",
+        "shared_expert_gate"
+      ],
+      [
+        "shared_down_proj",
+        "shared_sigmoid_gate"
+      ],
+      [
+        "shared_expert_gate",
+        "shared_sigmoid_gate"
+      ],
+      [
+        "shared_sigmoid_gate",
+        "shared_output"
+      ]
+    ],
+    "fingerprint": "07f6fd03adb9cbc4818d40ae73d3277a8dfea6b989186bf9cea5ec59e59ac5df",
+    "native_kernel_execution_observed": true,
+    "native_kernels": [
+      "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec",
+      "qwen_next_shared_expert_sigmoid_gate"
+    ],
+    "nodes": [
+      {
+        "device_resident": true,
+        "dtype": "F32",
+        "id": "input",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "id": "shared_gate_proj",
+        "representation": "independent_q4_g64",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "id": "shared_up_proj",
+        "representation": "independent_q4_g64",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_gate_up_swiglu",
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "shape": [
+          640
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_down_proj",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          2560,
+          640
+        ]
+      },
+      {
+        "id": "shared_expert_gate",
+        "representation": "independent_q4_g64",
+        "shape": [
+          1,
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_sigmoid_gate",
+        "kernel": "qwen_next_shared_expert_sigmoid_gate",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "dtype": "F32",
+        "id": "shared_output",
+        "shape": [
+          2560
+        ]
+      }
+    ],
+    "promotion_allowed": false,
+    "schema": "hcli.physical_graph.v1",
+    "semantic_type": "PhysicalGraph",
+    "verification_reads_after_graph": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "BOUNDED_NATIVE_SHARED_EXPERT_Q4_G64_GATED_SWIGLU_COMPOSITION",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_noetic_shared_expert_composition_native.v1",
+  "semantic_type": "NoeticExecutableCandidate",
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

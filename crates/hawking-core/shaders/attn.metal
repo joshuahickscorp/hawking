@@ -429,6 +429,80 @@ kernel void kv_append_f32(
     }
 }
 
+// Q8_0 variant of the persistent KV append. Each threadgroup owns one
+// 32-value latent block and emits the exact ggml Q8_0 wire format:
+//   { fp16 d; int8 qs[32] }, 34 bytes.
+// The scale is rounded to fp16 before the integer codes are formed, matching
+// the CPU reference in `quant::quantize_q8_0`. The k_pe tail is copied in the
+// same launch so the cache append does not require a second command buffer.
+//
+// Buffer layout is the same as kv_append_f32 except that buffer(2) is a byte
+// buffer containing max_seq × (kv_lora_rank / 32) × 34 bytes:
+//   0  src_c_kv_normed  f32[kv_lora_rank]
+//   1  src_kv_a_out     f32[kv_lora_rank + qk_rope_head_dim]
+//   2  dst_c_kv         uchar[...]
+//   3  dst_k_pe         f32[max_seq × qk_rope_head_dim]
+//   4  ArgbufKvAppend   { seq_slot, kv_lora_rank, qk_rope_head_dim }
+kernel void kv_append_q8_0_f32(
+    device const float* src_c_kv_normed [[buffer(0)]],
+    device const float* src_kv_a_out    [[buffer(1)]],
+    device       uchar* dst_c_kv        [[buffer(2)]],
+    device       float* dst_k_pe        [[buffer(3)]],
+    constant ArgbufKvAppend& args       [[buffer(4)]],
+    threadgroup float* absmax           [[threadgroup(0)]],
+    uint gid [[thread_position_in_grid]],
+    uint lid [[thread_index_in_threadgroup]])
+{
+    const uint block = gid >> 5u;
+    const uint blocks = args.kv_lora_rank >> 5u;
+    const bool in_quant = block < blocks;
+
+    // The grid is widened when the RoPE tail is longer than the latent. Keep
+    // the reduction uniform for those extra groups while suppressing writes.
+    const uint src_index = (block << 5u) + lid;
+    const float value = in_quant ? src_c_kv_normed[src_index] : 0.0f;
+    absmax[lid] = fabs(value);
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    for (uint stride = 16u; stride > 0u; stride >>= 1u) {
+        if (lid < stride) absmax[lid] = max(absmax[lid], absmax[lid + stride]);
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+    }
+
+    if (in_quant) {
+        const float amax = absmax[0];
+        const float d = amax > 0.0f ? amax / 127.0f : 0.0f;
+        if (lid == 0u) {
+            const ushort d_bits = as_type<ushort>((half)d);
+            const uint64_t out_base = (uint64_t)args.seq_slot
+                                     * (uint64_t)blocks * 34ul
+                                     + (uint64_t)block * 34ul;
+            dst_c_kv[out_base + 0ul] = (uchar)(d_bits & 0xffu);
+            dst_c_kv[out_base + 1ul] = (uchar)(d_bits >> 8u);
+        }
+
+        const float inv_d = d > 0.0f ? 1.0f / d : 0.0f;
+        const float scaled = value * inv_d;
+        // Rust f32::round is ties-away-from-zero. Spell it out instead of
+        // depending on the device rounding mode of a conversion.
+        const float rounded = scaled >= 0.0f
+            ? floor(scaled + 0.5f)
+            : ceil(scaled - 0.5f);
+        const int q = (int)clamp(rounded, -127.0f, 127.0f);
+        const uint64_t q_base = (uint64_t)args.seq_slot
+                              * (uint64_t)blocks * 34ul
+                              + (uint64_t)block * 34ul + 2ul;
+        dst_c_kv[q_base + (uint64_t)lid] = (uchar)(q & 0xff);
+    }
+
+    // The widened grid also covers qk_rope_head_dim > kv_lora_rank.
+    if (gid < args.qk_rope_head_dim) {
+        const uint64_t pe_base = (uint64_t)args.seq_slot
+                               * (uint64_t)args.qk_rope_head_dim;
+        dst_k_pe[pe_base + gid] = src_kv_a_out[(uint64_t)args.kv_lora_rank + gid];
+    }
+}
+
 // v0.5.8-B — fused RMSNorm + Q4_K_M GEMV pair (gate and up projections).
 //
 // Reads x once, computes rmsnorm, then runs two Q4_K_M GEMVs in parallel

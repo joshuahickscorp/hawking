@@ -1,0 +1,760 @@
+{
+  "body_mutated": false,
+  "candidate_semantics": {
+    "formula": "state + low_rank_up(low_rank_down(state)) * sigmoid(block_inject(state)[stream])",
+    "hc_norm": "NOT_LOADED",
+    "injected_stream": 1,
+    "source_model_activation_parity": "NOT_TESTED",
+    "status": "BOUNDED_CANDIDATE_ONLY"
+  },
+  "claim_boundary": "PASSED bounded native layer-0 shared-expert-to-hyperconnection candidate graph: the measured shared-expert output is injected into stream 1 on-device, passed through source-independent Q4/G64 low-rank input mix down/up and source-independent block-inject logits, then combined by an explicit per-stream sigmoid-gated residual candidate kernel. This does not establish the source model's hc_norm or exact hyperconnection semantics, BF16 activation parity, routed-expert/MoE combine, attention/state, complete layers, complete-token runtime, Flash TPS, EBPW, or promotion.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_expert_runtime": "NOT_TESTED",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "component_receipt_policy": {
+    "directory": "/Users/scammermike/Downloads/hawking/receipts/headless",
+    "hyper_block_inject_body": "FLASH_NOETIC_MLP_HYPER_BLOCK_INJECT_BODY_L0_R0_4.json",
+    "hyper_input_down_body": "FLASH_NOETIC_MLP_HYPER_INPUT_DOWN_BODY_L0_R0_320.json",
+    "hyper_input_up_body": "FLASH_NOETIC_MLP_HYPER_INPUT_UP_BODY_L0_R0_10240.json",
+    "shared_down_body": "FLASH_NOETIC_SHARED_EXPERT_DOWN_BODY_L0_R0_2560.json",
+    "shared_gate_body": "FLASH_NOETIC_SHARED_EXPERT_GATE_BODY_L0_R0_640.json",
+    "shared_scalar_gate_body": "FLASH_NOETIC_SHARED_EXPERT_SCALAR_GATE_BODY_L0_R0_1.json",
+    "shared_up_body": "FLASH_NOETIC_SHARED_EXPERT_UP_BODY_L0_R0_640.json"
+  },
+  "components": {
+    "hyper_block_inject": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_BLOCK_INJECT_BODY_L0_R0_4.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "602db4dd0ae58fd5bfa514eb11ae0728d5159ccde5a89e7d3dde15d4de124711",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 21760,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-residual/l0-mlp-block-inject-q4-g64.bin",
+        "sha256": "dcd9ef32efad258004a7e873f96751e1cfc31b413f8efaeaee60a03815192841",
+        "shape": [
+          4,
+          10240
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "hyper_input_mix_down": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_INPUT_DOWN_BODY_L0_R0_320.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "645db531d322e0802f48787f5d433013d79013ee6092420d227653f3d9bff28d",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 1740800,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-residual/l0-mlp-input-down-q4-g64.bin",
+        "sha256": "1fe8ff61ed39f1b85d43a8d8cfae37d1c039ff1a8c16e5fd075673051d7fc760",
+        "shape": [
+          320,
+          10240
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "hyper_input_mix_up": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_MLP_HYPER_INPUT_UP_BODY_L0_R0_10240.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "b51414ffaac3d50813ff3f88644ace2de1a64dd9700e9d413ae0b5d880da8a01",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 1740800,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-residual/l0-mlp-input-up-q4-g64.bin",
+        "sha256": "8c93856fa37ec1a928e442f82b4f13cb05b09de5d2fd68901ab30c6eae1b5c34",
+        "shape": [
+          10240,
+          320
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "shared_down_proj": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_DOWN_BODY_L0_R0_2560.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "d086014742aac2a5a6b20e99cc884772c32091b573effad8d29d4652810b8644",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 870400,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-down-q4-g64.bin",
+        "sha256": "da418fcbdb62de967cc85d31b4849959b7a80ed73a0f3cb6be214345cf5a4a4f",
+        "shape": [
+          2560,
+          640
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "shared_expert_gate": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_SCALAR_GATE_BODY_L0_R0_1.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "93937a1c31d1dba1b286e6f63a6d6755488351b373e3a40f3c32c81f5f28b32e",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 1360,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-scalar-gate-q4-g64.bin",
+        "sha256": "5608198fd80e57318e4b14e92261ca1a191c8c71c4233d7084a74e14ecac5044",
+        "shape": [
+          1,
+          2560
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "shared_gate_proj": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_GATE_BODY_L0_R0_640.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "65bf22eea80cb4c7bedac503c5cf78e4b2646cc69f2ab5258587e8dba1e39f1a",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 870400,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-gate-q4-g64.bin",
+        "sha256": "095da6e8efc3a93ae15a8411507e45c7ee75fba399498be512e7057b6bf938b3",
+        "shape": [
+          640,
+          2560
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    },
+    "shared_up_proj": {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_UP_BODY_L0_R0_640.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "7edb2c0fe6f2d5180fdd3bc60aa086b34c92bd1786efc842e0a6b67ebd88ef3d",
+        "status": "PASSED"
+      },
+      "candidate_body": {
+        "bytes": 870400,
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-shared-expert/l0-up-q4-g64.bin",
+        "sha256": "66358f0b7a756bc5c8a948cd57f4bc77368e0858c4ff0e9acebd8d162e09663e",
+        "shape": [
+          640,
+          2560
+        ],
+        "source_independent": true
+      },
+      "native_kernel": "qwen_uniform_q4_group64_matvec"
+    }
+  },
+  "dependencies": {
+    "prior_shared_expert_composition_receipt": {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_SHARED_EXPERT_COMPOSITION_NATIVE.json",
+      "promotion_allowed": false,
+      "sha256": "0a42939f94c8492e5912818fadfc4e099e9a423cb945f0a2e5e1efadad0ff58f",
+      "status": "PASSED"
+    }
+  },
+  "device_intermediate_no_host_roundtrip": true,
+  "elapsed_s": 0.11251625,
+  "execution": {
+    "body_mutated": false,
+    "complete_moe_combine": false,
+    "complete_token_runtime": false,
+    "device_intermediate_no_host_roundtrip": true,
+    "dispatches_per_graph": 9,
+    "hc_norm_loaded": false,
+    "hyperconnection_elements": 10240,
+    "hyperconnection_hidden": 2560,
+    "hyperconnection_lowrank": 320,
+    "hyperconnection_streams": 4,
+    "injected_stream": 1,
+    "measured_graphs": 3,
+    "model_loaded": false,
+    "native_hyperconnection_block_inject_observed": true,
+    "native_hyperconnection_low_rank_down_observed": true,
+    "native_hyperconnection_low_rank_up_observed": true,
+    "native_hyperconnection_residual_mix_observed": true,
+    "native_hyperconnection_stream_injection_observed": true,
+    "native_shared_expert_down_projection_observed": true,
+    "native_shared_expert_gate_up_swiglu_observed": true,
+    "native_shared_expert_sigmoid_gate_observed": true,
+    "native_shared_residual_composition_observed": true,
+    "operation": "shared expert output -> device-side stream-1 injection into 4x2560 state -> Q4/G64 low-rank input mix down/up -> Q4/G64 block inject logits -> per-stream sigmoid-gated residual mix",
+    "provider": "apple-metal",
+    "shared_expert_hidden": 2560,
+    "source_reference_used_for_execution": false,
+    "total_measured_dispatches": 27,
+    "verification_reads_after_graph": true
+  },
+  "flash_tps": null,
+  "gpu_timing": {
+    "block_inject_gpu_ns": [
+      1434875,
+      920709,
+      929625
+    ],
+    "block_inject_gpu_ns_median": 929625,
+    "device": "Apple M3 Ultra",
+    "dispatches_per_graph": 9,
+    "expand_gpu_ns": [
+      9459,
+      5416,
+      6125
+    ],
+    "expand_gpu_ns_median": 6125,
+    "graph_gpu_ns": [
+      3794250,
+      2257957,
+      2272957
+    ],
+    "graph_gpu_ns_median": 2272957,
+    "graph_host_wall_ns": [
+      6318000,
+      4466000,
+      4701000
+    ],
+    "graph_host_wall_ns_median": 4701000,
+    "low_rank_down_gpu_ns": [
+      1749625,
+      989000,
+      990750
+    ],
+    "low_rank_down_gpu_ns_median": 990750,
+    "low_rank_up_gpu_ns": [
+      59875,
+      34125,
+      34541
+    ],
+    "low_rank_up_gpu_ns_median": 34541,
+    "measured_runs": 3,
+    "memory_limits": {
+      "current_allocated_size": 6864896,
+      "has_unified_memory": true,
+      "max_buffer_length": 62620631040,
+      "recommended_max_working_set_size": 83494174720
+    },
+    "output_hashes": [
+      "efc17640689e67ba3b865ad4c41c6397ad6c534b985c589d58e6f439ccf5baef",
+      "efc17640689e67ba3b865ad4c41c6397ad6c534b985c589d58e6f439ccf5baef",
+      "efc17640689e67ba3b865ad4c41c6397ad6c534b985c589d58e6f439ccf5baef"
+    ],
+    "residual_mix_gpu_ns": [
+      5500,
+      5834,
+      6125
+    ],
+    "residual_mix_gpu_ns_median": 5834,
+    "shared_down_gpu_ns": [
+      113000,
+      64666,
+      64500
+    ],
+    "shared_down_gpu_ns_median": 64666,
+    "shared_gate_up_gpu_ns": [
+      15666,
+      8666,
+      8791
+    ],
+    "shared_gate_up_gpu_ns_median": 8791,
+    "shared_scalar_gate_gpu_ns": [
+      398000,
+      225500,
+      228000
+    ],
+    "shared_scalar_gate_gpu_ns_median": 228000,
+    "shared_sigmoid_gate_gpu_ns": [
+      8250,
+      4041,
+      4500
+    ],
+    "shared_sigmoid_gate_gpu_ns_median": 4500,
+    "stage_output_hashes": {
+      "block_logits": [
+        "3c4ebcff8799e982ad13455dc92c51d167173c8227f5ea6d0e1c5b2f599db598",
+        "3c4ebcff8799e982ad13455dc92c51d167173c8227f5ea6d0e1c5b2f599db598",
+        "3c4ebcff8799e982ad13455dc92c51d167173c8227f5ea6d0e1c5b2f599db598"
+      ],
+      "correction": [
+        "f017db536296afc92b4c9beea3fb920db64111e0a60d14cb46dbf91ffa49d8fb",
+        "f017db536296afc92b4c9beea3fb920db64111e0a60d14cb46dbf91ffa49d8fb",
+        "f017db536296afc92b4c9beea3fb920db64111e0a60d14cb46dbf91ffa49d8fb"
+      ],
+      "hyper_state": [
+        "25d83a56236c72a777146d7fb6905e2ae0f23a1e7aba6d342f42d5c1252a5ee7",
+        "25d83a56236c72a777146d7fb6905e2ae0f23a1e7aba6d342f42d5c1252a5ee7",
+        "25d83a56236c72a777146d7fb6905e2ae0f23a1e7aba6d342f42d5c1252a5ee7"
+      ],
+      "low_rank_state": [
+        "ed9ecf8a02c903d1e902275375be3ebe186f5739893695227a1d961fa42cab80",
+        "ed9ecf8a02c903d1e902275375be3ebe186f5739893695227a1d961fa42cab80",
+        "ed9ecf8a02c903d1e902275375be3ebe186f5739893695227a1d961fa42cab80"
+      ],
+      "residual_output": [
+        "efc17640689e67ba3b865ad4c41c6397ad6c534b985c589d58e6f439ccf5baef",
+        "efc17640689e67ba3b865ad4c41c6397ad6c534b985c589d58e6f439ccf5baef",
+        "efc17640689e67ba3b865ad4c41c6397ad6c534b985c589d58e6f439ccf5baef"
+      ],
+      "shared_output": [
+        "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650",
+        "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650",
+        "381faf220abbd6f6608db3e693cceb3eac204d691ca75b3444c48974c8024650"
+      ]
+    },
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for all nine native shared/residual dispatches; host wall is reported separately",
+    "warmup_graph_gpu_ns": [
+      3984877
+    ],
+    "warmup_runs": 1
+  },
+  "input": {
+    "base_hyper_state": {
+      "definition": "((index * 71) mod 509 - 254) / 509",
+      "deterministic_sha256": "6ae0743a61852fe8b5ae5aa8be548d6d4773e6e108ec43962011c0d931878378",
+      "label": "[V]",
+      "values": 10240
+    },
+    "shared_input": {
+      "definition": "((index * 71) mod 509 - 254) / 509",
+      "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+      "label": "[V]",
+      "values": 2560
+    },
+    "stream_layout": "four contiguous 2560-wide streams; stream 1 is replaced on-device by the gated shared-expert output"
+  },
+  "intermediates": {
+    "block_logits": {
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "semantic_type": "NoeticBlockInjectLogits",
+      "shape": [
+        4
+      ]
+    },
+    "correction": {
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "semantic_type": "NoeticResidualCorrection",
+      "shape": [
+        10240
+      ]
+    },
+    "hyper_state": {
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "semantic_type": "NoeticHyperconnectionState",
+      "shape": [
+        10240
+      ],
+      "stream_count": 4
+    },
+    "low_rank_state": {
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "semantic_type": "NoeticLowRankActivation",
+      "shape": [
+        320
+      ]
+    },
+    "residual_output": {
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "semantic_type": "NoeticResidualOutput",
+      "shape": [
+        10240
+      ]
+    },
+    "shared_output": {
+      "device_resident": true,
+      "dtype": "F32",
+      "host_roundtrip": false,
+      "semantic_type": "NoeticActivationBuffer",
+      "shape": [
+        2560
+      ]
+    }
+  },
+  "layer": 0,
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+  },
+  "model_loaded": false,
+  "native_hyperconnection_block_inject_observed": true,
+  "native_hyperconnection_low_rank_down_observed": true,
+  "native_hyperconnection_low_rank_up_observed": true,
+  "native_hyperconnection_residual_mix_observed": true,
+  "native_hyperconnection_stream_injection_observed": true,
+  "native_shared_expert_down_projection_observed": true,
+  "native_shared_expert_gate_up_swiglu_observed": true,
+  "native_shared_expert_sigmoid_gate_observed": true,
+  "native_shared_residual_composition_observed": true,
+  "next_action": "qualify hc_norm and exact same-model hyperconnection activation semantics, then compose the candidate with routed-expert selection and the next residual boundary; keep protected complete-token Flash TPS and EBPW unmeasured until all remaining native organs are capability-qualified",
+  "noetic_ir": {
+    "complete_hyperconnection_candidate": true,
+    "complete_model": false,
+    "complete_shared_expert": true,
+    "complete_token": false,
+    "operations": [
+      "load_source_independent_shared_expert_gate_proj_body",
+      "load_source_independent_shared_expert_up_proj_body",
+      "execute_native_q4_g64_shared_gate_up_swiglu",
+      "execute_native_q4_g64_shared_down_projection",
+      "execute_native_q4_g64_shared_scalar_gate",
+      "execute_native_sigmoid_shared_expert_gate",
+      "inject_gated_shared_output_into_hyperconnection_stream_1_on_device",
+      "load_source_independent_mlp_hyperconnection_input_mix_down_body",
+      "execute_native_q4_g64_hyperconnection_low_rank_down",
+      "load_source_independent_mlp_hyperconnection_input_mix_up_body",
+      "execute_native_q4_g64_hyperconnection_low_rank_up",
+      "load_source_independent_mlp_hyperconnection_block_inject_body",
+      "execute_native_q4_g64_hyperconnection_block_inject",
+      "execute_native_candidate_block_gated_residual_mix",
+      "emit_bounded_shared_residual_candidate_output"
+    ],
+    "representation": "independent_q4_g64",
+    "schema": "hcli.noetic.ir.v1",
+    "semantic_type": "NoeticIR",
+    "source_independent": true
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "parity": {
+    "block_inject": {
+      "cosine": 0.9999999999999952,
+      "count": 4,
+      "finite": true,
+      "max_abs_error": 3.5762786865234375e-07,
+      "rmse": 1.8656462468468303e-07,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "candidate_space": "CPU reference uses the same persisted Q4/G64 candidate bodies and the same explicit candidate stream-injection/gating formula; source BF16 activation parity remains unqualified",
+    "hyper_state": {
+      "cosine": 1.0000000000000013,
+      "count": 10240,
+      "finite": true,
+      "max_abs_error": 1.4435499906539917e-08,
+      "rmse": 8.005214062200057e-10,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "low_rank_down": {
+      "cosine": 0.9999999999999516,
+      "count": 320,
+      "finite": true,
+      "max_abs_error": 1.9073486328125e-06,
+      "rmse": 4.889722711506884e-07,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "low_rank_up_correction": {
+      "cosine": 0.9999999999998984,
+      "count": 10240,
+      "finite": true,
+      "max_abs_error": 1.52587890625e-05,
+      "rmse": 1.2741723316308474e-06,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "residual_output": {
+      "cosine": 0.9999999999999019,
+      "count": 10240,
+      "finite": true,
+      "max_abs_error": 6.67572021484375e-06,
+      "rmse": 5.985490800483008e-07,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "shared_output": {
+      "cosine": 0.9999999999993143,
+      "count": 2560,
+      "finite": true,
+      "max_abs_error": 1.4435499906539917e-08,
+      "rmse": 1.6010428124400114e-09,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    }
+  },
+  "physical_graph": {
+    "compiler_stage": "HawkingAccelerator",
+    "component_scope": "layer-0 shared expert output injected into a four-stream MLP hyperconnection candidate: shared gate/up/SwiGLU -> down -> sigmoid gate -> device-side stream injection -> low-rank down/up -> block-inject gated residual mix",
+    "device_intermediate_no_host_roundtrip": true,
+    "device_placement": {
+      "candidates": [
+        "apple_metal",
+        "cpu"
+      ],
+      "selected": "apple_metal"
+    },
+    "dispatches_per_graph": 9,
+    "edges": [
+      [
+        "shared_input",
+        "shared_gate_proj"
+      ],
+      [
+        "shared_input",
+        "shared_up_proj"
+      ],
+      [
+        "shared_gate_proj",
+        "shared_gate_up_swiglu"
+      ],
+      [
+        "shared_up_proj",
+        "shared_gate_up_swiglu"
+      ],
+      [
+        "shared_gate_up_swiglu",
+        "shared_down_proj"
+      ],
+      [
+        "shared_input",
+        "shared_expert_gate"
+      ],
+      [
+        "shared_down_proj",
+        "shared_sigmoid_gate"
+      ],
+      [
+        "shared_expert_gate",
+        "shared_sigmoid_gate"
+      ],
+      [
+        "shared_sigmoid_gate",
+        "inject_shared_output"
+      ],
+      [
+        "base_hyper_state",
+        "inject_shared_output"
+      ],
+      [
+        "inject_shared_output",
+        "hyper_input_mix_down"
+      ],
+      [
+        "hyper_input_mix_down",
+        "hyper_low_rank_state"
+      ],
+      [
+        "hyper_low_rank_state",
+        "hyper_input_mix_up"
+      ],
+      [
+        "hyper_input_mix_up",
+        "hyper_correction"
+      ],
+      [
+        "inject_shared_output",
+        "hyper_block_inject"
+      ],
+      [
+        "hyper_block_inject",
+        "hyper_block_logits"
+      ],
+      [
+        "inject_shared_output",
+        "hyper_residual_mix"
+      ],
+      [
+        "hyper_correction",
+        "hyper_residual_mix"
+      ],
+      [
+        "hyper_block_logits",
+        "hyper_residual_mix"
+      ]
+    ],
+    "fingerprint": "c33cca0c4dd2b907cc6e236a34e2fdc770f794f3044a6dd940138fb444462a47",
+    "native_kernel_execution_observed": true,
+    "native_kernels": [
+      "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matvec",
+      "qwen_next_shared_expert_sigmoid_gate",
+      "qwen_next_expand_shared_to_hyper_state",
+      "qwen_next_hyperconnection_residual_mix_candidate"
+    ],
+    "nodes": [
+      {
+        "device_resident": true,
+        "dtype": "F32",
+        "id": "shared_input",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "id": "shared_gate_proj",
+        "representation": "independent_q4_g64",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "id": "shared_up_proj",
+        "representation": "independent_q4_g64",
+        "shape": [
+          640,
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_gate_up_swiglu",
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "shape": [
+          640
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_down_proj",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          2560,
+          640
+        ]
+      },
+      {
+        "id": "shared_expert_gate",
+        "representation": "independent_q4_g64",
+        "shape": [
+          1,
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "shared_sigmoid_gate",
+        "kernel": "qwen_next_shared_expert_sigmoid_gate",
+        "shape": [
+          2560
+        ]
+      },
+      {
+        "device_resident": true,
+        "dtype": "F32",
+        "id": "base_hyper_state",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "inject_shared_output",
+        "kernel": "qwen_next_expand_shared_to_hyper_state",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "id": "hyper_input_mix_down",
+        "representation": "independent_q4_g64",
+        "shape": [
+          320,
+          10240
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "hyper_low_rank_state",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          320
+        ]
+      },
+      {
+        "id": "hyper_input_mix_up",
+        "representation": "independent_q4_g64",
+        "shape": [
+          10240,
+          320
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "hyper_correction",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          10240
+        ]
+      },
+      {
+        "id": "hyper_block_inject",
+        "representation": "independent_q4_g64",
+        "shape": [
+          4,
+          10240
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "hyper_block_logits",
+        "kernel": "qwen_uniform_q4_group64_matvec",
+        "shape": [
+          4
+        ]
+      },
+      {
+        "device_resident": true,
+        "id": "hyper_residual_mix",
+        "kernel": "qwen_next_hyperconnection_residual_mix_candidate",
+        "shape": [
+          10240
+        ]
+      }
+    ],
+    "promotion_allowed": false,
+    "schema": "hcli.physical_graph.v1",
+    "semantic_type": "PhysicalGraph",
+    "verification_reads_after_graph": true
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "BOUNDED_NATIVE_SHARED_EXPERT_RESIDUAL_HYPERCONNECTION_COMPOSITION",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_noetic_shared_residual_hyperconnection_native.v1",
+  "semantic_type": "NoeticExecutableCandidate",
+  "source_independent_execution": true,
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

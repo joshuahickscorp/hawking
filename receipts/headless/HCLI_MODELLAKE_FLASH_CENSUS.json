@@ -14,6 +14,13 @@
       "<partial destination>"
     ]
   },
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
   "capacity": {
     "available_for_unprivileged_bytes": 3746816499712,
     "capacity_bytes": 5000771321856,
@@ -22,6 +29,7 @@
     "mounted_directory": true,
     "path": "/Volumes/corpdrive/hawking-modellake"
   },
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "capacity_observed": true,
     "enough_free_capacity_for_pinned_source": true,
@@ -33,7 +41,16 @@
     "remote_file_count_matches_pin": true,
     "target_not_published_as_verified": true
   },
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
+  "direct_observation": "capacity.mounted_directory=True; capacity.free_bytes=3746816499712; remote.resolved_revision='34567a4712bc9766c4449e2e98e4468bfa24d915'; remote.file_count=144; remote.total_declared_bytes=360023286454; target.whole_tree_verified=False; download_performed=False; checks={capacity_observed=True, enough_free_capacity_for_pinned_source=True, model_lake_mounted=True, no_download_performed=True, pinned_revision_resolved_exactly=True, protected_paths_reported=True, remote_bytes_match_pin=True, remote_file_count_matches_pin=True, target_not_published_as_verified=True}; unmet=[]; error=None",
   "elapsed_s": 0.623,
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "finished_at": 1787797533.103623,
   "flash_target_manifest": {
     "files": [
@@ -3070,6 +3087,7 @@
     "verified_file_count": 0,
     "whole_tree_verified": false
   },
+  "interpretation": "pinned Flash identity matched the remote manifest and the lake was mounted with enough free bytes; no acquisition ran",
   "partials": {
     "entries": [
       {
@@ -3157,6 +3175,8 @@
     "present": true,
     "truncated": false
   },
+  "probe_kind": "measured_flags",
+  "probe_performed": "ModelLake census: os.statvfs of lake root, bounded iterdir of specimens/ and partial/, manifest inventory, huggingface API fetch of the pinned Flash-Next revision; no weight download, no recursive 360GB hash",
   "processes": {
     "matches": [],
     "needles": [

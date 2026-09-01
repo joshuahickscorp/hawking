@@ -1,0 +1,23 @@
+{
+  "expected": 14171362521,
+  "files": [
+    "README.md",
+    "config.json",
+    "hunyuan-video-t2v-720p/transformers/mp_rank_00_model_states_fp8.pt",
+    "hunyuan-video-t2v-720p/transformers/mp_rank_00_model_states_fp8_map.pt",
+    "hunyuan-video-t2v-720p/vae/config.json",
+    "hunyuan-video-t2v-720p/vae/pytorch_model.pt"
+  ],
+  "mode": "hunyuan",
+  "repo": "tencent/HunyuanVideo",
+  "resolved_sha": "6204ad6aea1a77ff5aba337c88278bb9500eb37d",
+  "revision": "6204ad6aea1a77ff5aba337c88278bb9500eb37d",
+  "sizes": {
+    "README.md": 23743,
+    "config.json": 39,
+    "hunyuan-video-t2v-720p/transformers/mp_rank_00_model_states_fp8.pt": 13185233506,
+    "hunyuan-video-t2v-720p/transformers/mp_rank_00_model_states_fp8_map.pt": 103890,
+    "hunyuan-video-t2v-720p/vae/config.json": 785,
+    "hunyuan-video-t2v-720p/vae/pytorch_model.pt": 986000558
+  }
+}

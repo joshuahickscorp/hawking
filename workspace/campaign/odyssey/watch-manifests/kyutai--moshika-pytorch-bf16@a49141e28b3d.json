@@ -1,0 +1,21 @@
+{
+  "expected": 15760704983,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "model.safetensors",
+    "tokenizer-e351c8d8-checkpoint125.safetensors",
+    "tokenizer_spm_32k_3.model"
+  ],
+  "mode": "safe",
+  "repo": "kyutai/moshika-pytorch-bf16",
+  "resolved_sha": "a49141e28b3d9c947cf9aa5314431e1b11cbd2f5",
+  "revision": "a49141e28b3d9c947cf9aa5314431e1b11cbd2f5",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 5650,
+    "model.safetensors": 15375500136,
+    "tokenizer-e351c8d8-checkpoint125.safetensors": 384644900,
+    "tokenizer_spm_32k_3.model": 552778
+  }
+}

@@ -1,4 +1,11 @@
 {
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
   "calls": [
     {
       "confidence": "source-links-extracted",
@@ -109,18 +116,31 @@
       "tool": "filesystem.read"
     }
   ],
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "external_search": true,
     "local_deterministic_validation": true,
     "vmcp_source_rediscovered": true,
     "vmcp_tool_called": true
   },
+  "claim_kind": "field_value",
   "conclusion": "HCLI records the VMCP capability response as evidence; deterministic source hashing validates only the local API contract, not visual or model inference.",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
   "credentials_secret_free": true,
+  "direct_observation": "calls=[{'tool': 'web.search', 'ok': True, 'failure_class': None, 'status': None}, {'tool': 'vmcp.inspect', 'ok': True, 'failure_class': None, 'status': 'AVAILABLE'}, {'tool': 'vision.capabilities', 'ok': True, 'failure_class': None, 'status': 'OBSERVED'}, {'tool': 'filesystem.read', 'ok': True, 'failure_class': None, 'status': None}]; credentials_secret_free=True; checks={external_search=True, local_deterministic_validation=True, vmcp_source_rediscovered=True, vmcp_tool_called=True}; unmet=[]",
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "finished_at": 1787788260.252105,
   "hypothesis": "The discovered VMCP core profile is callable and exposes a versioned capability/evidence surface; optional backends must remain capability-gated.",
   "inference_boundary": "VMCP observation/decompilation is evidence and never physical truth or verifier authority.",
+  "interpretation": "VMCP core profile was callable and locally hash-validated; receipt had no credential-shaped data",
   "next_action": "route a concrete local visual/repository target through a profile-specific VMCP tool and retain its receipt before making a capability claim",
+  "probe_kind": "measured_flags",
+  "probe_performed": "ToolRegistry invoke of web.search, vmcp.inspect(profile=core), vmcp.query(vision.capabilities), filesystem.read of visionmcp api.py; credential-shaped-string scan of the receipt",
   "qualification": "VMCP_OPERATIONAL",
   "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_AGENTOS_VMCP_GATE.json",
   "repo_root": "/Users/scammermike/Downloads/hawking",

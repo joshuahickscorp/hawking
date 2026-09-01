@@ -1,0 +1,988 @@
+{
+  "body_mutated": false,
+  "claim_boundary": "PASSED bounded native source-independent Q4/G64 gate+up/SwiGLU activation for the ten selected persisted expert bodies, with host-side selected-weight gather. Down projection, complete expert activation, complete-model loading, complete-token runtime, Flash TPS, and EBPW remain untested; source-selection mismatch remains explicit.",
+  "compiler_stage": "HawkingAccelerator",
+  "complete_expert_runtime": "NOT_TESTED",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "component_receipt_policy": {
+    "body_pattern": "FLASH_NOETIC_GATE_UP_BODY_E{expert}_R0_1280.json",
+    "body_rows": 1280,
+    "directory": "/Users/scammermike/Downloads/hawking/receipts/headless",
+    "gate_rows": 640,
+    "kernel_pattern": "FLASH_NOETIC_GATE_UP_KERNEL_E{expert}_R0_1280_PARITY.json"
+  },
+  "components": [
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E29_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "7c9e4f77dca74ecf77dbba487d77f82a17934ee42fca2ff27cf0de58349370e0",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e29-r0-1280.bin",
+        "sha256": "066d6364c8270f2b54ba862acc629333198f45116c0bcd081be142a493f056e5",
+        "source_independent": true
+      },
+      "expert_index": 29,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E29_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "49b4d22ee7585f1b5eee04c269a5b942695aee9e2e31b76ce5f4d784ee23f382",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15250,
+          15000,
+          15709,
+          14875,
+          15084,
+          14875,
+          15250
+        ],
+        "gpu_ns_median": 15084,
+        "host_wall_ns": [
+          246000,
+          245000,
+          261000,
+          258000,
+          241000,
+          268000,
+          260000
+        ],
+        "host_wall_ns_median": 258000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "e0ff1a39bde3f5e01cdbf86df429a759ab8dd5c70a58b0fabd0b21271475ab31",
+          "e0ff1a39bde3f5e01cdbf86df429a759ab8dd5c70a58b0fabd0b21271475ab31",
+          "e0ff1a39bde3f5e01cdbf86df429a759ab8dd5c70a58b0fabd0b21271475ab31",
+          "e0ff1a39bde3f5e01cdbf86df429a759ab8dd5c70a58b0fabd0b21271475ab31",
+          "e0ff1a39bde3f5e01cdbf86df429a759ab8dd5c70a58b0fabd0b21271475ab31",
+          "e0ff1a39bde3f5e01cdbf86df429a759ab8dd5c70a58b0fabd0b21271475ab31",
+          "e0ff1a39bde3f5e01cdbf86df429a759ab8dd5c70a58b0fabd0b21271475ab31"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999994365,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 1.6391277313232422e-07,
+        "rmse": 1.841696365297072e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E309_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "f52166107af59d5f0a841b2d4a4e2d4a2a493750e92dead87a376977164bb65e",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e309-r0-1280.bin",
+        "sha256": "e00035f05085a3fbc98fee6289259725a90e0b8527d8fc4e4d3397c52f89dde8",
+        "source_independent": true
+      },
+      "expert_index": 309,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E309_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "7c88649437d2c099d80f34fcf24bb9e86fa34260ae0c3ee8eb6abd6478046033",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15000,
+          15084,
+          15334,
+          15500,
+          15375,
+          15000,
+          14875
+        ],
+        "gpu_ns_median": 15084,
+        "host_wall_ns": [
+          260000,
+          246000,
+          249000,
+          255000,
+          248000,
+          266000,
+          261000
+        ],
+        "host_wall_ns_median": 255000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "d87ff6ac0b2c6d43359da9fa610e0b79609cd7238af343d6fda6c285dc20a961",
+          "d87ff6ac0b2c6d43359da9fa610e0b79609cd7238af343d6fda6c285dc20a961",
+          "d87ff6ac0b2c6d43359da9fa610e0b79609cd7238af343d6fda6c285dc20a961",
+          "d87ff6ac0b2c6d43359da9fa610e0b79609cd7238af343d6fda6c285dc20a961",
+          "d87ff6ac0b2c6d43359da9fa610e0b79609cd7238af343d6fda6c285dc20a961",
+          "d87ff6ac0b2c6d43359da9fa610e0b79609cd7238af343d6fda6c285dc20a961",
+          "d87ff6ac0b2c6d43359da9fa610e0b79609cd7238af343d6fda6c285dc20a961"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999994109,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 1.862645149230957e-07,
+        "rmse": 2.3756272414120726e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E455_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "6fbb6896fbcf75975f310302dbe3063ce3cf9376633a7628dfa60a4040deb8d2",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e455-r0-1280.bin",
+        "sha256": "967bd5011598ef1e3dc9a67b95f3bdc1519b1c10471036fe42caf841ea922eb0",
+        "source_independent": true
+      },
+      "expert_index": 455,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E455_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "3ba91bb4673b1a20c2fc83ed196f27589fdbe80687770d4b29f35bf19e6dd3a1",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15209,
+          15125,
+          15166,
+          15125,
+          15625,
+          15125,
+          15459
+        ],
+        "gpu_ns_median": 15166,
+        "host_wall_ns": [
+          253000,
+          255000,
+          247000,
+          250000,
+          269000,
+          261000,
+          258000
+        ],
+        "host_wall_ns_median": 255000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "c75e5af5ffd801fb296634cc4d7adcb04d5df87d72385ceafd1093bfc42712cb",
+          "c75e5af5ffd801fb296634cc4d7adcb04d5df87d72385ceafd1093bfc42712cb",
+          "c75e5af5ffd801fb296634cc4d7adcb04d5df87d72385ceafd1093bfc42712cb",
+          "c75e5af5ffd801fb296634cc4d7adcb04d5df87d72385ceafd1093bfc42712cb",
+          "c75e5af5ffd801fb296634cc4d7adcb04d5df87d72385ceafd1093bfc42712cb",
+          "c75e5af5ffd801fb296634cc4d7adcb04d5df87d72385ceafd1093bfc42712cb",
+          "c75e5af5ffd801fb296634cc4d7adcb04d5df87d72385ceafd1093bfc42712cb"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999991213,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 3.725290298461914e-07,
+        "rmse": 3.402579980034222e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E374_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "d2fd94436a90721116df04ccde503f0bfb5cc708c340b57cbe237651cd343e41",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e374-r0-1280.bin",
+        "sha256": "19f0b51ad9c50583171c8a5e0686ded17e23467ba8bc45f4a8d356339c3d0087",
+        "source_independent": true
+      },
+      "expert_index": 374,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E374_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "39404f19fc8314d4db45c8d923e75a33d646b8d8c28ce1efc56610000af16f75",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15041,
+          15334,
+          15209,
+          15041,
+          15209,
+          15125,
+          15291
+        ],
+        "gpu_ns_median": 15209,
+        "host_wall_ns": [
+          247000,
+          501000,
+          251000,
+          252000,
+          258000,
+          254000,
+          265000
+        ],
+        "host_wall_ns_median": 254000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "e675fa5a13b39e108ab70ef40867b329bb2d4b3d58cd3982257a92de49949e41",
+          "e675fa5a13b39e108ab70ef40867b329bb2d4b3d58cd3982257a92de49949e41",
+          "e675fa5a13b39e108ab70ef40867b329bb2d4b3d58cd3982257a92de49949e41",
+          "e675fa5a13b39e108ab70ef40867b329bb2d4b3d58cd3982257a92de49949e41",
+          "e675fa5a13b39e108ab70ef40867b329bb2d4b3d58cd3982257a92de49949e41",
+          "e675fa5a13b39e108ab70ef40867b329bb2d4b3d58cd3982257a92de49949e41",
+          "e675fa5a13b39e108ab70ef40867b329bb2d4b3d58cd3982257a92de49949e41"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999989734,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 3.203749656677246e-07,
+        "rmse": 2.98987054124438e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E151_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "f2565d041229fec6c56c53c2552249a2dba4b43bd4ce087768f9fe6171a5c12d",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e151-r0-1280.bin",
+        "sha256": "e39b0e2b3fb4853cf5b37ee22497b3ce0c1834a2b4a7beb71e956d35874b5bc3",
+        "source_independent": true
+      },
+      "expert_index": 151,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E151_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "08b24ee34ed81a47222c707b87c77be807ec1a9b843080183229446f975369df",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15125,
+          15459,
+          15625,
+          15291,
+          15125,
+          15041,
+          15000
+        ],
+        "gpu_ns_median": 15125,
+        "host_wall_ns": [
+          251000,
+          261000,
+          255000,
+          260000,
+          492000,
+          273000,
+          252000
+        ],
+        "host_wall_ns_median": 260000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "c1eabbfb998a45149d5005d0c87fbdfd8edffc7f674ca37b76a4a98e5a8e14fc",
+          "c1eabbfb998a45149d5005d0c87fbdfd8edffc7f674ca37b76a4a98e5a8e14fc",
+          "c1eabbfb998a45149d5005d0c87fbdfd8edffc7f674ca37b76a4a98e5a8e14fc",
+          "c1eabbfb998a45149d5005d0c87fbdfd8edffc7f674ca37b76a4a98e5a8e14fc",
+          "c1eabbfb998a45149d5005d0c87fbdfd8edffc7f674ca37b76a4a98e5a8e14fc",
+          "c1eabbfb998a45149d5005d0c87fbdfd8edffc7f674ca37b76a4a98e5a8e14fc",
+          "c1eabbfb998a45149d5005d0c87fbdfd8edffc7f674ca37b76a4a98e5a8e14fc"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999993601,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 4.76837158203125e-07,
+        "rmse": 3.820232729229591e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E93_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "f67c742a69bb5bbed422f69226247490e1ef3993805e850514dfc5cfee9ee79d",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e93-r0-1280.bin",
+        "sha256": "e7621b94045e0d1657492ae1a2fcfd7c7704de6a859de2f5ef3bad8966973401",
+        "source_independent": true
+      },
+      "expert_index": 93,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E93_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "3ea65dc8e2a980a50bfc168251e1862c75c8d6f903ed2447e931b20780e84422",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          14959,
+          15000,
+          15416,
+          15000,
+          15209,
+          15291,
+          15041
+        ],
+        "gpu_ns_median": 15041,
+        "host_wall_ns": [
+          255000,
+          254000,
+          246000,
+          254000,
+          250000,
+          268000,
+          252000
+        ],
+        "host_wall_ns_median": 254000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "f5a17584940f34ed350d13c461e9e57dbee8d4e934e7976340f7670af6236ac4",
+          "f5a17584940f34ed350d13c461e9e57dbee8d4e934e7976340f7670af6236ac4",
+          "f5a17584940f34ed350d13c461e9e57dbee8d4e934e7976340f7670af6236ac4",
+          "f5a17584940f34ed350d13c461e9e57dbee8d4e934e7976340f7670af6236ac4",
+          "f5a17584940f34ed350d13c461e9e57dbee8d4e934e7976340f7670af6236ac4",
+          "f5a17584940f34ed350d13c461e9e57dbee8d4e934e7976340f7670af6236ac4",
+          "f5a17584940f34ed350d13c461e9e57dbee8d4e934e7976340f7670af6236ac4"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999995258,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 1.9371509552001953e-07,
+        "rmse": 2.6778064089637067e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E0_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "c22407dd63e4f52b31abacdcc2856921a7b7675a7cc9630b4495f9594264ab54",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e0-r0-1280.bin",
+        "sha256": "79bb4d85c9473ca6b6c008f13cd310c906802f0714e98a537d850ec7a5e39073",
+        "source_independent": true
+      },
+      "expert_index": 0,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E0_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "cf2966122c6f06a543f63bdcec6d45849084b45726b0f183b882feb36c47cf29",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15000,
+          14750,
+          14834,
+          14875,
+          15125,
+          14959,
+          15459
+        ],
+        "gpu_ns_median": 14959,
+        "host_wall_ns": [
+          262000,
+          258000,
+          253000,
+          257000,
+          249000,
+          249000,
+          256000
+        ],
+        "host_wall_ns_median": 256000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "8ff436273a8569bde8da5b30e4acbb657def74dadf6d4786b5d9bfca2a4618f7",
+          "8ff436273a8569bde8da5b30e4acbb657def74dadf6d4786b5d9bfca2a4618f7",
+          "8ff436273a8569bde8da5b30e4acbb657def74dadf6d4786b5d9bfca2a4618f7",
+          "8ff436273a8569bde8da5b30e4acbb657def74dadf6d4786b5d9bfca2a4618f7",
+          "8ff436273a8569bde8da5b30e4acbb657def74dadf6d4786b5d9bfca2a4618f7",
+          "8ff436273a8569bde8da5b30e4acbb657def74dadf6d4786b5d9bfca2a4618f7",
+          "8ff436273a8569bde8da5b30e4acbb657def74dadf6d4786b5d9bfca2a4618f7"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999993507,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 1.4156103134155273e-07,
+        "rmse": 2.4714791305869258e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E500_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "9c4c4989ad2ce9dd6cefa88189be725dc45e27401c894042460c1a316d3bcd4c",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e500-r0-1280.bin",
+        "sha256": "545d68f62b794fcfbe375781dacde86063c9022c0aa1bbc0b15442249f5a6396",
+        "source_independent": true
+      },
+      "expert_index": 500,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E500_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "f1f2f2600776c9444e5b7dac6b88123f122ed15b78d46926deb38761b6093e4a",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          14625,
+          14916,
+          14750,
+          15209,
+          14791,
+          15000,
+          14959
+        ],
+        "gpu_ns_median": 14916,
+        "host_wall_ns": [
+          249000,
+          250000,
+          260000,
+          253000,
+          246000,
+          248000,
+          271000
+        ],
+        "host_wall_ns_median": 250000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "05cd665d113464f83d6951c631354e0be9066bfbcf58a57c46539aa5b5c5abd9",
+          "05cd665d113464f83d6951c631354e0be9066bfbcf58a57c46539aa5b5c5abd9",
+          "05cd665d113464f83d6951c631354e0be9066bfbcf58a57c46539aa5b5c5abd9",
+          "05cd665d113464f83d6951c631354e0be9066bfbcf58a57c46539aa5b5c5abd9",
+          "05cd665d113464f83d6951c631354e0be9066bfbcf58a57c46539aa5b5c5abd9",
+          "05cd665d113464f83d6951c631354e0be9066bfbcf58a57c46539aa5b5c5abd9",
+          "05cd665d113464f83d6951c631354e0be9066bfbcf58a57c46539aa5b5c5abd9"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999989729,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 2.980232238769531e-07,
+        "rmse": 2.845256879074258e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E149_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "282278ad6b6bae0bcf694d2291d0a280a421a138be59b4c6c23203f937a4036f",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e149-r0-1280.bin",
+        "sha256": "bc77012542678b57fde77c1caabcce2f159cc81c5fe16d6a5d20cc5fa212aaa5",
+        "source_independent": true
+      },
+      "expert_index": 149,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E149_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "233380d96b3e48b48e2b5d9b1850fb606736f4c470725a3bd57fceba2df571a2",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15000,
+          15084,
+          15375,
+          15000,
+          15166,
+          15125,
+          15666
+        ],
+        "gpu_ns_median": 15125,
+        "host_wall_ns": [
+          249000,
+          243000,
+          248000,
+          264000,
+          251000,
+          251000,
+          251000
+        ],
+        "host_wall_ns_median": 251000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "eb535fc906dc16000a38c470db02b97030de3c6e9b78489bd740eed616c73ff4",
+          "eb535fc906dc16000a38c470db02b97030de3c6e9b78489bd740eed616c73ff4",
+          "eb535fc906dc16000a38c470db02b97030de3c6e9b78489bd740eed616c73ff4",
+          "eb535fc906dc16000a38c470db02b97030de3c6e9b78489bd740eed616c73ff4",
+          "eb535fc906dc16000a38c470db02b97030de3c6e9b78489bd740eed616c73ff4",
+          "eb535fc906dc16000a38c470db02b97030de3c6e9b78489bd740eed616c73ff4",
+          "eb535fc906dc16000a38c470db02b97030de3c6e9b78489bd740eed616c73ff4"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999993353,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 2.2724270820617676e-07,
+        "rmse": 2.735109514818162e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    },
+    {
+      "body_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_BODY_E220_R0_1280.json",
+        "schema": "hcli.agentos.flash_noetic_component_body.v1",
+        "sha256": "65b1d179853a6e32695ba7c1564d8399b83f5fa5969acece1a188777050501de",
+        "status": "PASSED"
+      },
+      "body_rows": 1280,
+      "candidate_body": {
+        "bytes": 1740800,
+        "candidate_body_persisted": true,
+        "label": "[D]",
+        "layout": "fused gate_up body split into contiguous gate/up row halves",
+        "path": "/Users/scammermike/Downloads/hawking/.hcli/flash-gate-up/body-e220-r0-1280.bin",
+        "sha256": "4d0451ac280911bad06f2c69f15f63b6dce152e0efa21bf69bf1423730113d67",
+        "source_independent": true
+      },
+      "expert_index": 220,
+      "gate_rows": 640,
+      "kernel_receipt": {
+        "label": "[V]",
+        "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_GATE_UP_KERNEL_E220_R0_1280_PARITY.json",
+        "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+        "sha256": "fa14be3c27ab2cc85d4a227b7b924c325b68b647ffafb9556d937de34f8fb89a",
+        "status": "PASSED"
+      },
+      "native_dispatch": {
+        "dispatches_per_route": 1,
+        "gpu_ns": [
+          15125,
+          15166,
+          15250,
+          15000,
+          15166,
+          15125,
+          15125
+        ],
+        "gpu_ns_median": 15125,
+        "host_wall_ns": [
+          246000,
+          254000,
+          257000,
+          249000,
+          259000,
+          257000,
+          251000
+        ],
+        "host_wall_ns_median": 254000,
+        "kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+        "output_hashes": [
+          "27ba25bcf97f4882c084f7cef78a50b2a333503beeca0989b2e87d5b73b923a5",
+          "27ba25bcf97f4882c084f7cef78a50b2a333503beeca0989b2e87d5b73b923a5",
+          "27ba25bcf97f4882c084f7cef78a50b2a333503beeca0989b2e87d5b73b923a5",
+          "27ba25bcf97f4882c084f7cef78a50b2a333503beeca0989b2e87d5b73b923a5",
+          "27ba25bcf97f4882c084f7cef78a50b2a333503beeca0989b2e87d5b73b923a5",
+          "27ba25bcf97f4882c084f7cef78a50b2a333503beeca0989b2e87d5b73b923a5",
+          "27ba25bcf97f4882c084f7cef78a50b2a333503beeca0989b2e87d5b73b923a5"
+        ],
+        "stable_output": true
+      },
+      "parity": {
+        "cosine": 0.9999999999995691,
+        "count": 640,
+        "finite": true,
+        "max_abs_error": 1.1920928955078125e-07,
+        "rmse": 2.097763360834461e-08,
+        "tolerance": 0.0020000000949949026,
+        "within_tolerance": true
+      },
+      "source_reference_used_for_execution": false,
+      "up_rows": 640
+    }
+  ],
+  "elapsed_s": 0.172535166,
+  "execution": {
+    "body_mutated": false,
+    "complete_expert_activation": false,
+    "complete_token_runtime": false,
+    "dispatches_per_route": 10,
+    "down_projection": "NOT_TESTED",
+    "measured_routes": 7,
+    "model_loaded": false,
+    "native_expert_gate_up_activation_observed": true,
+    "native_gate_up_swiglu_observed": true,
+    "operation": "native_router_selection_receipt -> full persisted fused gate_up body load -> gate/up row split -> native Q4_G64 gate_up_swiglu -> host_selected_weight_gather",
+    "provider": "apple-metal",
+    "selected_expert_count": 10,
+    "selected_expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "source_reference_used_for_execution": false,
+    "source_selection_mismatch_accepted_as_bounded_boundary": true,
+    "total_measured_dispatches": 70
+  },
+  "flash_tps": null,
+  "gather": {
+    "fused_native_gather": false,
+    "output_rows": 640,
+    "output_sha256": "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9",
+    "parity": {
+      "cosine": 0.9999999999993374,
+      "count": 640,
+      "finite": true,
+      "max_abs_error": 5.21540641784668e-08,
+      "rmse": 8.730135294729941e-09,
+      "tolerance": 0.0020000000949949026,
+      "within_tolerance": true
+    },
+    "status": "BOUNDED_HOST_WEIGHTED_GATHER",
+    "weights": [
+      0.11854133754968643,
+      0.11501486599445343,
+      0.10764840245246887,
+      0.10018834471702576,
+      0.09720804542303085,
+      0.09608116745948792,
+      0.09241337329149246,
+      0.09228217601776123,
+      0.09135758876800537,
+      0.08926478028297424
+    ]
+  },
+  "gpu_timing": {
+    "device": "Apple M3 Ultra",
+    "dispatches_per_route": 10,
+    "measured_runs": 7,
+    "memory_limits": {
+      "current_allocated_size": 18169856,
+      "has_unified_memory": true,
+      "max_buffer_length": 62620631040,
+      "recommended_max_working_set_size": 83494174720
+    },
+    "output_hashes": [
+      "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9",
+      "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9",
+      "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9",
+      "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9",
+      "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9",
+      "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9",
+      "5f0fa6082867c3f7860835120c42a4341fd2bd1a8e8908a2f775bc27eb94c2b9"
+    ],
+    "route_gpu_ns": [
+      150334,
+      150918,
+      152668,
+      150916,
+      151875,
+      150666,
+      152125
+    ],
+    "route_gpu_ns_median": 150918,
+    "route_host_wall_ns": [
+      2518000,
+      2767000,
+      2527000,
+      2552000,
+      2763000,
+      2595000,
+      2577000
+    ],
+    "route_host_wall_ns_median": 2577000,
+    "timing_authority": "Metal completed-command-buffer GPUStartTime/GPUEndTime for native gate_up_swiglu dispatches summed across selected experts; host wall reported separately",
+    "warmup_route_gpu_ns": [
+      161168,
+      150916
+    ],
+    "warmup_runs": 2
+  },
+  "input": {
+    "definition": "((index * 71) mod 509 - 254) / 509",
+    "deterministic_sha256": "62055d5ebab03995a1e46aa8d8586ad80052602b0b1ed744c56b912c8c14593a",
+    "label": "[V]",
+    "values": 2560
+  },
+  "model_lake_manifest": {
+    "bytes": 360053432320,
+    "label": "[V]",
+    "n_files": 144,
+    "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+  },
+  "model_loaded": false,
+  "native_expert_gate_up_activation_observed": true,
+  "native_gate_up_swiglu_observed": true,
+  "next_action": "add and validate source-independent down-projection bodies, then compose a bounded native expert output before attempting any protected complete-token Flash graph",
+  "noetic_ir": {
+    "complete_expert": false,
+    "complete_model": false,
+    "operations": [
+      "consume_native_router_selection",
+      "resolve_selected_full_persisted_fused_gate_up_bodies",
+      "split_fused_gate_up_body_into_gate_and_up_q4_g64_buffers",
+      "execute_native_q4_g64_gate_up_swiglu_per_selected_expert",
+      "apply_selected_router_weights_on_host",
+      "emit_bounded_gate_up_activation_outputs"
+    ],
+    "schema": "hcli.noetic.ir.v1",
+    "semantic_type": "NoeticIR",
+    "source_independent": true
+  },
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "physical_graph": {
+    "compiler_stage": "HawkingAccelerator",
+    "component_scope": "native router receipt -> selected full persisted gate_up bodies -> split gate/up Q4/G64 buffers -> native Metal gate_up_swiglu -> host weighted gather; down projection and complete token graph excluded",
+    "device_placement": {
+      "candidates": [
+        "apple_metal",
+        "cpu"
+      ],
+      "selected": "apple_metal"
+    },
+    "dispatches_per_route": 10,
+    "fingerprint": "a715313b2c8e359f65e23a8f4559c88afa5eb84a0a7e0d1790aab411cc878189",
+    "full_body_rows": 1280,
+    "gate_rows": 640,
+    "native_kernel": "qwen_uniform_q4_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "native_kernel_execution_observed": true,
+    "promotion_allowed": false,
+    "schema": "hcli.physical_graph.v1",
+    "selected_expert_count": 10,
+    "semantic_type": "PhysicalGraph",
+    "source_selection_mismatch_accepted_as_bounded_boundary": true,
+    "source_selection_parity_qualified": false,
+    "source_selection_parity_status": "MISMATCH"
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "BOUNDED_NATIVE_ROUTED_EXPERT_GATE_UP_SWIGLU_ACTIVATION",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "router_receipt": {
+    "label": "[V]",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NOETIC_ROUTER_SELECTION_NATIVE.json",
+    "schema": "hawking.flash_noetic_router_selection_native.v1",
+    "sha256": "d583456dcfcb6be7d3ae0d81b09c5d195c5ab6197d4a16557c39744e97409fe3",
+    "status": "PASSED"
+  },
+  "schema": "hawking.flash_noetic_routed_expert_gate_up_swiglu_native.v1",
+  "selection": {
+    "expert_ids": [
+      29,
+      309,
+      455,
+      374,
+      151,
+      93,
+      0,
+      500,
+      149,
+      220
+    ],
+    "logits_sha256": "6413f4984702946d79897d945003d468c3a35f1f3dd0c5a3a583a1641f31846b",
+    "probabilities_finite": true,
+    "probability_vector_sha256": "17345dba97c5f3c864dd2b1657553f72d823c3f3b915115402ce35bc873b6ff8",
+    "router_probabilities": [
+      0.005038584116846323,
+      0.0048886919394135475,
+      0.004575581289827824,
+      0.00425849249586463,
+      0.004131815396249294,
+      0.00408391747623682,
+      0.003928018268197775,
+      0.003922441974282265,
+      0.0038831422571092844,
+      0.003794187679886818
+    ],
+    "selected_probability_sum": 0.042504869401454926,
+    "selected_weight_sum": 1.0000001192092896,
+    "selected_weights": [
+      0.11854133754968643,
+      0.11501486599445343,
+      0.10764840245246887,
+      0.10018834471702576,
+      0.09720804542303085,
+      0.09608116745948792,
+      0.09241337329149246,
+      0.09228217601776123,
+      0.09135758876800537,
+      0.08926478028297424
+    ]
+  },
+  "semantic_type": "NoeticExecutableCandidate",
+  "source_selection_parity": {
+    "candidate_reference_ids_match": true,
+    "expert_ids_exact_match": false,
+    "label": "[V]/[D]",
+    "qualification": "SOURCE_ROUTER_SELECTION_NOT_QUALIFIED",
+    "status": "MISMATCH",
+    "top_k_overlap_count": 8,
+    "top_k_overlap_fraction": 0.8
+  },
+  "status": "PASSED",
+  "whole_model_capability": "NOT_TESTED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

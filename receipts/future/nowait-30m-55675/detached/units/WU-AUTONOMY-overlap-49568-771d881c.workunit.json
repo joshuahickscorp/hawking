@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.49568.receipt.json",
+    "expert_bank_school.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "refuse_if_dead can kill the effect unit at admission; a live family is scheduled, a scar-dead one is not",
+  "frontier_id": "FT.MODEL_REPRESENTATION.ngram-school",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.49568",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.49568.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "0c5a16d19e429e5878fff790d5b9e971d3ac2e307fb5b05ffa87dc8576954560",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

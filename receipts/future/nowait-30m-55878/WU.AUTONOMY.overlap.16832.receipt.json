@@ -1,0 +1,1 @@
+{"module": "tournament.py", "entry_point": "build", "receipt": "receipts/future/TOURNAMENT_READINESS.json", "routed_to_frontier": "FT.MODEL_CAPABILITY.tournament-refuse", "species": "CAPABILITY_GATE", "wall_seconds": 0.126, "evidence_class": "STATIC_ONLY"}

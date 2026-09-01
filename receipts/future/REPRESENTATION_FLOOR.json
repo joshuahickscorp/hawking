@@ -1,0 +1,643 @@
+{
+ "authority": "S025 materiality; S026 60-TPS gap; cited receipts below",
+ "byte_classes": {
+  "attention_q4_code_bytes": 3618897920,
+  "attention_storage_bytes": 3852952064,
+  "by_stream_class": {
+   "activation": {
+    "bytes": 0,
+    "gb": 0.0,
+    "ms_per_gb": 2.906132
+   },
+   "broadcast_aux": {
+    "bytes": 1377977752,
+    "gb": 1.377978,
+    "ms_per_gb": 0.0
+   },
+   "weight_codes": {
+    "bytes": 9176351104,
+    "gb": 9.176351,
+    "ms_per_gb": 0.547282
+   }
+  },
+  "classes": [
+   {
+    "bytes": 4278190080,
+    "gb": 4.27819,
+    "id": "mlp_weight_codes",
+    "ms_per_gb": 0.547282,
+    "ms_per_token_if_streamed": 2.341376,
+    "part": "affine q2 codes",
+    "source": "receipts/future/MLP_BYTE_CENSUS.json",
+    "source_rate": "receipts/future/ECONOMICS_CALIBRATION.json",
+    "stream_class": "weight_codes",
+    "streamed_per_decode_token": true
+   },
+   {
+    "bytes": 1069605696,
+    "gb": 1.069606,
+    "id": "mlp_broadcast_aux",
+    "ms_per_gb": 0.0,
+    "ms_per_token_if_streamed": 0.0,
+    "part": "affine q2 scale/bias/header",
+    "source": "receipts/future/MLP_BYTE_CENSUS.json",
+    "source_rate": "receipts/future/ECONOMICS_CALIBRATION.json",
+    "stream_class": "broadcast_aux",
+    "streamed_per_decode_token": true
+   },
+   {
+    "bytes": 4890296320,
+    "gb": 4.890296,
+    "id": "q4_weight_codes",
+    "ms_per_gb": 0.547282,
+    "ms_per_token_if_streamed": 2.676371,
+    "part": "HQ30UQ4 codes (attention + DeltaNet + lm_head + embed table)",
+    "source": "receipts/future/DELTANET_REPRESENTATION.json",
+    "source_rate": "receipts/future/ECONOMICS_CALIBRATION.json",
+    "stream_class": "weight_codes",
+    "streamed_per_decode_token": true
+   },
+   {
+    "bytes": 305651920,
+    "gb": 0.305652,
+    "id": "q4_broadcast_aux",
+    "ms_per_gb": 0.0,
+    "ms_per_token_if_streamed": 0.0,
+    "part": "HQ30UQ4 scale/header",
+    "source": "receipts/future/DELTANET_REPRESENTATION.json",
+    "source_rate": "receipts/future/ECONOMICS_CALIBRATION.json",
+    "stream_class": "broadcast_aux",
+    "streamed_per_decode_token": true
+   },
+   {
+    "bytes": 7864704,
+    "gb": 0.007865,
+    "id": "f32_conv1d",
+    "ms_per_gb": 0.547282,
+    "ms_per_token_if_streamed": 0.004304,
+    "part": "DeltaNet conv1d f32 weights",
+    "source": "receipts/future/MLP_BYTE_CENSUS.json",
+    "source_rate": "receipts/future/ECONOMICS_CALIBRATION.json",
+    "stream_class": "weight_codes",
+    "streamed_per_decode_token": true
+   },
+   {
+    "bytes": 2720136,
+    "gb": 0.00272,
+    "id": "f32_norms_and_state",
+    "ms_per_gb": 0.0,
+    "ms_per_token_if_streamed": 0.0,
+    "part": "norms + A_log + dt_bias",
+    "source": "receipts/future/MLP_BYTE_CENSUS.json",
+    "source_rate": "receipts/future/ECONOMICS_CALIBRATION.json",
+    "stream_class": "broadcast_aux",
+    "streamed_per_decode_token": true
+   },
+   {
+    "bytes": 0,
+    "catalog_bytes": "UNKNOWN",
+    "gb": 0.0,
+    "id": "activation",
+    "ms_per_gb": 2.906132,
+    "ms_per_token_if_streamed": 0.0,
+    "note": "HQ38M20 describes packed weights only. A_log and dt_bias are catalogued DeltaNet parameters and ARE counted under state.*. The recurrent state tensor and the KV cache are not.",
+    "part": "activations / KV / DeltaNet recurrent state (not in catalog)",
+    "source": "receipts/future/MLP_BYTE_CENSUS.json",
+    "source_rate": "receipts/future/ECONOMICS_CALIBRATION.json",
+    "stream_class": "activation",
+    "streamed_per_decode_token": false
+   }
+  ],
+  "embedding_active_bytes": 2720,
+  "f32_bytes": 10584840,
+  "mlp_aux_bytes": 1069605696,
+  "mlp_code_bytes": 4278190080,
+  "mlp_elements": 17112760320,
+  "mlp_storage_bytes": 5347795776,
+  "parent_params": 26895998464,
+  "payload_bytes": 10554328856,
+  "payload_gb": 10.554329,
+  "q4_aux_bytes": 305651920,
+  "q4_code_bytes": 4890296320,
+  "q4_layout": {
+   "code_bits": 4,
+   "codec_named_by": "HQ30UQ4 g64 (hardlinked incumbent)",
+   "group": 64,
+   "header_bytes_per_tensor": 40,
+   "scale_bytes_per_group": 2,
+   "source": "receipts/future/DELTANET_REPRESENTATION.json"
+  },
+  "q4_organs": [
+   {
+    "active_bytes": 534774400,
+    "code_bytes": 503316480,
+    "elements": 1006632960,
+    "header_bytes": 640,
+    "n_tensors": 16,
+    "organ": "attention.q",
+    "scale_bytes": 31457280,
+    "storage_bytes": 534774400
+   },
+   {
+    "active_bytes": 44565120,
+    "code_bytes": 41943040,
+    "elements": 83886080,
+    "header_bytes": 640,
+    "n_tensors": 16,
+    "organ": "attention.k",
+    "scale_bytes": 2621440,
+    "storage_bytes": 44565120
+   },
+   {
+    "active_bytes": 44565120,
+    "code_bytes": 41943040,
+    "elements": 83886080,
+    "header_bytes": 640,
+    "n_tensors": 16,
+    "organ": "attention.v",
+    "scale_bytes": 2621440,
+    "storage_bytes": 44565120
+   },
+   {
+    "active_bytes": 267387520,
+    "code_bytes": 251658240,
+    "elements": 503316480,
+    "header_bytes": 640,
+    "n_tensors": 16,
+    "organ": "attention.o",
+    "scale_bytes": 15728640,
+    "storage_bytes": 267387520
+   },
+   {
+    "active_bytes": 2139096960,
+    "code_bytes": 2013265920,
+    "elements": 4026531840,
+    "header_bytes": 1920,
+    "n_tensors": 48,
+    "organ": "attention.linear_qkvz",
+    "scale_bytes": 125829120,
+    "storage_bytes": 2139096960
+   },
+   {
+    "active_bytes": 12535680,
+    "code_bytes": 11796480,
+    "elements": 23592960,
+    "header_bytes": 1920,
+    "n_tensors": 48,
+    "organ": "attention.linear_ba",
+    "scale_bytes": 737280,
+    "storage_bytes": 12535680
+   },
+   {
+    "active_bytes": 802162560,
+    "code_bytes": 754974720,
+    "elements": 1509949440,
+    "header_bytes": 1920,
+    "n_tensors": 48,
+    "organ": "attention.linear_out",
+    "scale_bytes": 47185920,
+    "storage_bytes": 802162560
+   },
+   {
+    "active_bytes": 2720,
+    "code_bytes": 635699200,
+    "elements": 1271398400,
+    "header_bytes": 40,
+    "n_tensors": 1,
+    "organ": "embedding",
+    "scale_bytes": 39731200,
+    "storage_bytes": 675430440
+   },
+   {
+    "active_bytes": 675430440,
+    "code_bytes": 635699200,
+    "elements": 1271398400,
+    "header_bytes": 40,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "scale_bytes": 39731200,
+    "storage_bytes": 675430440
+   }
+  ],
+  "reconciliation": {
+   "classes_sum_equals_payload": true,
+   "f32_organs_equal_f32_bytes": true,
+   "mlp_equals_affine_bytes": true,
+   "q4_split_equals_q4_bytes": true
+  },
+  "storage_bpw": 3.139300850311054,
+  "unread_embedding_table_bytes": 675427720
+ },
+ "can_conventional_compression_reach_60_tps": false,
+ "candidates": [
+  {
+   "H_q_bits": 1.87017973205819,
+   "bytes_saved": 277697891,
+   "counts_toward_measured_safe": true,
+   "evidence_status": "MEASURED",
+   "gb_saved": 0.277698,
+   "id": "entropy_code_mlp_codes",
+   "independent_fraction": 0.935089866029095,
+   "mechanism": "i.i.d. H(q)=1.870180 bits per 2 stored bits; independent_fraction=0.935090. 277697891 of 4278190080 code bytes are the 4-level histogram bias, not sharing.",
+   "ms_saved": 0.151979,
+   "ms_saved_if_rematerialized": 0.0,
+   "name": "entropy-code the MLP 2-bit codes to the measured 1.87-bit Shannon floor",
+   "nns022_reopen_fires": false,
+   "notes": "Lossless of the stored q. Fused rANS/Huffman affine2 is UNTESTED as a kernel (NNS-022 cousin: entropy coding is not a TPS lever without a native register-decodable path). Decode-to-incumbent-2-bit then bind affine2 eliminates zero active bytes. zlib on sampled tensors reaches mean ratio 0.946479 of stored, same single-digit percent. ms_saved is billed at weight_codes IF a fused decode existed; rematerialized it is 0.000.",
+   "overlap_bucket": "mlp_codes",
+   "sample_zlib_ratio_mean": 0.9464793186561732,
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "stream_class": "weight_codes"
+  },
+  {
+   "bytes_at_target": 4813022016,
+   "bytes_saved": 534773760,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "UNTESTED",
+   "floor_status": "MEASURED",
+   "gb_saved": 0.534774,
+   "id": "mlp_to_2_25_coherent_floor",
+   "mechanism": "incumbent affine_bytes 5347795776 at ~2.50 bpw; 2.25 bpw \u00d7 17112760320 elements / 8 = 4813022016 bytes. QN-SHARED-BASIS-DENSITY: no shared-basis K below ~2.25 bpw is coherent at held-out activation; QN-COORDINATE-TRANSFORM: ~2.25 bpw held under tested rotation families; QN-BINARY-INJURY: 1.25-bpw binary is generation-incoherent, 0/4 healers, vs q2f_g64.",
+   "move_status": "UNTESTED",
+   "ms_saved": 0.0,
+   "name": "MLP packing down to the measured 2.25 bpw coherent-class floor (q2f)",
+   "notes": "The FLOOR is MEASURED (nothing composed below 2.25). The MOVE from this mix's 2.5 affine-LS packing to a 2.25 packing of THIS artifact is UNTESTED as a generate-gated complete executable (receipts/future/FLASH_BPW_LADDER.json rung bpw_2_25 is RESEARCH_TARGET / qualified_complete_physical_ebpw UNKNOWN). Broadcast_aux, so ms_saved is 0 even if the bytes disappear. drop_bias is MEASURED_NEGATIVE in receipts/future/MLP_AUXILIARY_INFORMATION.json; this is not 'delete the bias field'.",
+   "overlap_bucket": "mlp_aux",
+   "source": "receipts/future/FLASH_BPW_LADDER.json",
+   "stream_class": "broadcast_aux",
+   "target_bpw": 2.25,
+   "three_ways": "QN-SHARED-BASIS-DENSITY: no shared-basis K below ~2.25 bpw is coherent at held-out activation; QN-COORDINATE-TRANSFORM: ~2.25 bpw held under tested rotation families; QN-BINARY-INJURY: 1.25-bpw binary is generation-incoherent, 0/4 healers, vs q2f_g64."
+  },
+  {
+   "bytes_saved": 534773760,
+   "capability_on_curve": "UNMEASURED",
+   "counts_toward_measured_safe": false,
+   "evidence_status": "UNTESTED",
+   "gb_saved": 0.534774,
+   "group_size": 128,
+   "id": "larger_affine_group_128",
+   "mechanism": "Same 2-bit codes, half as many f16 scale/bias groups.",
+   "ms_saved": 0.0,
+   "name": "affine group 128 (aux halved vs G=64)",
+   "notes": "Capability UNMEASURED on the group-size curve. Between incumbent G=64 and G=256 which FAILED_HELDOUT, so it is the only coarser group that is not already refuted. Overlaps mlp_to_2_25 / quantize_aux_u8.",
+   "overlap_bucket": "mlp_aux",
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "bytes_saved": 802160640,
+   "capability": "FAILED_HELDOUT",
+   "counts_toward_measured_safe": false,
+   "evidence_status": "REFUTED",
+   "gb_saved": 0.802161,
+   "group_size": 256,
+   "id": "larger_affine_group_256",
+   "mechanism": "Same 2-bit codes, 4\u00d7 fewer scale/bias groups than G=64.",
+   "ms_saved": 0.0,
+   "name": "affine group 256",
+   "notes": "Capability FAILED_HELDOUT: organ relfro_mean 0.3132 vs bar 0.2. Broadcast_aux, so even a pass would have saved SIZE not TIME.",
+   "overlap_bucket": "mlp_aux",
+   "source": "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "bytes_saved": 1002700800,
+   "capability": "FAILED_HELDOUT",
+   "counts_toward_measured_safe": false,
+   "evidence_status": "REFUTED",
+   "gb_saved": 1.002701,
+   "group_size": 1024,
+   "id": "larger_affine_group_1024",
+   "mechanism": "Same 2-bit codes, 16\u00d7 fewer scale/bias groups than G=64.",
+   "ms_saved": 0.0,
+   "name": "affine group 1024",
+   "notes": "Capability FAILED_HELDOUT: organ relfro_mean 0.3646 vs bar 0.2. G=512 was not screened; G=256 already dying makes G=512 a predicted fail, not an UNTESTED gift.",
+   "overlap_bucket": "mlp_aux",
+   "source": "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "bytes_saved": 534773760,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "UNTESTED",
+   "gb_saved": 0.534774,
+   "generate_gate": "UNMEASURED",
+   "heldout_status": "OPEN",
+   "id": "quantize_aux_u8",
+   "mechanism": "Keep 2-bit codes; requant per-group aux to u8 + endpoints.",
+   "ms_saved": 0.0,
+   "name": "quantize MLP scale/bias from f16 to u8 (held-out fit passed)",
+   "native_projected_mlp_delta_ms": 1.858624,
+   "notes": "Held-out organ/logit screen MEASURED_ON_HELDOUT / OPEN. Generate identity UNMEASURED. Native decode was SLOWER: receipts/future/AUX_U8_NATIVE.json projected_mlp_delta_ms=1.858624 (positive is a loss). Bytes bill at 0.000 ms/GB. Overlaps mlp_to_2_25.",
+   "overlap_bucket": "mlp_aux",
+   "source": "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "attention_q4_code_bytes": 3618897920,
+   "bytes_saved": 904724480,
+   "counts_toward_measured_safe": false,
+   "dn_out_q3_bytes": 188743680,
+   "dn_qkvz_q3_bytes": 503316480,
+   "evidence_status": "UNTESTED",
+   "gb_saved": 0.904724,
+   "id": "q4_uniform_q3_attention_deltanet",
+   "mechanism": "HQ30UQ4 codes are 4 bits/element. Uniform Q3 keeps 3/4 of those code bytes on the attention family (3618897920 code bytes). Scales stay f16 per group-64.",
+   "ms_saved": 0.495139,
+   "name": "q4 -> uniform Q3 on attention + DeltaNet codes",
+   "notes": "NNS-029 killed uniform bit-descent below q3 as a clean path on the MLP / whole artifact (cousin, not this organ). DN-only native Q3 is OPEN in receipts/future/DELTANET_REPRESENTATION.json (qkvz 503316480 + out 188743680). GQA Q3 is the same codec, same UNTESTED. Capability of a uniform Q3 of this mix is not measured.",
+   "overlap_bucket": "q4_codes",
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "stream_class": "weight_codes"
+  },
+  {
+   "bytes_saved": 1222574080,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "UNTESTED",
+   "gb_saved": 1.222574,
+   "id": "q4_uniform_q3_all_q4_codes",
+   "mechanism": "Same 3/4-of-codes cut on the whole q4_bytes code body, including lm_head and the unread embed table.",
+   "ms_saved": 0.669093,
+   "name": "q4 -> uniform Q3 on every HQ30UQ4 code (attention, DeltaNet, lm_head, embed)",
+   "notes": "lm_head and the unread embed table are NOT in the 15.27 ms matvec streaming pool (GAP_LEDGER_60 names lm_head as outside that accounting; embed is one-row lookup). Counted for payload floor, not for the 16.8% matvec cut. Dominates heterogeneous_qkvz and lower_bit_out_proj in overlap_bucket q4_codes.",
+   "overlap_bucket": "q4_codes",
+   "q4_code_bytes": 4890296320,
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "stream_class": "weight_codes"
+  },
+  {
+   "bytes_saved": 188743680,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "UNTESTED",
+   "gb_saved": 0.188744,
+   "id": "q4_heterogeneous_qkvz",
+   "mechanism": "linear_qkvz is one HQ30UQ4 GEMV over a fused 16384-row tensor. The consume path already splits those rows: z never enters gated-delta or conv; q is a readout of S; k is the rank-1 projector and write key; v is the write value. Spend 4-bit codes only on the ranges the state machine needs, and a narrower code on the rest, decoded in-register by a row-range Q4/Q3 matvec. Do not unpack to dense W.",
+   "ms_saved": 0.103296,
+   "name": "heterogeneous bits on DeltaNet qkvz (Q3 on a crushed block)",
+   "notes": "OPEN, STATIC_ONLY. Subset of uniform Q3 on qkvz. Weight-space Q3 rel-fro is similar across q/k/v/z (packing uniformity, not operator ranking).",
+   "overlap_bucket": "q4_codes",
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "stream_class": "weight_codes"
+  },
+  {
+   "bytes_saved": 86876160,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "UNTESTED",
+   "gb_saved": 0.086876,
+   "id": "larger_q4_group_128",
+   "mechanism": "Auxiliary Q4 bytes are f16 scale per group. Codes are 4 bits per weight regardless of G. gcd(5120, 6144)=1024, so G in {128,256,512,1024} tiles qkvz, ba and out. Parser already admits G=128.",
+   "ms_saved": 0.0,
+   "name": "Q4 group 128 on DeltaNet (scale aux halved)",
+   "notes": "OPEN. Codes unchanged. Broadcast_aux-class Q4 scales: SIZE not TIME. CHEAP CPU falsifier in the DN receipt is unrun.",
+   "overlap_bucket": "q4_aux",
+   "source": "receipts/future/DELTANET_REPRESENTATION.json",
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "bytes_saved": 52032,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "UNTESTED",
+   "gb_saved": 5.2e-05,
+   "id": "pack_headers",
+   "mechanism": "Header bytes are 58176 of the MLP aux; a tighter pack saves 52032.",
+   "ms_saved": 0.0,
+   "name": "pack affine per-tensor headers",
+   "notes": "OPEN and immaterial on both bars (52 KB, 0 ms).",
+   "overlap_bucket": "headers",
+   "source": "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "stream_class": "broadcast_aux"
+  },
+  {
+   "bytes_saved": 0,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "REFUTED",
+   "gb_saved": 0.0,
+   "id": "composite_mlp_simple_linear_low_rank",
+   "mechanism": "Replace the MLP maps with a bulk linear low-rank program.",
+   "ms_saved": 0.0,
+   "name": "composite MLP simple linear low-rank",
+   "notes": "COMPOSITE_MLP_SIMPLE_LINEAR_LOW_RANK_REFUTED: reused as bulk, not reswept. Residual rescue after it is a different school and is itself closed. Zero bytes may be counted toward any floor.",
+   "overlap_bucket": "mlp_program",
+   "source": "receipts/future/MLP_SPARSE_RESIDUAL.json",
+   "stream_class": "weight_codes"
+  },
+  {
+   "bytes_saved": 0,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "REFUTED",
+   "gb_saved": 0.0,
+   "id": "mlp_uniform_below_q2",
+   "mechanism": "Replace the 2-bit LS codes with uniform Q1/binary/ternary.",
+   "ms_saved": 0.0,
+   "name": "uniform bit-descent of the MLP below affine-Q2",
+   "notes": "ALREADY_FALSIFIED (NNS-029 uniform Q2 MLP rel-fro 0.578 vs q3 0.198; QN-BINARY-INJURY 1.25-bpw body generation-incoherent). Not a reopen of entropy coding (different object).",
+   "overlap_bucket": "mlp_codes",
+   "source": "receipts/future/MLP_BYTE_CENSUS.json",
+   "stream_class": "weight_codes"
+  },
+  {
+   "bytes_saved": 0,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "MEASURED",
+   "gb_saved": 0.0,
+   "gpu_ms_saved_measured": 3.8541,
+   "id": "q2_bitcast_dequant",
+   "mechanism": "Place the 2-bit code in an f32 exponent field; same bytes, cheaper convert.",
+   "ms_saved": 0.0,
+   "name": "bitcast dequant of the q2 MLP matvec (TIME, not SIZE)",
+   "notes": "gpu_ms_saved=3.8541; token_identical=True. Payload unchanged. Already built, default-off. Not a compression campaign.",
+   "overlap_bucket": "decode_arithmetic",
+   "source": "receipts/future/BITCAST_DEQUANT_AB.json",
+   "stream_class": "weight_codes",
+   "token_identical": true
+  },
+  {
+   "bit_identical": true,
+   "bytes_saved": 0,
+   "counts_toward_measured_safe": false,
+   "evidence_status": "MEASURED",
+   "gb_saved": 0.0,
+   "gpu_ms_saved_measured": 0.6836,
+   "id": "q4_bitcast_dequant",
+   "mechanism": "Same q4 bytes, cheaper nibble convert.",
+   "ms_saved": 0.0,
+   "name": "bitcast unpack of the q4 matvec (TIME, not SIZE)",
+   "notes": "gpu_ms_saved=0.6836; token_identical=True; bit_identical=True. Payload unchanged.",
+   "overlap_bucket": "decode_arithmetic",
+   "source": "receipts/future/Q4_BITCAST_AB.json",
+   "stream_class": "weight_codes",
+   "token_identical": true
+  }
+ ],
+ "claim_boundary": "Static sidecar artifact. No GPU work. No new fit. Hardware numbers are copied from sealed receipts and billed; they are not a protected reprofile of a smaller packing. evidence_status MEASURED means the cited quantity was measured, not that a fused kernel of that packing is in the resident.",
+ "context": {
+  "perfect_arithmetic_removal_tps": 52.008,
+  "q2_arithmetic_split": {
+   "both_fmas": 0.2848,
+   "shift_and_mask": 0.296,
+   "uint_to_float_convert": 0.4191
+  },
+  "quiet_cold_MB_per_s": 77.7,
+  "source_gap": "receipts/future/GAP_LEDGER_60.json",
+  "source_load": "receipts/future/SPECIMEN_LOAD_COST.json",
+  "source_opclass": "receipts/future/OP_CLASS_ABLATION.json",
+  "still_short_of_60_by_ms": 2.561,
+  "volume": "/Volumes/corpdrive (APFS over USB)"
+ },
+ "floor": {
+  "how_overlaps_are_resolved": "one move per overlap_bucket, the largest bytes_saved among statuses the floor allows. REFUTED is never selected. mlp_aux holds 2.25 / G=128 / G=256 / G=1024 / u8; q4_codes holds uniform-Q3 variants.",
+  "if_every_untested_move_worked_bpw": 2.508137,
+  "if_every_untested_move_worked_bytes": 8432354933,
+  "if_every_untested_move_worked_bytes_removed": 2121973923,
+  "if_every_untested_move_worked_gb": 8.432355,
+  "if_every_untested_move_worked_moves": [
+   "pack_headers",
+   "mlp_to_2_25_coherent_floor",
+   "entropy_code_mlp_codes",
+   "larger_q4_group_128",
+   "q4_uniform_q3_all_q4_codes"
+  ],
+  "if_every_untested_move_worked_ms_saved_billed": 0.821072,
+  "incumbent_bpw": 3.139301,
+  "incumbent_bytes": 10554328856,
+  "incumbent_gb": 10.554329,
+  "measured_safe_bpw": 3.056702,
+  "measured_safe_bytes": 10276630965,
+  "measured_safe_bytes_removed": 277697891,
+  "measured_safe_gb": 10.276631,
+  "measured_safe_moves": [
+   "entropy_code_mlp_codes"
+  ],
+  "measured_safe_ms_saved_billed": 0.151979,
+  "refuted_ids_excluded": [
+   "larger_affine_group_256",
+   "larger_affine_group_1024",
+   "composite_mlp_simple_linear_low_rank",
+   "mlp_uniform_below_q2"
+  ]
+ },
+ "load_bearing": [
+  {
+   "id": "payload_bytes",
+   "role": "incumbent storage payload",
+   "source": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+   "value": 10554328856
+  },
+  {
+   "id": "parent_params",
+   "role": "bpw denominator",
+   "source": "/Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+   "value": 26895998464
+  },
+  {
+   "id": "weight_codes_ms_per_gb",
+   "role": "binding-stream time cost",
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json",
+   "value": 0.547282
+  },
+  {
+   "id": "broadcast_aux_ms_per_gb",
+   "role": "aux time cost; 0 means SIZE not TIME",
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json",
+   "value": 0.0
+  },
+  {
+   "id": "activation_ms_per_gb",
+   "role": "catalog-scale activation billing",
+   "source": "receipts/future/ECONOMICS_CALIBRATION.json",
+   "value": 2.906132
+  },
+  {
+   "id": "mlp_code_entropy_bits",
+   "role": "lossless code-body floor",
+   "source": "receipts/future/MLP_CODE_INFORMATION.json",
+   "value": 1.87017973205819
+  },
+  {
+   "id": "fraction_of_matvec_bytes_to_remove",
+   "role": "16.8% cut 60 TPS still needs after arm_a",
+   "source": "receipts/future/GAP_LEDGER_60.json",
+   "value": 0.1677
+  },
+  {
+   "id": "streaming_ms_at_arm_a",
+   "role": "pure-streaming matvec time after arithmetic removal",
+   "source": "receipts/future/GAP_LEDGER_60.json",
+   "value": 15.269
+  },
+  {
+   "id": "measured_safe_gb",
+   "role": "smallest payload with MEASURED-safe moves",
+   "source": "derived from MEASURED candidates only",
+   "value": 10.276631
+  },
+  {
+   "id": "if_every_untested_move_worked_gb",
+   "role": "optimistic conventional payload",
+   "source": "derived from MEASURED+UNTESTED, REFUTED excluded",
+   "value": 8.432355
+  }
+ ],
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": null,
+  "lane": "derived",
+  "loadavg": "{ 7.18 7.42 7.63 }",
+  "measured_at": null,
+  "measured_at_source": "RETROFIT_UNKNOWN",
+  "receipt_regenerated_at": "2026-09-01T00:16:20Z",
+  "why": "this receipt predates measurement provenance; the raw capture carries no timestamp, so the measurement time is genuinely unknown and is recorded as unknown rather than invented"
+ },
+ "obligation": "representation floor for the Qwen3.8 dense incumbent",
+ "question": "HOW MUCH SMALLER CAN THE INCUMBENT GET, and is another compression effort worth running?",
+ "recorded_by": "tools/future/representation_floor.py",
+ "schema": "hawking.future.representation_floor.v1",
+ "seal_sha256": "d8dffa5ec89a99c23cd1232ab48a75e53d8c7fe5f4925c2f068623c66ca59c22",
+ "shortfall_gb": 0.143238,
+ "sixty": {
+  "arithmetic": {
+   "bytes_required_at_fraction_of_codes": 1325660568,
+   "bytes_required_at_fraction_of_storage": 1542965413,
+   "formula": "need 0.1677 \u00d7 matvec_code_bytes 7904952704 = 1325660568 bytes. MEASURED conventional (Shannon on MLP codes) supplies 277697891 (3.5130% of the codes). UNTESTED conventional adds uniform Q3 on attention/DeltaNet codes 904724480 for a total 1182422371 (14.9580%). Both are short of 16.7700%.",
+   "fraction_of_matvec_bytes_to_remove": 0.1677,
+   "further_ms_needed_for_60": 2.5609,
+   "matvec_code_bytes_mlp_plus_attention": 7904952704,
+   "matvec_storage_bytes_mlp_plus_attention": 9200747840,
+   "measured_conventional_code_bytes": 277697891,
+   "measured_fraction_of_matvec_codes": 0.0351,
+   "perfect_arithmetic_removal_tps": 52.008,
+   "source": "receipts/future/GAP_LEDGER_60.json",
+   "still_short_of_60_by_ms": 2.561,
+   "streaming_ms_at_arm_a": 15.269,
+   "untested_conventional_code_bytes": 1182422371,
+   "untested_fraction_of_matvec_codes": 0.1496,
+   "why_aux_does_not_count_here": "broadcast_aux bills at 0.000 ms/GB. After arithmetic removal the 15.269 ms is the binding stream. Shrinking scale/bias saves payload SIZE, not the 15.27 ms."
+  },
+  "can_conventional_compression_reach_60_tps": false,
+  "measured_code_move_ids": [
+   "entropy_code_mlp_codes"
+  ],
+  "shortfall_bytes_if_every_untested_conventional_worked": 143238197,
+  "shortfall_bytes_measured_conventional": 1047962677,
+  "shortfall_gb": 0.143238,
+  "untested_code_move_ids": [
+   "entropy_code_mlp_codes",
+   "q4_uniform_q3_all_q4_codes"
+  ],
+  "what_class_of_change_could": "INFORMATION ELIMINATION \u2014 a smaller executable program for the same function \u2014 or removing work that is not a matvec (DeltaNet state update / rearrange / gated norm, ~2.0 ms; host time). Ordinary coding of the stored q has single-digit percent of the MLP codes (0.277698 GB, 6.49% of that body) and cannot supply 16.8% of matvec weight bytes."
+ },
+ "what_is_estimated": "ms_saved for every payload cut is billed at the stream-class rate (not a complete-token re-measure of a new packing). HQ30UQ4 split of GQA/lm_head/embed applies the DeltaNet-measured 4-bit / group-64 / 40-byte-header layout to census storage_bytes; MIX_REPORT names that codec on the hardlinked q4 tensors. Uniform Q3 byte counts are 1/4 of those codes, not a fitted Q3 artifact. Combining arithmetic removal with byte removal is the composition caveat already on GAP_LEDGER_60.",
+ "what_is_measured": "MIX_REPORT payload split; catalog census organ bytes; stream-class ms/GB; MLP i.i.d. Shannon of the 2-bit codes; group_size_256/1024 FAILED_HELDOUT; composite linear low-rank scar; q2/q4 bitcast gpu_ms_saved; arm_a 52.008 TPS still 2.56 ms short of 60; USB quiet-cold 77.7 MB/s; aux-u8 native projected_mlp_delta_ms > 0.",
+ "worth_it": {
+  "cost_basis": "S025: spend an hour only if a perfect win is >= 1.0 ms/token, or >= 5-10% of important bytes. Shannon-coding the MLP codes is 6.49% of that 4.27819 GB body (True on the size bar) and 0.151979 ms/token billed at weight_codes 0.547282 ms/GB (False on the time bar). Every UNTESTED non-overlapping payload move still bills 0.821072 ms/token because the large aux cuts are 0.000 ms/GB and the Q3 code cut is a fraction of a millisecond. Neither reaches 60 TPS.",
+  "entropy_frac_of_mlp_codes": 0.0649,
+  "entropy_meets_size_bar": true,
+  "expected_ms_per_token": 0.151979,
+  "expected_ms_per_token_if_every_untested_worked": 0.821072,
+  "materiality_threshold_ms": 1.0,
+  "size_materiality_frac": 0.05,
+  "time_meets_ms_bar": false,
+  "verdict": "NO",
+  "why": "Another conventional compression campaign is not worth running as a 60-TPS lever. The only MEASURED byte cut on the binding stream is 0.277698 GB of MLP-code histogram bias, billed 0.151979 ms/token if a fused decoder existed and 0.000 if it rematerializes. Aux cuts (2.25 / G=128 / u8) are SIZE, measured 0.000 ms/GB, and the native u8 path was slower. G=256 and G=1024 are capability-REFUTED. Uniform Q3 of attention/DeltaNet is UNTESTED and still leaves the 16.8% matvec-byte cut short. The bitcast levers are TIME not SIZE and are already measured."
+ }
+}

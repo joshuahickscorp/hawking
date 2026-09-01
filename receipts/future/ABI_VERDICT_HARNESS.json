@@ -1,11 +1,11 @@
 {
  "aliases": {},
- "all_reported_pending": false,
+ "all_reported_pending": true,
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T21:44:23Z",
+  "recorded_at": "2026-09-01T05:10:29Z",
   "recorded_by": "tools/future/abi_verdicts.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -14,51 +14,39 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "codex_adjudication": {
   "available": true,
-  "recorded": [
+  "recorded": [],
+  "refused": [
    {
-    "applied": null,
-    "codex_classification": "REAL_DEFECT",
-    "codex_status": "FIXED",
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-01-kv-append-q8'",
     "finding_id": "claude-abi-01-kv-append-q8",
     "verdict": "CONFIRMED_BUG"
    },
    {
-    "applied": null,
-    "codex_classification": "BLOCKED_BY_GENERATION",
-    "codex_status": "RESOLVED_BY_MACRO_AWARE_PREFLIGHT",
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-02-qwen-generated-k1'",
     "finding_id": "claude-abi-02-qwen-generated-k1",
     "verdict": "GENERATED_KERNEL"
    },
    {
-    "applied": null,
-    "codex_classification": "REAL_DEFECT",
-    "codex_status": "FIXED",
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-03-gemv-attn-command-batch'",
     "finding_id": "claude-abi-03-gemv-attn-command-batch",
     "verdict": "CONFIRMED_BUG"
    },
    {
-    "applied": null,
-    "codex_classification": "REAL_DEFECT",
-    "codex_status": "FIXED",
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-04-gemv-attn-arena'",
     "finding_id": "claude-abi-04-gemv-attn-arena",
     "verdict": "CONFIRMED_BUG"
    },
    {
-    "applied": null,
-    "codex_classification": "REAL_DEFECT",
-    "codex_status": "FIXED",
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-05-moe-silu'",
     "finding_id": "claude-abi-05-moe-silu",
     "verdict": "CONFIRMED_BUG"
    },
    {
-    "applied": null,
-    "codex_classification": "REAL_DEFECT",
-    "codex_status": "FIXED",
+    "error": "VerdictRefused: unknown finding_id 'claude-abi-06-moe-route-accumulate'",
     "finding_id": "claude-abi-06-moe-route-accumulate",
     "verdict": "CONFIRMED_BUG"
    }
   ],
-  "refused": [],
   "source": "receipts/future/CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
   "summary": {
    "blocked_by_generation_resolved": 1,
@@ -82,249 +70,64 @@
    "check": "kernel_existence",
    "class_responses": {
     "ABI_MISMATCH": {
-     "harness_action": "reclassify kernel_existence|kv_append_q8_0_f32|mod.rs:8509 to abi_mismatch; do not exempt type_width as a class",
+     "harness_action": "reclassify kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333 to abi_mismatch; do not exempt type_width as a class",
      "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
      "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
     },
     "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for kernel_existence|kv_append_q8_0_f32|mod.rs:8509; regression_still_detectable() must keep returning True",
-     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'kv_append_q8_0_f32' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/kernels/mod.rs:8509 for 'kv_append_q8_0_f32'."
+     "harness_action": "install RegressionFixture for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333; regression_still_detectable() must keep returning True",
+     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' so a future checker edit cannot silently drop the class.",
+     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333 for 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128'."
     },
     "DEAD_CODE": {
-     "harness_action": "store reachability for kernel_existence|kv_append_q8_0_f32|mod.rs:8509; re-emit check=reachability severity=WARNING",
-     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for kv_append_q8_0_f32_metal. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path kv_append_q8_0_f32_metal at crates/hawking-core/src/kernels/mod.rs:8509 cannot run, so this mismatch cannot waste a protected GPU window."
+     "harness_action": "store reachability for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333; re-emit check=reachability severity=WARNING",
+     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for encode_fused_q2f_pair. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
+     "would_mean": "Host path encode_fused_q2f_pair at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333 cannot run, so this mismatch cannot waste a protected GPU window."
     },
     "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to kernel_existence|kv_append_q8_0_f32|mod.rs:8509's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=kv_append_q8_0_f32 host=crates/hawking-core/src/kernels/mod.rs:8509 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
+     "harness_action": "register ExemptionRule pinned to kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333's pattern",
+     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=qwen_q2f_group64_matvec_pair_geo_tpr64_tg128 host=crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
      "would_mean": "The checker mis-modelled this site. The source may be legal."
     },
     "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for kernel_existence|kv_append_q8_0_f32|mod.rs:8509; produced_names derived from source, not a count",
+     "harness_action": "register GeneratorSeam for kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333; produced_names derived from source, not a count",
      "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
-     "would_mean": "'kv_append_q8_0_f32' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'kv_append_q8_0_f32' is not among them (a different generator would be required)."
+     "would_mean": "'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' is not among them (a different generator would be required)."
     },
     "INTENTIONAL_ALIAS": {
-     "harness_action": "register KernelAlias for 'kv_append_q8_0_f32'; requires evidence.alias_of",
+     "harness_action": "register KernelAlias for 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128'; requires evidence.alias_of",
      "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
-     "would_mean": "Host name 'kv_append_q8_0_f32' is an alias for a different shader symbol. Nearby literal kernel void exists at crates/hawking-core/shaders/attn.metal:414 (kv_append_f32); signatures may still differ."
+     "would_mean": "Host name 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' is an alias for a different shader symbol. Nearby literal kernel void exists at crates/hawking-core/shaders/attn.metal:414 (kv_append_f32); signatures may still differ."
     }
    },
-   "codex_status": "FIXED",
-   "finding_id": "claude-abi-01-kv-append-q8",
+   "codex_status": null,
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333",
    "host_site": {
     "enclosing_fn": {
-     "line": 8469,
-     "name": "kv_append_q8_0_f32_metal",
-     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "line": 4300,
+     "name": "encode_fused_q2f_pair",
+     "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree"
     },
-    "extra_host_sites": null,
+    "extra_host_sites": [
+     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333"
+    ],
     "host_construct": "dispatch_threads_literal_name",
-    "line": 8509,
-    "path": "crates/hawking-core/src/kernels/mod.rs",
-    "preflight": "crates/hawking-core/src/kernels/mod.rs:8509",
+    "line": 4333,
+    "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "preflight": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333",
     "snippet": {
-     "end_line": 8513,
-     "line": 8509,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "end_line": 4337,
+     "line": 4333,
+     "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree",
      "present": true,
-     "start_line": 8505,
-     "text": "8505|                max_seq * row_bytes\n8506|            )));\n8507|        }\n8508|        if dst_k_pe.len() < max_seq * qk_rope_head_dim {\n8509|            return Err(Error::Kernel(format!(\n8510|                \"kv_append_q8_0_f32: dst_k_pe.len={} need {}\",\n8511|                dst_k_pe.len(),\n8512|                max_seq * qk_rope_head_dim\n8513|            )));"
+     "start_line": 4329,
+     "text": "4329|            let right_rows = ba.rows;\n4330|            let cols = qkvz.cols;\n4331|            let total = left_rows.saturating_add(right_rows);\n4332|            let grid = total.div_ceil(2).saturating_mul(128).max(128);\n4333|            tcb.dispatch_threads(\n4334|                QWEN38_Q2F_PAIR_GEO_KERNEL,\n4335|                (grid, 1, 1),\n4336|                (128, 1, 1),\n4337|                |enc| {"
     }
    },
-   "kernel": "kv_append_q8_0_f32",
-   "message": null,
-   "reviewer_evidence": {
-    "argbuf_dispatcher_comment": {
-     "end_line": 447,
-     "line": 443,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 439,
-     "text": "439|\n440|    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in\n441|    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,\n442|    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from\n443|    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`\n444|    /// \u2014 not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,\n445|    /// which leaves `args.cols` undefined in the synthetic test setup.\n446|    #[repr(C)]\n447|    #[derive(Copy, Clone)]"
-    },
-    "buffer_index": null,
-    "common_argbuf_structs": {
-     "end_line": 43,
-     "line": 31,
-     "path": "crates/hawking-core/shaders/common.metal",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 19,
-     "text": "19|//   add_inplace           \u2014 element-wise residual add: a[i] += b[i].\n20|//                           [Phase 4 Wedge 4a]\n21|\n22|#include <metal_stdlib>\n23|using namespace metal;\n24|\n25|// \u2500\u2500 Phase 3 argbuf structs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n26|// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the\n27|// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index\n28|// that previously held the first `set_bytes` arg.\n29|\n30|/// (rows: u32, cols: u32) \u2014 used by GEMV kernels with weight+activation buffers.\n31|struct ArgbufRowsCols { uint rows; uint cols; };\n32|\n33|/// (hidden: u32, eps: f32) \u2014 used by rmsnorm_f32 TCB path.\n34|struct ArgbufRmsnorm { uint hidden; float eps; };\n35|\n36|/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)\n37|/// \u2014 used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected\n38|/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on\n39|/// single-thread dispatch.\n40|struct ArgbufTopkGate {\n41|    uint n_experts;\n42|    uint top_k;\n43|    float tie_epsilon;"
-    },
-    "encode_gemv_f32_attn_pinned_set_bytes": {
-     "end_line": 5437,
-     "line": 5432,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 5427,
-     "text": "5427|        )\n5428|    }\n5429|\n5430|    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.\n5431|    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch\n5432|    /// without allocation or readback. Use this to coalesce two independent\n5433|    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.\n5434|    pub(crate) fn encode_gemv_f32_attn_pinned(\n5435|        batch: &mut CommandBatch<'_>,\n5436|        w_buf: &PinnedBuffer,\n5437|        rows: usize,"
-    },
-    "host_fns_sharing_kernel_prefix": [
-     {
-      "line": 8469,
-      "name": "kv_append_q8_0_f32_metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "host_kind": null,
-    "identity_map": {
-     "identity": true,
-     "line": 2239,
-     "maps_to": "kv_append_q8_0_f32",
-     "path": "crates/hawking-core/src/metal/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true
-    },
-    "nearby_kv_append_f32": [
-     {
-      "line": 414,
-      "path": "crates/hawking-core/shaders/attn.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "qwen_macro_seam": {
-     "macros": [
-      {
-       "define_line": 1203,
-       "invocations": [
-        "1",
-        "2",
-        "4",
-        "8"
-       ],
-       "macro": "QWEN_UNIFORM_Q4_MATMUL_K",
-       "prefix": "qwen_uniform_q4_group64_matmul_k",
-       "produced_names": [
-        "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-       ],
-       "suffix": "_geo_tpr64_tg128"
-      },
-      {
-       "define_line": 1453,
-       "invocations": [
-        "1",
-        "2",
-        "3"
-       ],
-       "macro": "QWEN_BINARY_PLANES",
-       "prefix": "qwen_binary_planes_k",
-       "produced_names": [
-        "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
-       ],
-       "suffix": "_matvec_geo_tpr64_tg128"
-      }
-     ],
-     "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
-     "path_taken": "read_from_worktree",
-     "produced_names": [
-      "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-     ]
-    },
-    "shader_kind": null
-   },
-   "ruled_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "severity_as_raised": "ERROR",
-   "shader_site": {
-    "line_as_raised": null,
-    "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
-    "literal_kernel_void_now": [
-     {
-      "line": 446,
-      "path": "crates/hawking-core/shaders/attn.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "observed_now": {
-     "line": 446,
-     "path": "crates/hawking-core/shaders/attn.metal",
-     "path_taken": "read_from_worktree"
-    },
-    "path": null,
-    "preflight": null,
-    "snippet_at_raised_line": null
-   },
-   "verdict": "CONFIRMED_BUG",
-   "verdict_status": "RULED"
-  },
-  {
-   "check": "kernel_existence",
-   "class_responses": {
-    "ABI_MISMATCH": {
-     "harness_action": "reclassify kernel_existence|qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128|ascension_qwen38_matmul_k_amortization.rs:221 to abi_mismatch; do not exempt type_width as a class",
-     "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
-     "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
-    },
-    "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for kernel_existence|qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128|ascension_qwen38_matmul_k_amortization.rs:221; regression_still_detectable() must keep returning True",
-     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The kernel_existence check was right at crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs:221 for 'qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128'."
-    },
-    "DEAD_CODE": {
-     "harness_action": "store reachability for kernel_existence|qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128|ascension_qwen38_matmul_k_amortization.rs:221; re-emit check=reachability severity=WARNING",
-     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for run. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path run at crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs:221 cannot run, so this mismatch cannot waste a protected GPU window."
-    },
-    "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to kernel_existence|qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128|ascension_qwen38_matmul_k_amortization.rs:221's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128 host=crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs:221 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
-     "would_mean": "The checker mis-modelled this site. The source may be legal."
-    },
-    "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for kernel_existence|qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128|ascension_qwen38_matmul_k_amortization.rs:221; produced_names derived from source, not a count",
-     "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
-     "would_mean": "'qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128' is among them."
-    },
-    "INTENTIONAL_ALIAS": {
-     "harness_action": "register KernelAlias for 'qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128'; requires evidence.alias_of",
-     "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
-     "would_mean": "Host name 'qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128' is an alias for a different shader symbol. Nearby literal kernel void exists at crates/hawking-core/shaders/attn.metal:414 (kv_append_f32); signatures may still differ."
-    }
-   },
-   "codex_status": "RESOLVED_BY_MACRO_AWARE_PREFLIGHT",
-   "finding_id": "claude-abi-02-qwen-generated-k1",
-   "host_site": {
-    "enclosing_fn": {
-     "line": 129,
-     "name": "run",
-     "path": "crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs",
-     "path_taken": "read_from_worktree"
-    },
-    "extra_host_sites": null,
-    "host_construct": "dispatch_threads_literal_name",
-    "line": 221,
-    "path": "crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs",
-    "preflight": "crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs:221",
-    "snippet": {
-     "end_line": 225,
-     "line": 221,
-     "path": "crates/hawking-core/examples/ascension_qwen38_matmul_k_amortization.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 217,
-     "text": "217|                            .map(|col| ((col % 31) as f32 - 15.0) * (1.0 + kk as f32))\n218|                            .collect();\n219|                        let xb = ctx.new_buffer_with_bytes_checked(bytemuck_cast(&xk))?;\n220|                        let ob = ctx.new_buffer_checked(rows * 4)?;\n221|                        ctx.dispatch_threads_timed(\n222|                            \"qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128\",\n223|                            grid,\n224|                            tg,\n225|                            |enc| {"
-    }
-   },
-   "kernel": "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-   "message": null,
+   "kernel": "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
+   "message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
    "reviewer_evidence": {
     "argbuf_dispatcher_comment": {
      "end_line": 447,
@@ -372,7 +175,7 @@
     "qwen_macro_seam": {
      "macros": [
       {
-       "define_line": 1203,
+       "define_line": 1240,
        "invocations": [
         "1",
         "2",
@@ -390,7 +193,7 @@
        "suffix": "_geo_tpr64_tg128"
       },
       {
-       "define_line": 1453,
+       "define_line": 1490,
        "invocations": [
         "1",
         "2",
@@ -420,7 +223,7 @@
     },
     "shader_kind": null
    },
-   "ruled_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+   "ruled_by": null,
    "severity_as_raised": "ERROR",
    "shader_site": {
     "line_as_raised": null,
@@ -431,473 +234,71 @@
     "preflight": null,
     "snippet_at_raised_line": null
    },
-   "verdict": "GENERATED_KERNEL",
-   "verdict_status": "RULED"
+   "verdict": null,
+   "verdict_status": "PENDING"
   },
   {
-   "check": "type_width",
+   "check": "kernel_existence",
    "class_responses": {
     "ABI_MISMATCH": {
-     "harness_action": "reclassify type_width|gemv_f32_attn|mod.rs:8694 to abi_mismatch; do not exempt type_width as a class",
+     "harness_action": "reclassify kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277 to abi_mismatch; do not exempt type_width as a class",
      "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
      "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
     },
     "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for type_width|gemv_f32_attn|mod.rs:8694; regression_still_detectable() must keep returning True",
-     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces type_width for 'gemv_f32_attn' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The type_width check was right at crates/hawking-core/src/kernels/mod.rs:8694 for 'gemv_f32_attn'."
+     "harness_action": "install RegressionFixture for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277; regression_still_detectable() must keep returning True",
+     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' so a future checker edit cannot silently drop the class.",
+     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277 for 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128'."
     },
     "DEAD_CODE": {
-     "harness_action": "store reachability for type_width|gemv_f32_attn|mod.rs:8694; re-emit check=reachability severity=WARNING",
-     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for mla_decode_and_o_proj_metal. Do not disable type_width. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path mla_decode_and_o_proj_metal at crates/hawking-core/src/kernels/mod.rs:8694 cannot run, so this mismatch cannot waste a protected GPU window."
+     "harness_action": "store reachability for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277; re-emit check=reachability severity=WARNING",
+     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for encode_fused_q2f_qkv. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
+     "would_mean": "Host path encode_fused_q2f_qkv at crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277 cannot run, so this mismatch cannot waste a protected GPU window."
     },
     "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to type_width|gemv_f32_attn|mod.rs:8694's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=type_width kernel=gemv_f32_attn host=crates/hawking-core/src/kernels/mod.rs:8694 construct=unknown. A different kernel, a different buffer index, or a different host construct of type_width must still fire.",
+     "harness_action": "register ExemptionRule pinned to kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277's pattern",
+     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128 host=crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
      "would_mean": "The checker mis-modelled this site. The source may be legal."
     },
     "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for type_width|gemv_f32_attn|mod.rs:8694; produced_names derived from source, not a count",
+     "harness_action": "register GeneratorSeam for kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277; produced_names derived from source, not a count",
      "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
-     "would_mean": "'gemv_f32_attn' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'gemv_f32_attn' is not among them (a different generator would be required)."
+     "would_mean": "'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' is not among them (a different generator would be required)."
     },
     "INTENTIONAL_ALIAS": {
-     "harness_action": "register KernelAlias for 'gemv_f32_attn'; requires evidence.alias_of",
+     "harness_action": "register KernelAlias for 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128'; requires evidence.alias_of",
      "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
-     "would_mean": "Host name 'gemv_f32_attn' is an alias for a different shader symbol."
+     "would_mean": "Host name 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' is an alias for a different shader symbol. Nearby literal kernel void exists at crates/hawking-core/shaders/attn.metal:414 (kv_append_f32); signatures may still differ."
     }
    },
-   "codex_status": "FIXED",
-   "finding_id": "claude-abi-03-gemv-attn-command-batch",
+   "codex_status": null,
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277",
    "host_site": {
     "enclosing_fn": {
-     "line": 8606,
-     "name": "mla_decode_and_o_proj_metal",
-     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "line": 4224,
+     "name": "encode_fused_q2f_qkv",
+     "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree"
     },
-    "extra_host_sites": null,
-    "host_construct": "unknown",
-    "line": 8694,
-    "path": "crates/hawking-core/src/kernels/mod.rs",
-    "preflight": "crates/hawking-core/src/kernels/mod.rs:8694",
+    "extra_host_sites": [
+     "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277"
+    ],
+    "host_construct": "dispatch_threads_literal_name",
+    "line": 4277,
+    "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+    "preflight": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277",
     "snippet": {
-     "end_line": 8698,
-     "line": 8694,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "end_line": 4281,
+     "line": 4277,
+     "path": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
      "path_taken": "read_from_worktree",
      "present": true,
-     "start_line": 8690,
-     "text": "8690|            batch.dispatch_threads(\n8691|                \"mla_decode_kernel\",\n8692|                (n_heads_u32 * TG_SIZE, 1, 1),\n8693|                (TG_SIZE, 1, 1),\n8694|                |enc| {\n8695|                    enc.set_buffer(0, Some(&q_buf), 0);\n8696|                    enc.set_buffer(1, Some(&c_kv_buf), 0);\n8697|                    enc.set_buffer(2, Some(&k_pe_buf), 0);\n8698|                    enc.set_buffer(3, Some(kv_b_proj), 0);"
+     "start_line": 4273,
+     "text": "4273|            let v_rows = v.rows;\n4274|            let cols = q.cols;\n4275|            let total = q_rows.saturating_add(k_rows).saturating_add(v_rows);\n4276|            let grid = total.div_ceil(2).saturating_mul(128).max(128);\n4277|            tcb.dispatch_threads(\n4278|                QWEN38_Q2F_QKV_GEO_KERNEL,\n4279|                (grid, 1, 1),\n4280|                (128, 1, 1),\n4281|                |enc| {"
     }
    },
-   "kernel": "gemv_f32_attn",
-   "message": null,
-   "reviewer_evidence": {
-    "argbuf_dispatcher_comment": {
-     "end_line": 447,
-     "line": 443,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 439,
-     "text": "439|\n440|    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in\n441|    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,\n442|    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from\n443|    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`\n444|    /// \u2014 not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,\n445|    /// which leaves `args.cols` undefined in the synthetic test setup.\n446|    #[repr(C)]\n447|    #[derive(Copy, Clone)]"
-    },
-    "buffer_index": null,
-    "common_argbuf_structs": {
-     "end_line": 43,
-     "line": 31,
-     "path": "crates/hawking-core/shaders/common.metal",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 19,
-     "text": "19|//   add_inplace           \u2014 element-wise residual add: a[i] += b[i].\n20|//                           [Phase 4 Wedge 4a]\n21|\n22|#include <metal_stdlib>\n23|using namespace metal;\n24|\n25|// \u2500\u2500 Phase 3 argbuf structs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n26|// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the\n27|// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index\n28|// that previously held the first `set_bytes` arg.\n29|\n30|/// (rows: u32, cols: u32) \u2014 used by GEMV kernels with weight+activation buffers.\n31|struct ArgbufRowsCols { uint rows; uint cols; };\n32|\n33|/// (hidden: u32, eps: f32) \u2014 used by rmsnorm_f32 TCB path.\n34|struct ArgbufRmsnorm { uint hidden; float eps; };\n35|\n36|/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)\n37|/// \u2014 used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected\n38|/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on\n39|/// single-thread dispatch.\n40|struct ArgbufTopkGate {\n41|    uint n_experts;\n42|    uint top_k;\n43|    float tie_epsilon;"
-    },
-    "encode_gemv_f32_attn_pinned_set_bytes": {
-     "end_line": 5437,
-     "line": 5432,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 5427,
-     "text": "5427|        )\n5428|    }\n5429|\n5430|    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.\n5431|    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch\n5432|    /// without allocation or readback. Use this to coalesce two independent\n5433|    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.\n5434|    pub(crate) fn encode_gemv_f32_attn_pinned(\n5435|        batch: &mut CommandBatch<'_>,\n5436|        w_buf: &PinnedBuffer,\n5437|        rows: usize,"
-    },
-    "host_fns_sharing_kernel_prefix": [
-     {
-      "line": 7832,
-      "name": "gemv_f32_attn_metal",
-      "path_taken": "read_from_worktree"
-     },
-     {
-      "line": 7849,
-      "name": "gemv_f32_attn_metal_pinned",
-      "path_taken": "read_from_worktree"
-     },
-     {
-      "line": 10224,
-      "name": "gemv_f32_attn_pinned_buf_tcb",
-      "path_taken": "read_from_worktree"
-     },
-     {
-      "line": 10255,
-      "name": "gemv_f32_attn_pair_arena_tcb",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "host_kind": null,
-    "identity_map": {
-     "identity": true,
-     "line": 1288,
-     "maps_to": "gemv_f32_attn",
-     "path": "crates/hawking-core/src/metal/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true
-    },
-    "nearby_kv_append_f32": [
-     {
-      "line": 414,
-      "path": "crates/hawking-core/shaders/attn.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "qwen_macro_seam": {
-     "macros": [
-      {
-       "define_line": 1203,
-       "invocations": [
-        "1",
-        "2",
-        "4",
-        "8"
-       ],
-       "macro": "QWEN_UNIFORM_Q4_MATMUL_K",
-       "prefix": "qwen_uniform_q4_group64_matmul_k",
-       "produced_names": [
-        "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-       ],
-       "suffix": "_geo_tpr64_tg128"
-      },
-      {
-       "define_line": 1453,
-       "invocations": [
-        "1",
-        "2",
-        "3"
-       ],
-       "macro": "QWEN_BINARY_PLANES",
-       "prefix": "qwen_binary_planes_k",
-       "produced_names": [
-        "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
-       ],
-       "suffix": "_matvec_geo_tpr64_tg128"
-      }
-     ],
-     "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
-     "path_taken": "read_from_worktree",
-     "produced_names": [
-      "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-     ]
-    },
-    "shader_kind": null
-   },
-   "ruled_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "severity_as_raised": "ERROR",
-   "shader_site": {
-    "line_as_raised": null,
-    "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
-    "literal_kernel_void_now": [
-     {
-      "line": 153,
-      "path": "crates/hawking-core/shaders/attn.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "observed_now": {
-     "line": 153,
-     "path": "crates/hawking-core/shaders/attn.metal",
-     "path_taken": "read_from_worktree"
-    },
-    "path": null,
-    "preflight": null,
-    "snippet_at_raised_line": null
-   },
-   "verdict": "CONFIRMED_BUG",
-   "verdict_status": "RULED"
-  },
-  {
-   "check": "type_width",
-   "class_responses": {
-    "ABI_MISMATCH": {
-     "harness_action": "reclassify type_width|gemv_f32_attn|mod.rs:8789 to abi_mismatch; do not exempt type_width as a class",
-     "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
-     "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
-    },
-    "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for type_width|gemv_f32_attn|mod.rs:8789; regression_still_detectable() must keep returning True",
-     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces type_width for 'gemv_f32_attn' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The type_width check was right at crates/hawking-core/src/kernels/mod.rs:8789 for 'gemv_f32_attn'."
-    },
-    "DEAD_CODE": {
-     "harness_action": "store reachability for type_width|gemv_f32_attn|mod.rs:8789; re-emit check=reachability severity=WARNING",
-     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for mla_decode_and_o_proj_arena_metal. Do not disable type_width. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path mla_decode_and_o_proj_arena_metal at crates/hawking-core/src/kernels/mod.rs:8789 cannot run, so this mismatch cannot waste a protected GPU window."
-    },
-    "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to type_width|gemv_f32_attn|mod.rs:8789's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=type_width kernel=gemv_f32_attn host=crates/hawking-core/src/kernels/mod.rs:8789 construct=unknown. A different kernel, a different buffer index, or a different host construct of type_width must still fire.",
-     "would_mean": "The checker mis-modelled this site. The source may be legal."
-    },
-    "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for type_width|gemv_f32_attn|mod.rs:8789; produced_names derived from source, not a count",
-     "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
-     "would_mean": "'gemv_f32_attn' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'gemv_f32_attn' is not among them (a different generator would be required)."
-    },
-    "INTENTIONAL_ALIAS": {
-     "harness_action": "register KernelAlias for 'gemv_f32_attn'; requires evidence.alias_of",
-     "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
-     "would_mean": "Host name 'gemv_f32_attn' is an alias for a different shader symbol."
-    }
-   },
-   "codex_status": "FIXED",
-   "finding_id": "claude-abi-04-gemv-attn-arena",
-   "host_site": {
-    "enclosing_fn": {
-     "line": 8748,
-     "name": "mla_decode_and_o_proj_arena_metal",
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree"
-    },
-    "extra_host_sites": null,
-    "host_construct": "unknown",
-    "line": 8789,
-    "path": "crates/hawking-core/src/kernels/mod.rs",
-    "preflight": "crates/hawking-core/src/kernels/mod.rs:8789",
-    "snippet": {
-     "end_line": 8793,
-     "line": 8789,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 8785,
-     "text": "8785|        let q_nope_proj_bytes = (kv_lora_rank as u64) * std::mem::size_of::<f32>() as u64;\n8786|        let scores_bytes = (seq_len as u64) * std::mem::size_of::<f32>() as u64;\n8787|        let shmem_bytes = TG_SIZE as u64 * std::mem::size_of::<f32>() as u64;\n8788|        let gemv_args = ArgbufRowsCols {\n8789|            rows: hidden_u32,\n8790|            cols: o_proj_cols_u32,\n8791|        };\n8792|\n8793|        ctx.dispatch_batch(|batch| {"
-    }
-   },
-   "kernel": "gemv_f32_attn",
-   "message": null,
-   "reviewer_evidence": {
-    "argbuf_dispatcher_comment": {
-     "end_line": 447,
-     "line": 443,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 439,
-     "text": "439|\n440|    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in\n441|    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,\n442|    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from\n443|    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`\n444|    /// \u2014 not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,\n445|    /// which leaves `args.cols` undefined in the synthetic test setup.\n446|    #[repr(C)]\n447|    #[derive(Copy, Clone)]"
-    },
-    "buffer_index": null,
-    "common_argbuf_structs": {
-     "end_line": 43,
-     "line": 31,
-     "path": "crates/hawking-core/shaders/common.metal",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 19,
-     "text": "19|//   add_inplace           \u2014 element-wise residual add: a[i] += b[i].\n20|//                           [Phase 4 Wedge 4a]\n21|\n22|#include <metal_stdlib>\n23|using namespace metal;\n24|\n25|// \u2500\u2500 Phase 3 argbuf structs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n26|// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the\n27|// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index\n28|// that previously held the first `set_bytes` arg.\n29|\n30|/// (rows: u32, cols: u32) \u2014 used by GEMV kernels with weight+activation buffers.\n31|struct ArgbufRowsCols { uint rows; uint cols; };\n32|\n33|/// (hidden: u32, eps: f32) \u2014 used by rmsnorm_f32 TCB path.\n34|struct ArgbufRmsnorm { uint hidden; float eps; };\n35|\n36|/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)\n37|/// \u2014 used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected\n38|/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on\n39|/// single-thread dispatch.\n40|struct ArgbufTopkGate {\n41|    uint n_experts;\n42|    uint top_k;\n43|    float tie_epsilon;"
-    },
-    "encode_gemv_f32_attn_pinned_set_bytes": {
-     "end_line": 5437,
-     "line": 5432,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 5427,
-     "text": "5427|        )\n5428|    }\n5429|\n5430|    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.\n5431|    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch\n5432|    /// without allocation or readback. Use this to coalesce two independent\n5433|    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.\n5434|    pub(crate) fn encode_gemv_f32_attn_pinned(\n5435|        batch: &mut CommandBatch<'_>,\n5436|        w_buf: &PinnedBuffer,\n5437|        rows: usize,"
-    },
-    "host_fns_sharing_kernel_prefix": [
-     {
-      "line": 7832,
-      "name": "gemv_f32_attn_metal",
-      "path_taken": "read_from_worktree"
-     },
-     {
-      "line": 7849,
-      "name": "gemv_f32_attn_metal_pinned",
-      "path_taken": "read_from_worktree"
-     },
-     {
-      "line": 10224,
-      "name": "gemv_f32_attn_pinned_buf_tcb",
-      "path_taken": "read_from_worktree"
-     },
-     {
-      "line": 10255,
-      "name": "gemv_f32_attn_pair_arena_tcb",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "host_kind": null,
-    "identity_map": {
-     "identity": true,
-     "line": 1288,
-     "maps_to": "gemv_f32_attn",
-     "path": "crates/hawking-core/src/metal/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true
-    },
-    "nearby_kv_append_f32": [
-     {
-      "line": 414,
-      "path": "crates/hawking-core/shaders/attn.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "qwen_macro_seam": {
-     "macros": [
-      {
-       "define_line": 1203,
-       "invocations": [
-        "1",
-        "2",
-        "4",
-        "8"
-       ],
-       "macro": "QWEN_UNIFORM_Q4_MATMUL_K",
-       "prefix": "qwen_uniform_q4_group64_matmul_k",
-       "produced_names": [
-        "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-       ],
-       "suffix": "_geo_tpr64_tg128"
-      },
-      {
-       "define_line": 1453,
-       "invocations": [
-        "1",
-        "2",
-        "3"
-       ],
-       "macro": "QWEN_BINARY_PLANES",
-       "prefix": "qwen_binary_planes_k",
-       "produced_names": [
-        "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
-       ],
-       "suffix": "_matvec_geo_tpr64_tg128"
-      }
-     ],
-     "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
-     "path_taken": "read_from_worktree",
-     "produced_names": [
-      "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-     ]
-    },
-    "shader_kind": null
-   },
-   "ruled_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "severity_as_raised": "ERROR",
-   "shader_site": {
-    "line_as_raised": null,
-    "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
-    "literal_kernel_void_now": [
-     {
-      "line": 153,
-      "path": "crates/hawking-core/shaders/attn.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "observed_now": {
-     "line": 153,
-     "path": "crates/hawking-core/shaders/attn.metal",
-     "path_taken": "read_from_worktree"
-    },
-    "path": null,
-    "preflight": null,
-    "snippet_at_raised_line": null
-   },
-   "verdict": "CONFIRMED_BUG",
-   "verdict_status": "RULED"
-  },
-  {
-   "check": "type_width",
-   "class_responses": {
-    "ABI_MISMATCH": {
-     "harness_action": "reclassify type_width|moe_batched_silu_mul|mod.rs:9166 to abi_mismatch; do not exempt type_width as a class",
-     "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
-     "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
-    },
-    "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for type_width|moe_batched_silu_mul|mod.rs:9166; regression_still_detectable() must keep returning True",
-     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces type_width for 'moe_batched_silu_mul' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The type_width check was right at crates/hawking-core/src/kernels/mod.rs:9166 for 'moe_batched_silu_mul'."
-    },
-    "DEAD_CODE": {
-     "harness_action": "store reachability for type_width|moe_batched_silu_mul|mod.rs:9166; re-emit check=reachability severity=WARNING",
-     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for encode_batched_gemv_indexed. Do not disable type_width. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path encode_batched_gemv_indexed at crates/hawking-core/src/kernels/mod.rs:9166 cannot run, so this mismatch cannot waste a protected GPU window."
-    },
-    "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to type_width|moe_batched_silu_mul|mod.rs:9166's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=type_width kernel=moe_batched_silu_mul host=crates/hawking-core/src/kernels/mod.rs:9166 construct=unknown. A different kernel, a different buffer index, or a different host construct of type_width must still fire.",
-     "would_mean": "The checker mis-modelled this site. The source may be legal."
-    },
-    "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for type_width|moe_batched_silu_mul|mod.rs:9166; produced_names derived from source, not a count",
-     "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
-     "would_mean": "'moe_batched_silu_mul' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'moe_batched_silu_mul' is not among them (a different generator would be required)."
-    },
-    "INTENTIONAL_ALIAS": {
-     "harness_action": "register KernelAlias for 'moe_batched_silu_mul'; requires evidence.alias_of",
-     "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
-     "would_mean": "Host name 'moe_batched_silu_mul' is an alias for a different shader symbol."
-    }
-   },
-   "codex_status": "FIXED",
-   "finding_id": "claude-abi-05-moe-silu",
-   "host_site": {
-    "enclosing_fn": {
-     "line": 9133,
-     "name": "encode_batched_gemv_indexed",
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree"
-    },
-    "extra_host_sites": null,
-    "host_construct": "unknown",
-    "line": 9166,
-    "path": "crates/hawking-core/src/kernels/mod.rs",
-    "preflight": "crates/hawking-core/src/kernels/mod.rs:9166",
-    "snippet": {
-     "end_line": 9170,
-     "line": 9166,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 9162,
-     "text": "9162|            (TG_SIZE as u64) * std::mem::size_of::<f32>() as u64\n9163|        };\n9164|\n9165|        batch.dispatch_threads(\n9166|            kernel_name,\n9167|            (n_tg_x * tg_size, routes_u32, 1),\n9168|            (tg_size, 1, 1),\n9169|            |enc| {\n9170|                enc.set_buffer(0, Some(model_buf), 0);"
-    }
-   },
-   "kernel": "moe_batched_silu_mul",
-   "message": null,
+   "kernel": "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
+   "message": "host references kernel 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128(`",
    "reviewer_evidence": {
     "argbuf_dispatcher_comment": {
      "end_line": 447,
@@ -930,12 +331,10 @@
     "host_fns_sharing_kernel_prefix": [],
     "host_kind": null,
     "identity_map": {
-     "identity": true,
-     "line": 1292,
-     "maps_to": "moe_batched_silu_mul",
+     "line": null,
      "path": "crates/hawking-core/src/metal/mod.rs",
      "path_taken": "read_from_worktree",
-     "present": true
+     "present": false
     },
     "nearby_kv_append_f32": [
      {
@@ -947,7 +346,7 @@
     "qwen_macro_seam": {
      "macros": [
       {
-       "define_line": 1203,
+       "define_line": 1240,
        "invocations": [
         "1",
         "2",
@@ -965,7 +364,7 @@
        "suffix": "_geo_tpr64_tg128"
       },
       {
-       "define_line": 1453,
+       "define_line": 1490,
        "invocations": [
         "1",
         "2",
@@ -995,216 +394,19 @@
     },
     "shader_kind": null
    },
-   "ruled_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
+   "ruled_by": null,
    "severity_as_raised": "ERROR",
    "shader_site": {
     "line_as_raised": null,
     "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
-    "literal_kernel_void_now": [
-     {
-      "line": 1377,
-      "path": "crates/hawking-core/shaders/moe.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "observed_now": {
-     "line": 1377,
-     "path": "crates/hawking-core/shaders/moe.metal",
-     "path_taken": "read_from_worktree"
-    },
+    "literal_kernel_void_now": [],
+    "observed_now": null,
     "path": null,
     "preflight": null,
     "snippet_at_raised_line": null
    },
-   "verdict": "CONFIRMED_BUG",
-   "verdict_status": "RULED"
-  },
-  {
-   "check": "type_width",
-   "class_responses": {
-    "ABI_MISMATCH": {
-     "harness_action": "reclassify type_width|moe_route_accumulate|mod.rs:9193 to abi_mismatch; do not exempt type_width as a class",
-     "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
-     "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
-    },
-    "CONFIRMED_BUG": {
-     "harness_action": "install RegressionFixture for type_width|moe_route_accumulate|mod.rs:9193; regression_still_detectable() must keep returning True",
-     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces type_width for 'moe_route_accumulate' so a future checker edit cannot silently drop the class.",
-     "would_mean": "The type_width check was right at crates/hawking-core/src/kernels/mod.rs:9193 for 'moe_route_accumulate'."
-    },
-    "DEAD_CODE": {
-     "harness_action": "store reachability for type_width|moe_route_accumulate|mod.rs:9193; re-emit check=reachability severity=WARNING",
-     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for encode_silu_mul. Do not disable type_width. Reachable sites of the same check stay ERROR.",
-     "would_mean": "Host path encode_silu_mul at crates/hawking-core/src/kernels/mod.rs:9193 cannot run, so this mismatch cannot waste a protected GPU window."
-    },
-    "FALSE_POSITIVE": {
-     "harness_action": "register ExemptionRule pinned to type_width|moe_route_accumulate|mod.rs:9193's pattern",
-     "preflight_change": "Register a NARROW exemption for this pattern only: check=type_width kernel=moe_route_accumulate host=crates/hawking-core/src/kernels/mod.rs:9193 construct=unknown. A different kernel, a different buffer index, or a different host construct of type_width must still fire.",
-     "would_mean": "The checker mis-modelled this site. The source may be legal."
-    },
-    "GENERATED_KERNEL": {
-     "harness_action": "register GeneratorSeam for type_width|moe_route_accumulate|mod.rs:9193; produced_names derived from source, not a count",
-     "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
-     "would_mean": "'moe_route_accumulate' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'moe_route_accumulate' is not among them (a different generator would be required)."
-    },
-    "INTENTIONAL_ALIAS": {
-     "harness_action": "register KernelAlias for 'moe_route_accumulate'; requires evidence.alias_of",
-     "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
-     "would_mean": "Host name 'moe_route_accumulate' is an alias for a different shader symbol."
-    }
-   },
-   "codex_status": "FIXED",
-   "finding_id": "claude-abi-06-moe-route-accumulate",
-   "host_site": {
-    "enclosing_fn": {
-     "line": 9189,
-     "name": "encode_silu_mul",
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree"
-    },
-    "extra_host_sites": null,
-    "host_construct": "unknown",
-    "line": 9193,
-    "path": "crates/hawking-core/src/kernels/mod.rs",
-    "preflight": "crates/hawking-core/src/kernels/mod.rs:9193",
-    "snippet": {
-     "end_line": 9197,
-     "line": 9193,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 9189,
-     "text": "9189|    fn encode_silu_mul(\n9190|        batch: &mut CommandBatch<'_>,\n9191|        gate_buf: &PinnedBuffer,\n9192|        up_buf: &PinnedBuffer,\n9193|        out_buf: &PinnedBuffer,\n9194|        n: usize,\n9195|    ) -> Result<()> {\n9196|        let n_u32 = n as u32;\n9197|        let args = ArgbufN { n: n_u32 };"
-    }
-   },
-   "kernel": "moe_route_accumulate",
-   "message": null,
-   "reviewer_evidence": {
-    "argbuf_dispatcher_comment": {
-     "end_line": 447,
-     "line": 443,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 439,
-     "text": "439|\n440|    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in\n441|    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,\n442|    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from\n443|    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`\n444|    /// \u2014 not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,\n445|    /// which leaves `args.cols` undefined in the synthetic test setup.\n446|    #[repr(C)]\n447|    #[derive(Copy, Clone)]"
-    },
-    "buffer_index": null,
-    "common_argbuf_structs": {
-     "end_line": 43,
-     "line": 31,
-     "path": "crates/hawking-core/shaders/common.metal",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 19,
-     "text": "19|//   add_inplace           \u2014 element-wise residual add: a[i] += b[i].\n20|//                           [Phase 4 Wedge 4a]\n21|\n22|#include <metal_stdlib>\n23|using namespace metal;\n24|\n25|// \u2500\u2500 Phase 3 argbuf structs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n26|// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the\n27|// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index\n28|// that previously held the first `set_bytes` arg.\n29|\n30|/// (rows: u32, cols: u32) \u2014 used by GEMV kernels with weight+activation buffers.\n31|struct ArgbufRowsCols { uint rows; uint cols; };\n32|\n33|/// (hidden: u32, eps: f32) \u2014 used by rmsnorm_f32 TCB path.\n34|struct ArgbufRmsnorm { uint hidden; float eps; };\n35|\n36|/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)\n37|/// \u2014 used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected\n38|/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on\n39|/// single-thread dispatch.\n40|struct ArgbufTopkGate {\n41|    uint n_experts;\n42|    uint top_k;\n43|    float tie_epsilon;"
-    },
-    "encode_gemv_f32_attn_pinned_set_bytes": {
-     "end_line": 5437,
-     "line": 5432,
-     "path": "crates/hawking-core/src/kernels/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true,
-     "start_line": 5427,
-     "text": "5427|        )\n5428|    }\n5429|\n5430|    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.\n5431|    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch\n5432|    /// without allocation or readback. Use this to coalesce two independent\n5433|    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.\n5434|    pub(crate) fn encode_gemv_f32_attn_pinned(\n5435|        batch: &mut CommandBatch<'_>,\n5436|        w_buf: &PinnedBuffer,\n5437|        rows: usize,"
-    },
-    "host_fns_sharing_kernel_prefix": [
-     {
-      "line": 12992,
-      "name": "moe_route_accumulate_two_add_tcb",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "host_kind": null,
-    "identity_map": {
-     "identity": true,
-     "line": 1293,
-     "maps_to": "moe_route_accumulate",
-     "path": "crates/hawking-core/src/metal/mod.rs",
-     "path_taken": "read_from_worktree",
-     "present": true
-    },
-    "nearby_kv_append_f32": [
-     {
-      "line": 414,
-      "path": "crates/hawking-core/shaders/attn.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "qwen_macro_seam": {
-     "macros": [
-      {
-       "define_line": 1203,
-       "invocations": [
-        "1",
-        "2",
-        "4",
-        "8"
-       ],
-       "macro": "QWEN_UNIFORM_Q4_MATMUL_K",
-       "prefix": "qwen_uniform_q4_group64_matmul_k",
-       "produced_names": [
-        "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-        "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-       ],
-       "suffix": "_geo_tpr64_tg128"
-      },
-      {
-       "define_line": 1453,
-       "invocations": [
-        "1",
-        "2",
-        "3"
-       ],
-       "macro": "QWEN_BINARY_PLANES",
-       "prefix": "qwen_binary_planes_k",
-       "produced_names": [
-        "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-        "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
-       ],
-       "suffix": "_matvec_geo_tpr64_tg128"
-      }
-     ],
-     "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
-     "path_taken": "read_from_worktree",
-     "produced_names": [
-      "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
-      "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-     ]
-    },
-    "shader_kind": null
-   },
-   "ruled_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "severity_as_raised": "ERROR",
-   "shader_site": {
-    "line_as_raised": null,
-    "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
-    "literal_kernel_void_now": [
-     {
-      "line": 1389,
-      "path": "crates/hawking-core/shaders/moe.metal",
-      "path_taken": "read_from_worktree"
-     }
-    ],
-    "observed_now": {
-     "line": 1389,
-     "path": "crates/hawking-core/shaders/moe.metal",
-     "path_taken": "read_from_worktree"
-    },
-    "path": null,
-    "preflight": null,
-    "snippet_at_raised_line": null
-   },
-   "verdict": "CONFIRMED_BUG",
-   "verdict_status": "RULED"
+   "verdict": null,
+   "verdict_status": "PENDING"
   }
  ],
  "evidence_class": "STATIC_ONLY",
@@ -1227,29 +429,9 @@
   "regression fixtures live in the harness (never under crates/) so a confirmed bug class stays detectable",
   "generator-seam and alias registries teach name resolution without editing Codex files"
  ],
- "generator_seams": [
-  {
-   "evidence_refs": [
-    "crates/hawking-core/shaders/qwen_uniform_q4.metal:1203",
-    "crates/hawking-core/shaders/qwen_uniform_q4.metal:1222",
-    "tools/future/static_kernel_verify.py:568"
-   ],
-   "finding_id": "kernel_existence|qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128|ascension_qwen38_matmul_k_amortization.rs:221",
-   "kind": "preprocessor_macro",
-   "macro_name": "QWEN_UNIFORM_Q4_MATMUL_K",
-   "name_template": "qwen_uniform_q4_group64_matmul_k{ARG}_geo_tpr64_tg128",
-   "produced_names": [
-    "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-    "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-    "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-    "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-   ],
-   "seam_id": "macro:QWEN_UNIFORM_Q4_MATMUL_K",
-   "source_path": "crates/hawking-core/shaders/qwen_uniform_q4.metal"
-  }
- ],
+ "generator_seams": [],
  "gpu_authority": false,
- "head": "0e4e9a93b3a196ba5c4472bf6d1998be6ae2dc75",
+ "head": "a1f415c100345380e702b07b36d43d1711309ee8",
  "measurement_states_we_are_not": [
   "DIAGNOSTIC_RELATIVE",
   "PROTECTED_ABSOLUTE"
@@ -1266,110 +448,32 @@
   "Did not assert that any path is absent: missing checkout files are recorded as path_taken, not as defects."
  ],
  "note_on_counts": "pending_count and preflight_error_count_derived are read from the preflight receipt. They are not a hard-coded six. Today they are six.",
- "pending": [],
- "pending_count": 0,
- "preflight_error_count_derived": 6,
+ "pending": [
+  {
+   "check": "kernel_existence",
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333",
+   "kernel": "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
+   "message": "host references kernel 'qwen_q2f_group64_matvec_pair_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_pair_geo_tpr64_tg128(`",
+   "shader": null,
+   "verdict_status": "PENDING"
+  },
+  {
+   "check": "kernel_existence",
+   "finding_id": "kernel_existence|qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4277",
+   "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4277",
+   "kernel": "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
+   "message": "host references kernel 'qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128' but no shader defines `kernel void qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128(`",
+   "shader": null,
+   "verdict_status": "PENDING"
+  }
+ ],
+ "pending_count": 2,
+ "preflight_error_count_derived": 2,
  "preflight_path_taken": "present",
  "preflight_receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
  "purpose": "Prepare every possible ruling on the static preflight ERROR findings so that whichever way Codex falls, the checker permanently learns. This sidecar does not itself rule.",
- "recorded_verdicts": {
-  "claude-abi-01-kv-append-q8": {
-   "action": {
-    "check": "kernel_existence",
-    "kernel": "kv_append_q8_0_f32",
-    "kind": "regression_fixture",
-    "still_detectable": true
-   },
-   "evidence_refs": [
-    "crates/hawking-core/shaders/attn.metal:446",
-    "crates/hawking-core/src/kernels/mod.rs:8535"
-   ],
-   "finding_id": "claude-abi-01-kv-append-q8",
-   "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "verdict": "CONFIRMED_BUG"
-  },
-  "claude-abi-02-qwen-generated-k1": {
-   "action": {
-    "count_is_derived": true,
-    "kind": "generator_seam",
-    "produced_names": [
-     "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-     "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-     "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-     "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-    ],
-    "seam_id": "macro:QWEN_UNIFORM_Q4_MATMUL_K"
-   },
-   "evidence_refs": [
-    "crates/hawking-core/shaders/qwen_uniform_q4.metal:1203",
-    "crates/hawking-core/shaders/qwen_uniform_q4.metal:1222",
-    "tools/future/static_kernel_verify.py:568"
-   ],
-   "finding_id": "claude-abi-02-qwen-generated-k1",
-   "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "verdict": "GENERATED_KERNEL"
-  },
-  "claude-abi-03-gemv-attn-command-batch": {
-   "action": {
-    "check": "type_width",
-    "kernel": "gemv_f32_attn",
-    "kind": "regression_fixture",
-    "still_detectable": true
-   },
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:8683",
-    "crates/hawking-core/shaders/attn.metal:157"
-   ],
-   "finding_id": "claude-abi-03-gemv-attn-command-batch",
-   "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "verdict": "CONFIRMED_BUG"
-  },
-  "claude-abi-04-gemv-attn-arena": {
-   "action": {
-    "check": "type_width",
-    "kernel": "gemv_f32_attn",
-    "kind": "regression_fixture",
-    "still_detectable": true
-   },
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:8683",
-    "crates/hawking-core/shaders/attn.metal:157"
-   ],
-   "finding_id": "claude-abi-04-gemv-attn-arena",
-   "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "verdict": "CONFIRMED_BUG"
-  },
-  "claude-abi-05-moe-silu": {
-   "action": {
-    "check": "type_width",
-    "kernel": "moe_batched_silu_mul",
-    "kind": "regression_fixture",
-    "still_detectable": true
-   },
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:9197",
-    "crates/hawking-core/shaders/moe.metal:1381"
-   ],
-   "finding_id": "claude-abi-05-moe-silu",
-   "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "verdict": "CONFIRMED_BUG"
-  },
-  "claude-abi-06-moe-route-accumulate": {
-   "action": {
-    "check": "type_width",
-    "kernel": "moe_route_accumulate",
-    "kind": "regression_fixture",
-    "still_detectable": true
-   },
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:9228",
-    "crates/hawking-core/shaders/moe.metal:1394"
-   ],
-   "finding_id": "claude-abi-06-moe-route-accumulate",
-   "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-   "verdict": "CONFIRMED_BUG"
-  }
- },
+ "recorded_verdicts": {},
  "recovered_implementation": {
   "adequate_duplicate": "No existing module recorded a verdict, an exemption, a regression fixture, or a generator seam against these six findings. The checker is consumed, not copied.",
   "argbuf_comment": "crates/hawking-core/src/kernels/mod.rs ArgbufRowsCols comment (read-only): dispatchers must send 8 bytes via one set_bytes(3), not two scalar binds. encode_gemv_f32_attn_pinned already uses set_bytes of the struct. The four type_width sites use set_u32. Recorded as reviewer evidence, not a verdict.",
@@ -1379,252 +483,23 @@
   "static_kernel_preflight": "tools/future/static_kernel_verify.py + receipts/future/STATIC_KERNEL_PREFLIGHT.json already raise the six ERROR findings (kernel_existence \u00d72, type_width \u00d74). This harness consumes that receipt; it does not fork the checker and does not rewrite STATIC_KERNEL_PREFLIGHT.json.",
   "write_receipt": "tools/future/_common.py \u2014 seal + HardwareClaimError + bench UNKNOWN"
  },
- "regression_fixtures": {
-  "claude-abi-01-kv-append-q8": {
-   "check": "kernel_existence",
-   "evidence_refs": [
-    "crates/hawking-core/shaders/attn.metal:446",
-    "crates/hawking-core/src/kernels/mod.rs:8535"
-   ],
-   "finding_id": "kernel_existence|kv_append_q8_0_f32|mod.rs:8509",
-   "host_chars": 157,
-   "kernel": "kv_append_q8_0_f32",
-   "metal_chars": 115
-  },
-  "claude-abi-03-gemv-attn-command-batch": {
-   "check": "type_width",
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:8683",
-    "crates/hawking-core/shaders/attn.metal:157"
-   ],
-   "finding_id": "type_width|gemv_f32_attn|mod.rs:8694",
-   "host_chars": 263,
-   "kernel": "gemv_f32_attn",
-   "metal_chars": 271
-  },
-  "claude-abi-04-gemv-attn-arena": {
-   "check": "type_width",
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:8683",
-    "crates/hawking-core/shaders/attn.metal:157"
-   ],
-   "finding_id": "type_width|gemv_f32_attn|mod.rs:8789",
-   "host_chars": 263,
-   "kernel": "gemv_f32_attn",
-   "metal_chars": 271
-  },
-  "claude-abi-05-moe-silu": {
-   "check": "type_width",
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:9197",
-    "crates/hawking-core/shaders/moe.metal:1381"
-   ],
-   "finding_id": "type_width|moe_batched_silu_mul|mod.rs:9166",
-   "host_chars": 270,
-   "kernel": "moe_batched_silu_mul",
-   "metal_chars": 278
-  },
-  "claude-abi-06-moe-route-accumulate": {
-   "check": "type_width",
-   "evidence_refs": [
-    "crates/hawking-core/src/kernels/mod.rs:9228",
-    "crates/hawking-core/shaders/moe.metal:1394"
-   ],
-   "finding_id": "type_width|moe_route_accumulate|mod.rs:9193",
-   "host_chars": 270,
-   "kernel": "moe_route_accumulate",
-   "metal_chars": 278
-  }
- },
- "reported_count": 6,
+ "regression_fixtures": {},
+ "reported_count": 2,
  "rulings_issued_by_this_sidecar": 0,
- "rulings_recorded_from_external_authority": 6,
+ "rulings_recorded_from_external_authority": 0,
  "schema": "hawking.future.abi_verdicts.v1",
- "seal_sha256": "60a1d448ebd6d02f090ca773f2b380b67af32c4184b6acf475cabcdffa4b6edb",
+ "seal_sha256": "6158db3db1af782a418a5921d1d708898fa373a6524259dc6b31afe2a99db673",
  "snapshot_captured_count": 46,
  "snapshot_manifest": "receipts/future/EVIDENCE_SNAPSHOT.json",
  "snapshot_path_taken": "present",
  "store": {
   "aliases": {},
   "exemptions": [],
-  "fixtures": {
-   "claude-abi-01-kv-append-q8": {
-    "check": "kernel_existence",
-    "evidence_refs": [
-     "crates/hawking-core/shaders/attn.metal:446",
-     "crates/hawking-core/src/kernels/mod.rs:8535"
-    ],
-    "finding_id": "kernel_existence|kv_append_q8_0_f32|mod.rs:8509",
-    "host": "fn go(ctx: &MetalContext) {\n    ctx.dispatch_threads(\"kv_append_q8_0_f32\", (1, 1, 1), (1, 1, 1), |enc| {\n        enc.set_buffer(0, Some(&out), 0);\n    });\n}\n",
-    "kernel": "kv_append_q8_0_f32",
-    "metal": "#include <metal_stdlib>\nusing namespace metal;\nkernel void unrelated_present_k(device float* out [[buffer(0)]]) {}\n"
-   },
-   "claude-abi-03-gemv-attn-command-batch": {
-    "check": "type_width",
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:8683",
-     "crates/hawking-core/shaders/attn.metal:157"
-    ],
-    "finding_id": "type_width|gemv_f32_attn|mod.rs:8694",
-    "host": "fn go(ctx: &MetalContext) {\n    ctx.dispatch_threads(\"gemv_f32_attn\", (1, 1, 1), (1, 1, 1), |enc| {\n        enc.set_buffer(0, Some(&x), 0);\n        enc.set_buffer(1, Some(&out), 0);\n        enc.set_buffer(2, Some(&extra), 0);\n        enc.set_u32(3, n);\n    });\n}\n",
-    "kernel": "gemv_f32_attn",
-    "metal": "#include <metal_stdlib>\nusing namespace metal;\nstruct ArgbufN { uint n; };\nkernel void gemv_f32_attn(\n    device const float* x [[buffer(0)]],\n    device float* out [[buffer(1)]],\n    device const float* extra [[buffer(2)]],\n    constant ArgbufN& args [[buffer(3)]]\n) {}\n"
-   },
-   "claude-abi-04-gemv-attn-arena": {
-    "check": "type_width",
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:8683",
-     "crates/hawking-core/shaders/attn.metal:157"
-    ],
-    "finding_id": "type_width|gemv_f32_attn|mod.rs:8789",
-    "host": "fn go(ctx: &MetalContext) {\n    ctx.dispatch_threads(\"gemv_f32_attn\", (1, 1, 1), (1, 1, 1), |enc| {\n        enc.set_buffer(0, Some(&x), 0);\n        enc.set_buffer(1, Some(&out), 0);\n        enc.set_buffer(2, Some(&extra), 0);\n        enc.set_u32(3, n);\n    });\n}\n",
-    "kernel": "gemv_f32_attn",
-    "metal": "#include <metal_stdlib>\nusing namespace metal;\nstruct ArgbufN { uint n; };\nkernel void gemv_f32_attn(\n    device const float* x [[buffer(0)]],\n    device float* out [[buffer(1)]],\n    device const float* extra [[buffer(2)]],\n    constant ArgbufN& args [[buffer(3)]]\n) {}\n"
-   },
-   "claude-abi-05-moe-silu": {
-    "check": "type_width",
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:9197",
-     "crates/hawking-core/shaders/moe.metal:1381"
-    ],
-    "finding_id": "type_width|moe_batched_silu_mul|mod.rs:9166",
-    "host": "fn go(ctx: &MetalContext) {\n    ctx.dispatch_threads(\"moe_batched_silu_mul\", (1, 1, 1), (1, 1, 1), |enc| {\n        enc.set_buffer(0, Some(&x), 0);\n        enc.set_buffer(1, Some(&out), 0);\n        enc.set_buffer(2, Some(&extra), 0);\n        enc.set_u32(3, n);\n    });\n}\n",
-    "kernel": "moe_batched_silu_mul",
-    "metal": "#include <metal_stdlib>\nusing namespace metal;\nstruct ArgbufN { uint n; };\nkernel void moe_batched_silu_mul(\n    device const float* x [[buffer(0)]],\n    device float* out [[buffer(1)]],\n    device const float* extra [[buffer(2)]],\n    constant ArgbufN& args [[buffer(3)]]\n) {}\n"
-   },
-   "claude-abi-06-moe-route-accumulate": {
-    "check": "type_width",
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:9228",
-     "crates/hawking-core/shaders/moe.metal:1394"
-    ],
-    "finding_id": "type_width|moe_route_accumulate|mod.rs:9193",
-    "host": "fn go(ctx: &MetalContext) {\n    ctx.dispatch_threads(\"moe_route_accumulate\", (1, 1, 1), (1, 1, 1), |enc| {\n        enc.set_buffer(0, Some(&x), 0);\n        enc.set_buffer(1, Some(&out), 0);\n        enc.set_buffer(2, Some(&extra), 0);\n        enc.set_u32(3, n);\n    });\n}\n",
-    "kernel": "moe_route_accumulate",
-    "metal": "#include <metal_stdlib>\nusing namespace metal;\nstruct ArgbufN { uint n; };\nkernel void moe_route_accumulate(\n    device const float* x [[buffer(0)]],\n    device float* out [[buffer(1)]],\n    device const float* extra [[buffer(2)]],\n    constant ArgbufN& args [[buffer(3)]]\n) {}\n"
-   }
-  },
+  "fixtures": {},
   "reachability": {},
   "reclassified": {},
-  "seams": [
-   {
-    "evidence_refs": [
-     "crates/hawking-core/shaders/qwen_uniform_q4.metal:1203",
-     "crates/hawking-core/shaders/qwen_uniform_q4.metal:1222",
-     "tools/future/static_kernel_verify.py:568"
-    ],
-    "finding_id": "kernel_existence|qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128|ascension_qwen38_matmul_k_amortization.rs:221",
-    "kind": "preprocessor_macro",
-    "macro_name": "QWEN_UNIFORM_Q4_MATMUL_K",
-    "name_template": "qwen_uniform_q4_group64_matmul_k{ARG}_geo_tpr64_tg128",
-    "produced_names": [
-     "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-     "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-     "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-     "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-    ],
-    "seam_id": "macro:QWEN_UNIFORM_Q4_MATMUL_K",
-    "source_path": "crates/hawking-core/shaders/qwen_uniform_q4.metal"
-   }
-  ],
-  "verdicts": {
-   "claude-abi-01-kv-append-q8": {
-    "action": {
-     "check": "kernel_existence",
-     "kernel": "kv_append_q8_0_f32",
-     "kind": "regression_fixture",
-     "still_detectable": true
-    },
-    "evidence_refs": [
-     "crates/hawking-core/shaders/attn.metal:446",
-     "crates/hawking-core/src/kernels/mod.rs:8535"
-    ],
-    "finding_id": "claude-abi-01-kv-append-q8",
-    "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-    "verdict": "CONFIRMED_BUG"
-   },
-   "claude-abi-02-qwen-generated-k1": {
-    "action": {
-     "count_is_derived": true,
-     "kind": "generator_seam",
-     "produced_names": [
-      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
-      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
-     ],
-     "seam_id": "macro:QWEN_UNIFORM_Q4_MATMUL_K"
-    },
-    "evidence_refs": [
-     "crates/hawking-core/shaders/qwen_uniform_q4.metal:1203",
-     "crates/hawking-core/shaders/qwen_uniform_q4.metal:1222",
-     "tools/future/static_kernel_verify.py:568"
-    ],
-    "finding_id": "claude-abi-02-qwen-generated-k1",
-    "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-    "verdict": "GENERATED_KERNEL"
-   },
-   "claude-abi-03-gemv-attn-command-batch": {
-    "action": {
-     "check": "type_width",
-     "kernel": "gemv_f32_attn",
-     "kind": "regression_fixture",
-     "still_detectable": true
-    },
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:8683",
-     "crates/hawking-core/shaders/attn.metal:157"
-    ],
-    "finding_id": "claude-abi-03-gemv-attn-command-batch",
-    "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-    "verdict": "CONFIRMED_BUG"
-   },
-   "claude-abi-04-gemv-attn-arena": {
-    "action": {
-     "check": "type_width",
-     "kernel": "gemv_f32_attn",
-     "kind": "regression_fixture",
-     "still_detectable": true
-    },
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:8683",
-     "crates/hawking-core/shaders/attn.metal:157"
-    ],
-    "finding_id": "claude-abi-04-gemv-attn-arena",
-    "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-    "verdict": "CONFIRMED_BUG"
-   },
-   "claude-abi-05-moe-silu": {
-    "action": {
-     "check": "type_width",
-     "kernel": "moe_batched_silu_mul",
-     "kind": "regression_fixture",
-     "still_detectable": true
-    },
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:9197",
-     "crates/hawking-core/shaders/moe.metal:1381"
-    ],
-    "finding_id": "claude-abi-05-moe-silu",
-    "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-    "verdict": "CONFIRMED_BUG"
-   },
-   "claude-abi-06-moe-route-accumulate": {
-    "action": {
-     "check": "type_width",
-     "kernel": "moe_route_accumulate",
-     "kind": "regression_fixture",
-     "still_detectable": true
-    },
-    "evidence_refs": [
-     "crates/hawking-core/src/kernels/mod.rs:9228",
-     "crates/hawking-core/shaders/moe.metal:1394"
-    ],
-    "finding_id": "claude-abi-06-moe-route-accumulate",
-    "recorded_by": "codex:CLAUDE_SIDECAR_ABI_ADJUDICATION.json",
-    "verdict": "CONFIRMED_BUG"
-   }
-  }
+  "seams": [],
+  "verdicts": {}
  },
  "verdict_class_names": [
   "CONFIRMED_BUG",

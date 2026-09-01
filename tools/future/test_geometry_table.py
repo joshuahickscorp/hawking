@@ -358,3 +358,39 @@ def test_receipt_on_disk_if_present_matches_the_contract():
     assert "measured_at" in prov
     assert "gpu_lane_lock_held" in prov
     assert "loadavg" in prov
+
+
+def test_the_body_is_read_from_the_promoted_absolute_not_hard_coded():
+    """28.722 was the pre-widen_f4 anchor and survived two rebases. A geometry
+    table priced against a body that no longer runs ranks shapes by a stale
+    share."""
+    import json
+    assert gt.CITED_BODY_BASIS == "GPU_SEALED_DEFAULT"
+    m = json.loads(
+        (gt.REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json").read_text()
+    )["measured"]
+    assert gt.TOKEN_MS == m["gpu_ms_per_token"]
+    assert gt.TOKEN_TPS == m["gpu_tps"]
+
+
+def test_the_organ_figures_come_from_the_sealed_decomposition():
+    import json
+    rows = {r["organ"]: float(r["sealed_ms"]) for r in json.loads(
+        (gt.REPO / "receipts/future/ORGAN_DECOMPOSITION_SEALED.json").read_text()
+    )["table"]}
+    assert gt.MLP_MS == rows["mlp_gate_up"] + rows["mlp_down"]
+    assert gt.DELTANET_MS == rows["deltanet"]
+    assert gt.LM_HEAD_MS == rows["lm_head"]
+
+
+def test_the_cited_organs_fit_inside_the_cited_token():
+    """The pre-promotion set did not: its organs summed to 26.7013 against a
+    21.9464 body."""
+    total = gt.MLP_MS + gt.DELTANET_MS + gt.GQA_MS + gt.LM_HEAD_MS
+    assert total < gt.TOKEN_MS
+
+
+def test_the_constant_cannot_creep_back():
+    from pathlib import Path
+    src = Path(gt.__file__).read_text()
+    assert "TOKEN_MS = 28.722" not in src

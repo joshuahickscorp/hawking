@@ -1,0 +1,29 @@
+{
+  "expected": 13957873280,
+  "files": [
+    "compression_state_dict.bin",
+    "config.json",
+    "generation_config.json",
+    "preprocessor_config.json",
+    "pytorch_model-00001-of-00002.bin",
+    "pytorch_model-00002-of-00002.bin",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "musicgen",
+  "repo": "facebook/musicgen-large",
+  "resolved_sha": "15ccdc92099879e47b6da12c350cdb71d4eab3ca",
+  "revision": "15ccdc92099879e47b6da12c350cdb71d4eab3ca",
+  "sizes": {
+    "compression_state_dict.bin": 236001935,
+    "config.json": 7866,
+    "generation_config.json": 224,
+    "preprocessor_config.json": 275,
+    "pytorch_model-00001-of-00002.bin": 9987827539,
+    "pytorch_model-00002-of-00002.bin": 3731608779,
+    "special_tokens_map.json": 2201,
+    "tokenizer.json": 2422095,
+    "tokenizer_config.json": 2366
+  }
+}

@@ -288,7 +288,9 @@ static inline float gk_fp4_serial_row(
     return row_accumulator;
 }
 
-// Q80/Q38 GQA geometry: same algebra, two admitted (heads, kv, theta) pairs.
+// Q80/Q38/Flash GQA geometry: same algebra, explicitly admitted source
+// contracts.  Flash uses 24 query heads but only 2 KV heads; do not infer
+// support from a nearby model's head ratio.
 
 static inline bool gk_gqa_geometry_ok(
     uint n_heads,
@@ -306,7 +308,9 @@ static inline bool gk_gqa_geometry_ok(
         && rope_theta == 5000000.0f;
     const bool q38 = n_heads == 24u && n_kv_heads == 4u
         && rope_theta == 10000000.0f;
-    return q80 || q38;
+    const bool flash = n_heads == 24u && n_kv_heads == 2u
+        && rope_theta == 10000000.0f;
+    return q80 || q38 || flash;
 }
 
 // ── worklist ABI (matches dsv4f_native_token_graph.metal) ─────────────────
@@ -589,6 +593,142 @@ kernel void gk_worklist_fp4_simd(
     }
     if (simd_lane == 0u) {
         output[(ulong)slot * (ulong)rows + (ulong)row] = row_accumulator;
+    }
+}
+#pragma clang fp contract(on)
+
+// Fused routed FP4 gate/up -> BF16 SwiGLU. The two source-order FP4 row
+// reductions are deliberately kept as separate helper calls. Each result is
+// round-tripped through BF16 before the clamp, matching the authority path:
+// FP4 matvec -> FP32-to-BF16 cast -> worklist SwiGLU. This removes the two
+// intermediate FP32->BF16 dispatches and the standalone SwiGLU dispatch while
+// preserving the observable intermediate rounding contract.
+#pragma clang fp contract(off)
+kernel void gk_worklist_fp4_gate_up_swiglu_bf16(
+    device const GkWorklistEntry* worklist [[buffer(0)]],
+    device const GkExpertRef* gate_refs    [[buffer(1)]],
+    device const GkExpertRef* up_refs      [[buffer(2)]],
+    device const uchar* quantized          [[buffer(3)]],
+    device const uchar* act_scales         [[buffer(4)]],
+    device       ushort* output_bf16       [[buffer(5)]],
+    constant uint& rows                     [[buffer(6)]],
+    constant uint& packed_cols              [[buffer(7)]],
+    constant uint& scale_cols               [[buffer(8)]],
+    constant uint& top_k                    [[buffer(9)]],
+    constant uint& act_is_per_slot          [[buffer(10)]],
+    uint tid                                [[thread_position_in_grid]])
+{
+    if (top_k != gk_k || rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * GK_FP4_BLOCK) {
+        return;
+    }
+    const uint slot = tid / rows;
+    const uint row = tid % rows;
+    if (slot >= gk_k) return;
+    const GkWorklistEntry entry = worklist[slot];
+    if (entry.ready != 1u || entry.slab_slot >= gk_k) return;
+    const GkExpertRef gate_ref = gate_refs[entry.slab_slot];
+    const GkExpertRef up_ref = up_refs[entry.slab_slot];
+    if (gate_ref.packed_weights == nullptr || gate_ref.weight_scales == nullptr
+        || up_ref.packed_weights == nullptr || up_ref.weight_scales == nullptr) {
+        return;
+    }
+
+    const float gate_f32 = gk_fp4_worklist_serial_row(
+        worklist, gate_refs, quantized, act_scales,
+        slot, row, packed_cols, scale_cols, act_is_per_slot);
+    const float up_f32 = gk_fp4_worklist_serial_row(
+        worklist, up_refs, quantized, act_scales,
+        slot, row, packed_cols, scale_cols, act_is_per_slot);
+    const float gate = min(gk_bf16_value(gk_bf16_encode_rne(gate_f32)), 10.0f);
+    const float up = clamp(gk_bf16_value(gk_bf16_encode_rne(up_f32)), -10.0f, 10.0f);
+    output_bf16[(ulong)slot * (ulong)rows + (ulong)row] = gk_bf16_encode_rne(
+        gk_silu_dsv4f(gate) * up * entry.route_weight);
+}
+#pragma clang fp contract(on)
+
+// SIMD sibling of the fused gate/up path. It intentionally has the same
+// 8-simdgroup occupancy geometry as gk_worklist_fp4_simd; only the second
+// projection and the BF16 epilogue are added per row.
+#pragma clang fp contract(off)
+kernel void gk_worklist_fp4_gate_up_swiglu_bf16_simd(
+    device const GkWorklistEntry* worklist [[buffer(0)]],
+    device const GkExpertRef* gate_refs    [[buffer(1)]],
+    device const GkExpertRef* up_refs      [[buffer(2)]],
+    device const uchar* quantized          [[buffer(3)]],
+    device const uchar* act_scales         [[buffer(4)]],
+    device       ushort* output_bf16       [[buffer(5)]],
+    constant uint& rows                     [[buffer(6)]],
+    constant uint& packed_cols              [[buffer(7)]],
+    constant uint& scale_cols               [[buffer(8)]],
+    constant uint& top_k                    [[buffer(9)]],
+    constant uint& act_is_per_slot          [[buffer(10)]],
+    uint group_id                           [[threadgroup_position_in_grid]],
+    uint simd_lane                          [[thread_index_in_simdgroup]],
+    uint simd_id                            [[simdgroup_index_in_threadgroup]])
+{
+    if (top_k != gk_k || rows == 0u || packed_cols == 0u
+        || packed_cols * 2u != scale_cols * GK_FP4_BLOCK) {
+        return;
+    }
+    constexpr uint kSimdgroupsPerThreadgroup = 8u;
+    const uint groups_per_slot = (rows + kSimdgroupsPerThreadgroup - 1u)
+        / kSimdgroupsPerThreadgroup;
+    if (groups_per_slot == 0u) return;
+    const uint slot = group_id / groups_per_slot;
+    const uint row = (group_id % groups_per_slot) * kSimdgroupsPerThreadgroup + simd_id;
+    if (slot >= gk_k || row >= rows) return;
+    const GkWorklistEntry entry = worklist[slot];
+    if (entry.ready != 1u || entry.slab_slot >= gk_k) return;
+    const GkExpertRef gate_ref = gate_refs[entry.slab_slot];
+    const GkExpertRef up_ref = up_refs[entry.slab_slot];
+    if (gate_ref.packed_weights == nullptr || gate_ref.weight_scales == nullptr
+        || up_ref.packed_weights == nullptr || up_ref.weight_scales == nullptr) {
+        return;
+    }
+
+    const uint logical_k = packed_cols * 2u;
+    const ulong act_base = act_is_per_slot != 0u
+        ? (ulong)entry.slab_slot * (ulong)logical_k
+        : 0ul;
+    const ulong act_scale_base = act_is_per_slot != 0u
+        ? (ulong)entry.slab_slot * (ulong)(logical_k / GK_ACT_BLOCK)
+        : 0ul;
+    const ulong gate_weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong gate_scale_base = (ulong)row * (ulong)scale_cols;
+    const ulong up_weight_base = (ulong)row * (ulong)packed_cols;
+    const ulong up_scale_base = (ulong)row * (ulong)scale_cols;
+    float gate_f32 = 0.0f;
+    float up_f32 = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        const uint col = block * GK_FP4_BLOCK + simd_lane;
+        const uchar gate_packed = gate_ref.packed_weights[
+            gate_weight_base + (ulong)(col >> 1u)];
+        const uchar up_packed = up_ref.packed_weights[
+            up_weight_base + (ulong)(col >> 1u)];
+        const float activation = gk_e4m3fn_value(quantized[act_base + (ulong)col]);
+        float gate_block = activation
+            * gk_e2m1fn_value(gate_packed, (col & 1u) != 0u);
+        float up_block = activation
+            * gk_e2m1fn_value(up_packed, (col & 1u) != 0u);
+        gate_block = simd_sum(gate_block);
+        up_block = simd_sum(up_block);
+        if (simd_lane == 0u) {
+            const float activation_scale = gk_e8m0fnu_value(
+                act_scales[act_scale_base + (ulong)(block / (GK_ACT_BLOCK / GK_FP4_BLOCK))]);
+            const float gate_scale = gk_e8m0fnu_value(
+                gate_ref.weight_scales[gate_scale_base + (ulong)block]);
+            const float up_scale = gk_e8m0fnu_value(
+                up_ref.weight_scales[up_scale_base + (ulong)block]);
+            gate_f32 = gate_f32 + gate_block * (activation_scale * gate_scale);
+            up_f32 = up_f32 + up_block * (activation_scale * up_scale);
+        }
+    }
+    if (simd_lane == 0u) {
+        const float gate = min(gk_bf16_value(gk_bf16_encode_rne(gate_f32)), 10.0f);
+        const float up = clamp(gk_bf16_value(gk_bf16_encode_rne(up_f32)), -10.0f, 10.0f);
+        output_bf16[(ulong)slot * (ulong)rows + (ulong)row] = gk_bf16_encode_rne(
+            gk_silu_dsv4f(gate) * up * entry.route_weight);
     }
 }
 #pragma clang fp contract(on)

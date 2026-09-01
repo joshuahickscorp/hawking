@@ -1286,7 +1286,25 @@ def _architecture_inspect(context: ToolContext, args: Dict[str, Any]) -> Dict[st
     from .architecture import ArchitectureRecognizer
 
     path = context.resolve_read_path(args.get("path"))
-    return ArchitectureRecognizer(max_tensors=int(args.get("max_tensors") or 250000)).inspect(path)
+    architecture_atlas = None
+    atlas_path = context.repo_root / "receipts" / "headless" / "ACCELERATOR_ARCHITECTURE_ATLAS.json"
+    try:
+        candidate = json.loads(atlas_path.read_text(encoding="utf-8"))
+        if isinstance(candidate, Mapping):
+            from tools.accelerator.architecture_atlas import validate_atlas
+
+            validate_atlas(candidate)
+            architecture_atlas = candidate
+    except (OSError, UnicodeError, json.JSONDecodeError, ValueError):
+        # Metadata inspection remains useful when the optional planning atlas
+        # is absent or stale; it simply returns the historical plan shape.
+        architecture_atlas = None
+    backend = str(args.get("backend") or "").strip() or None
+    return ArchitectureRecognizer(max_tensors=int(args.get("max_tensors") or 250000)).inspect(
+        path,
+        architecture_atlas=architecture_atlas,
+        backend=backend,
+    )
 
 
 def _doctor_query(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
@@ -1360,6 +1378,43 @@ def _benchmark_run(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]
         "paths": args.get("paths") or [],
         "timeout_s": args.get("timeout_s") or 600,
     })
+
+
+def _frontier_escalate(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    del context
+    if args.get("confirm") is not True:
+        raise PermissionError("cloud frontier escalation is costly and requires confirm=true")
+    from .escalation import escalate_to_frontier
+
+    return escalate_to_frontier(
+        args.get("question"),
+        args.get("mission_kernel"),
+        args.get("artifacts") or [],
+        args.get("output_schema") or {"type": "object"},
+        model=args.get("model"),
+        timeout_s=float(args.get("timeout_s") or 60.0),
+    )
+
+
+def _grok_swarm_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    del context
+    from .escalation import propose_swarm
+
+    return propose_swarm(args.get("problem_statement"), args.get("lanes") or [])
+
+
+def _grok_swarm_launch(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    if args.get("confirm") is not True:
+        raise PermissionError("Grok swarm launches are costly and require confirm=true")
+    from .escalation import launch_swarm
+
+    return launch_swarm(
+        context.workspace,
+        args.get("problem_statement"),
+        args.get("lanes") or [],
+        mode=str(args.get("mode") or "audit"),
+        dry_run=args.get("dry_run"),
+    )
 
 
 def default_tool_registry(
@@ -1538,8 +1593,8 @@ def default_tool_registry(
         mutation=READ_ONLY, deterministic=False, resources=("filesystem",), handler=_vmcp_query,
     ))
     registry.register(ToolSpec(
-        "architecture.inspect", "Recognize generic model organs/topology from config and tensor-index metadata only.",
-        {"type": "object", "required": ["path"], "additionalProperties": False, "properties": {"path": {"type": "string"}, "max_tensors": {"type": "integer"}}},
+        "architecture.inspect", "Recognize generic model organs/topology and project the canonical accelerator atlas as planning-only hypotheses.",
+        {"type": "object", "required": ["path"], "additionalProperties": False, "properties": {"path": {"type": "string"}, "max_tensors": {"type": "integer"}, "backend": {"type": "string"}}},
         mutation=READ_ONLY, deterministic=True, resources=("filesystem",), handler=_architecture_inspect,
     ))
     registry.register(ToolSpec(
@@ -1575,6 +1630,69 @@ def default_tool_registry(
         "benchmark.inspect", "Inspect benchmark evidence through a named receipt path.",
         {"type": "object", "required": ["path"], "additionalProperties": False, "properties": {"path": {"type": "string"}}},
         handler=_receipt_read,
+    ))
+    artifact_item_schema = {
+        "type": "object",
+        "required": ["name", "content"],
+        "additionalProperties": False,
+        "properties": {"name": {"type": "string"}, "content": {"type": "string"}},
+    }
+    registry.register(ToolSpec(
+        "frontier.escalate",
+        "Escalate one scoped question to a cloud frontier model with a curated packet "
+        "(mission kernel + named artifacts + output schema). Returns a proposal, never "
+        "a fact; fails closed with no API credential configured.",
+        {"type": "object", "required": ["confirm", "question", "mission_kernel"], "additionalProperties": False,
+         "properties": {
+             "confirm": {"type": "boolean"},
+             "question": {"type": "string"},
+             "mission_kernel": {"type": "string"},
+             "artifacts": {"type": "array", "items": artifact_item_schema},
+             "output_schema": {"type": "object"},
+             "model": {"type": "string"},
+             "timeout_s": {"type": "number"},
+         }},
+        mutation=COSTLY, deterministic=False, resources=("network", "frontier_api"),
+        verifier_expectations=("frontier prose is UNVERIFIED until a local deterministic check accepts it",),
+        handler=_frontier_escalate,
+    ))
+    lane_item_schema = {
+        "type": "object",
+        "required": ["name"],
+        "additionalProperties": False,
+        "properties": {
+            "name": {"type": "string"},
+            "objective": {"type": "string"},
+            "write_scope": {"type": "array", "items": {"type": "string"}},
+            "verify_command": {"type": "string"},
+            "acceptance": {"type": "array", "items": {"type": "string"}},
+            "contract_text": {"type": "string"},
+        },
+    }
+    registry.register(ToolSpec(
+        "grok.swarm.propose",
+        "Validate and render up to 4 caller-authored WRITE/VERIFY lane contracts from a "
+        "problem statement, without launching anything.",
+        {"type": "object", "required": ["problem_statement", "lanes"], "additionalProperties": False,
+         "properties": {"problem_statement": {"type": "string"}, "lanes": {"type": "array", "items": lane_item_schema}}},
+        handler=_grok_swarm_propose,
+    ))
+    registry.register(ToolSpec(
+        "grok.swarm.launch",
+        "Launch a bounded (<= 4 lanes) read-only Grok swarm (audit/consult) from "
+        "caller-authored lane contracts. Costly; requires confirm=true; fails closed "
+        "if grok-run is not installed.",
+        {"type": "object", "required": ["confirm", "problem_statement", "lanes"], "additionalProperties": False,
+         "properties": {
+             "confirm": {"type": "boolean"},
+             "problem_statement": {"type": "string"},
+             "lanes": {"type": "array", "items": lane_item_schema},
+             "mode": {"type": "string", "enum": ["audit", "consult"]},
+             "dry_run": {"type": "boolean"},
+         }},
+        mutation=COSTLY, deterministic=False, resources=("cpu", "network", "grok"),
+        verifier_expectations=("each lane's grok status/report must be checked before its output counts as fact",),
+        handler=_grok_swarm_launch,
     ))
     return registry
 

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T12:08:04Z",
+  "recorded_at": "2026-09-01T05:10:31Z",
   "recorded_by": "tools/future/accelerator_workunits.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1075,7 +1075,7 @@
   "workunit": "one CPU_ANALYSIS unit for next_species / emit_loop; GPU species are emitted SLEEPING and are not a work source on this host"
  },
  "schema": "hawking.future.accelerator_workunits.v1",
- "seal_sha256": "f4bb1afc4671aad6f0a00edef62b4698e2bfa80448435ecf7cda7d13f194743b",
+ "seal_sha256": "f994bad1302660b70d6f3bab6d5fb07f57c0010697ae93cd896b9ad4617d6763",
  "species": {
   "ATTACK_LAW": {
    "evidence_class": "STATIC_ONLY",

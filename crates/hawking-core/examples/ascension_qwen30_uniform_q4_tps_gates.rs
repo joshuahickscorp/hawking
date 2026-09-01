@@ -41,6 +41,10 @@ mod macos {
 
     const SEALED_FRANCE_IDS: [u32; 8] = [785, 6722, 315, 9625, 374, 12095, 13, 151645];
 
+    fn env_or(name: &str, default: &str) -> String {
+        env::var(name).unwrap_or_else(|_| default.to_owned())
+    }
+
     fn fail(msg: impl AsRef<str>) -> ! {
         eprintln!("uniform-q4 tps gates refused: {}", msg.as_ref());
         std::process::exit(2);
@@ -140,6 +144,30 @@ mod macos {
         env::set_var("HAWKING_QWEN30_DEVICE_EXPERT_TABLE", "1");
         env::set_var("HAWKING_QWEN30_DEVICE_RESIDENT_AR", "1");
 
+        let manifest_path = env_or("HAWKING_QWEN30_Q4_MANIFEST", MANIFEST);
+        let revalidation_path = env_or("HAWKING_QWEN30_Q4_REVALIDATION", REVALIDATION);
+        let terminal_path = env_or("HAWKING_QWEN30_Q4_TERMINAL", TERMINAL);
+        let expected_manifest_seal = env_or(
+            "HAWKING_QWEN30_Q4_MANIFEST_SEAL",
+            "6d8468dd88890ba3d980249b464c9b19b87d6c186d2c2a1c1021410a997a89b4",
+        );
+        let expected_source_audit_seal = env_or(
+            "HAWKING_QWEN30_Q4_SOURCE_AUDIT_SEAL",
+            "00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b",
+        );
+        let expected_source_revision = env_or(
+            "HAWKING_QWEN30_Q4_SOURCE_REVISION",
+            "b2cff646eb4bb1d68355c01b18ae02e7cf42d120",
+        );
+        let expected_revalidation_seal = env_or(
+            "HAWKING_QWEN30_Q4_REVALIDATION_SEAL",
+            "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123",
+        );
+        let expected_terminal_seal = env_or(
+            "HAWKING_QWEN30_Q4_TERMINAL_SEAL",
+            "6b54d9f54887d31cd657f9de4282f72d16c0824df2666733e8e4bf687d4906a8",
+        );
+
         let skip_tps = env::var("HAWKING_QWEN30_Q4_GATES_SKIP_TPS")
             .map(|s| {
                 let t = s.trim();
@@ -167,17 +195,13 @@ mod macos {
             });
 
         let admission = Qwen30UniformQ4Admission {
-            expected_manifest_seal_sha256:
-                "6d8468dd88890ba3d980249b464c9b19b87d6c186d2c2a1c1021410a997a89b4".into(),
-            expected_source_audit_seal_sha256:
-                "00ed3e495416c2cbafbcdb7800528e15f243b1a13f5f4af13240109c8fc69f7b".into(),
-            expected_source_revision: "b2cff646eb4bb1d68355c01b18ae02e7cf42d120".into(),
-            expected_revalidation_path: PathBuf::from(REVALIDATION),
-            expected_revalidation_seal_sha256:
-                "ac7208e11c31bbd035bd87fd62a80020b9d1d05970867576f4649f6bebe68123".into(),
-            expected_terminal_path: PathBuf::from(TERMINAL),
-            expected_terminal_seal_sha256:
-                "6b54d9f54887d31cd657f9de4282f72d16c0824df2666733e8e4bf687d4906a8".into(),
+            expected_manifest_seal_sha256: expected_manifest_seal,
+            expected_source_audit_seal_sha256: expected_source_audit_seal,
+            expected_source_revision,
+            expected_revalidation_path: PathBuf::from(revalidation_path.clone()),
+            expected_revalidation_seal_sha256: expected_revalidation_seal,
+            expected_terminal_path: PathBuf::from(terminal_path.clone()),
+            expected_terminal_seal_sha256: expected_terminal_seal,
         };
         let options = Qwen30CompleteRuntimeOptions {
             max_seq_len: 256,
@@ -188,7 +212,7 @@ mod macos {
 
         eprintln!("[gates] admitting uniform-q4-group64-v1 …");
         let load_t = Instant::now();
-        let mut runtime = Qwen30CompleteNativeRuntime::load_uniform_q4(MANIFEST, &admission, options)
+        let mut runtime = Qwen30CompleteNativeRuntime::load_uniform_q4(&manifest_path, &admission, options)
             .unwrap_or_else(|e| fail(e.to_string()));
         eprintln!(
             "[gates] admission+construct {:.1}s",
@@ -402,6 +426,9 @@ mod macos {
 
         let report = json!({
             "schema": "hawking.uniform_q4.q4_kernel_levers.gates.v1",
+            "manifest_path": manifest_path,
+            "revalidation_path": revalidation_path,
+            "terminal_path": terminal_path,
             "tcb_trace": env::var("HAWKING_TCB_TRACE").ok(),
             "modes": modes,
             "sealed_france_ids": SEALED_FRANCE_IDS,

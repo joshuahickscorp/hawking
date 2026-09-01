@@ -28,7 +28,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T14:46:49Z",
+  "recorded_at": "2026-09-01T05:30:20Z",
   "recorded_by": "tools/future/improvement_metabolism.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -54,7 +54,7 @@
    "candidate_id": "generated_transition_coefficients",
    "fit": null,
    "net_bytes": 2134548400,
-   "predicted_ms_saved": 5.790869111111111,
+   "predicted_ms_saved": 1.029768918339983,
    "source": "receipts/future/DELTANET_GENERATED_TRANSITION.json",
    "verdict": null
   },
@@ -154,13 +154,13 @@
    "verdict": "LAUNCH"
   },
   "path_to_71": {
-   "best_composed_cited_tps": 42.36,
+   "best_composed_cited_tps": 62.9,
    "best_composed_path": "PATH_04",
-   "best_composed_token_ms": 23.605,
-   "cited_token_ms": 28.722,
-   "cited_tps": 34.82,
+   "best_composed_token_ms": 15.898,
+   "cited_token_ms": 21.9464,
+   "cited_tps": 45.57,
    "source": "receipts/future/PATH_TO_71.json",
-   "still_to_remove_ms": 9.52,
+   "still_to_remove_ms": 1.813,
    "target_token_ms": 14.085
   }
  },
@@ -182,7 +182,7 @@
       "falsifier": "held-out reconstruction plus organ error on a real layer; capability UNMEASURED until that screen runs. Overlapping levers are not additive (PATH_TO_71 skipped aux_u8 against group_size_1024)",
       "formal_verdict": null,
       "id": "mlp.aux.group_size_1024",
-      "max_possible_gain_ms": 2.914,
+      "max_possible_gain_ms": 0.0,
       "notes": "",
       "parent_id": "mlp.aux.root",
       "prior_confidence": 0.45,
@@ -202,7 +202,7 @@
       "falsifier": "held-out reconstruction plus organ error on a real layer; capability UNMEASURED until that screen runs. Overlapping levers are not additive (PATH_TO_71 skipped aux_u8 against group_size_1024)",
       "formal_verdict": null,
       "id": "mlp.aux.group_size_256",
-      "max_possible_gain_ms": 2.331,
+      "max_possible_gain_ms": 0.0,
       "notes": "",
       "parent_id": "mlp.aux.root",
       "prior_confidence": 0.45,
@@ -222,7 +222,7 @@
       "falsifier": "held-out reconstruction plus organ error on a real layer; capability UNMEASURED until that screen runs. Overlapping levers are not additive (PATH_TO_71 skipped aux_u8 against group_size_1024)",
       "formal_verdict": null,
       "id": "mlp.aux.quantize_aux_u8",
-      "max_possible_gain_ms": 1.554,
+      "max_possible_gain_ms": 0.0,
       "notes": "",
       "parent_id": "mlp.aux.root",
       "prior_confidence": 0.45,
@@ -240,7 +240,7 @@
     "falsifier": "a generate-gate failure at the claimed group size / u8 aux kills the lever; a byte model without a capability screen stays PROSPECTIVE",
     "formal_verdict": null,
     "id": "mlp.aux.root",
-    "max_possible_gain_ms": 2.914,
+    "max_possible_gain_ms": 0.0,
     "notes": "",
     "parent_id": null,
     "prior_confidence": 0.45,
@@ -260,28 +260,28 @@
    "live_candidates": [
     {
      "id": "mlp.aux.root",
-     "max_possible_gain_ms": 2.914,
+     "max_possible_gain_ms": 0.0,
      "prior_confidence": 0.45,
      "required_resource": "CPU",
      "status": "OPEN"
     },
     {
      "id": "mlp.aux.group_size_1024",
-     "max_possible_gain_ms": 2.914,
+     "max_possible_gain_ms": 0.0,
      "prior_confidence": 0.45,
      "required_resource": "CPU",
      "status": "OPEN"
     },
     {
      "id": "mlp.aux.group_size_256",
-     "max_possible_gain_ms": 2.331,
+     "max_possible_gain_ms": 0.0,
      "prior_confidence": 0.45,
      "required_resource": "CPU",
      "status": "OPEN"
     },
     {
      "id": "mlp.aux.quantize_aux_u8",
-     "max_possible_gain_ms": 1.554,
+     "max_possible_gain_ms": 0.0,
      "prior_confidence": 0.45,
      "required_resource": "CPU",
      "status": "OPEN"
@@ -292,10 +292,10 @@
     "refit HGRAVF01 at group_size=256; same capability screen as group_size_1024; python3 tools/future/mlp_auxiliary_information.py --build",
     "u8 of per-group scale/bias (byte model exact) plus held-out organ error; python3 tools/future/mlp_auxiliary_information.py --build"
    ],
-   "objective": "The MLP auxiliary arrays are 1,069,605,696 bytes (receipts/future/MLP_AUXILIARY_INFORMATION.json). Open exact-byte levers: group_size_1024 (2.914 ms, 1.0027008 GB), group_size_256 (2.331 ms), quantize_aux_u8 (1.554 ms). Capability is UNMEASURED. This frontier exists because these are the only remaining exact-byte moves on today's weights.",
+   "objective": "The MLP auxiliary arrays are 1,069,605,696 bytes (receipts/future/MLP_AUXILIARY_INFORMATION.json). Open exact-byte levers: group_size_1024 (0.0 ms, 1.0027008 GB), group_size_256 (0.0 ms), quantize_aux_u8 (0.0 ms). Capability is UNMEASURED. This frontier exists because these are the only remaining exact-byte moves on today's weights.",
    "remaining_gap": {
     "capability": "UNMEASURED",
-    "cited_ms": 2.914,
+    "cited_ms": 0.0,
     "overlaps": "aux_u8 overlaps group_size; PATH_TO_71 does not sum them"
    },
    "resource_requirements": [
@@ -320,7 +320,7 @@
    ],
    "target": {
     "capability": "UNMEASURED",
-    "cited_ms_saved": 2.914,
+    "cited_ms_saved": 0.0,
     "gb_saved": 1.0027008,
     "id": "group_size_1024"
    },
@@ -335,28 +335,28 @@
     "live_candidates": [
      {
       "id": "mlp.aux.root",
-      "max_possible_gain_ms": 2.914,
+      "max_possible_gain_ms": 0.0,
       "prior_confidence": 0.45,
       "required_resource": "CPU",
       "status": "OPEN"
      },
      {
       "id": "mlp.aux.group_size_1024",
-      "max_possible_gain_ms": 2.914,
+      "max_possible_gain_ms": 0.0,
       "prior_confidence": 0.45,
       "required_resource": "CPU",
       "status": "OPEN"
      },
      {
       "id": "mlp.aux.group_size_256",
-      "max_possible_gain_ms": 2.331,
+      "max_possible_gain_ms": 0.0,
       "prior_confidence": 0.45,
       "required_resource": "CPU",
       "status": "OPEN"
      },
      {
       "id": "mlp.aux.quantize_aux_u8",
-      "max_possible_gain_ms": 1.554,
+      "max_possible_gain_ms": 0.0,
       "prior_confidence": 0.45,
       "required_resource": "CPU",
       "status": "OPEN"
@@ -369,10 +369,10 @@
      "refit HGRAVF01 at group_size=256; same capability screen as group_size_1024; python3 tools/future/mlp_auxiliary_information.py --build",
      "u8 of per-group scale/bias (byte model exact) plus held-out organ error; python3 tools/future/mlp_auxiliary_information.py --build"
     ],
-    "objective": "The MLP auxiliary arrays are 1,069,605,696 bytes (receipts/future/MLP_AUXILIARY_INFORMATION.json). Open exact-byte levers: group_size_1024 (2.914 ms, 1.0027008 GB), group_size_256 (2.331 ms), quantize_aux_u8 (1.554 ms). Capability is UNMEASURED. This frontier exists because these are the only remaining exact-byte moves on today's weights.",
+    "objective": "The MLP auxiliary arrays are 1,069,605,696 bytes (receipts/future/MLP_AUXILIARY_INFORMATION.json). Open exact-byte levers: group_size_1024 (0.0 ms, 1.0027008 GB), group_size_256 (0.0 ms), quantize_aux_u8 (0.0 ms). Capability is UNMEASURED. This frontier exists because these are the only remaining exact-byte moves on today's weights.",
     "remaining_gap": {
      "capability": "UNMEASURED",
-     "cited_ms": 2.914,
+     "cited_ms": 0.0,
      "overlaps": "aux_u8 overlaps group_size; PATH_TO_71 does not sum them"
     },
     "resource_requirements": [
@@ -381,7 +381,7 @@
     ],
     "target": {
      "capability": "UNMEASURED",
-     "cited_ms_saved": 2.914,
+     "cited_ms_saved": 0.0,
      "gb_saved": 1.0027008,
      "id": "group_size_1024"
     }
@@ -1359,10 +1359,10 @@
     "cheap round: one representative layer (38), Monarch or butterfly factorisation of F that is not rank-r, held-out relative L2 on the teacher corpus prompt_id split, bytes via executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
     "score function_replacement through executable_economics.score with bytes_added billed, then a held-out F replacement that is not an r-bottleneck; python3 tools/future/mlp_nonlinear_program.py --build"
    ],
-   "objective": "PATH_TO_71 best composed path reaches 42.36 cited TPS; 71 needs another 9.52 ms. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently. Six r-bottleneck families are MEASURED_NEGATIVE; the live reopen is a full-width structured operator. This frontier exists because function_replacement is the only economics candidate that is live and material at 2.3414 ms if F holds.",
+   "objective": "PATH_TO_71 best composed path reaches 42.36 cited TPS; 71 needs another 1.813 ms. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently. Six r-bottleneck families are MEASURED_NEGATIVE; the live reopen is a full-width structured operator. This frontier exists because function_replacement is the only economics candidate that is live and material at 2.3414 ms if F holds.",
    "remaining_gap": {
-    "best_composed_cited_tps": 42.36,
-    "cited_ms": 9.52,
+    "best_composed_cited_tps": 62.9,
+    "cited_ms": 1.813,
     "source": "receipts/future/PATH_TO_71.json"
    },
    "resource_requirements": [
@@ -1461,10 +1461,10 @@
      "cheap round: one representative layer (38), Monarch or butterfly factorisation of F that is not rank-r, held-out relative L2 on the teacher corpus prompt_id split, bytes via executable_economics.score; python3 tools/future/mlp_nonlinear_program.py --build",
      "score function_replacement through executable_economics.score with bytes_added billed, then a held-out F replacement that is not an r-bottleneck; python3 tools/future/mlp_nonlinear_program.py --build"
     ],
-    "objective": "PATH_TO_71 best composed path reaches 42.36 cited TPS; 71 needs another 9.52 ms. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently. Six r-bottleneck families are MEASURED_NEGATIVE; the live reopen is a full-width structured operator. This frontier exists because function_replacement is the only economics candidate that is live and material at 2.3414 ms if F holds.",
+    "objective": "PATH_TO_71 best composed path reaches 42.36 cited TPS; 71 needs another 1.813 ms. Both organs are at their entropy floor, so the only remaining source of that magnitude is weights that need not exist independently. Six r-bottleneck families are MEASURED_NEGATIVE; the live reopen is a full-width structured operator. This frontier exists because function_replacement is the only economics candidate that is live and material at 2.3414 ms if F holds.",
     "remaining_gap": {
-     "best_composed_cited_tps": 42.36,
-     "cited_ms": 9.52,
+     "best_composed_cited_tps": 62.9,
+     "cited_ms": 1.813,
      "source": "receipts/future/PATH_TO_71.json"
     },
     "resource_requirements": [
@@ -1967,7 +1967,7 @@
   "unbalanced": false
  },
  "schema": "hawking.future.improvement_metabolism.v1",
- "seal_sha256": "5897332bb1acdf24c4f42c503da9f1fd248b20b4e10275c9eb5292b4a3bb2b64",
+ "seal_sha256": "a611a00e07bee4fef2fead22e13016c2ee8ec17769566e0f62250f6e4ea18de8",
  "sources": {
   "receipts/future/DELTANET_GENERATED_TRANSITION.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/DELTANET_GENERATED_TRANSITION.json",
   "receipts/future/DELTANET_MULTISTEP.json": "disk:/Users/scammermike/Downloads/hawking/receipts/future/DELTANET_MULTISTEP.json",

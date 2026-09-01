@@ -13,7 +13,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T11:18:44Z",
+  "recorded_at": "2026-09-01T05:58:04Z",
   "recorded_by": "tools/future/status_causality.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -349,7 +349,7 @@
    {
     "calls_emit": true,
     "emit_fn": "run_static_preflight",
-    "gap": null,
+    "gap": "emits a campaign-consequential status without probe_performed, direct_observation, interpretation, confidence, and alternatives on the stamped row",
     "in_this_lane_write_scope": false,
     "module": "tools/future/qualification_pipeline.py",
     "name": "qualification_pipeline",
@@ -359,9 +359,9 @@
      "STATIC_ONLY"
     ],
     "receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
-    "receipt_has_five_fields": true,
+    "receipt_has_five_fields": false,
     "receipt_state": "readable",
-    "records_five_fields": true,
+    "records_five_fields": false,
     "selection": "verdict decides whether physical work proceeds",
     "source_state": "readable",
     "unreadable": false,
@@ -411,10 +411,11 @@
    }
   ],
   "n_gates": 18,
-  "n_not_recording": 1,
-  "n_recording": 17,
+  "n_not_recording": 2,
+  "n_recording": 16,
   "n_unreadable": 0,
   "not_recording_five_fields": [
+   "qualification_pipeline",
    "flash_meta_teacher_capture_boundary"
   ],
   "odyssey_launch_criteria": [
@@ -566,10 +567,14 @@
    "flash_nx_audit",
    "odyssey2_law_store",
    "contamination",
-   "qualification_pipeline",
    "protected_scheduler"
   ],
   "remainder": [
+   {
+    "module": "tools/future/qualification_pipeline.py",
+    "name": "qualification_pipeline",
+    "why_not_wired": "emits a campaign-consequential status without probe_performed, direct_observation, interpretation, confidence, and alternatives on the stamped row"
+   },
    {
     "module": "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
     "name": "flash_meta_teacher_capture_boundary",
@@ -621,6 +626,7 @@
   "the routine only scanned receipts on demand; emit() is the emit-time entry point a gate calls as it stamps a status"
  ],
  "gates_not_recording_five_fields": [
+  "qualification_pipeline",
   "flash_meta_teacher_capture_boundary"
  ],
  "gates_recording_five_fields": [
@@ -639,7 +645,6 @@
   "flash_nx_audit",
   "odyssey2_law_store",
   "contamination",
-  "qualification_pipeline",
   "protected_scheduler"
  ],
  "gates_unreadable": [],
@@ -861,6 +866,7 @@
   "known receipts unreadable in this checkout: 0",
   "a status whose probe is not recorded is UNTESTED, not OVERREACHING",
   "coverage is a list of names, not a percentage; gates that do not record the five fields are named gaps",
+  "qualification_pipeline does not record the five fields at emit time",
   "flash_meta_teacher_capture_boundary does not record the five fields at emit time"
  ],
  "odyssey_iii": {
@@ -968,7 +974,7 @@
    "schema": "hawking.flash.meta_teacher_trace_boundary.v1"
   },
   {
-   "n_keys": 25,
+   "n_keys": 19,
    "rel": "receipts/future/METAL_REACHABILITY.json",
    "schema": "hawking.future.metal_reachability.v1"
   },
@@ -1154,7 +1160,7 @@
  },
  "scar": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
  "schema": "hawking.future.status_causality.v1",
- "seal_sha256": "54118b9b186225c7bc84b3496fb48d95a22bbff046ef4808b8d015a4064a78be",
+ "seal_sha256": "c9eda0eb5769729a77eaf61487d6c3c44d7fc9ea715c3db7fbeeb96b648f7bcc",
  "supported_fixtures": [
   {
    "alternatives": [

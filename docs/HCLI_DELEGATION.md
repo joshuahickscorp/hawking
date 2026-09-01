@@ -1,6 +1,6 @@
 # HCLI delegation — operator runbook
 
-You do not need a Claude session to use this. Everything below is five shell
+You do not need a separate client session to use this. Everything below is five shell
 commands and a file you can read with `cat`.
 
 HCLI is a **governed laboratory**. You hand it a bounded objective; it hands back
@@ -39,7 +39,7 @@ there is no index that can go stale.
 > `python3 -m hcli <verb> ...`, which is what every example below does.
 
 `run` returns **immediately** with a mission id and spawns a detached worker. Your
-shell, your ssh session and your Claude session can all die; the mission does not.
+shell, your ssh session and your worker session can all die; the mission does not.
 Every other verb reads durable state from disk and needs no live process.
 
 ### The old CLI still works

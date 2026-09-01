@@ -9,6 +9,7 @@ from __future__ import annotations
 import json
 
 import pytest
+from pathlib import Path
 
 from tools.future import executable_economics as ee
 from tools.future._common import (
@@ -506,13 +507,36 @@ def test_build_emits_sealed_static_only_receipt():
     cited = doc["measured_constants_cited"]
     assert cited["affine_q2_saturated_gb_s"] == pytest.approx(376.7)
     assert cited["lm_head_gb_s"] == pytest.approx(497.4)
+    # 0.528 was a fact about the 28.722 ms pre-widen_f4 anchor this file used to
+    # hard-code. G131 promoted three levers and measured 21.9464 ms GPU, so the
+    # reduction needed to reach 71 fell to 0.402. The INVARIANT is that it is
+    # derived from the live baseline, not that it equals any particular number -
+    # a pinned figure fails the moment the body gets faster, which punishes
+    # exactly the progress this campaign is for.
     assert cited["gpu_reduction_for_71_at_current_executor"] == pytest.approx(
-        0.528, abs=0.005
+        1.0 - (1000.0 / 71.0 - ee.CITED_HOST_MS) / ee.CITED_GPU_MS, abs=1e-4
     )
+    assert 0.0 < cited["gpu_reduction_for_71_at_current_executor"] < 1.0
     cal = doc["calibration"]
     assert cal["stream_classes"]["broadcast_aux"]["on_critical_path"] is False
     assert cal["stream_classes"]["weight_codes"]["on_critical_path"] is True
     assert cal["loadavg"]
+
+
+def test_the_baseline_is_read_from_the_promoted_absolute_not_hard_coded():
+    """28.722 was hard-coded through TWO rebases, so every predicted_token_ms in
+    this gate was 6.8 ms stale and every predicted TPS with it."""
+    import json as _j
+    assert ee.CITED_BASIS == "GPU_SEALED_DEFAULT"
+    m = _j.loads(
+        (ee.REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json").read_text()
+    )["measured"]
+    assert ee.CITED_GPU_MS == m["gpu_ms_per_token"]
+    assert ee.CITED_HOST_MS == m["host_gap_ms"]
+    assert ee.CITED_TOKEN_MS == pytest.approx(
+        ee.CITED_GPU_MS + ee.CITED_HOST_MS, abs=1e-9)
+    src = Path(ee.__file__).read_text()
+    assert "CITED_TOKEN_MS = 28.722" not in src
 
 
 def test_calibration_receipt_is_a_real_gpu_run():

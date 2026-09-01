@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T16:11:43Z",
+  "recorded_at": "2026-09-01T05:56:35Z",
   "recorded_by": "tools/future/roof_anchor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -23,6 +23,11 @@
    "rests_on_roof_id": "machine_genome_f32_triad_589p73",
    "roof_named_in_record": false,
    "roof_value_gb_s": 589.73,
+   "source": {
+    "artifact": "receipts/headless/ACCELERATOR_TOKEN_BYTES_ATLAS.json",
+    "field": "THE_CEILING.raw_tps_ceiling_at_100pct_of_roof",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false
   },
   {
@@ -38,6 +43,11 @@
    "resolved": 595.9,
    "rests_on_roof_id": "g072_family_scoring_595p9",
    "roof_named_in_record": false,
+   "source": {
+    "artifact": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
+    "field": "artifact.anchors_not_rederived.measured_roof_GB_s",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false
   },
   {
@@ -52,6 +62,11 @@
    "resolved": 47.76,
    "rests_on_roof_id": "lm_head_production_497p4",
    "roof_named_in_record": true,
+   "source": {
+    "artifact": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "field": "ladder[rung=every organ at the LM head's demonstrated 497.4 GB/s].tps",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false
   },
   {
@@ -63,11 +78,16 @@
    "id": "causal_budget_roof_on_todays_bytes",
    "quote_checked": true,
    "quoted_value": 66.13,
-   "reading": "The rung NAMES 703.5 ('clean GEMV roof') so this is not an unstated roof. It is the wrong shape: 703.5 is the addr_probe that never loads the activation. the_two_numbers_that_matter.roof_on_todays_bytes_tps = 66.13 (66.54 before an unattributed term entered the reconstruction, 65.15 while that term was wrongly 0.321) has been steering priorities. Flag: NO INPUT-VECTOR LOAD. A 66.54 TPS ceiling is a ceiling for a kernel that does not exist in production. Recomputed against the recommended 497.4 with the same host-gap formula this receipt uses, the demonstrated rung is 47.97 \u2014 already in this ladder, one storey down.",
+   "reading": "The rung NAMES 703.5 ('clean GEMV roof') so this is not an unstated roof. It is the wrong shape: 703.5 is the addr_probe that never loads the activation. the_two_numbers_that_matter.roof_on_todays_bytes_tps is the live figure on that rung (66.54 before an unattributed term entered the reconstruction, 65.15 while that term was wrongly 0.321) and has been steering priorities. Flag: NO INPUT-VECTOR LOAD. A 66.54 TPS ceiling is a ceiling for a kernel that does not exist in production. Recomputed against the recommended 497.4 with the same host-gap formula this receipt uses, the demonstrated rung is already in this ladder, one storey down.",
    "receipt": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
    "resolved": 66.13,
    "rests_on_roof_id": "q4_single_gemv_addr_13p6gb_max",
    "roof_named_in_record": true,
+   "source": {
+    "artifact": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "field": "ladder[rung=every organ at the clean GEMV roof 703.5 GB/s].tps",
+    "tolerance": 1e-06
+   },
    "sourced_max_gb_s": 703.6072736347875,
    "sourced_median_gb_s": 699.5736545106142,
    "steers_priorities": true
@@ -79,11 +99,16 @@
    "id": "causal_budget_71_target",
    "quote_checked": true,
    "quoted_value": 71.0,
-   "reading": "71 is recorded as NOT_REACHABLE_AT_THE_ROOF_ON_TODAYS_BYTES. It still rests on the 703.5 addr_probe plus either 6.7% fewer bytes or the host gap gone. Same no-input-vector-load caveat as 66.54.",
+   "reading": "71 is recorded as NOT_REACHABLE_AT_THE_ROOF_ON_TODAYS_BYTES. It still rests on the 703.5 addr_probe plus either 6.7% fewer bytes or the host gap gone. Same no-input-vector-load caveat as the roof-on-today's-bytes rung.",
    "receipt": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
    "resolved": 71.0,
    "rests_on_roof_id": "q4_single_gemv_addr_13p6gb_max",
    "roof_named_in_record": true,
+   "source": {
+    "artifact": "receipts/future/RESIDENT_71TPS_CAUSAL_BUDGET.json",
+    "field": "ladder[rung=71 TPS].tps",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false
   },
   {
@@ -93,26 +118,36 @@
    "kind_of_ceiling": "campaign_target_not_roof_derived",
    "quote_checked": false,
    "quoted_value": 71.0,
-   "reading": "PATH_TO_71 never names a GB/s roof. 71 is a campaign target. The composed PATH_04 42.36 TPS is component arithmetic over measured token_ms (28.722) and listed levers, not roof_gb_s * bytes. A ceiling with no roof_id is the defect; this record cannot recover one because none was used.",
+   "reading": "PATH_TO_71 never names a GB/s roof. 71 is a campaign target. The composed PATH_04 figure is component arithmetic over measured token_ms and listed levers, not roof_gb_s * bytes. A ceiling with no roof_id is the defect; this record cannot recover one because none was used.",
    "receipt": "receipts/future/PATH_TO_71.json",
    "resolved": null,
    "rests_on_roof_id": null,
    "roof_named_in_record": false,
+   "source": {
+    "artifact": "receipts/future/PATH_TO_71.json",
+    "field": "gap_to_71 (target 71 TPS / 14.085 ms)",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false,
    "why_not_checked": "field is not a resolvable path in this receipt"
   },
   {
    "defect": null,
    "field": "gap_to_71.best_composed_tps",
-   "id": "path_to_71_best_composed_42p36",
+   "id": "path_to_71_best_composed",
    "kind_of_ceiling": "component_composition",
    "quote_checked": true,
-   "quoted_value": 42.36,
-   "reading": "Not a roof-derived ceiling. Component composition over measured token_ms. No roof to name; no roof was used. Listed so it is not mistaken for a 497.4 or 703.5 ceiling.",
+   "quoted_value": 62.9,
+   "reading": "Not a roof-derived ceiling. Component composition over measured token_ms. No roof to name; no roof was used. Listed so it is not mistaken for a 497.4 or 703.5 ceiling. The number lives on PATH_TO_71; this row names that field rather than copying it.",
    "receipt": "receipts/future/PATH_TO_71.json",
-   "resolved": 42.36,
+   "resolved": 62.9,
    "rests_on_roof_id": null,
    "roof_named_in_record": false,
+   "source": {
+    "artifact": "receipts/future/PATH_TO_71.json",
+    "field": "gap_to_71.best_composed_tps",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false
   },
   {
@@ -125,11 +160,16 @@
    "origin_value": 66.13,
    "quote_checked": true,
    "quoted_value": 66.13,
-   "reading": "Inherits causal-budget 66.54, which inherits 703.5. The note names clean GEMV 703.5 GB/s. Same no-input-vector-load caveat; this is how the 66.54 rung propagated.",
+   "reading": "Inherits causal-budget roof-on-today's-bytes, which inherits 703.5. The note names clean GEMV 703.5 GB/s. Same no-input-vector-load caveat; this is how that rung propagated.",
    "receipt": "receipts/future/CAPABILITY_INFORMATION_MAP.json",
    "resolved": 66.13,
    "rests_on_roof_id": "q4_single_gemv_addr_13p6gb_max",
    "roof_named_in_record": true,
+   "source": {
+    "artifact": "receipts/future/CAPABILITY_INFORMATION_MAP.json",
+    "field": "answers.roof_movement_on_the_71tps_ladder.quoted_roof_on_todays_bytes",
+    "tolerance": 1e-06
+   },
    "steers_priorities": true
   },
   {
@@ -142,11 +182,16 @@
    "origin_value": 66.13,
    "quote_checked": true,
    "quoted_value": 66.13,
-   "reading": "Cites 66.54 from the causal budget without naming 703.5 in the cited field. Inherited ceiling, inherited silence about the addr_probe shape.",
+   "reading": "Cites roof-on-today's-bytes from the causal budget without naming 703.5 in the cited field. Inherited ceiling, inherited silence about the addr_probe shape.",
    "receipt": "receipts/future/IMPROVEMENT_METABOLISM.json",
    "resolved": 66.13,
    "rests_on_roof_id": "q4_single_gemv_addr_13p6gb_max",
    "roof_named_in_record": false,
+   "source": {
+    "artifact": "receipts/future/IMPROVEMENT_METABOLISM.json",
+    "field": "cited.causal_budget.roof_on_todays_bytes_cited_tps",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false
   },
   {
@@ -160,6 +205,11 @@
    "resolved": "<structure>",
    "rests_on_roof_id": "(each row names its own)",
    "roof_named_in_record": true,
+   "source": {
+    "artifact": "receipts/future/ADDRESSING_GAP.json",
+    "field": "ceilings[]",
+    "tolerance": 1e-06
+   },
    "steers_priorities": false
   }
  ],
@@ -722,7 +772,7 @@
   "text": "EVERY CEILING MUST STATE WHICH ROOF IT RESTS ON. A ceiling with an unstated roof is the defect that produced 595.9. compute_ceiling() raises UnstatedRoof unless roof_id is a registry key."
  },
  "schema": "hawking.future.roof_anchor.v1",
- "seal_sha256": "7f304b581c1eb255f316fbb1858e2c36354a5966e9fdda276934333a54e2d0f0",
+ "seal_sha256": "8e6527b0cd6b962dd7f2fc1ca09ad58e00ea700f89e9609bd53386de8b927132",
  "source_verification": {
   "checks": [
    {

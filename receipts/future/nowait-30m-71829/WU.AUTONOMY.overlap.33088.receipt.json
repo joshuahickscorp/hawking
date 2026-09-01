@@ -1,0 +1,1 @@
+{"module": "nr_nx_generic.py", "entry_point": "build", "receipt": "receipts/future/NR_NX_GENERIC.json", "routed_to_frontier": "FT.GPU_KERNELS.flash-nx", "species": "NR_NX_GENERIC", "wall_seconds": 3.628, "evidence_class": "STATIC_ONLY"}

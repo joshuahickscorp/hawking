@@ -1,0 +1,18 @@
+{
+  "dependencies": [],
+  "evidence_class": "STATIC_ONLY",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-22571/WU.TORTURE.NO_WAIT.specimen_verify.receipt.json",
+  "frontier_item": "FT.MODEL_CAPABILITY.hard-gates",
+  "gpu_authority": false,
+  "job_id": "WU-TORTURE-NO_WAIT-specimen_verify-69c4a43a",
+  "launch_refused": false,
+  "launched_at": 1788141745.1950688,
+  "pid": 22827,
+  "required_schema": null,
+  "schema": "hawking.future.no_wait.handle.v1",
+  "start_token": "1788141745.250525",
+  "state": "RUNNING",
+  "terminal": null,
+  "timeout_s": 1776.6236491203308,
+  "unit_id": "WU.TORTURE.NO_WAIT.specimen_verify"
+}

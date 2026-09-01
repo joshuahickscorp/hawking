@@ -4,6 +4,7 @@ from __future__ import annotations
 import hashlib
 import json
 import os
+from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any, Dict, Mapping, Optional
 
@@ -14,6 +15,69 @@ EXACT_RECEIPT_NAME = "FLASH_NOETIC_EXACT_HYPERCONNECTION_NATIVE.json"
 GPU_WORK_LEDGER_NAME = "FLASH_GPU_WORK_LEDGER.json"
 TOKEN_CRITICAL_PATH_NAME = "FLASH_TOKEN_CRITICAL_PATH.json"
 CUDA_CAPABILITY_GRAPH_NAME = "CUDA_CAPABILITY_GRAPH.json"
+COMPLETE_LAYER0_RECEIPT_NAME = "FLASH_NOETIC_COMPLETE_LAYER0_NATIVE_PARITY.json"
+
+
+def _metal_execution_observed(receipt: Optional[Mapping[str, Any]]) -> bool:
+    """Return whether a receipt observed an Apple Metal graph, not whether it passed.
+
+    A failing parity receipt can still establish a narrow implementation fact: a
+    named graph dispatched on Metal with its buffers resident.  That fact must
+    stay below ``FUNCTIONAL`` in the capability graph, but hiding it entirely
+    loses the diagnostic trail needed to repair the next architecture port.
+    """
+    if not isinstance(receipt, Mapping):
+        return False
+    execution = receipt.get("execution")
+    if not isinstance(execution, Mapping):
+        return False
+    return (
+        execution.get("provider") == "apple_metal"
+        and execution.get("native_source_bf16") is True
+        and execution.get("fallback_count") == 0
+    )
+
+
+def _source_parity_passed(receipt: Optional[Mapping[str, Any]]) -> bool:
+    if not isinstance(receipt, Mapping):
+        return False
+    parity = receipt.get("parity")
+    return isinstance(parity, Mapping) and parity.get("passed") is True
+
+
+def _native_kernels(receipt: Optional[Mapping[str, Any]]) -> set[str]:
+    if not isinstance(receipt, Mapping):
+        return set()
+    values = receipt.get("native_kernels")
+    return {value for value in values if isinstance(value, str)} if isinstance(values, list) else set()
+
+
+def _diagnostic_node(
+    *,
+    node_id: str,
+    required_kernels: set[str],
+    observed: bool,
+    kernels: set[str],
+    parity_passed: bool,
+    transfer_law: str,
+) -> Dict[str, Any]:
+    """Describe a source-native Metal architecture port without promoting it.
+
+    ``DIAGNOSTIC_OBSERVED`` means all named kernels dispatched in an observed
+    source-native graph, while its source-parity receipt remains non-passing.
+    It is intentionally distinct from both ``FUNCTIONAL`` and ``ABSENT``.
+    """
+    return {
+        "id": node_id,
+        "metal_status": (
+            "FUNCTIONAL" if parity_passed and observed and required_kernels <= kernels
+            else "DIAGNOSTIC_OBSERVED" if observed and required_kernels <= kernels
+            else "ABSENT"
+        ),
+        "cuda_status": "UNOBSERVED",
+        "required_kernels": sorted(required_kernels),
+        "transfer_law": transfer_law,
+    }
 
 
 def _read_json(path: Path) -> Optional[Dict[str, Any]]:
@@ -41,6 +105,71 @@ def _receipt_ref(path: Path, receipt: Optional[Mapping[str, Any]]) -> Dict[str, 
         "sha256": _sha256(path),
         "status": receipt.get("status") if isinstance(receipt, Mapping) else None,
         "schema": receipt.get("schema") if isinstance(receipt, Mapping) else None,
+    }
+
+
+def _source_layer_refs(repo: Path, primary_path: Path,
+                       primary_receipt: Optional[Mapping[str, Any]]) -> list[Dict[str, Any]]:
+    """Index every emitted source-parity layer receipt without widening claims.
+
+    The capability graph is anchored to the layer-0 receipt for backward
+    compatibility, but an independently executed layer must remain visible once
+    the graph is generalized.  Only the explicitly named parity receipt family
+    is included; unrelated Flash diagnostics are not inferred into this map.
+    """
+    rows: list[Dict[str, Any]] = []
+    candidates = [primary_path]
+    candidates.extend(sorted(
+        (repo / "receipts" / "headless").glob(
+            "FLASH_NOETIC_COMPLETE_LAYER*_NATIVE_PARITY.json"
+        )
+    ))
+    seen: set[Path] = set()
+    for path in candidates:
+        resolved = path.resolve()
+        if resolved in seen:
+            continue
+        seen.add(resolved)
+        receipt = primary_receipt if resolved == primary_path.resolve() else _read_json(path)
+        if receipt is None:
+            continue
+        layer_index = None
+        source = receipt.get("source")
+        if isinstance(source, Mapping):
+            layer_index = source.get("layer_index")
+        rows.append({
+            "layer_index": layer_index,
+            "observed": _metal_execution_observed(receipt),
+            "parity_passed": _source_parity_passed(receipt),
+            "source_receipt": _receipt_ref(path, receipt),
+        })
+    return rows
+
+
+def _telemetry_bench(
+    receipt: Optional[Mapping[str, Any]],
+    *,
+    device: Any,
+) -> Dict[str, Any]:
+    """Carry the source bench sample forward, or explicitly state it is unknown.
+
+    This telemetry repeats GPU timings from an upstream receipt; it is not a
+    fresh protected benchmark.  A missing quiescence sample must therefore not
+    turn into a quiet-machine claim.
+    """
+    source_bench = receipt.get("bench") if isinstance(receipt, Mapping) else None
+    if isinstance(source_bench, Mapping):
+        return dict(source_bench)
+    return {
+        "state": "UNKNOWN",
+        "recorded_at": datetime.now(timezone.utc).isoformat().replace("+00:00", "Z"),
+        "recorded_by": "hcli.agentos.flash_telemetry.emit_flash_telemetry",
+        "machine": str(device) if device else "unknown machine from source receipt",
+        "rule": "S032 §3 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+        "provenance": (
+            "Derived telemetry repeats source timing, but the source receipt contained "
+            "no bench sample. This artifact therefore makes no quiescence claim."
+        ),
     }
 
 
@@ -113,6 +242,7 @@ def emit_flash_telemetry(
     repo_root: str | os.PathLike[str],
     *,
     exact_receipt: Optional[str | os.PathLike[str]] = None,
+    complete_layer0_receipt: Optional[str | os.PathLike[str]] = None,
     gpu_work_ledger: Optional[str | os.PathLike[str]] = None,
     token_critical_path: Optional[str | os.PathLike[str]] = None,
     cuda_capability_graph: Optional[str | os.PathLike[str]] = None,
@@ -123,6 +253,11 @@ def emit_flash_telemetry(
         Path(exact_receipt).expanduser().resolve()
         if exact_receipt
         else repo / "receipts" / "headless" / EXACT_RECEIPT_NAME
+    )
+    complete_layer0_path = (
+        Path(complete_layer0_receipt).expanduser().resolve()
+        if complete_layer0_receipt
+        else repo / "receipts" / "headless" / COMPLETE_LAYER0_RECEIPT_NAME
     )
     ledger_path = Path(gpu_work_ledger).expanduser() if gpu_work_ledger else repo / "receipts" / "headless" / GPU_WORK_LEDGER_NAME
     critical_path = Path(token_critical_path).expanduser() if token_critical_path else repo / "receipts" / "headless" / TOKEN_CRITICAL_PATH_NAME
@@ -135,11 +270,15 @@ def emit_flash_telemetry(
         capability_path = capability_path.resolve()
 
     receipt = _read_json(receipt_path)
+    complete_layer0 = _read_json(complete_layer0_path)
     execution = receipt.get("execution") if isinstance(receipt, Mapping) and isinstance(receipt.get("execution"), Mapping) else {}
     timing = receipt.get("gpu_timing") if isinstance(receipt, Mapping) and isinstance(receipt.get("gpu_timing"), Mapping) else {}
     graph = receipt.get("physical_graph") if isinstance(receipt, Mapping) and isinstance(receipt.get("physical_graph"), Mapping) else {}
     source = _receipt_ref(receipt_path, receipt)
+    complete_layer0_source = _receipt_ref(complete_layer0_path, complete_layer0)
+    source_layer_refs = _source_layer_refs(repo, complete_layer0_path, complete_layer0)
     passed = isinstance(receipt, Mapping) and receipt.get("status") == "PASSED"
+    bench = _telemetry_bench(receipt, device=timing.get("device"))
     stage_rows = _stage_rows(timing) if passed else []
     graph_gpu = timing.get("graph_gpu_ns_median") if passed else None
     graph_wall = timing.get("graph_host_wall_ns_median") if passed else None
@@ -148,6 +287,7 @@ def emit_flash_telemetry(
         "status": "PASSED" if passed else "NOT_RUN",
         "qualification": "BOUNDED_LAYER0_GRAPH_ONLY" if passed else "NOT_RUN",
         "source_receipt": source,
+        "bench": bench,
         "device": timing.get("device") if passed else None,
         "scope": "layer-0 exact HyperConnection read/write around selected routed-plus-shared MoE candidate",
         "physical_graph_fingerprint": graph.get("fingerprint") if passed else None,
@@ -168,6 +308,7 @@ def emit_flash_telemetry(
         "schema": "hcli.agentos.flash_token_critical_path.v1",
         "status": "WAITING_FOR_COMPLETE_TOKEN" if passed else "NOT_RUN",
         "source_receipt": source,
+        "bench": bench,
         "candidate_graph": {
             "qualification": receipt.get("qualification") if passed else None,
             "physical_graph_fingerprint": graph.get("fingerprint") if passed else None,
@@ -189,13 +330,40 @@ def emit_flash_telemetry(
         "claim_boundary": "This is a critical-path gate, not a token-performance result. Complete-token fields remain null until protected native execution exists.",
     }
     critical["blockers"] = [item for item in critical["blockers"] if item]
+    complete_layer0_observed = _metal_execution_observed(complete_layer0)
+    complete_layer0_parity_passed = _source_parity_passed(complete_layer0)
+    complete_layer0_kernels = _native_kernels(complete_layer0)
+    source_layer_claim_boundary = (
+        "A passed source-native Metal layer-0 parity receipt plus "
+        f"{len(source_layer_refs) - 1} additional eligible linear-attention layer receipt(s) "
+        "establish bounded Apple implementation only; they prove neither CUDA execution nor "
+        "a complete-token performance result."
+        if complete_layer0_parity_passed and len(source_layer_refs) > 1 else
+        "A passed source-native Metal layer-0 parity receipt establishes bounded Apple "
+        "implementation only; it proves neither CUDA execution nor a complete-token "
+        "performance result."
+        if complete_layer0_parity_passed else
+        "A source-native Metal dispatch with failed or blocked parity is diagnostic evidence "
+        "only. It proves neither CUDA execution, source parity, nor a complete-token "
+        "performance result."
+    )
     capability = {
         "schema": "hcli.agentos.cuda_capability_graph.v1",
         "status": "PARTIAL_TRANSFER_MAP",
         "execution_device": timing.get("device") if passed else None,
+        "bench": bench,
         "native_backend_observed": "apple_metal" if passed else None,
         "cuda_execution_observed": False,
         "qualification": "TRANSFERABLE_ACCELERATOR_LAWS_ONLY",
+        "diagnostic_source_execution": {
+            "source_receipt": complete_layer0_source,
+            "additional_source_parity_layers": source_layer_refs[1:],
+            "source_parity_layer_count": len(source_layer_refs),
+            "observed": complete_layer0_observed,
+            "parity_passed": complete_layer0_parity_passed,
+            "promotion_allowed": False,
+            "claim_boundary": source_layer_claim_boundary,
+        },
         "nodes": [
             {"id": "grouped_rmsnorm", "metal_status": "FUNCTIONAL" if passed else "ABSENT", "cuda_status": "UNOBSERVED", "transfer_law": "one element per output with stream-local reduction"},
             {"id": "q4_g64_matvec", "metal_status": "FUNCTIONAL" if passed else "ABSENT", "cuda_status": "UNOBSERVED", "transfer_law": "grouped packed code/scale decode with resident activation"},
@@ -203,6 +371,41 @@ def emit_flash_telemetry(
             {"id": "moe_weighted_sum", "metal_status": "FUNCTIONAL" if passed else "ABSENT", "cuda_status": "UNOBSERVED", "transfer_law": "selected-weight reduction over routed expert outputs"},
             {"id": "moe_add_shared", "metal_status": "FUNCTIONAL" if passed else "ABSENT", "cuda_status": "UNOBSERVED", "transfer_law": "elementwise routed-plus-shared join"},
             {"id": "hyperconnection_read_write", "metal_status": "FUNCTIONAL" if passed else "ABSENT", "cuda_status": "UNOBSERVED", "transfer_law": "grouped stream equations with explicit scale and broadcast"},
+            _diagnostic_node(
+                node_id="source_bf16_gemv",
+                required_kernels={"gemv_native_bf16_seq"},
+                observed=complete_layer0_observed,
+                kernels=complete_layer0_kernels,
+                parity_passed=complete_layer0_parity_passed,
+                transfer_law="source BF16 weights multiply a device-resident activation without host weight conversion",
+            ),
+            _diagnostic_node(
+                node_id="recurrent_state_update",
+                required_kernels={
+                    "qwen_next_qkv_split_rearrange_conv_l2",
+                    "qwen_next_ba_split_to_decay_beta_source_bf16",
+                    "qwen_next_gated_delta_decode_single",
+                    "qwen_next_deltanet_source_bf16_gated_rmsnorm",
+                },
+                observed=complete_layer0_observed,
+                kernels=complete_layer0_kernels,
+                parity_passed=complete_layer0_parity_passed,
+                transfer_law="causal convolution and DeltaNet state update remain device-resident across the graph",
+            ),
+            _diagnostic_node(
+                node_id="source_native_moe_wave",
+                required_kernels={
+                    "moe_topk_gate",
+                    "qwen_next_bf16_expert_gate_up_swiglu",
+                    "qwen_next_bf16_expert_down",
+                    "qwen_next_moe_weighted_sum",
+                    "qwen_next_moe_add_shared",
+                },
+                observed=complete_layer0_observed,
+                kernels=complete_layer0_kernels,
+                parity_passed=complete_layer0_parity_passed,
+                transfer_law="router-selected experts execute from source BF16 storage without a host gather or dense expert rematerialization",
+            ),
         ],
         "edges": [
             ["grouped_rmsnorm", "q4_g64_matvec"],
@@ -210,6 +413,9 @@ def emit_flash_telemetry(
             ["fused_gate_up_swiglu", "moe_weighted_sum"],
             ["moe_weighted_sum", "moe_add_shared"],
             ["moe_add_shared", "hyperconnection_read_write"],
+            ["source_bf16_gemv", "recurrent_state_update"],
+            ["recurrent_state_update", "source_native_moe_wave"],
+            ["source_native_moe_wave", "hyperconnection_read_write"],
         ],
         "promotion_allowed": False,
         "claim_boundary": "CUDA is not claimed on this run; this graph records accelerator laws transferable from the observed Apple Metal implementation.",

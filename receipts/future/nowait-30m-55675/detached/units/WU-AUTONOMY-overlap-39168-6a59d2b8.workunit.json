@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.39168.receipt.json",
+    "devplatform.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F017: Codex rewrote the queue 37\u219241\u219244\u219247\u219249. freshness.py distinguishes STALE_FINGERPRINT_ONLY vs STALE_SEMANTIC. Run it.",
+  "frontier_id": "FT.TOOLS.freshness",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.39168",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.39168.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "2ec06e77112dd7afcae89c818c41628fa80c9fa8337e71e1464b86d79b7d8fce",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

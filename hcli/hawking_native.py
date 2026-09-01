@@ -510,7 +510,7 @@ def is_hawking_native_path(path: Optional[str]) -> bool:
         return (expanded / "MIX_REPORT.json").is_file() and (
             expanded / "catalog.hq38m20"
         ).is_file()
-    if expanded.suffix.lower() in {".gravity", ".noetic", ".hawking"} or expanded.name.endswith(
+    if expanded.suffix.lower() in {".gravity", ".nx", ".noetic", ".hawking"} or expanded.name.endswith(
         ".hawking.json"
     ):
         return True
@@ -541,7 +541,11 @@ def config_for_model_path(model_path: Optional[str]) -> HawkingNativeConfig:
                 artifact_root=str(candidate),
                 tokenizer=str(candidate / "tokenizer.json"),
             ).with_mode_override()
-        if candidate.suffix.lower() in {".gravity", ".noetic", ".hawking"}:
+        if candidate.suffix.lower() == ".nr":
+            raise HawkingNativeConfigError(
+                f"NR representation {candidate} is transient/non-executable; compile it to an NX"
+            )
+        if candidate.suffix.lower() in {".gravity", ".nx", ".noetic", ".hawking"}:
             raise HawkingNativeConfigError(
                 f"native model path {candidate} is not a readable profile or artifact; "
                 "set HCLI_HAWKING_NATIVE_CONFIG to an explicit profile"
@@ -1302,6 +1306,13 @@ class HawkingNativeConnector:
                 "wall_minus_gpu_ns",
                 "dispatches",
                 "dispatches_per_generated_token",
+                "active_bytes_per_token",
+                "active_weight_bytes_per_generated_token",
+                "active_bytes_scope",
+                "resident_weight_bytes",
+                "workspace_resident_bytes",
+                "actual_read_bytes_per_token",
+                "transient_bytes_per_token",
                 "prefill",
                 "decode",
                 "step_trace",

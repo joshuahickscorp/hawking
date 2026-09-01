@@ -1004,7 +1004,7 @@ def test_protected_accelerator_benchmark_normalizes_provider_metrics_without_mod
             "native_metrics": {
                 "gpu_ns": 80,
                 "gpu_ns_per_generated_token": 20,
-                "wall_minus_gpu_ns": 5,
+                "wall_minus_gpu_ns": 8,
                 "dispatches": 40,
                 "dispatches_per_generated_token": 10,
                 "prefill": {"steps": 7, "wall_ns": 70},
@@ -1021,6 +1021,12 @@ def test_protected_accelerator_benchmark_normalizes_provider_metrics_without_mod
     assert row["complete_wall_ns_per_token"] == 25
     assert row["gpu_ns_per_token"] == 20
     assert row["wall_minus_gpu_ns_per_token"] == 5
+    assert row["wall_minus_gpu_metric_source"] == "derived_complete_wall_minus_gpu"
+    assert row["native_wall_minus_gpu_ns"] == 8
+    assert row["native_wall_minus_gpu_ns_per_token"] == 2
+    assert row["native_wall_minus_gpu_metric_source"] == "derived_from_native_wall_minus_gpu_ns"
+    assert summary["native_wall_minus_gpu_ns"]["median"] == 8
+    assert summary["native_wall_minus_gpu_ns_per_token"]["median"] == 2
     assert row["dispatches_per_token"] == 10
     assert row["capability_sanity"]["status"] == "PASS"
 

@@ -1,0 +1,1 @@
+{"module": "hbm_doctor.py", "entry_point": "build", "receipt": "receipts/future/HBM_DOCTOR.json", "routed_to_frontier": "FT.ACTIVE_BYTES.hbm-rank", "species": "HBM_RESIDENCY", "wall_seconds": 0.186, "evidence_class": "STATIC_ONLY"}

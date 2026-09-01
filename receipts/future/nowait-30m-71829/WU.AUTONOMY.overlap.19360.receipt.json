@@ -1,0 +1,1 @@
+{"module": "devplatform.py", "entry_point": "build", "receipt": "receipts/future/DEVELOPER_PLATFORM.json", "routed_to_frontier": "FT.TOOLS.freshness", "species": "HCLI_SELF_OPTIMIZE", "wall_seconds": 0.13, "evidence_class": "STATIC_ONLY"}

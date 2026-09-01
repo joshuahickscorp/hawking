@@ -1,0 +1,1 @@
+{"module": "workunit_species.py", "entry_point": "build", "receipt": "receipts/future/HCLI_FUTURE_WORKUNITS.json", "routed_to_frontier": "FT.HCLI_SELF.emit-workunits", "species": "HCLI_SELF_OPTIMIZE", "wall_seconds": 0.028, "evidence_class": "STATIC_ONLY"}

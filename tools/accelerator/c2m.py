@@ -54,6 +54,10 @@ UNSUPPORTED = {
 # VARIABLE NAME. Measured in ACCELERATOR_C2M_CORPUS_CENSUS.json.
 PATTERNS: list[tuple[str, str, int]] = [
     (r"^(\w+)\[i\]\s*\+\s*(\w+)\[i\]$", "add", 2),
+    # A common CUDA sample spelling of the same elementwise add.  The literal is
+    # an identity in f32, so accepting it does not widen the computation; it only
+    # removes a source-level normalization obstacle.
+    (r"^(\w+)\[i\]\s*\+\s*(\w+)\[i\]\s*\+\s*0(?:\.0)?f?$", "add", 2),
     (r"^(\w+)\[i\]\s*\*\s*(\w+)\[i\]$", "mul", 2),
     (r"^(\w+)\[i\]\s*-\s*(\w+)\[i\]$", "sub", 2),
     (r"^fmaxf\(\s*(\w+)\[i\]\s*,\s*0(?:\.0)?f?\s*\)$", "relu", 1),
@@ -93,6 +97,7 @@ INDEX_BINDING = re.compile(
     + _GRID_IDX_SRC)
 
 GRID_IDX = re.compile(_GRID_IDX_SRC)
+_SCALAR = r"[-+]?(?:\d+(?:\.\d*)?|\.\d+)(?:[eE][-+]?\d+)?[fF]?"
 
 
 class C2MRefusal(Exception):
@@ -142,7 +147,10 @@ def translate(src: str, *, elements: int) -> TranslatedKernel:
 
     params: list[tuple[str, str, bool]] = []
     for raw in [p.strip() for p in params_src.split(",") if p.strip()]:
-        pm = re.match(r"(?:const\s+)?(\w+)\s*(\*?)\s*(\w+)$", raw)
+        pm = re.match(
+            r"(?:const\s+)?(\w+)\s*(\*?)\s*"
+            r"(?:(?:__restrict__|restrict)\s*)?(\w+)$", raw
+        )
         if not pm:
             raise C2MRefusal(f"cannot parse parameter {raw!r}")
         ctype, star, pname = pm.group(1), pm.group(2), pm.group(3)
@@ -182,8 +190,31 @@ def translate(src: str, *, elements: int) -> TranslatedKernel:
         prog = AirProgram(name, ins, [AirOp(op, tuple(srcs), "out_")], "out_")
         return TranslatedKernel(name, params, srcs, out_name, prog)
 
+    # A scalar multiply is a common CUDA elementwise idiom (including ``x * -1``).
+    # It lowers to AIR's specialization-backed scale op: the scalar is a compile-time
+    # value, not a fabricated buffer input.  Only numeric literals are accepted here;
+    # a runtime scalar remains outside T0 until scalar-argument plumbing exists.
+    sm = re.match(
+        rf"^(?:(?P<left>{_SCALAR})\s*\*\s*(?P<left_src>\w+)\s*\[\s*{q}\s*\]"
+        rf"|(?P<right_src>\w+)\s*\[\s*{q}\s*\]\s*\*\s*(?P<right>{_SCALAR}))$",
+        expr,
+    )
+    if sm:
+        scalar = sm.group("left") or sm.group("right")
+        source = sm.group("left_src") or sm.group("right_src")
+        ptr_names = [p[1] for p in params if p[2]]
+        if source not in ptr_names:
+            raise C2MRefusal(f"{source!r} is not a pointer parameter")
+        alpha = float(scalar.rstrip("fF"))
+        ins = [AirTensor(source, (elements,), "f32")]
+        prog = AirProgram(
+            name, ins, [AirOp("scale", (source,), "out_")], "out_",
+            specialization={"ALPHA": alpha},
+        )
+        return TranslatedKernel(name, params, [source], out_name, prog)
+
     raise C2MRefusal(f"expression {expr!r} is outside the C2M-T0 pattern set "
-                     f"(supported: a+b, a*b, a-b, fmaxf(a,0))")
+                     f"(supported: a+b, a+b+0.0f, a*b, a-b, scalar*a, fmaxf(a,0))")
 
 
 def conformance(results: list[dict[str, Any]]) -> dict[str, Any]:
@@ -197,7 +228,8 @@ def conformance(results: list[dict[str, Any]]) -> dict[str, Any]:
         "higher_tiers": {
             "C2M-T1": "NOT CLAIMED: no runtime, memory API or stream semantics exist",
             "C2M-T2": "NOT CLAIMED: no math/ML kernel corpus (no GEMM, no reduction)",
-            "C2M-T3": "NOT CLAIMED: no real open CUDA project has been run",
+            "C2M-T3": "NOT CLAIMED: a bounded source slice and one translated kernel "
+                       "are present, but no project-level CUDA runtime has been run",
             "C2M-T4": "NOT CLAIMED: no AI workload",
             "C2M-T5": "NOT CLAIMED: nothing is production-supported",
         },

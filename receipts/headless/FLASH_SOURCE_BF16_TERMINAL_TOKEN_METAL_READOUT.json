@@ -1,0 +1,52 @@
+{
+  "claim_boundary": "First greedy token was physically received from the verified 48-layer source-BF16 state through a single Metal command buffer containing the HyperConnection readout and lm_head. This is not yet a one-process streamed 48-layer runtime, TPS, EBPW, or residency qualification.",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "FIRST_COMPLETE_TOKEN_TERMINAL_PROBE",
+  "execution": {
+    "command_buffers": 1,
+    "device": "Apple M3 Ultra",
+    "dispatches": 7,
+    "fallback_count": 0,
+    "gpu_ns": 7327375,
+    "native_source_bf16": true,
+    "provider": "apple_metal",
+    "wall_ns": 33574519083
+  },
+  "flash_tps": null,
+  "input": {
+    "elements": 10240,
+    "state": "receipts/headless/FLASH_PREFIX_FED_LAYER47_STATE_DUAL_PROJ.f32",
+    "state_sha256": "db34aaaad10bdbc48158e717ce6a3cf9ecf2db9733fbea8d483e2873847dbd64"
+  },
+  "parity": {
+    "hyperconnection_readout": {
+      "cosine": 0.9999999999999974,
+      "finite": true,
+      "length_match": true,
+      "max_abs_error": 7.62939453125e-06,
+      "rmse": 2.2812100813225184e-07,
+      "within_tolerance": true
+    }
+  },
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "representation": "source_bf16_exact",
+  "schema": "hawking.flash_source_bf16_terminal.v1",
+  "status": "PASSED",
+  "terminal": {
+    "hyperconnection_readout": "native Metal source-BF16 graph with CPU oracle",
+    "lm_head": "native_bf16_gemv_seq",
+    "sampling": "sample_argmax_f32",
+    "token_id": 17
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

@@ -1,0 +1,1 @@
+{"module": "specimen_verify.py", "entry_point": "build", "receipt": "receipts/future/SPECIMEN_VERIFICATION.json", "routed_to_frontier": "FT.MODEL_CAPABILITY.hard-gates", "species": "SPECIMEN_VERIFY", "wall_seconds": 541.686, "evidence_class": "STATIC_ONLY"}

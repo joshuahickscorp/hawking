@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.77536.receipt.json",
+    "flash_schools.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F019 stalls all nine real Flash meta families at gate 2 (real_teacher_fit). meta_ready.py already writes the dossier; the remaining CPU work is to keep gates 3-9 wired to the corpu",
+  "frontier_id": "FT.MODEL_REPRESENTATION.meta-gates-3-9",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.77536",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.77536.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "4da354179db35adde3ff2f20becd9cbac8770bbea6d2f26f78a343df90baf72a",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

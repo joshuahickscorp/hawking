@@ -1,0 +1,75 @@
+{
+  "schema": "hawking.flash.fused_route_accumulate_parity.v1",
+  "status": "PASSED_FUSED_ROUTE_ACCUMULATION_PARITY",
+  "layer": 7,
+  "fused_receipt": "receipts/headless/FLASH_FUSED_ROUTE_ACCUMULATE_L7.json",
+  "fused_receipt_sha256": "46b6024ea919b3aee839d755b94d8ac09fd3a4afabd3836145f1a3c27ae5b602",
+  "control_receipt": "receipts/headless/FLASH_COMPACT_L0_L7_V1/layer-7/receipt.json",
+  "control_receipt_sha256": "57d7dd729c085c1a03e41aaec955129dce67c9a2d424ee386e60bc52cb9679fc",
+  "fused_state_sha256": "f35aee14ffb836b3661376d36788c90aaaf97bbf30d382fbc7bdfa813c511eab",
+  "control_state_sha256": "6a221ea395895b070fc02d1bd3639a610d224b40749912baa1b9c90b26696aed",
+  "comparison": {
+    "route_ids_match": true,
+    "fused_route_ids": [
+      346,
+      505,
+      348,
+      40,
+      312,
+      377,
+      286,
+      452,
+      382,
+      303
+    ],
+    "control_route_ids": [
+      346,
+      505,
+      348,
+      40,
+      312,
+      377,
+      286,
+      452,
+      382,
+      303
+    ],
+    "fused_cpu_parity_all_within_tolerance": true,
+    "final_state": {
+      "shape_match": true,
+      "elements": 10240,
+      "max_abs_error": 7.450580596923828e-09,
+      "rmse": 3.287786256958785e-10,
+      "cosine": 1.0000000000000002,
+      "within_tolerance": true
+    },
+    "exact_state_hash_match": false,
+    "interpretation": "The direct kernel changes reduction order, so bitwise state identity is not required; the state remains within the qualified source-BF16 organ tolerance."
+  },
+  "physical_delta": {
+    "fused_dispatches": 28,
+    "control_dispatches": 29,
+    "dispatches_saved": 1,
+    "fused_gpu_ns": 6905374,
+    "control_gpu_ns": 13367708,
+    "gpu_reduction_fraction": 0.48342872241075285,
+    "fused_wall_ns": 19674750,
+    "control_wall_ns": 20776333,
+    "wall_reduction_fraction": 0.05302105044234707,
+    "fused_route_accumulation": "fused_compact_down_weighted_sum",
+    "routed_output_materialized": false,
+    "interpretation": "One host dispatch and the TOP_K x hidden routed-output materialization were removed. GPU time is a diagnostic organ result; isolated wall time is not a protected complete-token benchmark."
+  },
+  "claim_boundary": "This is a bounded layer-7 compact full-attention/MoE organ comparison. It proves direct fused routed accumulation against the existing CPU/source-BF16 oracle and materialized compact control within organ tolerance. It does not prove complete-token capability, TPS, EBPW, residency, or a whole-model wall-time win.",
+  "promotion_allowed": false,
+  "next_action": "Reuse the fused accumulation primitive in the next qualified compact full-attention boundaries, then measure complete-forward wall time before promotion.",
+  "bench": {
+    "state": "UNKNOWN",
+    "measurement_state": "MEASURED_DIAGNOSTIC_ORGAN",
+    "recorded_at": "2026-08-29T03:03:21.773740Z",
+    "recorded_by": "tools/flash_fused_route_accumulate_compare.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "organ parity and dispatch/GPU delta only; no complete-token promotion"
+  },
+  "seal_sha256": "58883cfdb1bb6f009c9d9453f13dc489d6b9c8ca4ad396000c422070516710c0"
+}

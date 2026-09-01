@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:48:38Z",
+  "recorded_at": "2026-09-01T05:58:27Z",
   "recorded_by": "tools/future/teacher_corpus_expansion.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1663,7 +1663,7 @@
   "path": "receipts/future/evidence/FLASH_META_COHERENCE_SCREEN_L4_REAL256.json",
   "status": "OFFLINE_META_SURFACE_GATE_FAILED"
  },
- "seal_sha256": "a87f32379a1678da629866185e87b64604cbb9679c2a7781910f6d5da26489a1",
+ "seal_sha256": "54f67ebca7a5825d2243e39b2187e29d6932ba0ab305052cb260613cedf6a763",
  "selftest": {
   "absent_corpus_accepted": false,
   "bounded_target_rows_agrees": true,

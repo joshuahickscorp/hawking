@@ -1,0 +1,35 @@
+{
+  "expected": 1207489041,
+  "files": [
+    ".gitattributes",
+    "1_Pooling/config.json",
+    "README.md",
+    "config.json",
+    "config_sentence_transformers.json",
+    "generation_config.json",
+    "merges.txt",
+    "model.safetensors",
+    "modules.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+  ],
+  "mode": "safe",
+  "repo": "Qwen/Qwen3-Embedding-0.6B",
+  "resolved_sha": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+  "revision": "97b0c614be4d77ee51c0cef4e5f07c00f9eb65b3",
+  "sizes": {
+    ".gitattributes": 1570,
+    "1_Pooling/config.json": 313,
+    "README.md": 17237,
+    "config.json": 727,
+    "config_sentence_transformers.json": 215,
+    "generation_config.json": 117,
+    "merges.txt": 1671853,
+    "model.safetensors": 1191586416,
+    "modules.json": 349,
+    "tokenizer.json": 11423705,
+    "tokenizer_config.json": 9706,
+    "vocab.json": 2776833
+  }
+}

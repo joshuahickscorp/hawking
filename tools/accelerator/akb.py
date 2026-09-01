@@ -41,7 +41,25 @@ SCHEMA = "hawking.accelerator.akb.v1"
 # ours -- it is the live organ-shape base written by odyssey_pass.py, which this lane
 # is forbidden to touch, so the law base is a separate file and that receipt stays in
 # the corpus as an ordinary input.
-OWN_OUTPUTS = frozenset({"ACCELERATOR_LAW_BASE.json", "ACCELERATOR_AKB_CONSTRUCTION.json"})
+OWN_OUTPUTS = frozenset({
+    "ACCELERATOR_LAW_BASE.json",
+    "ACCELERATOR_AKB_CONSTRUCTION.json",
+    # The architecture atlas is an executable planning input, not a typed
+    # Accelerator law receipt.  Keeping it out prevents the law corpus from
+    # treating its hypotheses as self-evidence or inflating the unextracted
+    # partition on every atlas regeneration.
+    "ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    # A derived scoreboard is a platform view, not a new Accelerator law.  It
+    # is deliberately kept out of the law corpus so its timing-shaped summary
+    # cannot become self-evidence or an untyped law candidate.
+    "ACCELERATOR_SCOREBOARD.json",
+    # The compiled repatriation queue is an executable hypothesis/work proposal,
+    # not physical evidence.  Its WorkUnit records must not feed the law corpus.
+    "ACCELERATOR_REPATRIATION_QUEUE.json",
+    # The repatriation audit proves structural/provenance invariants; it is not
+    # independent physical evidence and must not become self-evidence.
+    "ACCELERATOR_REPATRIATION_AUDIT.json",
+})
 
 # The applicability domain. Every entry names all eleven; none may be absent.
 AXES = ("MODEL", "ARCHITECTURE", "ORGAN", "REPRESENTATION", "SHAPE", "MACHINE",
@@ -2263,6 +2281,66 @@ UNEXTRACTED_REASONS = {
 }
 
 UNEXTRACTED: dict[str, str] = {
+    # C2M-T3 source admission spans three real CUDA projects and executes one
+    # translated kernel on Apple Metal, but deliberately makes no transferable
+    # performance-law claim and keeps CUDA execution blocked.
+    "ACCELERATOR_C2M_T3_REAL_PROJECTS.json": "CAPABILITY_NOT_LAW",
+    # A passed physical source-BF16 layer-0 parity graph establishes bounded
+    # Apple capability, not a transferable performance law or complete-token
+    # result. Keep it visible through its registration while refusing to type
+    # broader CUDA/throughput claims here.
+    "FLASH_NOETIC_COMPLETE_LAYER0_NATIVE_PARITY.json": "CAPABILITY_NOT_LAW",
+    # Same bounded source graph on an independent eligible linear-attention
+    # layer.  Cross-layer parity strengthens implementation coverage, but still
+    # is not a transferable performance law or a complete-token result.
+    "FLASH_NOETIC_COMPLETE_LAYER2_NATIVE_PARITY.json": "CAPABILITY_NOT_LAW",
+    # Prefix-fed continuation layers extend exact source parity through the next
+    # linear-attention run, but remain bounded capability receipts rather than
+    # transferable performance laws or complete-token evidence.
+    "FLASH_NOETIC_COMPLETE_LAYER4_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER5_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER6_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    # Prefix-fed continuation layers extend exact source parity through layers
+    # 8 and 9; they are bounded capability receipts, not transferable laws.
+    "FLASH_NOETIC_COMPLETE_LAYER8_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER9_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER10_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER12_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER13_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER14_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER16_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER17_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER18_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER20_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER21_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER22_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER24_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER25_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER26_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER28_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER29_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_DISPATCH_OPTIMIZATION_PROBE_LAYER29.json": "METHOD_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER29_PREFIX_FED_NATIVE_OPT.json": "METHOD_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER30_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER32_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER33_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER34_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER36_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER37_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER38_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER40_PREFIX_FED_NATIVE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER0_FUSED_SWIGLU.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER0_DUAL_PROJ.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER0_FUSED_MOE_EPILOGUE.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_COMPLETE_LAYER0_FUSED_HC_INPUT.json": "CAPABILITY_NOT_LAW",
+    "FLASH_LAYER0_DISPATCH_LEDGER_FUSED_SWIGLU.json": "METHOD_NOT_LAW",
+    "FLASH_LAYER0_CRITICAL_PATH_FUSED_SWIGLU.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_MULTILAYER_LINEAR_PREFIX_L0_L2_FUSED_SWIGLU.json": "CAPABILITY_NOT_LAW",
+    "FLASH_COMPLETE_TOKEN_NATIVE_ATTEMPT.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_FULL_ATTENTION_LAYER47_FUSED_SWIGLU.json": "CAPABILITY_NOT_LAW",
+    "FLASH_NOETIC_FULL_ATTENTION_LAYER47_DUAL_PROJ.json": "CAPABILITY_NOT_LAW",
+    "FLASH_SOURCE_BF16_TERMINAL_TOKEN.json": "CAPABILITY_NOT_LAW",
+    "FLASH_SOURCE_BF16_TERMINAL_TOKEN_METAL_READOUT.json": "CAPABILITY_NOT_LAW",
     # A hardware refusal and a precision measurement of its workaround; the
     # AKB's axes are about kernel performance and this is about a TYPE.
     "ACCELERATOR_FP64_IS_A_HARDWARE_REFUSAL.json": "CAPABILITY_NOT_LAW",
@@ -2386,6 +2464,15 @@ def build(*, root: Path = REPO) -> dict[str, Any]:
     unextracted = []
     for name in sorted(names - cited):
         key = UNEXTRACTED.get(name)
+        # Flash source-parity layer receipts are capability evidence by
+        # construction.  Keep future verified boundaries typed automatically
+        # so adding a new layer cannot turn the corpus red merely because a
+        # hand-maintained filename table lagged the physical run.
+        if key is None and re.fullmatch(
+            r"FLASH_NOETIC_(?:COMPLETE_LAYER\d+_PREFIX_FED_NATIVE|FULL_ATTENTION_LAYER\d+_ORGAN|COMPLETE_LAYER0_FUSED_MOE_EPILOGUE)(?:_OPT)?\.json",
+            name,
+        ):
+            key = "CAPABILITY_NOT_LAW"
         unextracted.append({
             "receipt": f"receipts/headless/{name}",
             "reason_code": key or "UNCLASSIFIED",

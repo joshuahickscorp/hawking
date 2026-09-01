@@ -15,7 +15,8 @@ fn main() {
 #[cfg(target_os = "macos")]
 mod macos {
     use hawking_core::model::qwen30_complete_runtime::{
-        preflight_complete_runtime, Qwen30CompleteNativeRuntime, Qwen30CompleteRuntimeOptions,
+        preflight_complete_runtime, preflight_uniform_q4_runtime, Qwen30CompleteNativeRuntime,
+        Qwen30CompleteRuntimeOptions,
         Qwen30GateUpSwiGluKernel, Qwen30NativeGreedyStep, Qwen30NativeProfilerSnapshot,
         Qwen30PackedMatvecKernel,
     };
@@ -967,6 +968,47 @@ mod macos {
                     },
                     "claim_boundary": {
                         "strict_mixed_artifact_admission_only": true,
+                        "no_full_token_has_executed": true,
+                        "not_generation_capability_hcli_clean_tps_tg_or_tournament_qualification": true,
+                    },
+                }));
+                return;
+            }
+            if is_uniform_q4 {
+                let uq = uniform_q4_admission(&arguments)
+                    .unwrap_or_else(|error| fail(error));
+                let preflight = preflight_uniform_q4_runtime(&arguments.manifest, &uq)
+                    .unwrap_or_else(|error| fail(error.to_string()));
+                print_json(json!({
+                    "schema": RESULT_SCHEMA,
+                    "status": "EARNED_QWEN30_UNIFORM_Q4_NATIVE_ADMISSION_PREFLIGHT_NOT_TOKEN_EXECUTION",
+                    "mode": arguments.mode.name(),
+                    "runtime_executable_sha256": runtime_executable_sha256,
+                    "preflight": {
+                        "manifest_path": preflight.manifest_path,
+                        "manifest_seal_sha256": preflight.manifest_seal_sha256,
+                        "source_revision": preflight.source_revision,
+                        "config_path": preflight.config_path,
+                        "config_sha256": preflight.config_sha256,
+                        "tokenizer_path": preflight.tokenizer_path,
+                        "tokenizer_sha256": preflight.tokenizer_sha256,
+                        "source_user_chat_template_path": preflight.source_user_chat_template_path,
+                        "source_user_chat_template_sha256": preflight.source_user_chat_template_sha256,
+                        "tokenizer_config_path": preflight.tokenizer_config_path,
+                        "tokenizer_config_sha256": preflight.tokenizer_config_sha256,
+                        "source_user_chat_template_bound": true,
+                        "complete_exact_tensor_catalog_bound": true,
+                        "tensor_count": preflight.tensor_count,
+                        "tensor_payload_bytes": preflight.tensor_payload_bytes,
+                        "source_weight_elements": preflight.source_weight_elements,
+                        "direct_layout_group_size": preflight.direct_layout_group_size,
+                        "verified_payload_count": preflight.verified_payload_count,
+                        "complete_verified_payload_cache_at_admission": preflight.complete_verified_payload_cache_at_admission,
+                        "preflight_payload_snapshots_are_process_local": true,
+                        "uniform_q4_group_size": 64,
+                    },
+                    "claim_boundary": {
+                        "strict_uniform_q4_artifact_config_tokenizer_catalog_binding_only": true,
                         "no_full_token_has_executed": true,
                         "not_generation_capability_hcli_clean_tps_tg_or_tournament_qualification": true,
                     },

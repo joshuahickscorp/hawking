@@ -1,0 +1,37 @@
+{
+  "expected": 6402697164,
+  "files": [
+    ".gitattributes",
+    "LICENSE.txt",
+    "README.md",
+    "assets/Enterprise Reliability Benchmarks for Tiny Models.png",
+    "chat_template.jinja",
+    "config.json",
+    "generation_config.json",
+    "model-00001-of-00002.safetensors",
+    "model-00002-of-00002.safetensors",
+    "model.safetensors.index.json",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "ai21labs/AI21-Jamba2-3B",
+  "resolved_sha": "525c6c8e1d9f5bddedfbdc1dbb0ade2df84230c9",
+  "revision": "525c6c8e1d9f5bddedfbdc1dbb0ade2df84230c9",
+  "sizes": {
+    ".gitattributes": 1519,
+    "LICENSE.txt": 11342,
+    "README.md": 4392,
+    "assets/Enterprise Reliability Benchmarks for Tiny Models.png": 74531,
+    "chat_template.jinja": 3147,
+    "config.json": 1004,
+    "generation_config.json": 132,
+    "model-00001-of-00002.safetensors": 4973441016,
+    "model-00002-of-00002.safetensors": 1420830280,
+    "model.safetensors.index.json": 37422,
+    "special_tokens_map.json": 895,
+    "tokenizer.json": 8285713,
+    "tokenizer_config.json": 5771
+  }
+}

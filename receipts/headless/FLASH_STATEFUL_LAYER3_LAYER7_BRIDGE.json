@@ -1,0 +1,135 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787955203517",
+    "recorded_by": "flash_stateful_layer3_layer7_bridge",
+    "rule": "S032 §3 -- bounded stateful bridge; no complete-token performance claim",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "Two token steps traverse layers 0..2 stateful DeltaNet, layer 3 stateful full-attention KV plus MLP/MoE, layers 4..6 stateful DeltaNet with device inter-layer handoffs, and layer 7 stateful full-attention KV plus MLP/MoE. The layer-3-to-layer-4 and layer-6-to-layer-7 seams remain host diagnostic copies; this does not prove device-only 48-layer integration, tokenizer acceptance, TPS, EBPW, or residency.",
+  "complete_system_ebpw": null,
+  "execution": {
+    "layer3_to_layer4_handoff": "host diagnostic copy",
+    "layer4_to_layer6_handoffs": "device resident",
+    "layer6_to_layer7_handoff": "host diagnostic copy",
+    "linear_context_reused": true,
+    "linear_weights_reused": true,
+    "process_boundary": "one native process"
+  },
+  "layer3": {
+    "final_state_count": 2,
+    "final_state_sha256": [
+      "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+      "ed176ce5428dbb3cd40860dd91178d68fd0386abe3375cb0ff16ad402e8ec551"
+    ],
+    "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER7_BRIDGE_ATTN.json"
+  },
+  "layer7": {
+    "final_state_count": 2,
+    "final_state_sha256": [
+      "a14f7db1fd0fc0762d41dde15579c322b96ad90ea53864fc3ad16e1c5188d15a",
+      "9820c6731db1967f5145bea0ea689fe99b9ef5536767f7b3aaeadb3dc904d252"
+    ],
+    "receipt": "receipts/headless/FLASH_STATEFUL_LAYER3_LAYER7_BRIDGE_ATTN.json"
+  },
+  "linear_4_6": {
+    "layer6_final_state_sha256": [
+      "a813ba5af87a5f13f8d7ca847cf7217ed80e01bac3c2bb12d780d0b91dbaf617",
+      "fcdf67ac94d23e629122147d942b1b5bf206fc64021b25d8db5f87c1d99ec42f"
+    ],
+    "layers": [
+      4,
+      5,
+      6
+    ],
+    "species": "linear_attention",
+    "stateful_recurrence": true,
+    "steps": [
+      {
+        "device_inter_layer_handoff": false,
+        "dispatches": 20,
+        "final_state_sha256": "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+        "finite": true,
+        "gpu_ns": 28954291,
+        "input_state_sha256": "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+        "layer": 4,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 40144333
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "89d0c8b721a716b72c255630ce48fed652ab2d1ea97cb1260a15243bb0bee42a",
+        "finite": true,
+        "gpu_ns": 28264916,
+        "input_state_sha256": "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+        "layer": 5,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 28754166
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "a813ba5af87a5f13f8d7ca847cf7217ed80e01bac3c2bb12d780d0b91dbaf617",
+        "finite": true,
+        "gpu_ns": 28006249,
+        "input_state_sha256": "89d0c8b721a716b72c255630ce48fed652ab2d1ea97cb1260a15243bb0bee42a",
+        "layer": 6,
+        "step": 0,
+        "token_id": 248044,
+        "wall_ns": 28332833
+      },
+      {
+        "device_inter_layer_handoff": false,
+        "dispatches": 20,
+        "final_state_sha256": "3d85152f1fc5cfd300aba5e4cd37b696e40ed46a0a81de556d95ab0109c23662",
+        "finite": true,
+        "gpu_ns": 25079875,
+        "input_state_sha256": "ed176ce5428dbb3cd40860dd91178d68fd0386abe3375cb0ff16ad402e8ec551",
+        "layer": 4,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25400333
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "ea6264f5c46dce7fc5ac0fcdbfe631a22515f4bfc8e2b8a2c95d30899ef0f5df",
+        "finite": true,
+        "gpu_ns": 25363208,
+        "input_state_sha256": "3d85152f1fc5cfd300aba5e4cd37b696e40ed46a0a81de556d95ab0109c23662",
+        "layer": 5,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25705792
+      },
+      {
+        "device_inter_layer_handoff": true,
+        "dispatches": 20,
+        "final_state_sha256": "fcdf67ac94d23e629122147d942b1b5bf206fc64021b25d8db5f87c1d99ec42f",
+        "finite": true,
+        "gpu_ns": 25299749,
+        "input_state_sha256": "ea6264f5c46dce7fc5ac0fcdbfe631a22515f4bfc8e2b8a2c95d30899ef0f5df",
+        "layer": 6,
+        "step": 1,
+        "token_id": 248044,
+        "wall_ns": 25605625
+      }
+    ]
+  },
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Continue the same state arena through the remaining structural boundaries, then replace the diagnostic species seams with device-resident handoff.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_layer3_layer7_bridge.v2",
+  "seal_sha256": "fe823d2f361ee7227b552318cc47da7ca9478d92bc15f17d0b06d34a13c993b3",
+  "status": "PASSED_STATEFUL_CROSS_SPECIES_CHAIN",
+  "token_ids": [
+    248044,
+    248044
+  ]
+}

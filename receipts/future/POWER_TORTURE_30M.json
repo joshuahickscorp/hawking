@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T10:22:28Z",
+  "recorded_at": "2026-09-01T05:40:27Z",
   "recorded_by": "tools/future/power_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -280,7 +280,7 @@
   "verdict": "PASS"
  },
  "duration_s_budget": 1800,
- "elapsed_s": 4.003138065338135,
+ "elapsed_s": 4.1230669021606445,
  "evidence_class": "STATIC_ONLY",
  "exercised": [
   "NO_WAIT",
@@ -314,12 +314,12 @@
  "integration_ok": true,
  "judge": {
   "append_only": true,
-  "claimed_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+  "claimed_sha256": "3ac02f383b8220c7dce645a8e0717b8c8bc255c6f5f88832e5e02b0dcdfdcd4d",
   "correct_refusal_counts_as_exercised": true,
   "correct_refusals": [
    "CONCURRENCY"
   ],
-  "events_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+  "events_sha256": "3ac02f383b8220c7dce645a8e0717b8c8bc255c6f5f88832e5e02b0dcdfdcd4d",
   "evidence_class": "STATIC_ONLY",
   "exercised": [
    "NO_WAIT",
@@ -359,7 +359,7 @@
     "power": "BLOCKED_RESOURCE_REROUTE",
     "seq": 13,
     "status": "EXERCISED",
-    "why": "protected unit parked; continue_with returned 32 CPU units"
+    "why": "protected unit parked; continue_with returned 33 CPU units"
    },
    "CONCURRENCY": {
     "correct_refusal": true,
@@ -399,7 +399,7 @@
     "power": "NO_WAIT",
     "seq": 5,
     "status": "EXERCISED",
-    "why": "detached pid 72371 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+    "why": "detached pid 75519 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
    },
    "PROTECTED_PARKING": {
     "correct_refusal": false,
@@ -486,7 +486,7 @@
    "correct_refusal": false,
    "counts_toward_pass": true,
    "evidence": {
-    "n_continued": 32,
+    "n_continued": 33,
     "unit_ids": [
      "FT.ACTIVE_BYTES.hbm-rank",
      "FT.CHILD_RESIDENT.install-dry-run",
@@ -496,6 +496,7 @@
      "FT.GPU_KERNELS.static-warnings",
      "FT.HCLI_SELF.emit-workunits",
      "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+     "FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
      "FT.MODEL_REPRESENTATION.meta-gates-3-9",
      "FT.ODYSSEY_ADVERSARY.attacks",
      "FT.ODYSSEY_TRANSFER.re-earn",
@@ -527,7 +528,7 @@
    "power": "BLOCKED_RESOURCE_REROUTE",
    "skipped": false,
    "status": "EXERCISED",
-   "why": "resource blocked; 32 CPU units scheduled instead of idling"
+   "why": "resource blocked; 33 CPU units scheduled instead of idling"
   },
   "CONCURRENCY": {
    "correct_refusal": true,
@@ -608,18 +609,18 @@
    "counts_toward_pass": true,
    "evidence": {
     "detector_verdict": "NO_WAIT_OK",
-    "fast_finished_at": 1788171745.795875,
+    "fast_finished_at": 1788241224.536639,
     "fast_ingest": "ingested",
-    "pid": 72371,
+    "pid": 75519,
     "runnable_while_open": "RUNNABLE",
-    "slow_launched_at": 1788171745.4641302
+    "slow_launched_at": 1788241224.204287
    },
    "exercised": true,
    "failed": false,
    "power": "NO_WAIT",
    "skipped": false,
    "status": "EXERCISED",
-   "why": "detached pid 72371 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
+   "why": "detached pid 75519 stayed open while WU.TORTURE.NO_WAIT.ind started, progressed and ingested; idle_runnable was not a wait"
   },
   "PROTECTED_PARKING": {
    "correct_refusal": false,
@@ -627,7 +628,7 @@
    "evidence": {
     "PROTECTED_SCHEDULER_CAPABLE": true,
     "PROTECTED_WINDOW_AVAILABLE": false,
-    "n_continued": 32,
+    "n_continued": 33,
     "verdict": "BLOCKED_ON_PROTECTED_WINDOW",
     "wake_condition": {
      "all_of": [
@@ -657,7 +658,7 @@
     "cites": [
      "receipts/future/STATUS_CAUSALITY_CHALLENGE.json",
      "receipts/future/DETACHED_WORK_TRIAL.json",
-     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-1741/power_torture_run0/nowait/results/fast.json"
+     "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-2223/power_torture_run0/nowait/results/fast.json"
     ]
    },
    "exercised": true,
@@ -720,8 +721,8 @@
    "counts_toward_pass": true,
    "evidence": {
     "emit_entry": "emit",
-    "n_gates_named_gap": 11,
-    "n_gates_recording": 7,
+    "n_gates_named_gap": 1,
+    "n_gates_recording": 17,
     "probe_kind": "process_error",
     "verdict": "OVERREACHING"
    },
@@ -766,12 +767,12 @@
  "purpose": "30-minute power torture on a frozen build. Judged independently from the sealed timeline against a substrate verified unchanged.",
  "resident_model_attached": false,
  "schema": "hawking.future.power_torture.v2",
- "seal_sha256": "c4aa2f1f57a55272c72a9f61348bf6dcf7a561e01969315f49fc6f6d0202730e",
+ "seal_sha256": "a752ed93921ab04debdc5ef352b671706c1e7ca9d4a5f5018e2d1c776902d13f",
  "skipped": [],
  "skipped_do_not_count_toward_pass": true,
  "substrate": {
-  "after_digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
-  "before_digest": "56834d7c5cabad6e9fb0083125007f342a754812331d44528c3d47761b362318",
+  "after_digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
+  "before_digest": "aa938a5d6f1a8f5403abdfd779f9135a015e97ba1a39fddd72e96f1024afa98a",
   "equal": true,
   "files": [
    {
@@ -781,9 +782,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 5334,
+    "bytes": 13414,
     "path": "tools/future/_common.py",
-    "sha256": "cacc92109ffa1f0d8f78a966a9797056286e984266b163808d739374412ceb23",
+    "sha256": "e3299f8acbe7c02c77d52d50d911abddca114e8ab7f51dc2b7cf79a2e79018b8",
     "state": "HASHED"
    },
    {
@@ -805,15 +806,15 @@
     "state": "HASHED"
    },
    {
-    "bytes": 79921,
+    "bytes": 87321,
     "path": "tools/future/autonomy_run.py",
-    "sha256": "541ac50bafcb9c6a92db979470177dfa6a9408c70573a3aa8f069232456c0ae1",
+    "sha256": "a777ce20810b4b6987c4a218b91736a5239a597fe189d99eff0546c83010aae2",
     "state": "HASHED"
    },
    {
-    "bytes": 123461,
+    "bytes": 156931,
     "path": "tools/future/autonomy_trial.py",
-    "sha256": "68408426267dd952e81910b57427b2e8caceb8c7e9669419546cc771541883ee",
+    "sha256": "a4dd3902c8d721f960d537babda2a59232248e9905eeeab1bb18369af72c9feb",
     "state": "HASHED"
    },
    {
@@ -895,9 +896,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 100960,
+    "bytes": 113469,
     "path": "tools/future/frontiers.py",
-    "sha256": "eeb6d745b475c2bf20e310fdb4e88920030fb150b1f6394fcbd246e3398b5d94",
+    "sha256": "4a47fd9471d44662bb7edfed3b1a4fe87ee513a8bb21a33632edf82de34983b3",
     "state": "HASHED"
    },
    {
@@ -907,15 +908,21 @@
     "state": "HASHED"
    },
    {
+    "bytes": 108707,
+    "path": "tools/future/improvement_trial.py",
+    "sha256": "9e324de579129a0a0b56eb4b7c9b50559eac41ed5e84d176ffd36ed2ffb3d14e",
+    "state": "HASHED"
+   },
+   {
     "bytes": 57194,
     "path": "tools/future/meta_funnel.py",
     "sha256": "6f96e4591b491a8fd5d4daff5b3d1dc8f2a9e5cf7859aed4a0760f020f652c09",
     "state": "HASHED"
    },
    {
-    "bytes": 69467,
+    "bytes": 76920,
     "path": "tools/future/model_bearing.py",
-    "sha256": "1d9a1820735a4b5d0900faffe85bbca7a79e5717c775ebe9d31d33d79be7391f",
+    "sha256": "3d116c7f410628077b82a341cbe7d646494a45ca7ef55f01ae97f1ffc93ad95d",
     "state": "HASHED"
    },
    {
@@ -931,15 +938,21 @@
     "state": "HASHED"
    },
    {
-    "bytes": 59430,
+    "bytes": 63130,
     "path": "tools/future/negative_index.py",
-    "sha256": "c435fd2a98225c4e8bdf6af4120ed69f496d59a27dc157d38b532145533ec747",
+    "sha256": "1a89c8c123f5fd954bea3fc28e3594832bf229ed6cfaa481f1420301086b1dee",
     "state": "HASHED"
    },
    {
     "bytes": 47702,
     "path": "tools/future/ngram_school.py",
     "sha256": "f7dfd8e29a9b0a5a3968afbb9d3315a743cda96dadc4ee470b79da6a667bfa6d",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 55838,
+    "path": "tools/future/no_wait_orchestration.py",
+    "sha256": "3c1ec97453e6b8a59d27ad6cf41a32437a238fa98c58e647f786a6c823be1ea7",
     "state": "HASHED"
    },
    {
@@ -1027,9 +1040,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 46786,
+    "bytes": 48796,
     "path": "tools/future/resident_health.py",
-    "sha256": "f1956cb481b43bdf42c97fe43c029181f74344a38828a591cbe24c2696132629",
+    "sha256": "153cf35ee8e34163b30e376d975154a1112d640450707411468f88d0d12e0f73",
     "state": "HASHED"
    },
    {
@@ -1051,9 +1064,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 103334,
+    "bytes": 110475,
     "path": "tools/future/resident_provider.py",
-    "sha256": "216a79c5db59ac20d320dcdb423003d08cff7186b93f66d19f47ae6de6ed9e9d",
+    "sha256": "cfbd490d8a7af3d8a88558ad5fa1604b8f84138c4e1a532cb19e3a044fce4d91",
     "state": "HASHED"
    },
    {
@@ -1072,6 +1085,12 @@
     "bytes": 52227,
     "path": "tools/future/router_science.py",
     "sha256": "f142bed15bc0f7aa0dc591d3cbafe1a099b8d037a0750a5550b46f8d6e384ef9",
+    "state": "HASHED"
+   },
+   {
+    "bytes": 7341,
+    "path": "tools/future/runnability_snapshot.py",
+    "sha256": "098cf6c04d4c672998b8796d8f66b987a5ce0531158bd2aaff4c552f7a51945b",
     "state": "HASHED"
    },
    {
@@ -1099,9 +1118,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 106575,
+    "bytes": 114872,
     "path": "tools/future/status_causality.py",
-    "sha256": "661fe3cbf71ef99262435160b1fa3efe7875e07b8fe8698e435c4ec1686a1185",
+    "sha256": "80ffe1929a7cc56b382cb366cf8cad2c3cde52f57e844159d4ed693d1aafbacd",
     "state": "HASHED"
    },
    {
@@ -1141,9 +1160,9 @@
     "state": "HASHED"
    },
    {
-    "bytes": 22642,
+    "bytes": 23654,
     "path": "tools/future/work_events.py",
-    "sha256": "f3683c45757ac64b4be4ec78dce4e4179533984403f93339ce46a9f78694a0c6",
+    "sha256": "8fb9cb622ed0af16df21ee8d6e70b526d72e5be850171281df1a2872928a49ee",
     "state": "HASHED"
    },
    {
@@ -1160,7 +1179,7 @@
    }
   ],
   "moved": [],
-  "n_files": 64,
+  "n_files": 67,
   "n_shaders": 1,
   "shaders": [
    {
@@ -1174,8 +1193,8 @@
  },
  "timeline": {
   "append_only": true,
-  "elapsed_s": 4.00228,
-  "events_sha256": "f4fe2dba98f6dd3fbb3e161dc2a35e1617f03818ca81961d3628d74b65e8c94f",
+  "elapsed_s": 4.122555,
+  "events_sha256": "3ac02f383b8220c7dce645a8e0717b8c8bc255c6f5f88832e5e02b0dcdfdcd4d",
   "n_events": 27,
   "path": "receipts/future/POWER_TORTURE_TIMELINE.json",
   "receipt": "receipts/future/POWER_TORTURE_TIMELINE.json",

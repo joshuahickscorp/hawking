@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.8832.receipt.json",
+    "negative_index.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "query the scar index for cross_expert_structure on qwen3-80b routed experts and refuse it before any experiment is scheduled",
+  "frontier_id": "FT.VERIFICATION.negative-index",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.8832",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.8832.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "bc66c7edbb93eb814d0bcdbfd6a4aa956289242618c5d12de08a73fcc5bd2e42",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

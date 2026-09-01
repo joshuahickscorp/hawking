@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.22144.receipt.json",
+    "abliteration.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "recover the candidate-direction generator (completion + harmless + loss gates) and plan it against the smallest whole-tree-verified residual-stream parent; fitting sleeps",
+  "frontier_id": "FT.MODEL_CAPABILITY.tournament-refuse",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.22144",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.22144.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "7527ae5b9f24c557ebb851bf44af6575771fdfd16e56d97eeeb72cad1e111d41",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

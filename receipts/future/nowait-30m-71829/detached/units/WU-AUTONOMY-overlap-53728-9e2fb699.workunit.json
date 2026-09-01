@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.53728.receipt.json",
+    "status_causality.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "challenge BLOCKED_NO_METAL_GPU against the probe that actually ran (process_error at dense_source_bf16_prefix_initialization), not against a reconstructed world-state",
+  "frontier_id": "FT.VERIFICATION.negative-index",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.53728",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-71829/WU.AUTONOMY.overlap.53728.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "bc09dd95677abde74bdda4c8e88a7e3a149e00f514e8141a57cd89ac13f114bf",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

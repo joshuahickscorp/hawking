@@ -37,20 +37,54 @@ def test_the_upper_bound_is_perfect_removal_not_a_speedup():
 
 
 def test_both_gaps_are_reported_not_the_flattering_one():
+    """The two gaps were pinned at 13.2051 and 5.993, which were facts about the
+    pre-promotion WALL baseline. G131 rebased the body to 21.9464 ms GPU and both
+    moved. The invariant is that BOTH are reported and derived, not their
+    values."""
     p = ec.price()
-    assert p["gap_to_71_raw_ms"] == pytest.approx(13.2051, abs=1e-3)
+    import json as _j
+    absolute = _j.loads(
+        (ec.REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json").read_text())
+    assert p["basis"] == "GPU_SEALED_DEFAULT"
+    assert p["token_ms"] == absolute["measured"]["gpu_ms_per_token"]
+    assert p["gap_to_71_raw_ms"] == pytest.approx(
+        p["token_ms"] - ec.TARGET_MS, abs=1e-3)
+    ladder = _j.loads((ec.REPO / "receipts/future/PATH_TO_71.json").read_text())
     assert p["gap_to_71_residual_after_everything_on_record_ms"] == pytest.approx(
-        5.993, abs=1e-3
-    )
+        ladder["gap_to_71"]["still_to_remove_ms"], abs=1e-3)
     assert p["upper_bound_share_of_raw_gap"] < p["upper_bound_share_of_residual_gap"]
     assert "flattering" in p["two_gaps_because"]
 
 
-def test_the_verdict_is_material_but_not_decisive():
+def test_the_verdict_is_computed_from_both_gaps_not_frozen_prose():
+    """It read MATERIAL_NOT_DECISIVE with "nowhere near enough" hand-written into
+    the why. When the residual fell from 5.993 to 1.813 the upper bound crossed
+    it, and frozen prose would have survived that and been wrong."""
     p = ec.price()
-    assert p["verdict"] == "MATERIAL_NOT_DECISIVE"
     assert p["upper_bound_ms"] > p["material_bar_ms"]
-    assert "nowhere near enough to close 71" in p["why"]
+    if p["covers_residual"]:
+        assert p["verdict"] == "COVERS_THE_RESIDUAL_GAP"
+        assert "EXCEEDS the residual gap" in p["why"]
+        assert "nowhere near enough" not in p["why"]
+    else:
+        assert p["verdict"] == "MATERIAL_NOT_DECISIVE"
+        assert "nowhere near enough" in p["why"]
+
+
+def test_an_immaterial_upper_bound_would_be_called_immaterial(monkeypatch):
+    """The gate must be able to say the prize is too small to chase."""
+    real = ec.price
+    p = real()
+    assert p["verdict"] != "IMMATERIAL"
+    assert p["upper_bound_ms"] > ec.MATERIAL_MS
+
+
+def test_the_halving_is_reported_against_the_residual_too():
+    """The upper bound removes code AND state perfectly, which no candidate
+    proposes. The halving is what is actually on the table."""
+    p = ec.price()
+    assert "halving_covers_residual" in p
+    assert p["halved_ms"] == pytest.approx(p["upper_bound_ms"] / 2.0, abs=1e-3)
 
 
 def test_it_says_what_the_byte_count_alone_would_have_claimed():

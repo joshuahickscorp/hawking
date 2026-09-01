@@ -1,0 +1,104 @@
+{
+ "authority": "S029",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T01:40:46Z",
+  "recorded_by": "tools/future/sub2_unified_plan.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "disagreements": [
+  {
+   "claude_said": "MLP 2.5 -> 2.25 bpw is worth 0.293 ms/token",
+   "consequence": "Claude's non-refuted total fell from 1.114 to 0.821 ms/token - further below the 1 ms materiality bar, not closer to it",
+   "grok_said": "0.000 ms/token",
+   "id": "D1.mlp_2p25_is_aux_not_codes",
+   "resolved_by": "arithmetic on the stored layout",
+   "why": "2.5 bpw stored is 2.000 code bits plus 32/64 = 0.500 aux bits for the f16 scale and bias per 64 weights. Going to 2.25 halves the AUX and never touches a code, and aux bills 0.000 ms/GB by measurement.",
+   "winner": "grok"
+  },
+  {
+   "consequence": "functional role survives as an allocation AXIS; this particular assignment does not. Scars prune methods, not goals.",
+   "id": "D2.functional_role_allocation",
+   "measurement_said": "gate never exceeds 1.3082x up per matched element, and down is most sensitive at 9 of 12 points",
+   "resident_said": "the SwiGLU gate is control and deserves literal storage; up and down are linear bulk that can be generated or shared",
+   "resolved_by": "matched-element perturbation across three layers",
+   "why": "the resident put down in the discard bucket and down is the most sensitive tensor tested. The claim was structural and a structural measurement answered it.",
+   "winner": "measurement"
+  },
+  {
+   "claude_said": "2.0 BPW plus the landed bitcast levers reaches 62.75 TPS if decode stays byte-bound",
+   "consequence": "the unified plan's top route is not a better code. It is a capability-allocated representation.",
+   "grok_said": "no conventional encoding reaches 2.0 at all; the floor is 2.508137 BPW even granting every untested move",
+   "id": "D3.what_2p0_would_buy_versus_whether_2p0_is_expressible",
+   "resolved_by": "they answer different questions",
+   "why": "Claude's is a conditional about the PAYOFF of 2.0. Grok's is about whether the current representation LANGUAGE can express it. Both are true, and together they are the case for leaving the language rather than lowering the target.",
+   "winner": "both"
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "n_disagreements": 3,
+ "n_routes_live": 2,
+ "obligation": "G107",
+ "planners": {
+  "claude": {
+   "artifact": "receipts/future/GAP_LEDGER_60.json",
+   "present": true
+  },
+  "grok": {
+   "artifact": "receipts/future/REPRESENTATION_FLOOR.json",
+   "present": true
+  },
+  "resident": {
+   "artifact": "receipts/future/FUNCTIONAL_ROLE_PROBE.json",
+   "present": true
+  }
+ },
+ "routes": [
+  {
+   "cheapest_falsifier": "one capability probe at a destruction level local fidelity would reject. If capability breaks there too, heterogeneous allocation buys nothing and the fidelity bars were right.",
+   "evidence_status": "UNTESTED",
+   "from": "claude + resident",
+   "id": "R1.capability_allocated_heterogeneous",
+   "max_payoff": "unbounded within the 1.139 BPW between 3.139 and 2.0",
+   "route": "allocate bits by measured capability value rather than uniformly: some regions literal, some 2-bit, some 1-bit, some generated, some omitted",
+   "why_live": "every refutation blocking it was measured at a FIDELITY level (receipts/future/FIDELITY_HIERARCHY.json), and the body tolerates 40% row destruction at 0.0059 cosine"
+  },
+  {
+   "cheapest_falsifier": "already run; the floor is measured",
+   "evidence_status": "MEASURED_INSUFFICIENT",
+   "from": "grok",
+   "id": "R2.conventional_coding",
+   "max_payoff": "0.821 ms/token, below the 1 ms materiality bar",
+   "route": "entropy coding, larger groups, lower bitwidths",
+   "why_live": "it is not - it bottoms out at 2.5081 BPW"
+  },
+  {
+   "cheapest_falsifier": "matched-element damage across a new role labelling, the same control that killed the first one",
+   "evidence_status": "REFUTED_AS_STATED",
+   "from": "resident",
+   "id": "R3.functional_role_allocation",
+   "max_payoff": "unknown until a labelling is proposed",
+   "route": "allocate by functional role rather than organ boundary",
+   "why_live": "the AXIS survives; the gate-high assignment does not. A different role labelling has not been tested."
+  },
+  {
+   "cheapest_falsifier": "measure whether any activation-conditional structure exists in the dense MLP at all. If every weight participates in every token equally, this route is dead.",
+   "evidence_status": "UNTESTED",
+   "from": "resident",
+   "id": "R4.dense_becomes_conditionally_sparse",
+   "max_payoff": "the MoE precedent reached 2.17x smaller than this body",
+   "route": "the resident observed that in an MoE the information that must be present is the IDENTITY of the active experts, not the continuous weights. A dense source need not have a dense executable.",
+   "why_live": "the MoE precedent is real - Qwen80 reached 1.4444 complete BPW with experts at 1.2349 - and nothing has tested whether a dense body admits an analogous structure"
+  }
+ ],
+ "seal_sha256": "9234887529bd84eb312d3466213457f50ec580feb58ae4ccc2980d50c3c2b42e",
+ "the_resident_is_not_scored_on_hit_rate": "it produced three falsifiable structural hypotheses and all three died cheaply - mutual information in two minutes, matched perturbation in forty seconds a layer, the bias claim on inspection. Each removed a live possibility. That is the loop this campaign is building, and the hit rate is not the metric.",
+ "top_route": "R1.capability_allocated_heterogeneous",
+ "who_was_wrong_about_what": "Claude was wrong about the ms value of an aux cut. The resident was wrong about which tensor carries information. Grok was wrong about nothing measured here, and its floor is the load-bearing number.",
+ "why_that_route": "the three plans agree on the negative - conventional coding cannot express 2.0 - and the only refutations standing against a capability-allocated representation were measured at fidelity levels that cannot speak to a capability claim."
+}

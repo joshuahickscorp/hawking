@@ -1032,7 +1032,7 @@ def physical_limit_audit() -> list[dict[str, Any]]:
             ),
         },
         {
-            "receipt": "SUPERWAVE_STATE.md header (later corrected in-file)",
+            "receipt": "docs/archive/SUPERWAVE_STATE.md header (later corrected in-file)",
             "claim": "Measured bandwidth control band: 560-647 GB/s (68-79% of peak).",
             "result": judge_physical_limit_claim(
                 saturated_resource="reuse-band DRAM control",

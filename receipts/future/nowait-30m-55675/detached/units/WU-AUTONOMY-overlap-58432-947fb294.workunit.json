@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.58432.receipt.json",
+    "negative_index.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F009: rediscovery was free. admit() must keep refusing scar-eligible families. CPU: keep the index current via ingest, do not restatement.",
+  "frontier_id": "FT.VERIFICATION.negative-index",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.58432",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.58432.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "e85ddebdae48da3d2733431387357c86af5c17fd782e13ff43c2687b618494c9",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

@@ -1,0 +1,152 @@
+{
+  "accepted_generation_tokens": 0,
+  "accepted_tps": null,
+  "bench": {
+    "machine": "Apple M3 Ultra",
+    "recorded_at": "unix-ms:1787959694536",
+    "recorded_by": "flash_stateful_attention_probe",
+    "rule": "S032 §3 -- stateful organ timing; quiescence unknown",
+    "state": "UNKNOWN"
+  },
+  "claim_boundary": "This proves a cross-species seam from stateful linear-prefix outputs through a persistent full-attention KV organ and its HyperConnection/routed/shared-MoE MLP epilogue, with distinct KV slots and first-step final-state parity. It does not prove device-only cross-module handoff, 48-layer token acceptance, complete-model TPS, EBPW, or resident promotion.",
+  "complete_system_ebpw": null,
+  "distinct_kv_slots": true,
+  "execution": {
+    "context_reused": true,
+    "device": "Apple M3 Ultra",
+    "first_input_bytes": 40960,
+    "first_input_sha256": "0cbbae815c3902912b27a859107cc1874e02434e7ef203f0d26e273b63807766",
+    "full_attention_mlp_epilogue": true,
+    "input_kind": "layer2_stateful_linear_prefix_output",
+    "kv_cache_reused": true,
+    "kv_cache_slots": 6,
+    "process_boundary": "one native process",
+    "provider": "apple_metal",
+    "source_payload_bytes_read": 5171656704,
+    "weights_reused": true
+  },
+  "layer": 23,
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "next": "Feed this final state through the next qualified Flash layer in the persistent 48-layer session, then remove the diagnostic host seam.",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "schema": "hawking.flash.stateful_attention_organ_probe.v1",
+  "seal_sha256": "60fe226a47d4854f2ce162de86b1b09259cd784d62b72c47276c507c9e3cef94",
+  "stateful_final_state": true,
+  "status": "PASSED_STATEFUL_KV_ORGAN",
+  "steps": [
+    {
+      "attention_sha256": "31b5ac054df3889d0f74aa6f8b99e255f2feaf04af40dd915845dba5cf965cab",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "0cbbae815c3902912b27a859107cc1874e02434e7ef203f0d26e273b63807766",
+      "final_state_sha256": "54c97f2d22b832743513c2373d73d6b8ff4d679d1bf5cf11cc32f6da61d03551",
+      "finite": true,
+      "first_step_parity": {
+        "final_state": {
+          "cosine": 0.9999999999994331,
+          "finite": true,
+          "max_abs_error": 1.0132789611816406e-6,
+          "rmse": 1.3878516489653514e-7,
+          "within_tolerance": true
+        },
+        "query": {
+          "cosine": 0.9999999999999134,
+          "finite": true,
+          "max_abs_error": 2.86102294921875e-6,
+          "rmse": 5.250959196226938e-7,
+          "within_tolerance": true
+        }
+      },
+      "gpu_ns": 9840375,
+      "key_slot_sha256": "b187219e6089c7526958b95ca913315e4c5819195e32efbf20bef3c0362180a4",
+      "sequence_length": 1,
+      "step": 0,
+      "token_id": 5423,
+      "wall_ns": 119719375
+    },
+    {
+      "attention_sha256": "b36f2b83e4e0afb26afd0ca442dedc3ef8332b20d39dd0eca4bbd42f09523567",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "3890319a04a44f8006b71ebcf4d7323153579018fb00d733be2f9b6364ddee50",
+      "final_state_sha256": "4da288b000925395ae2bfa8ee0db7ee21eaf4dbfd823a6fd43a206d40e1f4519",
+      "finite": true,
+      "first_step_parity": null,
+      "gpu_ns": 6117000,
+      "key_slot_sha256": "3e5911762d3434bb2423cc90c1a61930b40431f8c19c63049ba05cde04bcae60",
+      "sequence_length": 2,
+      "step": 1,
+      "token_id": 799,
+      "wall_ns": 6466500
+    },
+    {
+      "attention_sha256": "039f60024bad342d94f22e78eb94f8f32c41913dc076fdda0bce7d19a81b55b0",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "f2078178955b000012aaaed29ae3a0d6ecd46219d65b3a39fb65a6da249af201",
+      "final_state_sha256": "ec3297d0336e4e43346bcb971a18f4af21faba2c049bea252bddc33db97a1689",
+      "finite": true,
+      "first_step_parity": null,
+      "gpu_ns": 6157499,
+      "key_slot_sha256": "af956c6a395618ac1dd0767aadaca04978e7d452b7e282be2b36017b9562c637",
+      "sequence_length": 3,
+      "step": 2,
+      "token_id": 4581,
+      "wall_ns": 6456791
+    },
+    {
+      "attention_sha256": "ed936df02299135a2aa2e2eafbd70f91d38cfb034728d6d81d0947ff309ffc65",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "7eef16853128d486afb3d2a7ee1813a9b4aeee4e54d846cf9c809285c4b5be81",
+      "final_state_sha256": "9e960082c330c822b4610bb4f5d1fab92a2f7f0dd49ac91a884cbb7ea8414683",
+      "finite": true,
+      "first_step_parity": null,
+      "gpu_ns": 6145374,
+      "key_slot_sha256": "ca33922f06c0b9efb537e9cf0056cdb45e1c0709f926c068d71daa5b1de16204",
+      "sequence_length": 4,
+      "step": 3,
+      "token_id": 3817,
+      "wall_ns": 6464000
+    },
+    {
+      "attention_sha256": "a0ec0b7f42c68160e8f48d3a12d7a82f10d39221b3fcfcd288b9303f37aee854",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "eceb99b2f115b00f31c59f60fc4be337f5b928cc917d38f771fcc81a1df8cff3",
+      "final_state_sha256": "0187db2e139bd9d019027b241700e0011344a358ba509d0ca7d3919a34ccffa8",
+      "finite": true,
+      "first_step_parity": null,
+      "gpu_ns": 6165750,
+      "key_slot_sha256": "bb33c78240f72a9a1fda71e7f8918003802b8adc8cff10f078eb13973f55f818",
+      "sequence_length": 5,
+      "step": 4,
+      "token_id": 13,
+      "wall_ns": 6521708
+    },
+    {
+      "attention_sha256": "5e5b42aa7e3e4244c0136184bc2715f526e535705614e8014c79539ee5cec422",
+      "dispatches": 29,
+      "embedding_bytes": 40960,
+      "embedding_sha256": "0df073c1ec208e630cdda6e7a72ec4ebb153a25885007951642c6cecd98ba330",
+      "final_state_sha256": "c09610bf5df7686ad5ac15f4fa23f688670a359d897fd56f88d062bb789c5d46",
+      "finite": true,
+      "first_step_parity": null,
+      "gpu_ns": 6169750,
+      "key_slot_sha256": "9fa2f2dd57530e0ab28f75dc5b37859aaa048f5b2196a6366b02fd49bd61b00c",
+      "sequence_length": 6,
+      "step": 5,
+      "token_id": 17,
+      "wall_ns": 6525333
+    }
+  ],
+  "token_ids": [
+    5423,
+    799,
+    4581,
+    3817,
+    13,
+    17
+  ]
+}

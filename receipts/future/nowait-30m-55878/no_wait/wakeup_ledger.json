@@ -1,0 +1,751 @@
+{
+  "checksum_sha256": "2adfa06791128a430dbada8a381d8fd3f102ffdbd170e6723a768f851afd492d",
+  "cursor": {},
+  "dispatched": {},
+  "expectations": {
+    "WU.AUTONOMY.detach.FT.VERIFICATION.repro": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.detach.FT.VERIFICATION.repro.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.detach.FT.VERIFICATION.repro",
+      "verifier": "WU.AUTONOMY.detach.FT.VERIFICATION.repro.verifier"
+    },
+    "WU.AUTONOMY.overlap.10976": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.10976.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.10976.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.10976",
+      "verifier": "WU.AUTONOMY.overlap.10976.verifier"
+    },
+    "WU.AUTONOMY.overlap.14848": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.14848.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.14848.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.14848",
+      "verifier": "WU.AUTONOMY.overlap.14848.verifier"
+    },
+    "WU.AUTONOMY.overlap.14976": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.14976.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.14976.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.14976",
+      "verifier": "WU.AUTONOMY.overlap.14976.verifier"
+    },
+    "WU.AUTONOMY.overlap.16128": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.16128.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.16128.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.16128",
+      "verifier": "WU.AUTONOMY.overlap.16128.verifier"
+    },
+    "WU.AUTONOMY.overlap.16832": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.16832.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.16832.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.16832",
+      "verifier": "WU.AUTONOMY.overlap.16832.verifier"
+    },
+    "WU.AUTONOMY.overlap.17600": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.17600.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.17600.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.17600",
+      "verifier": "WU.AUTONOMY.overlap.17600.verifier"
+    },
+    "WU.AUTONOMY.overlap.23168": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.23168.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.23168.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.23168",
+      "verifier": "WU.AUTONOMY.overlap.23168.verifier"
+    },
+    "WU.AUTONOMY.overlap.24192": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.24192.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.24192.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.24192",
+      "verifier": "WU.AUTONOMY.overlap.24192.verifier"
+    },
+    "WU.AUTONOMY.overlap.26240": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.26240.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.26240.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.26240",
+      "verifier": "WU.AUTONOMY.overlap.26240.verifier"
+    },
+    "WU.AUTONOMY.overlap.28608": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.28608.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.28608.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.28608",
+      "verifier": "WU.AUTONOMY.overlap.28608.verifier"
+    },
+    "WU.AUTONOMY.overlap.30208": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.30208.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.30208.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.30208",
+      "verifier": "WU.AUTONOMY.overlap.30208.verifier"
+    },
+    "WU.AUTONOMY.overlap.38368": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.38368.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.38368.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.38368",
+      "verifier": "WU.AUTONOMY.overlap.38368.verifier"
+    },
+    "WU.AUTONOMY.overlap.39136": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.39136.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.39136.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.39136",
+      "verifier": "WU.AUTONOMY.overlap.39136.verifier"
+    },
+    "WU.AUTONOMY.overlap.39584": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.39584.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.39584.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.39584",
+      "verifier": "WU.AUTONOMY.overlap.39584.verifier"
+    },
+    "WU.AUTONOMY.overlap.39712": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.39712.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.39712.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.39712",
+      "verifier": "WU.AUTONOMY.overlap.39712.verifier"
+    },
+    "WU.AUTONOMY.overlap.40608": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.40608.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.40608.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.40608",
+      "verifier": "WU.AUTONOMY.overlap.40608.verifier"
+    },
+    "WU.AUTONOMY.overlap.44064": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.44064.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.44064.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.44064",
+      "verifier": "WU.AUTONOMY.overlap.44064.verifier"
+    },
+    "WU.AUTONOMY.overlap.60128": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.60128.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.60128.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.60128",
+      "verifier": "WU.AUTONOMY.overlap.60128.verifier"
+    },
+    "WU.AUTONOMY.overlap.60480": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.60480.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.60480.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.60480",
+      "verifier": "WU.AUTONOMY.overlap.60480.verifier"
+    },
+    "WU.AUTONOMY.overlap.63616": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.63616.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.63616.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.63616",
+      "verifier": "WU.AUTONOMY.overlap.63616.verifier"
+    },
+    "WU.AUTONOMY.overlap.66816": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.66816.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.66816.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.66816",
+      "verifier": "WU.AUTONOMY.overlap.66816.verifier"
+    },
+    "WU.AUTONOMY.overlap.67200": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.67200.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.67200.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.67200",
+      "verifier": "WU.AUTONOMY.overlap.67200.verifier"
+    },
+    "WU.AUTONOMY.overlap.67744": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.67744.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.67744.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.67744",
+      "verifier": "WU.AUTONOMY.overlap.67744.verifier"
+    },
+    "WU.AUTONOMY.overlap.73376": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.73376.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.73376.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.73376",
+      "verifier": "WU.AUTONOMY.overlap.73376.verifier"
+    },
+    "WU.AUTONOMY.overlap.75168": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.75168.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.75168.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.75168",
+      "verifier": "WU.AUTONOMY.overlap.75168.verifier"
+    },
+    "WU.AUTONOMY.overlap.76064": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.76064.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.76064.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.76064",
+      "verifier": "WU.AUTONOMY.overlap.76064.verifier"
+    },
+    "WU.AUTONOMY.overlap.80608": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.80608.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.80608.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.80608",
+      "verifier": "WU.AUTONOMY.overlap.80608.verifier"
+    },
+    "WU.AUTONOMY.overlap.81600": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.81600.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.81600.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.81600",
+      "verifier": "WU.AUTONOMY.overlap.81600.verifier"
+    },
+    "WU.AUTONOMY.overlap.82592": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.82592.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.82592.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.82592",
+      "verifier": "WU.AUTONOMY.overlap.82592.verifier"
+    },
+    "WU.AUTONOMY.overlap.8480": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.8480.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.8480.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.8480",
+      "verifier": "WU.AUTONOMY.overlap.8480.verifier"
+    },
+    "WU.AUTONOMY.overlap.85408": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.85408.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.85408.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.85408",
+      "verifier": "WU.AUTONOMY.overlap.85408.verifier"
+    },
+    "WU.AUTONOMY.overlap.87712": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.87712.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.87712.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.87712",
+      "verifier": "WU.AUTONOMY.overlap.87712.verifier"
+    },
+    "WU.AUTONOMY.overlap.92544": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.92544.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.92544.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.92544",
+      "verifier": "WU.AUTONOMY.overlap.92544.verifier"
+    },
+    "WU.AUTONOMY.overlap.9344": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.9344.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.9344.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.9344",
+      "verifier": "WU.AUTONOMY.overlap.9344.verifier"
+    },
+    "WU.AUTONOMY.overlap.98176": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.AUTONOMY.overlap.98176.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.98176.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.AUTONOMY.overlap.98176",
+      "verifier": "WU.AUTONOMY.overlap.98176.verifier"
+    },
+    "WU.TORTURE.NO_WAIT.specimen_verify": {
+      "content_sha256": null,
+      "deadline_tick": null,
+      "dependents": [],
+      "frontier": "future.wakeup",
+      "graph": "WU.TORTURE.NO_WAIT.specimen_verify.graph",
+      "last_event_id": null,
+      "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.TORTURE.NO_WAIT.specimen_verify.receipt.json",
+      "reason": null,
+      "required_schema": null,
+      "sleeping": false,
+      "state": "WAITING",
+      "unit_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+      "verifier": "WU.TORTURE.NO_WAIT.specimen_verify.verifier"
+    }
+  },
+  "graph": {
+    "WU.AUTONOMY.detach.FT.VERIFICATION.repro": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.10976": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.14848": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.14976": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.16128": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.16832": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.17600": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.23168": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.24192": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.26240": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.28608": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.30208": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.38368": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.39136": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.39584": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.39712": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.40608": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.44064": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.60128": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.60480": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.63616": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.66816": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.67200": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.67744": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.73376": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.75168": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.76064": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.80608": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.81600": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.82592": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.8480": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.85408": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.87712": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.92544": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.9344": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.AUTONOMY.overlap.98176": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    },
+    "WU.TORTURE.NO_WAIT.specimen_verify": {
+      "blocked_by": [],
+      "reason": null,
+      "state": "WAITING"
+    }
+  },
+  "schema": "hawking.future.wakeup.ledger.v1",
+  "version": 1
+}

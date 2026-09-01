@@ -730,7 +730,7 @@ NAMES: list[dict] = [
         "class": "AMBIGUOUS",
         "kind": "method",
         "summary": "Fan-out orchestration method plus a dated ascent-era state file.",
-        "path_prefixes": ("SUPERWAVE_STATE.md", "hawking-experiments/superwave/"),
+        "path_prefixes": ("docs/archive/SUPERWAVE_STATE.md", "hawking-experiments/superwave/"),
         "path_regex": r"superwave|SUPERWAVE",
         "content_ere": wb("Superwave", "superwave", "SUPERWAVE", "SUPERWAVE_STATE"),
         "schema_prefixes": ("hawking.superwave.",),
@@ -1333,10 +1333,10 @@ def rename_plan(names_out: list[dict], all_schemas: list[str], g105: dict) -> di
         "HIDE",
     )
     C(
-        "SUPERWAVE_STATE.md title and the superseded G013 law still printed at the top",
+        "docs/archive/SUPERWAVE_STATE.md title and the superseded G013 law still printed at the top",
         "The file already contains a CORRECTION block. Negative-science register lists "
-        "the top-of-file law as superseded. Rewording is cosmetic; do not rename the file "
-        "(receipts cite SUPERWAVE_STATE.md).",
+        "the top-of-file law as superseded. Rewording is cosmetic; historical receipts "
+        "may still cite the pre-archive path.",
         "Superwave",
     )
     C(

@@ -1,0 +1,43 @@
+{
+  "expected": 17545915883,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "chat_template.json",
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "model-00001-of-00004.safetensors",
+    "model-00002-of-00004.safetensors",
+    "model-00003-of-00004.safetensors",
+    "model-00004-of-00004.safetensors",
+    "model.safetensors.index.json",
+    "preprocessor_config.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "video_preprocessor_config.json",
+    "vocab.json"
+  ],
+  "mode": "safe",
+  "repo": "Qwen/Qwen3-VL-8B-Instruct",
+  "resolved_sha": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+  "revision": "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 7133,
+    "chat_template.json": 5499,
+    "config.json": 1474,
+    "generation_config.json": 269,
+    "merges.txt": 1671839,
+    "model-00001-of-00004.safetensors": 4902275944,
+    "model-00002-of-00004.safetensors": 4915962496,
+    "model-00003-of-00004.safetensors": 4999831048,
+    "model-00004-of-00004.safetensors": 2716270024,
+    "model.safetensors.index.json": 67759,
+    "preprocessor_config.json": 390,
+    "tokenizer.json": 7032403,
+    "tokenizer_config.json": 10868,
+    "video_preprocessor_config.json": 385,
+    "vocab.json": 2776833
+  }
+}

@@ -217,3 +217,23 @@ workspace/campaign/phaseB/capture_diverse2/
 workspace/campaign/odyssey/RUN_LOG.jsonl
 # Receipt archive tarballs: keep the extracted receipts, drop the archive.
 receipts/**/*.tar.xz
+
+# --- Accidental shell redirections and runtime scratch (launch hardening) ---
+# `none` is a multi-MB HF download log created by a stray `2>none`; `stdout` is
+# the same mistake with an empty result. Neither is a deliverable.
+/none
+/stdout
+# Sparse disk images and the download staging they back: local cache, rebuildable.
+*.sparseimage
+workspace/campaign/odyssey/downloads/
+workspace/campaign/odyssey/ssd-xet-cache/
+# launchd stdio and lock files for the ModelLake watcher: process state, not source.
+workspace/campaign/odyssey/modellake-watch.launchd.*
+workspace/campaign/odyssey/.modellake-watch.lock
+# Live HCLI runtime state (missions, resident, locks). 1.4G of working state that
+# is rebuilt on demand; the durable evidence lives in receipts/, not here.
+/.hcli/
+# Vendored third-party trees under workspace/ops: a Python env and a nested git
+# clone (cuda-metal keeps its own .git). Dependencies, not this repo's source.
+workspace/ops/ane/
+workspace/ops/c2m-seed/

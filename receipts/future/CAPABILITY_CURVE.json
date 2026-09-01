@@ -1,0 +1,80 @@
+{
+ "algorithm": {
+  "cache": "points are keyed by component, layer, axis, perturbation type and level; a re-run does not repay",
+  "coarse_scan": "n_coarse inclusive linspace points over the caller's [lo, hi], never a typed percentage list",
+  "defaults": {
+   "cliff_fraction": 0.5,
+   "n_coarse": 5
+  },
+  "detect": "the adjacent coarse pair with the largest |delta|; a cliff only if that jump is at least cliff_fraction of the value span. A zero span is flat",
+  "refine": "binary split of the detected interval, keeping the half that still holds the jump, until width <= resolution or the point budget is spent",
+  "result": "a bracketing interval [lo, hi] between two samples, or 'no cliff found in [lo, hi]'"
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T05:17:51Z",
+  "recorded_by": "tools/future/capability_curve.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement. The numbers in synthetic_proofs are injected step/flat/budget functions, not a GPU run and not a chosen organ. A live cliff location does not exist in this receipt because none was measured.",
+ "does_not_choose_science": true,
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "lane": "D2",
+ "live_sweep": {
+  "component": null,
+  "ran": false,
+  "why": "this module does not choose a component; the resident does. A live sweep is sweep(..., measure=bind_workunit()) with the resident's identity and range"
+ },
+ "one_point_runner": {
+  "bind": "bind_workunit()",
+  "missing_is_a_refusal": true,
+  "module": "tools/future/perturbation_workunit.py",
+  "role": "one curve point; this module is the sweep on top of it"
+ },
+ "question": "Where is the cliff, found without a human typing 10/20/30/40?",
+ "schema": "hawking.future.capability_curve.v1",
+ "seal_sha256": "ce34f2d5263fcbf27727a814d53fdbb89dc10ef6f6ce7784da80b3200d8ea145",
+ "synthetic_proofs": {
+  "budget": {
+   "budget": 7,
+   "cliff_found": true,
+   "honoured": true,
+   "n_measured": 7,
+   "resolution_met": false,
+   "result_n_measured": 7
+  },
+  "flat": {
+   "bracket": null,
+   "cliff_found": false,
+   "message": "no cliff found in [0, 1]",
+   "n_measured": 5
+  },
+  "identity_used": {
+   "axis": "SYNTHETIC",
+   "component": "SYNTHETIC",
+   "layer": "SYNTHETIC",
+   "perturbation_type": "SYNTHETIC"
+  },
+  "kind": "SYNTHETIC",
+  "not_a_live_organ": true,
+  "step": {
+   "bracket": {
+    "hi": 0.375,
+    "lo": 0.359375
+   },
+   "cliff_found": true,
+   "contains_step": true,
+   "message": "cliff bracketed in [0.359375, 0.375]",
+   "n_measured": 9,
+   "resolution_met": true,
+   "true_step": 0.37
+  }
+ },
+ "version": 1,
+ "what_this_module_does_not_do": "it does not choose which representation or which component to test next. That is the resident's hypothesis. --build runs only synthetic self-proofs under the SYNTHETIC identity",
+ "what_this_module_is": "search machinery. The caller names the component, layer, axis and perturbation type; this module finds the bracketing interval of a behaviour change, or reports that the curve is flat"
+}

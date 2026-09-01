@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.85216.receipt.json",
+    "cuda_lowbit_hypotheses.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "architecture_transfer species copies live work_unit fields. CPU compile of specs from the repatriation queue / atlas.",
+  "frontier_id": "FT.ARCHITECTURE_REPATRIATION.compile-specs",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.85216",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.85216.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "9b438cd80a5775bb8620eb58d6ab8126c57e2f2c70b299b0d4953b3ddc8a0ab0",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

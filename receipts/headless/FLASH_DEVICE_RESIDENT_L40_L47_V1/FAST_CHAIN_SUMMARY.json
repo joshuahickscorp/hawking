@@ -1,0 +1,321 @@
+{
+  "claim_boundary": "fast grouped continuation reduces index/context and receipt ceremony but is not yet a device-resident complete-token runtime",
+  "compact_experts": true,
+  "deep_verification": "linear groups retain stage parity; production fast mode seam pending",
+  "device_resident": true,
+  "elapsed_wall_ns": 414774391291,
+  "end_layer": 47,
+  "groups": [
+    {
+      "checkpoint": "one group checkpoint",
+      "end_layer": 42,
+      "group_wall_ns": 37665107333,
+      "kind": "linear_attention",
+      "layers": [
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 1647518459,
+          "device_prepare_ns": 14975583,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            30163208
+          ],
+          "graph_setup_ns": 1530083,
+          "host_ns": [
+            41681167
+          ],
+          "layer": 40,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            214,
+            190,
+            156,
+            1,
+            456,
+            445,
+            162,
+            75,
+            381,
+            314
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 6566472875,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 11208,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 250
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 1641432375,
+          "device_prepare_ns": 16154709,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            30732374
+          ],
+          "graph_setup_ns": 653709,
+          "host_ns": [
+            38336291
+          ],
+          "layer": 41,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            79,
+            74,
+            431,
+            377,
+            355,
+            130,
+            489,
+            304,
+            404,
+            229
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 9271438833,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 12083,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 125
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 1666978292,
+          "device_prepare_ns": 15613667,
+          "dispatches": 20,
+          "final_state": {
+            "cosine": 0.9999999999925603,
+            "finite": true,
+            "length_match": true,
+            "max_abs_error": 5.0067901611328125e-6,
+            "rmse": 7.378886505218381e-7,
+            "within_tolerance": true
+          },
+          "gpu_ns": [
+            32882125
+          ],
+          "graph_setup_ns": 534167,
+          "host_ns": [
+            37659375
+          ],
+          "layer": 42,
+          "layer_type": "linear_attention",
+          "output_sha256": "f089fac287348d0890ed179bfe0d75b5147e6bea03f5418bf305ae3eca05f7fa",
+          "route_ids_expected": [
+            109,
+            280,
+            252,
+            294,
+            32,
+            466,
+            398,
+            445,
+            457,
+            106
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 5958989542,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 656958,
+          "status": "PASSED_TERMINAL_ONLY",
+          "warmup_ns": 250
+        }
+      ],
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/group-40-42/receipt.json",
+      "start_layer": 40,
+      "state": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/group-40-42/state.f32"
+    },
+    {
+      "checkpoint": "one layer checkpoint",
+      "end_layer": 43,
+      "group_wall_ns": 150203465625,
+      "kind": "full_attention",
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/layer-43/receipt.json",
+      "start_layer": 43,
+      "state": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/layer-43/state.f32"
+    },
+    {
+      "checkpoint": "one group checkpoint",
+      "end_layer": 46,
+      "group_wall_ns": 91164862292,
+      "kind": "linear_attention",
+      "layers": [
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 1654918125,
+          "device_prepare_ns": 15546708,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            29869208
+          ],
+          "graph_setup_ns": 556875,
+          "host_ns": [
+            38823958
+          ],
+          "layer": 44,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            22,
+            174,
+            407,
+            501,
+            197,
+            56,
+            50,
+            277,
+            167,
+            423
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 27424077792,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 10792,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 84
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 1643015459,
+          "device_prepare_ns": 16927791,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            30847875
+          ],
+          "graph_setup_ns": 574708,
+          "host_ns": [
+            37527625
+          ],
+          "layer": 45,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            48,
+            253,
+            173,
+            505,
+            332,
+            121,
+            220,
+            468,
+            347,
+            4
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 27078115125,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 13000,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 250
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 1656851375,
+          "device_prepare_ns": 19532458,
+          "dispatches": 20,
+          "final_state": {
+            "cosine": 0.9999999999993507,
+            "finite": true,
+            "length_match": true,
+            "max_abs_error": 2.2388994693756104e-6,
+            "rmse": 3.697226497454189e-7,
+            "within_tolerance": true
+          },
+          "gpu_ns": [
+            32945041
+          ],
+          "graph_setup_ns": 657500,
+          "host_ns": [
+            39485542
+          ],
+          "layer": 46,
+          "layer_type": "linear_attention",
+          "output_sha256": "8d65ceebc7b30412b9800937df86a44e83e0ec8c128fa4ed40cde2c5d5d2d22b",
+          "route_ids_expected": [
+            424,
+            110,
+            200,
+            456,
+            6,
+            196,
+            275,
+            145,
+            466,
+            95
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 31489890667,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 611041,
+          "status": "PASSED_TERMINAL_ONLY",
+          "warmup_ns": 125
+        }
+      ],
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/group-44-46/receipt.json",
+      "start_layer": 44,
+      "state": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/group-44-46/state.f32"
+    },
+    {
+      "checkpoint": "one layer checkpoint",
+      "end_layer": 47,
+      "group_wall_ns": 122467503458,
+      "kind": "full_attention",
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/layer-47/receipt.json",
+      "start_layer": 47,
+      "state": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/layer-47/state.f32"
+    }
+  ],
+  "metal_context": "cached in linear executor thread-local resource cache",
+  "process_boundary": "single_os_process",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_fast_chain.v1",
+  "source_index": "cached in linear executor thread-local resource cache",
+  "start_layer": 40,
+  "state_handoff": "host f32 checkpoint per structural group; device-resident handoff pending",
+  "status": "PASSED",
+  "terminal_receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/terminal.json"
+}

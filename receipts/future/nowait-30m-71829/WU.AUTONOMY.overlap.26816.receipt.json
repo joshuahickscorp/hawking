@@ -1,0 +1,1 @@
+{"module": "concurrency_doctor.py", "entry_point": "build", "receipt": "receipts/future/RESIDENT_CONCURRENCY_DOCTOR.json", "routed_to_frontier": "FT.LATENCY.cpu-turnaround", "species": "CONCURRENCY_DOCTOR", "wall_seconds": 0.16, "evidence_class": "STATIC_ONLY"}

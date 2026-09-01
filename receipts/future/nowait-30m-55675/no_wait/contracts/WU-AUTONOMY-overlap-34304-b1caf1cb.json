@@ -1,0 +1,13 @@
+{
+  "absent_is": "process_failed",
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "job_id": "WU-AUTONOMY-overlap-34304-b1caf1cb",
+  "landing": "a file exists at path; if required_schema is set the receipt's schema field must match. Absence is process_failed.",
+  "launched_at": 1788202839.6544,
+  "never": "a silent pass, a default success, a guessed completion",
+  "path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.34304.receipt.json",
+  "required_schema": null,
+  "schema": "hawking.future.no_wait.receipt_contract.v1",
+  "unit_id": "WU.AUTONOMY.overlap.34304"
+}

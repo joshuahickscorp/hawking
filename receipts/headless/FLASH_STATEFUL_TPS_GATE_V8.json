@@ -1,0 +1,133 @@
+{
+  "schema": "hawking.flash.stateful_tps_gate.v1",
+  "status": "BLOCKED_FIRST_PHYSICAL_BOUNDARY",
+  "generated_at": "2026-08-28T21:57:10.828986Z",
+  "source_files": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_fast_chain.rs",
+      "sha256": "4ee029679f2a0c632cb1bb439d2e0e96abe9328af8f461fd8d6e065587cb9611"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
+      "sha256": "339436868e9ac9749ac2252c72a22ea1edb1b8aa7ff23bfe24cc7cad5727c46b"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_full_attention_layer3.rs",
+      "sha256": "bc2f51926da4be97e4bd002e17c50060e78b1411b65c95c21882bcf8b3fed600"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/crates/hawking-core/examples/flash_tokenizer_acceptance_contract.rs",
+      "sha256": "2069bdbe26cac53cc42ce6b2248afb22f7a8462efe443d0bd8fc167814cec60f"
+    }
+  ],
+  "source_checks": {
+    "tokenizer_contract": {
+      "Tokenizer::from_file": true,
+      "encode": true,
+      "decode_one": true,
+      "is_eog": true
+    },
+    "tokenizer_or_prompt_loop": {
+      "tokenizer": true,
+      "generate": true,
+      "max_new_tokens": false
+    },
+    "persistent_full_attention_kv": {
+      "kv_cache": true,
+      "key_cache": true,
+      "position": true
+    },
+    "persistent_linear_recurrence": {
+      "reset_states": true,
+      "recurrent_state": true
+    },
+    "terminal_probe_only": {
+      "FIRST_COMPLETE_TOKEN_TERMINAL_PROBE": false,
+      "terminal::run_with": true
+    }
+  },
+  "qualified_state_organs": [
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LINEAR_ORGAN.json",
+      "sha256": "177a37324f4b6251ba809506ce1fbdd66b10a3cf2e36a6af29dc4cb1011baa7c",
+      "status": "PASSED_STATEFUL_ORGAN",
+      "schema": "hawking.flash.stateful_linear_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN.json",
+      "sha256": "b220cc8b5b2fadcfe65fe223f33b60f34ec0064fdc55eb2e540485ff078c2b10",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_ATTENTION_ORGAN_V2.json",
+      "sha256": "526f8aa129b647acc63ca3bc4e758686818710c8bb16c577c0e4d1e6eb4e01a2",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM_V3_ATTN.json",
+      "sha256": "2ba596d839d6679877b85b68b40ac339fd269bc142ffb7f31725df3519c7195e",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_CROSS_SPECIES_SEAM_V2_ATTN.json",
+      "sha256": "4a06ef747efe7e6cb08968f890be468f8ba988a8398645b6a4a4fa20a2395740",
+      "status": "PASSED_STATEFUL_KV_ORGAN",
+      "schema": "hawking.flash.stateful_attention_organ_probe.v1"
+    },
+    {
+      "path": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json",
+      "sha256": "4648d586dfca77062caaa580cbd93338b2136136aad2b25a3b6cacaf203a8014",
+      "status": "PASSED_STATEFUL_PREFIX_SESSION",
+      "schema": "hawking.flash.stateful_linear_prefix_session.v1"
+    }
+  ],
+  "stateful_cross_species_bridge": {
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_STATEFUL_LAYER3_LAYER4_BRIDGE.json",
+    "sha256": "24067200cb8bce72b4c7677ab7a8290021c8d22965c5ea5a3bf5c01222bdfe6e",
+    "status": "PASSED_STATEFUL_CROSS_SPECIES_CHAIN",
+    "claim": "Two token steps traverse layers 0..2 stateful DeltaNet, layer 3 stateful full-attention KV plus MLP/MoE, and layer 4 stateful DeltaNet recurrence. The layer-3-to-layer-4 seam is a host diagnostic copy; this does not prove device-only 48-layer integration, tokenizer acceptance, TPS, EBPW, or residency."
+  },
+  "tokenizer_contract": {
+    "receipt": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_TOKENIZER_ACCEPTANCE_CONTRACT.json",
+    "status": "PASSED_TOKENIZER_SESSION_PREREQUISITE"
+  },
+  "first_physical_failure_boundary": {
+    "stage": "token_acceptance_loop",
+    "status": "MISSING",
+    "evidence": "the source-bound tokenizer contract is now physically verified, but flash_fast_chain.rs still invokes one terminal readout after layer 47 and has no stateful model-forward/session generation loop"
+  },
+  "blockers": [
+    {
+      "stage": "token_acceptance_loop",
+      "status": "MISSING",
+      "evidence": "the source-bound tokenizer contract is now physically verified, but flash_fast_chain.rs still invokes one terminal readout after layer 47 and has no stateful model-forward/session generation loop"
+    },
+    {
+      "stage": "full_attention_state",
+      "status": "ORGAN_QUALIFIED",
+      "evidence": "the newest stateful attention receipt proves two-position persistent KV slots, the full-attention MLP epilogue, and source parity; complete 48-layer per-layer KV integration remains absent"
+    },
+    {
+      "stage": "linear_recurrence_state",
+      "status": "ORGAN_AND_PREFIX_QUALIFIED",
+      "evidence": "FLASH_STATEFUL_LINEAR_PREFIX_SESSION.json proves recurrent state across layers 0..2 and two token steps; complete 48-layer executor still does not expose the session"
+    }
+  ],
+  "accepted_tokens": 0,
+  "accepted_tps": null,
+  "complete_system_ebpw": null,
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-28T21:57:10Z",
+    "recorded_by": "tools/flash_stateful_gate.py",
+    "machine": "Apple M3 Ultra (source audit; no multi-token benchmark run)",
+    "rule": "S032 \u00a73 -- no performance claim; state is UNKNOWN",
+    "provenance": "source audit only; no synthetic token loop was timed"
+  },
+  "claim_boundary": "No accepted multi-token TPS or EBPW claim. Linear recurrence is qualified as an isolated organ and a layers-0..2 prefix session; full-attention KV plus its MLP/MoE epilogue is qualified as an isolated organ. The complete executor still lacks per-layer KV integration across the 48-layer session and a tokenizer/session acceptance loop.",
+  "next_action": "Integrate the qualified full-attention KV organ into the 48-layer session, then continue to accepted-token accounting with deterministic oracle checks.",
+  "seal_sha256": "4b7cfcf49a6e1226ec8c725c3adde4b4832771e3c51ffa1573549184a71449d1"
+}

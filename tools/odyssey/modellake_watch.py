@@ -34,10 +34,21 @@ DOWNLOAD_DIR = ODYSSEY / "downloads"
 MANIFEST_DIR = ODYSSEY / "watch-manifests"
 DRIVE = Path("/Volumes/corpdrive")
 MODEL_ROOT = Path("/Volumes/corpdrive/hawking-modellake")
+SPECIMEN_ROOT = MODEL_ROOT / "specimens"
 HF_BIN = Path("/Library/Frameworks/Python.framework/Versions/3.12/bin/hf")
 PYTHON_BIN = Path("/Library/Frameworks/Python.framework/Versions/3.12/bin/python3")
 LOG = DOWNLOAD_DIR / "modellake-watch.jsonl"
 LOCK_PATH = ODYSSEY / ".modellake-watch.lock"
+# Keep a dedicated sparse APFS cache volume on the internal SSD.  The image is
+# deliberately larger than the requested free-space floor, while admission is
+# governed by the live internal-volume free bytes.  The older 50 GB image is
+# left mounted for already-running workers and is never moved or modified.
+SSD_XET_IMAGE = ODYSSEY / "ssd-xet-cache-large.sparseimage"
+SSD_XET_CACHE = ODYSSEY / "ssd-xet-cache-large"
+SSD_XET_IMAGE_CAPACITY_BYTES = 410_000_000_000
+SSD_XET_CHUNK_CACHE_TARGET_BYTES = 400_000_000_000
+SSD_FREE_FLOOR_BYTES = 50_000_000_000
+SSD_FREE_GUARD_BYTES = 5_000_000_000
 
 FLOOR_BYTES = 100_000_000_000
 WARN_BYTES = 250_000_000_000
@@ -52,6 +63,12 @@ NETWORK_SAMPLE_EMIT_SECONDS = 1.0
 STATE_SAMPLE_EMIT_SECONDS = 10.0
 STALL_SECONDS = 15 * 60
 AUTH_CHECK_SECONDS = 10 * 60
+# G101: without this, a sealed specimen only becomes a WorkUnit when a human
+# remembers to run `python3 tools/future/modellake_events.py --build` by
+# hand. A seal is a rare event; this cadence is deliberately far coarser than
+# the download-health polling above so the consumer's disk reads never
+# compete with the two live transfers this watcher is admitting.
+MODELLAKE_EVENTS_INTERVAL_SECONDS = 5 * 60
 KNOWN_TEMP_BYTES = 20_000_000_000
 # A transient interface dip is not evidence that a pinned downloader is bad.
 # Transfer rate is telemetry, not sufficient evidence to terminate a live
@@ -70,6 +87,71 @@ STALE_REFRESH_ENABLED = True
 RECOVERY_REFRESH_SECONDS = 60
 RECOVERY_COOLDOWN_SECONDS = 3 * 60 + 30
 LOW_RX_BYTES_PER_SEC = 150_000_000
+
+
+def tree_bytes(root: Path) -> int:
+    """Return regular-file bytes below root without following symlinks."""
+    total = 0
+    if not root.is_dir():
+        return total
+    for directory, _, filenames in os.walk(root, followlinks=False):
+        for filename in filenames:
+            try:
+                path = Path(directory) / filename
+                if path.is_symlink():
+                    continue
+                total += path.stat().st_size
+            except OSError:
+                continue
+    return total
+
+
+def ssd_xet_mounted() -> bool:
+    return SSD_XET_CACHE.is_dir() and os.path.ismount(SSD_XET_CACHE)
+
+
+def ensure_ssd_xet_cache() -> bool:
+    """Attach the prepared cache image if it is not already mounted."""
+    if ssd_xet_mounted():
+        return True
+    if not SSD_XET_IMAGE.is_file():
+        return False
+    try:
+        SSD_XET_CACHE.mkdir(parents=True, exist_ok=True)
+        subprocess.run(
+            ["/usr/bin/hdiutil", "attach", "-quiet", "-nobrowse",
+             "-mountpoint", str(SSD_XET_CACHE), str(SSD_XET_IMAGE)],
+            check=True, stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+            timeout=30,
+        )
+    except (OSError, subprocess.SubprocessError):
+        return False
+    return ssd_xet_mounted()
+
+
+def internal_ssd_free_bytes() -> int | None:
+    """Return free bytes on the internal volume hosting the cache."""
+    try:
+        stats = os.statvfs(Path.home())
+    except OSError:
+        return None
+    return int(stats.f_bavail * stats.f_frsize)
+
+
+def ssd_xet_plan() -> tuple[int, int, bool, bool]:
+    """Return (current bytes, chunk budget, policy-ok, mounted)."""
+    mounted = ssd_xet_mounted()
+    if not mounted:
+        return 0, 0, False, False
+    current = tree_bytes(SSD_XET_CACHE)
+    internal_free = internal_ssd_free_bytes()
+    if internal_free is None:
+        return current, 0, False, True
+    available = max(0, internal_free - SSD_FREE_FLOOR_BYTES - SSD_FREE_GUARD_BYTES)
+    budget = min(SSD_XET_CHUNK_CACHE_TARGET_BYTES, available)
+    policy_ok = (internal_free > SSD_FREE_FLOOR_BYTES + SSD_FREE_GUARD_BYTES
+                 and current < SSD_XET_CHUNK_CACHE_TARGET_BYTES)
+    return current, budget, policy_ok, True
 
 
 def now() -> str:
@@ -241,13 +323,18 @@ QUEUE = [
     job("Wan-AI/Wan2.2-T2V-A14B", "c8c270b13ee05bfa474194ac9fb07a5868a97cea", "all", "P2-HIGH"),
     job("zai-org/GLM-5.3-Flash", "04c4e9e95c5da8862dced7e5056455116f83a7e0", "all", "P2-HIGH"),
     job("thinkingmachines/Inkling-Small", "8cc5877b44d343f88b92086aa1fb72897950f06a", "safe", "P1-S"),
-    # Fresh diversity wave, appended after the existing queue so current
-    # admissions and pinned destinations retain their order.
+    # Fresh diversity wave.  These public small specimens are placed before
+    # the remaining large/gated entries so an available slot fills with useful
+    # diversity without changing any active pinned destination.
     job("ibm-granite/granite-4.0-h-micro", "d5f01a3ea75f088947be3aae039f4ad52837dfde", "safe", "P1-DIVERSITY"),
     job("ibm-granite/granite-4.0-h-tiny", "791e0d3d28c86e106c9b6e0b4cecdee0375b6124", "safe", "P1-DIVERSITY"),
     job("HuggingFaceTB/SmolVLM2-2.2B-Instruct", "482adb537c021c86670beed01cd58990d01e72e4", "safe", "P1-DIVERSITY"),
     job("microsoft/Phi-4-multimodal-instruct", "93f923e1a7727d1c4f446756212d9d3e8fcc5d81", "safe", "P1-DIVERSITY"),
     job("Qwen/Qwen3-VL-8B-Instruct", "0c351dd01ed87e9c1b53cbc748cba10e6187ff3b", "safe", "P1-DIVERSITY"),
+    job("LiquidAI/LFM2.5-1.2B-Instruct", "0f604ada3f766f9f257460c4c9f0b5d6f69d431b", "safe", "P1-SMALL"),
+    job("tiiuae/Falcon3-1B-Instruct", "28ba2251970a01dd1edc7ba7dad2eb71216ccfdf", "safe", "P1-SMALL"),
+    job("microsoft/Phi-4-mini-instruct", "cfbefacb99257ffa30c83adab238a50856ac3083", "safe", "P1-SMALL"),
+    job("Qwen/Qwen3-4B-Instruct-2507", "cdbee75f17c01a7cc42f958dc650907174af0554", "safe", "P1-SMALL"),
     job("Qwen/Qwen3-Coder-30B-A3B-Instruct", "b2cff646eb4bb1d68355c01b18ae02e7cf42d120", "safe", "P1-DIVERSITY"),
     {**job("google/gemma-3-4b-it", "093f9f388b31de276ce2de164bdc2081324b9767", "safe", "P1-DIVERSITY"),
      "requires_manual_auth": True},
@@ -370,17 +457,26 @@ def load_cached_manifest(item: dict[str, object]) -> tuple[list[str], int, dict[
 
 
 def complete(item: dict[str, object], files: list[str], sizes: dict[str, int]) -> bool:
-    root = Path(str(item["destination"]))
-    if not root.is_dir():
-        return False
-    for name in files:
-        path = root / name
-        try:
-            if not path.is_file() or path.stat().st_size != sizes[name]:
-                return False
-        except (FileNotFoundError, OSError):
-            return False
-    return True
+    # Completed exact-revision specimens may be promoted out of the active
+    # partial area.  Check the canonical specimen location as well as the
+    # legacy download destination so promotion cannot cause a re-download.
+    roots = [Path(str(item["destination"])), SPECIMEN_ROOT / str(item["tag"])]
+    for root in roots:
+        if not root.is_dir():
+            continue
+        complete_here = True
+        for name in files:
+            path = root / name
+            try:
+                if not path.is_file() or path.stat().st_size != sizes[name]:
+                    complete_here = False
+                    break
+            except (FileNotFoundError, OSError):
+                complete_here = False
+                break
+        if complete_here:
+            return True
+    return False
 
 
 def durable_bytes(item: dict[str, object], files: list[str], sizes: dict[str, int]) -> int:
@@ -427,6 +523,9 @@ def launch(item: dict[str, object], files: list[str], log_path: Path) -> subproc
     destination = Path(str(item["destination"]))
     destination.parent.mkdir(parents=True, exist_ok=True)
     log_path.parent.mkdir(parents=True, exist_ok=True)
+    ssd_cache_mounted = ensure_ssd_xet_cache()
+    ssd_cache_bytes, ssd_chunk_budget, ssd_within_limit, plan_mounted = ssd_xet_plan()
+    ssd_cache_mounted = ssd_cache_mounted and plan_mounted
     command = [str(HF_BIN), "download", str(item["repo"]), *files,
                "--revision", str(item["revision"]), "--local-dir", str(destination),
                "--max-workers", str(MAX_WORKERS), "--format", "json"]
@@ -441,7 +540,27 @@ def launch(item: dict[str, object], files: list[str], log_path: Path) -> subproc
         "HF_HUB_DISABLE_TELEMETRY": "1",
         "HF_HUB_DISABLE_PROGRESS_BARS": "1",
         "PYTHONUNBUFFERED": "1",
+        # The final files remain on the external ModelLake destination, but
+        # Xet's bounded chunk cache stays on the internal SSD.  Sequential
+        # reconstruction is specifically intended for spinning disks and
+        # avoids turning the HDD into a random-write bottleneck.
+        "HF_XET_RECONSTRUCT_WRITE_SEQUENTIALLY": "1",
+        # The existing cache contains large open historical logs.  Do not add
+        # more unbounded log growth to the 50 GB cache budget on new workers.
+        "HF_XET_LOG_DEST": "none",
+        "HF_XET_LOG_DIR_MAX_SIZE": "250mb",
     })
+    if ssd_cache_mounted:
+        env.update({
+            "HF_XET_CACHE": str(SSD_XET_CACHE),
+            "HF_XET_CHUNK_CACHE_SIZE_BYTES": str(
+                ssd_chunk_budget if ssd_within_limit else 0),
+        })
+    else:
+        # Never let an unmounted path become an ordinary uncapped directory.
+        # The worker can still download to the canonical HDD destination with
+        # the sequential reconstruction setting.
+        env["HF_XET_CHUNK_CACHE_SIZE_BYTES"] = "0"
     handle = log_path.open("a", encoding="utf-8")
     handle.write(json.dumps({"ts": now(), "event": "launch", "command": command},
                             sort_keys=True) + "\n")
@@ -453,7 +572,13 @@ def launch(item: dict[str, object], files: list[str], log_path: Path) -> subproc
     handle.close()
     emit("download_started", job=item["tag"], repo=item["repo"],
          revision=item["revision"], pid=process.pid, max_workers=MAX_WORKERS,
-         expected=item.get("expected"), destination=item["destination"])
+         expected=item.get("expected"), destination=item["destination"],
+         ssd_xet_cache=str(SSD_XET_CACHE), ssd_xet_cache_bytes=ssd_cache_bytes,
+         ssd_xet_cache_limit_bytes=SSD_XET_CACHE_LIMIT_BYTES,
+         ssd_xet_chunk_cache_budget_bytes=ssd_chunk_budget,
+         ssd_xet_cache_within_limit=ssd_within_limit,
+         ssd_xet_cache_mounted=ssd_cache_mounted,
+         reconstruct_write_sequentially=True)
     return process
 
 
@@ -470,6 +595,44 @@ def auth_check() -> tuple[str, str]:
     if re.search(r"401|403|unauthorized|invalid token|authentication", output, re.I):
         return "auth_failed", output
     return "network_error", output
+
+
+def emit_modellake_events_once() -> int:
+    """Run the seal -> registry -> fingerprint -> role -> WorkUnit consumer
+    once, and persist its receipt. Returns the number of specimens for which
+    a first-sight seal was emitted this run.
+
+    Imported lazily: a missing or broken sidecar module must not stop this
+    watcher from starting, and must not touch the download loop it takes no
+    part in. This does no network I/O; it reads lake manifests already on
+    disk and this watcher's own JSONL tail.
+    """
+    if str(REPO_ROOT) not in sys.path:
+        sys.path.insert(0, str(REPO_ROOT))
+    from tools.future import modellake_events as me
+    from tools.future._common import write_receipt
+
+    doc = me.build()
+    write_receipt(me.RECEIPT_NAME, doc, me.RECORDED_BY)
+    return int(doc["n_emitted_specimens"])
+
+
+def maybe_emit_modellake_events(loop_started: float, last_events_emit: float) -> float:
+    """Gate emit_modellake_events_once() to MODELLAKE_EVENTS_INTERVAL_SECONDS.
+
+    Never raises: a broken sidecar module is logged and retried next
+    interval, not once per poll tick, and never crashes the watcher that
+    is actively managing the two live downloads. Returns the timestamp to
+    remember as last_events_emit for the next call.
+    """
+    if last_events_emit and loop_started - last_events_emit < MODELLAKE_EVENTS_INTERVAL_SECONDS:
+        return last_events_emit
+    try:
+        n_new = emit_modellake_events_once()
+        emit("modellake_events_run", n_new_seal_specimens=n_new)
+    except Exception as exc:
+        emit("modellake_events_error", error=redact(str(exc)))
+    return loop_started
 
 
 def acquire_lock():
@@ -498,7 +661,12 @@ def main() -> int:
         return 2
 
     emit("watcher_started", pid=os.getpid(), floor_bytes=FLOOR_BYTES,
-         max_download_jobs=MAX_DOWNLOAD_JOBS, max_workers=MAX_WORKERS)
+         max_download_jobs=MAX_DOWNLOAD_JOBS, max_workers=MAX_WORKERS,
+         ssd_xet_cache=str(SSD_XET_CACHE),
+         ssd_xet_cache_limit_bytes=SSD_XET_CACHE_LIMIT_BYTES,
+         ssd_xet_cache_headroom_bytes=SSD_XET_CACHE_HEADROOM_BYTES,
+         ssd_xet_chunk_cache_target_bytes=SSD_XET_CHUNK_CACHE_TARGET_BYTES,
+         reconstruct_write_sequentially=True)
     children: dict[str, subprocess.Popen[str]] = {}
     manifest_cache: dict[str, tuple[list[str], int, dict[str, int]]] = {}
     retry_after: dict[str, float] = {}
@@ -511,6 +679,10 @@ def main() -> int:
     last_net_time = time.monotonic()
     last_network_emit = 0.0
     last_state_emit = 0.0
+    last_events_emit = 0.0
+    last_ssd_cache_bytes = None
+    last_ssd_cache_mounted = False
+    notified_ssd_cache_limit = False
     last_refresh: dict[str, float] = {}
     low_rx_since: dict[str, float] = {}
     rate_rearmed: set[str] = set()
@@ -840,10 +1012,36 @@ def main() -> int:
                 emit("hf_auth_network_error", detail=detail)
 
         if args.once or loop_started - last_state_emit >= STATE_SAMPLE_EMIT_SECONDS:
+            last_ssd_cache_mounted = ssd_xet_mounted()
+            last_ssd_cache_bytes = (
+                tree_bytes(SSD_XET_CACHE) if last_ssd_cache_mounted else None)
+            if (last_ssd_cache_bytes is not None
+                    and last_ssd_cache_bytes >= SSD_XET_CACHE_LIMIT_BYTES):
+                if not notified_ssd_cache_limit:
+                    notified_ssd_cache_limit = True
+                    emit("ssd_xet_cache_limit_reached",
+                         cache_bytes=last_ssd_cache_bytes,
+                         limit_bytes=SSD_XET_CACHE_LIMIT_BYTES)
+            else:
+                notified_ssd_cache_limit = False
             emit("watcher_sample", free_bytes=free, p0_done=p0_done,
                  active_jobs=sorted(active_tags | set(children)),
-                 active_remaining_bytes=active_remaining, states=states)
+                 active_remaining_bytes=active_remaining, states=states,
+                 ssd_xet_cache=str(SSD_XET_CACHE),
+                 ssd_xet_cache_bytes=last_ssd_cache_bytes,
+                 ssd_xet_cache_limit_bytes=SSD_XET_CACHE_LIMIT_BYTES,
+                 ssd_xet_cache_headroom_bytes=(
+                     max(0, SSD_XET_CACHE_LIMIT_BYTES - last_ssd_cache_bytes)
+                     if last_ssd_cache_bytes is not None else None),
+                 ssd_xet_cache_within_limit=(
+                     last_ssd_cache_bytes < SSD_XET_CACHE_LIMIT_BYTES
+                     if last_ssd_cache_bytes is not None else False),
+                 ssd_xet_cache_mounted=last_ssd_cache_mounted,
+                 reconstruct_write_sequentially=True)
             last_state_emit = loop_started
+
+        last_events_emit = maybe_emit_modellake_events(loop_started, last_events_emit)
+
         if args.once:
             return 0
         sleep_for = max(0.05, args.poll_secs - (time.monotonic() - loop_started))

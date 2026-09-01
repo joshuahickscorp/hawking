@@ -1,0 +1,1 @@
+{"module": "succession.py", "entry_point": "build", "receipt": "receipts/future/SUCCESSION.json", "routed_to_frontier": "FT.CHILD_RESIDENT.install-dry-run", "species": "CHILD_PROPOSAL", "wall_seconds": 0.169, "evidence_class": "STATIC_ONLY"}

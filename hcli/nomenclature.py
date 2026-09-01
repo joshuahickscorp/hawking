@@ -11,6 +11,12 @@ from typing import Any, Dict, Mapping
 
 NOMENCLATURE_VERSION = "HAWKING_NOMENCLATURE_V1"
 
+# Active artifact extensions. Gravity is a process, not a file format. The
+# ``.gravity`` suffix remains readable for sealed historical work; new
+# representation shards use NR and a machine-bound executable uses NX.
+NR_EXTENSION = ".nr"
+NX_EXTENSION = ".nx"
+
 CANONICAL_PIPELINE = (
     "SourceSpecimen",
     "Doctor",
@@ -28,7 +34,9 @@ CANONICAL_PIPELINE = (
 CANONICAL_DEFINITIONS = {
     "SourceSpecimen": "Pinned cold source checkpoint used to derive candidates.",
     "Doctor": "Measurement, prescription, verification, and rejection mechanism.",
-    "Gravity": "Capability-preserving search/reduction of physical cost; quantization is one operator.",
+    "Gravity": "The search/research process that discovers lower-information representations of useful model function; it is not a file format.",
+    "NR": "Portable Noetic Representation: transient shard/container between source and a Noetic executable; no machine binding.",
+    "NX": "Machine-bound Noetic Executable: final compiled executable derived from an NR representation.",
     "NoeticIR": "Portable representation/executable-intelligence ontology; not limited to tensors.",
     "NoeticExecutable": "Complete runnable bundle independent of the cold Source Specimen.",
     "ParetoFrontier": "Set of non-dominated qualified Noetic Executables.",
@@ -59,6 +67,7 @@ def nomenclature_metadata() -> Dict[str, Any]:
     """Return immutable-by-convention metadata for new active receipts."""
     return {
         "nomenclature_version": NOMENCLATURE_VERSION,
+        "artifact_extensions": {"representation_shard": NR_EXTENSION, "final_executable": NX_EXTENSION},
         "canonical_pipeline": list(CANONICAL_PIPELINE),
     }
 
@@ -75,6 +84,8 @@ __all__ = [
     "CANONICAL_PIPELINE",
     "COMPATIBILITY_ALIASES",
     "NOMENCLATURE_VERSION",
+    "NR_EXTENSION",
+    "NX_EXTENSION",
     "annotate_receipt",
     "nomenclature_metadata",
 ]

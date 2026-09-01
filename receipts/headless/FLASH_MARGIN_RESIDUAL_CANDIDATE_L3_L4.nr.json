@@ -1,0 +1,117 @@
+{
+  "nr_version": "1.0.0",
+  "nr_kind": "hawking.nos.noetic_representation",
+  "artifact_kind": "NR",
+  "semantic_provenance": {
+    "parent_model": "Qwen3.8-Flash-Next",
+    "source_state_sha256": {
+      "dense": "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+      "compact": "86aa8b0f0cc130bd96b0ba84947ac81635d21af9847aad194a207e174b1f6e85"
+    }
+  },
+  "representation": {
+    "scope": "layer-3 output residual targeting layer-4 router",
+    "candidates": [
+      {
+        "policy": "oracle_salience_fixed_coordinate_residual",
+        "fraction": 0.001,
+        "dimensions": 3,
+        "residual_bytes_fp16": 24,
+        "residual_bytes_fp32": 48,
+        "rows_with_top10_membership_change": 1,
+        "mean_top10_membership_symmetric_difference": 0.5,
+        "rows_with_top10_order_change": 2,
+        "mean_top10_order_difference": 0.75,
+        "router_logit_rmse": 0.000718513096217066,
+        "hidden_rmse": 0.0007729830103926361,
+        "min_margin_rows_below_1e-5": 1,
+        "route_stable_on_observed_seam": false
+      },
+      {
+        "policy": "oracle_salience_fixed_coordinate_residual",
+        "fraction": 0.0025,
+        "dimensions": 6,
+        "residual_bytes_fp16": 48,
+        "residual_bytes_fp32": 96,
+        "rows_with_top10_membership_change": 1,
+        "mean_top10_membership_symmetric_difference": 0.5,
+        "rows_with_top10_order_change": 2,
+        "mean_top10_order_difference": 0.75,
+        "router_logit_rmse": 0.0007322650635614991,
+        "hidden_rmse": 0.0007710572681389749,
+        "min_margin_rows_below_1e-5": 1,
+        "route_stable_on_observed_seam": false
+      },
+      {
+        "policy": "oracle_salience_fixed_coordinate_residual",
+        "fraction": 0.005,
+        "dimensions": 13,
+        "residual_bytes_fp16": 104,
+        "residual_bytes_fp32": 208,
+        "rows_with_top10_membership_change": 1,
+        "mean_top10_membership_symmetric_difference": 0.5,
+        "rows_with_top10_order_change": 2,
+        "mean_top10_order_difference": 0.75,
+        "router_logit_rmse": 0.0006888945936225355,
+        "hidden_rmse": 0.0007662751013413072,
+        "min_margin_rows_below_1e-5": 1,
+        "route_stable_on_observed_seam": false
+      },
+      {
+        "policy": "oracle_salience_fixed_coordinate_residual",
+        "fraction": 0.01,
+        "dimensions": 26,
+        "residual_bytes_fp16": 208,
+        "residual_bytes_fp32": 416,
+        "rows_with_top10_membership_change": 2,
+        "mean_top10_membership_symmetric_difference": 1.0,
+        "rows_with_top10_order_change": 3,
+        "mean_top10_order_difference": 1.0,
+        "router_logit_rmse": 0.0006736387149430811,
+        "hidden_rmse": 0.0007557312492281199,
+        "min_margin_rows_below_1e-5": 1,
+        "route_stable_on_observed_seam": false
+      },
+      {
+        "policy": "oracle_salience_fixed_coordinate_residual",
+        "fraction": 0.02,
+        "dimensions": 51,
+        "residual_bytes_fp16": 408,
+        "residual_bytes_fp32": 816,
+        "rows_with_top10_membership_change": 1,
+        "mean_top10_membership_symmetric_difference": 0.5,
+        "rows_with_top10_order_change": 2,
+        "mean_top10_order_difference": 0.75,
+        "router_logit_rmse": 0.0006350190378725529,
+        "hidden_rmse": 0.0007391704129986465,
+        "min_margin_rows_below_1e-5": 1,
+        "route_stable_on_observed_seam": false
+      }
+    ],
+    "conditional_policy": {
+      "policy": "0.5% salience residual normally; 2% when dense top10/top11 margin < 1e-5",
+      "residual_bytes_fp16_upper_bound": 408,
+      "rows_with_membership_change": 1,
+      "mean_membership_symmetric_difference": 0.5,
+      "state_artifact": "receipts/headless/FLASH_MARGIN_RESIDUAL_CANDIDATE_L3_L4_CONDITIONAL_STATE.f32",
+      "state_sha256": "14155cfb6e373b850cc1df19b74ac3dda5951d46fe156849c9449add1aeb148b"
+    },
+    "runtime_required": false
+  },
+  "dependencies": [],
+  "kernel_requirements": [
+    {
+      "requires": "margin_aware_residual_apply",
+      "parameters": "state-dependent coordinate/codebook selection"
+    }
+  ],
+  "verifier": "exact layer-3/4 native organ parity and route stability",
+  "seal": {
+    "status": "UNSEALED_ORACLE_CANDIDATE",
+    "promotion_allowed": false
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "rule": "NR diagnostic only"
+  }
+}

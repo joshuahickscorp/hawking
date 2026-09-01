@@ -1,0 +1,288 @@
+{
+  "schema": "hawking.flash.complete_session_timing_decomposition.v1",
+  "status": "MEASURED_BASELINE",
+  "session": "receipts/headless/FLASH_STATEFUL_COMPLETE_TOKEN_SESSION.json",
+  "session_sha256": "f593e28d084b4133a2a72e23eb94b2a99c88b7f7027987d382444337d72ba5d1",
+  "generated_at": "2026-08-29T00:23:38.736981Z",
+  "process_boundary": "one native process",
+  "segments": [
+    {
+      "segment": "layers-0-2",
+      "kind": "linear_attention",
+      "wall_ns": 2373050459,
+      "gpu_ns": 1461667739,
+      "host_and_unattributed_ns": 911382720,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-3",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-3-attention.json"
+    },
+    {
+      "segment": "layers-4-6",
+      "kind": "linear_attention",
+      "wall_ns": 2269592331,
+      "gpu_ns": 1491415532,
+      "host_and_unattributed_ns": 778176799,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-7",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-7-attention.json"
+    },
+    {
+      "segment": "layers-8-10",
+      "kind": "linear_attention",
+      "wall_ns": 843337915,
+      "gpu_ns": 687477953,
+      "host_and_unattributed_ns": 155859962,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-11",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-11-attention.json"
+    },
+    {
+      "segment": "layers-12-14",
+      "kind": "linear_attention",
+      "wall_ns": 715083625,
+      "gpu_ns": 599353616,
+      "host_and_unattributed_ns": 115730009,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-15",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-15-attention.json"
+    },
+    {
+      "segment": "layers-16-18",
+      "kind": "linear_attention",
+      "wall_ns": 2349045793,
+      "gpu_ns": 1503142531,
+      "host_and_unattributed_ns": 845903262,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-19",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-19-attention.json"
+    },
+    {
+      "segment": "layers-20-22",
+      "kind": "linear_attention",
+      "wall_ns": 1450911417,
+      "gpu_ns": 734428700,
+      "host_and_unattributed_ns": 716482717,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-23",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-23-attention.json"
+    },
+    {
+      "segment": "layers-24-26",
+      "kind": "linear_attention",
+      "wall_ns": 880067667,
+      "gpu_ns": 719504326,
+      "host_and_unattributed_ns": 160563341,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-27",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-27-attention.json"
+    },
+    {
+      "segment": "layers-28-30",
+      "kind": "linear_attention",
+      "wall_ns": 857249043,
+      "gpu_ns": 677970366,
+      "host_and_unattributed_ns": 179278677,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-31",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-31-attention.json"
+    },
+    {
+      "segment": "layers-32-34",
+      "kind": "linear_attention",
+      "wall_ns": 1565613583,
+      "gpu_ns": 1107230990,
+      "host_and_unattributed_ns": 458382593,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-35",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-35-attention.json"
+    },
+    {
+      "segment": "layers-36-38",
+      "kind": "linear_attention",
+      "wall_ns": 2386952126,
+      "gpu_ns": 1526802740,
+      "host_and_unattributed_ns": 860149386,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-39",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-39-attention.json"
+    },
+    {
+      "segment": "layers-40-42",
+      "kind": "linear_attention",
+      "wall_ns": 1006905373,
+      "gpu_ns": 823416906,
+      "host_and_unattributed_ns": 183488467,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-43",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-43-attention.json"
+    },
+    {
+      "segment": "layers-44-46",
+      "kind": "linear_attention",
+      "wall_ns": 3645484999,
+      "gpu_ns": 2524516575,
+      "host_and_unattributed_ns": 1120968424,
+      "dispatches": 360,
+      "source_payload_bytes_read": 15563910464,
+      "receipt": null
+    },
+    {
+      "segment": "layer-47",
+      "kind": "full_attention",
+      "wall_ns": 0,
+      "gpu_ns": 0,
+      "host_and_unattributed_ns": 0,
+      "dispatches": 174,
+      "source_payload_bytes_read": 5171656704,
+      "receipt": "receipts/headless/flash_stateful_complete_token_session/layer-47-attention.json"
+    }
+  ],
+  "totals": {
+    "elapsed_wall_ns": 5780352190000,
+    "elapsed_hours": 1.605653386111111,
+    "measured_gpu_ns": 13856927974,
+    "measured_host_and_unattributed_ns": 5766495262026,
+    "dispatches": 6408,
+    "source_payload_bytes_read": 248826806016
+  },
+  "top_runtime_latencies": [
+    {
+      "rank": 1,
+      "name": "dense expert-bank source/load ceremony",
+      "status": "dominant_by_source_bytes",
+      "evidence": "per-segment source payload bytes and wall time; exact open/read split not instrumented"
+    },
+    {
+      "rank": 2,
+      "name": "host and synchronization ceremony",
+      "status": "measured_residual",
+      "evidence": "segment wall_ns minus reported GPU ns"
+    },
+    {
+      "rank": 3,
+      "name": "dispatch/command submission",
+      "status": "measured_count_only",
+      "evidence": "per-step dispatch totals; dispatch ns not separately instrumented"
+    }
+  ],
+  "claim_boundary": "Post-hoc timing baseline for the exact dense stateful oracle. Source open/read/parse, upload, pipeline, wait, serialization and receipt sub-buckets remain explicitly unattributed where the source receipt did not time them; this is not a TPS or residency claim.",
+  "next": "Instrument the persistent route-safe executor with separate source/index/upload/pipeline/wait/state/receipt timers and compare complete accepted-token time.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T00:23:38.737173Z",
+    "recorded_by": "tools/flash_session_timing.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "S032 \u00a73 -- post-hoc baseline; no protected performance claim"
+  },
+  "seal_sha256": "0b2e84d65cb04845a78bfa55ceea404dfd726e614d96278f8b73c9c2c75afae5"
+}

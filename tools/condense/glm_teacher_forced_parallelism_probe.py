@@ -470,8 +470,14 @@ def main(argv: list[str] | None = None) -> int:
     out_json = Path(args.work) / "GLM_TEACHER_FORCED_PARALLELISM_PROBE.json"
     out_json.parent.mkdir(parents=True, exist_ok=True)
     out_json.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
-    # Also seal at repo root findings path for the task contract.
-    root_findings = _REPO / "GLM_TEACHER_FORCED_PARALLELISM_FINDINGS.json"
+    # Also seal at the repository evidence path for the task contract.
+    root_findings = (
+        _REPO
+        / "evidence"
+        / "parallelism"
+        / "GLM_TEACHER_FORCED_PARALLELISM_FINDINGS.json"
+    )
+    root_findings.parent.mkdir(parents=True, exist_ok=True)
     root_findings.write_text(json.dumps(report, indent=2, sort_keys=True) + "\n")
     print(json.dumps(report, indent=2, sort_keys=True))
     print(f"\nWrote {out_json}", file=sys.stderr)

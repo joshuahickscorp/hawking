@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.30208.receipt.json",
+    "hwir.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "hwir.py exists (F003 closed by sidecar). Remaining work is consumption, not a second IR.",
+  "frontier_id": "FT.PHYSICAL_GRAPH.hwir-lower",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.30208",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.30208.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "e90bf8f5f26c5c28523ca60a0ef563ae819838137f7be1f2f4a5bfd3718ac45f",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

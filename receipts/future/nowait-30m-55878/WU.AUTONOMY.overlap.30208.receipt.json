@@ -1,0 +1,1 @@
+{"module": "hwir.py", "entry_point": "build", "receipt": "receipts/future/HWIR_V1.json", "routed_to_frontier": "FT.PHYSICAL_GRAPH.hwir-lower", "species": "HWIR_LOWER", "wall_seconds": 0.028, "evidence_class": "STATIC_ONLY"}

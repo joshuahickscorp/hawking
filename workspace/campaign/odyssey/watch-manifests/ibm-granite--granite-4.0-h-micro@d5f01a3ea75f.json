@@ -1,0 +1,39 @@
+{
+  "expected": 6392637158,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "chat_template.jinja",
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "model-00001-of-00002.safetensors",
+    "model-00002-of-00002.safetensors",
+    "model.safetensors.index.json",
+    "model.sig",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+  ],
+  "mode": "safe",
+  "repo": "ibm-granite/granite-4.0-h-micro",
+  "resolved_sha": "d5f01a3ea75f088947be3aae039f4ad52837dfde",
+  "revision": "d5f01a3ea75f088947be3aae039f4ad52837dfde",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 34447,
+    "chat_template.jinja": 6418,
+    "config.json": 1796,
+    "generation_config.json": 147,
+    "merges.txt": 916646,
+    "model-00001-of-00002.safetensors": 4990606832,
+    "model-00002-of-00002.safetensors": 1392237216,
+    "model.safetensors.index.json": 37384,
+    "model.sig": 10390,
+    "special_tokens_map.json": 579,
+    "tokenizer.json": 7153421,
+    "tokenizer_config.json": 17659,
+    "vocab.json": 1612704
+  }
+}

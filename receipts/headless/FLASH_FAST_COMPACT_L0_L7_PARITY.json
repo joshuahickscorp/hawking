@@ -1,0 +1,306 @@
+{
+  "schema": "hawking.flash.fast_compact_parity.v1",
+  "status": "BLOCKED_FAST_COMPACT_PARITY",
+  "dense_receipt": "receipts/headless/FLASH_DENSE_L0_L7_V1/FAST_CHAIN_SUMMARY.json",
+  "dense_receipt_sha256": "f9e0f1ac40943a59cc9fe4dd627be8efbe678859b157343a422b2445926868ee",
+  "compact_receipt": "receipts/headless/FLASH_COMPACT_L0_L7_V1/FAST_CHAIN_SUMMARY.json",
+  "compact_receipt_sha256": "e0258c2cfdf6a5f6f8b450fe1c269c433a03feb09e4237cb29c3234db99c5996",
+  "layers": [
+    0,
+    1,
+    2,
+    3,
+    4,
+    5,
+    6,
+    7
+  ],
+  "comparisons": [
+    {
+      "layer": 0,
+      "dense_output_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+      "compact_output_sha256": "459e0084491336f1b4a1b4b8af02c65f0603d2fb1c46009d0ad878ef0b9bbc3e",
+      "exact_fingerprint_match": true,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "compact_route_ids": [
+        411,
+        334,
+        286,
+        152,
+        291,
+        106,
+        421,
+        304,
+        226,
+        331
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 1,
+      "dense_output_sha256": "5eb2ef9e2044cc1d258ed06ffce4f064e6e18b2f2907a14127bff22b9a90e91b",
+      "compact_output_sha256": "5eb2ef9e2044cc1d258ed06ffce4f064e6e18b2f2907a14127bff22b9a90e91b",
+      "exact_fingerprint_match": true,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        320,
+        19,
+        157,
+        46,
+        149,
+        131,
+        151,
+        367,
+        165,
+        452
+      ],
+      "compact_route_ids": [
+        320,
+        19,
+        157,
+        46,
+        149,
+        131,
+        151,
+        367,
+        165,
+        452
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 2,
+      "dense_output_sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "compact_output_sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+      "exact_fingerprint_match": true,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        75,
+        12,
+        209,
+        4,
+        9,
+        222,
+        5,
+        272,
+        114,
+        269
+      ],
+      "compact_route_ids": [
+        75,
+        12,
+        209,
+        4,
+        9,
+        222,
+        5,
+        272,
+        114,
+        269
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 3,
+      "dense_output_sha256": "31be68525a514b9beaf5c96f33992aaa673103f0c1e825fbd938332f22853ed3",
+      "compact_output_sha256": "86aa8b0f0cc130bd96b0ba84947ac81635d21af9847aad194a207e174b1f6e85",
+      "exact_fingerprint_match": false,
+      "full_attention_tolerance_match": true,
+      "dense_route_ids": [
+        315,
+        405,
+        182,
+        291,
+        194,
+        205,
+        143,
+        297,
+        223,
+        51
+      ],
+      "compact_route_ids": [
+        315,
+        405,
+        182,
+        291,
+        194,
+        205,
+        143,
+        297,
+        223,
+        51
+      ],
+      "route_ids_match": true
+    },
+    {
+      "layer": 4,
+      "dense_output_sha256": "26ddc645bfdfd769ed26fd5aa78823923feac67aa3836b0c041ad58ad78177b9",
+      "compact_output_sha256": "ba01bdf781e839deb4f089f350c5608ce7cc420e985a966ae1bb79fe72053b3c",
+      "exact_fingerprint_match": false,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        309,
+        252,
+        59,
+        106,
+        410,
+        475,
+        453,
+        41,
+        162,
+        108
+      ],
+      "compact_route_ids": [
+        309,
+        252,
+        59,
+        106,
+        410,
+        453,
+        475,
+        306,
+        41,
+        162
+      ],
+      "route_ids_match": false
+    },
+    {
+      "layer": 5,
+      "dense_output_sha256": "0b8a78620ab860a33065fefcc3d29c86d713e682cc5b5f666bf62b705d64464b",
+      "compact_output_sha256": "21706ce5f5c0b6320a7a6fdb4e4397f488a0ac0dd83651f6c0a98381fc444b58",
+      "exact_fingerprint_match": false,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        510,
+        446,
+        484,
+        410,
+        397,
+        66,
+        236,
+        263,
+        256,
+        251
+      ],
+      "compact_route_ids": [
+        510,
+        446,
+        484,
+        397,
+        410,
+        236,
+        66,
+        263,
+        256,
+        314
+      ],
+      "route_ids_match": false
+    },
+    {
+      "layer": 6,
+      "dense_output_sha256": "7def080f05880fdcd2a5488cf3221c0ac6b72e8f0657648aa92566740883d07d",
+      "compact_output_sha256": "657b986da3fe91d2c3ca92ff4f4672cf86aa33402f4f095e4a5db5a4a414b016",
+      "exact_fingerprint_match": false,
+      "full_attention_tolerance_match": null,
+      "dense_route_ids": [
+        223,
+        33,
+        283,
+        395,
+        256,
+        387,
+        221,
+        286,
+        80,
+        415
+      ],
+      "compact_route_ids": [
+        223,
+        33,
+        283,
+        395,
+        256,
+        387,
+        286,
+        221,
+        80,
+        415
+      ],
+      "route_ids_match": false
+    },
+    {
+      "layer": 7,
+      "dense_output_sha256": "cc1fe68d4061850d13e61314aae213fbe7844bda203883771203034fc75b4bea",
+      "compact_output_sha256": "6a221ea395895b070fc02d1bd3639a610d224b40749912baa1b9c90b26696aed",
+      "exact_fingerprint_match": false,
+      "full_attention_tolerance_match": true,
+      "dense_route_ids": [
+        346,
+        505,
+        40,
+        348,
+        312,
+        377,
+        286,
+        452,
+        382,
+        303
+      ],
+      "compact_route_ids": [
+        346,
+        505,
+        348,
+        40,
+        312,
+        377,
+        286,
+        452,
+        382,
+        303
+      ],
+      "route_ids_match": false
+    }
+  ],
+  "divergence": {
+    "first_route_id_mismatch_layer": 4,
+    "first_exact_fingerprint_mismatch_layer": 3,
+    "interpretation": "A route mismatch after a tolerance-only seam is a promotion blocker: compact mode must preserve route decisions or carry a capability-sensitive residual/fallback."
+  },
+  "source_payload": {
+    "dense_bytes": 41471062656,
+    "compact_bytes": 1992176256,
+    "bytes_saved": 39478886400,
+    "reduction_fraction": 0.9519622568506386
+  },
+  "timing": {
+    "dense_wall_ns": 965483432333,
+    "compact_wall_ns": 72321522292,
+    "wall_reduction_fraction": 0.9250929432136998,
+    "dense_gpu_ns": 1145505205,
+    "compact_gpu_ns": 210528412,
+    "gpu_reduction_fraction": 0.81621348285362,
+    "interpretation": "bounded device-resident cross-species prefix (layers 0..7); full-attention seam uses source-parity tolerance, no complete-token/TPS claim"
+  },
+  "claim_boundary": "Compact and dense fast-chain fingerprints or route IDs diverged; promotion is prohibited.",
+  "next": "If route IDs diverge, retain the negative control and test capability-sensitive residuals or route-conditioned representations before extending the range.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-29T02:08:44.842152Z",
+    "recorded_by": "tools/flash_fast_compact_compare.py",
+    "machine": "Apple M3 Ultra",
+    "rule": "bounded parity/source-read comparison only; no TPS or residency claim"
+  },
+  "seal_sha256": "6bf34f6cf719c954f6ca175a5b3bf7e4733e7b8dee48dccd350ee8feb78910ac"
+}

@@ -1,0 +1,678 @@
+{
+  "capacity": {
+    "free_after_expected_bytes": 3026768207178,
+    "free_bytes": 3386791493632,
+    "path": "/Volumes/corpdrive/hawking-modellake"
+  },
+  "checks": {
+    "atomic_publish_identity": true,
+    "capacity_headroom_observed": true,
+    "job_identity_matches_pinned_target": false,
+    "job_resumable": true,
+    "no_delete_policy": true,
+    "partial_not_final": false
+  },
+  "claim_boundary": "This receipt observes a resumable acquisition and never claims a partial tree is ready; it makes no model capability or performance claim.",
+  "expected_argv": [
+    "python3",
+    "tools/odyssey/modellake.py",
+    "acquire",
+    "--repo",
+    "Qwen/Qwen3.8-Flash-Next",
+    "--revision",
+    "34567a4712bc9766c4449e2e98e4468bfa24d915"
+  ],
+  "final": {
+    "direct_bytes": 360023286454,
+    "direct_files": 144,
+    "entries": [
+      {
+        "bytes": 1570,
+        "name": ".gitattributes"
+      },
+      {
+        "bytes": 3235,
+        "name": "LICENSE"
+      },
+      {
+        "bytes": 95,
+        "name": "README.md"
+      },
+      {
+        "bytes": 8952,
+        "name": "chat_template.jinja"
+      },
+      {
+        "bytes": 4745,
+        "name": "config.json"
+      },
+      {
+        "bytes": 202,
+        "name": "generation_config.json"
+      },
+      {
+        "bytes": 3353259,
+        "name": "merges.txt"
+      },
+      {
+        "bytes": 1040155944,
+        "name": "model-00001-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00002-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518264,
+        "name": "model-00003-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00004-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355888504,
+        "name": "model-00005-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00006-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00007-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00008-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00009-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00010-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00011-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00012-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00013-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00014-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00015-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00016-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00017-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00018-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00019-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00020-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00021-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00022-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00023-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00024-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00025-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00026-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00027-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00028-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00029-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016032,
+        "name": "model-00030-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016040,
+        "name": "model-00031-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016040,
+        "name": "model-00032-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016040,
+        "name": "model-00033-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016040,
+        "name": "model-00034-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016040,
+        "name": "model-00035-of-00131.safetensors"
+      },
+      {
+        "bytes": 3200016040,
+        "name": "model-00036-of-00131.safetensors"
+      },
+      {
+        "bytes": 1742347160,
+        "name": "model-00037-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00038-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716599840,
+        "name": "model-00039-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00040-of-00131.safetensors"
+      },
+      {
+        "bytes": 1941966288,
+        "name": "model-00041-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00042-of-00131.safetensors"
+      },
+      {
+        "bytes": 1839072016,
+        "name": "model-00043-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00044-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518280,
+        "name": "model-00045-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00046-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716681904,
+        "name": "model-00047-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00048-of-00131.safetensors"
+      },
+      {
+        "bytes": 1935433152,
+        "name": "model-00049-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00050-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518280,
+        "name": "model-00051-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00052-of-00131.safetensors"
+      },
+      {
+        "bytes": 1839072024,
+        "name": "model-00053-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00054-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716599840,
+        "name": "model-00055-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00056-of-00131.safetensors"
+      },
+      {
+        "bytes": 1941966280,
+        "name": "model-00057-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00058-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716600048,
+        "name": "model-00059-of-00131.safetensors"
+      },
+      {
+        "bytes": 3471361528,
+        "name": "model-00060-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00061-of-00131.safetensors"
+      },
+      {
+        "bytes": 3510240000,
+        "name": "model-00062-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00063-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518280,
+        "name": "model-00064-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00065-of-00131.safetensors"
+      },
+      {
+        "bytes": 1719221392,
+        "name": "model-00066-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00067-of-00131.safetensors"
+      },
+      {
+        "bytes": 1935412552,
+        "name": "model-00068-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00069-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832523520,
+        "name": "model-00070-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00071-of-00131.safetensors"
+      },
+      {
+        "bytes": 1839072128,
+        "name": "model-00072-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00073-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716599840,
+        "name": "model-00074-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00075-of-00131.safetensors"
+      },
+      {
+        "bytes": 1938689480,
+        "name": "model-00076-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00077-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832600344,
+        "name": "model-00078-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00079-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716599840,
+        "name": "model-00080-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00081-of-00131.safetensors"
+      },
+      {
+        "bytes": 1935433136,
+        "name": "model-00082-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00083-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716599840,
+        "name": "model-00084-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00085-of-00131.safetensors"
+      },
+      {
+        "bytes": 1941966296,
+        "name": "model-00086-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00087-of-00131.safetensors"
+      },
+      {
+        "bytes": 1839072024,
+        "name": "model-00088-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00089-of-00131.safetensors"
+      },
+      {
+        "bytes": 1835795216,
+        "name": "model-00090-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00091-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716599840,
+        "name": "model-00092-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00093-of-00131.safetensors"
+      },
+      {
+        "bytes": 1935412928,
+        "name": "model-00094-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00095-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518280,
+        "name": "model-00096-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00097-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518280,
+        "name": "model-00098-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00099-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716600224,
+        "name": "model-00100-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00101-of-00131.safetensors"
+      },
+      {
+        "bytes": 1935413160,
+        "name": "model-00102-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00103-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518272,
+        "name": "model-00104-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00105-of-00131.safetensors"
+      },
+      {
+        "bytes": 1863975680,
+        "name": "model-00106-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00107-of-00131.safetensors"
+      },
+      {
+        "bytes": 1900676064,
+        "name": "model-00108-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00109-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716599840,
+        "name": "model-00110-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00111-of-00131.safetensors"
+      },
+      {
+        "bytes": 1935413176,
+        "name": "model-00112-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00113-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832523512,
+        "name": "model-00114-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00115-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518280,
+        "name": "model-00116-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00117-of-00131.safetensors"
+      },
+      {
+        "bytes": 1716620424,
+        "name": "model-00118-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443376,
+        "name": "model-00119-of-00131.safetensors"
+      },
+      {
+        "bytes": 1948519840,
+        "name": "model-00120-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00121-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518264,
+        "name": "model-00122-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00123-of-00131.safetensors"
+      },
+      {
+        "bytes": 1729707128,
+        "name": "model-00124-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00125-of-00131.safetensors"
+      },
+      {
+        "bytes": 1935412520,
+        "name": "model-00126-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00127-of-00131.safetensors"
+      },
+      {
+        "bytes": 1832518264,
+        "name": "model-00128-of-00131.safetensors"
+      },
+      {
+        "bytes": 3355443368,
+        "name": "model-00129-of-00131.safetensors"
+      },
+      {
+        "bytes": 2974788136,
+        "name": "model-00130-of-00131.safetensors"
+      },
+      {
+        "bytes": 1271398528,
+        "name": "model-00131-of-00131.safetensors"
+      },
+      {
+        "bytes": 170726,
+        "name": "model.safetensors.index.json"
+      },
+      {
+        "bytes": 390,
+        "name": "preprocessor_config.json"
+      },
+      {
+        "bytes": 12809320,
+        "name": "tokenizer.json"
+      },
+      {
+        "bytes": 17928,
+        "name": "tokenizer_config.json"
+      },
+      {
+        "bytes": 385,
+        "name": "video_preprocessor_config.json"
+      },
+      {
+        "bytes": 6722759,
+        "name": "vocab.json"
+      }
+    ],
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "present": true
+  },
+  "final_manifest": {
+    "acquired_at": "2026-08-27T04:53:13Z",
+    "bytes": 360053432320,
+    "n_files": 144,
+    "n_sha256_verified": 132,
+    "n_size_only_verified": 12,
+    "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "reacquisition": "hf download Qwen/Qwen3.8-Flash-Next --revision 34567a4712bc9766c4449e2e98e4468bfa24d915 --local-dir <dest>",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "wall_s": 7210.4
+  },
+  "job": {
+    "argv": [
+      "python3",
+      "tools/odyssey/modellake.py",
+      "acquire",
+      "--repo",
+      "deepseek-ai/DeepSeek-V4-Flash",
+      "--revision",
+      "60d8d70770c6776ff598c94bb586a859a38244f1"
+    ],
+    "created_at": 1787833109.6380239,
+    "cwd": "/Users/scammermike/Downloads/hawking",
+    "error": null,
+    "finished_at": 1787834264.4896781,
+    "job_id": "job-59821c82-9c29-4367-b1a8-5e3f58b2d844",
+    "label": "modellake-resume-deepseek-v4-flash",
+    "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-59821c82-9c29-4367-b1a8-5e3f58b2d844.log",
+    "parent_job_id": null,
+    "pid": 56180,
+    "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+    "resumable": true,
+    "returncode": 0,
+    "schema": "hcli.agentos.background_job.v1",
+    "started_at": 1787833109.638025,
+    "state": "COMPLETED",
+    "timeout_s": 604800.0
+  },
+  "next_action": "If RUNNING_SAFE, continue observing. If interrupted, re-census and explicitly resume the same pinned argv; publish only after the existing tool verifies every file and atomically renames the tree.",
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "observed_at": 1787834272.946372,
+  "partial": {
+    "direct_bytes": 0,
+    "direct_files": 0,
+    "entries": [],
+    "path": "/Volumes/corpdrive/hawking-modellake/partial/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "present": false
+  },
+  "qualification": "MODELLAKE_FLASH_ACQUISITION_SUPERVISED_NO_DELETE",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "schema": "hcli.agentos.modellake_supervision.v1",
+  "status": "PASSED",
+  "target": {
+    "expected_bytes": 360023286454,
+    "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+    "repo": "Qwen/Qwen3.8-Flash-Next",
+    "slug": "Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  },
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

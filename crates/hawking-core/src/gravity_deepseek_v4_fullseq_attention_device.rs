@@ -20,13 +20,16 @@ use crate::gravity_deepseek_v4::{
     DeepSeekV4FullStreamReader, NativeScalePairKind, PINNED_REPOSITORY, PINNED_REVISION,
 };
 use crate::gravity_deepseek_v4_bos_layer_attention_device::expected_bos_compress_ratio;
-use crate::gravity_deepseek_v4_layer0_continuation::{yarn_rope_table_for_position, WINDOW_SIZE};
+use crate::gravity_deepseek_v4_layer0_continuation::{
+    verify_layer0_position1_continuation_anchors, yarn_rope_table_for_position_verified,
+    WINDOW_SIZE,
+};
 use crate::gravity_deepseek_v4_layer0_prefix::{
     EMBED_WEIGHT, HC_EPS, HC_MIX_WIDTH, HC_MULT, HC_SINKHORN_ITERS, HIDDEN_SIZE, RMS_NORM_EPS,
     VOCAB_SIZE,
 };
 use crate::gravity_deepseek_v4_layer_plan::DeepSeekV4LayerDeviceCatalog;
-use crate::metal::{CommandBatch, MetalBatchTiming, MetalContext};
+use crate::metal::{CommandBatch, MetalBatchTiming, MetalContext, TokenPipelineCache};
 use crate::{Error, Result};
 
 const HC_FLAT_WIDTH: usize = HC_MULT * HIDDEN_SIZE;
@@ -46,6 +49,8 @@ const WO_A_ROWS: usize = 8 * O_LORA_RANK;
 const WO_A_COLS: usize = NUM_HEADS * HEAD_DIM / 8;
 const WO_B_ROWS: usize = HIDDEN_SIZE;
 const WO_B_COLS: usize = WO_A_ROWS;
+const ROPE_TABLE_VALUES: usize = ROPE_HEAD_DIM / 2;
+const ROPE_TABLE_BYTES: usize = ROPE_TABLE_VALUES * size_of::<f32>();
 
 /// Position-0 (no rope kernels): same ordered graph as BOS layer attention.
 pub const DSV4F_FULLSEQ_ATTENTION_DISPATCHES_POS0: usize = 22;
@@ -54,6 +59,13 @@ pub const DSV4F_FULLSEQ_ATTENTION_DISPATCHES_POS_N: usize = 25;
 pub const DSV4F_FULLSEQ_HC_STATE_BF16_BYTES: usize = HC_FLAT_WIDTH * size_of::<u16>();
 pub const DSV4F_FULLSEQ_KV_ROW_BF16_BYTES: usize = HEAD_DIM * size_of::<u16>();
 pub const DSV4F_FULLSEQ_KV_CAPACITY: usize = WINDOW_SIZE;
+
+/// Default-off A/B for the dependent fullseq attention chain. When enabled,
+/// all dispatches use the existing ordered encoder, reducing encoder creation
+/// overhead without changing the dispatch count or command-buffer boundary.
+pub fn fullseq_ordered_encoder_enabled() -> bool {
+    crate::env_on("HAWKING_DSV4F_FULLSEQ_ORDERED_ENCODER")
+}
 
 const HC_PRE_PRED_KERNEL: &str = "deepseek_v4_p7_mhc_ffn_pre_authority";
 const HC_PRE_EMBED_KERNEL: &str = "deepseek_v4_p3a_layer0_hc_attn_pre_bos_authority";
@@ -121,6 +133,7 @@ pub struct DeepSeekV4FullseqAttentionDeviceOutput {
     pub actual_cpu_visible_waits: usize,
     pub timing: MetalBatchTiming,
     pub sparse_attention_kernel: &'static str,
+    pub ordered_encoder: bool,
 }
 
 impl DeepSeekV4FullseqAttentionDeviceOutput {
@@ -197,6 +210,22 @@ pub struct DeepSeekV4FullseqAttentionDeviceExecutor {
     compress_ratio: usize,
     input_kind: DeepSeekV4FullseqInputKind,
     context_queue_identity: usize,
+    catalog: DeepSeekV4LayerDeviceCatalog,
+    source_manifest_file_sha256: String,
+    catalog_cache_reuse: bool,
+    /// Snapshot the ordered-encoder A/B at preparation. A fullseq executor is
+    /// reused across positions, so reparsing the process environment in every
+    /// position adds host ceremony without changing the graph.
+    ordered_encoder: bool,
+    /// Warmed handles retained across repeated positions for this layer's
+    /// source-authority attention executor. The same process-scoped switch as
+    /// the native Flash graph keeps the cross-model pipeline law measurable;
+    /// `=0` restores per-position context-cache lookup for a protected control.
+    pipeline_cache: TokenPipelineCache,
+    pipeline_cache_reuse: bool,
+    /// Static source-controlled RoPE tables for the bounded sliding window.
+    /// Prepared once after source/config admission and addressed by byte
+    /// offset at execution; no per-position host upload is needed.
     hc_fn: metal::Buffer,
     hc_base: metal::Buffer,
     hc_scale: metal::Buffer,
@@ -252,6 +281,24 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
             .require_empty_compressed_growing_kv_attention(0)?;
         validate_required_pipelines(metal)?;
         verify_source_identity(reader)?;
+        verify_layer0_position1_continuation_anchors(reader)?;
+        let rope_tables = (0..WINDOW_SIZE)
+            .map(yarn_rope_table_for_position_verified)
+            .collect::<Result<Vec<_>>>()?;
+        let rope_cos_values = rope_tables
+            .iter()
+            .flat_map(|table| table.cos_f32.iter().copied())
+            .collect::<Vec<_>>();
+        let rope_sin_values = rope_tables
+            .iter()
+            .flat_map(|table| table.sin_f32.iter().copied())
+            .collect::<Vec<_>>();
+        let rope_cos = metal.new_buffer_checked(WINDOW_SIZE * ROPE_TABLE_BYTES)?;
+        let rope_sin = metal.new_buffer_checked(WINDOW_SIZE * ROPE_TABLE_BYTES)?;
+        upload_f32(metal, &rope_cos, &rope_cos_values)?;
+        upload_f32(metal, &rope_sin, &rope_sin_values)?;
+        let catalog_cache_reuse = crate::env_opt_out("HAWKING_DSV4F_FULLSEQ_CATALOG_CACHE");
+        let ordered_encoder = fullseq_ordered_encoder_enabled();
         let compress_ratio = expected_bos_compress_ratio(layer);
         let input_kind = if layer == 0 {
             DeepSeekV4FullseqInputKind::Embedding
@@ -264,6 +311,12 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
             compress_ratio,
             input_kind,
             context_queue_identity: context_queue_identity(metal),
+            catalog,
+            source_manifest_file_sha256: reader.manifest_file_sha256().to_owned(),
+            catalog_cache_reuse,
+            ordered_encoder,
+            pipeline_cache: Default::default(),
+            pipeline_cache_reuse: crate::env_opt_out("HAWKING_FLASH_PIPELINE_CACHE_REUSE"),
             hc_fn: metal.new_buffer_with_bytes_checked(&controls.hc_fn.bytes)?,
             hc_base: metal.new_buffer_with_bytes_checked(&controls.hc_base.bytes)?,
             hc_scale: metal.new_buffer_with_bytes_checked(&controls.hc_scale.bytes)?,
@@ -299,8 +352,8 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
             wo_a: metal.new_buffer_checked(WO_A_ROWS * size_of::<u16>())?,
             wo_b: new_linear_scratch(metal, WO_B_COLS, WO_B_ROWS)?,
             attention_hc_state_bf16: metal.new_buffer_checked(DSV4F_FULLSEQ_HC_STATE_BF16_BYTES)?,
-            rope_cos: metal.new_buffer_checked((ROPE_HEAD_DIM / 2) * size_of::<f32>())?,
-            rope_sin: metal.new_buffer_checked((ROPE_HEAD_DIM / 2) * size_of::<f32>())?,
+            rope_cos,
+            rope_sin,
         })
     }
 
@@ -337,10 +390,26 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
                 "KV cache layer does not match executor layer",
             ));
         }
-        let catalog = DeepSeekV4LayerDeviceCatalog::admit(reader)?;
-        catalog
-            .plan(self.layer)?
-            .require_empty_compressed_growing_kv_attention(token_position)?;
+        if self.catalog_cache_reuse {
+            if !prepared_catalog_manifest_matches(
+                &self.source_manifest_file_sha256,
+                reader.manifest_file_sha256(),
+            ) {
+                return Err(fullseq_error(
+                    "fullseq attention reader manifest differs from prepared catalog",
+                ));
+            }
+            self.catalog
+                .plan(self.layer)?
+                .require_empty_compressed_growing_kv_attention(token_position)?;
+        } else {
+            DeepSeekV4LayerDeviceCatalog::admit(reader)?
+                .plan(self.layer)?
+                .require_empty_compressed_growing_kv_attention(token_position)?;
+        }
+        if !self.catalog_cache_reuse && token_position > 0 {
+            verify_layer0_position1_continuation_anchors(reader)?;
+        }
         if token_position != kv_cache.filled {
             return Err(fullseq_error(format!(
                 "KV cache filled={} but token_position={token_position}; must execute positions in order",
@@ -367,10 +436,16 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
                 }
             }
         }
-        // Upload YaRN table for this position (static control, not activation).
-        let rope = yarn_rope_table_for_position(reader, token_position)?;
-        upload_f32(metal, &self.rope_cos, &rope.cos_f32)?;
-        upload_f32(metal, &self.rope_sin, &rope.sin_f32)?;
+        let apply_rope = token_position > 0;
+        let rope_offset = if apply_rope {
+            // Position 0 never dispatches a RoPE kernel. For later positions,
+            // select the source-derived row in the resident table buffer;
+            // bounds-check before forming the byte offset so the admission
+            // error remains explicit for positions outside the window.
+            rope_table_offset(token_position)?
+        } else {
+            0
+        };
 
         let hidden = HIDDEN_SIZE as u32;
         let hc_mult = HC_MULT as u32;
@@ -386,14 +461,22 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
         let cache_position = token_position as u32;
         let valid_kv_u32 = valid_kv as u32;
         let max_score_slots = kv_cache.capacity as u32;
-        let apply_rope = token_position > 0;
         let expected_dispatches = if apply_rope {
             DSV4F_FULLSEQ_ATTENTION_DISPATCHES_POS_N
         } else {
             DSV4F_FULLSEQ_ATTENTION_DISPATCHES_POS0
         };
+        let ordered_encoder = self.ordered_encoder;
+        let expected_encoders = if ordered_encoder {
+            1
+        } else {
+            expected_dispatches
+        };
 
-        let timing = metal.dispatch_batch_timed(|batch| {
+        let encode = |batch: &mut CommandBatch<'_>| {
+            if ordered_encoder {
+                batch.enable_ordered_encoder();
+            }
             // --- mHC pre ---
             match self.input_kind {
                 DeepSeekV4FullseqInputKind::Embedding => {
@@ -486,6 +569,7 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
                     &self.q_head,
                     &self.rope_cos,
                     &self.rope_sin,
+                    rope_offset as u64,
                     &self.q_rope,
                     heads,
                     head_dim,
@@ -539,6 +623,7 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
                     &self.kv.qat,
                     &self.rope_cos,
                     &self.rope_sin,
+                    rope_offset as u64,
                     &self.kv_rope,
                     1,
                     head_dim,
@@ -578,6 +663,7 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
                     &self.sparse,
                     &self.rope_cos,
                     &self.rope_sin,
+                    rope_offset as u64,
                     &self.derotated,
                     heads,
                     head_dim,
@@ -646,10 +732,23 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
                 }
             }
             Ok(())
-        })?;
+        };
+        let timing_result = if self.pipeline_cache_reuse {
+            // Keep the cache in a local while the closure borrows the
+            // executor's immutable buffers. This also restores the cache on
+            // an encode error without weakening the source/KV checks above.
+            let mut pipeline_cache = std::mem::take(&mut self.pipeline_cache);
+            let result =
+                metal.dispatch_batch_timed_with_pipeline_cache(&mut pipeline_cache, encode);
+            self.pipeline_cache = pipeline_cache;
+            result
+        } else {
+            metal.dispatch_batch_timed(encode)
+        };
+        let timing = timing_result?;
 
         if timing.command_buffers != 1
-            || timing.compute_encoders as usize != expected_dispatches
+            || timing.compute_encoders as usize != expected_encoders
             || timing.compute_dispatches as usize != expected_dispatches
         {
             return Err(fullseq_error(format!(
@@ -673,6 +772,7 @@ impl DeepSeekV4FullseqAttentionDeviceExecutor {
             actual_cpu_visible_waits: 1,
             timing,
             sparse_attention_kernel: SPARSE_KERNEL,
+            ordered_encoder,
         })
     }
 }
@@ -864,8 +964,11 @@ fn validate_required_pipelines(metal: &MetalContext) -> Result<()> {
 }
 
 fn upload_f32(metal: &MetalContext, buffer: &metal::Buffer, values: &[f32]) -> Result<()> {
-    let bytes: Vec<u8> = values.iter().flat_map(|v| v.to_le_bytes()).collect();
-    if buffer.length() < bytes.len() as u64 {
+    let byte_len = values
+        .len()
+        .checked_mul(size_of::<f32>())
+        .ok_or_else(|| fullseq_error("F32 control upload size overflow"))?;
+    if buffer.length() < byte_len as u64 {
         return Err(fullseq_error("upload buffer too small"));
     }
     // Host write of static control table only (not activation handoff).
@@ -873,8 +976,23 @@ fn upload_f32(metal: &MetalContext, buffer: &metal::Buffer, values: &[f32]) -> R
     if ptr.is_null() {
         return Err(fullseq_error("buffer contents null for control upload"));
     }
+    // Apple Silicon is little-endian, so the common path can copy the typed
+    // source table directly and avoid allocating/flattening a temporary byte
+    // vector for every fullseq position. Keep a portable big-endian branch
+    // for the non-physical test target.
+    #[cfg(target_endian = "little")]
     unsafe {
-        std::ptr::copy_nonoverlapping(bytes.as_ptr(), ptr, bytes.len());
+        std::ptr::copy_nonoverlapping(values.as_ptr() as *const u8, ptr, byte_len);
+    }
+    #[cfg(target_endian = "big")]
+    unsafe {
+        for (index, value) in values.iter().enumerate() {
+            std::ptr::copy_nonoverlapping(
+                value.to_le_bytes().as_ptr(),
+                ptr.add(index * size_of::<f32>()),
+                size_of::<f32>(),
+            );
+        }
     }
     let _ = metal; // queue identity already checked by caller
     Ok(())
@@ -1085,6 +1203,7 @@ fn dispatch_rope(
     input: &metal::Buffer,
     cos: &metal::Buffer,
     sin: &metal::Buffer,
+    table_offset: u64,
     output: &metal::Buffer,
     rows: u32,
     head_dim: u32,
@@ -1095,8 +1214,8 @@ fn dispatch_rope(
     let pairs = rows * (head_dim / 2);
     batch.dispatch_threads(ROPE_KERNEL, (pairs, 1, 1), (64, 1, 1), |e| {
         e.set_buffer(0, Some(input), 0);
-        e.set_buffer(1, Some(cos), 0);
-        e.set_buffer(2, Some(sin), 0);
+        e.set_buffer(1, Some(cos), table_offset);
+        e.set_buffer(2, Some(sin), table_offset);
         e.set_buffer(3, Some(output), 0);
         set_u32(e, 4, &rows);
         set_u32(e, 5, &head_dim);
@@ -1235,6 +1354,26 @@ fn context_queue_identity(context: &MetalContext) -> usize {
     context.queue() as *const _ as usize
 }
 
+#[inline]
+fn rope_table_offset(position: usize) -> Result<u64> {
+    if position >= WINDOW_SIZE {
+        return Err(fullseq_error(format!(
+            "RoPE position {position} is outside prepared table"
+        )));
+    }
+    position
+        .checked_mul(ROPE_TABLE_BYTES)
+        .map(|offset| offset as u64)
+        .ok_or_else(|| fullseq_error("RoPE table byte offset overflow"))
+}
+
+/// A prepared device catalog is valid only for the exact non-empty source
+/// manifest it admitted. Keep this predicate pure so the fail-closed
+/// invalidation rule is testable without constructing a Metal device.
+fn prepared_catalog_manifest_matches(prepared: &str, current: &str) -> bool {
+    !prepared.is_empty() && !current.is_empty() && prepared == current
+}
+
 fn fullseq_error(message: impl Into<String>) -> Error {
     Error::Gravity(format!(
         "DeepSeek-V4 fullseq attention device: {}",
@@ -1252,5 +1391,24 @@ mod tests {
         assert_eq!(DSV4F_FULLSEQ_ATTENTION_DISPATCHES_POS_N, 25);
         assert_eq!(DSV4F_FULLSEQ_KV_CAPACITY, 128);
         assert!(SPARSE_KERNEL.contains("growing_kv"));
+    }
+
+    #[test]
+    fn prepared_catalog_requires_exact_nonempty_manifest_identity() {
+        let manifest_a = "a".repeat(64);
+        let manifest_b = "b".repeat(64);
+        assert!(prepared_catalog_manifest_matches(&manifest_a, &manifest_a));
+        assert!(!prepared_catalog_manifest_matches(&manifest_a, &manifest_b));
+        assert!(!prepared_catalog_manifest_matches("", ""));
+        assert!(!prepared_catalog_manifest_matches(&manifest_a, ""));
+    }
+
+    #[test]
+    fn resident_rope_table_offsets_cover_exact_window_rows() {
+        assert_eq!(ROPE_TABLE_VALUES, 32);
+        assert_eq!(ROPE_TABLE_BYTES, 128);
+        assert_eq!(rope_table_offset(0).unwrap(), 0);
+        assert_eq!(rope_table_offset(WINDOW_SIZE - 1).unwrap(), 127 * 128);
+        assert!(rope_table_offset(WINDOW_SIZE).is_err());
     }
 }

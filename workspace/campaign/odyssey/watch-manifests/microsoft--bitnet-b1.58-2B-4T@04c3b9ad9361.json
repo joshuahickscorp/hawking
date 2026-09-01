@@ -1,0 +1,31 @@
+{
+  "expected": 1187777736,
+  "files": [
+    ".gitattributes",
+    "LICENSE",
+    "README.md",
+    "config.json",
+    "data_summary_card.md",
+    "generation_config.json",
+    "model.safetensors",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "microsoft/bitnet-b1.58-2B-4T",
+  "resolved_sha": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+  "revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+  "sizes": {
+    ".gitattributes": 1519,
+    "LICENSE": 1073,
+    "README.md": 9647,
+    "config.json": 844,
+    "data_summary_card.md": 3861,
+    "generation_config.json": 199,
+    "model.safetensors": 1178623988,
+    "special_tokens_map.json": 73,
+    "tokenizer.json": 9085698,
+    "tokenizer_config.json": 50834
+  }
+}

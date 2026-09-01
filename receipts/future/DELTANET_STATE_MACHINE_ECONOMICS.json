@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T20:21:20Z",
+  "recorded_at": "2026-09-01T03:36:45Z",
   "recorded_by": "tools/future/deltanet_state_machine_economics.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -18,9 +18,12 @@
   "ranking": "against the capacity classes: ARM A shows about 1.5x available at CONSTANT BYTES, which on a 5.597 ms organ is a larger prize than 2.077 ms of perfect byte removal, and needs no fit at all."
  },
  "price": {
-  "gap_to_71_raw_ms": 13.2051,
-  "gap_to_71_residual_after_everything_on_record_ms": 5.993,
+  "basis": "GPU_SEALED_DEFAULT",
+  "covers_residual": true,
+  "gap_to_71_raw_ms": 7.8619,
+  "gap_to_71_residual_after_everything_on_record_ms": 1.813,
   "halved_ms": 1.0384,
+  "halving_covers_residual": false,
   "material_bar_ms": 1.0,
   "rates_used": {
    "activation": 2.906132,
@@ -29,16 +32,17 @@
   },
   "state_gb": 0.1569,
   "state_ms_if_all_removed": 0.456,
+  "token_ms": 21.9464,
   "two_gaps_because": "the RAW gap is from today's body to 71; the RESIDUAL is what remains after every path already on record composes, and that is the gap a NEW lever has to close. Quoting only one would be picking the flattering number.",
   "upper_bound_ms": 2.0768,
-  "upper_bound_share_of_raw_gap": 0.1573,
-  "upper_bound_share_of_residual_gap": 0.3465,
-  "verdict": "MATERIAL_NOT_DECISIVE",
+  "upper_bound_share_of_raw_gap": 0.2642,
+  "upper_bound_share_of_residual_gap": 1.1455,
+  "verdict": "COVERS_THE_RESIDUAL_GAP",
   "weights_gb": 2.9617,
   "weights_ms_if_all_removed": 1.6209,
-  "why": "removing the ENTIRE DeltaNet representation - every code and every byte of recurrent state - is 2.0768 ms against a 13.2051 ms raw gap - 15.7% of it, and 34.7% of the 5.9930 ms residual after everything on record. The halving the landed candidates actually propose is 1.0384 ms. Above the 1.0 ms bar, so worth doing; nowhere near enough to close 71 on its own."
+  "why": "removing the ENTIRE DeltaNet representation - every code and every byte of recurrent state - is 2.0768 ms against a 7.8619 ms raw gap - 26.4% of it, and 114.6% of the 1.8130 ms residual after everything on record. The halving the landed candidates actually propose is 1.0384 ms, which is 57.3% of the residual. The upper bound now EXCEEDS the residual gap: a perfect DeltaNet state machine would close what everything on record leaves. It is still an upper bound on PERFECT removal of code and state together, which no candidate proposes, and capability is UNMEASURED for every family."
  },
  "schema": "hawking.future.deltanet_state_machine_economics.v1",
- "seal_sha256": "fdb995c7d546d3737af2888d71563722bcc6dc35103047eb3a4a0c00efb7332d",
+ "seal_sha256": "3b189a6d1c60c9b29cc1384a9ce2373c9719c8195d42d4e512986ccec6f6ad83",
  "version": 1
 }

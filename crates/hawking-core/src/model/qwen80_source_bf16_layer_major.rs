@@ -139,8 +139,20 @@ pub fn retained_swiglu_packed_relative_path(layer: usize, expert: u32) -> String
     format!("x/swiglu_hidden_routed/L{layer:02}/E{expert:03}.f32le")
 }
 
-/// Disable the unified file cache for this fd (macOS F_NOCACHE). No-op elsewhere.
+/// Disable the unified file cache for this fd (macOS F_NOCACHE). No-op
+/// elsewhere.  The default remains uncached so streamed campaigns do not
+/// silently turn a multi-hundred-GiB source into a resident file-cache load.
+/// A bounded, explicitly opt-in warm continuation may set
+/// `HAWKING_SOURCE_CACHE=1`; this leaves the OS file cache enabled and is
+/// recorded by callers as a different measurement state.
 fn macos_set_nocache(file: &File) {
+    if std::env::var("HAWKING_SOURCE_CACHE")
+        .ok()
+        .map(|value| matches!(value.as_str(), "1" | "true" | "TRUE" | "yes" | "YES"))
+        .unwrap_or(false)
+    {
+        return;
+    }
     #[cfg(target_os = "macos")]
     unsafe {
         extern "C" {
@@ -277,8 +289,7 @@ fn splitmix64(mut x: u64) -> u64 {
 
 fn reservoir_hash(seed: u64, layer: usize, expert: usize, token_ord: usize) -> u64 {
     splitmix64(
-        seed
-            ^ ((layer as u64).wrapping_shl(48))
+        seed ^ ((layer as u64).wrapping_shl(48))
             ^ ((expert as u64).wrapping_shl(32))
             ^ (token_ord as u64),
     )
@@ -1327,11 +1338,15 @@ impl SourceBf16Index {
                     .tensors
                     .get(&name)
                     .ok_or_else(|| model_err(format!("shard {shard_name} lacks tensor {name}")))?;
+                // Flash-Next safetensors indexes also carry integer control
+                // tensors (for example n-gram offsets).  This reader is a
+                // BF16 payload view, so admit the mixed index at header time
+                // but keep only BF16 locations.  A later `read_raw` of a
+                // non-BF16 tensor therefore fails closed as an absent source
+                // BF16 tensor instead of poisoning admission of the whole
+                // model.
                 if info.dtype != "BF16" && info.dtype != "BFLOAT16" {
-                    return Err(model_err(format!(
-                        "tensor {name} dtype {} is not BF16",
-                        info.dtype
-                    )));
+                    continue;
                 }
                 let (begin, end) = info.data_offsets;
                 if end < begin {
@@ -1387,6 +1402,33 @@ impl SourceBf16Index {
             buf.set_len(loc.nbytes);
         }
         self.read_raw_into(loc, name, &mut buf)?;
+        Ok(buf)
+    }
+
+    /// Range-read a bounded byte window from a source tensor without
+    /// materializing the rest of its payload. Offsets are relative to the
+    /// tensor payload (not the safetensors shard), and the request must stay
+    /// inside the indexed tensor bounds.
+    pub fn read_raw_range(&self, name: &str, offset: usize, len: usize) -> Result<Vec<u8>> {
+        let loc = self.require(name)?;
+        let end = offset
+            .checked_add(len)
+            .ok_or_else(|| model_err(format!("range overflow for tensor {name}")))?;
+        if end > loc.nbytes {
+            return Err(model_err(format!(
+                "range {}..{} exceeds tensor {} bytes",
+                offset, end, loc.nbytes
+            )));
+        }
+        let mut slice = loc.clone();
+        slice.data_offset = slice
+            .data_offset
+            .checked_add(offset as u64)
+            .ok_or_else(|| model_err(format!("shard offset overflow for tensor {name}")))?;
+        slice.nbytes = len;
+        let mut buf = Vec::with_capacity(len);
+        unsafe { buf.set_len(len); }
+        self.read_raw_into(&slice, name, &mut buf)?;
         Ok(buf)
     }
 
@@ -4229,7 +4271,11 @@ mod tests {
 
         let collect = |root: &std::path::Path| -> Vec<(String, Vec<u8>)> {
             let mut files = Vec::new();
-            fn walk(dir: &std::path::Path, root: &std::path::Path, out: &mut Vec<(String, Vec<u8>)>) {
+            fn walk(
+                dir: &std::path::Path,
+                root: &std::path::Path,
+                out: &mut Vec<(String, Vec<u8>)>,
+            ) {
                 let Ok(rd) = std::fs::read_dir(dir) else {
                     return;
                 };

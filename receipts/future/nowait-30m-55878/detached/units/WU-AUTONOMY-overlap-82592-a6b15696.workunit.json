@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.82592.receipt.json",
+    "freshness.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "Same shape as token latency, currently all-null on the Accelerator scoreboard for GPU phases. CPU phases are the honest work.",
+  "frontier_id": "FT.EXPERIMENT_TURNAROUND.refresh",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.82592",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.82592.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "54caf269ccf4e48b0fd9aef70977269630a08edfcda051902fc302f287a15067",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

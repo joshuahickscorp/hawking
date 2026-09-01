@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.51360.receipt.json",
+    "static_skeleton.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "STATIC_SKELETON.json already names backend usability. Next: re-run the validator against current organ maps.",
+  "frontier_id": "FT.MODEL_EXECUTION.static-skeleton",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.51360",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.51360.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "218cc489f955f0ce84d42cf7268ea99c8f3e35c0c6a37f05409be7b32948e814",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.27840.receipt.json",
+    "hardware_doctor.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F004 closed by sidecar. Next: keep the ranked queue current as Codex adds P6/P7 concepts.",
+  "frontier_id": "FT.FPGA.hardware-doctor",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.27840",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.AUTONOMY.overlap.27840.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "dca38049603c6d36783ebe1452470bb951a52c647f65931ae6f27b84be3ee451",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

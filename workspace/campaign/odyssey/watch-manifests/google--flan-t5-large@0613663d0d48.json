@@ -1,0 +1,29 @@
+{
+  "expected": 3135902327,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "model.safetensors",
+    "special_tokens_map.json",
+    "spiece.model",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "google/flan-t5-large",
+  "resolved_sha": "0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a",
+  "revision": "0613663d0d48ea86ba8cb3d7a44f0f65dc596a2a",
+  "sizes": {
+    ".gitattributes": 1434,
+    "README.md": 10820,
+    "config.json": 662,
+    "generation_config.json": 147,
+    "model.safetensors": 3132668804,
+    "special_tokens_map.json": 2201,
+    "spiece.model": 791656,
+    "tokenizer.json": 2424064,
+    "tokenizer_config.json": 2539
+  }
+}

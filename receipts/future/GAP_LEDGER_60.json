@@ -1,0 +1,433 @@
+{
+ "arithmetic_ceiling": {
+  "assumption": "arm_a's ratio measured on one representative projection per codec is applied to every organ that runs that codec. Organs differ in shape, so this is an estimate at the organ level even though each ratio is measured. It would take a per-organ arm_a to tighten.",
+  "parts": [
+   {
+    "arm_a_over_production": 1.5128,
+    "codec": "q2",
+    "deltanet_in_projection_only_ms": null,
+    "deltanet_note": null,
+    "ms_saved_at_perfect_removal": 5.304,
+    "organ_ms": 15.6473,
+    "organs": [
+     "mlp_gate_up",
+     "mlp_down"
+    ],
+    "source": "receipts/future/OP_CLASS_ABLATION.json"
+   },
+   {
+    "arm_a_over_production": 1.5599,
+    "codec": "q4",
+    "deltanet_in_projection_only_ms": 3.5885,
+    "deltanet_note": "the DeltaNet ORGAN is 5.5971 ms; only its 3.5885 ms in-projection is a q4 matvec. The state update, rearrange and gated norm are different kernels and are NOT counted here. Counting the whole organ would overstate this ceiling by about 0.72 ms.",
+    "ms_saved_at_perfect_removal": 2.7579,
+    "organ_ms": 7.6837,
+    "organs": [
+     "q4_remainder",
+     "gqa_attention"
+    ],
+    "source": "receipts/future/Q4_BITCAST_AB.json"
+   }
+  ],
+  "reaches_60": false,
+  "still_short_of_60_by_ms": 2.561,
+  "token_ms_after": 19.2276,
+  "total_ms_at_perfect_removal": 8.062,
+  "tps_after": 52.008,
+  "verdict": "THE DECODE-ARITHMETIC SCHOOL CANNOT REACH 60 EVEN IF IT PERFECTLY SUCCEEDS. Removing every arithmetic operation from every q2 and q4 matvec reaches 52.0 TPS. 60 needs 2.56 ms from a DIFFERENT class - fewer bytes, less host time, or work removed rather than made cheaper.",
+  "what_this_does_not_say": "it does not say the arithmetic school is not worth working. It is the largest single block on the board and the bitcast candidates have already taken a measured 3.854 ms of it. It says the school must not be the ONLY thing running if 60 is the target."
+ },
+ "authority": "S026 \u00a70, \u00a71, \u00a711, \u00a712, \u00a748",
+ "built_not_promoted": {
+  "all_token_identical": true,
+  "combined_ms_saved": 4.5377,
+  "levers": [
+   {
+    "gpu_ms_saved": 3.8541,
+    "lever": "HAWKING_AFFINE2_GEO=bitcast",
+    "receipt": "receipts/future/BITCAST_DEQUANT_AB.json",
+    "token_identical": true
+   },
+   {
+    "gpu_ms_saved": 0.6836,
+    "lever": "HAWKING_Q4_UNPACK=bitcast",
+    "receipt": "receipts/future/Q4_BITCAST_AB.json",
+    "token_identical": true
+   }
+  ],
+  "live_tps": 45.566,
+  "ms_if_promoted": 17.4087,
+  "still_short_of_60_by_ms": 0.742,
+  "tps_if_promoted": 57.443,
+  "what_promotion_requires": "a protected reprofile with both levers set, replacing the resident token budget; then the default flips and this section empties",
+  "why_not_promoted": "both are opt-in env levers and production default is unchanged. Promotion needs a protected absolute measurement to replace receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json, and every window so far has had ModelLake downloads running - twice after they were SIGSTOPped and the supervisor respawned them."
+ },
+ "bytes_required_after_arithmetic": {
+  "caveat": "this assumes arithmetic removal and byte removal compose, which they do not automatically: a representation that removes bytes usually changes the arithmetic too, and the accelerator has to be reopened after every representation change.",
+  "fraction_of_matvec_bytes_to_remove": 0.1677,
+  "further_ms_needed_for_60": 2.5609,
+  "statement": "after perfect arithmetic removal the q2 and q4 matvecs are 15.27 ms of pure streaming. Reaching 60 needs 2.56 ms more, which at that point can only come from reading fewer bytes: 16.8% of the matvec weight bytes must stop existing.",
+  "streaming_ms_at_arm_a": 15.269,
+  "the_other_place_to_look": "this accounting covers only the q2 and q4 matvecs. The DeltaNet state update, rearrange and gated norm are about 2.0 ms and sit OUTSIDE it entirely, as do lm_head at 1.0204 ms and sampling at 0.334 ms. G053 - DeltaNet as a state machine rather than four matrices - is aimed at exactly that 2.0 ms and is still open.",
+  "why_entropy_coding_does_not_supply_it": "the MLP 2-bit code body measures ~1.87 bits of entropy per 2 stored bits and the codes are 93.5% independent information, so ordinary coding has single-digit percent to give, not 17%. A cut this size is INFORMATION ELIMINATION - a smaller executable program for the same function - which is the ULTRAGOAL's stated primary weapon."
+ },
+ "checkpoints": [
+  {
+   "fraction_of_token_to_remove": -0.1391,
+   "ms_per_token_required": 25.0,
+   "ms_to_remove_from_live": -3.0536,
+   "reached": true,
+   "tps": 40.0
+  },
+  {
+   "fraction_of_token_to_remove": 0.0887,
+   "ms_per_token_required": 20.0,
+   "ms_to_remove_from_live": 1.9464,
+   "reached": false,
+   "tps": 50.0
+  },
+  {
+   "fraction_of_token_to_remove": 0.2406,
+   "ms_per_token_required": 16.6667,
+   "ms_to_remove_from_live": 5.2797,
+   "reached": false,
+   "tps": 60.0
+  },
+  {
+   "fraction_of_token_to_remove": 0.3582,
+   "ms_per_token_required": 14.0845,
+   "ms_to_remove_from_live": 7.8619,
+   "reached": false,
+   "tps": 71.0
+  }
+ ],
+ "does_the_open_set_reach_60": true,
+ "escalation_clock": {
+  "deprivilege_condition_would_fire": true,
+  "elapsed_hours": 4.916,
+  "hours_to_next_phase": 1.084,
+  "next_phase": "SURVIVOR_OR_COLLAPSE",
+  "not_an_abandonment": "the clock forbids complacency, not the incumbent. Passing a phase boundary licenses widening the search; it never requires dropping work that is producing evidence.",
+  "phase": "DISCOVERY",
+  "phase_licenses": "incumbent-kernel work is the privileged route",
+  "started_at_tps": 36.644,
+  "started_utc": "2026-08-31T21:31:32Z",
+  "tps_moved_since_start": 8.922
+ },
+ "gap_to_60_ms": 5.2797,
+ "gap_to_71_ms": 7.8619,
+ "honest_reading": "the material open experiments are bandwidth-recovery bounds - what each organ would cost if it ran at a rate already demonstrated elsewhere on this machine. They are CEILINGS, not candidates: no mechanism that reaches them is on record. Summing them and comparing to the gap says whether the gap is closable IN PRINCIPLE by the open set, not whether it is closable today.",
+ "live": {
+  "basis": "GPU",
+  "git_head": null,
+  "gpu_ms_per_token": 21.9464,
+  "host_gap_ms": 0.956,
+  "levers_are_the_sealed_default": true,
+  "ms_per_token": 21.9464,
+  "source": "receipts/future/SEALED_DEFAULT_ABSOLUTE.json",
+  "tps": 45.566,
+  "wall_is_not_promoted": "wall = gpu + host and the host gap spans 4.7x across protected windows; see receipts/future/HARNESS_RECONCILIATION.json",
+  "wall_ms_per_token": 22.9024,
+  "wall_tps": 43.664
+ },
+ "material_open_experiments": [
+  {
+   "id": "reach_demonstrated_bandwidth_mlp",
+   "material": true,
+   "max_ms_removable": 4.79,
+   "organ": "mlp",
+   "status": "RUNNING"
+  },
+  {
+   "id": "reach_demonstrated_bandwidth_deltanet",
+   "material": true,
+   "max_ms_removable": 2.273,
+   "organ": "deltanet",
+   "status": "QUEUED"
+  }
+ ],
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": null,
+  "lane": "derived",
+  "loadavg": "{ 10.12 8.86 8.64 }",
+  "measured_at": null,
+  "measured_at_source": "RETROFIT_UNKNOWN",
+  "receipt_regenerated_at": "2026-09-01T02:26:28Z",
+  "why": "this receipt predates measurement provenance; the raw capture carries no timestamp, so the measurement time is genuinely unknown and is recorded as unknown rather than invented"
+ },
+ "obligation": "G095",
+ "organ_decomposition_is_stale": {
+  "live_baseline_ms": 21.9464,
+  "next_measurement": "re-run the organ decomposition under the sealed default so the table and the baseline describe the same body",
+  "organ_rows_sum_ms": 26.7013,
+  "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+  "stale_by_ms": 4.7549,
+  "stale_by_share": 0.1781,
+  "what_it_means": "the organ table prices wins against its OWN total, not against the live baseline. Its ranking is still usable - the levers did not reorder the organs - but no absolute TPS-at-a-win figure in that table is current."
+ },
+ "organ_win_table": [
+  {
+   "current_ms": 9.9154,
+   "dispatches": 128,
+   "material": true,
+   "ms_at_100pct_win": 9.9154,
+   "ms_at_10pct_win": 0.9915,
+   "ms_at_20pct_win": 1.9831,
+   "ms_at_30pct_win": 2.9746,
+   "organ": "mlp_gate_up",
+   "perfect_removal_max_ms": 9.9154,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.3713,
+   "tps_at_100pct_win": 59.574,
+   "tps_at_10pct_win": 38.896,
+   "tps_at_20pct_win": 40.456,
+   "tps_at_30pct_win": 42.147,
+   "why": "a 20% win here is 1.983 ms of the 26.701 ms token"
+  },
+  {
+   "current_ms": 5.7319,
+   "dispatches": 128,
+   "material": true,
+   "ms_at_100pct_win": 5.7319,
+   "ms_at_10pct_win": 0.5732,
+   "ms_at_20pct_win": 1.1464,
+   "ms_at_30pct_win": 1.7196,
+   "organ": "mlp_down",
+   "perfect_removal_max_ms": 5.7319,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.2147,
+   "tps_at_100pct_win": 47.689,
+   "tps_at_10pct_win": 38.273,
+   "tps_at_20pct_win": 39.131,
+   "tps_at_30pct_win": 40.029,
+   "why": "a 20% win here is 1.146 ms of the 26.701 ms token"
+  },
+  {
+   "current_ms": 5.5971,
+   "dispatches": 288,
+   "material": true,
+   "ms_at_100pct_win": 5.5971,
+   "ms_at_10pct_win": 0.5597,
+   "ms_at_20pct_win": 1.1194,
+   "ms_at_30pct_win": 1.6791,
+   "organ": "deltanet",
+   "perfect_removal_max_ms": 5.5971,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.2096,
+   "tps_at_100pct_win": 47.384,
+   "tps_at_10pct_win": 38.253,
+   "tps_at_20pct_win": 39.09,
+   "tps_at_30pct_win": 39.965,
+   "why": "a 20% win here is 1.119 ms of the 26.701 ms token"
+  },
+  {
+   "current_ms": 2.0596,
+   "dispatches": 64,
+   "material": true,
+   "ms_at_100pct_win": 2.0596,
+   "ms_at_10pct_win": 0.206,
+   "ms_at_20pct_win": 0.4119,
+   "ms_at_30pct_win": 0.6179,
+   "organ": "q4_remainder",
+   "perfect_removal_max_ms": 2.0596,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.0771,
+   "tps_at_100pct_win": 40.582,
+   "tps_at_10pct_win": 37.742,
+   "tps_at_20pct_win": 38.038,
+   "tps_at_30pct_win": 38.339,
+   "why": "a 20% win here is 0.412 ms of the 26.701 ms token"
+  },
+  {
+   "current_ms": 2.0356,
+   "dispatches": 96,
+   "material": true,
+   "ms_at_100pct_win": 2.0356,
+   "ms_at_10pct_win": 0.2036,
+   "ms_at_20pct_win": 0.4071,
+   "ms_at_30pct_win": 0.6107,
+   "organ": "gqa_attention",
+   "perfect_removal_max_ms": 2.0356,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.0762,
+   "tps_at_100pct_win": 40.542,
+   "tps_at_10pct_win": 37.739,
+   "tps_at_20pct_win": 38.031,
+   "tps_at_30pct_win": 38.328,
+   "why": "a 20% win here is 0.407 ms of the 26.701 ms token"
+  },
+  {
+   "current_ms": 1.0204,
+   "dispatches": 2,
+   "material": true,
+   "ms_at_100pct_win": 1.0204,
+   "ms_at_10pct_win": 0.102,
+   "ms_at_20pct_win": 0.2041,
+   "ms_at_30pct_win": 0.3061,
+   "organ": "lm_head",
+   "perfect_removal_max_ms": 1.0204,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.0382,
+   "tps_at_100pct_win": 38.939,
+   "tps_at_10pct_win": 37.595,
+   "tps_at_20pct_win": 37.74,
+   "tps_at_30pct_win": 37.886,
+   "why": "a 20% win here is 0.204 ms of the 26.701 ms token"
+  },
+  {
+   "current_ms": 0.334,
+   "dispatches": 1,
+   "material": false,
+   "ms_at_100pct_win": 0.334,
+   "ms_at_10pct_win": 0.0334,
+   "ms_at_20pct_win": 0.0668,
+   "ms_at_30pct_win": 0.1002,
+   "organ": "sampling",
+   "perfect_removal_max_ms": 0.334,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.0125,
+   "tps_at_100pct_win": 37.926,
+   "tps_at_10pct_win": 37.498,
+   "tps_at_20pct_win": 37.545,
+   "tps_at_30pct_win": 37.592,
+   "why": "perfect elimination is below the materiality threshold; do not spend an hour here"
+  },
+  {
+   "current_ms": 0.0073,
+   "dispatches": 1,
+   "material": false,
+   "ms_at_100pct_win": 0.0073,
+   "ms_at_10pct_win": 0.0007,
+   "ms_at_20pct_win": 0.0015,
+   "ms_at_30pct_win": 0.0022,
+   "organ": "embedding",
+   "perfect_removal_max_ms": 0.0073,
+   "priced_against": {
+    "basis": "the organ decomposition's own total, GPU ms",
+    "not_the_live_baseline_because": "these organs predate the sealed-default promotion; see organ_decomposition_is_stale",
+    "source": "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json",
+    "token_ms": 26.7013
+   },
+   "share_of_token": 0.0003,
+   "tps_at_100pct_win": 37.462,
+   "tps_at_10pct_win": 37.452,
+   "tps_at_20pct_win": 37.453,
+   "tps_at_30pct_win": 37.454,
+   "why": "perfect elimination is below the materiality threshold; do not spend an hour here"
+  }
+ ],
+ "ranked_experiments": [
+  {
+   "id": "reach_demonstrated_bandwidth_mlp",
+   "material": true,
+   "max_ms_removable": 4.79,
+   "organ": "mlp",
+   "status": "RUNNING"
+  },
+  {
+   "id": "reach_demonstrated_bandwidth_deltanet",
+   "material": true,
+   "max_ms_removable": 2.273,
+   "organ": "deltanet",
+   "status": "QUEUED"
+  },
+  {
+   "id": "eliminate_all_host_gap",
+   "material": false,
+   "max_ms_removable": 0.989,
+   "organ": null,
+   "status": "CLOSED"
+  },
+  {
+   "id": "reach_demonstrated_bandwidth_gqa",
+   "material": false,
+   "max_ms_removable": 0.815,
+   "organ": "gqa",
+   "status": "QUEUED"
+  },
+  {
+   "id": "entropy_floor_of_mlp_codes",
+   "material": false,
+   "max_ms_removable": 0.152,
+   "organ": null,
+   "status": "OPEN"
+  },
+  {
+   "id": "quantize_aux_u8",
+   "material": false,
+   "max_ms_removable": 0.0,
+   "organ": null,
+   "status": "OPEN"
+  },
+  {
+   "id": "group_size_256",
+   "material": false,
+   "max_ms_removable": 0.0,
+   "organ": null,
+   "status": "OPEN"
+  },
+  {
+   "id": "group_size_1024",
+   "material": false,
+   "max_ms_removable": 0.0,
+   "organ": null,
+   "status": "OPEN"
+  }
+ ],
+ "ranked_experiments_are_gross_not_net": "the bandwidth-recovery ceilings above are computed against the PRODUCTION kernels. The built-not-promoted levers have already taken 4.5377 ms of that headroom, so the ranking overstates what remains. It is kept gross because the levers are not promoted and the resident still runs production.",
+ "recorded_by": "tools/future/gap_ledger_60.py",
+ "seal_sha256": "7a4a6f7f8140f0fbfab71d28fcd7fc7b166fe1d63bbbb99cad290bc2f322ceac",
+ "sum_of_material_open_ms": 7.063,
+ "three_dominant_kernels": {
+  "combined_ms": 21.2444,
+  "ms_at_10pct_across_all_three": 2.1244,
+  "ms_at_20pct_across_all_three": 4.2489,
+  "ms_at_30pct_across_all_three": 6.3733,
+  "organs": [
+   "deltanet",
+   "mlp_down",
+   "mlp_gate_up"
+  ],
+  "reading": "these three are 77.8% of the token. A 20% win across all three is 4.2489 ms, which takes the LIVE resident to 43.401 TPS - not to 60 on its own. S026's arithmetic reaching 60 assumed the ~49.8 PROSPECTIVE composed path as the base, and that path is not qualified.",
+  "share_of_token": 0.7785,
+  "tps_at_10pct_across_all_three": 39.737,
+  "tps_at_20pct_across_all_three": 43.401,
+  "tps_at_30pct_across_all_three": 47.81
+ }
+}

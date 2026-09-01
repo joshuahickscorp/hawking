@@ -1,5 +1,5 @@
 use crate::{Error, Result};
-use std::sync::atomic::{AtomicU64, Ordering as AtomicOrdering};
+use std::sync::atomic::{AtomicBool, AtomicU64, Ordering as AtomicOrdering};
 use std::sync::{Arc, Mutex as StdMutex, OnceLock};
 
 // ── Physical-evidence attribution scope ────────────────────────────────────
@@ -84,6 +84,7 @@ struct PhysicalTraceState {
 }
 
 static ACTIVE_PHYSICAL_TRACE: OnceLock<StdMutex<Option<Arc<PhysicalTraceState>>>> = OnceLock::new();
+static ACTIVE_PHYSICAL_TRACE_FAST: AtomicBool = AtomicBool::new(false);
 
 fn active_physical_trace() -> &'static StdMutex<Option<Arc<PhysicalTraceState>>> {
     ACTIVE_PHYSICAL_TRACE.get_or_init(|| StdMutex::new(None))
@@ -96,6 +97,9 @@ struct PhysicalCommandIdentity {
 }
 
 fn physical_command_label(kind: &str) -> Option<(PhysicalCommandIdentity, String)> {
+    if !ACTIVE_PHYSICAL_TRACE_FAST.load(AtomicOrdering::Acquire) {
+        return None;
+    }
     let state = active_physical_trace().lock().ok()?.clone()?;
     let command_index = state.next_command.fetch_add(1, AtomicOrdering::Relaxed);
     let label = format!(
@@ -210,6 +214,7 @@ impl PhysicalTraceGuard {
         )
         .map_err(Error::Metal)?;
         *active = Some(state.clone());
+        ACTIVE_PHYSICAL_TRACE_FAST.store(true, AtomicOrdering::Release);
         drop(active);
         Ok(Self {
             state,
@@ -236,6 +241,7 @@ impl Drop for PhysicalTraceGuard {
                 .is_some_and(|current| Arc::ptr_eq(current, &self.state))
             {
                 *active = None;
+                ACTIVE_PHYSICAL_TRACE_FAST.store(false, AtomicOrdering::Release);
             }
         }
         // `_signpost` drops after this method and emits the exact matching end.
@@ -541,7 +547,9 @@ pub struct MetalDispatchTiming {
 /// Per-encoder GPU timestamps are intentionally not implied by this type.
 #[derive(Debug, Clone, Copy, Default, serde::Serialize)]
 pub struct MetalBatchTiming {
-    /// Sum of CPU time resolving every pipeline used by the batch.
+    /// Sum of CPU time resolving every pipeline used by the batch when the
+    /// batch is explicitly timed or traced; ordinary production submission
+    /// leaves this at zero to avoid a clock read per dispatch.
     pub pipeline_lookup_us: u64,
     /// CPU time from command-buffer allocation through final encoder close.
     pub encode_us: u64,
@@ -637,11 +645,13 @@ mod imp {
     use super::*;
     use metal::objc::{class, msg_send, sel, sel_impl};
     use metal::{
-        Buffer, CommandBufferRef, CommandQueue, ComputeCommandEncoder, ComputePipelineDescriptor,
-        ComputePipelineState, Device, FunctionConstantValues, IndirectCommandBuffer,
-        IndirectCommandBufferDescriptor, Library, MTLDispatchType, MTLIndirectCommandType,
-        MTLResourceOptions, MTLResourceUsage, MTLSize, NSRange,
+        Buffer, CommandBufferRef, CommandQueue, ComputeCommandEncoder, ComputeCommandEncoderRef,
+        ComputePipelineDescriptor, ComputePipelineState, Device, FunctionConstantValues,
+        IndirectCommandBuffer, IndirectCommandBufferDescriptor, Library, MTLDispatchType,
+        MTLIndirectCommandType, MTLResourceOptions, MTLResourceUsage, MTLSize, NSRange,
     };
+    use std::cell::Cell;
+    use std::hash::{BuildHasherDefault, Hasher};
 
     /// Read `GPUStartTime` / `GPUEndTime` on an MTLCommandBuffer via raw
     /// objc msg_send. The `metal` 0.29 crate doesn't wrap these selectors,
@@ -711,10 +721,135 @@ mod imp {
         let supported = find_timestamp_counter_set(device).is_some();
         cost_ledger::record_counter_sample_capability(true, Some(supported));
     }
-    use parking_lot::Mutex;
+    use parking_lot::{Mutex, RwLock};
     use std::collections::HashMap;
     use std::sync::atomic::{AtomicUsize, Ordering};
     use std::time::Instant;
+
+    /// A/B switch for the sticky-pipeline optimization. The default is on;
+    /// setting `=0` restores an explicit pipeline bind for every dispatch so
+    /// a protected control can isolate the host-encoding effect.
+    fn pipeline_state_elision_enabled() -> bool {
+        crate::env_opt_out("HAWKING_METAL_PIPELINE_STATE_ELISION")
+    }
+
+    /// A/B switch for the resident pipeline ID fast path. The default uses a
+    /// one-time name admission followed by direct ID/vector resolution;
+    /// setting `=0` restores the historical second name-map lookup so the
+    /// host-side lookup reduction can be qualified independently.
+    fn pipeline_id_resolution_enabled() -> bool {
+        crate::env_opt_out("HAWKING_METAL_PIPELINE_ID_RESOLUTION")
+    }
+
+    /// A/B switch for ordinary Metal encoder labels. Labels are valuable for
+    /// trace and physical-capture runs, but the default decode path does not
+    /// consume them; avoid one Objective-C call per non-group dispatch there.
+    /// Setting `=0` restores the historical label on every encoder.
+    fn encoder_label_elision_enabled() -> bool {
+        crate::env_opt_out("HAWKING_METAL_ENCODER_LABEL_ELISION")
+    }
+
+    /// A/B switch for the `TokenCommandBuffer::commit_and_wait` path. The
+    /// method returns no timing, so an untraced production TCB does not need
+    /// CPU clocks or GPU start/end timestamp queries. `=0` restores the
+    /// historical fully-timed commit path for an apples-to-apples control.
+    fn commit_timing_elision_enabled() -> bool {
+        crate::env_opt_out("HAWKING_METAL_COMMIT_TIMING_ELISION")
+    }
+
+    /// The resident Qwen token graph currently uses about sixteen distinct
+    /// kernels per token. Reserve a small headroom once per command buffer so
+    /// the pipeline cache does not repeatedly grow while the graph is encoded.
+    const PIPELINE_CACHE_INITIAL_CAPACITY: usize = 32;
+
+    /// Fast non-cryptographic hasher for the trusted, process-local kernel
+    /// names in [`TokenPipelineCache`]. The default `HashMap` hasher is
+    /// intentionally randomized and general-purpose; paying that cost for
+    /// hundreds of fixed-name lookups in every resident token is avoidable.
+    /// HashMap still checks key equality, so collisions only affect lookup
+    /// time and cannot change pipeline selection.
+    #[derive(Clone)]
+    pub struct TokenPipelineHasher(u64);
+
+    impl Default for TokenPipelineHasher {
+        fn default() -> Self {
+            Self(0xcbf29ce484222325)
+        }
+    }
+
+    impl Hasher for TokenPipelineHasher {
+        #[inline]
+        fn finish(&self) -> u64 {
+            self.0
+        }
+
+        #[inline]
+        fn write(&mut self, bytes: &[u8]) {
+            for byte in bytes {
+                self.0 ^= u64::from(*byte);
+                self.0 = self.0.wrapping_mul(0x100000001b3);
+            }
+        }
+    }
+
+    /// Reusable pipeline handles for a resident token graph. Moving this
+    /// cache between token command buffers keeps the handles alive across
+    /// command buffers, so steady-state dispatches avoid reacquiring the
+    /// context-wide pipeline-cache lock. The name map admits a pipeline and
+    /// assigns its stable ID; the parallel vector resolves that ID without a
+    /// second string hash on every dispatch. The `Arc` owns each handle across
+    /// command buffers; dispatches borrow it without an additional
+    /// retain/release pair.
+    pub struct TokenPipelineCache {
+        by_name: HashMap<String, usize, BuildHasherDefault<TokenPipelineHasher>>,
+        pipelines: Vec<Arc<ComputePipelineState>>,
+    }
+
+    impl Default for TokenPipelineCache {
+        fn default() -> Self {
+            Self {
+                by_name: HashMap::with_hasher(BuildHasherDefault::default()),
+                pipelines: Vec::new(),
+            }
+        }
+    }
+
+    impl TokenPipelineCache {
+        #[inline]
+        fn id_for(&self, fn_name: &str) -> Option<usize> {
+            self.by_name.get(fn_name).copied()
+        }
+
+        #[inline]
+        fn insert_new(&mut self, fn_name: &str, pipeline: Arc<ComputePipelineState>) -> usize {
+            let id = self.pipelines.len();
+            debug_assert!(!self.by_name.contains_key(fn_name));
+            self.by_name.insert(fn_name.to_owned(), id);
+            self.pipelines.push(pipeline);
+            id
+        }
+
+        #[inline]
+        fn pipeline_at(&self, id: usize) -> Option<&ComputePipelineState> {
+            self.pipelines.get(id).map(Arc::as_ref)
+        }
+
+        #[inline]
+        fn pipeline_named(&self, fn_name: &str) -> Option<&ComputePipelineState> {
+            self.id_for(fn_name).and_then(|id| self.pipeline_at(id))
+        }
+    }
+
+    #[inline]
+    fn new_token_pipeline_cache() -> TokenPipelineCache {
+        TokenPipelineCache {
+            by_name: HashMap::with_capacity_and_hasher(
+                PIPELINE_CACHE_INITIAL_CAPACITY,
+                BuildHasherDefault::default(),
+            ),
+            pipelines: Vec::with_capacity(PIPELINE_CACHE_INITIAL_CAPACITY),
+        }
+    }
 
     /// Wave-6 residency lever (`HAWKING_QWEN_RESIDENCY=1`, DEFAULT-OFF).
     ///
@@ -1058,6 +1193,28 @@ mod imp {
         /// Mirrors `EngineConfig::trace_dispatch`; env var `HAWKING_TRACE_DISPATCH`
         /// acts as a fallback when this is false.
         pub trace_dispatch: bool,
+        /// Snapshot of the sticky-pipeline A/B at context creation. The
+        /// decode path creates a TCB per token, so resolving this once avoids
+        /// an environment lookup in every token's command-buffer setup while
+        /// preserving the process-scoped `=0` control.
+        pipeline_state_elision: bool,
+        /// Snapshot the resident pipeline ID-resolution A/B at context
+        /// creation. The fast path uses one name admission plus direct
+        /// vector indexing; `=0` restores the historical second name lookup.
+        pipeline_id_resolution: bool,
+        /// Snapshot of ordinary encoder-label elision. Fast production paths
+        /// skip labels unless tracing or physical capture is active; `=0`
+        /// restores the historical label on every encoder for A/B isolation.
+        encoder_label_elision: bool,
+        /// Snapshot of the no-timing commit fast path. Untraced production
+        /// callers of `commit_and_wait` do not consume its timing result, so
+        /// they can avoid CPU clocks and GPU timeline queries; `=0` restores
+        /// the historical fully-timed path for a protected control.
+        commit_timing_elision: bool,
+        /// Snapshot the diagnostic TCB mode at context creation. The decode
+        /// path creates a TCB per token, so reparsing the environment there
+        /// would add host ceremony without changing the resident mode.
+        tcb_trace_mode: TcbTraceMode,
         /// Reusable diagnostic counter-sample buffers. A complete token may
         /// commit dozens of serial command buffers; leasing and returning a
         /// tracer prevents the hardware sample-buffer quota from silently
@@ -1079,12 +1236,32 @@ mod imp {
         // batch closure returns.
         concurrent_encoder: Option<ComputeCommandEncoder>,
         serial_group_active: bool,
+        /// Per-batch pipeline handles. A Flash/Qwen batch commonly revisits
+        /// the same small kernel set; keep those handles local so repeated
+        /// dispatches do not reacquire the context-wide cache lock. `Arc`
+        /// cache hits avoid retaining/releasing the Objective-C wrapper, and
+        /// the integer ID avoids cloning a short-lived dynamic kernel name
+        /// when the sticky binding changes.
+        pipeline_cache: TokenPipelineCache,
+        /// Pipeline state is sticky on a Metal compute encoder. Keep the
+        /// cache-local pipeline ID currently bound so repeated dispatches in
+        /// an ordered/concurrent group do not issue redundant state changes
+        /// or allocate comparison strings.
+        bound_pipeline_id: Option<usize>,
+        /// Pipeline lookup clocks are diagnostic work. Keep them on for
+        /// explicitly timed/trace batches, but remove one clock read per
+        /// dispatch from ordinary production submit paths.
+        measure_pipeline_lookup: bool,
+        /// Whether shared encoders may retain an already-bound pipeline.
+        /// Resolved once when the batch is created, not inside the dispatch
+        /// loop.
+        elide_pipeline_state: bool,
         // One sequential compute encoder reused across dispatch_threads
         // calls in this batch. Off by default so existing one-encoder-per-
         // dispatch callers keep their previous topology.
         ordered_encoder: Option<ComputeCommandEncoder>,
         ordered_encoder_enabled: bool,
-        pipeline_lookup_us: u64,
+        pipeline_lookup_us: Cell<u64>,
         compute_encoders: u64,
         compute_dispatches: u64,
     }
@@ -1093,7 +1270,11 @@ mod imp {
         device: Device,
         queue: CommandQueue,
         library: Library,
-        pipelines: Mutex<HashMap<String, ComputePipelineState>>,
+        // Pipeline handles are immutable after insertion. Decode sessions can
+        // resolve the same resident kernel concurrently, so use a shared-read
+        // cache for the cross-token fast path; creation still takes the write
+        // lock and double-checks to keep one handle per function name.
+        pipelines: RwLock<HashMap<String, ComputePipelineState>>,
         icb_pipelines: Mutex<HashMap<String, ComputePipelineState>>,
     }
 
@@ -1166,13 +1347,9 @@ mod imp {
             }
             "q80_uniform8_matvec_tg256" => "q80_uniform8_matvec_tg256",
             "q80_uniform8_matvec_tg256_addr_probe" => "q80_uniform8_matvec_tg256_addr_probe",
-            "q80_uniform8_matvec_tg256_decode_probe" => {
-                "q80_uniform8_matvec_tg256_decode_probe"
-            }
+            "q80_uniform8_matvec_tg256_decode_probe" => "q80_uniform8_matvec_tg256_decode_probe",
             "q80_hgravs01_two_stage_matvec" => "q80_hgravs01_two_stage_matvec",
-            "q80_hgravs01_two_stage_matvec_rowblock4" => {
-                "q80_hgravs01_two_stage_matvec_rowblock4"
-            },
+            "q80_hgravs01_two_stage_matvec_rowblock4" => "q80_hgravs01_two_stage_matvec_rowblock4",
             "qwen_binary_sign_scale_matvec" => "qwen_binary_sign_scale_matvec",
             "qwen_binary_sign_scale_matvec_serial" => "qwen_binary_sign_scale_matvec_serial",
             "qwen_binary_sign_scale_matvec_tiled" => "qwen_binary_sign_scale_matvec_tiled",
@@ -1193,9 +1370,7 @@ mod imp {
             "qwen_uniform_q4_group64_matvec_interleaved" => {
                 "qwen_uniform_q4_group64_matvec_interleaved"
             }
-            "qwen_uniform_q4_group64_matvec_vecgroup" => {
-                "qwen_uniform_q4_group64_matvec_vecgroup"
-            }
+            "qwen_uniform_q4_group64_matvec_vecgroup" => "qwen_uniform_q4_group64_matvec_vecgroup",
             "qwen_uniform_q4_group64_matvec_vecgroup_x" => {
                 "qwen_uniform_q4_group64_matvec_vecgroup_x"
             }
@@ -1207,7 +1382,7 @@ mod imp {
             }
             "qwen_uniform_q4_group64_matvec_vecgroup_x64" => {
                 "qwen_uniform_q4_group64_matvec_vecgroup_x64"
-            },
+            }
             "qwen_uniform_q4_group64_matvec_rowblock" => "qwen_uniform_q4_group64_matvec_rowblock",
             "qwen_uniform_q4_group64_matvec_simdgroup" => {
                 "qwen_uniform_q4_group64_matvec_simdgroup"
@@ -1359,14 +1534,34 @@ mod imp {
                 "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128"
             }
             "qwen_q2f_group64_matvec" => "qwen_q2f_group64_matvec",
-            "qwen_q2f_group64_matvec_geo_tpr64_tg128" => {
-                "qwen_q2f_group64_matvec_geo_tpr64_tg128"
+            "qwen_q2f_group64_matvec_geo_tpr64_tg128" => "qwen_q2f_group64_matvec_geo_tpr64_tg128",
+            "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128"
             }
             "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128" => {
                 "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128"
             }
             "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128" => {
                 "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec_pipe_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_pipe_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec_splitk4_tg256" => "qwen_q2f_group64_matvec_splitk4_tg256",
+            "qwen_q2f_group64_matvec_gate_up_pipe_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_gate_up_pipe_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128" => {
+                "qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128"
+            }
+            "qwen_q2f_group64_matvec_gate_up_splitk4_tg256" => {
+                "qwen_q2f_group64_matvec_gate_up_splitk4_tg256"
+            }
+            "qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256" => {
+                "qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256"
             }
             "qwen_uniform_q4_decode_vector" => "qwen_uniform_q4_decode_vector",
             "qwen_uniform_q4_embedding_lookup" => "qwen_uniform_q4_embedding_lookup",
@@ -1471,9 +1666,7 @@ mod imp {
             "qwen38_gated_delta_decode_vi_simd_ba_plain" => {
                 "qwen38_gated_delta_decode_vi_simd_ba_plain"
             }
-            "qwen38_gated_delta_decode_vi_simd_ba_f4" => {
-                "qwen38_gated_delta_decode_vi_simd_ba_f4"
-            }
+            "qwen38_gated_delta_decode_vi_simd_ba_f4" => "qwen38_gated_delta_decode_vi_simd_ba_f4",
             "qwen38_gated_delta_decode_vi_simd_ba_tg32" => {
                 "qwen38_gated_delta_decode_vi_simd_ba_tg32"
             }
@@ -1495,20 +1688,62 @@ mod imp {
             "qwen_complete_any_nonfinite_f32" => "qwen_complete_any_nonfinite_f32",
             "qwen_next_gated_delta_decode_single" => "qwen_next_gated_delta_decode_single",
             "qwen_next_ba_to_decay_beta" => "qwen_next_ba_to_decay_beta",
+            "qwen_next_ba_split_to_decay_beta_source_bf16" => {
+                "qwen_next_ba_split_to_decay_beta_source_bf16"
+            }
             "qwen_next_direct_packed_input_rmsnorm" => "qwen_next_direct_packed_input_rmsnorm",
             "qwen_next_qkvz_rearrange_conv_l2" => "qwen_next_qkvz_rearrange_conv_l2",
+            "qwen_next_qkv_split_rearrange_conv_l2" => "qwen_next_qkv_split_rearrange_conv_l2",
             "qwen_next_deltanet_gated_rmsnorm" => "qwen_next_deltanet_gated_rmsnorm",
+            "qwen_next_deltanet_source_bf16_gated_rmsnorm" => {
+                "qwen_next_deltanet_source_bf16_gated_rmsnorm"
+            }
+            "qwen_next_bf16_router_topk_shared" => "qwen_next_bf16_router_topk_shared",
+            "qwen_next_bf16_qkv_gqa_rope_cache" => "qwen_next_bf16_qkv_gqa_rope_cache",
             "qwen_next_add_residual" => "qwen_next_add_residual",
             "qwen_next_shared_expert_sigmoid_gate" => "qwen_next_shared_expert_sigmoid_gate",
             "qwen_next_moe_weighted_sum" => "qwen_next_moe_weighted_sum",
             "qwen_next_moe_add_shared" => "qwen_next_moe_add_shared",
+            "qwen_next_moe_weighted_sum_add_shared_sigmoid" => {
+                "qwen_next_moe_weighted_sum_add_shared_sigmoid"
+            }
+            "qwen_next_moe_weighted_sum_add_shared_sigmoid_hc" => {
+                "qwen_next_moe_weighted_sum_add_shared_sigmoid_hc"
+            }
+            "qwen_next_bf16_compact_expert_down_shared_direct" => {
+                "qwen_next_bf16_compact_expert_down_shared_direct"
+            }
+            "qwen_next_bf16_compact_expert_down_shared_direct_hc" => {
+                "qwen_next_bf16_compact_expert_down_shared_direct_hc"
+            }
+            "qwen_next_bf16_compact_expert_down_shared_direct_hc_vec4" => {
+                "qwen_next_bf16_compact_expert_down_shared_direct_hc_vec4"
+            }
+            "qwen_next_bf16_compact_expert_down_shared_direct_hc_geo_tg128" => {
+                "qwen_next_bf16_compact_expert_down_shared_direct_hc_geo_tg128"
+            }
+            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu" => {
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu"
+            }
+            "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4" => {
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4"
+            }
+            "qwen_next_bf16_expert_gate_up_swiglu" => "qwen_next_bf16_expert_gate_up_swiglu",
+            "qwen_next_bf16_expert_down" => "qwen_next_bf16_expert_down",
             "qwen_next_expand_shared_to_hyper_state" => "qwen_next_expand_shared_to_hyper_state",
             "qwen_next_hyperconnection_residual_mix_candidate" => {
                 "qwen_next_hyperconnection_residual_mix_candidate"
-            },
+            }
             "qwen_next_hyperconnection_grouped_rmsnorm" => {
                 "qwen_next_hyperconnection_grouped_rmsnorm"
-            },
+            }
+            "qwen_next_hyperconnection_input_fused" => "qwen_next_hyperconnection_input_fused",
+            "qwen_next_hyperconnection_input_fused_with_block" => {
+                "qwen_next_hyperconnection_input_fused_with_block"
+            }
+            "qwen_next_hyperconnection_input_fused_with_block_router_topk" => {
+                "qwen_next_hyperconnection_input_fused_with_block_router_topk"
+            }
             "qwen_next_hyperconnection_silu_scale" => "qwen_next_hyperconnection_silu_scale",
             "qwen_next_hyperconnection_read_mix" => "qwen_next_hyperconnection_read_mix",
             "qwen_next_hyperconnection_combine" => "qwen_next_hyperconnection_combine",
@@ -1600,8 +1835,17 @@ mod imp {
             "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate" => {
                 "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate"
             }
+            "deepseek_v4_p6a_act_quant_bf16_ue8m0_fixed7_authority" => {
+                "deepseek_v4_p6a_act_quant_bf16_ue8m0_fixed7_authority"
+            }
             "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority" => {
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority"
+            }
+            "deepseek_v4_fp8_gate_up_swiglu_bf16_fused" => {
+                "deepseek_v4_fp8_gate_up_swiglu_bf16_fused"
+            }
+            "deepseek_v4_fp8_down_bf16_combine_fused" => {
+                "deepseek_v4_fp8_down_bf16_combine_fused"
             }
             "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate" => {
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate"
@@ -1718,13 +1962,35 @@ mod imp {
             "deepseek_v4_p6a_route6_shared_combine_bf16_authority" => {
                 "deepseek_v4_p6a_route6_shared_combine_bf16_authority"
             }
+            "deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_authority" => {
+                "deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_authority"
+            }
+            "deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_simd_candidate" => {
+                "deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_simd_candidate"
+            }
+            "deepseek_v4_p6a_fp4_down_bf16_fused_authority" => {
+                "deepseek_v4_p6a_fp4_down_bf16_fused_authority"
+            }
+            "deepseek_v4_p6a_fp4_down_bf16_fused_simd_candidate" => {
+                "deepseek_v4_p6a_fp4_down_bf16_fused_simd_candidate"
+            }
+            "deepseek_v4_p6a_fp4_down_fp8_shared_combine_bf16_fused_authority" => {
+                "deepseek_v4_p6a_fp4_down_fp8_shared_combine_bf16_fused_authority"
+            }
             // Isolated P7 mHC-FFN composition kernels.  These are traceable
             // library residents only, not a registered causal-runtime path.
             "deepseek_v4_p7_mhc_ffn_pre_authority" => "deepseek_v4_p7_mhc_ffn_pre_authority",
+            "deepseek_v4_mhc_pre_simdgroup_candidate" => "deepseek_v4_mhc_pre_simdgroup_candidate",
             "deepseek_v4_p7_ffn_rmsnorm_bf16_authority" => {
                 "deepseek_v4_p7_ffn_rmsnorm_bf16_authority"
             }
+            "deepseek_v4_p7_ffn_rmsnorm_act_quant_bf16_ue8m0_simdgroup_candidate" => {
+                "deepseek_v4_p7_ffn_rmsnorm_act_quant_bf16_ue8m0_simdgroup_candidate"
+            }
             "deepseek_v4_p7_mhc_ffn_post_authority" => "deepseek_v4_p7_mhc_ffn_post_authority",
+            "deepseek_v4_p7_mhc_ffn_post_from_f32_authority" => {
+                "deepseek_v4_p7_mhc_ffn_post_from_f32_authority"
+            }
             "gk_matvec_binary" => "gk_matvec_binary",
             "gk_matvec_binary_simd" => "gk_matvec_binary_simd",
             "gk_matvec_hgravs" => "gk_matvec_hgravs",
@@ -1734,6 +2000,10 @@ mod imp {
             "gk_worklist_fp4_simd" => "gk_worklist_fp4_simd",
             "gk_swiglu_f32" => "gk_swiglu_f32",
             "gk_swiglu_bf16_worklist" => "gk_swiglu_bf16_worklist",
+            "gk_worklist_fp4_gate_up_swiglu_bf16" => "gk_worklist_fp4_gate_up_swiglu_bf16",
+            "gk_worklist_fp4_gate_up_swiglu_bf16_simd" => {
+                "gk_worklist_fp4_gate_up_swiglu_bf16_simd"
+            }
             "gk_combine_bf16" => "gk_combine_bf16",
             "gk_pack_worklist" => "gk_pack_worklist",
             "dsv4f_pack_worklist" => "dsv4f_pack_worklist",
@@ -1745,6 +2015,10 @@ mod imp {
             "dsv4f_worklist_fp4_matvec_simd" => "dsv4f_worklist_fp4_matvec_simd",
             "dsv4f_diag_fp4_load_only_simd" => "dsv4f_diag_fp4_load_only_simd",
             "dsv4f_diag_f32_matvec_simd" => "dsv4f_diag_f32_matvec_simd",
+            "dsv4f_worklist_fp4_gate_up_swiglu_bf16" => "dsv4f_worklist_fp4_gate_up_swiglu_bf16",
+            "dsv4f_worklist_fp4_gate_up_swiglu_bf16_simd" => {
+                "dsv4f_worklist_fp4_gate_up_swiglu_bf16_simd"
+            }
             "dsv4f_worklist_swiglu" => "dsv4f_worklist_swiglu",
             "dsv4f_worklist_combine" => "dsv4f_worklist_combine",
             "dsv4f_ax_act_quant_bf16_ue8m0_batched" => "dsv4f_ax_act_quant_bf16_ue8m0_batched",
@@ -1793,6 +2067,19 @@ mod imp {
             "gemv_simdgroup_f32" => "gemv_simdgroup_f32",
             // GLM native.bf16 lm_head (sequential accumulate, host parity)
             "gemv_native_bf16_seq" => "gemv_native_bf16_seq",
+            "gemv_native_bf16_seq_vec4" => "gemv_native_bf16_seq_vec4",
+            "gemv_native_bf16_geo_vec4_tg128" => "gemv_native_bf16_geo_vec4_tg128",
+            "gemv_native_bf16_swiglu_seq" => "gemv_native_bf16_swiglu_seq",
+            "gemv_native_bf16_swiglu_seq_vec4" => "gemv_native_bf16_swiglu_seq_vec4",
+            "gemv_native_bf16_swiglu_geo_vec4_tg128" => "gemv_native_bf16_swiglu_geo_vec4_tg128",
+            "gemv_native_bf16_dual_seq" => "gemv_native_bf16_dual_seq",
+            "gemv_native_bf16_dual_seq_vec4" => "gemv_native_bf16_dual_seq_vec4",
+            "gemv_native_bf16_dual_geo_vec4_tg128" => "gemv_native_bf16_dual_geo_vec4_tg128",
+            "gemv_native_bf16_triple_seq" => "gemv_native_bf16_triple_seq",
+            "gemv_native_bf16_triple_seq_vec4" => "gemv_native_bf16_triple_seq_vec4",
+            "gemv_native_bf16_hyperconnection_combine" => {
+                "gemv_native_bf16_hyperconnection_combine"
+            }
             // GLM activation-aware factorized GEMV.
             "activation_aware_project_f16" => "activation_aware_project_f16",
             "activation_aware_expand_f16" => "activation_aware_expand_f16",
@@ -1937,6 +2224,7 @@ mod imp {
             // Q4K_FAST, and megakernel/POC kernels (named now so they attribute
             // correctly the moment they're wired in, never silently as 'other').
             "mha_decode_f32" => "mha_decode_f32",
+            "mha_decode_f32_qwen38_gated" => "mha_decode_f32_qwen38_gated",
             "mha_decode_f32_batched" => "mha_decode_f32_batched",
             "mha_decode_f16kv" => "mha_decode_f16kv",
             "mha_decode_f16kv_batched" => "mha_decode_f16kv_batched",
@@ -2014,8 +2302,8 @@ mod imp {
         use super::static_kernel_name;
         use crate::metal::{
             SHADER_DEEPSEEK_V4_MHC_CONTROL_EXP, SHADER_DEEPSEEK_V4_P7,
-            SHADER_DSV4F_ACTIVATION_X_BATCH, SHADER_GK_FAMILY, SHADER_GRAVITY_PQ,
-            SHADER_MATMUL, SHADER_MOE,
+            SHADER_DSV4F_ACTIVATION_X_BATCH, SHADER_GK_FAMILY, SHADER_GRAVITY_PQ, SHADER_MATMUL,
+            SHADER_MHA, SHADER_MOE, SHADER_QWEN_NEXT,
         };
 
         #[test]
@@ -2025,6 +2313,102 @@ mod imp {
                 assert!(
                     SHADER_GK_FAMILY.contains(&format!("kernel void {name}(")),
                     "{name} missing from gk_family.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn flash_direct_compact_moe_epilogue_is_trace_named_and_compiled() {
+            for kernel in [
+                "qwen_next_bf16_compact_expert_down_shared_direct",
+                "qwen_next_bf16_compact_expert_down_shared_direct_hc",
+                "qwen_next_bf16_compact_expert_down_shared_direct_hc_vec4",
+                "qwen_next_bf16_compact_expert_down_shared_direct_hc_geo_tg128",
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu",
+                "qwen_next_bf16_compact_expert_gate_up_shared_swiglu_vec4",
+                "qwen_next_moe_weighted_sum_add_shared_sigmoid",
+                "qwen_next_moe_weighted_sum_add_shared_sigmoid_hc",
+            ] {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN_NEXT.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} missing from qwen_next.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn flash_hyperconnection_block_fusion_is_trace_named_and_compiled() {
+            for kernel in [
+                "qwen_next_hyperconnection_input_fused",
+                "qwen_next_hyperconnection_input_fused_with_block",
+            ] {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_QWEN_NEXT.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} missing from qwen_next.metal"
+                );
+            }
+        }
+
+        #[test]
+        fn flash_qkv_rope_fusion_is_trace_named_and_compiled() {
+            let kernel = "qwen_next_bf16_qkv_gqa_rope_cache";
+            assert_eq!(static_kernel_name(kernel), kernel);
+            assert!(
+                SHADER_QWEN_NEXT.contains(&format!("kernel void {kernel}(")),
+                "{kernel} missing from qwen_next.metal"
+            );
+        }
+
+        #[test]
+        fn flash_router_topk_fusion_is_trace_named_and_compiled() {
+            let kernel = "qwen_next_bf16_router_topk_shared";
+            assert_eq!(static_kernel_name(kernel), kernel);
+            assert!(
+                SHADER_QWEN_NEXT.contains(&format!("kernel void {kernel}(")),
+                "{kernel} missing from qwen_next.metal"
+            );
+        }
+
+        #[test]
+        fn flash_hyperconnection_router_fusion_is_trace_named_and_compiled() {
+            let kernel = "qwen_next_hyperconnection_input_fused_with_block_router_topk";
+            assert_eq!(static_kernel_name(kernel), kernel);
+            assert!(
+                SHADER_QWEN_NEXT.contains(&format!("kernel void {kernel}(")),
+                "{kernel} missing from qwen_next.metal"
+            );
+        }
+
+        #[test]
+        fn qwen38_gated_mha_is_trace_named_and_compiled() {
+            const KERNEL: &str = "mha_decode_f32_qwen38_gated";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_MHA.contains(&format!("kernel void {KERNEL}(")),
+                "{KERNEL} missing from mha.metal"
+            );
+        }
+
+        #[test]
+        fn source_bf16_vec4_gemvs_are_trace_named_and_compiled() {
+            const KERNELS: &[&str] = &[
+                "gemv_native_bf16_seq_vec4",
+                "gemv_native_bf16_swiglu_seq_vec4",
+                "gemv_native_bf16_dual_seq_vec4",
+                "gemv_native_bf16_geo_vec4_tg128",
+                "gemv_native_bf16_swiglu_geo_vec4_tg128",
+                "gemv_native_bf16_dual_geo_vec4_tg128",
+                "gemv_native_bf16_triple_seq",
+                "gemv_native_bf16_triple_seq_vec4",
+                "gemv_native_bf16_hyperconnection_combine",
+            ];
+            for &kernel in KERNELS {
+                assert_eq!(static_kernel_name(kernel), kernel);
+                assert!(
+                    SHADER_MATMUL.contains(&format!("kernel void {kernel}(")),
+                    "{kernel} missing from matmul.metal"
                 );
             }
         }
@@ -2119,6 +2503,11 @@ mod imp {
                 "deepseek_v4_p6a_learned_bias_route_sqrtsoftplus_authority",
                 "deepseek_v4_p6a_swiglu_route_weight_buffer_bf16_authority",
                 "deepseek_v4_p6a_route6_shared_combine_bf16_authority",
+                "deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_authority",
+                "deepseek_v4_p6a_fp4_gate_up_swiglu_route_weight_buffer_bf16_fused_simd_candidate",
+                "deepseek_v4_p6a_fp4_down_bf16_fused_authority",
+                "deepseek_v4_p6a_fp4_down_bf16_fused_simd_candidate",
+                "deepseek_v4_p6a_fp4_down_fp8_shared_combine_bf16_fused_authority",
             ];
             for &kernel in KERNELS {
                 assert_eq!(static_kernel_name(kernel), kernel);
@@ -2159,7 +2548,10 @@ mod imp {
             const KERNELS: &[&str] = &[
                 "deepseek_v4_act_quant_bf16_ue8m0_authority",
                 "deepseek_v4_act_quant_bf16_ue8m0_simdgroup_block_candidate",
+                "deepseek_v4_p6a_act_quant_bf16_ue8m0_fixed7_authority",
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority",
+                "deepseek_v4_fp8_gate_up_swiglu_bf16_fused",
+                "deepseek_v4_fp8_down_bf16_combine_fused",
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_v4_splitk_candidate",
                 "deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_simdgroup_occupancy_candidate",
             ];
@@ -2255,8 +2647,10 @@ mod imp {
         fn deepseek_v4_p7_mhc_ffn_kernels_are_trace_named_and_compiled() {
             const KERNELS: &[&str] = &[
                 "deepseek_v4_p7_mhc_ffn_pre_authority",
+                "deepseek_v4_mhc_pre_simdgroup_candidate",
                 "deepseek_v4_p7_ffn_rmsnorm_bf16_authority",
                 "deepseek_v4_p7_mhc_ffn_post_authority",
+                "deepseek_v4_p7_mhc_ffn_post_from_f32_authority",
             ];
             for &kernel in KERNELS {
                 assert_eq!(static_kernel_name(kernel), kernel);
@@ -2265,6 +2659,17 @@ mod imp {
                     "DeepSeek-V4 P7 kernel must remain in deepseek_v4_p7.metal"
                 );
             }
+        }
+
+        #[test]
+        fn deepseek_v4_p7_mhc_norm_quant_kernel_is_trace_named_and_compiled() {
+            const KERNEL: &str =
+                "deepseek_v4_p7_ffn_rmsnorm_act_quant_bf16_ue8m0_simdgroup_candidate";
+            assert_eq!(static_kernel_name(KERNEL), KERNEL);
+            assert!(
+                SHADER_MATMUL.contains(&format!("kernel void {KERNEL}(")),
+                "DeepSeek-V4 P7 norm/quant kernel must remain in matmul.metal"
+            );
         }
 
         #[test]
@@ -2365,8 +2770,16 @@ mod imp {
                 "qwen_affine_q2_group64_matvec_gate_up_swiglu_biasprep_drop_tpr64_tg128",
                 "qwen_q2f_group64_matvec",
                 "qwen_q2f_group64_matvec_geo_tpr64_tg128",
+                "qwen_q2f_group64_matvec_qkv_geo_tpr64_tg128",
+                "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
                 "qwen_q2f_group64_matvec_gate_up_geo_tpr64_tg128",
                 "qwen_q2f_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+                "qwen_q2f_group64_matvec_pipe_tpr64_tg128",
+                "qwen_q2f_group64_matvec_splitk4_tg256",
+                "qwen_q2f_group64_matvec_gate_up_pipe_tpr64_tg128",
+                "qwen_q2f_group64_matvec_gate_up_swiglu_pipe_tpr64_tg128",
+                "qwen_q2f_group64_matvec_gate_up_splitk4_tg256",
+                "qwen_q2f_group64_matvec_gate_up_swiglu_splitk4_tg256",
                 "qwen_uniform_q3_group64_matvec_geo_tpr64_tg128",
                 "qwen_uniform_q3_group128_matvec_geo_tpr64_tg128",
             ] {
@@ -2601,12 +3014,17 @@ mod imp {
                         device,
                         queue,
                         library,
-                        pipelines: Mutex::new(HashMap::new()),
+                        pipelines: RwLock::new(HashMap::new()),
                         icb_pipelines: Mutex::new(HashMap::new()),
                     }),
                     trace: Arc::new(DispatchTrace::new()),
                     stats: Arc::new(MetalContextStats::new()),
                     trace_dispatch: effective,
+                    pipeline_state_elision: pipeline_state_elision_enabled(),
+                    pipeline_id_resolution: pipeline_id_resolution_enabled(),
+                    encoder_label_elision: encoder_label_elision_enabled(),
+                    commit_timing_elision: commit_timing_elision_enabled(),
+                    tcb_trace_mode: TcbTraceMode::from_env(),
                     prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
                 })
             })
@@ -2632,12 +3050,17 @@ mod imp {
                             device,
                             queue,
                             library,
-                            pipelines: Mutex::new(HashMap::new()),
+                            pipelines: RwLock::new(HashMap::new()),
                             icb_pipelines: Mutex::new(HashMap::new()),
                         }),
                         trace: Arc::new(DispatchTrace::new()),
                         stats: Arc::new(MetalContextStats::new()),
                         trace_dispatch: effective,
+                        pipeline_state_elision: pipeline_state_elision_enabled(),
+                        pipeline_id_resolution: pipeline_id_resolution_enabled(),
+                        encoder_label_elision: encoder_label_elision_enabled(),
+                        commit_timing_elision: commit_timing_elision_enabled(),
+                        tcb_trace_mode: TcbTraceMode::from_env(),
                         prod_cb_tracer_pool: Arc::new(Mutex::new(Vec::new())),
                     })
                 },
@@ -2699,7 +3122,12 @@ mod imp {
         /// Look up -- or create + cache -- a compute pipeline for a
         /// kernel function.
         pub fn pipeline(&self, fn_name: &str) -> Result<ComputePipelineState> {
-            let mut pipes = self.inner.pipelines.lock();
+            if let Some(p) = self.inner.pipelines.read().get(fn_name) {
+                return Ok(p.clone());
+            }
+            let mut pipes = self.inner.pipelines.write();
+            // Another resolver may have populated the cache while this call
+            // was waiting for the write lock.
             if let Some(p) = pipes.get(fn_name) {
                 return Ok(p.clone());
             }
@@ -3003,7 +3431,7 @@ mod imp {
             let enc = cmd.new_compute_command_encoder();
             if let Some((command, _)) = physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
-            } else {
+            } else if !self.encoder_label_elision || trace_enabled {
                 enc.set_label(fn_name);
             }
             enc.set_compute_pipeline_state(&pipe);
@@ -3096,7 +3524,7 @@ mod imp {
             let enc = cmd.new_compute_command_encoder();
             if let Some((command, _)) = physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
-            } else {
+            } else if !self.encoder_label_elision || self.trace_dispatch {
                 enc.set_label(fn_name);
             }
             enc.set_compute_pipeline_state(&pipe);
@@ -3177,9 +3605,13 @@ mod imp {
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 serial_group_active: false,
+                pipeline_cache: new_token_pipeline_cache(),
+                bound_pipeline_id: None,
+                measure_pipeline_lookup: false,
+                elide_pipeline_state: self.pipeline_state_elision,
                 ordered_encoder: None,
                 ordered_encoder_enabled: false,
-                pipeline_lookup_us: 0,
+                pipeline_lookup_us: Cell::new(0),
                 compute_encoders: 0,
                 compute_dispatches: 0,
             };
@@ -3206,6 +3638,73 @@ mod imp {
             Ok(())
         }
 
+        /// Encode and drain a batch while carrying a resident pipeline cache
+        /// across adjacent batches. This is the untimed counterpart to
+        /// `dispatch_batch_timed_with_pipeline_cache`: it preserves the
+        /// historical commit/wait and tracing behavior while avoiding a fresh
+        /// per-batch name map and context-cache lookup for already-warmed
+        /// kernels.
+        pub fn dispatch_batch_with_pipeline_cache(
+            &self,
+            pipeline_cache: &mut TokenPipelineCache,
+            encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
+        ) -> Result<()> {
+            let trace_enabled = self.trace_dispatch;
+            let t0 = if trace_enabled {
+                Some(Instant::now())
+            } else {
+                None
+            };
+
+            let cmd = self.inner.queue.new_command_buffer();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
+            let mut batch = CommandBatch {
+                ctx: self,
+                cmd,
+                physical_trace: physical_trace.map(|(identity, _)| identity),
+                concurrent_encoder: None,
+                serial_group_active: false,
+                pipeline_cache: std::mem::take(pipeline_cache),
+                bound_pipeline_id: None,
+                measure_pipeline_lookup: false,
+                elide_pipeline_state: self.pipeline_state_elision,
+                ordered_encoder: None,
+                ordered_encoder_enabled: false,
+                pipeline_lookup_us: Cell::new(0),
+                compute_encoders: 0,
+                compute_dispatches: 0,
+            };
+            let encode_result = encode(&mut batch);
+            batch.close_ordered_encoder();
+            *pipeline_cache = batch.take_pipeline_cache();
+            encode_result?;
+            if batch.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "dispatch_batch_with_pipeline_cache returned with an unclosed concurrent group"
+                        .into(),
+                ));
+            }
+            let CommandBatch { cmd, .. } = batch;
+            cmd.commit();
+            if trace_enabled {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
+            cmd.wait_until_completed();
+
+            if let Some(t0) = t0 {
+                let wall_us = t0.elapsed().as_micros() as u64;
+                self.trace.record(
+                    "dispatch_batch_with_pipeline_cache",
+                    wall_us,
+                    super::current_layer(),
+                );
+            }
+            Ok(())
+        }
+
         /// Encode one or more dependent GPU kernels into one command buffer
         /// and return completed-command-buffer GPU timestamps plus exact
         /// command topology.  This is intentionally a probe-only surface:
@@ -3228,9 +3727,13 @@ mod imp {
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 serial_group_active: false,
+                pipeline_cache: new_token_pipeline_cache(),
+                bound_pipeline_id: None,
+                measure_pipeline_lookup: true,
+                elide_pipeline_state: self.pipeline_state_elision,
                 ordered_encoder: None,
                 ordered_encoder_enabled: false,
-                pipeline_lookup_us: 0,
+                pipeline_lookup_us: Cell::new(0),
                 compute_encoders: 0,
                 compute_dispatches: 0,
             };
@@ -3249,6 +3752,105 @@ mod imp {
                 compute_dispatches,
                 ..
             } = batch;
+            let pipeline_lookup_us = pipeline_lookup_us.into_inner();
+
+            let submit_started = Instant::now();
+            cmd.commit();
+            let submit_us = submit_started.elapsed().as_micros() as u64;
+            if self.trace_dispatch {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
+            let wait_started = Instant::now();
+            cmd.wait_until_completed();
+            let wait_us = wait_started.elapsed().as_micros() as u64;
+            let (gpu_start_s, gpu_end_s) = unsafe { cb_gpu_start_end_s(&cmd) };
+            let (gpu_duration_us, gpu_start_ns, gpu_end_ns) = match (gpu_start_s, gpu_end_s) {
+                (Some(start), Some(end)) if end > start => (
+                    Some(((end - start) * 1_000_000.0) as u64),
+                    Some((start * 1_000_000_000.0) as u64),
+                    Some((end * 1_000_000_000.0) as u64),
+                ),
+                _ => (None, None, None),
+            };
+            let host_wall_us = total_started.elapsed().as_micros() as u64;
+            if self.trace_dispatch {
+                self.trace.samples.lock().push(super::DispatchSample {
+                    kernel_name: "dispatch_batch",
+                    wall_us: host_wall_us,
+                    layer_hint: super::current_layer(),
+                    gpu_us: gpu_duration_us,
+                    gpu_start_ns,
+                    gpu_end_ns,
+                });
+            }
+            Ok(super::MetalBatchTiming {
+                pipeline_lookup_us,
+                encode_us,
+                submit_us,
+                wait_us,
+                host_wall_us,
+                gpu_duration_us,
+                gpu_start_ns,
+                gpu_end_ns,
+                command_buffers: 1,
+                compute_encoders,
+                compute_dispatches,
+            })
+        }
+
+        /// Timed counterpart to [`Self::dispatch_batch_timed`] that carries
+        /// warmed pipeline handles across repeated Flash fullseq positions.
+        /// The command-buffer, encoder, dispatch, and timestamp topology is
+        /// identical; only the immutable pipeline lookup cache is moved into
+        /// and back out of the batch.  The cache is restored even when the
+        /// encoder closure rejects, so a diagnostic failure cannot poison a
+        /// resident executor's next attempt.
+        pub fn dispatch_batch_timed_with_pipeline_cache(
+            &self,
+            pipeline_cache: &mut TokenPipelineCache,
+            encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
+        ) -> Result<super::MetalBatchTiming> {
+            let total_started = Instant::now();
+            let encode_started = Instant::now();
+            let cmd = self.inner.queue.new_command_buffer();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
+            let mut batch = CommandBatch {
+                ctx: self,
+                cmd,
+                physical_trace: physical_trace.map(|(identity, _)| identity),
+                concurrent_encoder: None,
+                serial_group_active: false,
+                pipeline_cache: std::mem::take(pipeline_cache),
+                bound_pipeline_id: None,
+                measure_pipeline_lookup: true,
+                elide_pipeline_state: self.pipeline_state_elision,
+                ordered_encoder: None,
+                ordered_encoder_enabled: false,
+                pipeline_lookup_us: Cell::new(0),
+                compute_encoders: 0,
+                compute_dispatches: 0,
+            };
+            let encode_result = encode(&mut batch);
+            batch.close_ordered_encoder();
+            *pipeline_cache = batch.take_pipeline_cache();
+            encode_result?;
+            if batch.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "dispatch_batch_timed_with_pipeline_cache returned with an unclosed concurrent group".into(),
+                ));
+            }
+            let encode_us = encode_started.elapsed().as_micros() as u64;
+            let CommandBatch {
+                cmd,
+                pipeline_lookup_us,
+                compute_encoders,
+                compute_dispatches,
+                ..
+            } = batch;
+            let pipeline_lookup_us = pipeline_lookup_us.into_inner();
 
             let submit_started = Instant::now();
             cmd.commit();
@@ -3314,9 +3916,13 @@ mod imp {
                 physical_trace: physical_trace.map(|(identity, _)| identity),
                 concurrent_encoder: None,
                 serial_group_active: false,
+                pipeline_cache: new_token_pipeline_cache(),
+                bound_pipeline_id: None,
+                measure_pipeline_lookup: self.trace_dispatch || crate::cost_ledger::is_recording(),
+                elide_pipeline_state: self.pipeline_state_elision,
                 ordered_encoder: None,
                 ordered_encoder_enabled: false,
-                pipeline_lookup_us: 0,
+                pipeline_lookup_us: Cell::new(0),
                 compute_encoders: 0,
                 compute_dispatches: 0,
             };
@@ -3328,7 +3934,71 @@ mod imp {
                 ));
             }
             let encode_us = encode_started.elapsed().as_micros() as u64;
-            let pipeline_lookup_us = batch.pipeline_lookup_us;
+            let pipeline_lookup_us = batch.pipeline_lookup_us.get();
+            let compute_encoders = batch.compute_encoders;
+            let compute_dispatches = batch.compute_dispatches;
+            let submit_started = Instant::now();
+            cmd.commit();
+            let submit_us = submit_started.elapsed().as_micros() as u64;
+            if self.trace_dispatch {
+                self.stats.commits.fetch_add(1, Ordering::Relaxed);
+            }
+            Ok(SubmittedBatch {
+                cmd,
+                encode_us,
+                submit_us,
+                pipeline_lookup_us,
+                compute_encoders,
+                compute_dispatches,
+                started: total_started,
+            })
+        }
+
+        /// Submit a batch while moving a resident pipeline cache into and
+        /// back out of the batch. Flash's graph creates one batch per organ;
+        /// retaining these handles across those batches avoids repeated
+        /// context-cache lock acquisition after the first use without
+        /// changing the command-buffer or dispatch topology.
+        pub fn submit_batch_with_pipeline_cache(
+            &self,
+            pipeline_cache: &mut TokenPipelineCache,
+            encode: impl FnOnce(&mut CommandBatch<'_>) -> Result<()>,
+        ) -> Result<SubmittedBatch> {
+            let total_started = Instant::now();
+            let encode_started = Instant::now();
+            let cmd = self.inner.queue.new_command_buffer().to_owned();
+            let physical_trace = physical_command_label("command_buffer");
+            if let Some((_, label)) = physical_trace.as_ref() {
+                cmd.set_label(label);
+            }
+            let mut batch = CommandBatch {
+                ctx: self,
+                cmd: &cmd,
+                physical_trace: physical_trace.map(|(identity, _)| identity),
+                concurrent_encoder: None,
+                serial_group_active: false,
+                pipeline_cache: std::mem::take(pipeline_cache),
+                bound_pipeline_id: None,
+                measure_pipeline_lookup: self.trace_dispatch || crate::cost_ledger::is_recording(),
+                elide_pipeline_state: self.pipeline_state_elision,
+                ordered_encoder: None,
+                ordered_encoder_enabled: false,
+                pipeline_lookup_us: Cell::new(0),
+                compute_encoders: 0,
+                compute_dispatches: 0,
+            };
+            let encode_result = encode(&mut batch);
+            batch.close_ordered_encoder();
+            *pipeline_cache = batch.take_pipeline_cache();
+            encode_result?;
+            if batch.concurrent_encoder.is_some() {
+                return Err(Error::Metal(
+                    "submit_batch_with_pipeline_cache returned with an unclosed concurrent group"
+                        .into(),
+                ));
+            }
+            let encode_us = encode_started.elapsed().as_micros() as u64;
+            let pipeline_lookup_us = batch.pipeline_lookup_us.get();
             let compute_encoders = batch.compute_encoders;
             let compute_dispatches = batch.compute_dispatches;
             let submit_started = Instant::now();
@@ -3392,6 +4062,71 @@ mod imp {
     }
 
     impl CommandBatch<'_> {
+        fn bind_pipeline_if_changed(
+            bound_pipeline_id: &mut Option<usize>,
+            encoder: &ComputeCommandEncoderRef,
+            pipeline_id: usize,
+            pipeline: &ComputePipelineState,
+            elide_pipeline_state: bool,
+        ) {
+            if !elide_pipeline_state || *bound_pipeline_id != Some(pipeline_id) {
+                encoder.set_compute_pipeline_state(pipeline);
+                *bound_pipeline_id = elide_pipeline_state.then_some(pipeline_id);
+            }
+        }
+
+        fn ensure_pipeline(&mut self, fn_name: &str) -> Result<usize> {
+            if let Some(id) = self.pipeline_cache.id_for(fn_name) {
+                return Ok(id);
+            }
+            let pipeline = Arc::new(self.ctx.pipeline(fn_name)?);
+            let id = self.pipeline_cache.insert_new(fn_name, pipeline);
+            Ok(id)
+        }
+
+        pub(crate) fn take_pipeline_cache(&mut self) -> TokenPipelineCache {
+            std::mem::take(&mut self.pipeline_cache)
+        }
+
+        /// Resolve one pipeline without cloning its resident handle. The
+        /// cache owns the `Arc` until the batch returns it to its caller;
+        /// callers use the returned stable ID for direct vector resolution.
+        fn pipeline_for_dispatch(&mut self, fn_name: &str) -> Result<usize> {
+            let started = self.measure_pipeline_lookup.then(Instant::now);
+            let pipeline_id = self.ensure_pipeline(fn_name)?;
+            if let Some(started) = started {
+                let elapsed = started.elapsed().as_micros() as u64;
+                self.pipeline_lookup_us
+                    .set(self.pipeline_lookup_us.get().saturating_add(elapsed));
+            }
+            Ok(pipeline_id)
+        }
+
+        /// Borrow a resident pipeline after admission. The default path uses
+        /// its stable ID for direct vector resolution; the explicit `=0`
+        /// control restores the historical second name-map lookup.
+        fn pipeline_for_id(
+            &self,
+            pipeline_id: usize,
+            fn_name: &str,
+        ) -> Result<&ComputePipelineState> {
+            let started = self.measure_pipeline_lookup.then(Instant::now);
+            let pipeline = if self.ctx.pipeline_id_resolution {
+                self.pipeline_cache.pipeline_at(pipeline_id)
+            } else {
+                self.pipeline_cache.pipeline_named(fn_name)
+            }
+            .ok_or_else(|| {
+                Error::Metal(format!("pipeline `{fn_name}` missing from batch cache"))
+            })?;
+            if let Some(started) = started {
+                let elapsed = started.elapsed().as_micros() as u64;
+                self.pipeline_lookup_us
+                    .set(self.pipeline_lookup_us.get().saturating_add(elapsed));
+            }
+            Ok(pipeline)
+        }
+
         /// Fold subsequent `dispatch_threads` calls into one sequential
         /// compute encoder. Metal hazard tracking plus an explicit buffers
         /// barrier keep producer/consumer dispatches ordered without a new
@@ -3405,6 +4140,7 @@ mod imp {
                 enc.end_encoding();
                 self.compute_encoders += 1;
             }
+            self.bound_pipeline_id = None;
         }
 
         /// Begin one ordered `MTLDispatchTypeSerial` encoder for a dependent
@@ -3433,11 +4169,12 @@ mod imp {
                     "compute_encoder",
                     "serial_group",
                 ));
-            } else {
+            } else if !self.ctx.encoder_label_elision || self.ctx.trace_dispatch {
                 enc.set_label("serial_group");
             }
             self.concurrent_encoder = Some(enc.to_owned());
             self.serial_group_active = true;
+            self.bound_pipeline_id = None;
             Ok(())
         }
 
@@ -3464,10 +4201,11 @@ mod imp {
                     "compute_encoder",
                     "concurrent_group",
                 ));
-            } else {
+            } else if !self.ctx.encoder_label_elision || self.ctx.trace_dispatch {
                 enc.set_label("concurrent_group");
             }
             self.concurrent_encoder = Some(enc.to_owned());
+            self.bound_pipeline_id = None;
             Ok(())
         }
 
@@ -3480,21 +4218,65 @@ mod imp {
             tg: (u32, u32, u32),
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
-            let pipeline_started = Instant::now();
-            let pipe = self.ctx.pipeline(fn_name)?;
-            self.pipeline_lookup_us += pipeline_started.elapsed().as_micros() as u64;
+            let pipeline_id = self.pipeline_for_dispatch(fn_name)?;
             let enc = self.concurrent_encoder.as_ref().ok_or_else(|| {
                 Error::Metal(
                     "dispatch_threads_in_concurrent_group called without an active group".into(),
                 )
             })?;
-            enc.set_compute_pipeline_state(&pipe);
+            let mut bound_pipeline_id = self.bound_pipeline_id;
+            let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+            Self::bind_pipeline_if_changed(
+                &mut bound_pipeline_id,
+                enc,
+                pipeline_id,
+                pipe,
+                self.elide_pipeline_state,
+            );
+            self.bound_pipeline_id = bound_pipeline_id;
             encode(enc);
             enc.dispatch_threads(
                 MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
                 MTLSize::new(tg.0 as u64, tg.1 as u64, tg.2 as u64),
             );
             self.compute_dispatches += 1;
+            Ok(())
+        }
+
+        /// Encode into whichever explicit dependency group is currently
+        /// open.  P6 uses this only for a serial producer/consumer pair whose
+        /// producer is itself one fixed batched dispatch; ordinary independent
+        /// waves continue to use [`Self::dispatch_threads_in_concurrent_group`].
+        pub fn dispatch_threads_in_active_group(
+            &mut self,
+            fn_name: &str,
+            grid: (u32, u32, u32),
+            tg: (u32, u32, u32),
+            encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
+        ) -> Result<()> {
+            if self.serial_group_active {
+                self.dispatch_threads(fn_name, grid, tg, encode)
+            } else {
+                self.dispatch_threads_in_concurrent_group(fn_name, grid, tg, encode)
+            }
+        }
+
+        /// Insert a resource-scoped dependency barrier inside an open serial
+        /// group.  This keeps a producer/consumer pair in one encoder while
+        /// making the indirect GPU-addressed resources explicit to Metal.
+        pub fn memory_barrier_in_serial_group(
+            &mut self,
+            resources: &[&metal::ResourceRef],
+        ) -> Result<()> {
+            if !self.serial_group_active {
+                return Err(Error::Metal(
+                    "memory_barrier_in_serial_group called outside a serial group".into(),
+                ));
+            }
+            let enc = self.concurrent_encoder.as_ref().ok_or_else(|| {
+                Error::Metal("serial group marked active without an encoder".into())
+            })?;
+            enc.memory_barrier_with_resources(resources);
             Ok(())
         }
 
@@ -3507,6 +4289,7 @@ mod imp {
             enc.end_encoding();
             self.compute_encoders += 1;
             self.serial_group_active = false;
+            self.bound_pipeline_id = None;
             Ok(())
         }
 
@@ -3527,14 +4310,21 @@ mod imp {
                     "dispatch_threads cannot run while a concurrent group is active".into(),
                 ));
             }
-            let pipeline_started = Instant::now();
-            let pipe = self.ctx.pipeline(fn_name)?;
-            self.pipeline_lookup_us += pipeline_started.elapsed().as_micros() as u64;
+            let pipeline_id = self.pipeline_for_dispatch(fn_name)?;
             if self.serial_group_active {
                 let enc = self.concurrent_encoder.as_ref().ok_or_else(|| {
                     Error::Metal("serial group marked active without an encoder".into())
                 })?;
-                enc.set_compute_pipeline_state(&pipe);
+                let mut bound_pipeline_id = self.bound_pipeline_id;
+                let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+                Self::bind_pipeline_if_changed(
+                    &mut bound_pipeline_id,
+                    enc,
+                    pipeline_id,
+                    pipe,
+                    self.elide_pipeline_state,
+                );
+                self.bound_pipeline_id = bound_pipeline_id;
                 encode(enc);
                 enc.dispatch_threads(
                     MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
@@ -3552,7 +4342,7 @@ mod imp {
                             "compute_encoder",
                             "ordered_batch",
                         ));
-                    } else {
+                    } else if !self.ctx.encoder_label_elision || self.ctx.trace_dispatch {
                         enc.set_label("ordered_batch");
                     }
                     self.ordered_encoder = Some(enc.to_owned());
@@ -3562,7 +4352,16 @@ mod imp {
                 // Bit-identity is the gate; an explicit barrier is not
                 // wrapped by metal 0.29 on ComputeCommandEncoder.
                 let enc = self.ordered_encoder.as_ref().expect("ordered encoder");
-                enc.set_compute_pipeline_state(&pipe);
+                let mut bound_pipeline_id = self.bound_pipeline_id;
+                let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+                Self::bind_pipeline_if_changed(
+                    &mut bound_pipeline_id,
+                    enc,
+                    pipeline_id,
+                    pipe,
+                    self.elide_pipeline_state,
+                );
+                self.bound_pipeline_id = bound_pipeline_id;
                 encode(enc);
                 enc.dispatch_threads(
                     MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
@@ -3574,10 +4373,11 @@ mod imp {
             let enc = self.cmd.new_compute_command_encoder();
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
-            } else {
+            } else if !self.ctx.encoder_label_elision || self.ctx.trace_dispatch {
                 enc.set_label(fn_name);
             }
-            enc.set_compute_pipeline_state(&pipe);
+            let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+            enc.set_compute_pipeline_state(pipe);
             encode(enc);
             enc.dispatch_threads(
                 MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
@@ -3613,12 +4413,10 @@ mod imp {
                 ));
             }
             self.close_ordered_encoder();
-            let first_pipeline_started = Instant::now();
-            let first_pipe = self.ctx.pipeline(first_name)?;
-            self.pipeline_lookup_us += first_pipeline_started.elapsed().as_micros() as u64;
-            let second_pipeline_started = Instant::now();
-            let second_pipe = self.ctx.pipeline(second_name)?;
-            self.pipeline_lookup_us += second_pipeline_started.elapsed().as_micros() as u64;
+            let first_pipeline_id = self.pipeline_for_dispatch(first_name)?;
+            let second_pipeline_id = self.pipeline_for_dispatch(second_name)?;
+            let first_pipe = self.pipeline_for_id(first_pipeline_id, first_name)?;
+            let second_pipe = self.pipeline_for_id(second_pipeline_id, second_name)?;
             let enc = self.cmd.new_compute_command_encoder();
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(
@@ -3626,10 +4424,10 @@ mod imp {
                     "compute_encoder",
                     "ordered_pair_with_resource_barrier",
                 ));
-            } else {
+            } else if !self.ctx.encoder_label_elision || self.ctx.trace_dispatch {
                 enc.set_label("ordered_pair_with_resource_barrier");
             }
-            enc.set_compute_pipeline_state(&first_pipe);
+            enc.set_compute_pipeline_state(first_pipe);
             first_encode(enc);
             enc.dispatch_threads(
                 MTLSize::new(
@@ -3640,7 +4438,7 @@ mod imp {
                 MTLSize::new(first_tg.0 as u64, first_tg.1 as u64, first_tg.2 as u64),
             );
             enc.memory_barrier_with_resources(barrier_resources);
-            enc.set_compute_pipeline_state(&second_pipe);
+            enc.set_compute_pipeline_state(second_pipe);
             second_encode(enc);
             enc.dispatch_threads(
                 MTLSize::new(
@@ -4468,8 +5266,9 @@ mod imp {
     /// tcb.commit_and_wait()?;
     /// ```
     ///
-    /// TCB-internal trace mode (parsed once from `HAWKING_TCB_TRACE` at
-    /// construction so the hot path is a single enum compare).
+    /// TCB-internal trace mode (parsed once from `HAWKING_TCB_TRACE` when the
+    /// resident Metal context is created so token setup is a single enum
+    /// copy).
     ///
     /// - **Off** (env var unset or `=0`): zero-overhead default.
     /// - **CpuEncode** (`=1` or `=cpu`): per-dispatch CPU encoding wall time.
@@ -4571,8 +5370,14 @@ mod imp {
         has_encoded_work: bool,
         /// Host nanos spent encoding dispatches while a cost-ledger token is
         /// active. Folded into [`crate::cost_ledger::Bucket::MetalEncode`] at
-        /// commit. Zero when the ledger is off (no `Instant` on the hot path).
+        /// commit. Zero when the ledger is off.
         ledger_encode_ns: u128,
+        /// Snapshot of the token-ledger state at TCB construction. A token
+        /// command buffer is created inside one decode-token scope; keeping
+        /// this bit locally removes a TLS/atomic lookup and two clock reads
+        /// from every default (unrecorded) dispatch. The commit path still
+        /// checks the live ledger before publishing the accumulated sample.
+        ledger_recording: bool,
         /// Exact semantic dispatch composition for whole-CB GPU timestamp
         /// attribution. Indexed by [`crate::cost_ledger::GpuStage`].
         ledger_stage_dispatches: [u64; crate::cost_ledger::GpuStage::ALL.len()],
@@ -4581,16 +5386,41 @@ mod imp {
         /// Physical CBs committed while this TCB was live (split-CB mode
         /// increments per dispatch; production is 1).
         pub command_buffer_count: usize,
+        /// Per-token pipeline handle cache. The context cache protects
+        /// cross-token first creation, but taking its mutex for every one of
+        /// the hundreds of repeated Qwen dispatches is still host overhead.
+        /// Keep the handles hot for this TCB and only touch the context cache
+        /// once per distinct kernel name.
+        pipeline_cache: TokenPipelineCache,
+        /// Pipeline state is sticky while a serial/concurrent encoder group
+        /// is open. This avoids redundant state changes on repeated kernels;
+        /// per-dispatch diagnostic encoders still bind explicitly. The
+        /// cache-local ID avoids allocating a name on every pipeline change.
+        bound_pipeline_id: Option<usize>,
+        /// Resolved once per token command buffer so the control/candidate
+        /// A/B does not add an environment lookup to each dispatch.
+        elide_pipeline_state: bool,
     }
 
     impl<'ctx> TokenCommandBuffer<'ctx> {
         pub fn new(ctx: &'ctx MetalContext) -> Self {
+            Self::new_with_pipeline_cache(ctx, new_token_pipeline_cache())
+        }
+
+        /// Construct a TCB with pipeline handles retained by a resident
+        /// session. The default [`Self::new`] path remains empty for callers
+        /// that do not have a reusable token graph cache.
+        pub fn new_with_pipeline_cache(
+            ctx: &'ctx MetalContext,
+            pipeline_cache: TokenPipelineCache,
+        ) -> Self {
             let cmd = ctx.inner.queue.new_command_buffer().to_owned();
             let physical_trace = physical_command_label("command_buffer");
             if let Some((_, label)) = physical_trace.as_ref() {
                 cmd.set_label(label);
             }
-            let mode = TcbTraceMode::from_env();
+            let mode = ctx.tcb_trace_mode;
+            let ledger_recording = crate::cost_ledger::is_recording();
             let prod_cb_tracer_pool = if mode == TcbTraceMode::ProdCbGpu {
                 Some(ctx.prod_cb_tracer_pool.clone())
             } else {
@@ -4617,10 +5447,49 @@ mod imp {
                 dispatch_count: 0,
                 has_encoded_work: false,
                 ledger_encode_ns: 0,
+                ledger_recording,
                 ledger_stage_dispatches: [0; crate::cost_ledger::GpuStage::ALL.len()],
                 encoder_count: 0,
                 command_buffer_count: 0,
+                pipeline_cache,
+                bound_pipeline_id: None,
+                elide_pipeline_state: ctx.pipeline_state_elision,
             }
+        }
+
+        /// Move the resident cache back to its session after all dispatches
+        /// have been encoded. Pipeline lookup state is no longer needed by
+        /// commit/wait, so taking it before consuming the TCB is safe.
+        pub fn take_pipeline_cache(&mut self) -> TokenPipelineCache {
+            std::mem::take(&mut self.pipeline_cache)
+        }
+
+        fn ensure_pipeline(&mut self, fn_name: &str) -> Result<usize> {
+            if let Some(id) = self.pipeline_cache.id_for(fn_name) {
+                return Ok(id);
+            }
+            let pipeline = Arc::new(self.ctx.pipeline(fn_name)?);
+            let id = self.pipeline_cache.insert_new(fn_name, pipeline);
+            Ok(id)
+        }
+
+        /// Borrow the resident pipeline by its stable ID without cloning its
+        /// `Arc`. The default path performs no second name-hash lookup; the
+        /// explicit `=0` control restores the historical name-map lookup for
+        /// an independent A/B.
+        fn pipeline_for_id(
+            &self,
+            pipeline_id: usize,
+            fn_name: &str,
+        ) -> Result<&ComputePipelineState> {
+            let pipeline = if self.ctx.pipeline_id_resolution {
+                self.pipeline_cache.pipeline_at(pipeline_id)
+            } else {
+                self.pipeline_cache.pipeline_named(fn_name)
+            };
+            pipeline.ok_or_else(|| {
+                Error::Metal(format!("pipeline `{fn_name}` missing from token cache"))
+            })
         }
 
         /// Return the number of compute dispatches encoded so far.
@@ -4708,10 +5577,14 @@ mod imp {
                     "compute_encoder",
                     "concurrent_group",
                 ));
-            } else {
+            } else if !self.ctx.encoder_label_elision
+                || self.ctx.trace_dispatch
+                || self.mode != TcbTraceMode::Off
+            {
                 enc.set_label("concurrent_group");
             }
             self.concurrent_encoder = Some(enc.to_owned());
+            self.bound_pipeline_id = None;
             self.encoder_count = self.encoder_count.saturating_add(1);
             Ok(())
         }
@@ -4754,10 +5627,14 @@ mod imp {
                     "compute_encoder",
                     "serial_group",
                 ));
-            } else {
+            } else if !self.ctx.encoder_label_elision
+                || self.ctx.trace_dispatch
+                || self.mode != TcbTraceMode::Off
+            {
                 enc.set_label("serial_group");
             }
             self.concurrent_encoder = Some(enc.to_owned());
+            self.bound_pipeline_id = None;
             self.encoder_count = self.encoder_count.saturating_add(1);
             Ok(())
         }
@@ -4766,6 +5643,7 @@ mod imp {
         pub fn end_concurrent_group(&mut self) -> Result<()> {
             if let Some(enc) = self.concurrent_encoder.take() {
                 enc.end_encoding();
+                self.bound_pipeline_id = None;
             }
             Ok(())
         }
@@ -4797,11 +5675,17 @@ mod imp {
             if resources.is_empty() {
                 return Ok(());
             }
-            let mut refs: Vec<&metal::ResourceRef> = Vec::with_capacity(resources.len());
-            for resource in resources {
-                refs.push(resource);
+            if resources.len() == 2 {
+                let refs: [&metal::ResourceRef; 2] = [&**resources[0], &**resources[1]];
+                enc.use_resources(&refs, MTLResourceUsage::Read);
+            } else {
+                // Expert-table leases may retain a variable number of
+                // resources; keep the general path for those callers while
+                // avoiding a heap allocation in the fixed Qwen fanout pair.
+                let refs: Vec<&metal::ResourceRef> =
+                    resources.iter().map(|resource| &***resource).collect();
+                enc.use_resources(&refs, MTLResourceUsage::Read);
             }
-            enc.use_resources(&refs, MTLResourceUsage::Read);
             Ok(())
         }
 
@@ -4922,7 +5806,10 @@ mod imp {
             let enc = cmd.new_compute_command_encoder();
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", label));
-            } else {
+            } else if !self.ctx.encoder_label_elision
+                || self.ctx.trace_dispatch
+                || self.mode != TcbTraceMode::Off
+            {
                 enc.set_label(label);
             }
 
@@ -5011,11 +5898,11 @@ mod imp {
             // Track 3.1 / 5.1: count every kernel dispatch unconditionally.
             self.dispatch_count += 1;
             self.has_encoded_work = true;
-            // Encode wall is always collected so TOKEN_NS can close. The
-            // Instant pair is ~20 ns and is not the work being measured.
-            // Cost-ledger stage counts stay gated on is_recording().
-            let encode_t0 = Instant::now();
-            if crate::cost_ledger::is_recording() {
+            // The default path is deliberately clock-free. When a cost-ledger
+            // token was active at construction, retain the exact per-dispatch
+            // encode accounting and stage attribution.
+            let encode_t0 = self.ledger_recording.then(Instant::now);
+            if self.ledger_recording {
                 let stage = crate::cost_ledger::current_gpu_stage()
                     .unwrap_or(crate::cost_ledger::GpuStage::Untagged);
                 let slot = &mut self.ledger_stage_dispatches[stage.index()];
@@ -5027,9 +5914,11 @@ mod imp {
                     names.push(fn_name.to_owned());
                 }
             }
-            self.ledger_encode_ns = self
-                .ledger_encode_ns
-                .saturating_add(encode_t0.elapsed().as_nanos());
+            if let Some(encode_t0) = encode_t0 {
+                self.ledger_encode_ns = self
+                    .ledger_encode_ns
+                    .saturating_add(encode_t0.elapsed().as_nanos());
+            }
             result
         }
 
@@ -5052,12 +5941,21 @@ mod imp {
                 } else {
                     None
                 };
-                let pipe = self.ctx.pipeline(fn_name)?;
+                let pipeline_id = self.ensure_pipeline(fn_name)?;
                 let enc = self
                     .concurrent_encoder
                     .as_ref()
                     .expect("checked is_some above");
-                enc.set_compute_pipeline_state(&pipe);
+                let mut bound_pipeline_id = self.bound_pipeline_id;
+                let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+                CommandBatch::bind_pipeline_if_changed(
+                    &mut bound_pipeline_id,
+                    enc,
+                    pipeline_id,
+                    pipe,
+                    self.elide_pipeline_state,
+                );
+                self.bound_pipeline_id = bound_pipeline_id;
                 encode(enc);
                 enc.dispatch_threads(
                     MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
@@ -5088,19 +5986,23 @@ mod imp {
             } else {
                 None
             };
+            let pipeline_id = self.ensure_pipeline(fn_name)?;
             let cmd = self
                 .cmd
                 .as_ref()
                 .ok_or_else(|| Error::Metal("TokenCommandBuffer already committed".into()))?;
-            let pipe = self.ctx.pipeline(fn_name)?;
             let enc = cmd.new_compute_command_encoder();
             self.encoder_count = self.encoder_count.saturating_add(1);
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
-            } else {
+            } else if !self.ctx.encoder_label_elision
+                || self.ctx.trace_dispatch
+                || self.mode != TcbTraceMode::Off
+            {
                 enc.set_label(fn_name);
             }
-            enc.set_compute_pipeline_state(&pipe);
+            let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+            enc.set_compute_pipeline_state(pipe);
             encode(enc);
             enc.dispatch_threads(
                 MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
@@ -5142,6 +6044,7 @@ mod imp {
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
             let t0_cpu = Instant::now();
+            let pipeline_id = self.ensure_pipeline(fn_name)?;
             let cmd = self
                 .cmd
                 .as_ref()
@@ -5150,7 +6053,6 @@ mod imp {
                 .prod_cb_tracer
                 .as_ref()
                 .expect("ProdCbGpu path requires a tracer; constructor ensures this");
-            let pipe = self.ctx.pipeline(fn_name)?;
             let pair_index = tracer.reserve_pair();
 
             // Build a per-encoder ComputePassDescriptor with one sample
@@ -5170,10 +6072,14 @@ mod imp {
             let _ = pair_index;
             if let Some(command) = self.physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
-            } else {
+            } else if !self.ctx.encoder_label_elision
+                || self.ctx.trace_dispatch
+                || self.mode != TcbTraceMode::Off
+            {
                 enc.set_label(fn_name);
             }
-            enc.set_compute_pipeline_state(&pipe);
+            let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+            enc.set_compute_pipeline_state(pipe);
             encode(enc);
             enc.dispatch_threads(
                 MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
@@ -5208,21 +6114,25 @@ mod imp {
             encode: impl FnOnce(&metal::ComputeCommandEncoderRef),
         ) -> Result<()> {
             let t0_cpu = Instant::now();
+            let pipeline_id = self.ensure_pipeline(fn_name)?;
             let dedicated = self.ctx.inner.queue.new_command_buffer();
             let physical_trace = physical_command_label("command_buffer");
             if let Some((_, label)) = physical_trace.as_ref() {
                 dedicated.set_label(label);
             }
-            let pipe = self.ctx.pipeline(fn_name)?;
             let enc = dedicated.new_compute_command_encoder();
             self.encoder_count = self.encoder_count.saturating_add(1);
             self.command_buffer_count = self.command_buffer_count.saturating_add(1);
             if let Some((command, _)) = physical_trace.as_ref() {
                 enc.set_label(&physical_encoder_label(command, "compute_encoder", fn_name));
-            } else {
+            } else if !self.ctx.encoder_label_elision
+                || self.ctx.trace_dispatch
+                || self.mode != TcbTraceMode::Off
+            {
                 enc.set_label(fn_name);
             }
-            enc.set_compute_pipeline_state(&pipe);
+            let pipe = self.pipeline_for_id(pipeline_id, fn_name)?;
+            enc.set_compute_pipeline_state(pipe);
             encode(enc);
             enc.dispatch_threads(
                 MTLSize::new(grid.0 as u64, grid.1 as u64, grid.2 as u64),
@@ -5398,11 +6308,25 @@ mod imp {
         /// Commit the command buffer and block until the GPU finishes.
         /// Consumes self; subsequent dispatch calls would fail.
         ///
-        /// When the per-token cost ledger is **recording**, this is identical
-        /// to [`commit_and_wait_split`] (metal submit / synchronize + GPU
-        /// timestamps). When the ledger is off, behaviour is unchanged —
-        /// a single atomic load then the historical flush path.
-        pub fn commit_and_wait(self) -> Result<()> {
+        /// In an untraced production context, the default path uses the
+        /// plain commit/fence helper because this API returns no timing. That
+        /// avoids CPU clocks and GPU timeline queries. Ledger and diagnostic
+        /// modes, plus the explicit `=0` control, retain the fully-timed
+        /// [`commit_and_wait_split`] path.
+        pub fn commit_and_wait(mut self) -> Result<()> {
+            if self.ctx.commit_timing_elision
+                && self.mode == TcbTraceMode::Off
+                && !crate::cost_ledger::is_recording()
+            {
+                if let Some(cmd) = self.cmd.take() {
+                    // The caller selected the no-timing production fence and
+                    // does not consume a diagnostic status.  Keep the
+                    // command-buffer wait, but omit the extra Objective-C
+                    // status message on this explicitly untimed path.
+                    self.flush_and_commit(cmd, false);
+                }
+                return Ok(());
+            }
             self.commit_and_wait_split().map(|_| ())
         }
 
@@ -5507,9 +6431,7 @@ mod imp {
             let encode_ns = self.ledger_encode_ns as u64;
             let dispatches = self.dispatch_count as u64;
             let Some(cmd) = self.cmd.take() else {
-                return Err(Error::Metal(
-                    "TokenCommandBuffer already committed".into(),
-                ));
+                return Err(Error::Metal("TokenCommandBuffer already committed".into()));
             };
             if let Some(enc) = self.concurrent_encoder.take() {
                 enc.end_encoding();
@@ -5689,7 +6611,7 @@ mod imp {
         /// empty CB (each dispatch already self-committed); we still commit
         /// it for symmetry and flush the per-dispatch samples without adding
         /// a tcb_commit record (it would be meaningless in split mode).
-        fn flush_and_commit(&mut self, cmd: metal::CommandBuffer) {
+        fn flush_and_commit(&mut self, cmd: metal::CommandBuffer, verify_status: bool) {
             // Close any still-open concurrent group before committing the
             // CB — Metal requires all encoders be ended before commit.
             if let Some(enc) = self.concurrent_encoder.take() {
@@ -5705,15 +6627,19 @@ mod imp {
                 self.ctx.stats.commits.fetch_add(1, Ordering::Relaxed);
             }
             cmd.wait_until_completed();
-            // Fail closed on GPU errors: an errored CB can leave shared buffers
-            // half-written, which surfaces as non-deterministic greedy decode
-            // (varying route ids / dispatch counts) rather than a hard error
-            // if we only wait. Drop path cannot return Result — log loudly.
-            let status = cmd.status();
-            if status != metal::MTLCommandBufferStatus::Completed {
-                eprintln!(
-                    "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
-                );
+            if verify_status {
+                // Fail closed on GPU errors: an errored CB can leave shared
+                // buffers half-written, which surfaces as non-deterministic
+                // greedy decode (varying route ids / dispatch counts) rather
+                // than a hard error if we only wait. Drop path cannot return
+                // Result — log loudly. The explicit untimed serving path
+                // skips this extra status message after its fence.
+                let status = cmd.status();
+                if status != metal::MTLCommandBufferStatus::Completed {
+                    eprintln!(
+                        "[hawking] Metal command buffer did not complete cleanly: status={status:?}"
+                    );
+                }
             }
             match self.mode {
                 TcbTraceMode::Off => {}
@@ -5810,7 +6736,7 @@ mod imp {
                 return;
             }
             if let Some(cmd) = self.cmd.take() {
-                self.flush_and_commit(cmd);
+                self.flush_and_commit(cmd, true);
             }
         }
     }
@@ -5880,6 +6806,8 @@ mod imp {
     }
 
     /// Non-macOS stub for TokenCommandBuffer. Never constructed off-macOS.
+    pub type TokenPipelineCache = ();
+
     pub struct TokenCommandBuffer<'ctx> {
         _ctx: std::marker::PhantomData<&'ctx ()>,
         pub dispatch_count: usize,
@@ -5930,6 +6858,8 @@ mod imp {
                 "dsv4f_pack_worklist",
                 "dsv4f_worklist_fp4_matvec",
                 "dsv4f_worklist_fp4_matvec_simd",
+                "dsv4f_worklist_fp4_gate_up_swiglu_bf16",
+                "dsv4f_worklist_fp4_gate_up_swiglu_bf16_simd",
                 "dsv4f_diag_fp4_load_only_simd",
                 "dsv4f_diag_f32_matvec_simd",
                 "dsv4f_worklist_swiglu",
@@ -5969,7 +6899,9 @@ pub struct DeviceMemoryLimits {
     pub has_unified_memory: bool,
 }
 
-pub use imp::{MetalContext, PinnedBuffer, SubmittedTokenCommandBuffer, TokenCommandBuffer};
+pub use imp::{
+    MetalContext, PinnedBuffer, SubmittedTokenCommandBuffer, TokenCommandBuffer, TokenPipelineCache,
+};
 
 #[cfg(target_os = "macos")]
 pub use imp::{

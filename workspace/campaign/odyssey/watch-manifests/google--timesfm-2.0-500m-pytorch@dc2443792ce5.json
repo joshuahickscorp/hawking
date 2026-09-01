@@ -1,0 +1,19 @@
+{
+  "expected": 1995416592,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "model.safetensors"
+  ],
+  "mode": "safe",
+  "repo": "google/timesfm-2.0-500m-pytorch",
+  "resolved_sha": "dc2443792ce5516872b89b37cf1bc058c3bf0c10",
+  "revision": "dc2443792ce5516872b89b37cf1bc058c3bf0c10",
+  "sizes": {
+    ".gitattributes": 1572,
+    "README.md": 7352,
+    "config.json": 692,
+    "model.safetensors": 1995406976
+  }
+}

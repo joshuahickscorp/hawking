@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T23:17:56Z",
+  "recorded_at": "2026-09-01T05:30:20Z",
   "recorded_by": "tools/future/hmf_objects.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -175,32 +175,88 @@
    "DEVICE"
   ],
   "hcli_machine": {
-   "materialised": false,
+   "materialised": true,
    "path": "hcli/machine.py",
    "role": "Host memory admission (vm_stat, Metal working-set). Not an object fabric."
   },
   "hcli_physical_graph": {
-   "materialised": false,
+   "materialised": true,
    "path": "hcli/physical_graph.py",
    "role": "PLAN_ONLY placement/dataflow graph; synchronization is runtime_boundary/unresolved. No managed-object coherence."
   },
   "hmf_humf": {
+   "has_is_coherent": false,
+   "has_kernel_boundary": false,
+   "has_migrate": false,
+   "has_require_coherent": false,
+   "hmf_defines": [
+    "Accelerator",
+    "AcceleratorDomain",
+    "DeviceIdentity",
+    "MachineIdentity",
+    "build_hawkgpu0"
+   ],
+   "hmf_is_humf": true,
    "hmf_path": "tools/accelerator/hmf.py",
-   "hmf_present": false,
+   "hmf_present": true,
+   "humf_object_fields": [
+    "identity",
+    "logical_type",
+    "elements",
+    "dtype",
+    "materializations",
+    "owner",
+    "recompute_cost_s",
+    "next_use_hint",
+    "recompute",
+    "content_digest",
+    "unsealed_because",
+    "memory_class"
+   ],
    "humf_path": "tools/accelerator/humf.py",
-   "humf_present": false,
-   "import_error": "tools/accelerator/humf.py not importable in this worktree",
-   "imported": false
+   "humf_present": true,
+   "humf_states": [
+    "ABSENT",
+    "CLEAN",
+    "DIRTY",
+    "STALE",
+    "MATERIALIZING",
+    "TRANSFERRING",
+    "INVALID",
+    "EVICTED",
+    "UNKNOWN",
+    "CORRUPT",
+    "LOST"
+   ],
+   "imported": true,
+   "materialization_fields": [
+    "domain",
+    "representation",
+    "layout",
+    "bytes",
+    "state",
+    "payload",
+    "digest",
+    "trust",
+    "verified_at",
+    "resident_verified",
+    "resident_digest_path",
+    "ownership"
+   ],
+   "plan_picks_cheapest_known_number": true,
+   "trusted_copies_excludes_trust_unknown": true,
+   "trusted_copies_includes_asserted": true,
+   "valid_copies_names_clean_regardless_of_trust": true
   },
   "machine_genome": {
-   "materialised": false,
+   "materialised": true,
    "path": "tools/accelerator/machine_genome.py",
    "role": "SoC identity and contended-bandwidth measurement. No object-level coherence API."
   },
   "note": "HUMF/HMF already implement the copy fabric (twelve recorded fields, fail-closed transitions, trust decay, resident digest, HAWKGPU-0). They do not implement tri-state is_coherent, kernel-boundary UNKNOWN, UNDECIDABLE costs, device visibility, or HGVAS identity-without-native-pointers. This module closes those gaps as an overlay rather than a rival fabric."
  },
  "schema": "hawking.future.hmf_objects.v1",
- "seal_sha256": "ed0e289c52d0a3d109e2cf10d64135656426337381c47d8969a3f8c99907d614",
+ "seal_sha256": "eea8f82aa206ec0721f5931a6a4d285aa4036aa072635126ec62e65301790d8c",
  "selftest": {
   "boolean_collapse_refused_on_coherent": "PASS",
   "consume_for_kernel_accepts_coherent": "PASS",

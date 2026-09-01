@@ -1,0 +1,60 @@
+{
+  "schema": "hawking.flash_hot_chain_profile.v1",
+  "status": "MEASURED_CANDIDATE",
+  "benchmark_mode": "PROTECTED_FAST_CANDIDATE",
+  "source_receipt": "receipts/headless/FLASH_DEVICE_RESIDENT_L44_L46_V5/group-44-46/receipt.json",
+  "start_layer": 44,
+  "end_layer": 46,
+  "layer_count": 3,
+  "complete_wall_ns": 28639224833,
+  "GPU_ns": 93010497,
+  "average_wall_ns_per_layer": 9546408277,
+  "average_GPU_ns_per_layer": 31003499,
+  "p50_layer_ns": 36552625,
+  "p95_layer_ns": 36552625,
+  "max_layer_ns": 40171416,
+  "total_dispatches": 60,
+  "dispatches_per_layer": 20,
+  "command_buffer_count": 3,
+  "synchronization_count": 3,
+  "host_roundtrip_count": 0,
+  "host_roundtrip_bytes": 0,
+  "host_roundtrip_ns": null,
+  "source_bytes_read": 759292224,
+  "representation_bytes_read": null,
+  "device_bytes_uploaded": null,
+  "fallback_count": 0,
+  "state_residency_contract": {
+    "device_resident": true,
+    "host_roundtrip_required": false,
+    "description": "device final-state blit between layer command buffers; host snapshots disabled in hot interval"
+  },
+  "timing_decomposition_ns": {
+    "source_load_ns": 20215894291,
+    "representation_load_ns": 0,
+    "device_prepare_ns": 46644124,
+    "graph_setup_ns": 1812250,
+    "verification_ns": 0,
+    "checkpoint_ns": 915416
+  },
+  "parity_verdict": "INCONCLUSIVE",
+  "capability_verdict_if_applicable": null,
+  "gate": {
+    "compact_routed_experts_multi_layer": false,
+    "zero_mandatory_host_handoff": true,
+    "long_lived_executor": true,
+    "protected_chain_minimum_8_layers": false,
+    "fastpath_exit_gate": false
+  },
+  "claim_boundary": "Device-resident terminal-only parity probe in one native process; not FastPath exit-gate promotion because per-layer deep parity and the minimum 8-layer protected-chain requirement remain open.",
+  "next": "Remove the structural host state seam, then rerun this profile on an 8\u201316 layer protected hot chain.",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

@@ -10,7 +10,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T08:39:20Z",
+  "recorded_at": "2026-09-01T05:40:45Z",
   "recorded_by": "tools/future/protected_scheduler.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -19,7 +19,7 @@
   "PROTECTED_SCHEDULER_CAPABLE": true,
   "PROTECTED_WINDOW_AVAILABLE": false,
   "contamination_class": "HEAVY",
-  "continue_with_n": 32,
+  "continue_with_n": 33,
   "lease_present": false,
   "live_reason": "protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing",
   "live_verdict": "BLOCKED_ON_PROTECTED_WINDOW",
@@ -27,30 +27,6 @@
  },
  "category_error_refused": "PROTECTED_SCHEDULER_CAPABLE is not derived from PROTECTED_WINDOW_AVAILABLE. A busy window is BLOCKED_ON_PROTECTED_WINDOW, not scheduler-incapable",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
- "consumed_by": {
-  "lane": "G005",
-  "odyssey_launch": {
-   "criterion": "_eval_protected_scheduling",
-   "does_not_and_lease_ok": true,
-   "does_not_fabricate_lease": true,
-   "does_not_seize_lock": true,
-   "operational_flags_follow": "PROTECTED_SCHEDULER_CAPABLE",
-   "path": "tools/future/odyssey_launch.py",
-   "reads": [
-    "PROTECTED_SCHEDULER_CAPABLE",
-    "PROTECTED_WINDOW_AVAILABLE"
-   ],
-   "refusing_on_names_which_field": true
-  },
-  "orchestration": {
-   "binding_key": "protected_scheduler.py",
-   "call_bound": "tools.future.orchestration.call_bound('protected_scheduler.py', fn)",
-   "frontier_item": "FT.GPU_KERNELS.ready-protected",
-   "invoke": "tools.future.orchestration.invoke('protected_scheduler.py')",
-   "path": "tools/future/orchestration.py",
-   "species": "PROTECTED_SCHEDULER"
-  }
- },
  "did_not_fabricate_lease": true,
  "did_not_flock": true,
  "did_not_touch_lock_file": true,
@@ -61,11 +37,11 @@
    "contamination_reason": "at least one HEAVY probe fired",
    "injected_input": false,
    "live": true,
-   "source": "/Users/scammermike/.claude-grok/worktrees/a1protsched-20260831-042807/receipts/future/CONTAMINATION_SCIENCE.json"
+   "source": "/Users/scammermike/Downloads/hawking/receipts/future/CONTAMINATION_SCIENCE.json"
   },
   "continue_with": {
    "failed_closed": false,
-   "n": 32,
+   "n": 33,
    "n_dropped_protected": 0,
    "reason": "protected unit is parked; resident continues with CPU-class work that does not need a protected window",
    "unit_ids": [
@@ -77,6 +53,7 @@
     "FT.GPU_KERNELS.static-warnings",
     "FT.HCLI_SELF.emit-workunits",
     "FT.MODEL_CAPABILITY.hard-gates.drive-tools",
+    "FT.MODEL_EXECUTION.capacity-register_limited_occupancy",
     "FT.MODEL_REPRESENTATION.meta-gates-3-9",
     "FT.ODYSSEY_ADVERSARY.attacks",
     "FT.ODYSSEY_TRANSFER.re-earn",
@@ -105,12 +82,32 @@
   },
   "decide": {
    "acquires_lease": false,
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "the named flags were measured and have these values"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
+   "claim_kind": "field_value",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
    "contamination_class": "HEAVY",
+   "direct_observation": "recognized=True; protected_required=True; contamination_class='HEAVY'; lease_present=False; window_available=False; scheduler_capable=True; verdict=BLOCKED_ON_PROTECTED_WINDOW",
    "executes_benchmark": false,
+   "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "gpu_authority": false,
    "inputs_simulated": false,
+   "interpretation": "protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing",
    "kind": "DECISION",
    "lease_present": false,
+   "probe_kind": "measured_flags",
+   "probe_performed": "recognize(unit) by declared resource_class; inspect_contamination (READ CONTAMINATION_SCIENCE, never coerced QUIESCENT); inspect_lease (lsof holders, never flock); window_available = (contamination_class == QUIESCENT and lease.present); scheduler_capable is independent of window_available",
    "protected_required": true,
    "quiesces_worker": false,
    "reason": "protected-required unit cannot start: contamination_class='HEAVY' (needs QUIESCENT; at least one HEAVY probe fired); no proven HCLI lease (protected lock file(s) exist but no holder could be proven without flock; fail closed: present=false. flock would be a seizure). scheduler_capable remains true; the window is what is missing",
@@ -143,7 +140,7 @@
    "fabricated": false,
    "holders": {
     "pids": [],
-    "status": "SKIPPED"
+    "status": "OK"
    },
    "injected_input": false,
    "live": true,
@@ -237,10 +234,7 @@
   "park() refuses to park a unit that does not need protection",
   "continue_with() is frontiers.next_work(THIS_HOST_LANES), not idle and not a GPU_EXCLUSIVE substitute",
   "inspect_lease composes protected_window.read_protected_locks; flock / lockf / O_EXCL / _try_lock are never called",
-  "_eval_protected_scheduling consumes capability_report(); HANDLE operational flags follow PROTECTED_SCHEDULER_CAPABLE, never lease_ok / QUIESCENT / gpu_authority",
-  "a no-window host reports PROTECTED_SCHEDULER_CAPABLE=true and PROTECTED_WINDOW_AVAILABLE=false; refusing_on names which of the two a refusal is on",
-  "orchestration.py BINDINGS lists protected_scheduler.py -> FT.GPU_KERNELS.ready-protected / PROTECTED_SCHEDULER; call_bound and invoke are the resident path",
-  "evaluating or invoking the scheduler does not fabricate a lease, flock a bench lock, or touch a lock file"
+  "capability_report() is the shape _eval_protected_scheduling would need to read; odyssey_launch.py is not edited"
  ],
  "gpu_authority": false,
  "live_decision_today": {
@@ -253,12 +247,13 @@
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
   "this sidecar has no GPU authority and cannot produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE even when decide() returns RUNNABLE",
+  "odyssey_launch.py is not in this lane's WRITE list; _eval_protected_scheduling still ANDs lease_ok into invoke/schedule/frontier/refill",
+  "orchestration.py BINDINGS is not in the WRITE list; this module is unbound there until a later lane adds it",
   "inspect_contamination does not re-snapshot the machine; a stale receipt would be believed. Staleness is a recorded source, not a coerced class",
   "an empty .hcli/locks/*.lock file is lock_file_exists=true and present=false; lsof without a pid is not a lease",
   "tools/odyssey/protected_window.py's /tmp lease is a downloader SIGSTOP record, not the HCLI bench lock; this scheduler does not heal or write it",
   "RUNNABLE does not mean this process will execute the unit; it means the scheduler would allow it given window inputs",
-  "normalize_resource_class maps unknown classes to LIGHT_CONTROL; recognize() refuses unknown classes instead of inheriting that default",
-  "protected_scheduler.py still emits the original negative_findings strings (that module is not in this lane's WRITE list); this receipt records the consumer-side close"
+  "normalize_resource_class maps unknown classes to LIGHT_CONTROL; recognize() refuses unknown classes instead of inheriting that default"
  ],
  "never": [
   "fabricate or simulate a live lease to make anything pass",
@@ -270,10 +265,9 @@
  "no_era_vi": true,
  "no_odyssey_iv": true,
  "odyssey_launch_read_plan": {
-  "consumed": true,
-  "current_conflation": "resolved: lease_ok is not an input. invoke/schedule/frontier/refill follow PROTECTED_SCHEDULER_CAPABLE. START refusal is named PROTECTED_WINDOW_AVAILABLE",
+  "current_conflation": "lease_ok = (contamination_class == QUIESCENT) and gpu_auth; invoke/schedule/frontier/refill are all ANDed with lease_ok, so a HEAVY machine with no proven holder makes the scheduler look non-operational",
   "current_criterion": "_eval_protected_scheduling",
-  "do_not_edit": "resolved: G005 edited tools/future/odyssey_launch.py _eval_protected_scheduling to consume this receipt's two fields",
+  "do_not_edit": "tools/future/odyssey_launch.py",
   "honest_values_today": {
    "PROTECTED_SCHEDULER_CAPABLE": true,
    "PROTECTED_WINDOW_AVAILABLE": false,
@@ -283,7 +277,6 @@
    "live_verdict": "BLOCKED_ON_PROTECTED_WINDOW"
   },
   "how_to_use": "discover/invoke/schedule/verify/frontier/persist/refill for 'can the resident HANDLE protected work' AND with CAPABLE, never with AVAILABLE. Record AVAILABLE as its own field. 'can protected work START right now' is CAPABLE and AVAILABLE",
-  "refusing_on": "PROTECTED_WINDOW_AVAILABLE when CAPABLE and the window is closed; PROTECTED_SCHEDULER_CAPABLE when the scheduler is not capable; None when neither field refuses",
   "should_read": {
    "PROTECTED_SCHEDULER_CAPABLE": "tools.future.protected_scheduler.capability_report()['PROTECTED_SCHEDULER_CAPABLE']",
    "PROTECTED_WINDOW_AVAILABLE": "tools.future.protected_scheduler.capability_report()['PROTECTED_WINDOW_AVAILABLE']"
@@ -328,13 +321,13 @@
    "role": "HCLI resource_class set; requires_quiescence derived from GPU_EXCLUSIVE"
   },
   {
-   "composed_as": "_eval_protected_scheduling invokes capability_report(); HANDLE flags follow CAPABLE; START refusal is named on AVAILABLE via refusing_on. This lane edited that evaluator.",
+   "composed_as": "cited, not imported, not edited (not in WRITE list). capability_report() is the shape it would need to read",
    "path": "tools/future/odyssey_launch.py",
-   "role": "_eval_protected_scheduling \u2014 consumes CAPABLE vs AVAILABLE as separate fields; names which of the two a refusal is on"
+   "role": "_eval_protected_scheduling \u2014 the criterion this lane must satisfy honestly"
   },
   {
    "composed_as": "READ ONLY. Different lease (SIGSTOP of downloaders) than the HCLI bench lock. Not taken, not healed, not written",
-   "on_disk_in_this_worktree": false,
+   "on_disk_in_this_worktree": true,
    "path": "tools/odyssey/protected_window.py",
    "role": "G013 crash-safe pause/resume lease at /tmp/hawking_protected_window.lease"
   },
@@ -361,7 +354,7 @@
   "workunit": "one CPU_ANALYSIS unit; recognize/decide/park/continue_with against declared GPU_EXCLUSIVE without opening a window"
  },
  "schema": "hawking.future.protected_scheduler.v1",
- "seal_sha256": "2fd87a9f4a4cfff7aecd00ced901b63a28aedc2ad9732543b5405dc19a0a605e",
+ "seal_sha256": "32940eb9e92661a07306d17ef41aa2d9c61ed10d90e3a4385bcf8ef77948a940",
  "version": 1,
  "vocabulary": {
   "BLOCKED_ON_PROTECTED_WINDOW": "protected-required, and the window is not available",

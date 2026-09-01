@@ -8,6 +8,11 @@ while its gate is open, a test count written from arithmetic instead of a run.
 import json, pathlib, re, subprocess, sys
 
 CATEGORIES = 9
+CANONICAL_ERAS = ("I", "II", "III", "IV", "V")
+PROGRAM_STATUSES = {
+    "NOT_STARTED", "EXPLORING", "BUILDING", "PHYSICALLY_RUNNING",
+    "ADVERSARIALLY_VERIFIED", "INTEGRATED", "CIVILIZATION_COMPLETE",
+}
 
 
 def validate(state, goal_text=None):
@@ -17,6 +22,42 @@ def validate(state, goal_text=None):
 
     if g("active_era") != "I":
         v.append(f"active_era is {g('active_era')}: Era I is sovereign until its gates close")
+
+    # The V5 decree is a disk-addressable authority.  Do not let a regenerated
+    # state silently fall back to the superseded V1 freeze, or claim a digest
+    # that no longer identifies the file a fresh process should read.
+    if g("roadmap_version") != "H-ROADMAP_CRISPR_EXECUTION_SPECIFICATION_2026-08-27":
+        v.append("roadmap_version is not the canonical H-ROADMAP execution decree")
+    if g("civilizational_coordinate") != 0.7:
+        v.append(f"civilizational_coordinate is {g('civilizational_coordinate')!r}, not canonical 0.7")
+    roadmap_path = g("roadmap_path")
+    roadmap_hash = g("roadmap_hash")
+    if not roadmap_path or not roadmap_hash:
+        v.append("canonical roadmap path/hash missing from the ledger")
+    else:
+        path = pathlib.Path(roadmap_path)
+        if path.is_file():
+            import hashlib
+            actual = hashlib.sha256(path.read_bytes()).hexdigest()
+            if actual != roadmap_hash:
+                v.append("roadmap_hash does not match the canonical roadmap on disk")
+
+    eras = g("era_statuses")
+    if not isinstance(eras, dict) or set(eras) != set(CANONICAL_ERAS):
+        v.append("era_statuses does not represent exactly the five canonical eras")
+    else:
+        for era, row in eras.items():
+            if not isinstance(row, dict) or row.get("status") not in PROGRAM_STATUSES:
+                v.append(f"era {era} has an invalid canonical status")
+            elif not row.get("claim_boundary"):
+                v.append(f"era {era} has no claim boundary")
+
+    programs = g("program_statuses")
+    if not isinstance(programs, dict) or len(programs) != 25:
+        v.append("program_statuses does not represent all 25 canonical programs")
+    elif any(not isinstance(row, dict) or row.get("status") not in PROGRAM_STATUSES
+             for row in programs.values()):
+        v.append("program_statuses contains an invalid program status")
 
     for name, c in state.get("civilization_status", {}).items():
         ev, ob, comp = c.get("evidence_pct"), c.get("obligation_pct"), c.get("completion_pct")
@@ -145,7 +186,7 @@ def validate(state, goal_text=None):
             cmds = None
         for L in lanes:
             ex, det = L.get("executor"), L.get("detection")
-            if ex not in ("grok", "claude", "resident"):
+            if ex not in ("grok", "claude", "resident", "roadmap"):
                 v.append(f"running lane {L.get('lane')} names no known executor: {ex!r}")
                 continue
             if det not in ("definitive", "heuristic"):
@@ -169,6 +210,14 @@ def validate(state, goal_text=None):
             elif ex == "resident" and not L.get("judged_by"):
                 v.append(f"resident lane {L.get('lane')} says nothing about how it was "
                          "detected; a process that COMMITS to this repo must be named exactly")
+
+            elif ex == "roadmap":
+                if not L.get("judged_by"):
+                    v.append(f"roadmap lane {L.get('lane')} says nothing about how it was detected")
+                elif cmds is not None and L.get("alive") and not any(
+                        "ascension_qwen30_uniform_q4_repack.py" in c for c in cmds):
+                    v.append(f"running lane {L.get('lane')} claims alive but no live roadmap "
+                             "packer process exists -- a status file is not a pid")
 
             elif ex == "claude" and det != "heuristic":
                 # There is no pid for a workflow agent. Anything claiming definitive

@@ -1,0 +1,347 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T05:10:42Z",
+  "recorded_by": "tools/future/ane_probe_lab.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "capability": {
+  "materialize_graph": "caller supplies op, shape, dtype, structure",
+  "placement_evidence": "PUBLIC_API_OBSERVED only from a live MLComputePlan; inferences stay PLACEMENT_INFERRED / TIMING_INFERRED / PHYSICAL_BEHAVIOR_INFERRED",
+  "run_modes": [
+   "GPU_ONLY",
+   "ANE_ONLY",
+   "SERIAL",
+   "CONCURRENT"
+  ],
+  "time": "time.perf_counter around MLModel.predict; not a placement"
+ },
+ "claim_boundary": "Capability and runnability only. Device list is from MLModel.availableComputeDevices in this process. No graph was chosen, compiled, or timed. No ANE latency. Requested compute units are not placement.",
+ "claim_class": "CAPABILITY_AND_RUNNABILITY",
+ "compute_devices": {
+  "ane_listed": true,
+  "api": "MLModel.availableComputeDevices",
+  "cpu_listed": true,
+  "devices": [
+   {
+    "description": "<MLNeuralEngineComputeDevice: 0x10325e140>",
+    "kind": "NEURAL_ENGINE"
+   },
+   {
+    "description": "<MLGPUComputeDevice: 0x10326af40> Apple M3 Ultra",
+    "kind": "GPU"
+   },
+   {
+    "description": "<MLCPUComputeDevice: 0x10326af50>",
+    "kind": "CPU"
+   }
+  ],
+  "did_not": [
+   "treat Metal GPU presence as a Core ML GPU compute device",
+   "treat ioreg ANE classes as a placement"
+  ],
+  "error": null,
+  "evidence_class": "PUBLIC_API_OBSERVED",
+  "gpu_listed": true,
+  "is_inference": false,
+  "is_observation": true,
+  "kinds": [
+   "CPU",
+   "GPU",
+   "NEURAL_ENGINE"
+  ],
+  "macos": "Version 27.0 (Build 26A5416b)",
+  "n_devices": 3,
+  "status": "OBSERVED"
+ },
+ "coremltools": {
+  "error": "ModuleNotFoundError: No module named 'coremltools'",
+  "present": false,
+  "version": null
+ },
+ "documented_compute_units": {
+  "ANE_ONLY": {
+   "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+   "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+   "coremltools_compute_unit": "CPU_AND_NE",
+   "evidence_class": "PUBLICLY_DOCUMENTED",
+   "exclusive_without_cpu": false,
+   "is_inference": false,
+   "is_observation": true,
+   "is_placement": false,
+   "kind": "COMPUTE_UNITS",
+   "ml_compute_units": "cpuAndNeuralEngine",
+   "mode": "ANE_ONLY"
+  },
+  "CONCURRENT": {
+   "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+   "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+   "coremltools_compute_unit": "ALL",
+   "evidence_class": "PUBLICLY_DOCUMENTED",
+   "exclusive_without_cpu": false,
+   "is_inference": false,
+   "is_observation": true,
+   "is_placement": false,
+   "kind": "SCHEDULE",
+   "ml_compute_units": "all",
+   "mode": "CONCURRENT"
+  },
+  "GPU_ONLY": {
+   "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+   "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+   "coremltools_compute_unit": "CPU_AND_GPU",
+   "evidence_class": "PUBLICLY_DOCUMENTED",
+   "exclusive_without_cpu": false,
+   "is_inference": false,
+   "is_observation": true,
+   "is_placement": false,
+   "kind": "COMPUTE_UNITS",
+   "ml_compute_units": "cpuAndGPU",
+   "mode": "GPU_ONLY"
+  },
+  "SERIAL": {
+   "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+   "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+   "coremltools_compute_unit": "ALL",
+   "evidence_class": "PUBLICLY_DOCUMENTED",
+   "exclusive_without_cpu": false,
+   "is_inference": false,
+   "is_observation": true,
+   "is_placement": false,
+   "kind": "SCHEDULE",
+   "ml_compute_units": "all",
+   "mode": "SERIAL"
+  }
+ },
+ "does_not_choose_the_experiment": true,
+ "evidence_classes": [
+  "PUBLICLY_DOCUMENTED",
+  "PUBLIC_API_OBSERVED",
+  "PLACEMENT_INFERRED",
+  "TIMING_INFERRED",
+  "PHYSICAL_BEHAVIOR_INFERRED"
+ ],
+ "execution_entry_points": [
+  "materialize_graph",
+  "run_graph",
+  "run_matched_modes",
+  "inspect_placement"
+ ],
+ "existing_harness": {
+  "in_git_head": true,
+  "on_disk": true,
+  "path": "tools/future/ane_preboard.py",
+  "role": "STATIC_ONLY prepared-but-unrun Core ML / ANE contract; parser, device vocabulary, and MLComputePlan inspector are reused here",
+  "source": "ON_DISK",
+  "this_lab_does_not_import": [
+   "graph_corpus",
+   "test_matrix graphs",
+   "Flash / Qwen27 experiment recipe"
+  ]
+ },
+ "extends": "tools/future/ane_preboard.py",
+ "host": {
+  "machine": "arm64",
+  "macos": "27.0",
+  "system": "Darwin"
+ },
+ "inference_classes": [
+  "PHYSICAL_BEHAVIOR_INFERRED",
+  "PLACEMENT_INFERRED",
+  "TIMING_INFERRED"
+ ],
+ "mode_runnability": {
+  "ANE_ONLY": {
+   "assumed": false,
+   "documented": {
+    "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+    "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+    "coremltools_compute_unit": "CPU_AND_NE",
+    "evidence_class": "PUBLICLY_DOCUMENTED",
+    "exclusive_without_cpu": false,
+    "is_inference": false,
+    "is_observation": true,
+    "is_placement": false,
+    "kind": "COMPUTE_UNITS",
+    "ml_compute_units": "cpuAndNeuralEngine",
+    "mode": "ANE_ONLY"
+   },
+   "kind": "COMPUTE_UNITS",
+   "measured_by": [
+    "importlib.util.find_spec('coremltools') / coremltools import",
+    "MLModel.availableComputeDevices via xcrun swiftc -framework CoreML"
+   ],
+   "mode": "ANE_ONLY",
+   "needed_device": "NEURAL_ENGINE",
+   "runnable_now": false,
+   "why": [
+    "coremltools is not importable; cannot materialize a graph (ModuleNotFoundError: No module named 'coremltools')"
+   ]
+  },
+  "CONCURRENT": {
+   "assumed": false,
+   "documented": {
+    "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+    "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+    "coremltools_compute_unit": "ALL",
+    "evidence_class": "PUBLICLY_DOCUMENTED",
+    "exclusive_without_cpu": false,
+    "is_inference": false,
+    "is_observation": true,
+    "is_placement": false,
+    "kind": "SCHEDULE",
+    "ml_compute_units": "all",
+    "mode": "CONCURRENT"
+   },
+   "kind": "SCHEDULE",
+   "measured_by": [
+    "importlib.util.find_spec('coremltools') / coremltools import",
+    "MLModel.availableComputeDevices via xcrun swiftc -framework CoreML"
+   ],
+   "mode": "CONCURRENT",
+   "needed_device": null,
+   "runnable_now": false,
+   "why": [
+    "coremltools is not importable; cannot materialize a graph (ModuleNotFoundError: No module named 'coremltools')"
+   ]
+  },
+  "GPU_ONLY": {
+   "assumed": false,
+   "documented": {
+    "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+    "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+    "coremltools_compute_unit": "CPU_AND_GPU",
+    "evidence_class": "PUBLICLY_DOCUMENTED",
+    "exclusive_without_cpu": false,
+    "is_inference": false,
+    "is_observation": true,
+    "is_placement": false,
+    "kind": "COMPUTE_UNITS",
+    "ml_compute_units": "cpuAndGPU",
+    "mode": "GPU_ONLY"
+   },
+   "kind": "COMPUTE_UNITS",
+   "measured_by": [
+    "importlib.util.find_spec('coremltools') / coremltools import",
+    "MLModel.availableComputeDevices via xcrun swiftc -framework CoreML"
+   ],
+   "mode": "GPU_ONLY",
+   "needed_device": "GPU",
+   "runnable_now": false,
+   "why": [
+    "coremltools is not importable; cannot materialize a graph (ModuleNotFoundError: No module named 'coremltools')"
+   ]
+  },
+  "SERIAL": {
+   "assumed": false,
+   "documented": {
+    "api": "MLModelConfiguration.computeUnits / coremltools.ComputeUnit",
+    "caveat": "Apple's public MLComputeUnits has no GPU-without-CPU and no ANE-without-CPU case. Requesting GPU_ONLY sets cpuAndGPU; what actually ran is a later PUBLIC_API_OBSERVED placement, not this mapping.",
+    "coremltools_compute_unit": "ALL",
+    "evidence_class": "PUBLICLY_DOCUMENTED",
+    "exclusive_without_cpu": false,
+    "is_inference": false,
+    "is_observation": true,
+    "is_placement": false,
+    "kind": "SCHEDULE",
+    "ml_compute_units": "all",
+    "mode": "SERIAL"
+   },
+   "kind": "SCHEDULE",
+   "measured_by": [
+    "importlib.util.find_spec('coremltools') / coremltools import",
+    "MLModel.availableComputeDevices via xcrun swiftc -framework CoreML"
+   ],
+   "mode": "SERIAL",
+   "needed_device": null,
+   "runnable_now": false,
+   "why": [
+    "coremltools is not importable; cannot materialize a graph (ModuleNotFoundError: No module named 'coremltools')"
+   ]
+  }
+ },
+ "modes": [
+  "GPU_ONLY",
+  "ANE_ONLY",
+  "SERIAL",
+  "CONCURRENT"
+ ],
+ "negative_findings": [
+  "coremltools is absent; authoring/run/time refuse",
+  "MLModel.availableComputeDevices listed ['CPU', 'GPU', 'NEURAL_ENGINE']",
+  "GPU listing as reported by availableComputeDevices",
+  "this --build compiled no caller graph and timed no predict",
+  "Flash/Qwen27 corpus stays in the preboard; this lab has no campaign"
+ ],
+ "observation_classes": [
+  "PUBLICLY_DOCUMENTED",
+  "PUBLIC_API_OBSERVED"
+ ],
+ "preboard_path": "/Users/scammermike/Downloads/hawking/tools/future/ane_preboard.py",
+ "public_dtypes": [
+  "float16",
+  "float32",
+  "fp16",
+  "fp32"
+ ],
+ "purpose": "Parameterized ANE probe lab. The caller supplies (op, shape, dtype, structure) and the mode list. This receipt does not choose them.",
+ "runnable_now": {
+  "ANE_ONLY": false,
+  "CONCURRENT": false,
+  "GPU_ONLY": false,
+  "SERIAL": false
+ },
+ "runnable_now_plain": "GPU_ONLY=False ANE_ONLY=False SERIAL=False CONCURRENT=False",
+ "schema": "hawking.future.ane_probe_lab.v1",
+ "seal_sha256": "1e48939386a02b7da530b1dd7b2033f601c2fe98ecd1112d786bc48e4ad5f0ad",
+ "supported_specs": [
+  "add/elementwise",
+  "matmul/linear",
+  "mul/elementwise",
+  "sigmoid/elementwise",
+  "sigmoid/unary",
+  "silu/elementwise",
+  "silu/unary",
+  "softmax/reduction"
+ ],
+ "toolchain_preboard": {
+  "available": false,
+  "command_line_tools_only": true,
+  "coreml_framework": "/System/Library/Frameworks/CoreML.framework",
+  "coremltools": {
+   "error": "ModuleNotFoundError: No module named 'coremltools'",
+   "present": false,
+   "version": null
+  },
+  "did_not": [
+   "install any package",
+   "run xcode-select to change the active developer directory",
+   "prompt for a password",
+   "estimate an ANE placement or latency"
+  ],
+  "headline": "no usable Core ML / Xcode toolchain; everything here is a prepared-but-unrun contract",
+  "machine": "arm64",
+  "macos": "27.0",
+  "missing": [
+   "/Applications/Xcode.app is absent",
+   "active developer directory is CommandLineTools (/Library/Developer/CommandLineTools); full Xcode is required for MLComputePlan / Neural Engine compile",
+   "xcodebuild unavailable: xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance",
+   "coremltools unavailable: ModuleNotFoundError: No module named 'coremltools'"
+  ],
+  "present": [
+   "swift at /usr/bin/swift (Apple Swift version 6.4 (swiftlang-6.4.0.20.104 clang-2100.3.20.102))",
+   "/System/Library/Frameworks/CoreML.framework present (OS runtime; not a compile toolchain by itself)",
+   "platform macOS 27.0 (arm64)"
+  ],
+  "public_api_floor": "macOS 14.4+ for MLComputePlan.load(contentsOf:configuration:)",
+  "swift": "/usr/bin/swift",
+  "xcode_app": null,
+  "xcode_select_path": "/Library/Developer/CommandLineTools",
+  "xcodebuild": "xcode-select: error: tool 'xcodebuild' requires Xcode, but active developer directory '/Library/Developer/CommandLineTools' is a command line tools instance",
+  "xcodebuild_ok": false
+ },
+ "version": 1
+}

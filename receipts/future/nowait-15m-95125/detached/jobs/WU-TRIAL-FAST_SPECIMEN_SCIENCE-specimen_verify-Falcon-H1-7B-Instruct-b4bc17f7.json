@@ -1,0 +1,62 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/_bound_run.py",
+    "shell",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.receipt.json",
+    "[\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"/Users/scammermike/Downloads/hawking/tools/future/specimen_verify.py\", \"--verify\", \"tiiuae--Falcon-H1-7B-Instruct@41e72f27effb\", \"--max-seconds\", \"1800\"]"
+  ],
+  "attempts": 0,
+  "cancel_requested": false,
+  "crash_reason": null,
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.receipt.json",
+  "finished_at": 1788140257.346816,
+  "identity_status": "dead",
+  "job_id": "WU-TRIAL-FAST_SPECIMEN_SCIENCE-specimen_verify-Falcon-H1-7B-Instruct-b4bc17f7",
+  "launch_refused": false,
+  "log_paths": {
+    "stderr": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/detached/logs/WU-TRIAL-FAST_SPECIMEN_SCIENCE-specimen_verify-Falcon-H1-7B-Instruct-b4bc17f7.stderr.log",
+    "stdout": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/detached/logs/WU-TRIAL-FAST_SPECIMEN_SCIENCE-specimen_verify-Falcon-H1-7B-Instruct-b4bc17f7.stdout.log"
+  },
+  "pgid": 95169,
+  "pid": 95169,
+  "resource_class": "STATIC_ANALYSIS",
+  "resource_lease": {
+    "held": false,
+    "kind": null,
+    "reason": "this lane never takes a GPU or bench lease; flock of the protected lock would be a seizure",
+    "refused": true
+  },
+  "result_location": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.receipt.json",
+  "retry_policy": {
+    "max_attempts": 3,
+    "never_resume_mid_execution": true,
+    "never_retry_on": [
+      "cancelled",
+      "completed-with-receipt",
+      "completed-without-receipt",
+      "timed_out",
+      "unknown"
+    ],
+    "policy": "rerun",
+    "retry_on": [
+      "crashed"
+    ],
+    "source": "hcli/workunit.py RESUME_POLICY + DEFAULT_RETRY_BUDGET"
+  },
+  "returncode": 0,
+  "running_at": 1788140246.5925171,
+  "schema": "hawking.future.detached.supervision.v1",
+  "start_token": "1788140246.585201",
+  "started_at": 1788140246.535358,
+  "state": "TERMINAL",
+  "supervisor_pid": 95168,
+  "supervisor_start_token": "1788140246.535836",
+  "terminal": "completed-with-receipt",
+  "timeout_s": 24.42581295967102,
+  "workunit_id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
+  "workunit_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/detached/units/WU-TRIAL-FAST_SPECIMEN_SCIENCE-specimen_verify-Falcon-H1-7B-Instruct-b4bc17f7.workunit.json",
+  "workunit_seal_sha256": "3c155240cb9bbc0c97615f1ccb11eda2af9ff69ceaf196719bc1cea734468d28"
+}

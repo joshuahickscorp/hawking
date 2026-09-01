@@ -3,7 +3,7 @@
     "HCLI_RESTART_RESUME",
     "AGENTOS_STEERING_DURABLE"
   ],
-  "generated_at": "2026-08-23T08:49:00Z",
+  "generated_at": "2026-08-27T23:22:54Z",
   "method": "phase one runs in a child process and is SIGKILLed mid-mission; phase two is a separate interpreter that only sees the workspace",
   "results": [
     {
@@ -14,7 +14,7 @@
     {
       "name": "the killed process left its mutation lock behind",
       "ok": true,
-      "detail": "record={'acquired_at': 1787474939.944126, 'pid': 86501, 'start_time': '1787474939.865268', 'unit_id': 'stuck'}"
+      "detail": "record={'acquired_at': 1787872974.52966, 'pid': 88945, 'start_time': '1787872974.391007', 'unit_id': 'stuck'}"
     },
     {
       "name": "a lock held by a dead pid is recoverable",

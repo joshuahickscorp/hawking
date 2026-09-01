@@ -1,0 +1,37 @@
+{
+  "expected": 14351246858,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "model-00001-of-00003.safetensors",
+    "model-00002-of-00003.safetensors",
+    "model-00003-of-00003.safetensors",
+    "model.safetensors.index.json",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+  ],
+  "mode": "safe",
+  "repo": "bigcode/starcoder2-7b",
+  "resolved_sha": "bb9afde76d7945da5745592525db122d4d729eb1",
+  "revision": "bb9afde76d7945da5745592525db122d4d729eb1",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 8516,
+    "config.json": 893,
+    "generation_config.json": 116,
+    "merges.txt": 441705,
+    "model-00001-of-00003.safetensors": 4889534952,
+    "model-00002-of-00003.safetensors": 4946278984,
+    "model-00003-of-00003.safetensors": 4512091576,
+    "model.safetensors.index.json": 41641,
+    "special_tokens_map.json": 958,
+    "tokenizer.json": 2060919,
+    "tokenizer_config.json": 7877,
+    "vocab.json": 777202
+  }
+}

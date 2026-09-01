@@ -117,7 +117,7 @@ def classify_backend(
     lower = expanded.lower()
     if lower.endswith(".gguf"):
         return "llamacpp"
-    if lower.endswith(".gravity") or lower.endswith(".noetic"):
+    if lower.endswith((".gravity", ".nx", ".noetic")):
         return "noetic_native"
     if os.path.isdir(expanded):
         return "mlx"

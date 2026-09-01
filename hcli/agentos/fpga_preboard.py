@@ -28,6 +28,101 @@ def _hash(value: Any) -> str:
     return hashlib.sha256(json.dumps(value, sort_keys=True, separators=(",", ":"), default=str).encode()).hexdigest()
 
 
+def _load_architecture_atlas(repo: Path) -> Optional[Dict[str, Any]]:
+    """Load the canonical planning atlas without making it a board claim."""
+
+    path = repo / "receipts" / "headless" / "ACCELERATOR_ARCHITECTURE_ATLAS.json"
+    try:
+        value = json.loads(path.read_text())
+    except (OSError, json.JSONDecodeError):
+        return None
+    return value if isinstance(value, dict) else None
+
+
+def _atlas_model_matches(model: str, candidate: Any) -> bool:
+    if not isinstance(candidate, str):
+        return False
+    value = candidate.strip().lower().replace("_", "-")
+    if model == "qwen27":
+        return value in {"qwen27", "qwen3.8-27b", "qwen3.8-27b sealed"}
+    if model == "flash-next":
+        return value in {"flash", "flash-next"}
+    return value == model.lower().replace("_", "-")
+
+
+def _architecture_projection(model: str, atlas: Optional[Mapping[str, Any]]) -> Dict[str, Any]:
+    """Project atlas behaviors into HWIR as derived compiler hypotheses."""
+
+    if not atlas:
+        return {
+            "status": "ABSENT",
+            "label": DERIVED,
+            "reason": "canonical accelerator architecture atlas is not present",
+            "claim_boundary": "No architecture behavior was projected and no hardware timing is claimed.",
+        }
+    entries = atlas.get("entries")
+    if not isinstance(entries, list):
+        return {
+            "status": "INVALID",
+            "label": DERIVED,
+            "reason": "atlas entries are missing or not a list",
+            "claim_boundary": "Invalid planning input is not treated as an FPGA capability or timing claim.",
+        }
+    selected = []
+    for entry in entries:
+        if not isinstance(entry, Mapping):
+            continue
+        if entry.get("status") in {"BLOCKED", "REJECTED"}:
+            continue
+        if "fpga" not in entry.get("applicable_backends", []):
+            continue
+        if not any(_atlas_model_matches(model, item) for item in entry.get("applicable_models", [])):
+            continue
+        selected.append(entry)
+    selected.sort(key=lambda row: (-float(row.get("expected_value_score", 0.0)), str(row.get("behavior_id", ""))))
+    static = [row["behavior_id"] for row in selected if "STATIC_SCHEDULING" in row.get("behavior_taxonomy", [])]
+    dynamic = [row["behavior_id"] for row in selected if "DYNAMIC_SCHEDULING" in row.get("behavior_taxonomy", [])]
+    return {
+        "status": "PROJECTED",
+        "label": DERIVED,
+        "atlas_schema": atlas.get("schema"),
+        "atlas_fingerprint": atlas.get("fingerprint"),
+        "model": model,
+        "backend": "fpga",
+        "selected_behavior_ids": [row.get("behavior_id") for row in selected],
+        "selected_primitives": [row.get("hawking_primitive") for row in selected],
+        "physical_graph_mappings": {
+            row.get("behavior_id"): row.get("physical_graph_mapping") for row in selected
+        },
+        "static_skeleton": static,
+        "dynamic_slots": dynamic,
+        "hwir_realizations": [
+            {
+                "behavior_id": row.get("behavior_id"),
+                "primitive": row.get("hawking_primitive"),
+                "node_kind": "spatial_dataflow_hypothesis",
+                "status": row.get("status"),
+            }
+            for row in selected
+        ],
+        "claim_boundary": "Derived atlas-to-HWIR projection only. No physical FPGA board, bitstream, hardware timing, or U50 performance is claimed.",
+    }
+
+
+def _attach_architecture_atlas(
+    model_map: Dict[str, Any],
+    model: str,
+    atlas: Optional[Mapping[str, Any]],
+) -> Dict[str, Any]:
+    projection = _architecture_projection(model, atlas)
+    model_map["architecture_repatriation"] = projection
+    hwir = model_map.get("hwir")
+    if isinstance(hwir, dict):
+        hwir["architecture_repatriation"] = projection
+        hwir["fingerprint"] = _hash({key: value for key, value in hwir.items() if key != "fingerprint"})
+    return model_map
+
+
 @dataclass(frozen=True)
 class FPGADeviceGenome:
     device_id: str = "unselected-fpga-device"
@@ -466,6 +561,9 @@ def run_fpga_preboard(
     repo = Path(repo_root).expanduser().resolve() if repo_root else Path(__file__).resolve().parents[2]
     qwen27 = _map("qwen27")
     flash = _map("flash-next")
+    architecture_atlas = _load_architecture_atlas(repo)
+    _attach_architecture_atlas(qwen27, "qwen27", architecture_atlas)
+    _attach_architecture_atlas(flash, "flash-next", architecture_atlas)
     qwen_path = repo / "receipts" / "headless" / "QWEN27_FPGA_ORGAN_MAP.json"
     flash_path = repo / "receipts" / "headless" / "FLASH_NEXT_FPGA_ORGAN_MAP.json"
     atomic_write_json(qwen_path, qwen27)
@@ -476,6 +574,17 @@ def run_fpga_preboard(
         "generated_at": time.time(),
         "repo_root": str(repo),
         "maps": {"qwen27": str(qwen_path), "flash_next": str(flash_path)},
+        "architecture_repatriation": {
+            "status": "PRESENT" if architecture_atlas else "ABSENT",
+            "schema": architecture_atlas.get("schema") if architecture_atlas else None,
+            "fingerprint": architecture_atlas.get("fingerprint") if architecture_atlas else None,
+            "selected_counts": {
+                "qwen27": len(qwen27.get("architecture_repatriation", {}).get("selected_behavior_ids", [])),
+                "flash_next": len(flash.get("architecture_repatriation", {}).get("selected_behavior_ids", [])),
+            },
+            "label": DERIVED,
+            "claim_boundary": "Atlas projections are compiler hypotheses; they do not promote FPGA capability or timing.",
+        },
         "shared_primitives": ["packed low-bit GEMV", "norm/epilogue", "persistent state/update", "transport/link accounting", "kernel genome/cache", "telemetry/receipt verifier"],
         "model_specific": {"qwen27": [row["organ"] for row in qwen27["organs"]], "flash_next": [row["organ"] for row in flash["organs"]]},
         "physical_board": {"status": "ABSENT", "claim": False},
@@ -514,7 +623,7 @@ def main(argv: Optional[list[str]] = None) -> int:
     return 0 if report.get("status") == "PASSED" else 1
 
 
-__all__ = ["DERIVED", "FPGADeviceGenome", "FPGAProvider", "HBMGenome", "HWIR", "MockFPGAProvider", "SCHEMA", "SIMULATED", "TransportLinkSimulator", "main", "partitioner", "run_fpga_preboard", "simulate_partition"]
+__all__ = ["DERIVED", "FPGADeviceGenome", "FPGAProvider", "HBMGenome", "HWIR", "MockFPGAProvider", "SCHEMA", "SIMULATED", "TransportLinkSimulator", "_attach_architecture_atlas", "_architecture_projection", "_load_architecture_atlas", "main", "partitioner", "run_fpga_preboard", "simulate_partition"]
 
 
 if __name__ == "__main__":

@@ -3,8 +3,12 @@ from __future__ import annotations
 import json
 import os
 import time
+from datetime import datetime
 from pathlib import Path
 from typing import Any, Dict, List, Optional
+
+from .command_registry import command_names, help_text
+from .paths import find_repo_root
 
 # A per-hour rate from a window much shorter than an hour is sampling noise.
 # 4 accepts in 12.4s annualises to 1164/h — the documented lie. Five minutes
@@ -12,12 +16,23 @@ from typing import Any, Dict, List, Optional
 # explode into four-digit rates. Below that, print the raw count and window.
 MIN_ACCEPTED_RATE_WINDOW_S = 300.0
 GOAL_DISPLAY_CHARS = 72
+# /status is one screen of unwrapped lines. `evacuation_checkpoint_error`
+# alone would spend a third of the resident line, so cap the event field.
+STATUS_LINE_CHARS = 80
+# One screen. Four protected tests assert /status never exceeds this.
+STATUS_MAX_LINES = 10
+EVENT_DISPLAY_CHARS = 20
 
 
 def _fmt_unknown(value: Any) -> str:
     if value is None or value == "":
         return "unknown"
     return str(value)
+
+
+def _truncate(value: Any, limit: int) -> str:
+    text = _fmt_unknown(value)
+    return text if len(text) <= limit else text[: limit - 1] + "…"
 
 
 def _fmt_age(seconds: Any) -> str:
@@ -91,6 +106,132 @@ def _accepted_h_text(snap: Dict[str, Any]) -> str:
     return "unknown"
 
 
+def _fmt_bytes(value: Any) -> str:
+    try:
+        number = float(value)
+    except (TypeError, ValueError):
+        return "unknown"
+    for unit in ("B", "KB", "MB", "GB"):
+        if abs(number) < 1024.0:
+            return f"{number:.1f}{unit}"
+        number /= 1024.0
+    return f"{number:.1f}TB"
+
+
+def format_machine_status(
+    snapshot: Dict[str, Any], *, max_lines: int = 2
+) -> List[str]:
+    """The machine-scoped lines: resident daemon and ModelLake watcher.
+
+    ``state`` is what the supervisor last wrote; ``supervisor`` is what the
+    process table says now. They are printed side by side on purpose, so a
+    RUNNING record whose pid is gone reads as the contradiction it is.
+
+    ``max_lines=1`` collapses both onto one row. /status is capped at one
+    screen, and a mission carrying a no_progress warning already spends that
+    row -- two machine lines plus the warning put it one over. Collapsing is
+    what gives way there, rather than the cap or the warning.
+    """
+    snap = snapshot if isinstance(snapshot, dict) else {}
+    if max_lines <= 1:
+        return _machine_status_one_line(snap)
+    lines: List[str] = []
+    resident = snap.get("resident")
+    if isinstance(resident, dict) and resident.get("ambiguous"):
+        # Two live records disagree; picking one and hiding the other would
+        # be the silent guess this line exists to refuse.
+        lines.append(
+            f"Resident ambiguous: {_fmt_unknown(resident.get('root_count'))} "
+            "workspaces report state, see --workspace"
+        )
+    elif isinstance(resident, dict):
+        head = (
+            f"Resident {_fmt_unknown(resident.get('state'))} "
+            f"supervisor={_fmt_unknown(resident.get('supervisor'))} "
+            f"cycles={_fmt_unknown(resident.get('cycles'))} event="
+        )
+        tail = f" age={_fmt_age(resident.get('age_s'))}"
+        # The event is the one field with no natural bound, so it is the one
+        # that gives way -- visibly elided -- when the rest runs long.
+        # ponytail: `stop_reason` is a whole sentence and does not fit a line
+        # that is already full. It stays in /status's structured last_value.
+        budget = max(8, STATUS_LINE_CHARS - len(head) - len(tail))
+        lines.append(
+            head
+            + _truncate(resident.get("last_event"), min(EVENT_DISPLAY_CHARS, budget))
+            + tail
+        )
+    modellake = snap.get("modellake")
+    if isinstance(modellake, dict) and modellake.get("ambiguous"):
+        lines.append(
+            f"ModelLake ambiguous: {_fmt_unknown(modellake.get('root_count'))} "
+            "workspaces report state, see --workspace"
+        )
+    elif isinstance(modellake, dict):
+        lines.append(
+            f"ModelLake watcher={_fmt_unknown(modellake.get('watcher'))} "
+            f"jobs={_fmt_unknown(modellake.get('jobs'))} "
+            f"remaining={_fmt_bytes(modellake.get('remaining_bytes'))} "
+            f"sample={_fmt_age(modellake.get('sample_age_s'))}"
+        )
+    if not lines:
+        # Say it rather than printing nothing. "this host is quiet" and
+        # "/status cannot see this host" are different facts -- and only the
+        # latter means zero workspaces looked real enough to search.
+        if snap.get("workspace_roots_seen") == 0:
+            lines.append("Machine: no Hawking workspace visible, see --workspace")
+        else:
+            lines.append("Machine resident=absent modellake=absent")
+    return lines
+
+
+def _machine_status_one_line(snap: Dict[str, Any]) -> List[str]:
+    """Both machine facts on one row, within STATUS_LINE_CHARS.
+
+    Drops the fields a reader can get from ``/status``'s structured last_value
+    (supervisor pid, sample age) and keeps the two that change decisions: what
+    the resident is doing, and whether ModelLake is still pulling.
+    """
+    resident = snap.get("resident")
+    modellake = snap.get("modellake")
+    if not isinstance(resident, dict) and not isinstance(modellake, dict):
+        if snap.get("workspace_roots_seen") == 0:
+            return ["Machine: no Hawking workspace visible, see --workspace"]
+        return ["Machine resident=absent modellake=absent"]
+    if isinstance(resident, dict) and resident.get("ambiguous"):
+        left = f"Machine resident=ambiguous({_fmt_unknown(resident.get('root_count'))})"
+    elif isinstance(resident, dict):
+        left = (
+            f"Machine resident={_fmt_unknown(resident.get('state'))} "
+            f"cycles={_fmt_unknown(resident.get('cycles'))}"
+        )
+    else:
+        left = "Machine resident=absent"
+    if isinstance(modellake, dict) and modellake.get("ambiguous"):
+        right = f" modellake=ambiguous({_fmt_unknown(modellake.get('root_count'))})"
+    elif isinstance(modellake, dict):
+        right = (
+            f" modellake={_fmt_unknown(modellake.get('watcher'))} "
+            f"jobs={_fmt_unknown(modellake.get('jobs'))} "
+            f"remaining={_fmt_bytes(modellake.get('remaining_bytes'))}"
+        )
+    else:
+        right = " modellake=absent"
+    # `remaining` outranks the event string here: it is the field that says
+    # whether ModelLake is still competing for this host. The event is included
+    # only if a useful amount of it fits -- `_truncate(text, 0)` returns almost
+    # the whole string, so a zero budget has to omit the field, not shrink it.
+    budget = STATUS_LINE_CHARS - len(left) - len(right) - len(" event=")
+    event = (
+        _truncate(resident.get("last_event"), min(EVENT_DISPLAY_CHARS, budget))
+        if isinstance(resident, dict)
+        and not resident.get("ambiguous")
+        and budget >= 8
+        else ""
+    )
+    return [left + (f" event={event}" if event else "") + right]
+
+
 def format_status(snapshot: Dict[str, Any]) -> str:
     """One-screen /status. Unmeasured fields print as unknown, never as 0."""
     snap = snapshot if isinstance(snapshot, dict) else {}
@@ -142,29 +283,28 @@ def format_status(snapshot: Dict[str, Any]) -> str:
         if health and health != "ok":
             queued = provider_status.get("queued")
             queued_s = str(queued) if queued is not None else "unknown"
-            qwen_line = (
-                f"{provider_label} health=down resident=0 active=0 "
-                f"queued={queued_s} n_ctx=unknown prompt=unknown tps=unknown"
-            )
-        elif health == "ok":
-            qwen_line = (
-                f"{provider_label} health=ok resident={_fmt_unknown(provider_status.get('resident'))} "
-                f"active={_fmt_unknown(provider_status.get('active_decode'))} "
-                f"queued={_fmt_unknown(provider_status.get('queued'))} "
-                f"n_ctx={_fmt_unknown(provider_status.get('n_ctx'))} "
-                f"prompt={_fmt_unknown(provider_status.get('prompt_tokens'))} "
-                f"tps={_fmt_unknown(provider_status.get('tps'))}"
-            )
+            head = f"{provider_label} health=down resident=0 active=0 "
+            tail = f"queued={queued_s} n_ctx=unknown prompt=unknown tps=unknown"
         else:
-            qwen_line = (
-                f"{provider_label} health=unknown "
+            health_s = "ok" if health == "ok" else "unknown"
+            head = (
+                f"{provider_label} health={health_s} "
                 f"resident={_fmt_unknown(provider_status.get('resident'))} "
                 f"active={_fmt_unknown(provider_status.get('active_decode'))} "
                 f"queued={_fmt_unknown(provider_status.get('queued'))} "
+            )
+            tail = (
                 f"n_ctx={_fmt_unknown(provider_status.get('n_ctx'))} "
                 f"prompt={_fmt_unknown(provider_status.get('prompt_tokens'))} "
                 f"tps={_fmt_unknown(provider_status.get('tps'))}"
             )
+        # n_ctx/prompt_tokens carry real token counts (up to 7 digits on a
+        # long-context model) with no natural width cap, unlike the small
+        # bounded counters in `head`. Same head/tail budget technique as
+        # the resident line below: one flexible chunk truncated to fit,
+        # rather than letting the frame wrap.
+        budget = max(8, STATUS_LINE_CHARS - len(head))
+        qwen_line = head + _truncate(tail, budget)
 
     if not grok:
         grok_line = "Grok unknown"
@@ -218,17 +358,25 @@ def format_status(snapshot: Dict[str, Any]) -> str:
         f"watchdog={_fmt_unknown(watchdog)}"
     )
 
+    warning = snap.get("no_progress_warning") or snap.get("watchdog_message")
+    has_warning = bool(warning) and warning not in ("(none)", "")
+    # Eight fixed rows plus an optional warning; the machine section gets what
+    # is left of the one-screen budget. Deciding this here, rather than letting
+    # the machine lines splice in unconditionally, is what keeps a warning-
+    # carrying mission from rendering STATUS_MAX_LINES + 1.
     lines = [
         f"mission {mission_id}  phase={phase}",
         f"Goal: {goal}",
         wu_line,
         qwen_line,
         grok_line,
+        *format_machine_status(
+            snap, max_lines=STATUS_MAX_LINES - 8 - (1 if has_warning else 0)
+        ),
         cpu_line,
         mut_line,
         footer,
     ]
-    warning = snap.get("no_progress_warning") or snap.get("watchdog_message")
     if warning and warning not in ("(none)", ""):
         if snap.get("no_progress_warning") or "no_progress" in str(warning):
             lines.append(f"no_progress: {warning}")
@@ -247,6 +395,250 @@ def _workspace_root(controller: Any) -> Optional[Path]:
         return Path(os.fspath(inner))
     except TypeError:
         return None
+
+
+# --- machine-scoped observation ------------------------------------------
+# /status described only this session's controller, so a second CLI on a busy
+# host printed `health=down resident=0` while a resident supervisor and three
+# ModelLake downloads were running. These readers open the durable files those
+# processes actually write. Anything that cannot be read stays None and prints
+# as unknown; nothing here is remembered between calls.
+
+RESIDENT_STATE_REL = (".hcli", "resident", "state.json")
+# Producer: tools/odyssey/modellake_watch.py (LOCK_PATH and LOG), both under
+# <repo>/workspace/campaign/odyssey. That is the watcher's own literal layout,
+# not lab.layout.ODYSSEY_ROOT, which points somewhere else.
+MODELLAKE_LOCK_REL = ("workspace", "campaign", "odyssey", ".modellake-watch.lock")
+MODELLAKE_LOG_REL = (
+    "workspace",
+    "campaign",
+    "odyssey",
+    "downloads",
+    "modellake-watch.jsonl",
+)
+# The watcher log grows without bound (580 MB observed). A watcher_sample row
+# is a few KB and lands every 10s, so a bounded tail always contains one.
+MODELLAKE_TAIL_BYTES = 128 * 1024
+
+
+def _status_roots(
+    controller: Any, *, repo_root: Optional[Path] = None
+) -> List[Path]:
+    """Where host state may live: session workspace, resolved workspace, repo.
+
+    A session opened in a scratch directory must still see the machine, so
+    this also tries `resolve_workspace()` -- the existing HCLI_WORKSPACE /
+    `.hcli`-`.haider` ancestor walk-up, already built for exactly this and
+    already wired into mission commands, but never into /status until now.
+    ``repo_root`` overrides the live `find_repo_root()` call; production
+    never passes it, tests use it to exercise the stamped-install fallback
+    (which always resolves to *this* checkout when the test itself runs from
+    inside it) without faking `__file__`.
+    """
+    from .runtime import resolve_workspace
+
+    roots: List[Path] = []
+    for candidate in (
+        _workspace_root(controller),
+        resolve_workspace(),
+        repo_root if repo_root is not None else find_repo_root(),
+    ):
+        if candidate is not None and candidate not in roots:
+            roots.append(candidate)
+    return roots
+
+
+# The state roots SUPERWAVE_STATE.md documents for this repo, plus `.git` for
+# a fresh checkout that has not written any of them yet. Not a registry --
+# the same on-disk evidence `_resident_status`/`_modellake_status` already
+# read from -- just checked before trusting a guessed root at all.
+# Evidence that is actually DISTINCTIVE to Hawking. The first list accepted a
+# bare `.git`, so every git repository on the machine read as a Hawking
+# workspace, and `resolve_workspace()` walks up to the filesystem root, so one
+# stray `.hcli` left in the system tmp dir did too. On any developer box that
+# made `workspace_roots_seen` non-zero with zero real roots present, which fell
+# straight back to the misleading "absent" line the search exists to replace.
+#
+# The roadmap is unmistakable on its own. Runtime state plus receipts together
+# is the other honest signature: a scratch dir has neither, a stamped install
+# snapshot has no receipts, and a stray `.hcli` has no receipts beside it.
+_DECISIVE_MARKERS = (Path("civilization") / "ROADMAP_STATE.json",)
+_CORROBORATING_MARKERS = (Path("receipts"), Path(".hcli"))
+
+
+def _looks_like_hawking_root(path: Optional[Path]) -> bool:
+    """Cheap evidence *path* is a real Hawking workspace, not a guess.
+
+    A stamped install snapshot (no vcs metadata, no state dirs) or a plain
+    scratch directory fails this. "This host is quiet" and "/status cannot
+    see this host" are different facts; this is what tells them apart.
+    """
+    if path is None:
+        return False
+    try:
+        if any((path / marker).exists() for marker in _DECISIVE_MARKERS):
+            return True
+        return all((path / marker).is_dir() for marker in _CORROBORATING_MARKERS)
+    except OSError:
+        return False
+
+
+def _visible_status_roots(
+    controller: Any, *, repo_root: Optional[Path] = None
+) -> List[Path]:
+    """``_status_roots``, filtered to candidates that look like a real host."""
+    return [
+        root
+        for root in _status_roots(controller, repo_root=repo_root)
+        if _looks_like_hawking_root(root)
+    ]
+
+
+def _multiple_hits(roots: List[Path], rel: tuple) -> bool:
+    """True when more than one visible root independently has this file.
+
+    Used to tell a defined search order (this root, then that one) apart
+    from an actual conflict -- two live records that disagree -- which must
+    not be resolved by silently picking the first and dropping the rest.
+    """
+    return sum(1 for root in roots if root.joinpath(*rel).is_file()) > 1
+
+
+def _multiple_modellake_hits(roots: List[Path]) -> bool:
+    return (
+        sum(
+            1
+            for root in roots
+            if root.joinpath(*MODELLAKE_LOCK_REL).is_file()
+            or root.joinpath(*MODELLAKE_LOG_REL).is_file()
+        )
+        > 1
+    )
+
+
+def _pid_liveness(pid: Any, token: Any) -> str:
+    """``live`` / ``dead`` / ``none``. Never ``live`` on a pid alone.
+
+    A recycled pid answers ``kill(pid, 0)`` happily, so the recorded start
+    token has to match too. An unreadable token is not evidence of death --
+    the pid check already passed -- so that case stays ``live``.
+    """
+    from .resources import pid_is_alive, process_start_token
+
+    try:
+        number = int(pid)
+    except (TypeError, ValueError):
+        return "none"
+    if number <= 0:
+        return "none"
+    if not pid_is_alive(number):
+        return "dead"
+    if token is None:
+        return "live"
+    observed = process_start_token(number)
+    return "live" if observed is None or str(observed) == str(token) else "dead"
+
+
+def _resident_status(roots: List[Path]) -> Optional[Dict[str, Any]]:
+    """The durable resident record a host supervisor left, or None."""
+    for root in roots:
+        path = root.joinpath(*RESIDENT_STATE_REL)
+        if not path.is_file():
+            continue
+        try:
+            state = json.loads(path.read_text(encoding="utf-8"))
+        except (OSError, UnicodeError, json.JSONDecodeError):
+            continue
+        if not isinstance(state, dict):
+            continue
+        updated = _float_or_none(state.get("updated_at"))
+        if updated is None:
+            try:
+                updated = path.stat().st_mtime
+            except OSError:
+                updated = None
+        return {
+            "state": state.get("state"),
+            "supervisor": _pid_liveness(
+                state.get("supervisor_pid"), state.get("supervisor_start_token")
+            ),
+            "pid": state.get("supervisor_pid"),
+            "worker": _pid_liveness(
+                state.get("worker_pid"), state.get("worker_start_token")
+            ),
+            "cycles": state.get("cycles"),
+            "last_event": state.get("last_event"),
+            "stop_reason": state.get("stop_reason"),
+            "age_s": None if updated is None else max(0.0, time.time() - updated),
+            "state_path": str(path),
+        }
+    return None
+
+
+def _last_watcher_sample(path: Path) -> Optional[Dict[str, Any]]:
+    """Last complete ``watcher_sample`` row from a bounded tail of the JSONL."""
+    try:
+        size = path.stat().st_size
+        with path.open("rb") as handle:
+            handle.seek(max(0, size - MODELLAKE_TAIL_BYTES))
+            chunk = handle.read()
+    except OSError:
+        return None
+    for line in reversed(chunk.decode("utf-8", "replace").splitlines()):
+        if '"watcher_sample"' not in line:
+            continue
+        try:
+            row = json.loads(line)
+        except json.JSONDecodeError:
+            # The first line of the tail is usually a half row. Keep looking.
+            continue
+        if isinstance(row, dict) and row.get("event") == "watcher_sample":
+            return row
+    return None
+
+
+def _sample_age_s(sample: Optional[Dict[str, Any]]) -> Optional[float]:
+    stamp = (sample or {}).get("ts")
+    if not stamp:
+        return None
+    try:
+        born = datetime.fromisoformat(str(stamp)).timestamp()
+    except ValueError:
+        return None
+    return max(0.0, time.time() - born)
+
+
+def _modellake_status(roots: List[Path]) -> Optional[Dict[str, Any]]:
+    """What the detached ModelLake watcher is doing, or None if it never ran.
+
+    Job count and remaining bytes come from the watcher's own last sample, so
+    a dead watcher reports its last observation with a visible sample age
+    rather than a fresh-looking number.
+    """
+    for root in roots:
+        lock = root.joinpath(*MODELLAKE_LOCK_REL)
+        log = root.joinpath(*MODELLAKE_LOG_REL)
+        if not lock.is_file() and not log.is_file():
+            continue
+        try:
+            pid = int(lock.read_text(encoding="utf-8").strip())
+        except (OSError, UnicodeError, ValueError):
+            pid = None
+        sample = _last_watcher_sample(log) or {}
+        jobs = sample.get("active_jobs")
+        return {
+            # The watcher holds an flock on this file for its whole life, so
+            # the pid in it identifies the incarnation; there is no start
+            # token to check, only whether that pid is still there.
+            "watcher": _pid_liveness(pid, None),
+            "pid": pid,
+            "jobs": len(jobs) if isinstance(jobs, list) else None,
+            "job_names": jobs if isinstance(jobs, list) else None,
+            "remaining_bytes": sample.get("active_remaining_bytes"),
+            "free_bytes": sample.get("free_bytes"),
+            "sample_age_s": _sample_age_s(sample),
+        }
+    return None
 
 
 def _load_mission_state(controller: Any) -> Optional[Dict[str, Any]]:
@@ -463,6 +855,23 @@ def enrich_status_snapshot(controller: Any, snap: Dict[str, Any]) -> Dict[str, A
     else:
         snap.setdefault("watchdog", None)
 
+    # Machine scope. Measured here rather than defaulted, because the whole
+    # point is that these outlive this session's controller. Only roots that
+    # look like a real Hawking workspace count -- `workspace_roots_seen`
+    # lets the formatter tell "zero visible" apart from "visible but quiet".
+    roots = _visible_status_roots(controller)
+    snap["workspace_roots_seen"] = len(roots)
+
+    resident = _resident_status(roots)
+    if resident is not None and _multiple_hits(roots, RESIDENT_STATE_REL):
+        resident = dict(resident, ambiguous=True, root_count=len(roots))
+    snap["resident"] = resident
+
+    modellake = _modellake_status(roots)
+    if modellake is not None and _multiple_modellake_hits(roots):
+        modellake = dict(modellake, ambiguous=True, root_count=len(roots))
+    snap["modellake"] = modellake
+
     return snap
 
 
@@ -482,23 +891,10 @@ def _status_has_observed_fields(snap: Dict[str, Any]) -> bool:
     return False
 
 
-REQUIRED_COMMANDS = (
-    "/help",
-    "/status",
-    "/models",
-    "/model",
-    "/goal",
-    "/ultragoal",
-    "/mission",
-    "/steer",
-    "/grok",
-    "/cancel",
-    "/context",
-    "/compact",
-    "/clear",
-    "/resume",
-    "/exit",
-)
+# Derived, never hand-maintained. This tuple and /help used to be two lists
+# and they had already drifted: /tools, /provider and /flash-next were
+# advertised by help and missing here. hcli/command_registry.py is the source.
+REQUIRED_COMMANDS = command_names()
 
 
 def _model_path(model: Any) -> str:
@@ -523,22 +919,12 @@ def _model_name(model: Any) -> str:
     )
 
 
-def _fmt_unknown(value: Any) -> str:
-    if value is None or value == "":
-        return "unknown"
-    return str(value)
-
-
-def _fmt_age(seconds: Any) -> str:
-    if seconds is None:
-        return "unknown"
+def _mtime(path: Path) -> float:
+    """Sort key that survives a file vanishing mid-listing."""
     try:
-        value = float(seconds)
-    except (TypeError, ValueError):
-        return "unknown"
-    if value < 10:
-        return f"{value:.1f}s"
-    return f"{int(round(value))}s"
+        return path.stat().st_mtime
+    except OSError:
+        return 0.0
 
 
 class CommandHandler:
@@ -575,27 +961,7 @@ class CommandHandler:
         return handler(arg)
 
     def _cmd_help(self, arg: str) -> str:
-        text = (
-            "Commands:\n"
-            "  /help - show this help\n"
-            "  /status - show session status\n"
-            "  /models - list available models\n"
-            "  /model - select model\n"
-            "  /tools - list typed AgentOS tools\n"
-            "  /provider - show the selected provider profile\n"
-            "  /flash-next - show the pinned Flash-Next acquisition identity\n"
-            "  /goal - set active goal\n"
-            "  /ultragoal - create or show the durable Goal + ledger + DAG\n"
-            "  /mission - run a persistent mission\n"
-            "  /steer - queue steering instruction\n"
-            "  /grok - delegate, audit, consult, or inspect a Grok task\n"
-            "  /cancel - cancel the active mission\n"
-            "  /context - show context summary\n"
-            "  /compact - compact context\n"
-            "  /clear - clear transcript (does not forget the mission)\n"
-            "  /resume - resume session\n"
-            "  /exit - exit HCLI"
-        )
+        text = help_text()
         self.last_value = text
         return text
 
@@ -618,12 +984,17 @@ class CommandHandler:
         session = getattr(self.controller, "session", None)
         if session is None:
             return "No active session"
-        text = (
-            f"Session: {session.id}\n"
-            f"Goal: {session.goal or '(none)'}\n"
-            f"Runtimes: {session.runtime_count}\n"
-            f"Model: {session.model or '(default)'}\n"
-            f"Messages: {len(session.messages)}"
+        # The machine outlives this session either way, so the thin session
+        # summary carries the same host lines the full snapshot does.
+        text = "\n".join(
+            [
+                f"Session: {session.id}",
+                f"Goal: {session.goal or '(none)'}",
+                f"Runtimes: {session.runtime_count}",
+                f"Model: {session.model or '(default)'}",
+                f"Messages: {len(session.messages)}",
+                *format_machine_status(snap),
+            ]
         )
         self.last_value = text
         return text
@@ -922,10 +1293,113 @@ class CommandHandler:
         self.last_value = True
         return "Cancellation requested."
 
+    def _paste_cache(self):
+        from .paste_cache import PasteCache
+
+        return PasteCache(_workspace_root(self.controller))
+
     def _cmd_context(self, arg: str) -> str:
-        text = self.controller.context_summary()
-        self.last_value = text
-        return text
+        """Context summary, plus the disposable paste cache.
+
+        ``drop`` and ``clear-pastes`` reach PasteCache and nothing else. Every
+        id it accepts must match its ``paste_<stamp>_<sha8>`` pattern AND
+        resolve to a direct child of ``<root>/.hcli/pastes``, so there is no
+        spelling of this command that can delete a receipt, mission state, or
+        evidence -- those live in sibling directories a paste id cannot name.
+        """
+        usage = (
+            "Commands:\n"
+            "  /context - context summary\n"
+            "  /context list - list cached pastes, newest first\n"
+            "  /context drop <paste-id> - delete one cached paste\n"
+            "  /context clear-pastes - delete every cached paste"
+        )
+        verb, _, rest = (arg or "").strip().partition(" ")
+        verb, rest = verb.lower(), rest.strip()
+
+        if not verb:
+            text = self.controller.context_summary()
+            try:
+                text += f" pastes={len(self._paste_cache().list())}"
+            except OSError:
+                text += " pastes=unknown"
+            self.last_value = text
+            return text
+
+        if verb == "list":
+            refs = self._paste_cache().list()
+            self.last_value = [ref.to_dict() for ref in refs]
+            if not refs:
+                return "No cached pastes"
+            return "\n".join(
+                ["Cached pastes (newest first):"]
+                + [f"  {ref.context_ref()}" for ref in refs]
+            )
+
+        if verb == "drop":
+            if not rest:
+                return "Usage: /context drop <paste-id>"
+            try:
+                dropped = self._paste_cache().drop(rest)
+            except ValueError as exc:
+                self.last_value = str(exc)
+                return str(exc)
+            self.last_value = {"dropped": [rest] if dropped else []}
+            return f"Dropped paste {rest}" if dropped else f"No such paste: {rest}"
+
+        if verb == "clear-pastes":
+            # keep_last=0 is PasteCache's own way to say "empty it"; prune
+            # refuses to run without an explicit policy.
+            dropped = self._paste_cache().prune(keep_last=0)
+            self.last_value = {"dropped": dropped}
+            return f"Dropped {len(dropped)} paste(s)"
+
+        self.last_value = usage
+        return usage
+
+    def _cmd_receipts(self, arg: str) -> str:
+        """Durable run receipts, newest first. hcli.engine writes one per goal."""
+        limit = 10
+        if arg.strip():
+            try:
+                limit = max(1, int(arg.strip()))
+            except ValueError:
+                return "Usage: /receipts [count]"
+        root = _workspace_root(self.controller)
+        directory = None if root is None else root / ".hcli" / "receipts"
+        if directory is None or not directory.is_dir():
+            self.last_value = []
+            return "No receipts"
+        now = time.time()
+        rows = []
+        for path in sorted(directory.glob("*.json"), key=_mtime, reverse=True)[:limit]:
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                data = {}
+            if not isinstance(data, dict):
+                data = {}
+            mtime = _mtime(path)
+            rows.append(
+                {
+                    "path": str(path),
+                    "goal_id": data.get("goal_id") or path.stem,
+                    "status": data.get("status"),
+                    "kind": data.get("kind"),
+                    "age_s": None if mtime <= 0 else max(0.0, now - mtime),
+                }
+            )
+        self.last_value = rows
+        if not rows:
+            return "No receipts"
+        return "\n".join(
+            ["Receipts (newest first):"]
+            + [
+                f"  {row['goal_id']} status={_fmt_unknown(row['status'])} "
+                f"kind={_fmt_unknown(row['kind'])} age={_fmt_age(row['age_s'])}"
+                for row in rows
+            ]
+        )
 
     def _cmd_compact(self, arg: str) -> str:
         self.controller.compact_context()
@@ -972,3 +1446,12 @@ class CommandHandler:
 
     def _cmd_stop(self, arg: str) -> str:
         return self._cmd_cancel(arg)
+
+
+# `/flash-next` carries a dash and no Python identifier can. The dispatcher
+# looks up `_cmd_` + the name, so /help advertised a command that answered
+# "Unknown command: /flash-next". Bind the dashed attribute instead of
+# teaching the lookup a spelling rule -- a direct
+# `getattr(handler, "_cmd_" + name[1:])`, which is how the ingress tests
+# probe wiring, then finds it too.
+setattr(CommandHandler, "_cmd_flash-next", CommandHandler._cmd_flash_next)

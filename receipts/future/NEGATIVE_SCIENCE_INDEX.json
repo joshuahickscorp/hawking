@@ -153,7 +153,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-31T11:28:58Z",
+  "recorded_at": "2026-09-01T06:06:59Z",
   "recorded_by": "tools/future/negative_index.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -244,6 +244,14 @@
    },
    {
     "family": "butterfly",
+    "n": 1
+   },
+   {
+    "family": "byte_count_times_organ_average",
+    "n": 1
+   },
+   {
+    "family": "bytes_traded_for_decode_arithmetic",
     "n": 1
    },
    {
@@ -1114,7 +1122,7 @@
    },
    {
     "model": "qwen3.8-27b",
-    "n": 53
+    "n": 55
    },
    {
     "model": "unrecorded",
@@ -1205,6 +1213,13 @@
     "n_unparsed": 1,
     "origin": "disk",
     "path": "receipts/future/DELTANET_GENERATED_TRANSITION.json"
+   },
+   {
+    "n_parsed": 2,
+    "n_scars": 2,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/future/ECONOMICS_CALIBRATION.json"
    },
    {
     "n_parsed": 0,
@@ -1440,10 +1455,10 @@
    "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
    "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
   ],
-  "n_parsed": 669,
-  "n_refuse_eligible": 597,
-  "n_scars": 683,
-  "n_sources": 44,
+  "n_parsed": 671,
+  "n_refuse_eligible": 599,
+  "n_scars": 685,
+  "n_sources": 45,
   "n_unparsed": 14
  },
  "evidence_class": "STATIC_ONLY",
@@ -1457,7 +1472,7 @@
   "Sparse-checkout ingest via git show HEAD:<path> so missing-on-disk is not treated as missing-in-git."
  ],
  "gpu_authority": false,
- "head": "4f32126616f1037bd4d5ab4f8419bae3e6948b81",
+ "head": "ec0d4d1fb89bf7f9b4b38f4a797e3bf999c8f15e",
  "how_to_use": {
   "proposal_keys": [
    "model",
@@ -4015,6 +4030,58 @@
    "verdict": "unrecorded"
   },
   {
+   "claim_refuted": "any representation that stores fewer bytes at the cost of more decode FMA per weight byte",
+   "failure_mechanism": "A REPRESENTATION CHANGE THAT TRADES BYTES FOR DECODE ARITHMETIC TRADES A FREE RESOURCE FOR THE BINDING ONE. broadcast_aux bytes measure 0.000 ms/GB while stripping arithmetic at identical bytes buys 1.51x (MLP_ALU_ROOFLINE ARM A), so the trade is negative before it starts. Both attempts went the wrong way and were measured doing it: the incumbent decodes at 1.3333 FMA/weight-byte, aux_u8_lut at 2.0, aux_u8_native at 2.5. That is aux_u8's measured slowdown explained without...",
+   "hypothesis_family": "bytes_traded_for_decode_arithmetic",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "BYTES_TRADED_FOR_DECODE_ARITHMETIC",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/ECONOMICS_CALIBRATION.json#BYTES_TRADED_FOR_DECODE_ARITHMETIC",
+   "source_origin": "disk",
+   "source_path": "receipts/future/ECONOMICS_CALIBRATION.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "any projection of token time from a byte count",
+   "failure_mechanism": "BYTE_COUNT x ORGAN_AVERAGE_RATE IS NOT A VALID COST MODEL WHEN BYTE CLASSES HAVE DIFFERENT PHYSICAL BEHAVIOUR. Dropping fractions of each stream and timing it: codes_keep_50 is faster than 2*MAD, aux_keep_50 is NOT. weight_codes bill at 0.547282 ms/GB (an effective 1827.21 GB/s, not the 344.1 organ average); broadcast_aux bills at 0.0. Billing an auxiliary byte at the organ average credited quantize_aux_u8 with 1.99 TPS and group_size_256 with 3.08 on the 71 ladder. Both a...",
+   "hypothesis_family": "byte_count_times_organ_average",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "BYTE_COUNT_TIMES_ORGAN_AVERAGE",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/ECONOMICS_CALIBRATION.json#BYTE_COUNT_TIMES_ORGAN_AVERAGE",
+   "source_origin": "disk",
+   "source_path": "receipts/future/ECONOMICS_CALIBRATION.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
    "claim_refuted": "unrecorded",
    "failure_mechanism": "unrecorded",
    "hypothesis_family": "unrecorded",
@@ -4380,7 +4447,7 @@
   },
   {
    "claim_refuted": "F(x)=down(silu(gate(x))*up(x)) on the teacher corpus",
-   "failure_mechanism": "the UMBRELLA closure, MLP_FUNCTION_REPLACEMENT_CLOSED. Every bottleneck-shaped family died (rank, dictionary, conditional, generated-block, nonlinear generator, factorwise), and the full-width structured operators died too. The DISTILLED CONTROL is what closes it: with no narrow layer anywhere it BEATS the mean predictor (0.442 vs 0.859 pooled) yet still cannot carry F under the incumbent 5,347,795,776 bytes. A control with more capacity than any structured family and no s...",
+   "failure_mechanism": "the UMBRELLA closure, MLP_FUNCTION_REPLACEMENT_CLOSED. Every bottleneck-shaped family died (rank, dictionary, conditional, generated-block, nonlinear generator, factorwise), and the full-width structured operators died too. The DISTILLED CONTROL is what closes it: with no narrow layer anywhere it BEATS the mean predictor yet still cannot carry F under the incumbent ledger. A control with more capacity than any structured family and no structural constraint at all still fai...",
    "hypothesis_family": "mlp_function_replacement",
    "keys_filled": 4,
    "level": "MODEL_SPECIFIC",
@@ -4396,7 +4463,7 @@
    "original_id": "MLP_FUNCTION_REPLACEMENT",
    "parse_status": "PARSED",
    "refuse_eligible": true,
-   "reopen_condition": "a materially larger byte budget, a different parent, or an operator class that is neither an r-bottleneck nor a full-width structured transform",
+   "reopen_condition": "unrecorded",
    "representation": "unrecorded",
    "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MLP_FUNCTION_REPLACEMENT",
    "source_origin": "disk",
@@ -19412,6 +19479,6 @@
   }
  ],
  "schema": "hawking.future.negative_index.v1",
- "seal_sha256": "f73fd58d632d9ddfbc7d6a24b82d419ab1546ac4963bd56816025ee4e0e3b0db",
+ "seal_sha256": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
  "version": 1
 }

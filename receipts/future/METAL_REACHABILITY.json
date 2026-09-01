@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:46:08Z",
+  "recorded_at": "2026-09-01T05:59:53Z",
   "recorded_by": "tools/future/metal_reachability.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -71,19 +71,59 @@
   "workunit": "one CPU_ANALYSIS unit; cheap; no GPU authority"
  },
  "schema": "hawking.future.metal_reachability.v1",
- "seal_sha256": "0c12510bdef007e13465069d38128daa55e510e775739f563afd10198832b73d",
+ "seal_sha256": "d6c35529da9dc9dfca62a527cfb4e6212054542e8729d1989e2a2b3853d26273",
  "verdict": {
+  "alternatives": [
+   {
+    "consistent_with_claim": true,
+    "consistent_with_observation": true,
+    "hypothetical": "this process saw a Metal device, so the host has one"
+   }
+  ],
+  "causality_verdict": "SUPPORTED",
   "claim": "this host has no Metal-capable GPU",
+  "claim_kind": "device_present",
+  "confidence": {
+   "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+   "level": "HIGH",
+   "would_lower": "a demonstration that the observation is consistent with the claim being false",
+   "would_raise": "independent replication of the same probe"
+  },
   "different_remedies": {
    "a process that cannot see a present GPU": "change how the process is launched, then re-run the capture",
    "if the host had no GPU": "acquire hardware; nothing else helps"
   },
+  "direct_observation": "system_default='Apple M3 Ultra'; n_devices=1; devices=['Apple M3 Ultra']",
+  "falsifier": "repeat the enumeration; a device appearing or disappearing settles presence",
+  "interpretation": "this process saw a Metal device ('Apple M3 Ultra'); the campaign claim 'this host has no Metal-capable GPU' is falsified as a host property",
+  "probe_kind": "device_enumeration",
+  "probe_performed": "Swift Metal enumeration: MTLCreateSystemDefaultDevice() and MTLCopyAllDevices(); no command queue created, no work submitted",
   "runtime_binding": {
+   "alternatives": [
+    {
+     "consistent_with_claim": true,
+     "consistent_with_observation": true,
+     "hypothetical": "this process saw a Metal device, so the host has one"
+    }
+   ],
+   "causality_verdict": "SUPPORTED",
    "claim": "this host has no Metal-capable GPU",
+   "claim_kind": "device_present",
+   "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+   },
    "different_remedies": {
     "a process that cannot see a present GPU": "change how the process is launched, then re-run the capture",
     "if the host had no GPU": "acquire hardware; nothing else helps"
    },
+   "direct_observation": "system_default='Apple M3 Ultra'; n_devices=1; devices=None",
+   "falsifier": "repeat the enumeration; a device appearing or disappearing settles presence",
+   "interpretation": "this process saw a Metal device ('Apple M3 Ultra'); the campaign claim 'this host has no Metal-capable GPU' is falsified as a host property",
+   "probe_kind": "device_enumeration",
+   "probe_performed": "Swift Metal enumeration: MTLCreateSystemDefaultDevice() and MTLCopyAllDevices(); no command queue created, no work submitted",
    "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
    "what_this_does_not_establish": [
     "that the blocked capture will now succeed; that binary was not run here",

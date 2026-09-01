@@ -1,0 +1,274 @@
+{
+  "claim_boundary": "This receipt proves only a contiguous exact source-BF16 linear-attention prefix. It is not a 48-layer Flash token, not greedy decode, not TPS/EBPW qualification, and not HCLI resident promotion.",
+  "complete_system_ebpw": null,
+  "complete_token_runtime": "NOT_TESTED",
+  "elapsed_wall_ns": 51941292875,
+  "execution": {
+    "device": "Apple M3 Ultra",
+    "fallback_count": 0,
+    "host_activation_roundtrips": 2,
+    "layer_graph_dispatches": 20,
+    "native_source_bf16": true,
+    "provider": "apple_metal",
+    "source_payload_bytes_read": 759292224,
+    "state_handoff": "explicit f32 host snapshot between layer command buffers; no hidden fallback",
+    "total_command_buffers": 3,
+    "total_dispatches": 60
+  },
+  "first_physical_failure_boundary": {
+    "layer": 47,
+    "layer_type": "full_attention",
+    "next_action": "bind source-BF16 full-attention projections, RoPE/KV cache, gated attention and residual parity before claiming a complete token",
+    "reason": "Flash full-attention Qwen4-Exp Metal graph is not yet implemented in the source-BF16 executor",
+    "required_geometry": {
+      "head_dim": 256,
+      "kv_heads": 2,
+      "query_heads": 24,
+      "rotary_fraction": 0.25
+    }
+  },
+  "flash_tps": null,
+  "layers": [
+    {
+      "command_buffers": 1,
+      "cpu_oracle_ns": 1700175625,
+      "device_prepare_ns": 16453417,
+      "dispatches": 20,
+      "final_state": {
+        "cosine": 0.9999999999999664,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 9.5367431640625e-7,
+        "rmse": 6.650619627372603e-8,
+        "within_tolerance": true
+      },
+      "gpu_ns": [
+        27766750
+      ],
+      "graph_setup_ns": 556542,
+      "host_ns": [
+        38458250
+      ],
+      "layer": 44,
+      "layer_type": "linear_attention",
+      "output_sha256": "fb38f20b430c0fb16d845d8d1b0f993ae6062e065cfcee8cc50352b93c146daa",
+      "route_ids_expected": [
+        56,
+        263,
+        433,
+        209,
+        277,
+        12,
+        111,
+        373,
+        60,
+        392
+      ],
+      "route_ids_match": true,
+      "route_ids_observed": [
+        56,
+        263,
+        433,
+        209,
+        277,
+        12,
+        111,
+        373,
+        60,
+        392
+      ],
+      "route_weights": {
+        "cosine": 0.9999999999999769,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 5.774199962615967e-8,
+        "rmse": 3.473221422820998e-8,
+        "within_tolerance": true
+      },
+      "source_bytes_read": 253097408,
+      "source_load_ns": 9120353791,
+      "state_handoff": "device-final-state snapshot becomes next layer base",
+      "state_snapshot_ns": 678750,
+      "status": "PASSED",
+      "warmup_ns": 167
+    },
+    {
+      "command_buffers": 1,
+      "cpu_oracle_ns": 1712582458,
+      "device_prepare_ns": 15591292,
+      "dispatches": 20,
+      "final_state": {
+        "cosine": 0.9999999999999276,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 1.430511474609375e-6,
+        "rmse": 1.269401484883913e-7,
+        "within_tolerance": true
+      },
+      "gpu_ns": [
+        25852833
+      ],
+      "graph_setup_ns": 574458,
+      "host_ns": [
+        35221292
+      ],
+      "layer": 45,
+      "layer_type": "linear_attention",
+      "output_sha256": "7bf81a7332b7cd0ab295dc9f33642de27d04e1cd92451ae258222b83f599bf7f",
+      "route_ids_expected": [
+        443,
+        228,
+        475,
+        21,
+        181,
+        271,
+        50,
+        227,
+        303,
+        377
+      ],
+      "route_ids_match": true,
+      "route_ids_observed": [
+        443,
+        228,
+        475,
+        21,
+        181,
+        271,
+        50,
+        227,
+        303,
+        377
+      ],
+      "route_weights": {
+        "cosine": 0.9999999999999949,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 5.960464477539063e-8,
+        "rmse": 2.859630477134182e-8,
+        "within_tolerance": true
+      },
+      "source_bytes_read": 253097408,
+      "source_load_ns": 19620235125,
+      "state_handoff": "device-final-state snapshot becomes next layer base",
+      "state_snapshot_ns": 685459,
+      "status": "PASSED",
+      "warmup_ns": 125
+    },
+    {
+      "command_buffers": 1,
+      "cpu_oracle_ns": 1733163250,
+      "device_prepare_ns": 17067125,
+      "dispatches": 20,
+      "final_state": {
+        "cosine": 0.9999999999999308,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 9.5367431640625e-6,
+        "rmse": 1.8875678739653503e-7,
+        "within_tolerance": true
+      },
+      "gpu_ns": [
+        25706749
+      ],
+      "graph_setup_ns": 680041,
+      "host_ns": [
+        35203709
+      ],
+      "layer": 46,
+      "layer_type": "linear_attention",
+      "output_sha256": "c75aaf589a33222b0f8a44e76d8b5268369cbfec86317bdc893c3308e6d8eecc",
+      "route_ids_expected": [
+        171,
+        25,
+        338,
+        81,
+        419,
+        388,
+        498,
+        354,
+        74,
+        226
+      ],
+      "route_ids_match": true,
+      "route_ids_observed": [
+        171,
+        25,
+        338,
+        81,
+        419,
+        388,
+        498,
+        354,
+        74,
+        226
+      ],
+      "route_weights": {
+        "cosine": 0.999999999999829,
+        "finite": true,
+        "length_match": true,
+        "max_abs_error": 2.086162567138672e-7,
+        "rmse": 1.0029267472305203e-7,
+        "within_tolerance": true
+      },
+      "source_bytes_read": 253097408,
+      "source_load_ns": 17807561250,
+      "state_handoff": "device-final-state snapshot becomes next layer base",
+      "state_snapshot_ns": 648458,
+      "status": "PASSED",
+      "warmup_ns": 291
+    }
+  ],
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "qualification": "EXACT_SOURCE_BF16_LINEAR_PREFIX_ONLY",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "schema": "hawking.flash_noetic_multilayer_linear_prefix.v1",
+  "seal_sha256": "febff26cc47aafefffe815cd68c07f799e58299ca9ef82286313ca6f662cb8b4",
+  "source": {
+    "config_sha256": "889658f2508e8c61d409b02e70e0d78d8d4452ec65aaafbe129805d213d2e74b",
+    "embedding": {
+      "sha256": null,
+      "source_bytes": 0,
+      "tensor_name": "model.language_model.embed_tokens.weight",
+      "token_id": 248044
+    },
+    "executed_layers": [
+      44,
+      45,
+      46
+    ],
+    "layer_count": 48,
+    "manifest": {
+      "bytes": 360053432320,
+      "label": "[V]",
+      "n_files": 144,
+      "path": "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "resolved_sha": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "sha256": "1f536f70c963a4d9b800e17c54c0dec54ce2d31a0a36041146b4013a04221fb7"
+    },
+    "requested_prefix_layers": 3,
+    "requested_start_layer": 44,
+    "state_handoff_artifact": {
+      "bytes": 40960,
+      "dtype": "F32_LE",
+      "elements": 10240,
+      "path": "receipts/headless/FLASH_COMPACT_L44_L46_V1/group-44-46/state.f32",
+      "sha256": "c75aaf589a33222b0f8a44e76d8b5268369cbfec86317bdc893c3308e6d8eecc",
+      "source": "last device-final-state snapshot from the exact linear prefix"
+    }
+  },
+  "status": "PASSED_LINEAR_PREFIX_BLOCKED_AT_FULL_ATTENTION",
+  "timing": {
+    "device_prepare_ns": 49111834,
+    "graph_setup_ns": 1811041,
+    "receipt_write_ns": null,
+    "source_load_ns": 46548150166,
+    "state_fingerprint_ns": 2012667,
+    "state_write_ns": 227625,
+    "warmup_ns": 583
+  }
+}

@@ -1,0 +1,79 @@
+{
+ "schema": "hawking.future.resident_science_loop.raw.v1",
+ "prompt": "You previously proposed that information value follows FUNCTIONAL ROLE: that the SwiGLU gate is a non-linear state-dependent selector deserving literal storage, while the up and down projections are linear components that could be generated or shared.\n\nThat hypothesis was tested. Here is the measurement.\n\nMethod: zero a random fraction of the OUTPUT ROWS of one tensor at one layer, then replay real tokens and compare the hidden state two layers later against the undamaged run. The same NUMBER of elements was destroyed in every arm, so the comparison across differently shaped tensors is fair.\n\nDamage with 40% of rows zeroed (higher = more sensitive):\n    layer  0: gate 0.002166   up 0.001896   down 0.002312\n    layer 21: gate 0.002565   up 0.002552   down 0.003097\n    layer 42: gate 0.005527   up 0.004526   down 0.005905\n\nAcross all 12 measured points, DOWN was the most sensitive tensor at 9 of them. Gate was never more than 1.3082x as damaging as up.\n\nDo not perform arithmetic. Do not recompute these numbers.\n\nAnswer ONLY with JSON in exactly this shape:\n\n{\"previous_hypothesis_status\": \"REFUTED\" or \"SUPPORTED\",\n \"what_falsified_it\": \"one sentence\",\n \"explanations\": [\n   {\"claim\": \"one sentence explaining why down is more sensitive than gate\",\n     \"cheapest_test\": \"one sentence naming a measurement that would kill this claim\"},\n   {\"claim\": \"...\", \"cheapest_test\": \"...\"},\n   {\"claim\": \"...\", \"cheapest_test\": \"...\"}\n ]}\n\nGive three DIFFERENT explanations. Be concise.",
+ "prompt_sha256": "4f52ee4e353d2bf13bc34c46267630270a71736f0c8fd0fa12385fc674e4ebee",
+ "prompt_chars": 1490,
+ "max_new_tokens": 700,
+ "seconds": 26.7,
+ "full_reply": "```json\n{\n\"previous_hypothesis_status\": \"REFUTED\",\n \"what_falsified_it\": \"The data shows that the linear down projection is more sensitive to row destruction than the non-linear gate in 9 out of 12 cases, contradict the hypothesis that the gate is the most sensitive component.\",\n \"explanations\": [\n   {\n      \"claim\": \"The down projection is more sensitive because it performs a high-dimensional linear transformation that maps the intermediate state to the output space, where the basis vectors are highly correlated and thus row removal causes significant loss of information.\",\n      \"cheapest_test\": \"Measure the sensitivity of the up projection to row zeroing in the same layer to see if it is also highly sensitive, which would indicate that the high-dimensional linear transformation is the cause rather than the specific role of the down projection.\"\n    },\n      {\n      \"claim\": \"The down projection is more sensitive because it is the only component that directly contributes to the residual stream, and the model has evolved to make the residual stream a high- information channel that is sensitive to any perturbation.\",\n      \"cheapest_test\": \"Measure the sensitivity of the gate to row zeroing in a layer where the gate is not directly connected to the residual stream, to see if it is still highly sensitive, which would indicate that the direct connection to the residual stream is the cause rather the specific role of the down projection.\"\n    },\n      {\n      \"claim\": \"The down projection is more sensitive because it is the only component that has a non-trivial bias, and the bias is a high- information component that is sensitive to any perturbation.\",\n      \"cheapest_test\": \"Measure the sensitivity of the gate to row zeroing in a layer where the gate has a non-trivial bias, to see if it is still highly sensitive, which would indicate that the non-trivial bias is the cause rather the specific role of the down projection.\"\n    }\n  ]\n}\n```",
+ "full_reply_sha256": "8211544f3dcf42dc753d6c85aa40bf73d48672fe0cde45a7dafac0c4a8219025",
+ "full_reply_chars": 1968,
+ "degenerated": false,
+ "clean_prefix_sha256": "8211544f3dcf42dc753d6c85aa40bf73d48672fe0cde45a7dafac0c4a8219025",
+ "salvaged_chars": 1968,
+ "degeneration_start": null,
+ "parsed": {
+  "previous_hypothesis_status": "REFUTED",
+  "what_falsified_it": "The data shows that the linear down projection is more sensitive to row destruction than the non-linear gate in 9 out of 12 cases, contradict the hypothesis that the gate is the most sensitive component.",
+  "explanations": [
+   {
+    "claim": "The down projection is more sensitive because it performs a high-dimensional linear transformation that maps the intermediate state to the output space, where the basis vectors are highly correlated and thus row removal causes significant loss of information.",
+    "cheapest_test": "Measure the sensitivity of the up projection to row zeroing in the same layer to see if it is also highly sensitive, which would indicate that the high-dimensional linear transformation is the cause rather than the specific role of the down projection."
+   },
+   {
+    "claim": "The down projection is more sensitive because it is the only component that directly contributes to the residual stream, and the model has evolved to make the residual stream a high- information channel that is sensitive to any perturbation.",
+    "cheapest_test": "Measure the sensitivity of the gate to row zeroing in a layer where the gate is not directly connected to the residual stream, to see if it is still highly sensitive, which would indicate that the direct connection to the residual stream is the cause rather the specific role of the down projection."
+   },
+   {
+    "claim": "The down projection is more sensitive because it is the only component that has a non-trivial bias, and the bias is a high- information component that is sensitive to any perturbation.",
+    "cheapest_test": "Measure the sensitivity of the gate to row zeroing in a layer where the gate has a non-trivial bias, to see if it is still highly sensitive, which would indicate that the non-trivial bias is the cause rather the specific role of the down projection."
+   }
+  ]
+ },
+ "grade": {
+  "parsed": true,
+  "previous_hypothesis_status": "REFUTED",
+  "accepted_refutation": true,
+  "n_explanations": 3,
+  "n_distinct_explanations": 3,
+  "all_have_a_cheapest_test": true,
+  "epistemic_pass": true,
+  "why": "marked REFUTED and proposed three distinct explanations"
+ },
+ "evidence_shown": {
+  "verdict": "REFUTED",
+  "gate_over_up_range": [
+   0.4813,
+   1.3082
+  ],
+  "n_down_most_sensitive": 9,
+  "n_points": 12,
+  "worst_damage_at_40pct": 0.005905,
+  "points_at_40pct": [
+   {
+    "layer": 0,
+    "damage": {
+     "down": 0.002312,
+     "gate": 0.002166,
+     "up": 0.001896
+    }
+   },
+   {
+    "layer": 21,
+    "damage": {
+     "down": 0.003097,
+     "gate": 0.002565,
+     "up": 0.002552
+    }
+   },
+   {
+    "layer": 42,
+    "damage": {
+     "down": 0.005905,
+     "gate": 0.005527,
+     "up": 0.004526
+    }
+   }
+  ]
+ }
+}

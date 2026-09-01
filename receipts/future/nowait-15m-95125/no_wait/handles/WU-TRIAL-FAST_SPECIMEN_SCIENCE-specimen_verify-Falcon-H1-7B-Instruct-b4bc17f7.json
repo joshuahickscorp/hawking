@@ -1,0 +1,18 @@
+{
+  "dependencies": [],
+  "evidence_class": "STATIC_ONLY",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-15m-95125/WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct.receipt.json",
+  "frontier_item": "FT.MODEL_CAPABILITY.hard-gates",
+  "gpu_authority": false,
+  "job_id": "WU-TRIAL-FAST_SPECIMEN_SCIENCE-specimen_verify-Falcon-H1-7B-Instruct-b4bc17f7",
+  "launch_refused": false,
+  "launched_at": 1788140246.535358,
+  "pid": 95169,
+  "required_schema": null,
+  "schema": "hawking.future.no_wait.handle.v1",
+  "start_token": "1788140246.585201",
+  "state": "RUNNING",
+  "terminal": null,
+  "timeout_s": 24.42581295967102,
+  "unit_id": "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct"
+}

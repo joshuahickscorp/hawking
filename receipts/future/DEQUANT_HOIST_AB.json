@@ -1,0 +1,93 @@
+{
+ "bit_identity": {
+  "all_exact": false,
+  "max_abs_err": 4.76837158203125e-07,
+  "max_rel_fro": 9.802392101565035e-08,
+  "measured_on": "real_captured_activation",
+  "n_bit_exact": 15435,
+  "n_compared": 39936,
+  "reading": "NOT bit-identical, which is correct for a transform that reassociates, with the error at f32 epsilon. This was never the reason to reject the candidate.",
+  "the_dyadic_bit_exact_result_was_an_artifact": "the harness fill is (i % 17) * 0.125 - 1.0 - dyadic values with four mantissa bits - and the codes are 2-bit, so both orderings landed on exactly representable intermediates. Flagged as an artifact when it was first recorded, and confirmed by the real-activation run."
+ },
+ "candidate": "affine_q2_geo_tpr64_tg128_hoist",
+ "correction_history": [
+  {
+   "cause": "warmup 5; production's median landed on the slow mode",
+   "claim": "1.6338x, a win",
+   "reading": 1
+  },
+  {
+   "cause": "warmup 5; production's median landed on the FAST mode in that one run, and I attributed the difference to the input",
+   "claim": "0.9995x, the synthetic input slowed production",
+   "reading": 2
+  },
+  {
+   "cause": "warmup 60; three runs, two inputs, all ratios within 0.01",
+   "claim": "0.960x, the hoist is slower",
+   "reading": 3
+  }
+ ],
+ "kernel": "alu_roofline_affine_q2_geo_tpr64_tg128_hoist",
+ "measured": {
+  "headline_hoist_over_production": 0.9598,
+  "real_activation_run": {
+   "arm_a_over_production": 1.5128,
+   "arm_a_stripped_gb_s": 502.3561169461261,
+   "hoist_gb_s": 318.72325168023315,
+   "hoist_over_production": 0.9598,
+   "input": "real_captured_activation",
+   "loadavg": "{ 8.64 9.54 9.50 }",
+   "production_gb_s": 332.07511177347243,
+   "production_rep_spread": 1.0086249099498903,
+   "raw": "receipts/future/_G092_HOIST_REALX_raw.json",
+   "warmup": 60
+  },
+  "synthetic_control_run": {
+   "arm_a_over_production": 1.5188,
+   "arm_a_stripped_gb_s": 503.11229927205073,
+   "hoist_gb_s": 319.4336023365433,
+   "hoist_over_production": 0.9643,
+   "input": "synthetic_dyadic_fill",
+   "loadavg": "{ 12.82 10.68 9.96 }",
+   "production_gb_s": 331.2536422344588,
+   "production_rep_spread": 1.0082988047808765,
+   "raw": "receipts/future/_G092_HOIST_SYNTH_W60_raw.json",
+   "warmup": 60
+  },
+  "the_input_does_not_matter": {
+   "production_real_gb_s": 332.07511177347243,
+   "production_synthetic_gb_s": 331.2536422344588,
+   "reading": "at adequate warmup the production kernel reads the same rate on both inputs to within 0.25%. The earlier claim that the synthetic fill depressed production is REFUTED by this control.",
+   "relative_difference": 0.0025
+  },
+  "verdict": "SLOWER_THAN_PRODUCTION",
+  "what_actually_moved": {
+   "cause": "INSUFFICIENT_WARMUP_ON_THE_FIRST_MEASURED_ARM",
+   "signature": "at warmup 5 production's per-rep timings are bimodal, 252k ns or 428k ns within one run, and one run showed 2 fast reps followed by 9 slow ones. At warmup 60 the spread is 1.01.",
+   "why_production_specifically": "production is the first arm timed, so it pays first-touch residency for buffers every later arm finds already warm. The later arms were never bimodal in any run."
+  }
+ },
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g092-hoist",
+  "loadavg": "{ 13.30 11.06 10.14 }",
+  "measured_at": "2026-08-31T21:41:37Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "ms_per_token_saved": 0.0,
+ "obligation": "G092",
+ "recorded_by": "tools/future/dequant_hoist_ab.py",
+ "scar": {
+  "id": "WARMUP_5_LEAVES_THE_FIRST_MEASURED_ARM_OUTSIDE_STEADY_STATE",
+  "producer_fix": "the harness default warmup is 60, arm_json emits gpu_ns_min, gpu_ns_max, rep_spread and a steady_state flag against a 1.10 bound, and the consumers refuse an arm outside it. RECEIPT-ONLY FIXES ARE FORBIDDEN: the producer changed, then the receipt was regenerated.",
+  "reopen": "any receipt whose first-measured arm has rep_spread above 1.10 is not a measurement regardless of how clean its median looks",
+  "statement": "the harness timed arms in blocks at warmup 5. The first block - always production - was still faulting buffers in during its measured reps and went bimodal between 252k and 428k ns, a 1.70 spread. Every ratio taken against that arm inherits which mode won.",
+  "who_it_hit": "receipts/future/MLP_ALU_ROOFLINE.json carries the signature: its MLP production arm has min 252500 and max 428333, spread 1.696, while its DeltaNet production arm is 1.010. Its median landed on the fast mode so its 329.6 GB/s is close to the warmup-60 value of 331 - it was right by luck, not by construction."
+ },
+ "seal_sha256": "5aa71735d75fb3f4d637a42008f7403e4ebe4e425bd2123885930a74a3cfa6db",
+ "transform": "apply the per-group affine once per 8-weight chunk instead of once per weight, using a per-chunk sum of x that amortises over all rows",
+ "verdict": "SLOWER_THAN_PRODUCTION",
+ "why_it_is_slower": "G094 measured the class the hoist attacked: the affine FMA is 1.8% of this kernel's arithmetic and 0.6% of its time. The hoist's per-chunk fixup costs more than that."
+}

@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T18:59:36Z",
+  "recorded_at": "2026-09-01T05:39:02Z",
   "recorded_by": "tools/future/odyssey_tool_driver.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -21,7 +21,7 @@
   "isolation": "cli_out",
   "receipt": "receipts/future/DOCTOR_SEAL_DRIVEN.json",
   "refused": false,
-  "wall_seconds": 0.119
+  "wall_seconds": 0.128
  },
  "gaps_closed": [
   "no sidecar module actually invoked Doctor/Gravity; this one does",
@@ -117,7 +117,7 @@
   }
  },
  "schema": "hawking.future.odyssey_tool_driver.v1",
- "seal_sha256": "bf89497cfe5f9835ccb9e18436893c8ae957c0bd3f2c8bddcb9de5c331046ba9",
+ "seal_sha256": "87438122702edbd9a23ce7a5fe73890c824177329bc354793812b7884a6b8c0a",
  "sleeping": [
   {
    "id": "doctor_tournament",

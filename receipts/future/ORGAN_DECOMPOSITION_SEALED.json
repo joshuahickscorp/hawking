@@ -1,0 +1,122 @@
+{
+ "inputs": [
+  "receipts/future/_G133_ORGAN_SEALED_raw.json",
+  "receipts/future/_G075_organ_widen_f4.json",
+  "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+ ],
+ "levers_unset": true,
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": true,
+  "lane": "g133-organ",
+  "loadavg": "{ 8.37 8.62 8.56 }",
+  "measured_at": "2026-09-01T02:29:53Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "nothing_pinned": "this example never calls set_dn_state_kernel and never exports a geo lever, so the session opens on the promoted defaults",
+ "obligation": "G133",
+ "question": "GAP_LEDGER_60 named this: re-run the organ decomposition under the sealed default so the table and the baseline describe one body.",
+ "reconciliation": {
+  "measured_token_ms": 21.9464,
+  "reconciles": true,
+  "residual_ms": -0.103,
+  "residual_relative": 0.00469,
+  "sealed_organ_sum_ms": 21.8434,
+  "the_previous_table_did_not": {
+   "pre_organ_sum_ms": 26.7013,
+   "was_above_its_baseline_by_ms": 4.7549,
+   "why": "it was measured before the three levers became the sealed default, so it described a body that no longer runs"
+  }
+ },
+ "recorded_by": "tools/future/organ_decomposition_sealed.py",
+ "seal_sha256": "45123f24ea0a9f632943a8feaa71a666ccbe2e38c5b8ef00bc71a4f092aaec92",
+ "table": [
+  {
+   "delta_ms": -2.7447,
+   "dispatches": 128,
+   "organ": "mlp_gate_up",
+   "pre_ms": 9.9154,
+   "sealed_ms": 7.1706,
+   "share_of_sealed_token": 0.3283
+  },
+  {
+   "delta_ms": -0.3907,
+   "dispatches": 288,
+   "organ": "deltanet",
+   "pre_ms": 5.5971,
+   "sealed_ms": 5.2064,
+   "share_of_sealed_token": 0.2384
+  },
+  {
+   "delta_ms": -1.1465,
+   "dispatches": 128,
+   "organ": "mlp_down",
+   "pre_ms": 5.7319,
+   "sealed_ms": 4.5854,
+   "share_of_sealed_token": 0.2099
+  },
+  {
+   "delta_ms": -0.1788,
+   "dispatches": 64,
+   "organ": "q4_remainder",
+   "pre_ms": 2.0596,
+   "sealed_ms": 1.8808,
+   "share_of_sealed_token": 0.0861
+  },
+  {
+   "delta_ms": -0.2695,
+   "dispatches": 96,
+   "organ": "gqa_attention",
+   "pre_ms": 2.0356,
+   "sealed_ms": 1.7661,
+   "share_of_sealed_token": 0.0809
+  },
+  {
+   "delta_ms": -0.1292,
+   "dispatches": 2,
+   "organ": "lm_head",
+   "pre_ms": 1.0204,
+   "sealed_ms": 0.8912,
+   "share_of_sealed_token": 0.0408
+  },
+  {
+   "delta_ms": 0.0001,
+   "dispatches": 1,
+   "organ": "sampling",
+   "pre_ms": 0.334,
+   "sealed_ms": 0.3341,
+   "share_of_sealed_token": 0.0153
+  },
+  {
+   "delta_ms": 0.0014,
+   "dispatches": 1,
+   "organ": "embedding",
+   "pre_ms": 0.0073,
+   "sealed_ms": 0.0088,
+   "share_of_sealed_token": 0.0004
+  }
+ ],
+ "verdict": "RECONCILED_AT_21p8434_MS",
+ "what_remains": {
+  "deleting_everything_else_perfectly_still_misses_60_by_ms": 0.3987,
+  "deltanet_ms": 5.2064,
+  "everything_else_ms": 4.881,
+  "gap_as_share_of_mlp": 0.4491,
+  "gap_to_60_ms": 5.2797,
+  "gap_to_71_ms": 7.8619,
+  "mlp_share": 0.5357,
+  "mlp_total_ms": 11.756,
+  "reading": "the gap to 60 is 5.2797 ms. MLP is 11.756 ms across its two halves (53.6% of the token) and DeltaNet is 5.206. Everything else together is 4.881 ms, so perfectly deleting ALL of it still misses 60 by 0.3987 ms. The remaining gap has to come out of MLP or DeltaNet."
+ },
+ "where_the_saving_landed": {
+  "mlp_delta_ms": -3.8912,
+  "mlp_share_of_the_saving": 0.801,
+  "organs_that_did_not_move": [
+   "sampling",
+   "embedding"
+  ],
+  "reading": "3.891 of the 4.858 ms came out of mlp_gate_up and mlp_down, which is exactly where an MLP dequant arithmetic lever should show up. deltanet lost 0.391 ms, consistent with widen_f4 folding ba_to_decay. sampling and embedding did not move, and nothing touched them - an organ that moved without a lever pointed at it would mean the arms were not matched.",
+  "total_delta_ms": -4.8579
+ }
+}

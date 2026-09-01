@@ -1,0 +1,124 @@
+{
+ "admission_table": [
+  {
+   "exceeds_total_memory": false,
+   "fits_in_admissible": true,
+   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "margin_gb": 52.39,
+   "source_gb": 1.52
+  },
+  {
+   "exceeds_total_memory": false,
+   "fits_in_admissible": true,
+   "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "margin_gb": 38.72,
+   "source_gb": 15.18
+  },
+  {
+   "exceeds_total_memory": false,
+   "fits_in_admissible": true,
+   "id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "margin_gb": 21.08,
+   "source_gb": 32.82
+  },
+  {
+   "exceeds_total_memory": false,
+   "fits_in_admissible": false,
+   "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "margin_gb": -7.18,
+   "source_gb": 61.09
+  },
+  {
+   "exceeds_total_memory": false,
+   "fits_in_admissible": false,
+   "id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "margin_gb": -8.25,
+   "source_gb": 62.15
+  },
+  {
+   "exceeds_total_memory": false,
+   "fits_in_admissible": false,
+   "id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "margin_gb": -42.18,
+   "source_gb": 96.08
+  },
+  {
+   "exceeds_total_memory": true,
+   "fits_in_admissible": false,
+   "id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "margin_gb": -105.73,
+   "source_gb": 159.63
+  },
+  {
+   "exceeds_total_memory": true,
+   "fits_in_admissible": false,
+   "id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "margin_gb": -306.16,
+   "source_gb": 360.05
+  }
+ ],
+ "authority": "S027 \u00a75-\u00a77, \u00a726-\u00a728, \u00a743-\u00a744",
+ "disk": {
+  "free_gb": 1366.0,
+  "total_gb": 5000.8,
+  "used_fraction": 0.7268,
+  "volume": "/Volumes/corpdrive"
+ },
+ "lane_overlap_rule": {
+  "measured_in": "receipts/future/SPECIMEN_LOAD_COST.json",
+  "rule": "DISK_READ and MODELLAKE_NETWORK may overlap: contention was measured at 1.23x while residency is worth 142x. Do not serialize a load behind a download."
+ },
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": false,
+  "lane": "g103-uma",
+  "loadavg": "{ 7.00 6.98 6.87 }",
+  "measured_at": "2026-08-31T23:01:23Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "memory": {
+  "active_gb": 24.0,
+  "admissible_bytes": 54141757030,
+  "admissible_gb": 54.1,
+  "compressed_gb": 0.0,
+  "free_bytes": 45372604416,
+  "free_gb": 45.4,
+  "headroom_is_reserved_because": "S027 \u00a743: free memory has option value. Filling it because it is empty is how a scheduler loses the ability to accept a sudden high-value specimen or a child resident.",
+  "headroom_reserved_gb": 15.5,
+  "reclaimable_bytes": 69603639296,
+  "reclaimable_gb": 69.6,
+  "total_bytes": 103079215104,
+  "total_gb": 103.1,
+  "why_reclaimable_and_not_free": "inactive and speculative pages are returned without swapping, so free alone understates what a load may use. Neither is Metal's working set, which is the real admission gate.",
+  "wired_gb": 8.6
+ },
+ "n_sealed_exceeding_total_memory": 2,
+ "n_sealed_that_do_not_fit": 5,
+ "obligation": "G103",
+ "protected_lease_overrides": {
+  "authority": "S027 \u00a728",
+  "rule": "a protected absolute measurement suspends contaminating downloads and large loads, then resumes them automatically. This is an EXCEPTION window, not normal operation - and G095 showed the supervisor must be suspended first or it respawns the workers mid-window."
+ },
+ "recorded_by": "tools/future/uma_resource_ledger.py",
+ "residency_score_example": {
+  "expected_reuses": 3,
+  "formula": "expected_reuses x reload_seconds x scientific_priority / memory_gb",
+  "memory_cost_gb": 61.09,
+  "not_frozen": "S027 \u00a77 explicitly declines to freeze this formula. It exists so KEEP-WARM versus EVICT is a rational decision rather than a reflex, and it should be replaced when eviction data exists to fit it.",
+  "reload_seconds": 786.2,
+  "residency_value": 38.61,
+  "scientific_priority": 1.0,
+  "the_reload_cost_is_measured_not_assumed": "reload seconds come from the measured 77.7 MB/s cold rate on this volume, not from a nominal bandwidth"
+ },
+ "resource_lanes": [
+  "DISK_READ",
+  "DISK_WRITE",
+  "MODELLAKE_NETWORK",
+  "GPU",
+  "CPU",
+  "UMA"
+ ],
+ "seal_sha256": "e06ddbff6714ac479f1d5cd0554f6d4d25e07ae0964a8067a685b8c992073731",
+ "what_this_does_not_know": "Metal's working set. Apple Silicon admission is gated by the working set rather than by free RAM, and nothing here reads it. The admission table refuses the obvious cases and does not pretend to decide the marginal ones."
+}

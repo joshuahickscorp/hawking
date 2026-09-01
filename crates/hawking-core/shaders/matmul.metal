@@ -196,6 +196,460 @@ kernel void gemv_native_bf16_seq(
     out_logits[row_idx] = acc;
 }
 
+// Vec4-load candidate for the source-BF16 GEMV family. Each lane still widens
+// and accumulates one element at a time in column order; only the memory
+// transactions and pointer arithmetic are packed. This keeps the scalar
+// source-order numerical contract while making the candidate useful for the
+// large Flash-Next projections that are currently one-thread-per-row.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_seq_vec4(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float* act          [[buffer(1)]],
+    device       float* out_logits    [[buffer(2)]],
+    constant     uint&   n_rows       [[buffer(3)]],
+    constant     uint&   n_cols       [[buffer(4)]],
+    uint                 row_idx      [[thread_position_in_grid]])
+{
+    if (row_idx >= n_rows || (n_cols & 3u) != 0u) return;
+    device const ushort* row_bits = weight_bits + (ulong)row_idx * (ulong)n_cols;
+    float acc = 0.0f;
+    for (uint col = 0u; col < n_cols; col += 4u) {
+        const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+        const float4 packed_x = *(device const float4*)(act + col);
+        const float p0 = as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+        const float p1 = as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+        const float p2 = as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+        const float p3 = as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        acc = acc + p0;
+        acc = acc + p1;
+        acc = acc + p2;
+        acc = acc + p3;
+    }
+    out_logits[row_idx] = acc;
+}
+
+// SIMD-group source-BF16 GEMV candidate. Four independent output rows share
+// one 128-thread threadgroup; one SIMD group owns one row and reduces its
+// contiguous four-value loads with simd_sum. This intentionally changes the
+// reduction association, so it is opt-in rather than a replacement for the
+// scalar source-order authority kernel.
+kernel void gemv_native_bf16_geo_vec4_tg128(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float* act          [[buffer(1)]],
+    device       float* out_logits    [[buffer(2)]],
+    constant     uint& n_rows        [[buffer(3)]],
+    constant     uint& n_cols        [[buffer(4)]],
+    uint group_id                    [[threadgroup_position_in_grid]],
+    uint simd_lane                   [[thread_index_in_simdgroup]],
+    uint simd_id                     [[simdgroup_index_in_threadgroup]])
+{
+    const uint row = group_id * 4u + simd_id;
+    float acc = 0.0f;
+    if (row < n_rows && (n_cols & 3u) == 0u) {
+        device const ushort* row_bits =
+            weight_bits + (ulong)row * (ulong)n_cols;
+        for (uint col = simd_lane * 4u; col < n_cols; col += 128u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 packed_x = *(device const float4*)(act + col);
+            acc += as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+            acc += as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+            acc += as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+            acc += as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        }
+    }
+    acc = simd_sum(acc);
+    if (simd_lane == 0u && row < n_rows) out_logits[row] = acc;
+}
+
+// Two source-BF16 projections followed by exact SwiGLU.  This removes the
+// intermediate gate/up buffers and the standalone activation dispatch while
+// preserving the same left-to-right BF16->f32 accumulation as the scalar
+// GEMV kernel above.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_swiglu_seq(
+    device const ushort* gate_bits [[buffer(0)]],
+    device const ushort* up_bits   [[buffer(1)]],
+    device const float* act        [[buffer(2)]],
+    device float* out              [[buffer(3)]],
+    constant uint& n_rows          [[buffer(4)]],
+    constant uint& n_cols          [[buffer(5)]],
+    uint row_idx                   [[thread_position_in_grid]])
+{
+    if (row_idx >= n_rows) return;
+    const ulong base = (ulong)row_idx * (ulong)n_cols;
+    float gate = 0.0f;
+    float up = 0.0f;
+    for (uint col = 0u; col < n_cols; ++col) {
+        const float x = act[col];
+        const float gate_w = as_type<float>(((uint)gate_bits[base + col]) << 16);
+        const float up_w = as_type<float>(((uint)up_bits[base + col]) << 16);
+        gate = gate + gate_w * x;
+        up = up + up_w * x;
+    }
+    out[row_idx] = (gate / (1.0f + exp(-gate))) * up;
+}
+
+// Vec4-load source-BF16 SwiGLU candidate. Gate and up retain the same
+// per-column scalar update order as `gemv_native_bf16_swiglu_seq`.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_swiglu_seq_vec4(
+    device const ushort* gate_bits [[buffer(0)]],
+    device const ushort* up_bits   [[buffer(1)]],
+    device const float* act        [[buffer(2)]],
+    device float* out              [[buffer(3)]],
+    constant uint& n_rows          [[buffer(4)]],
+    constant uint& n_cols          [[buffer(5)]],
+    uint row_idx                   [[thread_position_in_grid]])
+{
+    if (row_idx >= n_rows || (n_cols & 3u) != 0u) return;
+    const ulong base = (ulong)row_idx * (ulong)n_cols;
+    float gate = 0.0f;
+    float up = 0.0f;
+    for (uint col = 0u; col < n_cols; col += 4u) {
+        const ushort4 packed_gate = *(device const ushort4*)(gate_bits + base + col);
+        const ushort4 packed_up = *(device const ushort4*)(up_bits + base + col);
+        const float4 packed_x = *(device const float4*)(act + col);
+        gate = gate + as_type<float>(((uint)packed_gate.x) << 16u) * packed_x.x;
+        up = up + as_type<float>(((uint)packed_up.x) << 16u) * packed_x.x;
+        gate = gate + as_type<float>(((uint)packed_gate.y) << 16u) * packed_x.y;
+        up = up + as_type<float>(((uint)packed_up.y) << 16u) * packed_x.y;
+        gate = gate + as_type<float>(((uint)packed_gate.z) << 16u) * packed_x.z;
+        up = up + as_type<float>(((uint)packed_up.z) << 16u) * packed_x.z;
+        gate = gate + as_type<float>(((uint)packed_gate.w) << 16u) * packed_x.w;
+        up = up + as_type<float>(((uint)packed_up.w) << 16u) * packed_x.w;
+    }
+    out[row_idx] = (gate / (1.0f + exp(-gate))) * up;
+}
+
+// SIMD-group SwiGLU source-BF16 candidate. The gate and up reductions retain
+// the same packed source loads as the vec4 authority sibling, but divide each
+// output row across one SIMD group. Reduction association is intentionally
+// non-authoritative and is guarded by a dedicated environment switch.
+kernel void gemv_native_bf16_swiglu_geo_vec4_tg128(
+    device const ushort* gate_bits [[buffer(0)]],
+    device const ushort* up_bits   [[buffer(1)]],
+    device const float* act        [[buffer(2)]],
+    device float* out              [[buffer(3)]],
+    constant uint& n_rows          [[buffer(4)]],
+    constant uint& n_cols          [[buffer(5)]],
+    uint group_id                  [[threadgroup_position_in_grid]],
+    uint simd_lane                 [[thread_index_in_simdgroup]],
+    uint simd_id                   [[simdgroup_index_in_threadgroup]])
+{
+    const uint row = group_id * 4u + simd_id;
+    float gate = 0.0f;
+    float up = 0.0f;
+    if (row < n_rows && (n_cols & 3u) == 0u) {
+        const ulong base = (ulong)row * (ulong)n_cols;
+        for (uint col = simd_lane * 4u; col < n_cols; col += 128u) {
+            const ushort4 packed_gate = *(device const ushort4*)(gate_bits + base + col);
+            const ushort4 packed_up = *(device const ushort4*)(up_bits + base + col);
+            const float4 packed_x = *(device const float4*)(act + col);
+            gate += as_type<float>(((uint)packed_gate.x) << 16u) * packed_x.x;
+            up += as_type<float>(((uint)packed_up.x) << 16u) * packed_x.x;
+            gate += as_type<float>(((uint)packed_gate.y) << 16u) * packed_x.y;
+            up += as_type<float>(((uint)packed_up.y) << 16u) * packed_x.y;
+            gate += as_type<float>(((uint)packed_gate.z) << 16u) * packed_x.z;
+            up += as_type<float>(((uint)packed_up.z) << 16u) * packed_x.z;
+            gate += as_type<float>(((uint)packed_gate.w) << 16u) * packed_x.w;
+            up += as_type<float>(((uint)packed_up.w) << 16u) * packed_x.w;
+        }
+    }
+    gate = simd_sum(gate);
+    up = simd_sum(up);
+    if (simd_lane == 0u && row < n_rows) {
+        out[row] = (gate / (1.0f + exp(-gate))) * up;
+    }
+}
+
+// Two independent source-BF16 projections over one activation vector.  This
+// is used for the shared-expert down projection plus its scalar gate: each
+// output keeps the established left-to-right BF16->f32 accumulation, while a
+// single grid removes the launch/synchronization gap between the projections.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_dual_seq(
+    device const ushort* weight_a_bits [[buffer(0)]],
+    device const ushort* weight_b_bits [[buffer(1)]],
+    device const float* act            [[buffer(2)]],
+    device float* out_a                [[buffer(3)]],
+    device float* out_b                [[buffer(4)]],
+    constant uint& rows_a              [[buffer(5)]],
+    constant uint& rows_b              [[buffer(6)]],
+    constant uint& n_cols              [[buffer(7)]],
+    uint row_idx                       [[thread_position_in_grid]])
+{
+    if (row_idx < rows_a) {
+        device const ushort* row_bits =
+            weight_a_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; ++col) {
+            float w_val = as_type<float>(((uint)row_bits[col]) << 16);
+            float product = w_val * act[col];
+            acc = acc + product;
+        }
+        out_a[row_idx] = acc;
+    }
+    if (row_idx < rows_b) {
+        device const ushort* row_bits =
+            weight_b_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; ++col) {
+            float w_val = as_type<float>(((uint)row_bits[col]) << 16);
+            float product = w_val * act[col];
+            acc = acc + product;
+        }
+        out_b[row_idx] = acc;
+    }
+}
+
+// Vec4-load dual-projection candidate. The two output rows are still
+// independent scalar-order reductions; this only packs their source loads.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_dual_seq_vec4(
+    device const ushort* weight_a_bits [[buffer(0)]],
+    device const ushort* weight_b_bits [[buffer(1)]],
+    device const float* act            [[buffer(2)]],
+    device float* out_a                [[buffer(3)]],
+    device float* out_b                [[buffer(4)]],
+    constant uint& rows_a              [[buffer(5)]],
+    constant uint& rows_b              [[buffer(6)]],
+    constant uint& n_cols              [[buffer(7)]],
+    uint row_idx                       [[thread_position_in_grid]])
+{
+    if ((n_cols & 3u) != 0u) return;
+    if (row_idx < rows_a) {
+        device const ushort* row_bits = weight_a_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; col += 4u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 packed_x = *(device const float4*)(act + col);
+            acc = acc + as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+            acc = acc + as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+            acc = acc + as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+            acc = acc + as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        }
+        out_a[row_idx] = acc;
+    }
+    if (row_idx < rows_b) {
+        device const ushort* row_bits = weight_b_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; col += 4u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 packed_x = *(device const float4*)(act + col);
+            acc = acc + as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+            acc = acc + as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+            acc = acc + as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+            acc = acc + as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        }
+        out_b[row_idx] = acc;
+    }
+}
+
+// Three independent source-BF16 projections over one activation vector. This
+// is the Flash full-attention Q/K/V launch-fusion path: Q is wider than K/V,
+// so one logical row index can service all three matrices without packing or
+// concatenating their resident weights. Each dot remains a left-to-right
+// BF16->f32 reduction, making this a source-order authority sibling rather
+// than a numerical approximation.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_triple_seq(
+    device const ushort* weight_a_bits [[buffer(0)]],
+    device const ushort* weight_b_bits [[buffer(1)]],
+    device const ushort* weight_c_bits [[buffer(2)]],
+    device const float* act            [[buffer(3)]],
+    device float* out_a                [[buffer(4)]],
+    device float* out_b                [[buffer(5)]],
+    device float* out_c                [[buffer(6)]],
+    constant uint& rows_a              [[buffer(7)]],
+    constant uint& rows_b              [[buffer(8)]],
+    constant uint& rows_c              [[buffer(9)]],
+    constant uint& n_cols              [[buffer(10)]],
+    uint row_idx                       [[thread_position_in_grid]])
+{
+    if (row_idx < rows_a) {
+        device const ushort* row_bits =
+            weight_a_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; ++col) {
+            const float weight = as_type<float>(((uint)row_bits[col]) << 16u);
+            acc = acc + weight * act[col];
+        }
+        out_a[row_idx] = acc;
+    }
+    if (row_idx < rows_b) {
+        device const ushort* row_bits =
+            weight_b_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; ++col) {
+            const float weight = as_type<float>(((uint)row_bits[col]) << 16u);
+            acc = acc + weight * act[col];
+        }
+        out_b[row_idx] = acc;
+    }
+    if (row_idx < rows_c) {
+        device const ushort* row_bits =
+            weight_c_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; ++col) {
+            const float weight = as_type<float>(((uint)row_bits[col]) << 16u);
+            acc = acc + weight * act[col];
+        }
+        out_c[row_idx] = acc;
+    }
+}
+
+// Vec4-load sibling of the triple projection. The scalar update order within
+// each four-element packet is explicit, so this remains source-order exact;
+// only the device load transactions are widened.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_triple_seq_vec4(
+    device const ushort* weight_a_bits [[buffer(0)]],
+    device const ushort* weight_b_bits [[buffer(1)]],
+    device const ushort* weight_c_bits [[buffer(2)]],
+    device const float* act            [[buffer(3)]],
+    device float* out_a                [[buffer(4)]],
+    device float* out_b                [[buffer(5)]],
+    device float* out_c                [[buffer(6)]],
+    constant uint& rows_a              [[buffer(7)]],
+    constant uint& rows_b              [[buffer(8)]],
+    constant uint& rows_c              [[buffer(9)]],
+    constant uint& n_cols              [[buffer(10)]],
+    uint row_idx                       [[thread_position_in_grid]])
+{
+    if ((n_cols & 3u) != 0u) return;
+    if (row_idx < rows_a) {
+        device const ushort* row_bits =
+            weight_a_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; col += 4u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 packed_x = *(device const float4*)(act + col);
+            acc = acc + as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+            acc = acc + as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+            acc = acc + as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+            acc = acc + as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        }
+        out_a[row_idx] = acc;
+    }
+    if (row_idx < rows_b) {
+        device const ushort* row_bits =
+            weight_b_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; col += 4u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 packed_x = *(device const float4*)(act + col);
+            acc = acc + as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+            acc = acc + as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+            acc = acc + as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+            acc = acc + as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        }
+        out_b[row_idx] = acc;
+    }
+    if (row_idx < rows_c) {
+        device const ushort* row_bits =
+            weight_c_bits + (ulong)row_idx * (ulong)n_cols;
+        float acc = 0.0f;
+        for (uint col = 0u; col < n_cols; col += 4u) {
+            const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+            const float4 packed_x = *(device const float4*)(act + col);
+            acc = acc + as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+            acc = acc + as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+            acc = acc + as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+            acc = acc + as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+        }
+        out_c[row_idx] = acc;
+    }
+}
+
+// Source-BF16 output projection fused with the following HyperConnection
+// combine. One thread owns one output row, writes the retained block output
+// for parity, and immediately broadcasts that row across the logical streams.
+// The dot remains left-to-right BF16->f32 source order; only the launch and
+// the device reread of block_output are removed.
+#pragma clang fp contract(off)
+kernel void gemv_native_bf16_hyperconnection_combine(
+    device const ushort* weight_bits [[buffer(0)]],
+    device const float* act            [[buffer(1)]],
+    device const float* residual       [[buffer(2)]],
+    device const float* block_logits   [[buffer(3)]],
+    device float* block_output         [[buffer(4)]],
+    device float* output               [[buffer(5)]],
+    constant uint& hidden              [[buffer(6)]],
+    constant uint& cols                [[buffer(7)]],
+    constant uint& streams             [[buffer(8)]],
+    constant float& divisor            [[buffer(9)]],
+    uint row                           [[thread_position_in_grid]])
+{
+    if (row >= hidden) return;
+    device const ushort* row_bits =
+        weight_bits + (ulong)row * (ulong)cols;
+    float acc = 0.0f;
+    for (uint col = 0u; col < cols; ++col) {
+        const float weight = as_type<float>(((uint)row_bits[col]) << 16u);
+        acc = acc + weight * act[col];
+    }
+    block_output[row] = acc;
+    for (uint stream = 0u; stream < streams; ++stream) {
+        const float gate = 2.0f / (1.0f + exp(-block_logits[stream] / divisor));
+        output[(ulong)stream * (ulong)hidden + row] =
+            residual[(ulong)stream * (ulong)hidden + row] + acc * gate;
+    }
+}
+
+// SIMD-group dual-projection candidate. A SIMD group owns one row from each
+// projection at the same row index, allowing the shared activation to stay in
+// cache while preserving separate output buffers. The two reductions are not
+// source-order authoritative; use only with the explicit dual candidate flag.
+kernel void gemv_native_bf16_dual_geo_vec4_tg128(
+    device const ushort* weight_a_bits [[buffer(0)]],
+    device const ushort* weight_b_bits [[buffer(1)]],
+    device const float* act            [[buffer(2)]],
+    device float* out_a                [[buffer(3)]],
+    device float* out_b                [[buffer(4)]],
+    constant uint& rows_a              [[buffer(5)]],
+    constant uint& rows_b              [[buffer(6)]],
+    constant uint& n_cols              [[buffer(7)]],
+    uint group_id                      [[threadgroup_position_in_grid]],
+    uint simd_lane                     [[thread_index_in_simdgroup]],
+    uint simd_id                       [[simdgroup_index_in_threadgroup]])
+{
+    const uint row = group_id * 4u + simd_id;
+    float acc_a = 0.0f;
+    float acc_b = 0.0f;
+    if ((n_cols & 3u) == 0u) {
+        if (row < rows_a) {
+            device const ushort* row_bits =
+                weight_a_bits + (ulong)row * (ulong)n_cols;
+            for (uint col = simd_lane * 4u; col < n_cols; col += 128u) {
+                const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+                const float4 packed_x = *(device const float4*)(act + col);
+                acc_a += as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+                acc_a += as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+                acc_a += as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+                acc_a += as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+            }
+        }
+        if (row < rows_b) {
+            device const ushort* row_bits =
+                weight_b_bits + (ulong)row * (ulong)n_cols;
+            for (uint col = simd_lane * 4u; col < n_cols; col += 128u) {
+                const ushort4 packed_w = *(device const ushort4*)(row_bits + col);
+                const float4 packed_x = *(device const float4*)(act + col);
+                acc_b += as_type<float>(((uint)packed_w.x) << 16u) * packed_x.x;
+                acc_b += as_type<float>(((uint)packed_w.y) << 16u) * packed_x.y;
+                acc_b += as_type<float>(((uint)packed_w.z) << 16u) * packed_x.z;
+                acc_b += as_type<float>(((uint)packed_w.w) << 16u) * packed_x.w;
+            }
+        }
+    }
+    acc_a = simd_sum(acc_a);
+    acc_b = simd_sum(acc_b);
+    if (simd_lane == 0u) {
+        if (row < rows_a) out_a[row] = acc_a;
+        if (row < rows_b) out_b[row] = acc_b;
+    }
+}
+
 // ── DeepSeek-V4 source-native FP8 authority probe ──────────────────────────
 //
 // `DeepSeek-V4-Flash` stores control/attention weights as E4M3FN and their
@@ -467,6 +921,62 @@ kernel void deepseek_v4_act_quant_bf16_ue8m0_authority(
     }
 }
 
+// Fixed-seven down-projection activation quantization candidate. The P6A
+// down wave always has six routed BF16 SwiGLU tensors plus one shared tensor.
+// Each logical block keeps the exact authority arithmetic above; only the
+// seven independent resource bindings are packed behind one fixed indirect
+// dispatch. This removes launch/encoder ceremony without changing the
+// quantized bytes or the per-block source order.
+struct DeepSeekV4P6ActQuantRef {
+    device const ushort* input_bf16;
+    device       uchar* quantized;
+    device       uchar* act_scales;
+    uint ready;
+    uint reserved;
+};
+
+static_assert(sizeof(DeepSeekV4P6ActQuantRef) == 32,
+    "DeepSeekV4P6ActQuantRef ABI drift");
+
+#pragma clang fp contract(off)
+#pragma clang fp reassociate(off)
+kernel void deepseek_v4_p6a_act_quant_bf16_ue8m0_fixed7_authority(
+    device const DeepSeekV4P6ActQuantRef* refs [[buffer(0)]],
+    constant uint& cols                         [[buffer(1)]],
+    constant uint& tensor_count                 [[buffer(2)]],
+    uint tid                                     [[thread_position_in_grid]])
+{
+    constexpr uint kBlock = 128u;
+    constexpr uint kTensorCount = 7u;
+    if (tensor_count != kTensorCount || cols == 0u || (cols % kBlock) != 0u) {
+        return;
+    }
+    const uint blocks = cols / kBlock;
+    const uint tensor = tid / blocks;
+    const uint block = tid % blocks;
+    if (tensor >= kTensorCount) return;
+    const DeepSeekV4P6ActQuantRef ref = refs[tensor];
+    if (ref.ready != 1u || ref.input_bf16 == nullptr
+        || ref.quantized == nullptr || ref.act_scales == nullptr) {
+        return;
+    }
+    const uint start = block * kBlock;
+    float amax = 0.0f;
+    for (uint offset = 0u; offset < kBlock; ++offset) {
+        const float value = deepseek_v4_bf16_value(ref.input_bf16[start + offset]);
+        amax = max(amax, fabs(value));
+    }
+    const uchar scale_bits = deepseek_v4_act_quant_ue8m0_scale(amax);
+    const float scale = deepseek_v4_e8m0fnu_value(scale_bits);
+    ref.act_scales[block] = scale_bits;
+    for (uint offset = 0u; offset < kBlock; ++offset) {
+        const float value = deepseek_v4_bf16_value(ref.input_bf16[start + offset]);
+        const float scaled = clamp(value / scale, -448.0f, 448.0f);
+        ref.quantized[start + offset] = deepseek_v4_e4m3fn_encode_rne(scaled);
+    }
+}
+#pragma clang fp contract(on)
+
 // Optional source-linear *component* candidate.  The authority kernel above
 // deliberately serializes every 128-wide source block so its byte-level
 // grammar is easy to audit.  That makes its E4M3FN table conversion the
@@ -650,6 +1160,143 @@ kernel void deepseek_v4_fp8_act_quant_e4m3fn_e8m0_matvec_authority(
     }
     output[row] = row_accumulator;
 }
+
+// Shared-expert FP8 gate/up -> BF16 SwiGLU fusion. The two row reductions
+// retain the source-order FP8 authority loop independently; each reduction is
+// explicitly rounded to BF16 before the same clamped SwiGLU epilogue used by
+// deepseek_v4_p5b_swiglu_route_bf16_authority. This removes two cast
+// dispatches and one elementwise SwiGLU dispatch from the shared expert.
+#pragma clang fp contract(off)
+#pragma clang fp reassociate(off)
+kernel void deepseek_v4_fp8_gate_up_swiglu_bf16_fused(
+    device const uchar* gate_weights       [[buffer(0)]],
+    device const uchar* gate_scales        [[buffer(1)]],
+    device const uchar* up_weights         [[buffer(2)]],
+    device const uchar* up_scales          [[buffer(3)]],
+    device const uchar* quantized          [[buffer(4)]],
+    device const uchar* act_scales         [[buffer(5)]],
+    device       ushort* output_bf16       [[buffer(6)]],
+    constant uint& rows                     [[buffer(7)]],
+    constant uint& cols                     [[buffer(8)]],
+    constant uint& scale_cols               [[buffer(9)]],
+    constant float& route_weight            [[buffer(10)]],
+    uint row                                 [[thread_position_in_grid]])
+{
+    constexpr uint kBlock = 128u;
+    if (row >= rows || cols == 0u || (cols % kBlock) != 0u
+        || scale_cols != cols / kBlock) {
+        return;
+    }
+    const uint scale_row = row / kBlock;
+    const ulong row_base = (ulong)row * (ulong)cols;
+    const ulong scale_base = (ulong)scale_row * (ulong)scale_cols;
+    float gate_accumulator = 0.0f;
+    float up_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        float gate_block = 0.0f;
+        float up_block = 0.0f;
+        const uint start = block * kBlock;
+        for (uint offset = 0u; offset < kBlock; ++offset) {
+            const uint col = start + offset;
+            const float activation = deepseek_v4_e4m3fn_value(quantized[col]);
+            const float gate_weight = deepseek_v4_e4m3fn_value(
+                gate_weights[row_base + (ulong)col]);
+            const float up_weight = deepseek_v4_e4m3fn_value(
+                up_weights[row_base + (ulong)col]);
+            gate_block = gate_block + activation * gate_weight;
+            up_block = up_block + activation * up_weight;
+        }
+        const float activation_scale = deepseek_v4_e8m0fnu_value(act_scales[block]);
+        const float gate_scale = deepseek_v4_e8m0fnu_value(
+            gate_scales[scale_base + (ulong)block]);
+        const float up_scale = deepseek_v4_e8m0fnu_value(
+            up_scales[scale_base + (ulong)block]);
+        gate_accumulator = gate_accumulator
+            + gate_block * (activation_scale * gate_scale);
+        up_accumulator = up_accumulator
+            + up_block * (activation_scale * up_scale);
+    }
+    const float gate = min(deepseek_v4_bf16_value(
+        deepseek_v4_bf16_encode_rne(gate_accumulator)), 10.0f);
+    const float up = clamp(deepseek_v4_bf16_value(
+        deepseek_v4_bf16_encode_rne(up_accumulator)), -10.0f, 10.0f);
+    float silu = 0.0f;
+    if (gate >= 0.0f) {
+        silu = gate / (1.0f + exp(-gate));
+    } else {
+        const float e = exp(gate);
+        silu = gate * e / (1.0f + e);
+    }
+    output_bf16[row] = deepseek_v4_bf16_encode_rne(silu * up * route_weight);
+}
+#pragma clang fp reassociate(on)
+#pragma clang fp contract(on)
+
+// Shared-expert FP8 W2 -> BF16 plus the fixed six-way routed combine. The
+// routed outputs have already crossed their source-required BF16 boundary;
+// this kernel preserves the remaining source order by computing the shared
+// FP8 row, explicitly round-tripping that row through BF16, then adding the
+// six routed BF16 rows in numeric-expert order before the final BF16 store.
+// It is deliberately separate from the gate/up fusion because the shared
+// W2 input is produced by its own authoritative activation-quantization wave.
+#pragma clang fp contract(off)
+#pragma clang fp reassociate(off)
+kernel void deepseek_v4_fp8_down_bf16_combine_fused(
+    device const uchar* shared_weights    [[buffer(0)]],
+    device const uchar* shared_scales     [[buffer(1)]],
+    device const uchar* quantized         [[buffer(2)]],
+    device const uchar* act_scales        [[buffer(3)]],
+    device const ushort* routed_0_bf16    [[buffer(4)]],
+    device const ushort* routed_1_bf16    [[buffer(5)]],
+    device const ushort* routed_2_bf16    [[buffer(6)]],
+    device const ushort* routed_3_bf16    [[buffer(7)]],
+    device const ushort* routed_4_bf16    [[buffer(8)]],
+    device const ushort* routed_5_bf16    [[buffer(9)]],
+    device       ushort* output_bf16      [[buffer(10)]],
+    constant uint& rows                    [[buffer(11)]],
+    constant uint& cols                    [[buffer(12)]],
+    constant uint& scale_cols              [[buffer(13)]],
+    uint row                               [[thread_position_in_grid]])
+{
+    constexpr uint kBlock = 128u;
+    if (row >= rows || cols == 0u || (cols % kBlock) != 0u
+        || scale_cols != cols / kBlock) {
+        return;
+    }
+    const uint scale_row = row / kBlock;
+    const ulong row_base = (ulong)row * (ulong)cols;
+    const ulong scale_base = (ulong)scale_row * (ulong)scale_cols;
+    float shared_accumulator = 0.0f;
+    for (uint block = 0u; block < scale_cols; ++block) {
+        float block_accumulator = 0.0f;
+        const uint start = block * kBlock;
+        for (uint offset = 0u; offset < kBlock; ++offset) {
+            const uint col = start + offset;
+            const float activation = deepseek_v4_e4m3fn_value(quantized[col]);
+            const float weight = deepseek_v4_e4m3fn_value(
+                shared_weights[row_base + (ulong)col]);
+            block_accumulator = block_accumulator + activation * weight;
+        }
+        const float activation_scale = deepseek_v4_e8m0fnu_value(
+            act_scales[block]);
+        const float weight_scale = deepseek_v4_e8m0fnu_value(
+            shared_scales[scale_base + (ulong)block]);
+        shared_accumulator = shared_accumulator
+            + block_accumulator * (activation_scale * weight_scale);
+    }
+    const ushort shared_bf16 = deepseek_v4_bf16_encode_rne(shared_accumulator);
+    float value = 0.0f;
+    value = value + deepseek_v4_bf16_value(routed_0_bf16[row]);
+    value = value + deepseek_v4_bf16_value(routed_1_bf16[row]);
+    value = value + deepseek_v4_bf16_value(routed_2_bf16[row]);
+    value = value + deepseek_v4_bf16_value(routed_3_bf16[row]);
+    value = value + deepseek_v4_bf16_value(routed_4_bf16[row]);
+    value = value + deepseek_v4_bf16_value(routed_5_bf16[row]);
+    value = value + deepseek_v4_bf16_value(shared_bf16);
+    output_bf16[row] = deepseek_v4_bf16_encode_rne(value);
+}
+#pragma clang fp reassociate(on)
+#pragma clang fp contract(on)
 
 // ── DeepSeek-V4 layer-0 P3A pre-attention authority rung ────────────────
 //
@@ -1362,7 +2009,10 @@ kernel void deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate(
     uint tptg                          [[threads_per_threadgroup]])
 {
     constexpr uint kSimdWidth = 32u;
-    constexpr uint kMaxWidth = 2048u;
+    // The device-mHC P7 boundary is HIDDEN_SIZE=4096. Keep the same
+    // source-ordered reduction grammar while allowing that opt-in path to
+    // use this candidate instead of its one-thread authority kernel.
+    constexpr uint kMaxWidth = 4096u;
     constexpr uint kMaxSimdgroups = 32u;
     threadgroup float squares[kMaxWidth];
     threadgroup float reciprocal_slot[1];
@@ -1390,6 +2040,94 @@ kernel void deepseek_v4_p3a_rmsnorm_bf16_simdgroup_candidate(
         const float value = deepseek_v4_bf16_value(input_bf16[index]);
         const float scale = deepseek_v4_bf16_value(weight_bf16[index]);
         output_bf16[index] = deepseek_v4_bf16_encode_rne(value * reciprocal * scale);
+    }
+}
+
+// Device-mHC P7 candidate: normalize the reduced BF16 row and immediately
+// quantize the source-BF16-rounded result for the following FP8 projection.
+// The normalized value is staged as a decoded BF16 value in the existing
+// 4096-float threadgroup array, so the source norm->act_quant round-trip is
+// preserved without a global BF16 intermediate or a second dispatch.
+kernel void deepseek_v4_p7_ffn_rmsnorm_act_quant_bf16_ue8m0_simdgroup_candidate(
+    device const ushort* input_bf16 [[buffer(0)]],
+    device const ushort* weight_bf16 [[buffer(1)]],
+    device       uchar* quantized   [[buffer(2)]],
+    device       uchar* act_scales  [[buffer(3)]],
+    constant uint& width             [[buffer(4)]],
+    constant float& eps               [[buffer(5)]],
+    uint tid                          [[thread_position_in_threadgroup]],
+    uint simdgroup_id                 [[simdgroup_index_in_threadgroup]],
+    uint lane_id                      [[thread_index_in_simdgroup]],
+    uint tptg                         [[threads_per_threadgroup]])
+{
+    constexpr uint kSimdWidth = 32u;
+    constexpr uint kHidden = 4096u;
+    constexpr uint kBlock = 128u;
+    constexpr uint kMaxSimdgroups = 32u;
+    threadgroup float values[kHidden];
+    threadgroup float reciprocal_slot[1];
+    threadgroup uchar scale_bits_by_simdgroup[kMaxSimdgroups];
+
+    if (width != kHidden || !(eps > 0.0f)
+        || (tptg % kSimdWidth) != 0u || tptg / kSimdWidth == 0u
+        || tptg / kSimdWidth > kMaxSimdgroups) {
+        return;
+    }
+
+    for (uint index = tid; index < kHidden; index += tptg) {
+        const float value = deepseek_v4_bf16_value(input_bf16[index]);
+        values[index] = value * value;
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    if (tid == 0u) {
+        float sum_square = 0.0f;
+        for (uint index = 0u; index < kHidden; ++index) {
+            sum_square = sum_square + values[index];
+        }
+        reciprocal_slot[0] = 1.0f / sqrt(sum_square / (float)kHidden + eps);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+    const float reciprocal = reciprocal_slot[0];
+    for (uint index = tid; index < kHidden; index += tptg) {
+        const float value = deepseek_v4_bf16_value(input_bf16[index]);
+        const float scale = deepseek_v4_bf16_value(weight_bf16[index]);
+        const ushort normalized_bits = deepseek_v4_bf16_encode_rne(
+            value * reciprocal * scale);
+        values[index] = deepseek_v4_bf16_value(normalized_bits);
+    }
+    threadgroup_barrier(mem_flags::mem_threadgroup);
+
+    const uint simdgroups = tptg / kSimdWidth;
+    const uint blocks = kHidden / kBlock;
+    const uint passes = (blocks + simdgroups - 1u) / simdgroups;
+    for (uint pass = 0u; pass < passes; ++pass) {
+        const uint block = pass * simdgroups + simdgroup_id;
+        const bool active = block < blocks;
+        const uint start = block * kBlock;
+        float local_amax = 0.0f;
+        if (active) {
+            for (uint element = 0u; element < 4u; ++element) {
+                local_amax = max(local_amax,
+                    fabs(values[start + lane_id * 4u + element]));
+            }
+        }
+        const float block_amax = simd_max(local_amax);
+        if (active && lane_id == 0u) {
+            scale_bits_by_simdgroup[simdgroup_id] =
+                deepseek_v4_act_quant_ue8m0_scale(block_amax);
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
+        if (active) {
+            const uchar scale_bits = scale_bits_by_simdgroup[simdgroup_id];
+            const float scale = deepseek_v4_e8m0fnu_value(scale_bits);
+            if (lane_id == 0u) act_scales[block] = scale_bits;
+            for (uint element = 0u; element < 4u; ++element) {
+                const uint index = start + lane_id * 4u + element;
+                quantized[index] = deepseek_v4_e4m3fn_encode_rne(
+                    clamp(values[index] / scale, -448.0f, 448.0f));
+            }
+        }
+        threadgroup_barrier(mem_flags::mem_threadgroup);
     }
 }
 

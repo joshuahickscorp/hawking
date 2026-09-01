@@ -1,0 +1,43 @@
+{
+  "schema": "hawking.flash_source_bf16_terminal.v1",
+  "status": "PASSED",
+  "model": "Qwen/Qwen3.8-Flash-Next",
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "representation": "source_bf16_exact",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "unix-seconds:1787911800",
+    "recorded_by": "flash_source_bf16_terminal",
+    "machine": "Apple M3 Ultra",
+    "rule": "S032 §3 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "Terminal probe recorded no independent quiescence sample."
+  },
+  "input": {
+    "state": "receipts/headless/FLASH_PREFIX_FED_LAYER47_STATE_FUSED_SWIGLU.f32",
+    "state_sha256": "db34aaaad10bdbc48158e717ce6a3cf9ecf2db9733fbea8d483e2873847dbd64",
+    "elements": 10240,
+    "source_chain": "verified layers 0..47 with explicit state handoffs"
+  },
+  "terminal": {
+    "hyperconnection_readout": "source BF16 CPU reference over exact final state",
+    "lm_head": "native_bf16_gemv_seq",
+    "sampling": "sample_argmax_f32",
+    "token_id": 17
+  },
+  "execution": {
+    "device": "Apple M3 Ultra",
+    "provider": "apple_metal",
+    "dispatches": 2,
+    "command_buffers": 1,
+    "gpu_ns": 3620000,
+    "wall_ns": 2787835333,
+    "fallback_count": 0,
+    "native_source_bf16": true
+  },
+  "complete_token_runtime": "FIRST_COMPLETE_TOKEN_TERMINAL_PROBE",
+  "flash_tps": null,
+  "complete_system_ebpw": null,
+  "promotion_allowed": false,
+  "claim_boundary": "First greedy token was physically received from the verified 48-layer source-BF16 state and native Metal lm_head. This is not yet a one-process streamed whole-token runtime, TPS, EBPW, or residency qualification."
+}

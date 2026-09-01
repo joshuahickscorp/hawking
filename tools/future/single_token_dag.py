@@ -239,6 +239,58 @@ def reading() -> dict[str, Any]:
     }
 
 
+def reordering_scar() -> dict[str, Any]:
+    """S026 §4 makes this DAG's result binding on what may be proposed next.
+
+    Emitted BY THE PRODUCER so a rebuild cannot delete it, and computed from
+    slack() rather than typed, so the scar cannot outlive the measurement that
+    justifies it. If a future graph ever exposes overlapable work, this raises
+    rather than silently keeping the old claim.
+    """
+    sl = slack()
+    if sl["theoretically_overlapable_ns"] != 0:
+        raise DagRefused(
+            "the DAG now shows "
+            f"{sl['theoretically_overlapable_ns']} ns of overlapable top-level "
+            "work, so TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK is FALSE "
+            "and must not be emitted. The scar's own reopen condition has fired."
+        )
+    return {
+        "family": "TOP_LEVEL_TOKEN_REORDERING_HAS_NO_CURRENT_SLACK",
+        "status": "MEASURED_NEGATIVE",
+        "level": "MODEL_SPECIFIC",
+        "parent": "qwen3.8-27b sealed-3.14",
+        "organ": "whole token",
+        "object": "any candidate that reorders or overlaps top-level dispatches",
+        "authority": "S026 §4",
+        "mechanism": (
+            f"all {sl['n_edges']} edges in the single-token data flow are TRUE "
+            "dependencies and the critical path equals the total GPU work "
+            f"({sl['critical_path_ns']} ns each), so there is ZERO overlapable "
+            "top-level work. The capacity that multi-session execution exposes "
+            "is not sitting between reorderable token regions; it is inside "
+            "kernel execution. Command-order permutations cannot reach it."
+        ),
+        "not": (
+            "a claim that the GPU is saturated, or that concurrency is "
+            "impossible in principle. G009 measured 450-580 aggregate GB/s "
+            "across independent sessions against ~361 for one. The capacity is "
+            "real and this scar says only WHERE IT IS NOT."
+        ),
+        "requires": (
+            "a frontier unit that reorders top-level dispatches is refused at "
+            "proposal time while this stands"
+        ),
+        "reopen": (
+            "any change to the decode graph that introduces a genuinely "
+            "independent top-level region - a second stream of work with no "
+            "data dependency on the first, such as speculative drafting or a "
+            "second sequence - makes this DAG stale and the scar void. "
+            "Rebuilding this module recomputes the slack and raises if so."
+        ),
+    }
+
+
 def build() -> dict[str, Any]:
     return {
         "schema": "hawking.future.single_token_dag.v1",
@@ -249,6 +301,7 @@ def build() -> dict[str, Any]:
         "fused_independence_already_taken": list(FUSED_INDEPENDENCE),
         **slack(),
         "reading": reading(),
+        "scars": [reordering_scar()],
         "claim_boundary": (
             "Static sidecar artifact. The EDGES are declared from the decode "
             "step's data flow, each with its reason; the MILLISECONDS are the "

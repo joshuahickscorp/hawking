@@ -53,6 +53,23 @@ pub struct Qwen30UniformQ4Admission {
     pub expected_terminal_seal_sha256: String,
 }
 
+/// Resolve the Qwen30 family variant from the sealed manifest source.
+/// The manifest seal is protected by the caller's admission binding, while
+/// the source-chain validator independently checks this repository against
+/// the source audit and revalidation receipt.
+fn model_for_manifest_source(
+    manifest: &Map<String, Value>,
+) -> Result<QwenCompleteBinaryModel> {
+    let source = required_object(manifest, "source", "uniform Q4 manifest")?;
+    match required_string(source, "repository", "uniform Q4 manifest source")? {
+        "Qwen/Qwen3-Coder-30B-A3B-Instruct" => Ok(QwenCompleteBinaryModel::Qwen30Coder),
+        "Qwen/Qwen3-30B-A3B" => Ok(QwenCompleteBinaryModel::Qwen30Base),
+        repository => Err(Error::Model(format!(
+            "uniform Q4 manifest source repository {repository:?} is not an admitted Qwen30 family variant"
+        ))),
+    }
+}
+
 /// Parse one HQ30UQ4 payload into the shared header geometry.
 ///
 /// `sign_offset` is the code-body offset (same field, different encoding).
@@ -341,6 +358,7 @@ fn admit_qwen30_uniform_q4_artifact_inner(
             "uniform Q4 manifest seal does not match the protected admission binding".into(),
         ));
     }
+    let model = model_for_manifest_source(manifest_object)?;
     require_exact_string(
         manifest_object,
         "schema",
@@ -427,7 +445,7 @@ fn admit_qwen30_uniform_q4_artifact_inner(
 
     // Reuse baseline source-chain validation against Qwen30 model identity.
     let baseline_admission = CompleteBinaryAdmission {
-        model: QwenCompleteBinaryModel::Qwen30Coder,
+        model,
         expected_manifest_seal_sha256: admission.expected_manifest_seal_sha256.clone(),
         expected_source_audit_seal_sha256: admission.expected_source_audit_seal_sha256.clone(),
         expected_source_revision: admission.expected_source_revision.clone(),
@@ -560,7 +578,7 @@ fn admit_qwen30_uniform_q4_artifact_inner(
         validate_ledger(manifest_object, &tensors, manifest_raw.len())?;
 
     Ok(CompleteBinaryArtifact {
-        model: QwenCompleteBinaryModel::Qwen30Coder,
+        model,
         manifest_path,
         manifest_seal_sha256: manifest_seal,
         source_audit_path: source.source_audit_path,
@@ -627,5 +645,27 @@ mod parse_group_size_tests {
                 "group_size={group_size} refuse message was {msg}"
             );
         }
+    }
+
+    #[test]
+    fn manifest_source_resolves_the_base_qwen30_variant_without_wildcarding() {
+        let mut source = Map::new();
+        source.insert(
+            "repository".into(),
+            Value::String("Qwen/Qwen3-30B-A3B".into()),
+        );
+        let mut manifest = Map::new();
+        manifest.insert("source".into(), Value::Object(source));
+        assert_eq!(
+            model_for_manifest_source(&manifest).unwrap(),
+            QwenCompleteBinaryModel::Qwen30Base
+        );
+
+        let mut bad_source = Map::new();
+        bad_source.insert("repository".into(), Value::String("Qwen/Qwen3-8B".into()));
+        let mut bad_manifest = Map::new();
+        bad_manifest.insert("source".into(), Value::Object(bad_source));
+        let error = model_for_manifest_source(&bad_manifest).expect_err("unknown source must refuse");
+        assert!(format!("{error}").contains("not an admitted Qwen30 family variant"));
     }
 }

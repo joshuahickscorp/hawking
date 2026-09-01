@@ -1,0 +1,231 @@
+{
+ "authority": "S027 \u00a738-\u00a739, \u00a765-\u00a766",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-08-31T23:17:05Z",
+  "recorded_by": "tools/future/recurring_operations.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "counts": {
+  "fraction_handed_off": 0.737,
+  "handed_off_this_campaign": [
+   {
+    "op": "interpret a benchmark discrepancy",
+    "owner": "tools/future/causal_pattern_library.py"
+   },
+   {
+    "op": "decide whether an op-class is worth attacking",
+    "owner": "tools/future/op_class_ablation.py"
+   },
+   {
+    "op": "recognise that a search has gone degenerate",
+    "owner": "tools/future/productive_search.py"
+   },
+   {
+    "op": "choose whether to take a protected measurement window",
+    "owner": "tools/future/protected_bench_lease.py"
+   },
+   {
+    "op": "update the causal budget after a lever lands",
+    "owner": "tools/future/causal_budget_71.py"
+   },
+   {
+    "op": "compute the gap to a TPS target and what it licenses",
+    "owner": "tools/future/gap_ledger_60.py"
+   },
+   {
+    "op": "suppress a hypothesis belonging to a dead school",
+    "owner": "tools/future/frontiers.py"
+   },
+   {
+    "op": "decide which model to load next",
+    "owner": "tools/future/specimen_scheduler.py"
+   },
+   {
+    "op": "know what specimens exist and what state they are in",
+    "owner": "tools/future/specimen_registry.py"
+   },
+   {
+    "op": "check on ModelLake download progress",
+    "owner": "tools/future/modellake_scheduler_view.py"
+   },
+   {
+    "op": "predict whether a specimen fits in memory",
+    "owner": "tools/future/uma_resource_ledger.py"
+   },
+   {
+    "op": "estimate what a load will cost",
+    "owner": "tools/future/specimen_load_cost.py"
+   },
+   {
+    "op": "decide whether an experiment is worth starting at this hour",
+    "owner": "tools/future/odyssey_mission_controller.py"
+   },
+   {
+    "op": "classify whether an obligation blocks launch",
+    "owner": "tools/future/mission_class.py"
+   }
+  ],
+  "n_handed_off": 14,
+  "n_operations": 19,
+  "n_still_claude_owned": 5,
+  "still_claude_owned": [
+   "design the next kernel candidate once a ladder names the class",
+   "notice that a measurement instrument is defective",
+   "write the receipt prose that states a claim boundary",
+   "reconcile two harnesses that disagree",
+   "decide that an obligation is met"
+  ]
+ },
+ "every_owner_is_checked_on_disk": "the module refuses to publish if any named owner is missing, because a register pointing at modules nobody wrote would be exactly the fake completion S027 \u00a738 is guarding against",
+ "evidence_class": "STATIC_ONLY",
+ "failure_mode": {
+  "FAIL_looks_like": "run work, Claude notices a problem, Claude writes a fifty-point steer, work resumes, repeat",
+  "PASS_looks_like": "work, evidence, HCLI diagnoses, HCLI generates probes, HCLI prepares the next model, HCLI runs them, the user optionally observes",
+  "the_count_is_not_the_metric": "handing off fourteen mechanical operations while keeping every judgement is not progress toward autonomy; it is a faster scaffold. The metric that matters is whether HCLI can run a cycle without a decision escalating, and this register does not claim it can.",
+  "where_this_campaign_sits": "between them, and closer to FAIL than the handed-off count suggests. Fourteen recurring operations now have owners, but the five that remain are the ones that decide what happens next: designing a candidate, noticing a new instrument defect, setting a claim boundary, adjudicating two disagreeing harnesses, and ruling an obligation met. Those are the loop, and Claude is still in it."
+ },
+ "gpu_authority": false,
+ "how_this_falls_honestly": "an operation moves out of the Claude column only when a module OWNS it - not when a module mentions it. The five remaining entries have no owner and are listed rather than dropped, so the count can only fall by real handoff.",
+ "obligation": "G106",
+ "register": [
+  {
+   "claude_owned": false,
+   "note": "an arm outside steady state is refused by the consumer rather than diagnosed by a person; the producer emits rep_spread",
+   "op": "interpret a benchmark discrepancy",
+   "owner": "tools/future/causal_pattern_library.py",
+   "rule": "RULE.UNSTEADY_ARM_IS_NOT_A_MEASUREMENT"
+  },
+  {
+   "claude_owned": false,
+   "note": "the split is measured before a target is chosen; two candidates attacked a 1.8% class before this existed",
+   "op": "decide whether an op-class is worth attacking",
+   "owner": "tools/future/op_class_ablation.py",
+   "rule": "RULE.MEASURE_THE_SPLIT_FIRST"
+  },
+  {
+   "claude_owned": false,
+   "note": "causal_question_id tracking, not prompt-string counting",
+   "op": "recognise that a search has gone degenerate",
+   "owner": "tools/future/productive_search.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "pause-measure-resume is encoded; G095 added the lesson that the supervisor must be suspended before the workers",
+   "op": "choose whether to take a protected measurement window",
+   "owner": "tools/future/protected_bench_lease.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "citations resolve against receipts and drift raises",
+   "op": "update the causal budget after a lever lands",
+   "owner": "tools/future/causal_budget_71.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "gap derived from disk authority; the escalation clock's phase is computed from a start stamped once",
+   "op": "compute the gap to a TPS target and what it licenses",
+   "owner": "tools/future/gap_ledger_60.py",
+   "rule": "RULE.SCHOOL_BOUNDED_BELOW_TARGET"
+  },
+  {
+   "claude_owned": false,
+   "note": "refused at proposal time in _item, before GPU time is spent",
+   "op": "suppress a hypothesis belonging to a dead school",
+   "owner": "tools/future/frontiers.py",
+   "rule": "RULE.SUPPRESS_REORDERING"
+  },
+  {
+   "claude_owned": false,
+   "note": "ranked by architecture distance over measured load cost; a scarred hypothesis loads nothing at all",
+   "op": "decide which model to load next",
+   "owner": "tools/future/specimen_scheduler.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "lifecycle derived from disk facts, not declared",
+   "op": "know what specimens exist and what state they are in",
+   "owner": "tools/future/specimen_registry.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "the watcher was always writing it; nothing read it",
+   "op": "check on ModelLake download progress",
+   "owner": "tools/future/modellake_scheduler_view.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "peak predicted before the load rather than OOM after it",
+   "op": "predict whether a specimen fits in memory",
+   "owner": "tools/future/uma_resource_ledger.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "measured on the real volume and scored held-out",
+   "op": "estimate what a load will cost",
+   "owner": "tools/future/specimen_load_cost.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "admission knows the horizon; five hours is fine at hour 4 and refused at hour 44",
+   "op": "decide whether an experiment is worth starting at this hour",
+   "owner": "tools/future/odyssey_mission_controller.py",
+   "rule": null
+  },
+  {
+   "claude_owned": false,
+   "note": "derived from what the obligation's text says it blocks; the unknown case blocks rather than defers",
+   "op": "classify whether an obligation blocks launch",
+   "owner": "tools/future/mission_class.py",
+   "rule": null
+  },
+  {
+   "claude_owned": true,
+   "note": "the ladder says WHERE the cost is; turning that into a bitcast unpack with the right mantissa constants was novel work and was wrong twice before it was right",
+   "op": "design the next kernel candidate once a ladder names the class",
+   "owner": null,
+   "rule": null
+  },
+  {
+   "claude_owned": true,
+   "note": "the warmup-5 bimodality was found by reading per-rep timings after a result refused to reproduce. The GUARD is now owned (rep_spread), but noticing a NEW instrument defect is not",
+   "op": "notice that a measurement instrument is defective",
+   "owner": null,
+   "rule": null
+  },
+  {
+   "claude_owned": true,
+   "note": "every module says what it does not claim; deciding what the boundary IS remains a judgement",
+   "op": "write the receipt prose that states a claim boundary",
+   "owner": null,
+   "rule": null
+  },
+  {
+   "claude_owned": true,
+   "note": "resident_reprofile and the organ profiler differ by 0.545 ms on the same control and nothing adjudicates that",
+   "op": "reconcile two harnesses that disagree",
+   "owner": null,
+   "rule": null
+  },
+  {
+   "claude_owned": true,
+   "note": "the integration gate proves tests pass; whether the acceptance text is SATISFIED is still read by a person",
+   "op": "decide that an obligation is met",
+   "owner": null,
+   "rule": null
+  }
+ ],
+ "seal_sha256": "5f8a315804357f98ceb52730fe6b4164afc48c1a281d865a78286571cd704bee"
+}

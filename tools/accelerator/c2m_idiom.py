@@ -253,8 +253,8 @@ def conformance_t2(results: list[dict[str, Any]], near_misses: list[dict[str, An
             "evidence is that kernels differing from the idiom in exactly one respect "
             "are REFUSED with that respect named.",
         "higher_tiers": {
-            "C2M-T3": "NOT CLAIMED: no real open CUDA project has been run, and "
-                      "recognition of 2 idioms will not carry one",
+            "C2M-T3": "NOT CLAIMED: a bounded source slice and one translated kernel "
+                       "are present, but project-level runtime coverage is still open",
             "C2M-T4": "NOT CLAIMED: no AI workload",
             "C2M-T5": "NOT CLAIMED: nothing is production-supported",
         },

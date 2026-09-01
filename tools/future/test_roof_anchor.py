@@ -192,8 +192,8 @@ def test_audit_covers_the_minimum_four():
     assert census["defect"] == "unstated_roof"
     budget = by_id["causal_budget_roof_on_todays_bytes"]
     assert budget["rests_on_roof_id"] == "q4_single_gemv_addr_13p6gb_max"
-    # NOT the digits. quoted_value is now checked against the receipt on
-    # construction, so asserting it here pinned a moment and broke when the
+    # NOT the digits. quoted_value is resolved from the source reference at
+    # evaluation time, so asserting it here pinned a moment and broke when the
     # budget was corrected. What must hold is that this rung rests on the
     # addr-probe roof and is known to steer priorities.
     assert budget["quote_checked"] is True
@@ -203,6 +203,14 @@ def test_audit_covers_the_minimum_four():
     assert path["rests_on_roof_id"] is None
     assert path["roof_named_in_record"] is False
     assert path["defect"] == "unstated_roof"
+    composed = by_id["path_to_71_best_composed"]
+    assert composed["source"]["artifact"] == ra.PATH_REL
+    assert composed["source"]["field"] == "gap_to_71.best_composed_tps"
+    assert isinstance(composed["source"]["tolerance"], float)
+    live = ra._resolve_field(composed["source"]["artifact"], composed["source"]["field"])
+    assert live is not ra._UNRESOLVABLE
+    assert composed["quoted_value"] == live
+    assert composed["quote_checked"] is True
 
 
 def test_causal_budget_47p97_names_497p4():

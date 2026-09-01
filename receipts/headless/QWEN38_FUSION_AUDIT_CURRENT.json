@@ -1,0 +1,305 @@
+{
+  "accepted_values": {
+    "HAWKING_QWEN38_FUSE_ADD_RMSNORM": {
+      "bad_control_values": [
+        "bad",
+        "plainweight"
+      ],
+      "enabled_values": [
+        "1",
+        "true",
+        "on"
+      ],
+      "unset_or_other": "disabled"
+    },
+    "HAWKING_QWEN38_FUSE_DN_INPROJ": {
+      "enabled_values": [
+        "1"
+      ],
+      "unset_or_other": "disabled (crate::env_on exact-one parser)"
+    },
+    "HAWKING_QWEN38_FUSE_GQA_QKV": {
+      "enabled_values": [
+        "1"
+      ],
+      "unset_or_other": "disabled (crate::env_on exact-one parser)"
+    },
+    "HAWKING_QWEN38_FUSE_MLP": {
+      "gate_up_pair": [
+        "pair",
+        "gate_up"
+      ],
+      "gate_up_swiglu": [
+        "swiglu",
+        "gate_up_swiglu",
+        "1",
+        "true",
+        "on",
+        "yes"
+      ],
+      "off": [
+        "unset",
+        "",
+        "0",
+        "off",
+        "false",
+        "no"
+      ],
+      "unknown": "panic before graph selection; never silently Off"
+    }
+  },
+  "checks": {
+    "no_physical_performance_claim": true,
+    "prior_receipt_retained": true,
+    "profile_exists": true,
+    "profile_fusion_controls_declared": true,
+    "selected_graph_is_source_derived": true,
+    "source_contract_passes": true
+  },
+  "claim_boundary": "This receipt resolves source semantics and derives a graph count; it does not claim that the selected graph was physically traced or that any TPS changed.",
+  "elapsed_s": 0.02,
+  "experiment": {
+    "class": "ACCEL-SOURCE",
+    "control": "Read-only inspection of checked-in Rust source, current profile, and prior fusion receipt.",
+    "hypothesis": "The current profile's MLP value swiglu selects the strongest gate+up+SwiGLU fusion, while sibling boolean levers use the exact-one convention.",
+    "id": "qwen38-fusion-source-authority",
+    "mutation": "NONE",
+    "performance_claim": false,
+    "physical_runtime_executed": false
+  },
+  "finished_at": 1787832165.475696,
+  "git_head": "f343beac5e7a57252a6870fc0cc62db1aea06887",
+  "prior_fusion_receipt": {
+    "bench_state": "UNKNOWN",
+    "dispatches_per_token": {
+      "after": 756,
+      "before": 964,
+      "command_buffers": 1,
+      "measured_after": 756,
+      "measured_before": 964,
+      "theoretical": {
+        "mlp_pair": 900,
+        "mlp_swiglu": 836,
+        "mlp_swiglu_qkv_dn": 756,
+        "unfused": 964
+      }
+    },
+    "git_head": "03373eae6c961158e3b929ecbd8f2c31302c1809",
+    "path": "/Users/scammermike/Downloads/hawking/receipts/headless/NOETIC_DISPATCH_FUSION.json",
+    "performance_claim_allowed": false,
+    "present": true
+  },
+  "profile": {
+    "fusion_env": {
+      "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+      "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+      "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+      "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+    },
+    "identity": {
+      "architecture": "unknown",
+      "artifact_inventory": {
+        "artifact_bytes": 10554328856,
+        "artifact_bytes_exact": true,
+        "artifact_bytes_source": "MIX_REPORT.json:payload_bytes",
+        "catalog": "/Users/scammermike/noetic/NOETIC_PARENT_A/catalog.hq38m20",
+        "mix_id": "mix_all_mlp_affine_g64_ls",
+        "n_tensors": 755
+      },
+      "artifact_root": "/Users/scammermike/noetic/NOETIC_PARENT_A",
+      "binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+      "binary_sha256_16": "2d5fd0f157fb7987",
+      "capabilities": {},
+      "compiler": {
+        "language": "rust",
+        "profile": "release-fast",
+        "source": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident"
+      },
+      "current_runtime": {
+        "complete_tps_current_measured": 24.4086,
+        "complete_tps_historical_qualified": 34.0,
+        "fallbacks": 0
+      },
+      "executable_profile": "release-fast",
+      "fallbacks": [
+        "transformers tokenizer fallback when unavailable"
+      ],
+      "family": "qwen3.8",
+      "fusion_env": {
+        "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+        "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+        "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+        "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+      },
+      "generation": {
+        "do_sample": false,
+        "enable_thinking": false,
+        "max_new_tokens": 2048,
+        "temperature": 0.0,
+        "top_k": 1,
+        "top_p": 1.0
+      },
+      "hot_bytes": null,
+      "limits": {
+        "context": 8192,
+        "max_new_tokens": 2048
+      },
+      "machine_genome": {},
+      "max_seq_len": 8192,
+      "mode": "resident",
+      "model_id": "qwen3.8-27b-sealed-3.14",
+      "param_class": "?B",
+      "physical_ebpw": 3.1393,
+      "profile_schema": "hcli.provider.profile.v1",
+      "prompt_contract": {
+        "fallback_template": "qwen_closed_think",
+        "renderer": "qwen-chat-template-or-closed-think-fallback",
+        "token_count_authority": "native-resident"
+      },
+      "protocol": "hawking.qwen38.resident.v1",
+      "provider": "native",
+      "qualification": "capability 30/43 historical sealed contract",
+      "quantisation": "unknown",
+      "receipts": [
+        "receipts/headless/CAPABILITY_noetic-sealed-3.14.json",
+        "receipts/headless/QWEN_COMPLETION_RECEIPT.json"
+      ],
+      "representation": {
+        "kind": "native-packed",
+        "physical_ebpw": 3.1393,
+        "weights_loaded_once": true
+      },
+      "require_fusion_env": true,
+      "resident_identity": "sealed-3.14",
+      "runtime": "hawking-native",
+      "runtime_env": {},
+      "tokenizer": "/Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json",
+      "tokenizer_sha256_16": "0997f410c57a1f4e"
+    },
+    "require_fusion_env": true
+  },
+  "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
+  "qualification": "QWEN38_FUSION_SOURCE_AUTHORITY_NO_PERFORMANCE_CLAIM",
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/QWEN38_FUSION_AUDIT_CURRENT.json",
+  "repo_root": "/Users/scammermike/Downloads/hawking",
+  "result": {
+    "current_profile_selected_graph": {
+      "baseline_source_derived": 964,
+      "physical_dispatch_trace": null,
+      "physical_trace_status": "NOT_MEASURED",
+      "saved_by_control": {
+        "add_rmsnorm": 128,
+        "ba_delta": 0,
+        "dn_inproj": 48,
+        "gqa_qkv": 32,
+        "mlp": 128
+      },
+      "selected_source_derived": 628
+    },
+    "finding": "swiglu is accepted as the strongest MLP fusion; 1/true/on/yes are also accepted only by the custom MLP parser, while sibling env_on flags accept exact 1.",
+    "next_experiment": "In one protected QUIESCED window, trace identical complete-token requests for the current 628-dispatch source-derived profile and one-control mutations; record dispatches, GPU/wall timing, capability, and fallback count.",
+    "physical_graph_trace": "NOT_MEASURED",
+    "status": "SOURCE_SEMANTICS_RESOLVED"
+  },
+  "schema": "hcli.agentos.qwen38_fusion_source_audit.v1",
+  "selected_graph": {
+    "dispatch_consequence": {
+      "baseline_source_derived": 964,
+      "physical_dispatch_trace": null,
+      "physical_trace_status": "NOT_MEASURED",
+      "saved_by_control": {
+        "add_rmsnorm": 128,
+        "ba_delta": 0,
+        "dn_inproj": 48,
+        "gqa_qkv": 32,
+        "mlp": 128
+      },
+      "selected_source_derived": 628
+    },
+    "dispatch_constants": {
+      "deltanet_layers": 48,
+      "dense_mlp_suffix_dispatches": 6,
+      "gqa_layers": 16,
+      "layers": 64,
+      "mixer_prefix_dispatches": 9,
+      "terminal_head_kernels": 3
+    },
+    "effective_controls": {
+      "fuse_add_rmsnorm": true,
+      "fuse_ba_delta": false,
+      "fuse_dn_inproj": true,
+      "fuse_gqa_qkv": true,
+      "mlp_fusion": "swiglu"
+    },
+    "kernel_family": "qwen_affine_q2_group64_matvec_gate_up_swiglu_geo_tpr64_tg128",
+    "profile_values": {
+      "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
+      "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
+      "HAWKING_QWEN38_FUSE_GQA_QKV": "1",
+      "HAWKING_QWEN38_FUSE_MLP": "swiglu"
+    }
+  },
+  "source_contract": {
+    "all_assertions_pass": true,
+    "assertions": {
+      "add_rmsnorm_enable_values_present": true,
+      "dispatch_formula_references_add_rmsnorm_savings": true,
+      "dispatch_formula_references_deltanet_savings": true,
+      "dispatch_formula_references_gqa_savings": true,
+      "dispatch_formula_references_mlp_savings": true,
+      "mlp_off_values_present": true,
+      "mlp_pair_values_present": true,
+      "mlp_parser_present": true,
+      "mlp_swiglu_values_present": true,
+      "mlp_unknown_value_panics": true,
+      "production_dispatch_formula_present": true,
+      "schedule_has_nine_plus_six": true,
+      "sibling_env_on_is_exact_one": true
+    },
+    "authority_lines": {
+      "add_rmsnorm_from_env": 137,
+      "dispatch_formula": 265,
+      "env_on": 198,
+      "mlp_from_env": 85,
+      "production_dispatches": 56
+    },
+    "files": {
+      "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/lib.rs": {
+        "exists": true,
+        "line_count": 229,
+        "sha256": "f437f58229d862f019aa92e26df5e2abd496e8b49e0f038054296c92593313ee"
+      },
+      "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_64_layer_execution_schedule.rs": {
+        "exists": true,
+        "line_count": 189,
+        "sha256": "e399c5bf6b86dfcf198091f031017a1adc66d435f7a1014e690aab66f1552456"
+      },
+      "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_geometry.rs": {
+        "exists": true,
+        "line_count": 579,
+        "sha256": "c722d11bc6aca57ab70d745e32dc63296edb33ae8d24f50df135231a4829c131"
+      },
+      "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_hybrid_decode.rs": {
+        "exists": true,
+        "line_count": 8650,
+        "sha256": "fbb11476dff889029d52451f95f538b7a7c39910d689d29e7b4e9a72a00b6746"
+      },
+      "/Users/scammermike/Downloads/hawking/crates/hawking-core/src/model/qwen38_token_ns_ledger.rs": {
+        "exists": true,
+        "line_count": 840,
+        "sha256": "12242ce30663b1e27a52f01e6142ca831de71bfb8abe915cf35cbfeff650b790"
+      }
+    }
+  },
+  "started_at": 1787832165.455905,
+  "status": "PASSED",
+  "bench": {
+    "state": "UNKNOWN",
+    "recorded_at": "2026-08-26T00:00:00Z",
+    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
+    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
+    "quiescence": null,
+    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
+    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
+  }
+}

@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.80608.receipt.json",
+    "repro_science.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F008: autonomy can launder weak evidence. repro_science.py exists. Replica does not become the source.",
+  "frontier_id": "FT.VERIFICATION.repro",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.80608",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.80608.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "8efeb8daf82a94fc613f2bcb3a5d8d3d8ec0103e0644d5fd34511196c4483348",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

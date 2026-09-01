@@ -1,0 +1,322 @@
+{
+  "claim_boundary": "device-resident protected-shaped continuation; deep per-layer parity, complete token, and resident promotion remain open",
+  "compact_experts": true,
+  "deep_verification": "linear groups retain stage parity; production fast mode seam pending",
+  "deep_verification_enabled": false,
+  "device_resident": true,
+  "elapsed_wall_ns": 52162694917,
+  "end_layer": 7,
+  "groups": [
+    {
+      "checkpoint": "one group checkpoint",
+      "end_layer": 2,
+      "group_wall_ns": 23078829666,
+      "kind": "linear_attention",
+      "layers": [
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 97561917,
+          "device_prepare_ns": 15835666,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            27115375
+          ],
+          "graph_setup_ns": 488000,
+          "host_ns": [
+            47571667
+          ],
+          "layer": 0,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            411,
+            334,
+            286,
+            152,
+            291,
+            106,
+            421,
+            304,
+            226,
+            331
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 4821586125,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 0,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 42
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 96612083,
+          "device_prepare_ns": 16068333,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            32915958
+          ],
+          "graph_setup_ns": 343458,
+          "host_ns": [
+            39017709
+          ],
+          "layer": 1,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            320,
+            19,
+            157,
+            46,
+            149,
+            131,
+            151,
+            367,
+            165,
+            452
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 5809445333,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 0,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 83
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 98841042,
+          "device_prepare_ns": 15911167,
+          "dispatches": 20,
+          "final_state": {
+            "cosine": 0.9999999999994688,
+            "finite": true,
+            "length_match": true,
+            "max_abs_error": 2.384185791015625e-7,
+            "rmse": 2.1827948287975716e-8,
+            "within_tolerance": true
+          },
+          "gpu_ns": [
+            33070750
+          ],
+          "graph_setup_ns": 396750,
+          "host_ns": [
+            38229416
+          ],
+          "layer": 2,
+          "layer_type": "linear_attention",
+          "output_sha256": "eb4ab2b15acd37335247a384ddd3cfaf248cbee6bb32176f4ac7d0acdbd469c9",
+          "route_ids_expected": [
+            75,
+            12,
+            209,
+            4,
+            9,
+            222,
+            5,
+            272,
+            114,
+            269
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 4845623541,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 0,
+          "status": "PASSED_TERMINAL_ONLY",
+          "warmup_ns": 0
+        }
+      ],
+      "receipt": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/group-0-2/receipt.json",
+      "start_layer": 0,
+      "state": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/group-0-2/state.f32"
+    },
+    {
+      "checkpoint": "one layer checkpoint",
+      "end_layer": 3,
+      "group_wall_ns": 6595855334,
+      "kind": "full_attention",
+      "receipt": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/layer-3/receipt.json",
+      "start_layer": 3,
+      "state": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/layer-3/state.f32"
+    },
+    {
+      "checkpoint": "one group checkpoint",
+      "end_layer": 6,
+      "group_wall_ns": 16932268959,
+      "kind": "linear_attention",
+      "layers": [
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 96279875,
+          "device_prepare_ns": 15799750,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            31867500
+          ],
+          "graph_setup_ns": 368625,
+          "host_ns": [
+            36403625
+          ],
+          "layer": 4,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            309,
+            252,
+            59,
+            106,
+            410,
+            453,
+            475,
+            306,
+            41,
+            162
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 4263874833,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 0,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 83
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 95373792,
+          "device_prepare_ns": 15158125,
+          "dispatches": 20,
+          "final_state": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "gpu_ns": [
+            30741958
+          ],
+          "graph_setup_ns": 337916,
+          "host_ns": [
+            35400041
+          ],
+          "layer": 5,
+          "layer_type": "linear_attention",
+          "output_sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+          "route_ids_expected": [
+            510,
+            446,
+            484,
+            397,
+            410,
+            236,
+            66,
+            263,
+            256,
+            314
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 6296094959,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 0,
+          "status": "HOT_UNVERIFIED",
+          "warmup_ns": 42
+        },
+        {
+          "command_buffers": 1,
+          "cpu_oracle_ns": 97825750,
+          "device_prepare_ns": 14766959,
+          "dispatches": 20,
+          "final_state": {
+            "cosine": 0.999999999999958,
+            "finite": true,
+            "length_match": true,
+            "max_abs_error": 2.384185791015625e-7,
+            "rmse": 1.088570615110162e-8,
+            "within_tolerance": true
+          },
+          "gpu_ns": [
+            36549624
+          ],
+          "graph_setup_ns": 330500,
+          "host_ns": [
+            41558333
+          ],
+          "layer": 6,
+          "layer_type": "linear_attention",
+          "output_sha256": "8f67760ede3dd135e80ce80fd85f18af58cb9752642ba91a1e8395545aa20233",
+          "route_ids_expected": [
+            223,
+            33,
+            283,
+            395,
+            256,
+            387,
+            286,
+            221,
+            80,
+            415
+          ],
+          "route_ids_match": true,
+          "route_ids_observed": [],
+          "route_weights": {
+            "status": "DEFERRED_TO_TERMINAL_PROBE"
+          },
+          "source_bytes_read": 253097408,
+          "source_load_ns": 5918557167,
+          "state_handoff": "device-final-state blit becomes next layer base; CPU snapshot disabled",
+          "state_snapshot_ns": 0,
+          "status": "PASSED_TERMINAL_ONLY",
+          "warmup_ns": 41
+        }
+      ],
+      "receipt": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/group-4-6/receipt.json",
+      "start_layer": 4,
+      "state": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/group-4-6/state.f32"
+    },
+    {
+      "checkpoint": "one layer checkpoint",
+      "end_layer": 7,
+      "group_wall_ns": 5555700584,
+      "kind": "full_attention",
+      "receipt": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/layer-7/receipt.json",
+      "start_layer": 7,
+      "state": "receipts/headless/FLASH_FAST_CACHE_L0_L7_V1/layer-7/state.f32"
+    }
+  ],
+  "metal_context": "cached in linear executor thread-local resource cache",
+  "process_boundary": "single_os_process",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_fast_chain.v1",
+  "source_index": "cached in linear executor thread-local resource cache",
+  "start_layer": 0,
+  "state_handoff": "device final-state blit between structural groups; host activation snapshots disabled in hot interval",
+  "status": "PASSED",
+  "terminal_receipt": null
+}

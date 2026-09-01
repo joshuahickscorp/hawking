@@ -1,4 +1,12 @@
 {
+  "alternatives": [
+    {
+      "consistent_with_claim": true,
+      "consistent_with_observation": true,
+      "hypothetical": "the named flags were measured and have these values"
+    }
+  ],
+  "causality_verdict": "SUPPORTED",
   "checks": {
     "A1_direct_resident": true,
     "A2_hawking_native_backend": true,
@@ -7,8 +15,20 @@
     "A5_hcli_structured_cognition": true,
     "A6_full_hcli_task": true
   },
+  "claim_kind": "field_value",
+  "confidence": {
+    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
+    "level": "HIGH",
+    "would_lower": "a demonstration that the observation is consistent with the claim being false",
+    "would_raise": "independent replication of the same probe"
+  },
+  "direct_observation": "n_stages=6; n_errors=0; stage_rows=[{'stage': 'A1_direct_resident', 'status': 'PASSED', 'passed': None, 'backend_class': 'subprocess-resident', 'error': None}, {'stage': 'A2_hawking_native_backend', 'status': 'PASSED', 'passed': None, 'backend_class': 'HawkingNativeConnector', 'error': None}, {'stage': 'A3_provider_abstraction', 'status': 'PASSED', 'passed': None, 'backend_class': 'NoeticNativeBackend', 'error': None}, {'stage': 'A4_hcli_plain_cognition', 'status': 'PASSED', 'passed': None, 'backend_class': 'Controller/Engine.complete_text', 'error': None}, {'stage': 'A5_hcli_structured_cognition', 'status': 'PASSED', 'passed': None, 'backend_class': 'Controller/Engine.execute', 'error': None}, {'stage': 'A6_full_hcli_task', 'status': 'PASSED', 'passed': None, 'backend_class': 'hcli-command', 'error': None}]; checks={A1_direct_resident=True, A2_hawking_native_backend=True, A3_provider_abstraction=True, A4_hcli_plain_cognition=True, A5_hcli_structured_cognition=True, A6_full_hcli_task=True}; unmet=[]",
   "errors": [],
+  "falsifier": "an independent probe of the same object the status names, not a reread of the status",
   "finished_at": 1787791361.574292,
+  "interpretation": "every required ladder stage recorded status=PASSED",
+  "probe_kind": "measured_flags",
+  "probe_performed": "live native reproduction ladder: A1 subprocess-resident, A2 HawkingNativeConnector.complete_payload, A3 NoeticNativeBackend.complete, A4 Controller.complete_text, A5 structured cognition, A6 hcli CLI task; profile /Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
   "profile_path": "/Users/scammermike/Downloads/hawking/hcli/hawking-native.sealed-3.14.json",
   "prompt": "Return exactly: HAWKING_OK",
   "prompt_contract": {

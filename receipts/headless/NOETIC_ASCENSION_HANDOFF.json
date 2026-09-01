@@ -1,9 +1,9 @@
 {
   "schema": "hawking.headless.noetic_ascension_handoff.v1",
-  "generated_at": "2026-08-26T10:13:57Z",
+  "generated_at": "2026-09-01T05:52:47Z",
   "builder": "tools/headless/noetic_ascension_handoff.py",
   "loop": "tools/headless/noetic_ascension_loop.py",
-  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+  "git_head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
   "branch": "odyssey-i",
   "sparse": {
     "on": false,
@@ -580,20 +580,37 @@
   },
   "negative_science": {
     "value": {
-      "obligation": "G021 \u2014 NEGATIVE_SCIENCE THREE-LEVEL (directive \u00a780, \u00a781)",
+      "obligation": "Every representation idea this project already killed, classified PROPERTY_OF_IDEA vs ARTIFACT_OF_METHOD, with a reopen condition and whether that condition holds TODAY. A refutation of a measurement is not a refutation of an idea.",
       "counts": {
-        "total": 39,
-        "by_level": {
-          "MODEL_SPECIFIC": 39,
-          "FAMILY": 0,
-          "GENERAL_PHYSICAL": 0
-        },
-        "qwen_measured": 8,
-        "migrated_from_v1": 31,
-        "rejected_at_admission": 1
+        "entries": 32,
+        "property_of_idea": 21,
+        "artifact_of_method": 11,
+        "seeds": 8,
+        "seeds_confirmed": 4,
+        "seeds_corrected": 4,
+        "live_opportunities": 10,
+        "evidence_paths_missing": [],
+        "numbers_unconfirmed": []
       },
-      "live_opportunity_ids": [],
-      "nns015": null
+      "live_opportunity_ids": [
+        "NNS-001",
+        "NNS-004",
+        "NNS-005",
+        "NNS-006",
+        "NNS-009",
+        "NNS-010",
+        "NNS-011",
+        "NNS-015",
+        "NNS-016",
+        "NNS-032"
+      ],
+      "nns015": {
+        "id": "NNS-015",
+        "kind": "PROPERTY_OF_IDEA",
+        "callout": "LIVE AVENUE \u2014 PHASE_B_HYBRID left distillation as the sole surviving MLP-byte path and it has not been run.",
+        "reopen_condition": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
+        "why_today": "no distilled-operator Doctor receipt; PHASE_B_HYBRID.reopen_if still open"
+      }
     },
     "evidence_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
     "reproducing_command": [
@@ -771,7 +788,7 @@
       {
         "id": "doctor.distilled_mlp_operator",
         "role": "experiment",
-        "description": null,
+        "description": "A distilled/generated operator, trained to match the MLP function, achieves q3 quality at materially fewer active bytes held-out across layers, with Doctor holding. That experiment has not been run.",
         "preferred_backend": "tool",
         "resource_class": "LIGHT_CONTROL",
         "source_receipt": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
@@ -1621,14 +1638,5 @@
       "tools/headless/noetic_ascension_handoff.py",
       "--refuse-only"
     ]
-  },
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
   }
 }

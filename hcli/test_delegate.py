@@ -618,8 +618,9 @@ def test_main_routes_the_old_positional_form_to_the_app(monkeypatch):
         def __init__(self, **kwargs):
             seen.update(kwargs)
 
-        def run(self, prompt=None):
+        def run(self, prompt=None, *, plain=False):
             seen["prompt"] = prompt
+            seen["plain"] = plain
             return 0
 
     monkeypatch.setattr(hcli.app, "App", RecordingApp)

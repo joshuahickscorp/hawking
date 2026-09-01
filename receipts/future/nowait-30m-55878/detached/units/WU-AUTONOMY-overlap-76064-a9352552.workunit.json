@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.76064.receipt.json",
+    "codex_ingest.py"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "F016 closed the routing loop; PROPAGATION_STATE shows applied=0 and skipped_as_duplicate in the hundreds. That is not compounding. CPU work: name the real novel deltas, if any.",
+  "frontier_id": "FT.TOOLS.propagate-skips",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.overlap.76064",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.overlap.76064.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "1c5cad9b131caebd85a00435397f194d03157f9d26509f938b7894a1c0e7278e",
+  "timeout_s": 600.0,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

@@ -1,0 +1,13 @@
+{
+  "schema": "hawking.flash.detached_result.v1",
+  "status": "COMPLETE",
+  "summary": "receipts/headless/FLASH_DEVICE_RESIDENT_L40_L47_V1/FAST_CHAIN_SUMMARY.json",
+  "receipts": [
+    "group-40-42/receipt.json",
+    "group-44-46/receipt.json",
+    "layer-43/receipt.json",
+    "layer-47/receipt.json",
+    "terminal.json"
+  ],
+  "completed_unix_ns": 1787941974445619000
+}

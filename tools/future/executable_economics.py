@@ -74,9 +74,24 @@ BA_REL = "receipts/future/BA_DELTA_AB.json"
 # them are re-measured here.
 # ---------------------------------------------------------------------------
 
-CITED_TOKEN_MS = 28.722
-CITED_HOST_MS = cb.HOST_GAP_MS  # 0.989
-CITED_GPU_MS = 27.733
+# THE BASELINE IS READ, NOT REMEMBERED. 28.722 was the pre-widen_f4 anchor and
+# was hard-coded here through two rebases: G131 promoted three levers to sealed
+# defaults and measured 21.9464 ms GPU in a protected window, so every
+# predicted_token_ms in this gate was 6.8 ms stale and every predicted TPS with
+# it. The unit matters too - this file prices BYTES at GPU stream rates, so the
+# GPU figure is the right basis and the old wall/gpu split is not needed.
+def _cited_token_ms() -> tuple[float, float, str]:
+    """(gpu_ms, host_ms, basis). Falls back loudly rather than silently."""
+    p = REPO / "receipts/future/SEALED_DEFAULT_ABSOLUTE.json"
+    if p.is_file():
+        m = json.loads(p.read_text())["measured"]
+        return (float(m["gpu_ms_per_token"]), float(m["host_gap_ms"]),
+                "GPU_SEALED_DEFAULT")
+    return 27.733, cb.HOST_GAP_MS, "CITED_PRE_PROMOTION_FALLBACK"
+
+
+CITED_GPU_MS, CITED_HOST_MS, CITED_BASIS = _cited_token_ms()
+CITED_TOKEN_MS = CITED_GPU_MS + CITED_HOST_MS
 TPS_71_TOKEN_MS = 1000.0 / 71.0  # 14.085
 TPS_71_GPU_MS = TPS_71_TOKEN_MS - CITED_HOST_MS  # 13.096
 GPU_REDUCTION_FOR_71 = 1.0 - TPS_71_GPU_MS / CITED_GPU_MS  # 52.8%

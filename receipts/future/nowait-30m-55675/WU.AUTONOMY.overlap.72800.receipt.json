@@ -1,0 +1,1 @@
+{"module": "workgraph.py", "entry_point": "build", "receipt": "receipts/future/WORKGRAPH_STATE.json", "routed_to_frontier": "FT.HCLI_SELF.no-launch", "species": "HCLI_SELF_OPTIMIZE", "wall_seconds": 0.064, "evidence_class": "STATIC_ONLY"}

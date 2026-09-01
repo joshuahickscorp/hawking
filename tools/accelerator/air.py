@@ -79,6 +79,7 @@ ELEMENTWISE = {
     "add": "{a} + {b}",
     "mul": "{a} * {b}",
     "sub": "{a} - {b}",
+    "scale": "({t})ALPHA * {a}",
     "saxpy": "ALPHA * {a} + {b}",
     "relu": "max(({t}){a}, ({t})0)",
     "silu": "{a} / ({t})(1.0 + exp(-(float){a}))",
@@ -149,7 +150,7 @@ class AirOp:
     def __post_init__(self):
         if self.kind not in ELEMENTWISE:
             raise ValueError(f"unknown AIR op {self.kind!r}; known: {sorted(ELEMENTWISE)}")
-        want = 1 if self.kind in ("relu", "silu") else 2
+        want = 1 if self.kind in ("relu", "silu", "scale") else 2
         if len(self.inputs) != want:
             raise ValueError(f"{self.kind} takes {want} input(s), got {len(self.inputs)}")
 

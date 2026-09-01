@@ -282,7 +282,7 @@ def project_context(repo: Path, *, lock_path: Path = GPU_LOCK) -> dict[str, Any]
         "schema": "hawking.hcli.special_unit.project_context.v1",
         "repo": str(repo),
         "git": _git_snapshot(repo),
-        "superwave_head": _read_text(repo / "SUPERWAVE_STATE.md", 1800),
+        "superwave_head": _read_text(repo / "docs" / "archive" / "SUPERWAVE_STATE.md", 1800),
         "recent_ascent_receipts": receipts,
         "gpu_lock_owner": owner,
         "model_identity": {

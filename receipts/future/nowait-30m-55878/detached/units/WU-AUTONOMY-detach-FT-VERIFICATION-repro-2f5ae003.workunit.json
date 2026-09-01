@@ -1,0 +1,22 @@
+{
+  "classification": "STATIC_ONLY",
+  "command": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/_bound_run.py",
+    "shell",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+    "[\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"tools/future/test_mlp_byte_census.py\", \"-q\", \"-p\", \"no:cacheprovider\"]"
+  ],
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "description": "verify the MLP byte census reconciles, as a bounded multi-second detached job the scheduler can work around",
+  "frontier_id": "FT.VERIFICATION.repro",
+  "gpu_authority": false,
+  "id": "WU.AUTONOMY.detach.FT.VERIFICATION.repro",
+  "output_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55878/WU.AUTONOMY.detach.FT.VERIFICATION.repro.receipt.json",
+  "resource_class": "STATIC_ANALYSIS",
+  "role": "science",
+  "seal_sha256": "b4118ae7ba395f543ae0002e39d5db8033bcb20e89beb4cb8c09c2cf98bb03f7",
+  "timeout_s": 1781.5651330947876,
+  "verifier": "future.no_wait_scheduler.ingest_ready"
+}

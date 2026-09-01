@@ -1,0 +1,62 @@
+{
+  "argv": [
+    "/opt/homebrew/opt/python@3.14/bin/python3.14",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/_bound_run.py",
+    "cap",
+    "/Users/scammermike/Downloads/hawking",
+    "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.TORTURE.NO_WAIT.specimen_verify.receipt.json",
+    "specimen_verify.py"
+  ],
+  "attempts": 0,
+  "cancel_requested": false,
+  "crash_reason": null,
+  "cwd": "/Users/scammermike/Downloads/hawking",
+  "expected_receipt_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.TORTURE.NO_WAIT.specimen_verify.receipt.json",
+  "finished_at": 1788203326.788694,
+  "identity_status": "dead",
+  "job_id": "WU-TORTURE-NO_WAIT-specimen_verify-928c227a",
+  "launch_refused": false,
+  "log_paths": {
+    "stderr": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/detached/logs/WU-TORTURE-NO_WAIT-specimen_verify-928c227a.stderr.log",
+    "stdout": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/detached/logs/WU-TORTURE-NO_WAIT-specimen_verify-928c227a.stdout.log"
+  },
+  "pgid": 98629,
+  "pid": 98629,
+  "resource_class": "STATIC_ANALYSIS",
+  "resource_lease": {
+    "held": false,
+    "kind": null,
+    "reason": "this lane never takes a GPU or bench lease; flock of the protected lock would be a seizure",
+    "refused": true
+  },
+  "result_location": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/WU.TORTURE.NO_WAIT.specimen_verify.receipt.json",
+  "retry_policy": {
+    "max_attempts": 3,
+    "never_resume_mid_execution": true,
+    "never_retry_on": [
+      "cancelled",
+      "completed-with-receipt",
+      "completed-without-receipt",
+      "timed_out",
+      "unknown"
+    ],
+    "policy": "rerun",
+    "retry_on": [
+      "crashed"
+    ],
+    "source": "hcli/workunit.py RESUME_POLICY + DEFAULT_RETRY_BUDGET"
+  },
+  "returncode": 0,
+  "running_at": 1788202785.058034,
+  "schema": "hawking.future.detached.supervision.v1",
+  "start_token": "1788202785.049805",
+  "started_at": 1788202784.987714,
+  "state": "TERMINAL",
+  "supervisor_pid": 98627,
+  "supervisor_start_token": "1788202784.988302",
+  "terminal": "completed-with-receipt",
+  "timeout_s": 1779.0378720760345,
+  "workunit_id": "WU.TORTURE.NO_WAIT.specimen_verify",
+  "workunit_path": "/Users/scammermike/Downloads/hawking/receipts/future/nowait-30m-55675/detached/units/WU-TORTURE-NO_WAIT-specimen_verify-928c227a.workunit.json",
+  "workunit_seal_sha256": "3263eca15320168d7a30fb63dd2ef7dc4fc5f2b3aeb2a6eaa5e79601af86547b"
+}

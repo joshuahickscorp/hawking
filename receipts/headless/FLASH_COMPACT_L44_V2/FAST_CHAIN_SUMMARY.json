@@ -1,0 +1,36 @@
+{
+  "claim_boundary": "fast grouped continuation reduces index/context and receipt ceremony but is not yet a device-resident complete-token runtime",
+  "compact_experts": true,
+  "deep_verification": "linear groups retain stage parity; production fast mode seam pending",
+  "elapsed_wall_ns": 14329093042,
+  "end_layer": 44,
+  "groups": [
+    {
+      "checkpoint": "one group checkpoint",
+      "end_layer": 44,
+      "group_wall_ns": 14328941542,
+      "kind": "linear_attention",
+      "layers": [
+        {
+          "dispatches": 20,
+          "layer": 44,
+          "layer_type": "linear_attention",
+          "source_bytes_read": 253097408,
+          "status": "PASSED"
+        }
+      ],
+      "receipt": "receipts/headless/FLASH_COMPACT_L44_V2/group-44-44/receipt.json",
+      "start_layer": 44,
+      "state": "receipts/headless/FLASH_COMPACT_L44_V2/group-44-44/state.f32"
+    }
+  ],
+  "metal_context": "cached in linear executor thread-local resource cache",
+  "process_boundary": "single_os_process",
+  "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+  "schema": "hawking.flash_fast_chain.v1",
+  "source_index": "cached in linear executor thread-local resource cache",
+  "start_layer": 44,
+  "state_handoff": "host f32 checkpoint per structural group; device-resident handoff pending",
+  "status": "PASSED",
+  "terminal_receipt": null
+}

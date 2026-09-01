@@ -1,0 +1,224 @@
+{
+ "activations": "real captured prefix, 4 real vocabulary tokens, not Gaussian",
+ "arms_are_matched": {
+  "n_groups_checked": 12,
+  "tolerance": 0.01,
+  "why_it_matters": "gate and up are 17408x5120 while down is 5120x17408. Comparing damage across them is only meaningful because the same NUMBER of elements is destroyed, not the same fraction of a different shape.",
+  "worst_element_count_spread": 0.00046
+ },
+ "authority": "S031 \u00a75-\u00a712, \u00a722",
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T00:58:44Z",
+  "recorded_by": "tools/future/functional_role_probe.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "measure": "hidden_after_2_layers_cosine",
+ "method": "zero a random `frac` of OUTPUT ROWS of one MLP tensor at one layer, replay every prompt token from that layer through +2 layers, compare hidden state by cosine against the unperturbed replay",
+ "obligation": "G118",
+ "perturbation": "zero_rows",
+ "ranking": {
+  "down_is_most_sensitive_everywhere": false,
+  "gate_over_up_range": [
+   0.4813,
+   1.3082
+  ],
+  "n_points": 12,
+  "n_where_down_is_most_sensitive": 9,
+  "points": [
+   {
+    "damage": {
+     "down": 0.000189,
+     "gate": 8.9e-05,
+     "up": 0.000186
+    },
+    "down_over_gate": 2.1148,
+    "frac": 0.05,
+    "gate_over_up": 0.4813,
+    "layer": 0,
+    "least_sensitive": "gate",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.000397,
+     "gate": 0.000395,
+     "up": 0.000604
+    },
+    "down_over_gate": 1.0064,
+    "frac": 0.1,
+    "gate_over_up": 0.654,
+    "layer": 0,
+    "least_sensitive": "gate",
+    "most_sensitive": "up"
+   },
+   {
+    "damage": {
+     "down": 0.00122,
+     "gate": 0.000706,
+     "up": 0.000678
+    },
+    "down_over_gate": 1.7265,
+    "frac": 0.2,
+    "gate_over_up": 1.0416,
+    "layer": 0,
+    "least_sensitive": "up",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.002312,
+     "gate": 0.002166,
+     "up": 0.001896
+    },
+    "down_over_gate": 1.0671,
+    "frac": 0.4,
+    "gate_over_up": 1.1427,
+    "layer": 0,
+    "least_sensitive": "up",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.000448,
+     "gate": 0.000292,
+     "up": 0.000244
+    },
+    "down_over_gate": 1.5366,
+    "frac": 0.05,
+    "gate_over_up": 1.1943,
+    "layer": 21,
+    "least_sensitive": "up",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.000794,
+     "gate": 0.000728,
+     "up": 0.000557
+    },
+    "down_over_gate": 1.0907,
+    "frac": 0.1,
+    "gate_over_up": 1.3082,
+    "layer": 21,
+    "least_sensitive": "up",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.001658,
+     "gate": 0.001256,
+     "up": 0.001269
+    },
+    "down_over_gate": 1.3206,
+    "frac": 0.2,
+    "gate_over_up": 0.9895,
+    "layer": 21,
+    "least_sensitive": "gate",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.003097,
+     "gate": 0.002565,
+     "up": 0.002552
+    },
+    "down_over_gate": 1.2074,
+    "frac": 0.4,
+    "gate_over_up": 1.0051,
+    "layer": 21,
+    "least_sensitive": "up",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.00083,
+     "gate": 0.000466,
+     "up": 0.000507
+    },
+    "down_over_gate": 1.7812,
+    "frac": 0.05,
+    "gate_over_up": 0.9193,
+    "layer": 42,
+    "least_sensitive": "gate",
+    "most_sensitive": "down"
+   },
+   {
+    "damage": {
+     "down": 0.001459,
+     "gate": 0.00153,
+     "up": 0.00145
+    },
+    "down_over_gate": 0.954,
+    "frac": 0.1,
+    "gate_over_up": 1.0552,
+    "layer": 42,
+    "least_sensitive": "up",
+    "most_sensitive": "gate"
+   },
+   {
+    "damage": {
+     "down": 0.002673,
+     "gate": 0.002491,
+     "up": 0.0029
+    },
+    "down_over_gate": 1.073,
+    "frac": 0.2,
+    "gate_over_up": 0.8587,
+    "layer": 42,
+    "least_sensitive": "gate",
+    "most_sensitive": "up"
+   },
+   {
+    "damage": {
+     "down": 0.005905,
+     "gate": 0.005527,
+     "up": 0.004526
+    },
+    "down_over_gate": 1.0684,
+    "frac": 0.4,
+    "gate_over_up": 1.2212,
+    "layer": 42,
+    "least_sensitive": "up",
+    "most_sensitive": "down"
+   }
+  ]
+ },
+ "robustness": {
+  "at_fraction_zeroed": 0.4,
+  "caveat": "hidden-state cosine two layers downstream is not capability, and a flat fidelity curve is exactly the situation where a capability cliff could still hide. This licenses the next experiment, not a deletion.",
+  "statement": "zeroing 40% of the output rows of down at layer 42 - 35,651,584 elements - moves the hidden state by 0.0059 of cosine. The MLP tolerates enormous row destruction at this measurement depth.",
+  "why_this_is_the_bigger_result": "byte elimination needs to know how much can go, not which tensor goes first. A curve this flat says the binding constraint is not found at this level of measurement, and that the capability-level experiment is the one worth running.",
+  "worst_damage": 0.005905,
+  "worst_layer": 42,
+  "worst_tensor": "down"
+ },
+ "role_labels": {
+  "down": "BULK_LINEAR",
+  "gate": "CONTROL",
+  "up": "BULK_LINEAR"
+ },
+ "role_labels_are_a_hypothesis_layer": "S031 \u00a77: these are the resident's candidate labels, not source truth, and each has to be testable. This receipt tests them.",
+ "seal_sha256": "95f23a7c28c030ad585b9153f157a5a019b1742a6dac0422d34ab9e80b20dd9b",
+ "this_is_the_behaviour_being_graded": "S031 \u00a748: the grade is not whether the gate proved important. The resident proposed a structural hypothesis, the lab built the matched control it implies, and the belief moved on the result. Its first idea died on mutual information; its second died on matched perturbation.",
+ "verdict": {
+  "down_is_most_sensitive_everywhere": false,
+  "gate_over_up_range": [
+   0.4813,
+   1.3082
+  ],
+  "hypothesis": "information value follows functional role: CONTROL (the SwiGLU gate) deserves literal information while BULK_LINEAR (up, down) can be generated or shared",
+  "measured_at_level": "LOCAL_FUNCTIONAL_FIDELITY",
+  "proposed_by": "the resident, sealed-3.14, unprompted",
+  "status": "REFUTED",
+  "what_survives_of_it": "the shape of the question. Functional role remains a legitimate allocation axis; what is refuted is this particular assignment - gate high, up and down low. The measurement points at down, which writes directly into the residual stream, rather than at the gate.",
+  "what_this_does_not_close": "S031 \u00a79 forbids local cosine as the final verdict. This measures LOCAL_FUNCTIONAL_FIDELITY two layers downstream, not CAPABILITY. A role could still carry unequal CAPABILITY value while carrying equal fidelity value, and that experiment has not been run.",
+  "why": "gate is 0.4813x to 1.3082x as damaging as up per matched element - not the separation the hypothesis needs - and DOWN, which the resident placed in the generate-or-share bucket, is the most sensitive tensor at 9 of 12 measured points."
+ }
+}

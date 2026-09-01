@@ -1,19 +1,17 @@
 {
- "allowed": false,
+ "allowed": true,
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-08-30T15:43:36Z",
+  "recorded_at": "2026-09-01T05:22:41Z",
   "recorded_by": "tools/future/consolidated_run.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "branch": "odyssey-i",
  "claim_boundary": "Static sidecar artifact. No hardware measurement. A REFUSED receipt is not Odyssey started. The run descriptor is emitted only when every odyssey_launch criterion is met; the supervisor executes, this module does not.",
- "descriptor": null,
- "descriptor_emitted": false,
- "disk_inventory": {
+ "descriptor": {
   "blocked_triggers": {
    "items": [
     {
@@ -226,6 +224,144 @@
       "synthetic result",
       "lease seizure / flock",
       "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_cache_behaviour",
+     "id": "FT.MODEL_EXECUTION.capacity-cache_behaviour",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class F: cache behaviour",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_command_queue_topology",
+     "id": "FT.MODEL_EXECUTION.capacity-command_queue_topology",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class G: command queue topology",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_instruction_dependency_chain",
+     "id": "FT.MODEL_EXECUTION.capacity-instruction_dependency_chain",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class D: instruction dependency chain",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_kernel_shape_underfill",
+     "id": "FT.MODEL_EXECUTION.capacity-kernel_shape_underfill",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class I: kernel shape underfill",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_memory_level_parallelism",
+     "id": "FT.MODEL_EXECUTION.capacity-memory_level_parallelism",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class E: memory level parallelism",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_occupancy",
+     "id": "FT.MODEL_EXECUTION.capacity-occupancy",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class B: occupancy",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
      ]
     },
     {
@@ -443,11 +579,13 @@
      "workunit_id": "odyssey-i.sleep.teacher-capture"
     }
    ],
-   "n": 20,
+   "n": 26,
    "reason": null,
    "source": "tools.future.frontiers.load_book+tools.future.odyssey_launch.physical_blockers",
    "status": "PRESENT"
   },
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. A REFUSED receipt is not Odyssey started. The run descriptor is emitted only when every odyssey_launch criterion is met; the supervisor executes, this module does not.",
+  "evidence_class": "STATIC_ONLY",
   "evidence_dag_handle": {
    "reason": null,
    "source": "tools.future.evidence_dag",
@@ -497,6 +635,15 @@
     ]
    }
   },
+  "gate": {
+   "allowed": true,
+   "n_met": 16,
+   "n_unmet": 0,
+   "unmet": [],
+   "verdict": "LAUNCH"
+  },
+  "git_head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
+  "gpu_authority": false,
   "machine_genome": {
    "reason": null,
    "source": "receipts/headless/MACHINE_GENOME.json",
@@ -687,6 +834,279 @@
   "phase_i_workgraphs": {
    "emit_errors": [],
    "items": [
+    {
+     "by_stage": {
+      "architecture_fingerprint": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint",
+      "capability": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability",
+      "doctor": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor",
+      "gravity": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity",
+      "laws": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws",
+      "native_execution": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution",
+      "nr": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr",
+      "nx": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx",
+      "pareto": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto",
+      "phase_ii_transfer": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+      "phase_iii_attack": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+      "physical_profiling": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling",
+      "representation_search": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search",
+      "scars": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.scars",
+      "specimen_verification": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification"
+     },
+     "launchable_specimen": true,
+     "n_units": 15,
+     "note": "Real HCLI WorkUnits for a curriculum-ready specimen. Emitting them is not executing them.",
+     "phase_listen": {
+      "barrier": null,
+      "global_barrier": false,
+      "no_era_vi": true,
+      "no_odyssey_iv": true,
+      "odysseys": [
+       "I WHAT IS TRUE?",
+       "II WHAT DID HAWKING ALREADY LEARN?",
+       "III WHERE IS HAWKING WRONG?"
+      ],
+      "phase_ii_depends_on": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "phase_ii_depends_on_phase_iii": false,
+      "phase_iii_depends_on": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "phase_iii_depends_on_phase_ii": false,
+      "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+     },
+     "role": "very_small_dense_procedural_speed",
+     "specimen": {
+      "repo": "Qwen/Qwen3-0.6B",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "slug": "qwen3-0-6b@c1899de289a0"
+     },
+     "stages": [
+      "specimen_verification",
+      "architecture_fingerprint",
+      "doctor",
+      "gravity",
+      "representation_search",
+      "physical_profiling",
+      "nr",
+      "nx",
+      "native_execution",
+      "capability",
+      "pareto",
+      "laws",
+      "scars"
+     ],
+     "units": [
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "architecture_fingerprint",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "capability",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.capability:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "doctor",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.doctor:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "gravity",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.gravity:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "laws",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.laws:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "native_execution",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.native_execution:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NR_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "COMPILE",
+       "sleeping": false,
+       "stage": "nr",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.nr:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NX_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "nx",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.nx:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "pareto",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.pareto:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+       "odyssey": "II",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_ii_transfer",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+       "odyssey": "III",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_iii_attack",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "physical_profiling",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.physical_profiling:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "representation_search",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.representation_search:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.scars",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "scars",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.scars:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "specimen_verification",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.specimen_verification:qwen3-0-6b@c1899de289a0"
+      }
+     ]
+    },
     {
      "by_stage": {
       "architecture_fingerprint": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
@@ -1004,7 +1424,7 @@
      "role": "mid_size_dense_compiler",
      "specimen": {
       "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
-      "revision": "68faf511d618",
+      "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
       "slug": "mistral-small-3-1-24b-instruct-2503@68faf511d618"
      },
      "stages": [
@@ -1505,16 +1925,312 @@
        "verifier": "future.odyssey_launch.workgraph.specimen_verification:qwen3-8-27b@unpinned"
       }
      ]
+    },
+    {
+     "by_stage": {
+      "architecture_fingerprint": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.architecture_fingerprint",
+      "capability": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.capability",
+      "doctor": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.doctor",
+      "gravity": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.gravity",
+      "laws": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws",
+      "native_execution": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.native_execution",
+      "nr": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nr",
+      "nx": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nx",
+      "pareto": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.pareto",
+      "phase_ii_transfer": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+      "phase_iii_attack": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+      "physical_profiling": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.physical_profiling",
+      "representation_search": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.representation_search",
+      "scars": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.scars",
+      "specimen_verification": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.specimen_verification"
+     },
+     "launchable_specimen": true,
+     "n_units": 15,
+     "note": "Real HCLI WorkUnits for a curriculum-ready specimen. Emitting them is not executing them.",
+     "phase_listen": {
+      "barrier": null,
+      "global_barrier": false,
+      "no_era_vi": true,
+      "no_odyssey_iv": true,
+      "odysseys": [
+       "I WHAT IS TRUE?",
+       "II WHAT DID HAWKING ALREADY LEARN?",
+       "III WHERE IS HAWKING WRONG?"
+      ],
+      "phase_ii_depends_on": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "phase_ii_depends_on_phase_iii": false,
+      "phase_iii_depends_on": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "phase_iii_depends_on_phase_ii": false,
+      "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+     },
+     "role": "flash_heterogeneous_frontier",
+     "specimen": {
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "slug": "qwen3-8-flash-next@34567a4712bc"
+     },
+     "stages": [
+      "specimen_verification",
+      "architecture_fingerprint",
+      "doctor",
+      "gravity",
+      "representation_search",
+      "physical_profiling",
+      "nr",
+      "nx",
+      "native_execution",
+      "capability",
+      "pareto",
+      "laws",
+      "scars"
+     ],
+     "units": [
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.specimen_verification"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.architecture_fingerprint",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "architecture_fingerprint",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.native_execution"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.capability",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "capability",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.capability:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.architecture_fingerprint"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.doctor",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "doctor",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.doctor:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.doctor"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.gravity",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "gravity",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.gravity:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.pareto"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "laws",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.laws:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nx"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.native_execution",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "native_execution",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.native_execution:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.physical_profiling"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nr",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NR_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "COMPILE",
+       "sleeping": false,
+       "stage": "nr",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.nr:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nr"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nx",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NX_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "nx",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.nx:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.capability"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.pareto",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "pareto",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.pareto:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+       "odyssey": "II",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_ii_transfer",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+       "odyssey": "III",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_iii_attack",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.representation_search"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.physical_profiling",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "physical_profiling",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.physical_profiling:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.gravity"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.representation_search",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "representation_search",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.representation_search:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.scars",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "scars",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.scars:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.specimen_verification",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "specimen_verification",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.specimen_verification:qwen3-8-flash-next@34567a4712bc"
+      }
+     ]
     }
    ],
-   "n": 3,
-   "n_ready_roles": 3,
+   "n": 5,
+   "n_ready_roles": 5,
    "reason": null,
    "source": "tools.future.odyssey_launch.emit_first_workgraphs",
    "status": "PRESENT"
   },
   "phase_ii_listener": {
    "items": [
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+     "odyssey": "II",
+     "specimen": "Qwen/Qwen3-0.6B",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+      "odyssey": "II",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_ii_transfer",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-0-6b@c1899de289a0"
+     }
+    },
     {
      "depends_on": [
       "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
@@ -1583,9 +2299,32 @@
       "status": "pending",
       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-8-27b@unpinned"
      }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+     "odyssey": "II",
+     "specimen": "Qwen/Qwen3.8-Flash-Next",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+      "odyssey": "II",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_ii_transfer",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-8-flash-next@34567a4712bc"
+     }
     }
    ],
-   "n": 3,
+   "n": 5,
    "reason": null,
    "source": "tools.future.odyssey_launch.phase_listen_policy",
    "status": "PRESENT",
@@ -1594,17 +2333,42 @@
     "depends_on_sibling": false,
     "global_barrier": false,
     "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
      "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_ii_transfer",
      "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_ii_transfer",
-     "odyssey-i.wg.qwen3-8-27b@unpinned.phase_ii_transfer"
+     "odyssey-i.wg.qwen3-8-27b@unpinned.phase_ii_transfer",
+     "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer"
     ],
-    "n": 3,
+    "n": 5,
     "odyssey": "II",
     "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
    }
   },
   "phase_iii_listener": {
    "items": [
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+     "odyssey": "III",
+     "specimen": "Qwen/Qwen3-0.6B",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+      "odyssey": "III",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_iii_attack",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-0-6b@c1899de289a0"
+     }
+    },
     {
      "depends_on": [
       "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
@@ -1673,9 +2437,32 @@
       "status": "pending",
       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-8-27b@unpinned"
      }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+     "odyssey": "III",
+     "specimen": "Qwen/Qwen3.8-Flash-Next",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+      "odyssey": "III",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_iii_attack",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-8-flash-next@34567a4712bc"
+     }
     }
    ],
-   "n": 3,
+   "n": 5,
    "reason": null,
    "source": "tools.future.odyssey_launch.phase_listen_policy",
    "status": "PRESENT",
@@ -1684,11 +2471,13 @@
     "depends_on_sibling": false,
     "global_barrier": false,
     "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
      "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_iii_attack",
      "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_iii_attack",
-     "odyssey-i.wg.qwen3-8-27b@unpinned.phase_iii_attack"
+     "odyssey-i.wg.qwen3-8-27b@unpinned.phase_iii_attack",
+     "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack"
     ],
-    "n": 3,
+    "n": 5,
     "odyssey": "III",
     "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
    }
@@ -2267,33 +3056,35 @@
       "note": "durable workgraph exists (selftest / scheduler). It is not an Odyssey I run restart until a descriptor has launched.",
       "odyssey_run": false,
       "schema": "hawking.future.workgraph.durable.v1",
-      "tick": 36
+      "tick": 242
      }
     }
    }
   },
+  "run_id": "odyssey-i-20260901T052240Z-7f3f1ffc5bce",
+  "schema": "hawking.future.odyssey_i.run_descriptor.v1",
   "source_specimens": {
-   "curriculum_n_ready": 3,
+   "curriculum_n_ready": 5,
    "curriculum_n_roles": 5,
-   "curriculum_ready": false,
+   "curriculum_ready": true,
    "items": [
     {
      "architecture_family": "dense_transformer",
-     "bytes_hashed": null,
-     "curriculum_ready": false,
-     "curriculum_ready_reason": "identity known but specimen is not in the ModelLake specimens listing",
+     "bytes_hashed": 1519209243,
+     "curriculum_ready": true,
+     "curriculum_ready_reason": "ModelLake whole-tree sha256 verification",
      "identity_source": "modellake_manifest",
-     "in_specimens_listing": false,
+     "in_specimens_listing": true,
      "purpose": "very small dense for procedural speed",
      "repo": "Qwen/Qwen3-0.6B",
      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
      "role": "very_small_dense_procedural_speed",
-     "specimen_name": null,
-     "specimen_owner": null,
+     "specimen_name": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "specimen_owner": "modellake",
      "verification_path_taken": "worktree",
      "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
-     "verification_status": "NOT_IN_VERIFICATION_RECEIPT",
-     "whole_tree_verified": false
+     "verification_status": "WHOLE_TREE_VERIFIED",
+     "whole_tree_verified": true
     },
     {
      "architecture_family": "falcon_h1",
@@ -2307,7 +3098,7 @@
      "revision": "41e72f27effbab80cd45b6e884688452253a3686",
      "role": "small_dense_alternate_architecture_transfer",
      "specimen_name": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
-     "specimen_owner": null,
+     "specimen_owner": "modellake",
      "verification_path_taken": "worktree",
      "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
      "verification_status": "WHOLE_TREE_VERIFIED",
@@ -2318,14 +3109,14 @@
      "bytes_hashed": 96077777512,
      "curriculum_ready": true,
      "curriculum_ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
-     "identity_source": "odyssey_i_O004+modellake_partial",
-     "in_specimens_listing": null,
+     "identity_source": "modellake_manifest",
+     "in_specimens_listing": true,
      "purpose": "mid-size dense for compiler",
      "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
-     "revision": "68faf511d618",
+     "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
      "role": "mid_size_dense_compiler",
      "specimen_name": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
-     "specimen_owner": null,
+     "specimen_owner": "modellake",
      "verification_path_taken": "worktree",
      "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
      "verification_status": "WHOLE_TREE_VERIFIED",
@@ -2351,21 +3142,3212 @@
     },
     {
      "architecture_family": "qwen4_exp",
-     "bytes_hashed": null,
-     "curriculum_ready": false,
-     "curriculum_ready_reason": "ModelLake pin exists but the specimen is not published as verified",
+     "bytes_hashed": 360023286454,
+     "curriculum_ready": true,
+     "curriculum_ready_reason": "ModelLake whole-tree sha256 verification",
      "identity_source": "hcli.flash_next pin + modellake census + odyssey2 school",
-     "in_specimens_listing": false,
+     "in_specimens_listing": true,
      "purpose": "Flash for heterogeneous frontier",
      "repo": "Qwen/Qwen3.8-Flash-Next",
      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
      "role": "flash_heterogeneous_frontier",
-     "specimen_name": null,
-     "specimen_owner": null,
+     "specimen_name": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "specimen_owner": "modellake",
      "verification_path_taken": "worktree",
      "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
-     "verification_status": "NOT_IN_VERIFICATION_RECEIPT",
-     "whole_tree_verified": false
+     "verification_status": "WHOLE_TREE_VERIFIED",
+     "whole_tree_verified": true
+    }
+   ],
+   "n": 5,
+   "reason": null,
+   "source": "tools.future.odyssey_launch.propose_specimen_curriculum + specimen_verify",
+   "status": "PRESENT",
+   "verification_receipt": {
+    "found": true,
+    "path_taken": "worktree",
+    "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/SPECIMEN_VERIFICATION.json"
+   }
+  },
+  "start_time": "2026-09-01T05:22:40Z",
+  "time_budget": {
+   "declared_trial_catalog": {
+    "ids": [
+     "15m",
+     "30m",
+     "1h",
+     "3h",
+     "6h"
+    ],
+    "note": "autonomy-trial durations are a judging catalog, not this run's budget. Copying one in would invent a launch parameter.",
+    "source": "tools.future.autonomy_trial.TRIAL_DURATION_S"
+   },
+   "invalidated_runs": [
+    {
+     "kept": "the specimen verifications it completed are real recomputations and stand on their own: Qwen3-30B-A3B, Qwen3-VL-30B, Mistral-24B, Kimi-VL-A3B and Falcon-H1-7B, all whole-tree verified",
+     "killed": "2026-08-30T10:17:34-04:00",
+     "started": "2026-08-30T08:57:13-04:00",
+     "trial": "1h",
+     "verdict": "INVALIDATED_BY_SUBSTRATE_MUTATION",
+     "why": "specimen_verify.py was edited while the run was in flight, and the loop invokes it as a subprocess, so later units ran different code from earlier ones. odyssey_launch.py was edited too. No timeline was written."
+    }
+   ],
+   "items": null,
+   "n": null,
+   "probes": {
+    "autonomy_run": {
+     "found": true,
+     "path_taken": "worktree"
+    },
+    "autonomy_trial": {
+     "found": true,
+     "path_taken": "worktree"
+    },
+    "mission_state": {
+     "found": true,
+     "path_taken": "worktree"
+    }
+   },
+   "reason": "autonomy trial/run receipts exist but they are not an Odyssey I consolidated-run time budget; no launch descriptor has been executed",
+   "source": "receipts/future/AUTONOMY_TRIALS.json + AUTONOMY_RUN.json",
+   "status": "UNAVAILABLE",
+   "value": null
+  }
+ },
+ "descriptor_emitted": true,
+ "disk_inventory": {
+  "blocked_triggers": {
+   "items": [
+    {
+     "frontier": "ACTIVE_BYTES",
+     "hypothesis_family": "measured_active_bytes",
+     "id": "FT.ACTIVE_BYTES.measured",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Measured active-byte / bandwidth figures require a protected window",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "ANE",
+     "hypothesis_family": "ane_flash_execution",
+     "id": "FT.ANE.execution",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "ANE"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Flash-shaped ANE execution / latency / energy / residency is not authorized",
+     "wake_all_of": [
+      "Core ML / ANE compiler environment available",
+      "Flash-shaped ANE execution is authorized on this host"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "ARCHITECTURE_REPATRIATION",
+     "hypothesis_family": "repatriation_device_run",
+     "id": "FT.ARCHITECTURE_REPATRIATION.device-run",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Metal/CUDA/ANE repatriation runs wait on their devices",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "CHILD_RESIDENT",
+     "hypothesis_family": "child_resident_launch",
+     "id": "FT.CHILD_RESIDENT.launch",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Launching a child resident / taking a GPU lease is forbidden in this sidecar",
+     "wake_all_of": [
+      "authorized HCLI resident-install lane",
+      "existing HCLI lease with proven holder"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "EXPERIMENT_TURNAROUND",
+     "hypothesis_family": "turnaround_gpu_phases",
+     "id": "FT.EXPERIMENT_TURNAROUND.cargo",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "compile/link/shader_compile/launch/execution phases require cargo and/or GPU",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "cargo build authorized without contending for the shared target-dir"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "FPGA",
+     "hypothesis_family": "u50_arrival",
+     "id": "FT.FPGA.u50",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "FPGA"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "U50 board arrival work sleeps until the board is here",
+     "wake_all_of": [
+      "U50 / FPGA board present and the physical-compiler/fusion lane owns it"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "GPU_KERNELS",
+     "hypothesis_family": "flash_source_independent_nx",
+     "id": "FT.GPU_KERNELS.flash-nx",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Flash source-independent NX remains SCAFFOLD_ONLY / sealed-metadata",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "GPU_KERNELS",
+     "hypothesis_family": "ready_protected_qualification",
+     "id": "FT.GPU_KERNELS.ready-protected",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "READY_PROTECTED Qwen27 candidates wait on a GPU window this sidecar must not seize",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "HCLI_SELF",
+     "hypothesis_family": "resident_process_launch",
+     "id": "FT.HCLI_SELF.no-launch",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "A live resident model process must not be started from this sidecar",
+     "wake_all_of": [
+      "an authorized HCLI resident-install lane distinct from this sidecar"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "LATENCY",
+     "hypothesis_family": "protected_latency",
+     "id": "FT.LATENCY.gpu-ns",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Protected kernel/token latency is blocked on GPU_PROTECTED",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_cache_behaviour",
+     "id": "FT.MODEL_EXECUTION.capacity-cache_behaviour",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class F: cache behaviour",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_command_queue_topology",
+     "id": "FT.MODEL_EXECUTION.capacity-command_queue_topology",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class G: command queue topology",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_instruction_dependency_chain",
+     "id": "FT.MODEL_EXECUTION.capacity-instruction_dependency_chain",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class D: instruction dependency chain",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_kernel_shape_underfill",
+     "id": "FT.MODEL_EXECUTION.capacity-kernel_shape_underfill",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class I: kernel shape underfill",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_memory_level_parallelism",
+     "id": "FT.MODEL_EXECUTION.capacity-memory_level_parallelism",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class E: memory level parallelism",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "executor_capacity_occupancy",
+     "id": "FT.MODEL_EXECUTION.capacity-occupancy",
+     "kind": "NEXT_WORK",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Capacity class B: occupancy",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers",
+      "invented hardware number"
+     ]
+    },
+    {
+     "frontier": "MODEL_EXECUTION",
+     "hypothesis_family": "complete_token_protected",
+     "id": "FT.MODEL_EXECUTION.complete-token",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Protected complete-token execution is blocked on Metal + NX",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "MODEL_REPRESENTATION",
+     "hypothesis_family": "teacher_capture",
+     "id": "FT.MODEL_REPRESENTATION.teacher-capture",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Flash teacher capture is 0/256 and blocked on Metal",
+     "wake_all_of": [
+      "Metal-capable GPU for dense source-BF16 prefix initialization",
+      "teacher capture rows meet the minimum (disk count, never a synthetic corpus)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "STATE",
+     "hypothesis_family": "full_layer_kv",
+     "id": "FT.STATE.full-kv",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Complete 48-layer per-layer KV integration is absent",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "TPS",
+     "hypothesis_family": "protected_accepted_tps",
+     "id": "FT.TPS.protected-tps",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED"
+     ],
+     "source": "tools.future.frontiers.load_book",
+     "title": "Protected accepted-token TPS is blocked; Flash has one accepted stateful token",
+     "wake_all_of": [
+      "Metal-capable GPU present on the execution host (MetalContext)",
+      "xcrun locates the Metal compiler (not CommandLineTools-missing)",
+      "existing HCLI protected lease with a proven holder pid (read, never flock)",
+      "qualification pipeline classifies the machine QUIESCENT (assessed, never coerced)",
+      "Flash source-independent NX is qualified (not SCAFFOLD_ONLY / SEALED_METADATA_ONLY)"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ]
+    },
+    {
+     "frontier": "ODYSSEY_TRANSFER",
+     "id": "sleep.flash-nx-scaffold",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED",
+      "ANE",
+      "FPGA"
+     ],
+     "source": "tools.future.odyssey_launch.physical_blockers",
+     "title": "Flash source-independent NX is not qualified",
+     "wake_all_of": [
+      "FLASH_NX_COMPLETENESS_AUDIT seven_all_met=False nx_status='SEALED_METADATA_ONLY_NOT_FOR_PROMOTION' nr_v2.status='COMPLETE_HETEROGENEOUS_CANDIDATE_NOT_FOR_PROMOTION'. SCAFFOLD_ONLY / metadata seals are not a callable NX path."
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ],
+     "workunit_id": "odyssey-i.sleep.flash-nx-scaffold"
+    },
+    {
+     "frontier": "ODYSSEY_TRANSFER",
+     "id": "sleep.machine-heavy",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED",
+      "ANE",
+      "FPGA"
+     ],
+     "source": "tools.future.odyssey_launch.physical_blockers",
+     "title": "Machine classified HEAVY; standing workers not quiesced",
+     "wake_all_of": [
+      "contamination_class='HEAVY'; sidecar will not SIGSTOP standing workers. HEAVY (or unknown) is not a protected window."
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ],
+     "workunit_id": "odyssey-i.sleep.machine-heavy"
+    },
+    {
+     "frontier": "ODYSSEY_TRANSFER",
+     "id": "sleep.metal-compiler",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED",
+      "ANE",
+      "FPGA"
+     ],
+     "source": "tools.future.odyssey_launch.physical_blockers",
+     "title": "Metal compiler under CommandLineTools",
+     "wake_all_of": [
+      "xcrun -f metal did not locate the Metal compiler"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ],
+     "workunit_id": "odyssey-i.sleep.metal-compiler"
+    },
+    {
+     "frontier": "ODYSSEY_TRANSFER",
+     "id": "sleep.no-gpu-authority",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED",
+      "ANE",
+      "FPGA"
+     ],
+     "source": "tools.future.odyssey_launch.physical_blockers",
+     "title": "No protected GPU / MetalContext not invoked",
+     "wake_all_of": [
+      "Sidecar has no GPU authority and does not invoke MetalContext. Handoff blockers record no protected GPU authority on this campaign."
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ],
+     "workunit_id": "odyssey-i.sleep.no-gpu-authority"
+    },
+    {
+     "frontier": "ODYSSEY_TRANSFER",
+     "id": "sleep.protected-bench-lock",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED",
+      "ANE",
+      "FPGA"
+     ],
+     "source": "tools.future.odyssey_launch.physical_blockers",
+     "title": "Protected bench lock; holder pids unproven",
+     "wake_all_of": [
+      "lock file exists but no holder could be proven without flock (lsof status='OK' reason=None). fail closed: present=false. flock would be a seizure"
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ],
+     "workunit_id": "odyssey-i.sleep.protected-bench-lock"
+    },
+    {
+     "frontier": "ODYSSEY_TRANSFER",
+     "id": "sleep.teacher-capture",
+     "kind": "BLOCKED",
+     "required_lanes": [
+      "GPU_PROTECTED",
+      "ANE",
+      "FPGA"
+     ],
+     "source": "tools.future.odyssey_launch.physical_blockers",
+     "title": "Teacher capture has not run",
+     "wake_all_of": [
+      "teacher capture executed=0/12 workunits; target_row_counts=[256]. Unrun capture is not a synthetic corpus."
+     ],
+     "wake_never": [
+      "synthetic result",
+      "lease seizure / flock",
+      "quiesce standing workers"
+     ],
+     "workunit_id": "odyssey-i.sleep.teacher-capture"
+    }
+   ],
+   "n": 26,
+   "reason": null,
+   "source": "tools.future.frontiers.load_book+tools.future.odyssey_launch.physical_blockers",
+   "status": "PRESENT"
+  },
+  "evidence_dag_handle": {
+   "reason": null,
+   "source": "tools.future.evidence_dag",
+   "status": "PRESENT",
+   "value": {
+    "entry": "required_level / admit_candidate / execute_level",
+    "module": "tools.future.evidence_dag",
+    "receipt": {
+     "reason": null,
+     "source": "/Users/scammermike/Downloads/hawking/receipts/future/EVIDENCE_DAG.json",
+     "status": "PRESENT",
+     "value": {
+      "path": "receipts/future/EVIDENCE_DAG.json",
+      "path_taken": "worktree",
+      "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/EVIDENCE_DAG.json",
+      "schema": "hawking.future.evidence_dag.v1"
+     }
+    },
+    "receipt_name": "EVIDENCE_DAG.json",
+    "schema": "hawking.future.evidence_dag.v1"
+   }
+  },
+  "fallback_identity": {
+   "reason": null,
+   "source": "tools.future.super_resident.evaluate_flash",
+   "status": "PRESENT",
+   "value": {
+    "clears_sandbox_floor": false,
+    "clears_singularity": false,
+    "gpu_authority": false,
+    "headline": "Flash does NOT clear SANDBOX_RESIDENT_FLOOR today: source-independent NX is SCAFFOLD_ONLY and the stateful gate has one accepted token, not repeated accepted-token decode.",
+    "id": "FLASH_SINGULARITY.NX",
+    "receipt": "receipts/future/SUPER_RESIDENT_FLOOR.json",
+    "role": "CANDIDATE_NOT_SANDBOX_HOLDER",
+    "schema": "hawking.future.super_resident.v1",
+    "source": "tools.future.super_resident.evaluate_flash",
+    "unmet_clauses": [
+     "self_contained_executable_identity",
+     "source_independent_runtime",
+     "no_forbidden_fallback",
+     "stable_sessions",
+     "restart",
+     "capability_for_hcli_research",
+     "sufficient_token_rate",
+     "explicit_ebpw_evidence",
+     "rollback"
+    ]
+   }
+  },
+  "machine_genome": {
+   "reason": null,
+   "source": "receipts/headless/MACHINE_GENOME.json",
+   "status": "PRESENT",
+   "value": {
+    "arch": "arm64",
+    "cpu_cores": 28,
+    "efficiency_cores": 8,
+    "gpu_authority": false,
+    "gpu_cores": 60,
+    "knowledge_level": "INSTANCE",
+    "measure_bandwidth_invoked": false,
+    "memory_bytes": 103079215104,
+    "os": "Darwin 27.0.0",
+    "os_product": "27.0",
+    "perf_cores": 20,
+    "read_only": true,
+    "schema": "hawking.accelerator.machine_genome.v1",
+    "soc": "Apple M3 Ultra",
+    "source": "receipts/headless/MACHINE_GENOME.json",
+    "source_state": "ON_DISK",
+    "toolchain_metal_compiler": {
+     "reason": "xcrun metal is not installed; no Metal developer toolchain, so AOT metallib compilation is unavailable and kernels go through the MLX JIT",
+     "status": "ABSENT"
+    }
+   }
+  },
+  "negative_science_handle": {
+   "reason": null,
+   "source": "tools.future.negative_index",
+   "status": "PRESENT",
+   "value": {
+    "entry": "query / refuse_if_dead",
+    "module": "tools.future.negative_index",
+    "receipt": {
+     "reason": null,
+     "source": "/Users/scammermike/Downloads/hawking/receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+     "status": "PRESENT",
+     "value": {
+      "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+      "path_taken": "worktree",
+      "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/NEGATIVE_SCIENCE_INDEX.json",
+      "schema": "hawking.future.negative_index.v1"
+     }
+    },
+    "receipt_name": "NEGATIVE_SCIENCE_INDEX.json",
+    "schema": "hawking.future.negative_index.v1"
+   }
+  },
+  "nr_nx_destinations": {
+   "items": [
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_complete_receipt",
+     "path_taken": "worktree",
+     "rel": "receipts/future/FLASH_NR_COMPLETE.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NR_COMPLETE.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nx_audit",
+     "found": true,
+     "kind": "nx_audit_receipt",
+     "path_taken": "worktree",
+     "rel": "receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/FLASH_NX_COMPLETENESS_AUDIT.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_evidence_snapshot",
+     "path_taken": "worktree",
+     "rel": "receipts/future/evidence/FLASH_ORGAN_CENSUS.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_ORGAN_CENSUS.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_headless",
+     "path_taken": "worktree",
+     "rel": "receipts/headless/FLASH_ORGAN_CENSUS.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_ORGAN_CENSUS.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_evidence_snapshot",
+     "path_taken": "worktree",
+     "rel": "receipts/future/evidence/FLASH_COMPLETE_V2.nr.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V2.nr.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_headless",
+     "path_taken": "worktree",
+     "rel": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V2.nr.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_evidence_snapshot",
+     "path_taken": "worktree",
+     "rel": "receipts/future/evidence/FLASH_COMPLETE_V0.nx.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_COMPLETE_V0.nx.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_headless",
+     "path_taken": "worktree",
+     "rel": "receipts/headless/FLASH_COMPLETE_V0.nx.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.nx.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_evidence_snapshot",
+     "path_taken": "worktree",
+     "rel": "receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_NEXT_MACHINE.nx.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_headless",
+     "path_taken": "worktree",
+     "rel": "receipts/headless/FLASH_NEXT_MACHINE.nx.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_NEXT_MACHINE.nx.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_evidence_snapshot",
+     "path_taken": "worktree",
+     "rel": "receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/evidence/FLASH_META_REPRESENTATION_SUB1.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_headless",
+     "path_taken": "worktree",
+     "rel": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_META_REPRESENTATION_SUB1.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": false,
+     "kind": "nr_evidence_snapshot",
+     "path_taken": "not_found",
+     "rel": "receipts/future/evidence/FLASH_EBPW_BUDGET.json",
+     "resolved": null
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_headless",
+     "path_taken": "worktree",
+     "rel": "receipts/headless/FLASH_EBPW_BUDGET.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_EBPW_BUDGET.json"
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": false,
+     "kind": "nr_evidence_snapshot",
+     "path_taken": "not_found",
+     "rel": "receipts/future/evidence/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "resolved": null
+    },
+    {
+     "declared_by": "tools.future.flash_nr_complete",
+     "found": true,
+     "kind": "nr_headless",
+     "path_taken": "worktree",
+     "rel": "receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json",
+     "resolved": "/Users/scammermike/Downloads/hawking/receipts/headless/FLASH_COMPLETE_V0.BYTE_LEDGER.json"
+    }
+   ],
+   "n": 16,
+   "n_declared": 16,
+   "n_found": 14,
+   "reason": null,
+   "source": "tools.future.flash_nr_complete.EVIDENCE + flash_nx_audit.RECEIPT",
+   "status": "PRESENT"
+  },
+  "phase_i_workgraphs": {
+   "emit_errors": [],
+   "items": [
+    {
+     "by_stage": {
+      "architecture_fingerprint": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint",
+      "capability": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability",
+      "doctor": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor",
+      "gravity": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity",
+      "laws": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws",
+      "native_execution": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution",
+      "nr": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr",
+      "nx": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx",
+      "pareto": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto",
+      "phase_ii_transfer": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+      "phase_iii_attack": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+      "physical_profiling": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling",
+      "representation_search": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search",
+      "scars": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.scars",
+      "specimen_verification": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification"
+     },
+     "launchable_specimen": true,
+     "n_units": 15,
+     "note": "Real HCLI WorkUnits for a curriculum-ready specimen. Emitting them is not executing them.",
+     "phase_listen": {
+      "barrier": null,
+      "global_barrier": false,
+      "no_era_vi": true,
+      "no_odyssey_iv": true,
+      "odysseys": [
+       "I WHAT IS TRUE?",
+       "II WHAT DID HAWKING ALREADY LEARN?",
+       "III WHERE IS HAWKING WRONG?"
+      ],
+      "phase_ii_depends_on": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "phase_ii_depends_on_phase_iii": false,
+      "phase_iii_depends_on": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "phase_iii_depends_on_phase_ii": false,
+      "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+     },
+     "role": "very_small_dense_procedural_speed",
+     "specimen": {
+      "repo": "Qwen/Qwen3-0.6B",
+      "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+      "slug": "qwen3-0-6b@c1899de289a0"
+     },
+     "stages": [
+      "specimen_verification",
+      "architecture_fingerprint",
+      "doctor",
+      "gravity",
+      "representation_search",
+      "physical_profiling",
+      "nr",
+      "nx",
+      "native_execution",
+      "capability",
+      "pareto",
+      "laws",
+      "scars"
+     ],
+     "units": [
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "architecture_fingerprint",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "capability",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.capability:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.architecture_fingerprint"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "doctor",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.doctor:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.doctor"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "gravity",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.gravity:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "laws",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.laws:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.native_execution",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "native_execution",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.native_execution:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NR_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "COMPILE",
+       "sleeping": false,
+       "stage": "nr",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.nr:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nr"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.nx",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NX_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "nx",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.nx:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.capability"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.pareto",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "pareto",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.pareto:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+       "odyssey": "II",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_ii_transfer",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+       "odyssey": "III",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_iii_attack",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.physical_profiling",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "physical_profiling",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.physical_profiling:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.gravity"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.representation_search",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "representation_search",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.representation_search:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.scars",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "scars",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.scars:qwen3-0-6b@c1899de289a0"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [],
+       "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.specimen_verification",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_qwen3-0-6b@c1899de289a0.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "specimen_verification",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.specimen_verification:qwen3-0-6b@c1899de289a0"
+      }
+     ]
+    },
+    {
+     "by_stage": {
+      "architecture_fingerprint": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
+      "capability": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.capability",
+      "doctor": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.doctor",
+      "gravity": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.gravity",
+      "laws": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws",
+      "native_execution": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.native_execution",
+      "nr": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.nr",
+      "nx": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.nx",
+      "pareto": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.pareto",
+      "phase_ii_transfer": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_ii_transfer",
+      "phase_iii_attack": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_iii_attack",
+      "physical_profiling": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.physical_profiling",
+      "representation_search": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.representation_search",
+      "scars": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.scars",
+      "specimen_verification": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.specimen_verification"
+     },
+     "launchable_specimen": true,
+     "n_units": 15,
+     "note": "Real HCLI WorkUnits for a curriculum-ready specimen. Emitting them is not executing them.",
+     "phase_listen": {
+      "barrier": null,
+      "global_barrier": false,
+      "no_era_vi": true,
+      "no_odyssey_iv": true,
+      "odysseys": [
+       "I WHAT IS TRUE?",
+       "II WHAT DID HAWKING ALREADY LEARN?",
+       "III WHERE IS HAWKING WRONG?"
+      ],
+      "phase_ii_depends_on": [
+       "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+      ],
+      "phase_ii_depends_on_phase_iii": false,
+      "phase_iii_depends_on": [
+       "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+      ],
+      "phase_iii_depends_on_phase_ii": false,
+      "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+     },
+     "role": "small_dense_alternate_architecture_transfer",
+     "specimen": {
+      "repo": "tiiuae/Falcon-H1-7B-Instruct",
+      "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+      "slug": "falcon-h1-7b-instruct@41e72f27effb"
+     },
+     "stages": [
+      "specimen_verification",
+      "architecture_fingerprint",
+      "doctor",
+      "gravity",
+      "representation_search",
+      "physical_profiling",
+      "nr",
+      "nx",
+      "native_execution",
+      "capability",
+      "pareto",
+      "laws",
+      "scars"
+     ],
+     "units": [
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.specimen_verification"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "architecture_fingerprint",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.native_execution"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.capability",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "capability",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.capability:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.architecture_fingerprint"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.doctor",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "doctor",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.doctor:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.doctor"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.gravity",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "gravity",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.gravity:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.pareto"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "laws",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.laws:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.nx"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.native_execution",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "native_execution",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.native_execution:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.physical_profiling"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.nr",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NR_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "COMPILE",
+       "sleeping": false,
+       "stage": "nr",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.nr:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.nr"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.nx",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NX_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "nx",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.nx:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.capability"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.pareto",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "pareto",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.pareto:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_ii_transfer",
+       "odyssey": "II",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_ii_transfer",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_iii_attack",
+       "odyssey": "III",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_iii_attack",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.representation_search"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.physical_profiling",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "physical_profiling",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.physical_profiling:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.gravity"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.representation_search",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "representation_search",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.representation_search:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+       ],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.scars",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "scars",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.scars:falcon-h1-7b-instruct@41e72f27effb"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [],
+       "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.specimen_verification",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_falcon-h1-7b-instruct@41e72f27effb.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "specimen_verification",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.specimen_verification:falcon-h1-7b-instruct@41e72f27effb"
+      }
+     ]
+    },
+    {
+     "by_stage": {
+      "architecture_fingerprint": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.architecture_fingerprint",
+      "capability": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.capability",
+      "doctor": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.doctor",
+      "gravity": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.gravity",
+      "laws": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws",
+      "native_execution": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.native_execution",
+      "nr": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.nr",
+      "nx": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.nx",
+      "pareto": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.pareto",
+      "phase_ii_transfer": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_ii_transfer",
+      "phase_iii_attack": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_iii_attack",
+      "physical_profiling": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.physical_profiling",
+      "representation_search": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.representation_search",
+      "scars": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.scars",
+      "specimen_verification": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.specimen_verification"
+     },
+     "launchable_specimen": true,
+     "n_units": 15,
+     "note": "Real HCLI WorkUnits for a curriculum-ready specimen. Emitting them is not executing them.",
+     "phase_listen": {
+      "barrier": null,
+      "global_barrier": false,
+      "no_era_vi": true,
+      "no_odyssey_iv": true,
+      "odysseys": [
+       "I WHAT IS TRUE?",
+       "II WHAT DID HAWKING ALREADY LEARN?",
+       "III WHERE IS HAWKING WRONG?"
+      ],
+      "phase_ii_depends_on": [
+       "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+      ],
+      "phase_ii_depends_on_phase_iii": false,
+      "phase_iii_depends_on": [
+       "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+      ],
+      "phase_iii_depends_on_phase_ii": false,
+      "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+     },
+     "role": "mid_size_dense_compiler",
+     "specimen": {
+      "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+      "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+      "slug": "mistral-small-3-1-24b-instruct-2503@68faf511d618"
+     },
+     "stages": [
+      "specimen_verification",
+      "architecture_fingerprint",
+      "doctor",
+      "gravity",
+      "representation_search",
+      "physical_profiling",
+      "nr",
+      "nx",
+      "native_execution",
+      "capability",
+      "pareto",
+      "laws",
+      "scars"
+     ],
+     "units": [
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.specimen_verification"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.architecture_fingerprint",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "architecture_fingerprint",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.native_execution"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.capability",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "capability",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.capability:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.architecture_fingerprint"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.doctor",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "doctor",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.doctor:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.doctor"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.gravity",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "gravity",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.gravity:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.pareto"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "laws",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.laws:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.nx"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.native_execution",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "native_execution",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.native_execution:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.physical_profiling"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.nr",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NR_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "COMPILE",
+       "sleeping": false,
+       "stage": "nr",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.nr:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.nr"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.nx",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NX_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "nx",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.nx:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.capability"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.pareto",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "pareto",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.pareto:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_ii_transfer",
+       "odyssey": "II",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_ii_transfer",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_iii_attack",
+       "odyssey": "III",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_iii_attack",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.representation_search"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.physical_profiling",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "physical_profiling",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.physical_profiling:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.gravity"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.representation_search",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "representation_search",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.representation_search:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+       ],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.scars",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "scars",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.scars:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [],
+       "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.specimen_verification",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_mistral-small-3-1-24b-instruct-2503@68faf511d618.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "specimen_verification",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.specimen_verification:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+      }
+     ]
+    },
+    {
+     "by_stage": {
+      "architecture_fingerprint": "odyssey-i.wg.qwen3-8-27b@unpinned.architecture_fingerprint",
+      "capability": "odyssey-i.wg.qwen3-8-27b@unpinned.capability",
+      "doctor": "odyssey-i.wg.qwen3-8-27b@unpinned.doctor",
+      "gravity": "odyssey-i.wg.qwen3-8-27b@unpinned.gravity",
+      "laws": "odyssey-i.wg.qwen3-8-27b@unpinned.laws",
+      "native_execution": "odyssey-i.wg.qwen3-8-27b@unpinned.native_execution",
+      "nr": "odyssey-i.wg.qwen3-8-27b@unpinned.nr",
+      "nx": "odyssey-i.wg.qwen3-8-27b@unpinned.nx",
+      "pareto": "odyssey-i.wg.qwen3-8-27b@unpinned.pareto",
+      "phase_ii_transfer": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_ii_transfer",
+      "phase_iii_attack": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_iii_attack",
+      "physical_profiling": "odyssey-i.wg.qwen3-8-27b@unpinned.physical_profiling",
+      "representation_search": "odyssey-i.wg.qwen3-8-27b@unpinned.representation_search",
+      "scars": "odyssey-i.wg.qwen3-8-27b@unpinned.scars",
+      "specimen_verification": "odyssey-i.wg.qwen3-8-27b@unpinned.specimen_verification"
+     },
+     "launchable_specimen": true,
+     "n_units": 15,
+     "note": "Real HCLI WorkUnits for a curriculum-ready specimen. Emitting them is not executing them.",
+     "phase_listen": {
+      "barrier": null,
+      "global_barrier": false,
+      "no_era_vi": true,
+      "no_odyssey_iv": true,
+      "odysseys": [
+       "I WHAT IS TRUE?",
+       "II WHAT DID HAWKING ALREADY LEARN?",
+       "III WHERE IS HAWKING WRONG?"
+      ],
+      "phase_ii_depends_on": [
+       "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+      ],
+      "phase_ii_depends_on_phase_iii": false,
+      "phase_iii_depends_on": [
+       "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+      ],
+      "phase_iii_depends_on_phase_ii": false,
+      "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+     },
+     "role": "qwen27_mature_physical",
+     "specimen": {
+      "repo": "Qwen3.8-27B",
+      "revision": null,
+      "slug": "qwen3-8-27b@unpinned"
+     },
+     "stages": [
+      "specimen_verification",
+      "architecture_fingerprint",
+      "doctor",
+      "gravity",
+      "representation_search",
+      "physical_profiling",
+      "nr",
+      "nx",
+      "native_execution",
+      "capability",
+      "pareto",
+      "laws",
+      "scars"
+     ],
+     "units": [
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.specimen_verification"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.architecture_fingerprint",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "architecture_fingerprint",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.native_execution"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.capability",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_qwen3-8-27b@unpinned.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "capability",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.capability:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.architecture_fingerprint"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.doctor",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "doctor",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.doctor:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.doctor"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.gravity",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "gravity",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.gravity:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.pareto"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.laws",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "laws",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.laws:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.nx"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.native_execution",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_qwen3-8-27b@unpinned.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "native_execution",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.native_execution:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.physical_profiling"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.nr",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NR_qwen3-8-27b@unpinned.json",
+       "resource_class": "COMPILE",
+       "sleeping": false,
+       "stage": "nr",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.nr:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.nr"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.nx",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NX_qwen3-8-27b@unpinned.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "nx",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.nx:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.capability"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.pareto",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "pareto",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.pareto:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_ii_transfer",
+       "odyssey": "II",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_ii_transfer",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_iii_attack",
+       "odyssey": "III",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_iii_attack",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.representation_search"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.physical_profiling",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_qwen3-8-27b@unpinned.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "physical_profiling",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.physical_profiling:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.gravity"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.representation_search",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "representation_search",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.representation_search:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.scars",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "scars",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.scars:qwen3-8-27b@unpinned"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [],
+       "id": "odyssey-i.wg.qwen3-8-27b@unpinned.specimen_verification",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_qwen3-8-27b@unpinned.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "specimen_verification",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.specimen_verification:qwen3-8-27b@unpinned"
+      }
+     ]
+    },
+    {
+     "by_stage": {
+      "architecture_fingerprint": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.architecture_fingerprint",
+      "capability": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.capability",
+      "doctor": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.doctor",
+      "gravity": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.gravity",
+      "laws": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws",
+      "native_execution": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.native_execution",
+      "nr": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nr",
+      "nx": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nx",
+      "pareto": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.pareto",
+      "phase_ii_transfer": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+      "phase_iii_attack": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+      "physical_profiling": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.physical_profiling",
+      "representation_search": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.representation_search",
+      "scars": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.scars",
+      "specimen_verification": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.specimen_verification"
+     },
+     "launchable_specimen": true,
+     "n_units": 15,
+     "note": "Real HCLI WorkUnits for a curriculum-ready specimen. Emitting them is not executing them.",
+     "phase_listen": {
+      "barrier": null,
+      "global_barrier": false,
+      "no_era_vi": true,
+      "no_odyssey_iv": true,
+      "odysseys": [
+       "I WHAT IS TRUE?",
+       "II WHAT DID HAWKING ALREADY LEARN?",
+       "III WHERE IS HAWKING WRONG?"
+      ],
+      "phase_ii_depends_on": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "phase_ii_depends_on_phase_iii": false,
+      "phase_iii_depends_on": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "phase_iii_depends_on_phase_ii": false,
+      "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+     },
+     "role": "flash_heterogeneous_frontier",
+     "specimen": {
+      "repo": "Qwen/Qwen3.8-Flash-Next",
+      "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+      "slug": "qwen3-8-flash-next@34567a4712bc"
+     },
+     "stages": [
+      "specimen_verification",
+      "architecture_fingerprint",
+      "doctor",
+      "gravity",
+      "representation_search",
+      "physical_profiling",
+      "nr",
+      "nx",
+      "native_execution",
+      "capability",
+      "pareto",
+      "laws",
+      "scars"
+     ],
+     "units": [
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.specimen_verification"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.architecture_fingerprint",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_ARCHITECTURE_FINGERPRINT_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "architecture_fingerprint",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.architecture_fingerprint:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.native_execution"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.capability",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_CAPABILITY_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "capability",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.capability:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.architecture_fingerprint"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.doctor",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_DOCTOR_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "doctor",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.doctor:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.doctor"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.gravity",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_GRAVITY_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "gravity",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.gravity:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.pareto"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_LAWS_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "laws",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.laws:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nx"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.native_execution",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NATIVE_EXECUTION_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "native_execution",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.native_execution:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.physical_profiling"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nr",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NR_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "COMPILE",
+       "sleeping": false,
+       "stage": "nr",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.nr:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nr"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.nx",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_NX_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "nx",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.nx:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.capability"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.pareto",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PARETO_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "pareto",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.pareto:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+       "odyssey": "II",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_ii_transfer",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+       "odyssey": "III",
+       "output_receipt_path": null,
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "phase_iii_attack",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": "SLEEPING: hardware is not qualified on this host; HCLI wakes this unit when the protected GPU lane qualifies. Not a synthetic result.",
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.representation_search"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.physical_profiling",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_PHYSICAL_PROFILING_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "GPU_EXCLUSIVE",
+       "sleeping": true,
+       "stage": "physical_profiling",
+       "status": "sleeping",
+       "verifier": "future.odyssey_launch.workgraph.physical_profiling:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.gravity"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.representation_search",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_REPRESENTATION_SEARCH_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "representation_search",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.representation_search:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [
+        "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+       ],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.scars",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SCARS_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "scars",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.scars:qwen3-8-flash-next@34567a4712bc"
+      },
+      {
+       "blocked_reason": null,
+       "dependencies": [],
+       "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.specimen_verification",
+       "odyssey": "I",
+       "output_receipt_path": "receipts/future/ODYSSEY_I_SPECIMEN_VERIFICATION_qwen3-8-flash-next@34567a4712bc.json",
+       "resource_class": "STATIC_ANALYSIS",
+       "sleeping": false,
+       "stage": "specimen_verification",
+       "status": "pending",
+       "verifier": "future.odyssey_launch.workgraph.specimen_verification:qwen3-8-flash-next@34567a4712bc"
+      }
+     ]
+    }
+   ],
+   "n": 5,
+   "n_ready_roles": 5,
+   "reason": null,
+   "source": "tools.future.odyssey_launch.emit_first_workgraphs",
+   "status": "PRESENT"
+  },
+  "phase_ii_listener": {
+   "items": [
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+     "odyssey": "II",
+     "specimen": "Qwen/Qwen3-0.6B",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+      "odyssey": "II",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_ii_transfer",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-0-6b@c1899de289a0"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_ii_transfer",
+     "odyssey": "II",
+     "specimen": "tiiuae/Falcon-H1-7B-Instruct",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+      ],
+      "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_ii_transfer",
+      "odyssey": "II",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_ii_transfer",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:falcon-h1-7b-instruct@41e72f27effb"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_ii_transfer",
+     "odyssey": "II",
+     "specimen": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+      ],
+      "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_ii_transfer",
+      "odyssey": "II",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_ii_transfer",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_ii_transfer",
+     "odyssey": "II",
+     "specimen": "Qwen3.8-27B",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_ii_transfer",
+      "odyssey": "II",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_ii_transfer",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-8-27b@unpinned"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+     "odyssey": "II",
+     "specimen": "Qwen/Qwen3.8-Flash-Next",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer",
+      "odyssey": "II",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_ii_transfer",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_ii_transfer:qwen3-8-flash-next@34567a4712bc"
+     }
+    }
+   ],
+   "n": 5,
+   "reason": null,
+   "source": "tools.future.odyssey_launch.phase_listen_policy",
+   "status": "PRESENT",
+   "value": {
+    "barrier": null,
+    "depends_on_sibling": false,
+    "global_barrier": false,
+    "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_ii_transfer",
+     "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_ii_transfer",
+     "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_ii_transfer",
+     "odyssey-i.wg.qwen3-8-27b@unpinned.phase_ii_transfer",
+     "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_ii_transfer"
+    ],
+    "n": 5,
+    "odyssey": "II",
+    "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+   }
+  },
+  "phase_iii_listener": {
+   "items": [
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+     "odyssey": "III",
+     "specimen": "Qwen/Qwen3-0.6B",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-0-6b@c1899de289a0.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+      "odyssey": "III",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_iii_attack",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-0-6b@c1899de289a0"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_iii_attack",
+     "odyssey": "III",
+     "specimen": "tiiuae/Falcon-H1-7B-Instruct",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.laws"
+      ],
+      "id": "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_iii_attack",
+      "odyssey": "III",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_iii_attack",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:falcon-h1-7b-instruct@41e72f27effb"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_iii_attack",
+     "odyssey": "III",
+     "specimen": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.laws"
+      ],
+      "id": "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_iii_attack",
+      "odyssey": "III",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_iii_attack",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:mistral-small-3-1-24b-instruct-2503@68faf511d618"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_iii_attack",
+     "odyssey": "III",
+     "specimen": "Qwen3.8-27B",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-8-27b@unpinned.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-8-27b@unpinned.phase_iii_attack",
+      "odyssey": "III",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_iii_attack",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-8-27b@unpinned"
+     }
+    },
+    {
+     "depends_on": [
+      "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+     ],
+     "depends_on_sibling": false,
+     "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+     "odyssey": "III",
+     "specimen": "Qwen/Qwen3.8-Flash-Next",
+     "unit": {
+      "blocked_reason": null,
+      "dependencies": [
+       "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.laws"
+      ],
+      "id": "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack",
+      "odyssey": "III",
+      "output_receipt_path": null,
+      "resource_class": "STATIC_ANALYSIS",
+      "sleeping": false,
+      "stage": "phase_iii_attack",
+      "status": "pending",
+      "verifier": "future.odyssey_launch.workgraph.phase_iii_attack:qwen3-8-flash-next@34567a4712bc"
+     }
+    }
+   ],
+   "n": 5,
+   "reason": null,
+   "source": "tools.future.odyssey_launch.phase_listen_policy",
+   "status": "PRESENT",
+   "value": {
+    "barrier": null,
+    "depends_on_sibling": false,
+    "global_barrier": false,
+    "ids": [
+     "odyssey-i.wg.qwen3-0-6b@c1899de289a0.phase_iii_attack",
+     "odyssey-i.wg.falcon-h1-7b-instruct@41e72f27effb.phase_iii_attack",
+     "odyssey-i.wg.mistral-small-3-1-24b-instruct-2503@68faf511d618.phase_iii_attack",
+     "odyssey-i.wg.qwen3-8-27b@unpinned.phase_iii_attack",
+     "odyssey-i.wg.qwen3-8-flash-next@34567a4712bc.phase_iii_attack"
+    ],
+    "n": 5,
+    "odyssey": "III",
+    "rule": "once Phase I emits a law, Phase II may transfer it and Phase III may attack it. There is no global barrier between II and III."
+   }
+  },
+  "qualification_backlog": {
+   "by_status": {
+    "BLOCKED": 32,
+    "READY_PROTECTED": 13,
+    "STATIC_ONLY": 4
+   },
+   "compact_rule": "candidate_id/status/model/blocked_reason/scope_tags only; measurements not copied",
+   "items": [
+    {
+     "blocked_reason": "Flash complete-token and source-independent capability gates remain open",
+     "candidate_id": "flash-attention-gate-fusion",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-compact-moe-bf16-vec4",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent compact expert consumer is not yet qualified",
+     "candidate_id": "flash-compact-moe-epilogue",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; device mHC still requires matched parity/coherence and protected latency",
+     "candidate_id": "flash-device-mhc-state",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-encoder-label-elision",
+     "model": "Flash",
+     "scope_tags": [
+      "BACKEND_FAMILY",
+      "GENERIC_CANDIDATE"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-fullseq-catalog-cache",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "fullseq source path is not a complete source-independent Flash NX executable",
+     "candidate_id": "flash-fullseq-ordered-encoder",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected capability are not qualified",
+     "candidate_id": "flash-hc-router-topk-fusion",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "STATIC_ONLY"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX executable is not qualified",
+     "candidate_id": "flash-hc-staged-threadgroup",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "meta budget is only a prospective function description; no serialized functional artifact, source-independent Flash NX consumer, or protected complete-token path exists",
+     "candidate_id": "flash-meta-sub1-coherent",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 quantizer candidate has no byte-exact parity/coherence and protected-latency receipt",
+     "candidate_id": "flash-p6-act-quant-simdgroup",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-p6-batched-down-qat",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; this full composition still requires matched parity/coherence and protected latency",
+     "candidate_id": "flash-p6-fused-down-shared-combine",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified; composition interactions require a fresh parity/coherence and latency receipt",
+     "candidate_id": "flash-p6-fused-epilogue-stack",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the single-command-buffer path has no matched parity/coherence and protected-latency receipt",
+     "candidate_id": "flash-p6-hash-single-command-buffer",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-p6-learned-expert-cache-reuse",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-p6-learned-reader-reuse",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the shared prefix has no matched parity/coherence and protected-latency receipt",
+     "candidate_id": "flash-p6-prefix-concurrent-wave",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-p6-routed-fp4-down-bf16-fused",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-p6-routed-fp4-down-bf16-simd",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-fused",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-p6-routed-fp4-gate-up-swiglu-simd",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP4 candidate has no NumericParity/coherence and protected-latency receipt",
+     "candidate_id": "flash-p6-routed-fp4-simdgroup",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the P6 FP8 candidate has no NumericParity/coherence and protected-latency receipt",
+     "candidate_id": "flash-p6-shared-fp8-simdgroup",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash complete source-independent NX is not qualified and the SIMD mHC reduction has no bounded parity/coherence receipt",
+     "candidate_id": "flash-p7-mhc-pre-simdgroup",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-pipeline-cache-reuse",
+     "model": "Flash",
+     "scope_tags": [
+      "BACKEND_FAMILY",
+      "GENERIC_CANDIDATE"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-pipeline-id-resolution",
+     "model": "Flash",
+     "scope_tags": [
+      "BACKEND_FAMILY",
+      "GENERIC_CANDIDATE"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-qkv-gqa-rope-fusion",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-routed-fp4-gate-up-swiglu-fused",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source-independent Flash route consumer and protected capability are not qualified",
+     "candidate_id": "flash-router-topk-fusion",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-shared-fp8-down-combine-fused",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "Flash source-independent NX and protected complete-token capability are not qualified",
+     "candidate_id": "flash-shared-fp8-gate-up-swiglu-fused",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": "source oracle is a control; Flash NX and protected complete-token path are open",
+     "candidate_id": "flash-source-bf16-simd",
+     "model": "Flash",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "BLOCKED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-affine2-splitk4",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-affine2-splitk4-vec",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "STATIC_ONLY"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-attention-gate-fusion",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-ba-delta-fusion",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-commit-timing-elision",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-deltanet-inproj-fusion",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-encoder-label-elision",
+     "model": "Qwen27",
+     "scope_tags": [
+      "BACKEND_FAMILY",
+      "GENERIC_CANDIDATE"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-fast-profile",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-gqa-qkv-fusion",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-pipeline-cache-reuse",
+     "model": "Qwen27",
+     "scope_tags": [
+      "BACKEND_FAMILY",
+      "GENERIC_CANDIDATE"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-pipeline-id-resolution",
+     "model": "Qwen27",
+     "scope_tags": [
+      "BACKEND_FAMILY",
+      "GENERIC_CANDIDATE"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-pipeline-state-elision",
+     "model": "Qwen27",
+     "scope_tags": [
+      "BACKEND_FAMILY",
+      "GENERIC_CANDIDATE"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-q2f-splitk4",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-q2f-splitk4-vec",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "STATIC_ONLY"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-q4-vecgroup-x64",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "READY_PROTECTED"
+    },
+    {
+     "blocked_reason": null,
+     "candidate_id": "qwen27-resident-untimed-decode",
+     "model": "Qwen27",
+     "scope_tags": [
+      "MODEL_LOCAL"
+     ],
+     "status": "STATIC_ONLY"
+    }
+   ],
+   "n": 49,
+   "reason": null,
+   "source": "/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+   "status": "PRESENT"
+  },
+  "resident_identity": {
+   "machine_genome_nested": true,
+   "reason": null,
+   "source": "tools.future.resident_identity.collect",
+   "status": "PRESENT",
+   "value": {
+    "claim_class": "STATIC_ONLY",
+    "gpu_authority": false,
+    "id": "qwen3.8-27b-sealed-3.14",
+    "model_family": "qwen3.8",
+    "nx_id": {
+     "model_id": "qwen3.8-27b-sealed-3.14",
+     "profile_schema": "hcli.provider.profile.v1",
+     "protocol": "hawking.qwen38.resident.v1",
+     "resident_identity": "sealed-3.14"
+    },
+    "receipt": "receipts/future/RESIDENT_IDENTITY.json",
+    "role": "CURRENT_NONFINAL_HCLI_WORKER",
+    "schema": "hawking.future.resident_identity.v1",
+    "source": "tools.future.resident_identity.collect"
+   }
+  },
+  "resource_lanes": {
+   "reason": null,
+   "source": "tools.future.frontiers.THIS_HOST_LANES/HARDWARE_LANES/ALL_LANES",
+   "status": "PRESENT",
+   "value": {
+    "all": [
+     "CPU",
+     "ANALYSIS",
+     "SIMULATION",
+     "REPRESENTATION",
+     "TOOLING",
+     "ODYSSEY",
+     "GPU_PROTECTED",
+     "ANE",
+     "FPGA"
+    ],
+    "authority": "tools.future.frontiers",
+    "authority_receipt": "receipts/future/FRONTIER_STATE.json",
+    "blocked_on_this_host": [
+     "GPU_PROTECTED",
+     "ANE",
+     "FPGA"
+    ],
+    "cpu_class": [
+     "CPU",
+     "ANALYSIS",
+     "SIMULATION",
+     "REPRESENTATION",
+     "TOOLING",
+     "ODYSSEY"
+    ],
+    "hardware_blocked": [
+     "GPU_PROTECTED",
+     "ANE",
+     "FPGA"
+    ],
+    "imported": true,
+    "restated": false,
+    "this_host": [
+     "CPU",
+     "ANALYSIS",
+     "SIMULATION",
+     "REPRESENTATION",
+     "TOOLING",
+     "ODYSSEY"
+    ]
+   }
+  },
+  "restart_state": {
+   "reason": null,
+   "source": "workgraph durable + autonomy mission + detached receipt",
+   "status": "PRESENT",
+   "value": {
+    "autonomy_mission": {
+     "reason": null,
+     "source": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_MISSION_STATE.json",
+     "status": "PRESENT",
+     "value": {
+      "odyssey_run": false,
+      "path_taken": "worktree",
+      "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_MISSION_STATE.json"
+     }
+    },
+    "detached": {
+     "reason": null,
+     "source": "/Users/scammermike/Downloads/hawking/receipts/future/DETACHED_EXECUTION.json",
+     "status": "PRESENT",
+     "value": {
+      "odyssey_run": false,
+      "path_taken": "worktree"
+     }
+    },
+    "odyssey_run": {
+     "items": [],
+     "n": 0,
+     "reason": "no Odyssey I descriptor has launched; there is no run restart state. EMPTY (looked, none) is not UNAVAILABLE (could not read).",
+     "source": "receipts/future/ODYSSEY_CONSOLIDATED_RUN.json",
+     "status": "EMPTY",
+     "value": []
+    },
+    "workgraph_durable": {
+     "reason": null,
+     "source": "receipts/future/workgraph_workspace/workgraph.json",
+     "status": "PRESENT",
+     "value": {
+      "executes": false,
+      "n_units": 65,
+      "note": "durable workgraph exists (selftest / scheduler). It is not an Odyssey I run restart until a descriptor has launched.",
+      "odyssey_run": false,
+      "schema": "hawking.future.workgraph.durable.v1",
+      "tick": 242
+     }
+    }
+   }
+  },
+  "source_specimens": {
+   "curriculum_n_ready": 5,
+   "curriculum_n_roles": 5,
+   "curriculum_ready": true,
+   "items": [
+    {
+     "architecture_family": "dense_transformer",
+     "bytes_hashed": 1519209243,
+     "curriculum_ready": true,
+     "curriculum_ready_reason": "ModelLake whole-tree sha256 verification",
+     "identity_source": "modellake_manifest",
+     "in_specimens_listing": true,
+     "purpose": "very small dense for procedural speed",
+     "repo": "Qwen/Qwen3-0.6B",
+     "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+     "role": "very_small_dense_procedural_speed",
+     "specimen_name": "Qwen--Qwen3-0.6B@c1899de289a0",
+     "specimen_owner": "modellake",
+     "verification_path_taken": "worktree",
+     "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
+     "verification_status": "WHOLE_TREE_VERIFIED",
+     "whole_tree_verified": true
+    },
+    {
+     "architecture_family": "falcon_h1",
+     "bytes_hashed": 15182220635,
+     "curriculum_ready": true,
+     "curriculum_ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
+     "identity_source": "modellake_manifest+odyssey_i_O001",
+     "in_specimens_listing": true,
+     "purpose": "small dense alternate architecture for transfer",
+     "repo": "tiiuae/Falcon-H1-7B-Instruct",
+     "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+     "role": "small_dense_alternate_architecture_transfer",
+     "specimen_name": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "specimen_owner": "modellake",
+     "verification_path_taken": "worktree",
+     "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
+     "verification_status": "WHOLE_TREE_VERIFIED",
+     "whole_tree_verified": true
+    },
+    {
+     "architecture_family": "dense_transformer",
+     "bytes_hashed": 96077777512,
+     "curriculum_ready": true,
+     "curriculum_ready_reason": "RECURRENT_PATIENT: retired from the historical first wave, prior seal intact, and whole-tree verified again now",
+     "identity_source": "modellake_manifest",
+     "in_specimens_listing": true,
+     "purpose": "mid-size dense for compiler",
+     "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
+     "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
+     "role": "mid_size_dense_compiler",
+     "specimen_name": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+     "specimen_owner": "modellake",
+     "verification_path_taken": "worktree",
+     "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
+     "verification_status": "WHOLE_TREE_VERIFIED",
+     "whole_tree_verified": true
+    },
+    {
+     "architecture_family": "dense_hybrid_transformer",
+     "bytes_hashed": 55586059240,
+     "curriculum_ready": true,
+     "curriculum_ready_reason": "authorized external specimen; tree digest is sealed identity (c7c81652283f\u2026)",
+     "identity_source": "odyssey2_law_store.SCHOOLS.Qwen27",
+     "in_specimens_listing": null,
+     "purpose": "Qwen27 for mature physical",
+     "repo": "Qwen3.8-27B",
+     "revision": null,
+     "role": "qwen27_mature_physical",
+     "specimen_name": "qwen3.8-27b-abliterated-bf16@local",
+     "specimen_owner": "local_directory",
+     "verification_path_taken": "worktree",
+     "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
+     "verification_status": "WHOLE_TREE_VERIFIED",
+     "whole_tree_verified": true
+    },
+    {
+     "architecture_family": "qwen4_exp",
+     "bytes_hashed": 360023286454,
+     "curriculum_ready": true,
+     "curriculum_ready_reason": "ModelLake whole-tree sha256 verification",
+     "identity_source": "hcli.flash_next pin + modellake census + odyssey2 school",
+     "in_specimens_listing": true,
+     "purpose": "Flash for heterogeneous frontier",
+     "repo": "Qwen/Qwen3.8-Flash-Next",
+     "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+     "role": "flash_heterogeneous_frontier",
+     "specimen_name": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+     "specimen_owner": "modellake",
+     "verification_path_taken": "worktree",
+     "verification_source": "receipts/future/SPECIMEN_VERIFICATION.json",
+     "verification_status": "WHOLE_TREE_VERIFIED",
+     "whole_tree_verified": true
     }
    ],
    "n": 5,
@@ -2382,6 +6364,7 @@
    "declared_trial_catalog": {
     "ids": [
      "15m",
+     "30m",
      "1h",
      "3h",
      "6h"
@@ -2432,63 +6415,66 @@
   "Fallback identity identical to the resident is REJECTED (there is no fallback)."
  ],
  "gate": {
-  "allowed": false,
+  "allowed": true,
   "met": [
+   "resident_autonomy_trial_pass",
+   "specimen_curriculum_ready",
    "modellake_identity",
+   "doctor_callable",
+   "gravity_callable",
+   "nr_nx_path_callable",
    "evidence_hierarchy",
    "negative_science",
    "workgraphs",
    "self_refill",
    "dirty_measurement",
+   "protected_scheduling",
    "transfer_substrate",
    "adversary_substrate",
    "crash_recovery",
    "receipts"
   ],
   "n_criteria": 16,
-  "n_met": 10,
-  "n_unmet": 6,
+  "n_met": 16,
+  "n_unmet": 0,
   "rule": "every unmet criterion is named; the first failure does not hide the rest",
-  "unmet": [
-   "resident_autonomy_trial_pass",
-   "specimen_curriculum_ready",
-   "doctor_callable",
-   "gravity_callable",
-   "nr_nx_path_callable",
-   "protected_scheduling"
-  ],
-  "verdict": "REFUSED"
+  "unmet": [],
+  "verdict": "LAUNCH"
  },
  "gpu_authority": false,
- "head": "b06d725701ec506644ab109f4ea8be802a527f51",
+ "head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
  "met": [
+  "resident_autonomy_trial_pass",
+  "specimen_curriculum_ready",
   "modellake_identity",
+  "doctor_callable",
+  "gravity_callable",
+  "nr_nx_path_callable",
   "evidence_hierarchy",
   "negative_science",
   "workgraphs",
   "self_refill",
   "dirty_measurement",
+  "protected_scheduling",
   "transfer_substrate",
   "adversary_substrate",
   "crash_recovery",
   "receipts"
  ],
  "n_criteria": 16,
- "n_met": 10,
- "n_unmet": 6,
+ "n_met": 16,
+ "n_unmet": 0,
  "negative_findings": [
-  "verdict=REFUSED n_unmet=6 unmet=['resident_autonomy_trial_pass', 'specimen_curriculum_ready', 'doctor_callable', 'gravity_callable', 'nr_nx_path_callable', 'protected_scheduling']",
+  "verdict=LAUNCH n_unmet=0 unmet=[]",
   "A descriptor emitted on an unmet gate would be a document that looks like a launch.",
   "orchestration.BINDINGS does not yet name consolidated_run.py; that table is outside this lane's write set.",
   "time_budget for this run is UNAVAILABLE: no Odyssey I launch has started, and copying an autonomy-trial duration would invent a parameter.",
   "restart_state.odyssey_run is EMPTY: there is no in-flight Odyssey I run to re-adopt.",
-  "curriculum role very_small_dense_procedural_speed verification_status=NOT_IN_VERIFICATION_RECEIPT ready=False",
-  "curriculum role flash_heterogeneous_frontier verification_status=NOT_IN_VERIFICATION_RECEIPT ready=False",
   "fallback FLASH_SINGULARITY.NX does not clear SANDBOX_RESIDENT_FLOOR (role=CANDIDATE_NOT_SANDBOX_HOLDER)"
  ],
  "phase_transition": "NOT_STARTED",
  "purpose": "Run descriptor the detached Odyssey supervisor will execute, or an honest refusal naming every unmet launch criterion.",
- "reason": "launch gate unmet; emitting a descriptor would look like a launch. unmet=resident_autonomy_trial_pass, specimen_curriculum_ready, doctor_callable, gravity_callable, nr_nx_path_callable, protected_scheduling",
+ "reason": "all sixteen launch criteria met; descriptor sealed",
  "recovered_implementation": [
   "tools/future/odyssey_launch.py \u2014 sixteen _eval_* criteria, unmet_criteria, can_launch, emit_first_workgraphs, propose_specimen_curriculum, physical_blockers, probe_json",
   "tools/future/frontiers.py \u2014 THIS_HOST_LANES, HARDWARE_LANES, ALL_LANES, load_book blocked items with wake_all_of",
@@ -2510,37 +6496,23 @@
   "fails_closed": "build_run returns descriptor=None while any odyssey_launch criterion is unmet; validate_descriptor rejects a missing required field, a bare list where a tagged collection is required, a specimen without verification_status, and a fallback identical to the resident; write_receipt raises HardwareClaimError on numeric hardware fields; UNAVAILABLE never silently becomes [].",
   "frontier": "FT.ODYSSEY_TRANSFER.re-earn",
   "receipt": "receipts/future/ODYSSEY_CONSOLIDATED_RUN.json",
-  "unmet_now": [
-   "resident_autonomy_trial_pass",
-   "specimen_curriculum_ready",
-   "doctor_callable",
-   "gravity_callable",
-   "nr_nx_path_callable",
-   "protected_scheduling"
-  ],
-  "verdict_now": "REFUSED",
+  "unmet_now": [],
+  "verdict_now": "LAUNCH",
   "workunit": "one CPU_ANALYSIS unit; odyssey-i.consolidated-run; refuses rather than emitting a launch-shaped descriptor"
  },
  "schema": "hawking.future.consolidated_run.v1",
- "seal_sha256": "56c231c816a047826bc34f0fc6e091aefc3a5585c4aa38cbeb6d0f43787847f9",
- "unmet": [
-  "resident_autonomy_trial_pass",
-  "specimen_curriculum_ready",
-  "doctor_callable",
-  "gravity_callable",
-  "nr_nx_path_callable",
-  "protected_scheduling"
- ],
- "verdict": "REFUSED",
+ "seal_sha256": "d6f11bb85fc93340bafbda1a413ebf2171adc9d372405fda0c93038cbdb60868",
+ "unmet": [],
+ "verdict": "LAUNCH",
  "version": 1,
  "workunit": {
   "assigned_backend": null,
   "assigned_runtime": null,
   "attempts": 0,
   "backend_task_id": null,
-  "blocked_reason": "launch criteria unmet; descriptor not emitted",
+  "blocked_reason": null,
   "claim_boundary": "WorkUnit is a proposal; receipt and protected capability gates remain authoritative",
-  "classification": "REFUSED",
+  "classification": "STATIC_ONLY",
   "content_hash": "f013d5ff0643be860664fb007ce6febbeff7d27ebc288a9c7ccee470faad9a96",
   "dependencies": [],
   "description": "Build the Odyssey I run descriptor or refuse on unmet launch criteria",
@@ -2562,15 +6534,8 @@
   "role": "science",
   "running_at": null,
   "status": "completed",
-  "unmet": [
-   "resident_autonomy_trial_pass",
-   "specimen_curriculum_ready",
-   "doctor_callable",
-   "gravity_callable",
-   "nr_nx_path_callable",
-   "protected_scheduling"
-  ],
-  "verdict": "REFUSED",
+  "unmet": [],
+  "verdict": "LAUNCH",
   "verification": null,
   "verifier": "future.consolidated_run.build_run",
   "workspace": "repo-root"

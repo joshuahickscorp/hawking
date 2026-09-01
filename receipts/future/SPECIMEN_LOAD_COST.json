@@ -1,0 +1,164 @@
+{
+ "authority": "S027 \u00a74, \u00a78-\u00a713, \u00a727, \u00a733, \u00a734",
+ "measurement_provenance": {
+  "absolutes_are_measured_under_load": true,
+  "gpu_lane_lock_held": false,
+  "lane": "g102-load",
+  "loadavg": "{ 6.16 6.60 6.72 }",
+  "measured_at": "2026-08-31T22:59:15Z",
+  "measured_at_source": "WRITE_TIME",
+  "why": "a hardware number that cannot be placed in time cannot be audited against a contention window"
+ },
+ "obligation": "G102",
+ "per_specimen": [
+  {
+   "cold_load_minutes": 0.33,
+   "cold_load_seconds": 19.6,
+   "fits_in_uma": null,
+   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "source_gb": 1.52,
+   "warm_load_seconds": 0.14
+  },
+  {
+   "cold_load_minutes": 3.26,
+   "cold_load_seconds": 195.4,
+   "fits_in_uma": null,
+   "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "source_gb": 15.18,
+   "warm_load_seconds": 1.38
+  },
+  {
+   "cold_load_minutes": 7.04,
+   "cold_load_seconds": 422.4,
+   "fits_in_uma": null,
+   "id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+   "source_gb": 32.82,
+   "warm_load_seconds": 2.98
+  },
+  {
+   "cold_load_minutes": 13.1,
+   "cold_load_seconds": 786.2,
+   "fits_in_uma": null,
+   "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+   "source_gb": 61.09,
+   "warm_load_seconds": 5.55
+  },
+  {
+   "cold_load_minutes": 13.33,
+   "cold_load_seconds": 799.9,
+   "fits_in_uma": null,
+   "id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+   "source_gb": 62.15,
+   "warm_load_seconds": 5.64
+  },
+  {
+   "cold_load_minutes": 20.61,
+   "cold_load_seconds": 1236.5,
+   "fits_in_uma": null,
+   "id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+   "source_gb": 96.08,
+   "warm_load_seconds": 8.72
+  },
+  {
+   "cold_load_minutes": 34.24,
+   "cold_load_seconds": 2054.4,
+   "fits_in_uma": null,
+   "id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+   "source_gb": 159.63,
+   "warm_load_seconds": 14.49
+  },
+  {
+   "cold_load_minutes": 77.23,
+   "cold_load_seconds": 4633.9,
+   "fits_in_uma": null,
+   "id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+   "source_gb": 360.05,
+   "warm_load_seconds": 32.69
+  }
+ ],
+ "prefetch_case": {
+  "and_this_is_the_sealed_subset_only": "29 more specimens are complete but unsealed. Including them makes the figure much larger, and the registry's seal backlog is therefore a scheduling cost, not only a bookkeeping gap.",
+  "n_sealed_specimens": 8,
+  "statement": "cold-loading the 8 SEALED specimens once costs 2.8 hours of pure disk read, and the largest alone is 77 minutes. In a 48-hour cycle that is time the Odyssey does not have to spend twice, which is exactly S027 \u00a78's point: DO NOT WAIT UNTIL A MODEL IS NEEDED TO START LOADING IT.",
+  "total_cold_load_hours": 2.82,
+  "total_cold_load_minutes": 169.1,
+  "total_source_gb": 788.5,
+  "worst_single_specimen": {
+   "cold_minutes": 77.23,
+   "gb": 360.05,
+   "id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+  }
+ },
+ "rates": {
+  "contended_cold_MB_per_s": 63.3,
+  "contended_warm_MB_per_s": 10987.3,
+  "contention_cost": 1.2275,
+  "quiet_cold_MB_per_s": 77.7,
+  "quiet_cold_samples": [
+   76.5,
+   78.9
+  ],
+  "quiet_cold_spread": 1.0314,
+  "quiet_warm_MB_per_s": 11015.1,
+  "reading": "warm is 142x cold, while suspending downloads buys only 23%. Residency dominates contention by two orders of magnitude.",
+  "volume": "/Volumes/corpdrive (APFS over USB)",
+  "warm_over_cold": 141.8
+ },
+ "recorded_by": "tools/future/specimen_load_cost.py",
+ "scored_prediction": {
+  "fitted_on": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+  "n_held_out_points": 1,
+  "observed_seconds": 38.051,
+  "one_point_is_not_a_validation": "a single held-out specimen makes this a sanity check, not a validated cost model. It becomes one as real loads accumulate.",
+  "predicted_seconds": 39.256,
+  "relative_error": 0.0317,
+  "scored_on": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+  "why_this_is_a_real_score": "the rate was fitted on one specimen and scored on a DIFFERENT one with a different file count and layout. Scoring the model on the sample it was fitted to would measure nothing.",
+  "within_10pct": true
+ },
+ "seal_sha256": "e0b15ee2c0c785959ac9aa3153f8a3846ddf1e4c10672d386c987250c1050c68",
+ "ssd_contention_answer": {
+  "answer": "BARELY. Cold reads run 76.5-78.9 MB/s quiet and 63.3 MB/s with two downloads live - a 1.21x cost. Suspending downloads for a load is not worth it; keeping the specimen warm is worth 143x.",
+  "measured_contention_cost": 1.2275,
+  "question": "S027 \u00a727: do ModelLake writes materially interfere?",
+  "so_the_scheduling_rule_is": "overlap loads with downloads freely, and spend the effort on residency instead"
+ },
+ "what_is_not_measured_here": "this measures DISK READ only. A real LOAD_SPECIMEN also parses safetensors headers, allocates Metal buffers and warms pipeline states, none of which is timed here. The numbers are a FLOOR on load cost, and the module says so rather than calling them the load time.",
+ "work_species": {
+  "EVICT_SPECIMEN": {
+   "memory_effect": "-resident_bytes",
+   "resource": "CPU",
+   "reversible_by": "LOAD_SPECIMEN at full cold cost"
+  },
+  "LOAD_NR_FOR_COMPILE": {
+   "memory_effect": "+nr_bytes",
+   "resource": "DISK_READ",
+   "reversible_by": "EVICT_SPECIMEN"
+  },
+  "LOAD_NX": {
+   "memory_effect": "+nx_bytes",
+   "resource": "DISK_READ",
+   "reversible_by": "EVICT_SPECIMEN"
+  },
+  "LOAD_SPECIMEN": {
+   "memory_effect": "+source_bytes",
+   "resource": "DISK_READ",
+   "reversible_by": "EVICT_SPECIMEN"
+  },
+  "PREFETCH_SPECIMEN": {
+   "memory_effect": "+page_cache",
+   "resource": "DISK_READ",
+   "reversible_by": "eviction by pressure; speculative"
+  },
+  "UNLOAD_SPECIMEN": {
+   "memory_effect": "-resident_bytes",
+   "resource": "CPU",
+   "reversible_by": "LOAD_SPECIMEN"
+  },
+  "WARM_EXECUTOR": {
+   "memory_effect": "+pipeline_states",
+   "resource": "GPU",
+   "reversible_by": "none; cheap to redo"
+  }
+ }
+}
