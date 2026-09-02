@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:33:04Z",
+  "recorded_at": "2026-09-02T08:29:33Z",
   "recorded_by": "tools/future/vmcp.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -214,11 +214,6 @@
   "evidence_class": "STATIC_ONLY",
   "foreign_package": {
    "candidates": [
-    {
-     "has_bus": false,
-     "on_disk": false,
-     "path": "/Users/scammermike/.claude-grok/worktrees/d1-vmcp-tabula-disposition-20260901-231744/visionmcp/src"
-    },
     {
      "has_bus": true,
      "on_disk": true,
@@ -959,7 +954,7 @@
   "symbol": "tools.future.vmcp.compact_surface"
  },
  "schema": "hawking.future.vmcp.v1",
- "seal_sha256": "c43a8bac8cd18eb5a695dc55779f90c88590e21627c3c50a0704a3ba1abd1dfc",
+ "seal_sha256": "0283710d7ef66bba6c1eaa35c5c6891622edb072212d1b739e5d4e72e67acd8a",
  "selftest": {
   "n_connected_acts": 5,
   "n_organs": 10,

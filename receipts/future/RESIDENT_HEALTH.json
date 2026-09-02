@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:43Z",
+  "recorded_at": "2026-09-02T08:28:26Z",
   "recorded_by": "tools/future/resident_health.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -41,11 +41,11 @@
  "live_undeclared": {
   "detached_status": "UNOBSERVABLE",
   "memory_status": "OK",
-  "presence": "UNDECLARED",
+  "presence": "PRESENT",
   "queue_depth": 26,
   "queue_status": "OK",
-  "reason": "no resident pid declared (argument or HAWKING_RESIDENT_PID); will not invent one from the largest RSS neighbour (dirty_measure.identify_resident_loaded is a contamination envelope, not identity)",
-  "rss_bytes": null,
+  "reason": null,
+  "rss_bytes": 33849344,
   "uma_pressure_name": "warn"
  },
  "negative_findings": [
@@ -60,7 +60,7 @@
   "live_dead_pid": {
    "coped": true,
    "passed": true,
-   "pid": 22678,
+   "pid": 47500,
    "presence": "ABSENT",
    "reason": "resident pid is not alive",
    "rss_bytes": null
@@ -133,7 +133,7 @@
   "reason": null
  },
  "schema": "hawking.future.resident_health.v1",
- "seal_sha256": "669c5b6b4d8aba962b5463bcacbb04115cb84cb11076264765ad70d93320ff95",
+ "seal_sha256": "f869e8db42254cefde9788284c488ba8adc804363b2dbd3b595405bba771ca59",
  "telemetry_evidence_class": "SELF_MEASURED_DIRTY",
  "version": 1,
  "vocabulary": {

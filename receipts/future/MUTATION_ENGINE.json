@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple M3 Ultra",
   "measurement_state": "SELF_MEASURED_DIRTY",
-  "recorded_at": "2026-09-01T06:06:59Z",
+  "recorded_at": "2026-09-02T08:27:56Z",
   "recorded_by": "tools/future/mutation_trial.py",
   "rule": "lease_calls is a flock count, not a GPU rate. Hardware numbers live in receipts/future/MUTATION_TRIAL.json. This receipt does not restate them.",
   "state": "MEASURED",
@@ -50,10 +50,10 @@
   "RESIDENT_ARTIFACT"
  ],
  "needs_protected": [
-  "TOKEN_RATE",
+  "KERNEL_OR_GPU",
   "REPRESENTATION_BPW",
-  "RESIDENT_ARTIFACT",
-  "KERNEL_OR_GPU"
+  "TOKEN_RATE",
+  "RESIDENT_ARTIFACT"
  ],
  "negative_findings": [
   "gpu_authority remains false: trial evidence is SELF_MEASURED_DIRTY, not PROTECTED_ABSOLUTE",
@@ -153,7 +153,7 @@
   "workunit": "BINDINGS-reachable propose/apply/evidence/rollback/verdict. mutation_trial.py is the driver that takes the HCLI lease and measures KERNEL_OR_GPU / TOKEN_RATE / REPRESENTATION_BPW."
  },
  "schema": "hawking.future.mutation_engine.v1",
- "seal_sha256": "ebe81874313c9ecc40c95369d16e99439f44c191209510f557561c998736965d",
+ "seal_sha256": "e137b4172fe408f1884af344039f514f15c28e83e3c4c3031c573f22203178ee",
  "took_gpu_lease": true,
  "trial_table": {
   "refill_count": 4,

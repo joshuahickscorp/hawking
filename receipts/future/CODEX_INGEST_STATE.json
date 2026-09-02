@@ -53539,7 +53539,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:02:50Z",
+  "recorded_at": "2026-09-02T08:39:17Z",
   "recorded_by": "tools/future/codex_ingest.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -61487,7 +61487,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788308192.2294867,
+   "mtime": 1788336711.5695138,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011",
    "size": 38430
@@ -69527,7 +69527,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788332164.1066718,
+   "mtime": 1788337979.9588082,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "0b6209a16b3d0b546d16b47e23bf07fc23f2f50a100dbbe6d1a74bfceb76d484",
    "size": 132669
@@ -69563,7 +69563,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788332164.1009855,
+   "mtime": 1788337979.9512618,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "45feb7b0f1bfd8e3873bbf14b3c54d24973d4106b8ab4ee72ec83b32436fc5ec",
    "size": 11084
@@ -69587,7 +69587,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788332164.1130576,
+   "mtime": 1788337979.9698038,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "47617dd47099811fe178a5be6ddb29107072d097c73f9ea3679afda07317c223",
    "size": 4474
@@ -69599,7 +69599,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788332164.114406,
+   "mtime": 1788337979.973779,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "ec9589bd2ced5e72a157422d5b7db9935f37da44f8a029491aba41f07764a766",
    "size": 13150
@@ -69611,7 +69611,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788332164.1001544,
+   "mtime": 1788337979.949753,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "2350a4f2a12f8ffbdb32e99d68895b6d8273f199584cfa9b5f97ed88c2802439",
    "size": 12677
@@ -69647,7 +69647,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788332164.1124327,
+   "mtime": 1788337979.9683034,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "46b9377ab2c6743372f37ee6e2f71d9ebc8d985809f8dbf7d9947ef3fbc1145a",
    "size": 8160
@@ -69767,7 +69767,7 @@
    "driver_token": "FAIL",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788313206.3751805,
+   "mtime": 1788336711.5697021,
    "reason": "verdict FAIL",
    "sha256": "858fc1adf1533bbd45fe18e854645b3915e752b63b5c0ce4202445b5ed9c84be",
    "size": 22642
@@ -69899,7 +69899,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788332164.1110451,
+   "mtime": 1788337979.9661872,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "size": 189647
@@ -69911,7 +69911,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788332164.102956,
+   "mtime": 1788337979.9540975,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "79c7d5d916bebb31d6900f154c70b83943064c2323b1d7231b3e7f9bf469dcc8",
    "size": 55141
@@ -71591,7 +71591,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788308192.2286196,
+   "mtime": 1788336711.5703,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec",
    "size": 31585
@@ -72083,7 +72083,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788316583.177048,
+   "mtime": 1788336711.5704436,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "a74305d3e1f9c1f889961d0cbc4396f558998b7ec09aca761087965b5a4b91f2",
    "size": 2985
@@ -72503,7 +72503,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-09-02T04:02:42Z",
-   "mtime": 1788308230.9009497,
+   "mtime": 1788336711.5706503,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "ef4c9f808bbbc6a1112061d6f0e28d27a966900417bd6c9b7586fc3cc78b4992",
    "size": 31172
@@ -73658,7 +73658,7 @@
   "--once --assert-idempotent refusal that is capable of firing",
   "read-only open; writes only receipts/future/CODEX_INGEST_STATE.json"
  ],
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "idempotence": {
   "assert_idempotent": "exit non-zero iff n_new + n_changed > 0",
   "change_detector": "sha256 of file bytes; mtime is recorded and never consulted",
@@ -73829,7 +73829,7 @@
   "unreadable": []
  },
  "schema": "hawking.future.codex_ingest.v1",
- "seal_sha256": "3e8c3ea315f7fd04d5abc49984d177a62b3d948ff1220b7ea677d744dcffe159",
+ "seal_sha256": "ae96018ad24ee8ec5207ab54e5c0cb617aabc2000e45e6ec500405952a06086a",
  "version": 1,
  "vocabulary": {
   "bench_state": "UNKNOWN",

@@ -146,6 +146,14 @@ COMMANDS: Tuple[Command, ...] = (
         "/quit",
         aliases=("/exit",),
     ),
+    Command(
+        "/land",
+        "commit accumulated work via the governed landing service "
+        "(push/merge are separate: /land push, /land merge <branch>)",
+        True,
+        "repo_write",
+        "/land",
+    ),
 )
 
 

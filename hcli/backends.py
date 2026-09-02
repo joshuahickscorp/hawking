@@ -568,13 +568,96 @@ def inject_schema_instruction(payload: Dict[str, Any], instruction: str) -> None
     append_user_text(payload, instruction, skip_if="MUST satisfy this JSON Schema")
 
 
+def _bracket_closing_suffix(prefix: str) -> str:
+    """Closing brackets/braces needed to balance an open JSON prefix.
+
+    Scans outside of string literals only; ``prefix`` is assumed to already be
+    structurally valid up to this point (the decoder read this far without
+    erroring), so a naive escape-aware scan is enough.
+    """
+    stack: List[str] = []
+    in_string = False
+    escape = False
+    for ch in prefix:
+        if in_string:
+            if escape:
+                escape = False
+            elif ch == "\\":
+                escape = True
+            elif ch == '"':
+                in_string = False
+            continue
+        if ch == '"':
+            in_string = True
+        elif ch in "{[":
+            stack.append(ch)
+        elif ch in "}]":
+            if stack:
+                stack.pop()
+    return "".join("}" if ch == "{" else "]" for ch in reversed(stack))
+
+
+def _close_unterminated_string(text: str, error: "json.JSONDecodeError") -> Optional[str]:
+    """Deterministically close a reply whose only defect is an unclosed string.
+
+    json's own scanner reports the exact offset of the opening quote for an
+    "Unterminated string starting at" error (``error.pos``): everything from
+    there to end-of-text was read as string body without ever finding an
+    unescaped closing quote, which is only possible if that body contains no
+    unescaped quote or raw control character the scanner would have stopped
+    on first. Appending one closing quote plus whatever braces/brackets the
+    prefix still has open is therefore a syntax-only fix -- it invents no
+    field and no content, only the punctuation the model never emitted
+    before it stopped. If the repaired text still does not parse, or the
+    parsed object still fails the schema, this bought nothing and the normal
+    violation/retry path runs exactly as if it had never been tried.
+    """
+    if "Unterminated string starting at" not in error.msg:
+        return None
+    start = error.pos
+    if start < 0 or start >= len(text) or text[start] != '"':
+        return None
+    body = text[start + 1 :]
+    # A closing quote right after an ODD run of trailing backslashes would
+    # itself read as an escaped quote, not a terminator -- drop the dangling
+    # backslash rather than guess what it was escaping.
+    trailing_backslashes = len(body) - len(body.rstrip("\\"))
+    if trailing_backslashes % 2:
+        body = body[:-1]
+    closing = _bracket_closing_suffix(text[:start])
+    return text[: start + 1] + body + '"' + closing
+
+
+_DECODE_VIOLATION_MARKERS = (
+    "is not a JSON object",
+    "not an object",
+    "empty response",
+    "Unterminated",
+    "TRUNCATION_REPAIR",
+)
+
+
+def _is_decode_violation(reason: str) -> bool:
+    """True when a violation is broken JSON syntax, not a schema/shape miss.
+
+    Used to pick the retry instruction: a schema miss needs "add this field",
+    broken syntax needs "escape your quotes and keep it short" instead --
+    repeating the schema back at a model that already produced the right
+    shape and just failed to close a string does not fix a syntax error.
+    """
+    text = str(reason or "")
+    return any(marker in text for marker in _DECODE_VIOLATION_MARKERS)
+
+
 def extract_json_object(content: Any, diag: Optional[List[str]] = None) -> Dict[str, Any]:
     """Pull a JSON object out of a model reply. Raises SchemaViolation.
 
     ``diag`` collects notes about HOW the object was obtained. It matters when the
     whole reply does not parse and an inner object is salvaged instead: that object
     is a FRAGMENT, and validating it produces a schema error that blames the shape
-    when the real fault is a syntax error further up.
+    when the real fault is a syntax error further up. A "TRUNCATION_REPAIR: " note
+    means the object was recovered by closing an unterminated trailing string
+    deterministically (see ``_close_unterminated_string``) -- no retry spent.
 
     Measured on the sealed 27B resident: it emitted an unescaped quote inside a
     string (``"find \"$ROOT/receipts/head" -type f"``), the outer object failed to
@@ -600,6 +683,25 @@ def extract_json_object(content: Any, diag: Optional[List[str]] = None) -> Dict[
         )
     except SchemaViolation:
         raise
+    except json.JSONDecodeError as exc:
+        repaired_text = _close_unterminated_string(text, exc)
+        if repaired_text is not None:
+            try:
+                repaired = json.loads(repaired_text)
+            except Exception:
+                repaired = None
+            if isinstance(repaired, dict):
+                if diag is not None:
+                    diag.append(
+                        "TRUNCATION_REPAIR: the reply's last string was "
+                        f"never closed ({exc}); it "
+                        "was closed deterministically (appended a closing "
+                        f"quote and {len(repaired_text) - len(text)} "
+                        "bracket character(s)), no field content was "
+                        "invented, and the model was not asked again for "
+                        "this attempt"
+                    )
+                return repaired
     except Exception:
         pass
     decoder = json.JSONDecoder()
@@ -916,6 +1018,10 @@ class StructuredOutputContract:
     # Every key rename this contract performed. Carried into the receipt so a
     # repair is auditable rather than invisible.
     repairs: List[str] = field(default_factory=list)
+    # Every deterministic unterminated-string close this contract performed.
+    # Same auditability rule: a repair that fixed the reply without spending
+    # a retry still has to be visible in the receipt, not silently absorbed.
+    truncation_repairs: List[str] = field(default_factory=list)
 
     def apply(self, payload: Dict[str, Any]) -> Dict[str, Any]:
         prepared = deepcopy(payload)
@@ -938,6 +1044,9 @@ class StructuredOutputContract:
                 self.repairs.extend(log)
                 return repaired
             raise SchemaViolation(err, text=str(text) if text is not None else None)
+        for note in diag:
+            if note.startswith("TRUNCATION_REPAIR: "):
+                self.truncation_repairs.append(note[len("TRUNCATION_REPAIR: ") :])
         return parsed
 
     def enforce(
@@ -959,14 +1068,33 @@ class StructuredOutputContract:
             if attempt > 1:
                 to_send = deepcopy(working)
                 prior = errors[-1] if errors else "invalid structured output"
-                append_user_text(
-                    to_send,
-                    (
+                if _is_decode_violation(prior):
+                    # The reply broke JSON syntax, not the schema shape --
+                    # repeating "satisfy the schema" back at a model that
+                    # already had the right shape and just failed to close a
+                    # string does not fix a syntax error. Name the actual
+                    # failure class and ask for the thing that avoids it.
+                    required = self.schema.get("required") or []
+                    close_note = (
+                        f" Write every required field ({', '.join(required)}) "
+                        "and stop immediately after the final closing brace."
+                        if required
+                        else " Close every object and array you open."
+                    )
+                    note = (
+                        f"\nAttempt {attempt - 1} was rejected: {prior}. "
+                        "That reply broke JSON syntax, not the schema. "
+                        'Escape every quote and newline inside a string '
+                        'value (\\" and \\n) and keep string values short '
+                        "-- a sentence, not an essay." + close_note
+                    )
+                else:
+                    note = (
                         f"\nAttempt {attempt - 1} was rejected: {prior}. "
                         "Return exactly one JSON object that satisfies the "
                         "schema and nothing else."
-                    ),
-                )
+                    )
+                append_user_text(to_send, note)
             try:
                 # complete_fn is inside the try on purpose: a caller that can
                 # see the reply is truncated knows it violates the schema
@@ -998,6 +1126,12 @@ class StructuredOutputContract:
                     result.raw["_structured_repairs"] = list(self.repairs)
                     if "structured_output_key_repair" not in result.degraded:
                         result.degraded.append("structured_output_key_repair")
+                if self.truncation_repairs:
+                    result.raw["_structured_truncation_repairs"] = list(
+                        self.truncation_repairs
+                    )
+                    if "structured_output_truncation_repair" not in result.degraded:
+                        result.degraded.append("structured_output_truncation_repair")
             result.schema_attempts = attempt
             return result
         reason = (

@@ -107,6 +107,14 @@ class App:
 
     def _run_interactive(self) -> int:
         model_name = self.controller.model_name or "local"
+        # The ledger belongs to the INTERACTIVE surface only. This is the one
+        # place a human is present to see the numbers and decide, which is the
+        # whole point of it: an unattended run records the same snapshot into
+        # mission evidence instead of offering a prompt nobody is there to
+        # answer. Constructed here rather than inside TUI so a view never reads
+        # the state of a repository nobody handed it.
+        from .session_ledger import SessionLedger
+
         tui = TUI(
             event_bus=self.bus,
             workspace=self.ws.root,
@@ -115,6 +123,7 @@ class App:
             bank_snapshot_fn=self.controller.goal_bank_snapshot,
             stream=sys.stdout,
             tty=sys.stdout.isatty(),
+            ledger=SessionLedger(self.ws.root),
         )
         self.bus.emit("session_started", {"mode": "interactive"})
         try:

@@ -12,6 +12,7 @@ from typing import Any, Callable, Dict, List, Optional, TextIO
 
 from .events import Event, EventBus
 from .mission import mission_state_path
+from .session_ledger import SessionLedger
 from .stream_render import event_phase, is_terminal_event, render_event
 
 _THINK_RE = re.compile(r"<think>.*?</think>", re.DOTALL)
@@ -170,6 +171,7 @@ class TUI:
         stream: Optional[TextIO] = None,
         tty: Optional[bool] = None,
         live_interval: float = 1.0,
+        ledger: Optional[SessionLedger] = None,
     ):
         self.bus = event_bus
         self.workspace = workspace
@@ -202,6 +204,17 @@ class TUI:
         # as the flag that tells the final_response arm to swallow /steer's
         # own "Steer queued" confirmation, since the note already said so.
         self._auto_steer_note: Optional[str] = None
+        # One ledger for the life of the session, not one per turn: it is the
+        # instance itself (`_last_offered`) that remembers what was already
+        # offered so an unchanged dirty tree does not nag every turn.
+        #
+        # Injectable, and OFF unless a caller supplies one. A ledger built here
+        # from `workspace` resolves an enclosing git repository, which under a
+        # unit test is whatever tree the developer happens to be sitting in: a
+        # TUI test then asserted against a transcript carrying this repo's own
+        # "96 file(s) changed" line. A view must not read the state of a
+        # repository nobody handed it.
+        self._ledger = ledger
         self._detect_prompt()
 
     def _detect_prompt(self):
@@ -396,6 +409,31 @@ class TUI:
                 self._write_status_live()
             if stop.wait(self._live_interval):
                 break
+
+    def _note_ledger(self, *, at_exit: bool) -> None:
+        """A one-line, never-blocking offer: "you have accumulated work,
+        here are the numbers you would not otherwise see, try /land."
+
+        Printed with `_println` (not `_note`) because at exit the loop
+        breaks before the box is ever redrawn again -- `_note` alone would
+        leave this sitting unseen in `self.transcript`. Any failure here
+        (no repo, git missing) must never interrupt the turn loop, so
+        everything is best-effort.
+        """
+        try:
+            if self._ledger is None:
+                return
+            prompt, reason = self._ledger.should_prompt(at_exit=at_exit)
+            if not prompt:
+                return
+            stats = ", ".join(self._ledger.render())
+        except Exception:
+            return
+        line = sanitize_output(f"○ uncommitted work: {stats} ({reason}) — try /land")
+        if not line:
+            return
+        self.transcript.append(line)
+        self._println(line)
 
     def _mission_running(self) -> bool:
         """Is the workspace's persisted mission mid-run, in this process or
@@ -628,7 +666,9 @@ class TUI:
                 self._note(f"✗ {type(exc).__name__}: {exc}")
             finally:
                 self._end_turn()
-            if text in ("/exit", "/quit"):
+            exiting = text in ("/exit", "/quit")
+            self._note_ledger(at_exit=exiting)
+            if exiting:
                 break
             # The prompt leaves the cursor mid-line; start the box on its own.
             self._println()

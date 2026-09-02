@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:05Z",
+  "recorded_at": "2026-09-02T08:28:08Z",
   "recorded_by": "tools/future/nx_packer.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -49,15 +49,15 @@
      "runtime_required": true
     },
     "model_specific_code": {
-     "bytes": 101024,
+     "bytes": 101040,
      "n_parts": 6,
      "parts": [
-      "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
-      "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
-      "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
-      "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
-      "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
-      "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
+      "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive",
+      "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive",
+      "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive",
+      "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive",
+      "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive",
+      "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive"
      ],
      "runtime_required": true
     },
@@ -106,12 +106,12 @@
    },
    "complete_system": true,
    "n_parts": 17,
-   "parts_sum_bytes": 1519283389,
+   "parts_sum_bytes": 1519283405,
    "reconciles": true,
    "status": "CLOSED",
-   "total_bytes": 1519283389
+   "total_bytes": 1519283405
   },
-  "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+  "closure_sha256": "b51132fcef635c39b3c1c8cf4ab1ec6cd3acca1aaa9726a72b2a3bc9904c4f85",
   "compiled_organs": [
    "embed",
    "gqa_attention",
@@ -125,12 +125,12 @@
    "parts/metadata/config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
    "parts/metadata/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
    "parts/metadata/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
-   "parts/model_specific_code/embed.762d07047de9d713.mtlarchive": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
-   "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
-   "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
-   "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
-   "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
-   "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+   "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
+   "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
+   "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
+   "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
+   "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
+   "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
    "parts/representation/model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
    "parts/tables/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
    "parts/tables/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
@@ -140,7 +140,7 @@
   "source_independent": true,
   "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
   "status": "SOURCE_INDEPENDENT_COMPLETE",
-  "total_bytes": 1519283389
+  "total_bytes": 1519283405
  },
  "measurement_class": "STATIC_ONLY",
  "packer_callable": true,
@@ -153,6 +153,6 @@
  ],
  "replaces": "tools/headless/first_noetic_executable.py (Qwen3.8-27B hardlink mix)",
  "schema": "hawking.future.nx_packer.v1",
- "seal_sha256": "313fcf624704ac6466f9787647ef9bbd62c44422f3b2c9edfd409f4603d119eb",
+ "seal_sha256": "82e99d224635f266bc3781df8582c19a55892e3f1c2e6fd21466ccecdd2bc046",
  "version": 1
 }

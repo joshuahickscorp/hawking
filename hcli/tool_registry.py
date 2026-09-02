@@ -1652,6 +1652,43 @@ def _grok_swarm_launch(context: ToolContext, args: Dict[str, Any]) -> Dict[str, 
     )
 
 
+def _processes_list(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Every live Hawking process, classified by argv. Read-only: this wraps
+    hcli.processes.live_processes() and nothing else. Killing a process is
+    deliberately NOT reachable here -- that stays on the owned-signal path in
+    hcli/agentos/resident.py (_owned_signal), which checks a
+    process_start_token before it will ever send a signal.
+    """
+    del context, args
+    from . import processes
+
+    return {"processes": [p.to_dict() for p in processes.live_processes()]}
+
+
+def _processes_summary(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Roll-up counts and total footprint for every live Hawking process --
+    the same hcli.processes.summary() entry point the process audit receipt
+    uses. Read-only."""
+    del context, args
+    from . import processes
+
+    return processes.summary()
+
+
+def _processes_orphaned(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Resident model bodies with no live owner (reparented to pid 1, unclaimed
+    by any resident state file). Enumeration only: this calls
+    hcli.processes.orphaned_resident_bodies(), never reap_orphaned_bodies(),
+    which sends SIGTERM. Reaping stays a startup-only self-heal in
+    hcli/runtime.py._reap_orphans_once, not something the model can trigger
+    through the tool surface.
+    """
+    del context, args
+    from . import processes
+
+    return {"orphaned": [p.to_dict() for p in processes.orphaned_resident_bodies()]}
+
+
 def default_tool_registry(
     workspace: str | os.PathLike[str],
     *,
@@ -1767,6 +1804,46 @@ def default_tool_registry(
         resources=("cpu",),
         verifier_expectations=("returncode must be checked by the caller",),
         handler=_shell_exec,
+    ))
+    # G009 (receipts/sovereign/G009_reachability.json) found process truth
+    # REACHABLE FROM PRODUCTION CODE (hcli/runtime.py's startup reaper,
+    # hcli/commands.py's /processes command) but UNREACHABLE FROM THE MODEL:
+    # no registered tool named a process, and shell.readonly above refuses
+    # `ps` outright. The live goal's first law names processes as authority
+    # and gave the resident no way to look at one. These three close that gap
+    # by wrapping hcli/processes.py's existing read paths only -- nothing new
+    # is taught to reap or signal anything. Killing a process is not reachable
+    # through this registry at all; see the handler docstrings.
+    # G009 (receipts/sovereign/G009_reachability.json) found process truth
+    # REACHABLE FROM PRODUCTION CODE (hcli/runtime.py's startup reaper,
+    # hcli/commands.py's /processes command) but UNREACHABLE FROM THE MODEL:
+    # no registered tool named a process, and shell.readonly above refuses
+    # `ps` outright. The live goal's first law names processes as authority
+    # and gave the resident no way to look at one. These three close that gap
+    # by wrapping hcli/processes.py's existing read paths only -- nothing new
+    # is taught to reap or signal anything. Killing a process is not reachable
+    # through this registry at all; see the handler docstrings.
+    registry.register(ToolSpec(
+        "processes.list",
+        "Every live Hawking process, classified by argv: role, PID, memory, "
+        "elapsed time and whether it is safe to stop. Read-only.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_processes_list,
+    ))
+    registry.register(ToolSpec(
+        "processes.summary",
+        "Roll-up of live Hawking processes: count, total footprint, counts by "
+        "class. The same entry point the process audit receipt uses.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_processes_summary,
+    ))
+    registry.register(ToolSpec(
+        "processes.orphaned",
+        "Resident model bodies with no live owner (reparented to pid 1, "
+        "unclaimed by any resident state file). Enumeration only -- does not "
+        "reap; reaping is a startup-only self-heal in hcli/runtime.py.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_processes_orphaned,
     ))
     registry.register(ToolSpec(
         "git.status", "Inspect repository status without mutating Git.",

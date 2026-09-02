@@ -146,7 +146,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T00:17:23Z",
+  "recorded_at": "2026-09-02T08:28:15Z",
   "recorded_by": "tools/future/nr_nx_generic.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -280,15 +280,15 @@
     "runtime_required": true
    },
    "model_specific_code": {
-    "bytes": 101024,
+    "bytes": 101040,
     "n_parts": 6,
     "parts": [
-     "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
-     "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
-     "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
-     "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
-     "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
-     "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
+     "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive",
+     "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive",
+     "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive",
+     "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive",
+     "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive",
+     "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive"
     ],
     "runtime_required": true
    },
@@ -335,7 +335,7 @@
     "runtime_required": true
    }
   },
-  "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+  "closure_sha256": "b51132fcef635c39b3c1c8cf4ab1ec6cd3acca1aaa9726a72b2a3bc9904c4f85",
   "compiled_organs": [
    "embed",
    "gqa_attention",
@@ -355,12 +355,12 @@
    "parts/metadata/config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
    "parts/metadata/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
    "parts/metadata/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
-   "parts/model_specific_code/embed.762d07047de9d713.mtlarchive": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
-   "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
-   "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
-   "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
-   "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
-   "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+   "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
+   "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
+   "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
+   "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
+   "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
+   "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
    "parts/representation/model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
    "parts/tables/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
    "parts/tables/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
@@ -374,7 +374,7 @@
     "present": true
    },
    {
-    "bytes": 101024,
+    "bytes": 101040,
     "need": "model_specific_code",
     "present": true
    },
@@ -412,7 +412,7 @@
   "source_independent": true,
   "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
   "status": "SOURCE_INDEPENDENT_COMPLETE",
-  "total_bytes": 1519283389
+  "total_bytes": 1519283405
  },
  "packed_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
  "physical_ebpw": null,
@@ -536,7 +536,7 @@
   "workunit": "one CPU_ANALYSIS unit; probe+adapt+drive compiler stages and pack a source-independent NX on a real specimen; no GPU authority"
  },
  "schema": "hawking.future.nr_nx_generic.v1",
- "seal_sha256": "a6d05f837243144b8ed8a8a5757f07222a961b5c5c7e9c346f4ce995daea603a",
+ "seal_sha256": "30a85797f8af1b47be374b51246ab51037505cd4ee65f918375d1ed8246615c4",
  "sleeping_workunit": {
   "blocked_reason": "NX_LOWER blocked at stage None: None",
   "classification": "SLEEPING",
@@ -1604,7 +1604,7 @@
      "template": null,
      "why": "dense MLP has no expert router; router collapse is not an operator on this architecture"
     },
-    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 219, in <module>\n    raise SystemExit(main())\n                     ~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 128, in main\n    idx = json.load(open(md / \"model.safetensors.index.json\"))[\"weight_map\"]\n                    ~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/model.safetensors.index.json'\n",
+    "stderr_tail": "Traceback (most recent call last):\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 245, in <module>\n    raise SystemExit(main())\n                     ^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/odyssey/physical_graph_compiler.py\", line 128, in main\n    idx = json.load(open(md / \"model.safetensors.index.json\"))[\"weight_map\"]\n                    ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nFileNotFoundError: [Errno 2] No such file or directory: '/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/model.safetensors.index.json'\n",
     "stdout_tail": "",
     "used_compiler_silu": true
    },
@@ -2061,42 +2061,42 @@
       "bytes": 15888,
       "entry_point": "organ_embed_gather",
       "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-EPHEMERAL/embed.mtlarchive",
-      "sha256": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+      "sha256": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
       "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70"
      },
      "gqa_attention": {
       "bytes": 19952,
       "entry_point": "organ_gqa_decode",
       "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-EPHEMERAL/gqa_attention.mtlarchive",
-      "sha256": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+      "sha256": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
       "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27"
      },
      "lm_head": {
       "bytes": 15888,
       "entry_point": "organ_lm_head_gemv",
       "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-EPHEMERAL/lm_head.mtlarchive",
-      "sha256": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+      "sha256": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
       "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf"
      },
      "mlp_down": {
       "bytes": 15888,
       "entry_point": "organ_mlp_down_gemv",
       "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-EPHEMERAL/mlp_down.mtlarchive",
-      "sha256": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+      "sha256": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
       "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544"
      },
      "mlp_gate_up": {
-      "bytes": 16928,
+      "bytes": 16944,
       "entry_point": "organ_mlp_gate_up_swiglu",
       "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-EPHEMERAL/mlp_gate_up.mtlarchive",
-      "sha256": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+      "sha256": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
       "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f"
      },
      "rmsnorm": {
       "bytes": 16480,
       "entry_point": "organ_rmsnorm",
       "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-nx-cap-EPHEMERAL/rmsnorm.mtlarchive",
-      "sha256": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+      "sha256": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
       "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e"
      }
     },
@@ -2200,10 +2200,10 @@
           "object": "MTLComputePipelineState",
           "thread_execution_width": 32
          },
-         "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+         "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
          "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
          "unit": "mtl_binary_archive_sha256",
-         "value": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb"
+         "value": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257"
         },
         "entry_point": "organ_embed_gather",
         "occupying": {
@@ -2212,9 +2212,9 @@
          "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
         },
         "organ": "embed",
-        "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+        "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
         "status": "COMPILED",
-        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb. embedding gather table 151936x1024"
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257. embedding gather table 151936x1024"
        },
        {
         "compiled_identity": {
@@ -2233,10 +2233,10 @@
           "object": "MTLComputePipelineState",
           "thread_execution_width": 32
          },
-         "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+         "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
          "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
          "unit": "mtl_binary_archive_sha256",
-         "value": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f"
+         "value": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5"
         },
         "entry_point": "organ_gqa_decode",
         "occupying": {
@@ -2245,9 +2245,9 @@
          "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
         },
         "organ": "gqa_attention",
-        "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+        "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
         "status": "COMPILED",
-        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f. GQA decode n_q=16 n_kv=8 head_dim=128"
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5. GQA decode n_q=16 n_kv=8 head_dim=128"
        },
        {
         "compiled_identity": {
@@ -2266,10 +2266,10 @@
           "object": "MTLComputePipelineState",
           "thread_execution_width": 32
          },
-         "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+         "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
          "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
          "unit": "mtl_binary_archive_sha256",
-         "value": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025"
+         "value": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11"
         },
         "entry_point": "organ_lm_head_gemv",
         "occupying": {
@@ -2278,9 +2278,9 @@
          "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
         },
         "organ": "lm_head",
-        "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+        "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
         "status": "COMPILED",
-        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025. native f32 GEMV for lm_head at 151936x1024"
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11. native f32 GEMV for lm_head at 151936x1024"
        },
        {
         "compiled_identity": {
@@ -2299,10 +2299,10 @@
           "object": "MTLComputePipelineState",
           "thread_execution_width": 32
          },
-         "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+         "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
          "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
          "unit": "mtl_binary_archive_sha256",
-         "value": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980"
+         "value": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da"
         },
         "entry_point": "organ_mlp_down_gemv",
         "occupying": {
@@ -2311,13 +2311,13 @@
          "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
         },
         "organ": "mlp_down",
-        "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+        "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
         "status": "COMPILED",
-        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980. native f32 GEMV for mlp_down at 1024x3072"
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da. native f32 GEMV for mlp_down at 1024x3072"
        },
        {
         "compiled_identity": {
-         "archive_bytes": 16928,
+         "archive_bytes": 16944,
          "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-EPHEMERAL/mlp_gate_up.mtlarchive",
          "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
          "device": null,
@@ -2332,10 +2332,10 @@
           "object": "MTLComputePipelineState",
           "thread_execution_width": 32
          },
-         "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+         "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
          "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
          "unit": "mtl_binary_archive_sha256",
-         "value": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3"
+         "value": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649"
         },
         "entry_point": "organ_mlp_gate_up_swiglu",
         "occupying": {
@@ -2344,9 +2344,9 @@
          "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
         },
         "organ": "mlp_gate_up",
-        "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+        "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
         "status": "COMPILED",
-        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
        },
        {
         "compiled_identity": {
@@ -2365,10 +2365,10 @@
           "object": "MTLComputePipelineState",
           "thread_execution_width": 32
          },
-         "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+         "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
          "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
          "unit": "mtl_binary_archive_sha256",
-         "value": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426"
+         "value": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4"
         },
         "entry_point": "organ_rmsnorm",
         "occupying": {
@@ -2377,9 +2377,9 @@
          "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
         },
         "organ": "rmsnorm",
-        "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+        "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
         "status": "COMPILED",
-        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426. RMSNorm over hidden=1024"
+        "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4. RMSNorm over hidden=1024"
        }
       ],
       "n_compiled": 6,
@@ -2449,10 +2449,10 @@
         "object": "MTLComputePipelineState",
         "thread_execution_width": 32
        },
-       "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+       "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
        "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
        "unit": "mtl_binary_archive_sha256",
-       "value": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb"
+       "value": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257"
       },
       "entry_point": "organ_embed_gather",
       "extents": [
@@ -2466,7 +2466,7 @@
        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
       "organ": "embed",
-      "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+      "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
       "specimen_shape": {
        "cols": 1024,
        "extents": [
@@ -2477,7 +2477,7 @@
        "rows": 151936
       },
       "status": "COMPILED",
-      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb. embedding gather table 151936x1024"
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257. embedding gather table 151936x1024"
      },
      {
       "compiled_identity": {
@@ -2496,10 +2496,10 @@
         "object": "MTLComputePipelineState",
         "thread_execution_width": 32
        },
-       "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+       "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
        "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
        "unit": "mtl_binary_archive_sha256",
-       "value": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f"
+       "value": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5"
       },
       "entry_point": "organ_gqa_decode",
       "extents": [
@@ -2514,7 +2514,7 @@
        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
       "organ": "gqa_attention",
-      "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+      "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
       "specimen_shape": {
        "cols": 1024,
        "extents": [
@@ -2528,7 +2528,7 @@
        "q_rows": 2048
       },
       "status": "COMPILED",
-      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f. GQA decode n_q=16 n_kv=8 head_dim=128"
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5. GQA decode n_q=16 n_kv=8 head_dim=128"
      },
      {
       "compiled_identity": {
@@ -2547,10 +2547,10 @@
         "object": "MTLComputePipelineState",
         "thread_execution_width": 32
        },
-       "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+       "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
        "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
        "unit": "mtl_binary_archive_sha256",
-       "value": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025"
+       "value": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11"
       },
       "entry_point": "organ_lm_head_gemv",
       "extents": [
@@ -2564,7 +2564,7 @@
        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
       "organ": "lm_head",
-      "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+      "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
       "specimen_shape": {
        "cols": 1024,
        "extents": [
@@ -2575,7 +2575,7 @@
        "rows": 151936
       },
       "status": "COMPILED",
-      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025. native f32 GEMV for lm_head at 151936x1024"
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11. native f32 GEMV for lm_head at 151936x1024"
      },
      {
       "compiled_identity": {
@@ -2594,10 +2594,10 @@
         "object": "MTLComputePipelineState",
         "thread_execution_width": 32
        },
-       "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+       "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
        "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
        "unit": "mtl_binary_archive_sha256",
-       "value": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980"
+       "value": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da"
       },
       "entry_point": "organ_mlp_down_gemv",
       "extents": [
@@ -2611,7 +2611,7 @@
        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
       "organ": "mlp_down",
-      "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+      "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
       "specimen_shape": {
        "cols": 3072,
        "extents": [
@@ -2622,11 +2622,11 @@
        "rows": 1024
       },
       "status": "COMPILED",
-      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980. native f32 GEMV for mlp_down at 1024x3072"
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da. native f32 GEMV for mlp_down at 1024x3072"
      },
      {
       "compiled_identity": {
-       "archive_bytes": 16928,
+       "archive_bytes": 16944,
        "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-EPHEMERAL/mlp_gate_up.mtlarchive",
        "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
        "device": null,
@@ -2641,10 +2641,10 @@
         "object": "MTLComputePipelineState",
         "thread_execution_width": 32
        },
-       "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+       "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
        "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
        "unit": "mtl_binary_archive_sha256",
-       "value": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3"
+       "value": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649"
       },
       "entry_point": "organ_mlp_gate_up_swiglu",
       "extents": [
@@ -2658,7 +2658,7 @@
        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
       "organ": "mlp_gate_up",
-      "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+      "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
       "specimen_shape": {
        "cols": 1024,
        "extents": [
@@ -2669,7 +2669,7 @@
        "rows": 3072
       },
       "status": "COMPILED",
-      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
      },
      {
       "compiled_identity": {
@@ -2688,10 +2688,10 @@
         "object": "MTLComputePipelineState",
         "thread_execution_width": 32
        },
-       "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+       "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
        "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
        "unit": "mtl_binary_archive_sha256",
-       "value": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426"
+       "value": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4"
       },
       "entry_point": "organ_rmsnorm",
       "extents": [
@@ -2704,7 +2704,7 @@
        "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
       },
       "organ": "rmsnorm",
-      "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+      "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
       "specimen_shape": {
        "cols": 1024,
        "extents": [
@@ -2713,7 +2713,7 @@
        "from": "hidden_size"
       },
       "status": "COMPILED",
-      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426. RMSNorm over hidden=1024"
+      "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4. RMSNorm over hidden=1024"
      }
     ],
     "qwen3_dense_gguf_blocker": {
@@ -2789,15 +2789,15 @@
        "runtime_required": true
       },
       "model_specific_code": {
-       "bytes": 101024,
+       "bytes": 101040,
        "n_parts": 6,
        "parts": [
-        "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
-        "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
-        "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
-        "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
-        "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
-        "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
+        "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive",
+        "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive",
+        "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive",
+        "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive",
+        "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive",
+        "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive"
        ],
        "runtime_required": true
       },
@@ -2844,7 +2844,7 @@
        "runtime_required": true
       }
      },
-     "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+     "closure_sha256": "b51132fcef635c39b3c1c8cf4ab1ec6cd3acca1aaa9726a72b2a3bc9904c4f85",
      "compiled_organs": [
       "embed",
       "gqa_attention",
@@ -2864,12 +2864,12 @@
       "parts/metadata/config.json": "660db3b73d788119c04535e48cf9be5f55bc3100841a718637ae695b442f27dd",
       "parts/metadata/generation_config.json": "2325da0f15bb848e018c5ae071b7943332e9f871d6b60e2ed22ca97d4cb993d2",
       "parts/metadata/tokenizer_config.json": "d5d09f07b48c3086c508b30d1c9114bd1189145b74e982a265350c923acd8101",
-      "parts/model_specific_code/embed.762d07047de9d713.mtlarchive": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
-      "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
-      "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
-      "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
-      "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
-      "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+      "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
+      "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
+      "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
+      "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
+      "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
+      "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
       "parts/representation/model.safetensors": "f47f71177f32bcd101b7573ec9171e6a57f4f4d31148d38e382306f42996874b",
       "parts/tables/merges.txt": "8831e4f1a044471340f7c0a83d7bd71306a5b867e95fd870f74d0c5308a904d5",
       "parts/tables/tokenizer.json": "aeb13307a71acd8fe81861d94ad54ab689df773318809eed3cbe794b4492dae4",
@@ -2883,7 +2883,7 @@
        "present": true
       },
       {
-       "bytes": 101024,
+       "bytes": 101040,
        "need": "model_specific_code",
        "present": true
       },
@@ -2921,7 +2921,7 @@
      "source_independent": true,
      "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
      "status": "SOURCE_INDEPENDENT_COMPLETE",
-     "total_bytes": 1519283389
+     "total_bytes": 1519283405
     },
     "legacy_producer_not_executed": "tools/headless/first_noetic_executable.py",
     "n_compiled_on_fragment": 6,
@@ -2968,15 +2968,15 @@
        "runtime_required": true
       },
       "model_specific_code": {
-       "bytes": 101024,
+       "bytes": 101040,
        "n_parts": 6,
        "parts": [
-        "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
-        "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
-        "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
-        "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
-        "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
-        "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive"
+        "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive",
+        "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive",
+        "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive",
+        "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive",
+        "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive",
+        "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive"
        ],
        "runtime_required": true
       },
@@ -3024,10 +3024,10 @@
       }
      },
      "complete_system": true,
-     "parts_sum_bytes": 1519283389,
+     "parts_sum_bytes": 1519283405,
      "reconciles": true,
      "status": "CLOSED",
-     "total_bytes": 1519283389
+     "total_bytes": 1519283405
     },
     "claim_boundary": "source-independent packed NX. bytes are copies, not hardlinks. not a hardware measurement. not physical EBPW. not accepted generation.",
     "compiled_organs": [
@@ -3045,7 +3045,7 @@
     "family": "dense_swiglu_transformer",
     "manifest": "MANIFEST.json",
     "native_kernel": {
-     "catalog_sha256": "8adf8198bc0da62764a282ff05a0c5bffea153c9cc54a23843706677c03a9854",
+     "catalog_sha256": "6811be5ce463488174185086453394aae6fa2c39e954b605cde6acf5fae822e2",
      "kind": "METAL_PIPELINE_CATALOG",
      "n_compiled": 6,
      "organs": [
@@ -3063,7 +3063,7 @@
      "catalog": "MANIFEST.json",
      "kind": "packed_nx_catalog",
      "path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/MANIFEST.json",
-     "sha256": "d734bc4b222ebd6379b7706c6b289934aa1658a03b1dbee7b16d7292c0ea0341",
+     "sha256": "17ec04910428d71dcb1f6dd149a20fff6a41dc9d213dd3a35df981f1533f8367",
      "source_independent": true,
      "status": "BUILT"
     },
@@ -3072,7 +3072,7 @@
       {
        "compiled_identity": {
         "archive_bytes": 15888,
-        "archive_path": "parts/model_specific_code/embed.762d07047de9d713.mtlarchive",
+        "archive_path": "parts/model_specific_code/embed.0c2a13c9645b98bf.mtlarchive",
         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
         "device": null,
         "entry_point": "organ_embed_gather",
@@ -3086,10 +3086,10 @@
          "object": "MTLComputePipelineState",
          "thread_execution_width": 32
         },
-        "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+        "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
         "source_sha256": "7e7a44804195f31e0aefe0043f2552f1f342bed6df45a9fc99394024caa8be70",
         "unit": "mtl_binary_archive_sha256",
-        "value": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb"
+        "value": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257"
        },
        "entry_point": "organ_embed_gather",
        "occupying": {
@@ -3098,14 +3098,14 @@
         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
        },
        "organ": "embed",
-       "shader_hash": "762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb",
+       "shader_hash": "0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257",
        "status": "COMPILED",
-       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=762d07047de9d71339dd04f321830a493a719925a79adae3ecacdc54e7244bcb. embedding gather table 151936x1024"
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_embed_gather; shader_hash=0c2a13c9645b98bf7951628c8f804f6afe2b91300e324986570bf4ed0a24a257. embedding gather table 151936x1024"
       },
       {
        "compiled_identity": {
         "archive_bytes": 19952,
-        "archive_path": "parts/model_specific_code/gqa_attention.4db31146e49c1ed3.mtlarchive",
+        "archive_path": "parts/model_specific_code/gqa_attention.63f7946a88da304c.mtlarchive",
         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
         "device": null,
         "entry_point": "organ_gqa_decode",
@@ -3119,10 +3119,10 @@
          "object": "MTLComputePipelineState",
          "thread_execution_width": 32
         },
-        "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+        "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
         "source_sha256": "9f56e1b18596b19d855ad1b3464ea4b08e01b4ccf7c71d7f172c9e51eab82d27",
         "unit": "mtl_binary_archive_sha256",
-        "value": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f"
+        "value": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5"
        },
        "entry_point": "organ_gqa_decode",
        "occupying": {
@@ -3131,14 +3131,14 @@
         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
        },
        "organ": "gqa_attention",
-       "shader_hash": "4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f",
+       "shader_hash": "63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5",
        "status": "COMPILED",
-       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=4db31146e49c1ed3b7d8d7e5e5962bd43d180c466a28455d4ecd1b15fc8a745f. GQA decode n_q=16 n_kv=8 head_dim=128"
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_gqa_decode; shader_hash=63f7946a88da304c4a3d8f3de6e7ec09d72ad78478f93a9a80aeb62a23ea32b5. GQA decode n_q=16 n_kv=8 head_dim=128"
       },
       {
        "compiled_identity": {
         "archive_bytes": 15888,
-        "archive_path": "parts/model_specific_code/lm_head.e8463decefa97cf0.mtlarchive",
+        "archive_path": "parts/model_specific_code/lm_head.c00f7816d3cea7c3.mtlarchive",
         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
         "device": null,
         "entry_point": "organ_lm_head_gemv",
@@ -3152,10 +3152,10 @@
          "object": "MTLComputePipelineState",
          "thread_execution_width": 32
         },
-        "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+        "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
         "source_sha256": "8c619792891a89b97076db8f257e3f40c1ba1328f5f2a1f24518b50787c7d3cf",
         "unit": "mtl_binary_archive_sha256",
-        "value": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025"
+        "value": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11"
        },
        "entry_point": "organ_lm_head_gemv",
        "occupying": {
@@ -3164,14 +3164,14 @@
         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
        },
        "organ": "lm_head",
-       "shader_hash": "e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025",
+       "shader_hash": "c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11",
        "status": "COMPILED",
-       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=e8463decefa97cf0f0f1d34f555fbcd72a92c8081ef40af23d3fd0b6c929c025. native f32 GEMV for lm_head at 151936x1024"
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_lm_head_gemv; shader_hash=c00f7816d3cea7c30ae07414a5d2adc8f860f30a2d981b6744a530de5a074b11. native f32 GEMV for lm_head at 151936x1024"
       },
       {
        "compiled_identity": {
         "archive_bytes": 15888,
-        "archive_path": "parts/model_specific_code/mlp_down.78d8cb856a6d8e6e.mtlarchive",
+        "archive_path": "parts/model_specific_code/mlp_down.58f31ab7b77ac4bf.mtlarchive",
         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
         "device": null,
         "entry_point": "organ_mlp_down_gemv",
@@ -3185,10 +3185,10 @@
          "object": "MTLComputePipelineState",
          "thread_execution_width": 32
         },
-        "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+        "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
         "source_sha256": "6387c6788565c447920734ffe9dce54e4eefa90762717a3853838aecc0e3a544",
         "unit": "mtl_binary_archive_sha256",
-        "value": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980"
+        "value": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da"
        },
        "entry_point": "organ_mlp_down_gemv",
        "occupying": {
@@ -3197,14 +3197,14 @@
         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
        },
        "organ": "mlp_down",
-       "shader_hash": "78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980",
+       "shader_hash": "58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da",
        "status": "COMPILED",
-       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=78d8cb856a6d8e6e895829c32c77d0381e7cd9e7fcc68785c85ea912e4838980. native f32 GEMV for mlp_down at 1024x3072"
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_down_gemv; shader_hash=58f31ab7b77ac4bf7cae01febccb7f609b608698dd0111277d1548788baf69da. native f32 GEMV for mlp_down at 1024x3072"
       },
       {
        "compiled_identity": {
-        "archive_bytes": 16928,
-        "archive_path": "parts/model_specific_code/mlp_gate_up.9a2e9787c132ef32.mtlarchive",
+        "archive_bytes": 16944,
+        "archive_path": "parts/model_specific_code/mlp_gate_up.2294023e007649b0.mtlarchive",
         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
         "device": null,
         "entry_point": "organ_mlp_gate_up_swiglu",
@@ -3218,10 +3218,10 @@
          "object": "MTLComputePipelineState",
          "thread_execution_width": 32
         },
-        "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+        "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
         "source_sha256": "44c2825d006d200f87d4e28afe8634e571d81e689b01b07fda307551d19f6a5f",
         "unit": "mtl_binary_archive_sha256",
-        "value": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3"
+        "value": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649"
        },
        "entry_point": "organ_mlp_gate_up_swiglu",
        "occupying": {
@@ -3230,14 +3230,14 @@
         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
        },
        "organ": "mlp_gate_up",
-       "shader_hash": "9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3",
+       "shader_hash": "2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649",
        "status": "COMPILED",
-       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=9a2e9787c132ef329c8a392110591d194866b13e9a330e3324bba0ac168929a3. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_mlp_gate_up_swiglu; shader_hash=2294023e007649b0dbb2453c826389456bfd3bc12586846883f4460fa0287649. fused gate-up SwiGLU GEMV for mlp_gate_up at 3072x1024"
       },
       {
        "compiled_identity": {
         "archive_bytes": 16480,
-        "archive_path": "parts/model_specific_code/rmsnorm.f76e5d8e8d84e03b.mtlarchive",
+        "archive_path": "parts/model_specific_code/rmsnorm.7fcad78e7b8fb6d9.mtlarchive",
         "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
         "device": null,
         "entry_point": "organ_rmsnorm",
@@ -3251,10 +3251,10 @@
          "object": "MTLComputePipelineState",
          "thread_execution_width": 32
         },
-        "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+        "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
         "source_sha256": "25aef5898db60554a1301771bb9f26882f02ad88ba3028a885b69b822a05cf1e",
         "unit": "mtl_binary_archive_sha256",
-        "value": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426"
+        "value": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4"
        },
        "entry_point": "organ_rmsnorm",
        "occupying": {
@@ -3263,9 +3263,9 @@
         "science_mark": "COMPILE_TIME_SCIENCE_ONLY"
        },
        "organ": "rmsnorm",
-       "shader_hash": "f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426",
+       "shader_hash": "7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4",
        "status": "COMPILED",
-       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=f76e5d8e8d84e03b3c03086931b9ab5d3786452462f01754089ff54ca779e426. RMSNorm over hidden=1024"
+       "why": "COMPILED: MTLComputePipelineState created; entry_point=organ_rmsnorm; shader_hash=7fcad78e7b8fb6d995ee9f6427c9790af6beba4ee7920fdcf6cefe189096bcf4. RMSNorm over hidden=1024"
       }
      ],
      "n_compiled": 6,
@@ -3274,7 +3274,7 @@
     },
     "reproducibility": {
      "byte_reproducible": true,
-     "closure_sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+     "closure_sha256": "b51132fcef635c39b3c1c8cf4ab1ec6cd3acca1aaa9726a72b2a3bc9904c4f85",
      "status": "PASSED"
     },
     "root": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0",
@@ -3285,7 +3285,7 @@
       "present": true
      },
      {
-      "bytes": 101024,
+      "bytes": 101040,
       "need": "model_specific_code",
       "present": true
      },
@@ -3324,7 +3324,7 @@
     "serialized_artifact": {
      "path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
      "self_contained": true,
-     "sha256": "36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122",
+     "sha256": "b51132fcef635c39b3c1c8cf4ab1ec6cd3acca1aaa9726a72b2a3bc9904c4f85",
      "status": "BUILT"
     },
     "source_independent": true,
@@ -3334,7 +3334,7 @@
    "packed_path": "/Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0/packed.nx.json",
    "stage": "NoeticExecutable",
    "status": "PASSED",
-   "why": "generic packer minted a source-independent packed NX at /Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0 with 6 compiled organ(s), total_bytes=1519283389, closure_sha256=36e5555e200eadb47f10b3d1f70623a74818faac39588f854b77f19352fb6122. Did not execute first_noetic_executable.py; did not hardlink the source."
+   "why": "generic packer minted a source-independent packed NX at /Users/scammermike/Downloads/hawking/artifacts/nx/Qwen--Qwen3-0.6B@c1899de289a0 with 6 compiled organ(s), total_bytes=1519283405, closure_sha256=b51132fcef635c39b3c1c8cf4ab1ec6cd3acca1aaa9726a72b2a3bc9904c4f85. Did not execute first_noetic_executable.py; did not hardlink the source."
   },
   {
    "error": null,

@@ -168,7 +168,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:25:50Z",
+  "recorded_at": "2026-09-02T08:28:18Z",
   "recorded_by": "tools/future/sandbox.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -183,19 +183,19 @@
   "mechanism": "BoundedFS.resolve_writable walks components and refuses escape by kind",
   "proofs": [
    {
-    "error": "absolute escape refused for '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt': absolute path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt is outside /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable",
+    "error": "absolute escape refused for '/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/outside.txt': absolute path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/outside.txt is outside /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/canonical/.worktrees/resident/writable",
     "kind": "absolute",
-    "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt",
+    "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/outside.txt",
     "refused": true
    },
    {
-    "error": "dotdot escape refused for '../ESCAPE_DOTDOT.txt': path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/ESCAPE_DOTDOT.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable via .. traversal",
+    "error": "dotdot escape refused for '../ESCAPE_DOTDOT.txt': path /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/canonical/.worktrees/resident/ESCAPE_DOTDOT.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/canonical/.worktrees/resident/writable via .. traversal",
     "kind": "dotdot",
     "path": "../ESCAPE_DOTDOT.txt",
     "refused": true
    },
    {
-    "error": "symlink escape refused for 'escape_link': /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable/escape_link -> /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/outside.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident/writable",
+    "error": "symlink escape refused for 'escape_link': /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/canonical/.worktrees/resident/writable/escape_link -> /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/outside.txt leaves /private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/canonical/.worktrees/resident/writable",
     "kind": "symlink",
     "path": "escape_link",
     "refused": true
@@ -231,7 +231,7 @@
   "layout_dirs": 5,
   "permitted_autonomous": 10,
   "refused_higher": 9,
-  "source_index_files": 1825
+  "source_index_files": 1938
  },
  "gaps_closed": [
   "isolated git worktree under the canonical repo's own .worktrees/",
@@ -246,7 +246,7 @@
   "HCLI WorkUnit emitted for provision; verifier is not the proposer"
  ],
  "gpu_authority": false,
- "head": "d777f6dccc3ded44142823f5e1cfb3a8ad031528",
+ "head": "6ea04b88f9a4bcb92a784ab5359c0370337bcccb",
  "hermetic_source_index": {
   "copes_with_sparse_checkout": true,
   "entries": [
@@ -316,7 +316,7 @@
   }
  ],
  "longevity": {
-  "identity_sha256": "466e1394eafb65240a50835efce001a8e7373d22a81452009f2b538404e27cd6",
+  "identity_sha256": "dcbaeaf74c90a1b44a7f2537070aee750ff431cf62d0cc4eed14f5143264e0b2",
   "reentry_same_identity": true,
   "second_provision_creates_second_sandbox": false,
   "state_survives_process_restart": true
@@ -342,7 +342,7 @@
  "provision": {
   "default_sandbox_id": "resident",
   "git_worktree": "git worktree add --detach --no-checkout --lock (reason: resident-sandbox preserve-artifacts)",
-  "hermetic_proof_worktree": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-hj3yxjkv/canonical/.worktrees/resident",
+  "hermetic_proof_worktree": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/resident-sandbox-wv0ut9jy/canonical/.worktrees/resident",
   "idempotent": true,
   "layout_dirs": [
    "build",
@@ -462,7 +462,7 @@
   }
  },
  "schema": "hawking.future.sandbox.v1",
- "seal_sha256": "87dc5b42695f6757c6453999ec59af48cc9630fc64f698f9d0fba837d873ca34",
+ "seal_sha256": "fa6bee045dfa8fc782b650d36f3bafa04bc55cc58d9fbb0fd8263a2d16210cfa",
  "sleeping_physical_blockers": [
   "MetalContext reports no Metal-capable GPU on this host",
   "xcrun cannot locate the Metal compiler under CommandLineTools",
@@ -475,7 +475,7 @@
   "copes_with_sparse_checkout": true,
   "entries": [
    {
-    "file_count": 516,
+    "file_count": 538,
     "files_head": [
      "tools/future/__init__.py",
      "tools/future/_common.py",
@@ -506,18 +506,20 @@
      "tools/future/candidate_planner.py",
      "tools/future/capability_byte_elimination.py",
      "tools/future/capability_curve.py",
+     "tools/future/capability_eval.py",
      "tools/future/capability_information_map.py",
-     "tools/future/capability_stages.py",
-     "tools/future/capacity_inference_rule.py"
+     "tools/future/capability_reachability.py"
     ],
     "present": true,
     "root": "tools/future"
    },
    {
-    "file_count": 117,
+    "file_count": 185,
     "files_head": [
      "hcli/__init__.py",
      "hcli/__main__.py",
+     "hcli/_sovereign_gate_doc.md",
+     "hcli/acquisition.py",
      "hcli/agentos_cli.py",
      "hcli/ane_provider.py",
      "hcli/app.py",
@@ -534,26 +536,24 @@
      "hcli/dag_store.py",
      "hcli/delegate.py",
      "hcli/engine.py",
+     "hcli/escalation.py",
      "hcli/events.py",
      "hcli/executors.py",
      "hcli/flash_next.py",
+     "hcli/forbidden_fruit.py",
+     "hcli/frontier_scheduler.py",
      "hcli/goal.py",
-     "hcli/grok_bridge.py",
-     "hcli/hawking-native.sealed-3.14.json",
-     "hcli/hawking_native.py",
-     "hcli/ledger.py",
-     "hcli/machine.py",
-     "hcli/max_policy.py",
-     "hcli/mission.py",
-     "hcli/models.py",
-     "hcli/mutation.py",
-     "hcli/nomenclature.py"
+     "hcli/goal_bank.py",
+     "hcli/goal_compile.py",
+     "hcli/goal_graph.py",
+     "hcli/goal_ir.py",
+     "hcli/goal_tokenizer.py"
     ],
     "present": true,
     "root": "hcli"
    },
    {
-    "file_count": 1192,
+    "file_count": 1215,
     "files_head": [
      "receipts/future/ABI_VERDICT_HARNESS.json",
      "receipts/future/ABLITERATION.json",
@@ -562,6 +562,7 @@
      "receipts/future/ADAPTIVE_VERIFICATION.json",
      "receipts/future/ADDRESSING_ATTRIBUTION.json",
      "receipts/future/ADDRESSING_GAP.json",
+     "receipts/future/AIDER_NAMESPACE_AUDIT.json",
      "receipts/future/ANE_PREBOARD.json",
      "receipts/future/ANE_PROBE_LAB.json",
      "receipts/future/ARTIFACT_IDENTITY.json",
@@ -579,20 +580,19 @@
      "receipts/future/AUX_U8_NATIVE.json",
      "receipts/future/BASELINE_STALENESS.json",
      "receipts/future/BA_DELTA_AB.json",
+     "receipts/future/BENCH_A_LANDING_ATTACK.json",
+     "receipts/future/BENCH_B_TOOL_REACHABILITY.json",
      "receipts/future/BITCAST_DEQUANT_AB.json",
      "receipts/future/CAMPAIGN_SCARS.json",
      "receipts/future/CANDIDATE_STAGED_PLAN.json",
      "receipts/future/CAPABILITY_BYTE_ELIMINATION.json",
-     "receipts/future/CAPABILITY_CURVE.json",
-     "receipts/future/CAPABILITY_INFORMATION_MAP.json",
-     "receipts/future/CAPABILITY_STAGES.json",
-     "receipts/future/CAPACITY_INFERENCE_RULE.json"
+     "receipts/future/CAPABILITY_CURVE.json"
     ],
     "present": true,
     "root": "receipts/future"
    }
   ],
-  "file_count_total": 1825,
+  "file_count_total": 1938,
   "missing_roots": [],
   "present_roots": [
    "tools/future",

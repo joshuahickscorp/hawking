@@ -48,7 +48,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:06:04Z",
+  "recorded_at": "2026-09-02T08:37:37Z",
   "recorded_by": "tools/future/mlp_structured_operator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -5390,7 +5390,7 @@
   "train-set figure cannot be reported as held-out",
   "negative_index queried; proposal families not refused"
  ],
- "git_head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
+ "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "go_wider": false,
  "gpu_authority": false,
  "incumbent_mlp_bytes": 5347795776,
@@ -5451,9 +5451,17 @@
    {
     "hypothesis_family": "shared_basis",
     "model": "qwen3.8-27b",
-    "n_hits": 0,
+    "n_hits": 1,
     "organ": "mlp",
-    "top": []
+    "top": [
+     {
+      "hypothesis_family": "shared_basis",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+      "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+      "verdict": "MEASURED_NEGATIVE"
+     }
+    ]
    },
    {
     "hypothesis_family": "low_rank",
@@ -5509,6 +5517,13 @@
    }
   ],
   "refusals": [
+   {
+    "hypothesis_family": "shared_basis",
+    "level": "MODEL_SPECIFIC",
+    "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+    "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+    "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f"
+   },
    {
     "hypothesis_family": "global_dense_lowrank",
     "level": "MODEL_SPECIFIC",
@@ -5638,7 +5653,7 @@
   }
  ],
  "schema": "hawking.future.mlp_structured_operator.v1",
- "seal_sha256": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+ "seal_sha256": "b6010308ddbb3b11383e11046214de5a23ae228aff60e4feae3c36c133b68640",
  "selftest": {
   "baseline_codes": [
    "BaselineOmitted"

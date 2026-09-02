@@ -3,20 +3,20 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:56:47Z",
+  "recorded_at": "2026-09-02T08:33:05Z",
   "recorded_by": "tools/future/autonomy_run.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "claim_boundary": "Durable autonomy evidence. No hardware measurement. Sealed so a later edit is detectable.",
- "elapsed_s": 24,
+ "elapsed_s": 25,
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "mission_id": "AUTONOMY.15m",
  "next_action": "drain queue then refill from frontiers",
  "phase": "running",
  "schema": "hawking.future.autonomy_mission_state.v1",
- "seal_sha256": "b2d2e901986d7f7025daac2a5f182b85827c4c831ff46b497a1059ef8ac150cb",
+ "seal_sha256": "e9286363b45cd0e4c04990451ad7c049b2829df58d0a9e087ae7c8c75c6c1584",
  "trial": "15m",
  "units": [
   "WU.TRIAL.FAST_SPECIMEN_SCIENCE.specimen_verify.Falcon-H1-7B-Instruct",
@@ -66,7 +66,6 @@
   "WU.AUTONOMY.negative_index.44",
   "WU.AUTONOMY.ngram_school.45",
   "WU.AUTONOMY.succession.50",
-  "WU.AUTONOMY.evidence_snapshot.51",
-  "WU.AUTONOMY.workunit_species.55"
+  "WU.AUTONOMY.evidence_snapshot.51"
  ]
 }

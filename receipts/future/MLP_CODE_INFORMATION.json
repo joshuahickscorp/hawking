@@ -231,7 +231,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:01:45Z",
+  "recorded_at": "2026-09-02T08:32:47Z",
   "recorded_by": "tools/future/mlp_code_information.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -424,6 +424,19 @@
    "id": "shared_code_bases",
    "index_hits_are_cousins": true,
    "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+     "hypothesis_family": "shared_basis",
+     "organ": "mlp",
+     "queried_organ": "mlp",
+     "queried_slug": "shared_basis",
+     "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+     "verdict": "MEASURED_NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the 2-bit affine-Q2 code body, not W, not the f16 scale/bias, and not a different parent."
+    },
     {
      "applies_to_this_object": false,
      "claim_refuted": "held-out activation reconstruction fails; not coherent",
@@ -940,6 +953,19 @@
    "id": "shared_input_transforms",
    "index_hits_are_cousins": true,
    "index_refusals": [
+    {
+     "applies_to_this_object": false,
+     "claim_refuted": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+     "hypothesis_family": "shared_basis",
+     "organ": "mlp",
+     "queried_organ": "mlp",
+     "queried_slug": "shared_basis",
+     "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+     "verdict": "MEASURED_NEGATIVE",
+     "why_not_this_object": "Index family matches a weight-space or codec scar on this parent. The object here is the 2-bit affine-Q2 code body, not W, not the f16 scale/bias, and not a different parent."
+    },
     {
      "applies_to_this_object": false,
      "claim_refuted": "held-out activation reconstruction fails; not coherent",
@@ -3049,7 +3075,7 @@
   "reconstruction": "w = float(q)*scale + bias, q unsigned in {0,1,2,3}"
  },
  "schema": "hawking.future.mlp_code_information.v1",
- "seal_sha256": "641acab8bce86e6162bffcb7733dfe73b4028b13d82235fcf7bfe3c7e196876c",
+ "seal_sha256": "ad60ee3cedbfb90a20e62344eb061206efd5d7eff8d00738f2b14a20046b42c1",
  "unmeasured_attractive": [
   {
    "id": "shared_input_transforms",

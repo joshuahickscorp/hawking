@@ -87,7 +87,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:56:41Z",
+  "recorded_at": "2026-09-02T08:31:14Z",
   "recorded_by": "tools/future/odyssey_launch.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -157,6 +157,11 @@
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-14B",
+    "revision": "40c069824f42"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "Qwen/Qwen3-30B-A3B",
     "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
    },
@@ -164,6 +169,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "Qwen/Qwen3-4B-Instruct-2507",
     "revision": "cdbee75f17c0"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "revision": "b2cff646eb4b"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -344,6 +354,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "tencent/HunyuanVideo",
     "revision": "6204ad6aea1a"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "tiiuae/Falcon3-1B-Instruct",
+    "revision": "28ba2251970a"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -1864,7 +1879,7 @@
   "note": "Identity is not invented. A missing this-wave receipt stays unbound. Bound only when RESIDENT_SANDBOX.json pins identity_sha256 and reentry_same_identity. HCLI prior gates are not this identity.",
   "path_taken": "worktree",
   "pins": {
-   "identity_sha256": "466e1394eafb65240a50835efce001a8e7373d22a81452009f2b538404e27cd6",
+   "identity_sha256": "dcbaeaf74c90a1b44a7f2537070aee750ff431cf62d0cc4eed14f5143264e0b2",
    "reentry_same_identity": true,
    "sandbox_id": "resident"
   },
@@ -1878,7 +1893,7 @@
   "unbound_reason": null
  },
  "schema": "hawking.future.odyssey_i_launch.v1",
- "seal_sha256": "4ec516182b952a9ba912d574b45dd60b0135f9b4dbb1518590576c1ab0f221ec",
+ "seal_sha256": "e7bf8d7e9e90a56aa5af8bd28f62e61cd3308edec6c0c993c158f534a9db5e6a",
  "verdict": {
   "allowed": true,
   "met": [

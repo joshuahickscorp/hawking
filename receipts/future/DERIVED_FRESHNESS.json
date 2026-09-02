@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:52:41Z",
+  "recorded_at": "2026-09-02T08:15:20Z",
   "recorded_by": "tools/future/freshness.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -134,12 +134,6 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/future/CANDIDATE_STAGED_PLAN.json",
-       "sha256": "4ecf625b232062348d17aaef18517f203e480ad58323dc3654c7a17c18df96c0"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/f1-wired-is-not-accepted-20260902-003701/receipts/future/CANDIDATE_STAGED_PLAN.json",
        "sha256": "4ecf625b232062348d17aaef18517f203e480ad58323dc3654c7a17c18df96c0"
       },
       {
@@ -2124,12 +2118,6 @@
       {
        "evidence_source": "live_headless",
        "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/f1-wired-is-not-accepted-20260902-003701/receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
-       "sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
        "path": "/Users/scammermike/.claude-grok/worktrees/h2-hardware-odyssey-sealed-predictions-20260902-011227/receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json",
        "sha256": "f13e78c9f1568c66af5feec01017b02bb479d07a0fd42a36a461437e70348b05"
       },
@@ -2216,12 +2204,6 @@
       {
        "evidence_source": "live_headless",
        "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/f1-wired-is-not-accepted-20260902-003701/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
-       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
        "path": "/Users/scammermike/.claude-grok/worktrees/h1-u50-variants-and-carrier-20260902-011214/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
        "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
       },
@@ -2229,18 +2211,6 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/.claude-grok/worktrees/h2-hardware-odyssey-sealed-predictions-20260902-011227/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
-       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/r1-reachability-onto-rust-index-20260902-002510/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
-       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/r2-roadmap-auditor-onto-rust-index-20260902-002520/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
        "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
       },
       {
@@ -2271,6 +2241,12 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/.claude-grok/worktrees/s2-hwir-pluggable-lowering-target-20260902-025130/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+       "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
+      },
+      {
+       "evidence_source": "live_headless",
+       "kind": "other_worktree",
+       "path": "/Users/scammermike/.claude-grok/worktrees/s3-order-dependent-reachability-tests-20260902-031751/tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
        "sha256": "fe218618db0b2398a636271846915ddc9daf3affe1d54f53e57985a2938933f0"
       },
       {
@@ -2476,12 +2452,6 @@
       {
        "evidence_source": "live_headless",
        "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/f1-wired-is-not-accepted-20260902-003701/CODEX_ACCELERATOR_HANDOFF.json",
-       "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
        "path": "/Users/scammermike/.claude-grok/worktrees/h1-u50-variants-and-carrier-20260902-011214/CODEX_ACCELERATOR_HANDOFF.json",
        "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
       },
@@ -2495,18 +2465,6 @@
        "evidence_source": "live_headless",
        "kind": "other_worktree",
        "path": "/Users/scammermike/.claude-grok/worktrees/hcli-attach-20260902-020023/CODEX_ACCELERATOR_HANDOFF.json",
-       "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/r1-reachability-onto-rust-index-20260902-002510/CODEX_ACCELERATOR_HANDOFF.json",
-       "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
-      },
-      {
-       "evidence_source": "live_headless",
-       "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/r2-roadmap-auditor-onto-rust-index-20260902-002520/CODEX_ACCELERATOR_HANDOFF.json",
        "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
       },
       {
@@ -2542,7 +2500,7 @@
       {
        "evidence_source": "live_headless",
        "kind": "other_worktree",
-       "path": "/Users/scammermike/.claude-grok/worktrees/tui-live-20260902-005424/CODEX_ACCELERATOR_HANDOFF.json",
+       "path": "/Users/scammermike/.claude-grok/worktrees/s3-order-dependent-reachability-tests-20260902-031751/CODEX_ACCELERATOR_HANDOFF.json",
        "sha256": "2d37d971bf470bd236f0fffb80c7ccfb9420b30012a9bc236fa2460f9069e482"
       },
       {
@@ -2580,7 +2538,7 @@
   "STALE_SEMANTIC": 0,
   "UNKNOWN": 4,
   "registered": 6,
-  "unregistered": 320
+  "unregistered": 321
  },
  "eras": [
   "I Genesis of the Laboratory",
@@ -2600,7 +2558,7 @@
   "registry of derived -> source(s) -> producer; unregistered receipts/future/*.json are findings",
   "source resolution copes with live-present, live-absent, and pinned-snapshot copies and records which"
  ],
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "345e209c5e66b9729b65bf73f9c58978800aea97",
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
   "QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json and TOURNAMENT_READINESS.json record no source sha256/semantic fingerprint, so they classify UNKNOWN until those producers start writing the CANDIDATE_STAGED_PLAN.input pattern",
@@ -2609,7 +2567,7 @@
   "no GPU / FPGA / power meter in this lane; no hardware quantity is asserted",
   "--refresh was not invoked by --check/--report; STALE_SEMANTIC artifacts stay on disk until a caller passes --refresh",
   "UNKNOWN artifacts: QUALIFICATION_PIPELINE.json, FLASH_NX_COMPLETENESS_AUDIT.json, HCLI_FUTURE_WORKUNITS.json, TOURNAMENT_READINESS.json",
-  "320 receipts/future/*.json files are not in the freshness registry"
+  "321 receipts/future/*.json files are not in the freshness registry"
  ],
  "no_era_vi": true,
  "no_odyssey_iv": true,
@@ -2774,7 +2732,7 @@
   }
  ],
  "schema": "hawking.future.freshness.v1",
- "seal_sha256": "de82a0a5345d427163880482794594ede8280bfe1c5bd24133185182d32acbe0",
+ "seal_sha256": "bc578dea84d34f60c2812ee707910a1e8e1bd7d487ed49bab417cc497edec5be",
  "unregistered": [
   "ABI_VERDICT_HARNESS.json",
   "ABLITERATION.json",
@@ -3022,6 +2980,7 @@
   "SINGLE_TOKEN_PARALLEL_SLACK.json",
   "SLEEPING_SPECIMENS.json",
   "SOVEREIGN_ATTACKS.json",
+  "SOVEREIGN_NEGATIVE_SCIENCE.json",
   "SOVEREIGN_TRIAL.json",
   "SPECIMEN_CURRICULUM.json",
   "SPECIMEN_EVENTS.json",

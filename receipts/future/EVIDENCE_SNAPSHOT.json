@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T06:56:43Z",
+  "recorded_at": "2026-09-02T08:33:04Z",
   "recorded_by": "tools/future/evidence_snapshot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -203,8 +203,8 @@
    "name": "FLASH_NEXT_FPGA_ORGAN_MAP.json",
    "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011",
    "snapshot_path": "receipts/future/evidence/FLASH_NEXT_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1788308192.229,
-   "source_mtime_utc": "2026-09-02T00:16:32Z",
+   "source_mtime_epoch": 1788336711.57,
+   "source_mtime_utc": "2026-09-02T08:11:51Z",
    "source_path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
   },
   {
@@ -230,8 +230,8 @@
    "name": "QWEN27_FPGA_ORGAN_MAP.json",
    "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec",
    "snapshot_path": "receipts/future/evidence/QWEN27_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1788308192.229,
-   "source_mtime_utc": "2026-09-02T00:16:32Z",
+   "source_mtime_epoch": 1788336711.57,
+   "source_mtime_utc": "2026-09-02T08:11:51Z",
    "source_path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json"
   },
   {
@@ -347,8 +347,8 @@
    "name": "HCLI_MODELLAKE_FLASH_CENSUS.json",
    "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "snapshot_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_mtime_epoch": 1788332164.111,
-   "source_mtime_utc": "2026-09-02T06:56:04Z",
+   "source_mtime_epoch": 1788337979.966,
+   "source_mtime_utc": "2026-09-02T08:32:59Z",
    "source_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
   },
   {
@@ -439,6 +439,6 @@
  "purpose": "Pinned copy of the Codex receipts sidecar lanes read. Lanes run in sparse git worktrees where the live, uncommitted receipts are invisible; without this snapshot a lane would silently fall back to a fixture and its conclusions would be attached to nothing.",
  "read_only_guarantee": "Codex originals are opened read-only and never modified.",
  "schema": "hawking.future.evidence_snapshot.v1",
- "seal_sha256": "ec9a44ab2f4700596bc2d4d1dc09834ba9df35cdf871dde3ef79fadc5f2025c2",
+ "seal_sha256": "65e7376cd50c90ae81096c1f4fb2131e3878135723cc90de10b47210380f6fff",
  "version": 1
 }

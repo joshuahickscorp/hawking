@@ -30,7 +30,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T07:07:39Z",
+  "recorded_at": "2026-09-02T08:44:15Z",
   "recorded_by": "tools/future/device_ascension_pipeline.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -63,7 +63,7 @@
   "stage 8 refuses to emit VERIFIED performance laws when stage 7 is UNAVAILABLE",
   "Odyssey II field names (law_id, scope, evidence_strength) without importing a sibling law store"
  ],
- "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "negative_findings": [
   "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json is not in HEAD; ANE is present-unprofiled at best",
   "no Odyssey II scoped law store on disk (frontier F010); field names used locally",
@@ -621,6 +621,6 @@
   "SOC_FAMILY",
   "GENERIC_VERIFIED"
  ],
- "seal_sha256": "cae16715ea3d3fb01311fff3bbac8ed2f91450696f8e7abbb2434c96bae0a7e1",
+ "seal_sha256": "ca3e2f9d59555ca48f674af18191bd4a1d7bca3f27ce1951b2e1fefb5e8fa9a3",
  "version": 1
 }

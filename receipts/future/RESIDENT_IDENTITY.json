@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:10:48Z",
+  "recorded_at": "2026-09-02T08:27:58Z",
   "recorded_by": "tools/future/resident_identity.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -751,8 +751,8 @@
      "WEAK": 4
     },
     "probes_holding": 14,
-    "probes_resolved_by_sidecar": 6,
-    "probes_stale": 0,
+    "probes_resolved_by_sidecar": 5,
+    "probes_stale": 1,
     "total": 20
    },
    "evidence": [
@@ -2021,6 +2021,10 @@
       "n": 1
      },
      {
+      "family": "receipts_sovereign_g014_negative_science_json",
+      "n": 1
+     },
+     {
       "family": "recompute_immutable_identity_sha_256_st_dev_geometry_parse_manifest_scan_inside_the_token_loop",
       "n": 1
      },
@@ -2078,7 +2082,7 @@
      },
      {
       "family": "shared_basis",
-      "n": 1
+      "n": 2
      },
      {
       "family": "shared_index_bare_commit_sweeps_foreign_stage",
@@ -2094,7 +2098,7 @@
      },
      {
       "family": "spec_decode",
-      "n": 2
+      "n": 3
      },
      {
       "family": "spec_exactshared_as_is",
@@ -2213,6 +2217,14 @@
       "n": 1
      },
      {
+      "family": "weight_space_cosine_as_a_proxy_for_real_activation_error",
+      "n": 1
+     },
+     {
+      "family": "whole_model_composition_of_locally_adequate_mlp_codec",
+      "n": 1
+     },
+     {
       "family": "widening_the_calibration_corpus_to_fix_under_fitted_organs",
       "n": 1
      },
@@ -2252,19 +2264,19 @@
      },
      {
       "model": "qwen3-30b-a3b",
-      "n": 126
+      "n": 127
      },
      {
       "model": "qwen3-80b",
-      "n": 380
+      "n": 381
      },
      {
       "model": "qwen3.8-27b",
-      "n": 55
+      "n": 57
      },
      {
       "model": "unrecorded",
-      "n": 87
+      "n": 88
      }
     ],
     "by_source": [
@@ -2409,6 +2421,13 @@
       "path": "receipts/future/MLP_STRUCTURED_OPERATOR.json"
      },
      {
+      "n_parsed": 4,
+      "n_scars": 4,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json"
+     },
+     {
       "n_parsed": 3,
       "n_scars": 3,
       "n_unparsed": 0,
@@ -2451,6 +2470,13 @@
       "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
      },
      {
+      "n_parsed": 1,
+      "n_scars": 1,
+      "n_unparsed": 0,
+      "origin": "disk",
+      "path": "receipts/sovereign/G014_negative_science.json"
+     },
+     {
       "n_parsed": 14,
       "n_scars": 14,
       "n_unparsed": 0,
@@ -2470,6 +2496,13 @@
       "n_unparsed": 1,
       "origin": "disk",
       "path": "tools/headless/noetic_negative_science.py"
+     },
+     {
+      "n_parsed": 0,
+      "n_scars": 1,
+      "n_unparsed": 1,
+      "origin": "disk",
+      "path": "tools/sovereign/g014_negative_science.py"
      },
      {
       "n_parsed": 7,
@@ -2593,15 +2626,15 @@
      "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
      "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
     ],
-    "n_parsed": 671,
-    "n_refuse_eligible": 599,
-    "n_scars": 685,
-    "n_sources": 45,
-    "n_unparsed": 14
+    "n_parsed": 676,
+    "n_refuse_eligible": 603,
+    "n_scars": 691,
+    "n_sources": 48,
+    "n_unparsed": 15
    },
    "missing_evidence": [],
-   "n": 62,
-   "n_refuse_eligible": 47,
+   "n": 64,
+   "n_refuse_eligible": 49,
    "note": "compact projection of NEGATIVE_SCIENCE_INDEX; not the full corpus dump",
    "query": {
     "model": "qwen3.8-27b"
@@ -2870,6 +2903,22 @@
      "refuse_eligible": true,
      "scar_id": "receipts/future/MLP_STRUCTURED_OPERATOR.json#MONARCH",
      "source_path": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "shared_basis",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
+     "hypothesis_family": "whole_model_composition_of_locally_adequate_mlp_codec",
+     "level": "MODEL_SPECIFIC",
+     "refuse_eligible": true,
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#whole_model_composition_of_locally_adequate_mlp_codec",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
      "verdict": "MEASURED_NEGATIVE"
     },
     {
@@ -3751,7 +3800,7 @@
   }
  },
  "schema": "hawking.future.resident_identity.v1",
- "seal_sha256": "980f4e918e87ad093d1ec85da46de65fad559c9ece8aa6b3cace22e553f619a0",
+ "seal_sha256": "33e3d0b0f2c5a6497d757b14c688dcdcd363cee778bdec0a94b23c08340078ce",
  "status": "ACCEPTED",
  "version": 1,
  "work_unit": {

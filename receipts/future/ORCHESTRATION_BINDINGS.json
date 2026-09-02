@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:49Z",
+  "recorded_at": "2026-09-02T08:27:40Z",
   "recorded_by": "tools/future/orchestration.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -642,7 +642,7 @@
   "distinct_frontier_items": 41,
   "distinct_species": 73,
   "infrastructure_excluded": 5,
-  "unbound_production": 142
+  "unbound_production": 152
  },
  "frontier_view_keys": [
   "ABI_VERDICT_HARNESS.json",
@@ -762,7 +762,7 @@
   "orchestration.py"
  ],
  "negative_findings": [
-  "142 production modules remain unbound and are NOT credited",
+  "152 production modules remain unbound and are NOT credited",
   "0 bindings are broken and credit nothing",
   "binding a module does not make its science correct; it makes the module reachable and its result routable"
  ],
@@ -781,7 +781,7 @@
   "workunit": "tools.future.orchestration.emit_workunit(module)"
  },
  "schema": "hawking.future.orchestration.v1",
- "seal_sha256": "9c7a7857c0eec004bfe064598b9313827ddc8d455f24a28658862841aa0b4233",
+ "seal_sha256": "3010ed21d1bbddbe916a0d5bdb2ab7308c37cb65e444bcb422d6452e2d179bf0",
  "unbound_production": [
   "abliteration_run.py",
   "addressing_attribution.py",
@@ -801,7 +801,9 @@
   "campaign_scars.py",
   "capability_byte_elimination.py",
   "capability_curve.py",
+  "capability_eval.py",
   "capability_information_map.py",
+  "capability_reachability.py",
   "capability_stages.py",
   "capacity_inference_rule.py",
   "causal_budget_71.py",
@@ -811,6 +813,7 @@
   "claude_interventions.py",
   "complete_ebpw.py",
   "concurrency_measure.py",
+  "conftest.py",
   "decode_tax_target.py",
   "deltanet_generated_transition.py",
   "deltanet_multistep.py",
@@ -831,6 +834,8 @@
   "dispatch_size_sweep.py",
   "exam_a_option_tree.py",
   "executable_economics.py",
+  "experiment_policy.py",
+  "experiment_receipt.py",
   "fast_thought.py",
   "fidelity_hierarchy.py",
   "fold_addqx_ab.py",
@@ -839,6 +844,7 @@
   "geometry_table.py",
   "harness_reconciliation.py",
   "hcli_compactor.py",
+  "hcli_self_hosting_launch.py",
   "hcli_sovereign.py",
   "improvement_metabolism.py",
   "improvement_trial.py",
@@ -884,6 +890,7 @@
   "path_to_71.py",
   "per_generated_token_inflation.py",
   "perturbation_workunit.py",
+  "physical_compiler_predict.py",
   "productive_search.py",
   "protected_bench_lease.py",
   "protected_bitcast_absolute.py",
@@ -901,6 +908,7 @@
   "roof_anchor.py",
   "runnability_snapshot.py",
   "scar_reevaluator.py",
+  "science_corpus.py",
   "sealed_default_absolute.py",
   "sealed_default_verified.py",
   "single_token_dag.py",
@@ -913,6 +921,7 @@
   "specimen_load_cost.py",
   "specimen_registry.py",
   "specimen_scheduler.py",
+  "static_kernel_verify_parity.py",
   "sub2_unified_plan.py",
   "succession_trial.py",
   "terminal_speed_artifact.py",
@@ -924,6 +933,7 @@
   "tps_metrics.py",
   "trial_negative_controls.py",
   "uma_resource_ledger.py",
+  "vmcp.py",
   "wall_gpu_reconciliation.py"
  ],
  "version": 1

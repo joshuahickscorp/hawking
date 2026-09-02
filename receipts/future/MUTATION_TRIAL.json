@@ -9,7 +9,7 @@
   "gpu_authority": false,
   "machine": "Apple M3 Ultra",
   "measurement_state": "SELF_MEASURED_DIRTY",
-  "recorded_at": "2026-09-01T06:06:59Z",
+  "recorded_at": "2026-09-02T08:27:56Z",
   "recorded_by": "tools/future/mutation_trial.py",
   "rule": "hardware numbers in this receipt are MTLCommandBuffer GPUStartTime/GPUEndTime from this process under an HCLI exclusive flock; they are not PROTECTED_ABSOLUTE",
   "state": "MEASURED",
@@ -33,16 +33,16 @@
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 737.236,
-    "gpu_us_median": 273.083,
+    "effective_gb_s": 446.112,
+    "gpu_us_median": 451.292,
     "name": "fused_one_pass"
    },
    "applied": true,
    "before": {
     "bytes": 268435456,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 480.708,
-    "gpu_us_median": 558.417,
+    "effective_gb_s": 370.725,
+    "gpu_us_median": 724.083,
     "name": "two_pass"
    },
    "identity": true,
@@ -50,7 +50,7 @@
    "measured": true,
    "mutation_class": "KERNEL_OR_GPU",
    "proposed": true,
-   "reason": "KERNEL_OR_GPU candidate faster 558.417 -> 273.083 us (saved 285.334 us); token-id analogue is checksum identity of y=w*x",
+   "reason": "KERNEL_OR_GPU candidate faster 724.083 -> 451.292 us (saved 272.791 us); token-id analogue is checksum identity of y=w*x",
    "rollback_digest_match": true,
    "verdict": "KEPT"
   },
@@ -58,16 +58,16 @@
    "after": {
     "bytes": 152043520,
     "checksum": "67710b551945109e",
-    "effective_gb_s": 434.048,
-    "gpu_us_median": 350.292,
+    "effective_gb_s": 439.432,
+    "gpu_us_median": 346.0,
     "name": "u8_exp_dequant"
    },
    "applied": true,
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 459.519,
-    "gpu_us_median": 438.125,
+    "effective_gb_s": 542.904,
+    "gpu_us_median": 370.833,
     "name": "f32_weights"
    },
    "identity": false,
@@ -75,7 +75,7 @@
    "measured": true,
    "mutation_class": "REPRESENTATION_BPW",
    "proposed": true,
-   "reason": "REPRESENTATION_BPW candidate faster 438.125 -> 350.292 us (saved 87.833 us); weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
+   "reason": "REPRESENTATION_BPW candidate faster 370.833 -> 346.000 us (saved 24.833 us); weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
    "rollback_digest_match": true,
    "verdict": "KEPT"
   },
@@ -83,16 +83,16 @@
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 457.041,
-    "gpu_us_median": 440.5,
+    "effective_gb_s": 480.015,
+    "gpu_us_median": 419.417,
     "name": "dispatch_x1"
    },
    "applied": true,
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 269.213,
-    "gpu_us_median": 747.833,
+    "effective_gb_s": 282.795,
+    "gpu_us_median": 711.917,
     "name": "dispatch_x64"
    },
    "identity": true,
@@ -100,7 +100,7 @@
    "measured": true,
    "mutation_class": "TOKEN_RATE",
    "proposed": true,
-   "reason": "TOKEN_RATE candidate faster 747.833 -> 440.500 us (saved 307.333 us); dispatch fold 64 -> 1",
+   "reason": "TOKEN_RATE candidate faster 711.917 -> 419.417 us (saved 292.500 us); dispatch fold 64 -> 1",
    "rollback_digest_match": true,
    "verdict": "KEPT"
   },
@@ -133,19 +133,19 @@
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 737.236,
-    "gpu_us_median": 273.083,
+    "effective_gb_s": 446.112,
+    "gpu_us_median": 451.292,
     "n_reps": 7,
     "name": "fused_one_pass",
     "overlay": "27248090e447137e9d4952a994765e1f749f68d8d7e27f540dc4568efae3e7b8",
     "reps_us": [
-     266.75,
-     269.375,
-     273.083,
-     485.958,
-     495.25,
-     469.792,
-     267
+     451.292,
+     518.75,
+     372.5,
+     294.333,
+     454.25,
+     510.25,
+     385.375
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -153,19 +153,19 @@
    "before": {
     "bytes": 268435456,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 480.708,
-    "gpu_us_median": 558.417,
+    "effective_gb_s": 370.725,
+    "gpu_us_median": 724.083,
     "n_reps": 7,
     "name": "two_pass",
     "overlay": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "reps_us": [
-     718.5,
-     558.417,
-     454.125,
-     541.542,
-     870.5,
-     827.875,
-     542.875
+     815.5,
+     674.5,
+     740.958,
+     860.417,
+     476.25,
+     724.083,
+     462.958
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -187,7 +187,7 @@
     "before_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
    },
    "proposed": true,
-   "reason": "KERNEL_OR_GPU candidate faster 558.417 -> 273.083 us (saved 285.334 us); token-id analogue is checksum identity of y=w*x",
+   "reason": "KERNEL_OR_GPU candidate faster 724.083 -> 451.292 us (saved 272.791 us); token-id analogue is checksum identity of y=w*x",
    "rollback_digest_match": true,
    "rolled_back": true,
    "verdict": "KEPT"
@@ -240,19 +240,19 @@
    "after": {
     "bytes": 152043520,
     "checksum": "67710b551945109e",
-    "effective_gb_s": 434.048,
-    "gpu_us_median": 350.292,
+    "effective_gb_s": 439.432,
+    "gpu_us_median": 346.0,
     "n_reps": 7,
     "name": "u8_exp_dequant",
     "overlay": "6223c0d4f24476f581e0ef6ceb30b7498160b0d73b8c115dbc7ffcc813473cee",
     "reps_us": [
-     350.292,
-     191.25,
-     193.375,
-     189.833,
-     441.542,
-     387.708,
-     380.042
+     346,
+     352.458,
+     224.875,
+     420.75,
+     297.625,
+     289.5,
+     390.125
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -260,19 +260,19 @@
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 459.519,
-    "gpu_us_median": 438.125,
+    "effective_gb_s": 542.904,
+    "gpu_us_median": 370.833,
     "n_reps": 7,
     "name": "f32_weights",
     "overlay": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "reps_us": [
-     438.125,
-     270.5,
-     269.417,
-     346.125,
-     456.417,
-     456.5,
-     512.417
+     643.5,
+     370.833,
+     309.167,
+     299.625,
+     303.583,
+     459.208,
+     418.208
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -294,7 +294,7 @@
     "before_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
    },
    "proposed": true,
-   "reason": "REPRESENTATION_BPW candidate faster 438.125 -> 350.292 us (saved 87.833 us); weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
+   "reason": "REPRESENTATION_BPW candidate faster 370.833 -> 346.000 us (saved 24.833 us); weight bytes removed 49283072; extra exp-dequant billed in the measured GPU us (AUX_U8_NATIVE shape)",
    "rollback_digest_match": true,
    "rolled_back": true,
    "verdict": "KEPT"
@@ -303,19 +303,19 @@
    "after": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 457.041,
-    "gpu_us_median": 440.5,
+    "effective_gb_s": 480.015,
+    "gpu_us_median": 419.417,
     "n_reps": 7,
     "name": "dispatch_x1",
     "overlay": "9ccfe12f7ab674fac49d79815688c8de2d950b31882a32e61a11cd2652f1f481",
     "reps_us": [
-     445.25,
-     451.5,
-     274.917,
-     353.917,
-     440.5,
-     499.833,
-     419.792
+     319.75,
+     446.5,
+     419.25,
+     454.292,
+     397.292,
+     419.417,
+     422.75
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -323,19 +323,19 @@
    "before": {
     "bytes": 201326592,
     "checksum": "1bdd7e03fbcb4859",
-    "effective_gb_s": 269.213,
-    "gpu_us_median": 747.833,
+    "effective_gb_s": 282.795,
+    "gpu_us_median": 711.917,
     "n_reps": 7,
     "name": "dispatch_x64",
     "overlay": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
     "reps_us": [
-     948.625,
-     432.458,
-     401.208,
-     976.5,
-     747.833,
-     408.667,
-     879.833
+     457.167,
+     1045.5,
+     449.125,
+     711.917,
+     942.25,
+     634.792,
+     972.5
     ],
     "timing_authority": "MTLCommandBuffer GPUStartTime/GPUEndTime after waitUntilCompleted"
    },
@@ -357,19 +357,19 @@
     "before_digest": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
    },
    "proposed": true,
-   "reason": "TOKEN_RATE candidate faster 747.833 -> 440.500 us (saved 307.333 us); dispatch fold 64 -> 1",
+   "reason": "TOKEN_RATE candidate faster 711.917 -> 419.417 us (saved 292.500 us); dispatch fold 64 -> 1",
    "rollback_digest_match": true,
    "rolled_back": true,
    "verdict": "KEPT"
   }
  },
  "concurrent_load": {
-  "loadavg": "{ 11.52 11.16 10.76 }",
+  "loadavg": "{ 15.17 8.25 6.32 }",
   "note": "host loadavg; absolute us are measured-under-load",
-  "uptime": "2:06  up 6 days,  6:04, 3 users, load averages: 11.52 11.16 10.76"
+  "uptime": "4:27  up 7 days,  8:25, 4 users, load averages: 15.17 8.25 6.32"
  },
  "driven_through_bindings": true,
- "elapsed_s": 1.644,
+ "elapsed_s": 2.337,
  "evidence_class": "SELF_MEASURED_DIRTY",
  "gaps_closed": [
   "orchestration BINDINGS names mutation_engine.py and the resident calls it there",
@@ -416,15 +416,15 @@
  },
  "lease": {
   "acquired": true,
-  "acquired_at": "2026-09-01T06:06:57Z",
+  "acquired_at": "2026-09-02T08:27:54Z",
   "flock": "LOCK_EX",
   "lease_calls": 1,
   "lock_name": "protected-accelerator-bench.lock",
   "lock_path": "/Users/scammermike/Downloads/hawking/.hcli/locks/protected-accelerator-bench.lock",
   "lock_rel": ".hcli/locks/protected-accelerator-bench.lock",
-  "pid": 31178,
+  "pid": 31427,
   "recovered_from": "hcli/agentos/protected_accelerator_benchmark.py LOCK_NAME / _try_lock",
-  "released_at": "2026-09-01T06:06:59Z"
+  "released_at": "2026-09-02T08:27:56Z"
  },
  "lease_calls": 1,
  "metal": {
@@ -530,7 +530,7 @@
   "trial": "tools.future.mutation_trial.run_live_trial()"
  },
  "schema": "hawking.future.mutation_trial.v1",
- "seal_sha256": "beeeeef4812f134ab2f54984c311cdbff10b4ab5b8c01e6e5c8bf019c30973bf",
+ "seal_sha256": "f40c225715ea260a3de884931da3fb267928ec321c500eeb123dbd24725a4692",
  "took_gpu_lease": true,
  "verdict": "PASS",
  "version": 1

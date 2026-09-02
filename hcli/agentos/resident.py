@@ -1448,6 +1448,26 @@ class ResidentSupervisor:
         return 0
 
 
+def _session_ledger_evidence(agent: Any) -> Optional[Dict[str, Any]]:
+    """Record, never ask: the operator is not watching an unattended mission
+    slice, so this is `SessionLedger.snapshot()` (plus why it would have
+    prompted, had anyone been there to ask) written into durable resident
+    state -- the same numbers `hcli resident watch` already surfaces for
+    everything else this worker did. This never lands, pushes, or merges;
+    `hcli.landing` already owns that path and has a verifier in front of it
+    for good reason, so this module never imports it.
+    """
+    try:
+        from ..session_ledger import SessionLedger
+
+        ledger = SessionLedger(agent.workspace, repo_root=agent.repo_root)
+        snap = ledger.snapshot()
+        prompt, reason = ledger.should_prompt(snapshot=snap)
+        return {"would_prompt": prompt, "reason": reason, **snap}
+    except Exception as exc:
+        return {"error": f"{type(exc).__name__}: {exc}"}
+
+
 def _worker_main(state_path: str) -> int:
     state_file = Path(state_path).expanduser().resolve()
     workspace = state_file.parents[2]
@@ -1592,6 +1612,7 @@ def _worker_main(state_path: str) -> int:
             last_event="worker_evacuated" if evacuating else "worker_completed",
             work_refilled=refill,
             inbox_rejected=rejected,
+            session_ledger=_session_ledger_evidence(agent),
             logical_session={
                 **(daemon.store.read().get("logical_session") or {}),
                 "status": "EVACUATED" if evacuating else "IDLE",

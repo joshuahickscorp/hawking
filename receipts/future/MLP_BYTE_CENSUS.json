@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:00:22Z",
+  "recorded_at": "2026-09-02T08:14:48Z",
   "recorded_by": "tools/future/mlp_byte_census.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -6256,6 +6256,17 @@
    "id": "shared_bases",
    "index_refusals": [
     {
+     "claim_refuted": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+     "hypothesis_family": "shared_basis",
+     "organ": "mlp",
+     "queried_organ": "mlp",
+     "queried_slug": "shared_basis",
+     "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
      "claim_refuted": "held-out activation reconstruction fails; not coherent",
      "hypothesis_family": "shared_basis",
      "organ": "down",
@@ -6673,6 +6684,17 @@
    "id": "shared_input_transforms",
    "index_refusals": [
     {
+     "claim_refuted": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+     "hypothesis_family": "shared_basis",
+     "organ": "mlp",
+     "queried_organ": "mlp",
+     "queried_slug": "shared_basis",
+     "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+     "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+     "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+     "verdict": "MEASURED_NEGATIVE"
+    },
+    {
      "claim_refuted": "held-out activation reconstruction fails; not coherent",
      "hypothesis_family": "shared_basis",
      "organ": "down",
@@ -6858,7 +6880,7 @@
   "sealed_profile": "hcli/hawking-native.sealed-3.14.json"
  },
  "schema": "hawking.future.mlp_byte_census.v1",
- "seal_sha256": "07b18f00cdfd1a0d5bd9c8ea9e0357b40956b5cd9fbbe0d6dc656649d2bcbc37",
+ "seal_sha256": "1802f08d5074f633ff263466dbb75ad61d56b88317ed25f17c568ecda034d64a",
  "version": 1,
  "what_this_does_not_prove": [
   "physical EBPW of a different packing",

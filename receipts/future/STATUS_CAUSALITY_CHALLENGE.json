@@ -13,7 +13,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:27:21Z",
+  "recorded_at": "2026-09-02T08:27:39Z",
   "recorded_by": "tools/future/status_causality.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -999,7 +999,7 @@
    "schema": "hawking.future.flash_nx_audit.v1"
   },
   {
-   "n_keys": 17,
+   "n_keys": 18,
    "rel": "receipts/future/AUTONOMY_SCARS.json",
    "schema": "hawking.future.autonomy_scars.v1"
   },
@@ -1160,7 +1160,7 @@
  },
  "scar": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
  "schema": "hawking.future.status_causality.v1",
- "seal_sha256": "b5c1f4268dc25ba9bda66c7c287c09ac20570ff37fc679a2455b2304834b55e3",
+ "seal_sha256": "f196fe1c2d817914d2cb254aa5ec35892f91c6d2d0096b24c4809c90f50da77d",
  "supported_fixtures": [
   {
    "alternatives": [

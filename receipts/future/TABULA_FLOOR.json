@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T03:33:04Z",
+  "recorded_at": "2026-09-02T08:28:10Z",
   "recorded_by": "tools/future/tabula.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -234,7 +234,7 @@
  },
  "doctrine": {
   "doctrine": "Gravity finds the cheapest faithful physical realization. Tabula finds the least behaviorally constrained faithful realization. Doctor verifies both. Lower refusal rate is not Tabula success. Targets are preserved capability, increased useful behavioral freedom, minimized suppression, minimized calibration drift, and minimized personality and style drift. Behavioral freedom and external authority are different systems.",
-  "path_taken": "git:HEAD",
+  "path_taken": "worktree",
   "quoted_phrase_present": true,
   "source": "hawking-experiments/superwave/g1/g1-tabula-baseline.md"
  },
@@ -904,7 +904,7 @@
   }
  ],
  "gpu_authority": false,
- "head": "f3e4676f0172dda190eaed5878783fc02ef1788b",
+ "head": "6ea04b88f9a4bcb92a784ab5359c0370337bcccb",
  "independent_evaluation": {
   "behavioral_target": 0.5,
   "demo_failure": {
@@ -1130,16 +1130,16 @@
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hawking-experiments/superwave/g1/g1-tabula-baseline.md",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "G1 doctrine: lower refusal rate is not Tabula success; behavioral freedom and external authority are different systems"
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hawking-experiments/superwave/g1/g1-tabula-genome.md",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "G1 genome: Tabula/Gravity must be separate sealed content-hashed documents"
   },
   {
@@ -1158,9 +1158,9 @@
   },
   {
    "in_head": true,
-   "on_disk": false,
+   "on_disk": true,
    "path": "hcli/agentos/autonomy_gate.py",
-   "path_taken": "git:HEAD",
+   "path_taken": "worktree",
    "what": "live authority: Mission is DAG/receipt, AgentOS is typed-tool/checkpoint, provider is cognition; the model cannot nominate the verifier"
   },
   {
@@ -1355,7 +1355,7 @@
   "reasoning",
   "instruction_following"
  ],
- "seal_sha256": "7ca91ed04f9e062980a777d238d2e6652fe5491d7c9022e4f85f3e05fdce39cf",
+ "seal_sha256": "b7940348e45561904222afa725f38b4809f727a8dfdea5f00323f461bd0b21f4",
  "sleeping_fit": {
   "ready": false,
   "status": "sleeping",

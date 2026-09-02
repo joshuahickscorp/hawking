@@ -34,6 +34,7 @@ from __future__ import annotations
 
 import dataclasses
 import shlex
+import os
 import subprocess
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Sequence, Tuple
@@ -238,6 +239,15 @@ class IntegrationVerifier:
             admissible, why = False, "VACUOUS_COMMAND"
         if not admissible:
             return self._refuse("TEST_COMMAND_INADMISSIBLE", why)
+        # Verification must not DIRTY the tree it is about to verify. A python
+        # test command writes __pycache__/ and .pytest_cache/ into the repo,
+        # which lands between the pre-test status snapshot and the commit and
+        # trips the tamper guard below -- so a perfectly good proposal is
+        # refused as TAMPERED_DURING_VERIFICATION. It only escapes notice in a
+        # repo whose .gitignore already covers both. The guard is right; the
+        # verifier should not be creating the evidence that trips it.
+        test_env = dict(os.environ)
+        test_env["PYTHONDONTWRITEBYTECODE"] = "1"
         try:
             test_proc = subprocess.run(
                 list(proposal.test_command),
@@ -246,6 +256,7 @@ class IntegrationVerifier:
                 text=True,
                 timeout=proposal.timeout_s,
                 check=False,
+                env=test_env,
             )
         except subprocess.TimeoutExpired as exc:
             return self._refuse("TESTS_TIMEOUT", str(exc))

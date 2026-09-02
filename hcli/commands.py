@@ -5,7 +5,7 @@ import os
 import time
 from datetime import datetime
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Tuple
 
 from .command_registry import command_names, help_text
 from .paths import find_repo_root
@@ -22,6 +22,17 @@ STATUS_LINE_CHARS = 80
 # One screen. Four protected tests assert /status never exceeds this.
 STATUS_MAX_LINES = 10
 EVENT_DISPLAY_CHARS = 20
+# /land's default test command when the operator does not type one. Matches
+# this repo's own documented test invocation, so a bare /land re-runs exactly
+# what a human would run before committing by hand.
+# -p no:cacheprovider for the same reason landing sets
+# PYTHONDONTWRITEBYTECODE: a verification run that writes .pytest_cache/
+# into the repo dirties the tree between the status snapshot and the
+# commit, and landing then correctly refuses its own proposal as
+# TAMPERED_DURING_VERIFICATION.
+LAND_DEFAULT_TEST_COMMAND: Tuple[str, ...] = (
+    "python3", "-m", "pytest", "hcli/", "-q", "-p", "no:cacheprovider",
+)
 
 
 def _fmt_unknown(value: Any) -> str:
@@ -403,6 +414,21 @@ def _workspace_root(controller: Any) -> Optional[Path]:
         return Path(os.fspath(inner))
     except TypeError:
         return None
+
+
+def _land_repo_root(controller: Any) -> Path:
+    """Where /land's git plumbing runs.
+
+    Uses `session_ledger.discover_repo_root`, not the plain `find_repo_root`
+    every other command here uses -- see that function's docstring for why:
+    `find_repo_root` silently redirects a tree that is not shaped like this
+    repo to the live hawking checkout, which is unsafe for a verb (push,
+    branch -f) that actually mutates git state.
+    """
+    from .session_ledger import discover_repo_root
+
+    root = _workspace_root(controller)
+    return discover_repo_root(root) if root is not None else find_repo_root()
 
 
 # --- machine-scoped observation ------------------------------------------
@@ -1574,6 +1600,125 @@ class CommandHandler:
 
     def _cmd_stop(self, arg: str) -> str:
         return self._cmd_cancel(arg)
+
+    def _cmd_land(self, arg: str) -> str:
+        """/land commit[s] accumulated work; push and merge are separate,
+        explicitly-typed steps -- see `_land_push`/`_land_merge` for why.
+        `/land` alone (or `/land <message>`) commits everything currently
+        dirty through `hcli.landing`, which re-verifies and re-runs the test
+        command itself; this method never touches git directly for that
+        path, only for the push/merge verbs, neither of which is a commit.
+        """
+        verb, _, rest = (arg or "").strip().partition(" ")
+        if verb.lower() == "push":
+            return self._land_push()
+        if verb.lower() == "merge":
+            target = rest.strip()
+            if not target:
+                text = "Usage: /land merge <branch>"
+                self.last_value = text
+                return text
+            return self._land_merge(target)
+        return self._land_commit((arg or "").strip())
+
+    def _land_commit(self, message: str) -> str:
+        from .landing import propose_landing
+        from .session_ledger import SessionLedger, changed_paths
+
+        repo_root = _land_repo_root(self.controller)
+        ledger = SessionLedger(repo_root, repo_root=repo_root)
+        snap = ledger.snapshot()
+        paths = changed_paths(repo_root)
+        if not paths:
+            text = "Nothing to land: working tree is clean."
+            self.last_value = {"landed": False, "reason": "EMPTY_DIFF"}
+            return text
+        branch = self._verifier_run(repo_root, "rev-parse", "--abbrev-ref", "HEAD").stdout.strip()
+        if not message:
+            message = (
+                f"session checkpoint: {snap['files_changed']} file(s) changed, "
+                f"+{snap['insertions']}/-{snap['deletions']} lines, "
+                f"{snap['untracked']} untracked"
+            )
+        result = propose_landing(
+            repo_root,
+            branch=branch,
+            allowed_paths=paths,
+            test_command=list(LAND_DEFAULT_TEST_COMMAND),
+            message=message,
+        )
+        self.last_value = result
+        if result.get("landed"):
+            sha = str(result.get("commit_sha") or "")[:12]
+            count = len(result.get("changed_paths") or [])
+            return f"Landed {sha}: {count} file(s) committed. Push with /land push."
+        detail = f": {result.get('detail')}" if result.get("detail") else ""
+        return f"Not landed ({result.get('reason')}){detail}"
+
+    def _land_push(self) -> str:
+        """The explicit, operator-typed push. `hcli.landing` never pushes on
+        its own -- a local commit is recoverable by inspection; a push
+        changes what a remote and every other clone sees, so it happens only
+        when a human types this verb, never from an automatic prompt and
+        never from the resident (which never imports this method at all)."""
+        repo_root = _land_repo_root(self.controller)
+        result = self._verifier_run(repo_root, "push", timeout=60.0)
+        self.last_value = {
+            "pushed": result.returncode == 0,
+            "stdout": result.stdout, "stderr": result.stderr,
+        }
+        if result.returncode == 0:
+            return "Pushed."
+        return f"Push failed: {(result.stderr or result.stdout).strip()}"
+
+    def _land_merge(self, target: str) -> str:
+        """Fast-forward `target` to HEAD, ONLY when `target` is a strict
+        ancestor of HEAD, and WITHOUT ever checking `target` out -- this
+        working tree hosts a live daemon whose worker respawns from these
+        files, so swapping them mid-cycle is a production break. Moving the
+        branch pointer with `git branch -f` advances `target` without
+        touching a single file on disk.
+        """
+        repo_root = _land_repo_root(self.controller)
+        verify = self._verifier_run(repo_root, "rev-parse", "--verify", "--quiet", target)
+        if verify.returncode != 0:
+            text = f"Refused: no such branch {target!r}"
+            self.last_value = {"merged": False, "reason": "NO_SUCH_BRANCH", "target": target}
+            return text
+        counts = self._verifier_run(repo_root, "rev-list", "--left-right", "--count", f"{target}...HEAD")
+        parts = counts.stdout.split() if counts.returncode == 0 else []
+        if counts.returncode != 0 or len(parts) != 2 or not all(p.isdigit() for p in parts):
+            text = f"Refused: could not compare {target!r} with HEAD: {counts.stderr.strip()}"
+            self.last_value = {"merged": False, "reason": "COMPARE_FAILED", "target": target}
+            return text
+        only_target, only_head = int(parts[0]), int(parts[1])
+        if only_target > 0:
+            text = (
+                f"Refused: {target!r} is not a strict ancestor of HEAD "
+                f"({only_target} commit(s) on {target!r} not on HEAD); fast-forward only."
+            )
+            self.last_value = {"merged": False, "reason": "NOT_FAST_FORWARD", "target": target}
+            return text
+        if only_head == 0:
+            text = f"{target!r} is already up to date with HEAD."
+            self.last_value = {"merged": False, "reason": "ALREADY_UP_TO_DATE", "target": target}
+            return text
+        move = self._verifier_run(repo_root, "branch", "-f", target, "HEAD")
+        if move.returncode != 0:
+            text = f"Refused: git branch -f failed: {move.stderr.strip()}"
+            self.last_value = {"merged": False, "reason": "BRANCH_UPDATE_FAILED", "target": target}
+            return text
+        self.last_value = {"merged": True, "target": target, "advanced_by": only_head}
+        return f"Fast-forwarded {target!r} by {only_head} commit(s). Working tree untouched."
+
+    @staticmethod
+    def _verifier_run(repo_root: Path, *args: str, timeout: float = 30.0):
+        """Read-only-shaped git plumbing for /land push and /land merge, via
+        the same subprocess wrapper `hcli.landing.IntegrationVerifier` uses
+        for its own checks -- one way this module talks to git, not two."""
+        from .landing import IntegrationVerifier
+
+        return IntegrationVerifier()._run(repo_root, *args, timeout=timeout)
 
 
 # `/flash-next` carries a dash and no Python identifier can. The dispatcher

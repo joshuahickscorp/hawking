@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:28:12Z",
+  "recorded_at": "2026-09-02T08:27:44Z",
   "recorded_by": "tools/future/tps_budget.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -555,10 +555,10 @@
   "receipt": "receipts/future/RESIDENT_71TPS_BUDGET_STATIC.json"
  },
  "schema": "hawking.future.tps_budget.v1",
- "seal_sha256": "f3a2a18512115ed745546cb4399484b599fd5a7b9ab6e9f8e3e83bb2881fdaf1",
+ "seal_sha256": "94f4e1c8fa0adfb1af7751a29df2c7c702ecffa90ba06f675377d5f438c1a76f",
  "self_timing": {
   "class": "SELF_MEASURED_DIRTY",
-  "cpu_parse_s": 0.0070028339978307486,
+  "cpu_parse_s": 0.002395375049673021,
   "not": "a GPU measurement, a lease, a qualified TPS, a roof, or evidence the cited probes still hold on this host",
   "numbers_decide_nothing": true
  },
