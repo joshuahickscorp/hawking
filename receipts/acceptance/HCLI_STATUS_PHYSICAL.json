@@ -23,7 +23,7 @@
   ],
   "command": "python3 -m tools.acceptance.context --gate HCLI_STATUS_PHYSICAL",
   "evidence_tier": "FUNCTIONAL_SIM",
-  "rendered": "mission acc2-status-physical  phase=running bank=0\nGoal: demonstrate D.9 physical /status\nWU ready=1 running=2 blocked=0 completed=4 failed=1\nRuntime health=ok resident=1 active=1 queued=0 n_ctx=32768 prompt=1200 tps=12.5\nGrok admitted=1 active=0 queued=0 done=554 failed=14 latency=unknown\nResident RUNNING supervisor=live cycles=3 event=acceptance-probe age=90s\nCPU decode=1 compile=0 test=1 tool=0\nMutation held=false pid=unknown owner=unknown waiters=0\nVerifier backlog=2  accepted/h=unknown  ckpt=12s  watchdog=clear",
+  "rendered": "mission acc2-status-physical  phase=running bank=0\nGoal: demonstrate D.9 physical /status\nWU ready=1 running=2 blocked=0 completed=4 failed=1\nRuntime health=ok resident=1 active=1 queued=0 n_ctx=32768 prompt=1200 tps=12.5\nGrok admitted=1 active=1 queued=0 done=554 failed=14 latency=558s\nResident RUNNING supervisor=live cycles=3 event=acceptance-probe age=90s\nCPU decode=1 compile=0 test=1 tool=0\nMutation held=false pid=unknown owner=unknown waiters=0\nVerifier backlog=2  accepted/h=unknown  ckpt=12s  watchdog=clear",
   "rendered_line_count": 9,
   "d9": {
     "present": {
@@ -119,12 +119,12 @@
   "live_grok_snapshot": {
     "admitted": 1,
     "admitted_source": "fallback",
-    "active": 0,
+    "active": 1,
     "queued": 0,
     "done": 554,
     "failed": 14,
     "stale": 14,
-    "latency_s": null,
+    "latency_s": 558.3996448516846,
     "throttle": "   \"input_tokens\": 242957,\n    \"cache_read_input_tokens\": 10197504,\n    \"cache_creation_input_tokens\": 0,\n    \"output_tokens\": 53323,\n    \"reasoning_tokens\": 48425,\n    \"total_tokens\": 10493784\n  },\n "
   },
   "checks": {
@@ -140,7 +140,7 @@
       "Goal: demonstrate D.9 physical /status",
       "WU ready=1 running=2 blocked=0 completed=4 failed=1",
       "Runtime health=ok resident=1 active=1 queued=0 n_ctx=32768 prompt=1200 tps=12.5",
-      "Grok admitted=1 active=0 queued=0 done=554 failed=14 latency=unknown",
+      "Grok admitted=1 active=1 queued=0 done=554 failed=14 latency=558s",
       "Resident RUNNING supervisor=live cycles=3 event=acceptance-probe age=90s",
       "CPU decode=1 compile=0 test=1 tool=0",
       "Mutation held=false pid=unknown owner=unknown waiters=0",
@@ -149,7 +149,7 @@
   },
   "schema": "hawking.acceptance.gate.v1",
   "gate": "HCLI_STATUS_PHYSICAL",
-  "generated_at": "2026-09-02T18:34:52Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:46Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "criterion_altered": false
 }

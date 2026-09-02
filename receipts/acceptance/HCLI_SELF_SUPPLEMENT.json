@@ -12,7 +12,7 @@
     "qualname": "admit_evidence_children",
     "module": "hcli.agentos.resident",
     "file": "/Users/scammermike/Downloads/hawking/hcli/agentos/resident.py",
-    "line": 723
+    "line": 736
   },
   "invocations": [
     {
@@ -45,11 +45,11 @@
             {
               "id": "child",
               "description": "inspect the verified parent receipt",
-              "resource_class": "CPU_SHARED",
-              "role": "research"
+              "role": "research",
+              "resource_class": "CPU_SHARED"
             }
           ],
-          "at": 1788374093.825019
+          "at": 1788374687.694252
         }
       ]
     },
@@ -102,11 +102,11 @@
             {
               "id": "child",
               "description": "inspect the verified parent receipt",
-              "resource_class": "CPU_SHARED",
-              "role": "research"
+              "role": "research",
+              "resource_class": "CPU_SHARED"
             }
           ],
-          "at": 1788374093.825019
+          "at": 1788374687.694252
         }
       ]
     },
@@ -135,7 +135,7 @@
   },
   "schema": "hawking.acceptance.gate.v1",
   "gate": "HCLI_SELF_SUPPLEMENT",
-  "generated_at": "2026-09-02T18:34:53Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:47Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "criterion_altered": false
 }

@@ -71,10 +71,10 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 59.742,
+  "elapsed_ms": 59.913,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_TRUTH_LEDGER",
-  "generated_at": "2026-09-02T18:34:59Z",
+  "generated_at": "2026-09-02T18:44:53Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
@@ -85,14 +85,14 @@
       "symbol": "tools.headless.vmcp_lattice_disposition._load_vm"
     },
     {
-      "elapsed_ms": 51.767,
+      "elapsed_ms": 51.8,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition.prove_truth_ledger"
     },
     {
-      "elapsed_ms": 3.157,
+      "elapsed_ms": 3.29,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -106,14 +106,14 @@
       "symbol": "visionmcp.evidence_graph.graph.EvidenceGraph.support_for"
     },
     {
-      "elapsed_ms": 0.471,
+      "elapsed_ms": 0.415,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worldir.canonical.content_digest"
     },
     {
-      "elapsed_ms": 0.405,
+      "elapsed_ms": 0.416,
       "error": null,
       "kind": "call",
       "raised": false,

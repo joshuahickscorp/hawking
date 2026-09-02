@@ -74,35 +74,35 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 325.739,
+  "elapsed_ms": 330.552,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_STATE_LATTICE",
-  "generated_at": "2026-09-02T18:34:59Z",
+  "generated_at": "2026-09-02T18:44:53Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.04,
+      "elapsed_ms": 0.042,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition.locate_visionmcp_src"
     },
     {
-      "elapsed_ms": 24.684,
+      "elapsed_ms": 25.838,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._load_vm"
     },
     {
-      "elapsed_ms": 151.468,
+      "elapsed_ms": 157.999,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.vmcp_lattice_disposition._name_scan"
     },
     {
-      "elapsed_ms": 145.093,
+      "elapsed_ms": 142.446,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -172,7 +172,7 @@
       "symbol": "tools.headless.vmcp_lattice_disposition.prove_performance_ledger"
     },
     {
-      "elapsed_ms": 0.016,
+      "elapsed_ms": 0.013,
       "error": null,
       "kind": "call",
       "raised": false,

@@ -10,8 +10,8 @@
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_RESTART_COHERENCE",
-  "generated_at": "2026-09-02T18:34:52Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:46Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "backend_task_id_survived": true,
@@ -32,9 +32,9 @@
       "malformed_json": true,
       "network_unavailable": true,
       "nonsense_model": true,
-      "recovery": false
+      "recovery": true
     },
-    "run_recovery_gate_status": "FAILED",
+    "run_recovery_gate_status": "PASSED",
     "stuck_completed_after_resume": true,
     "stuck_interrupted": true,
     "stuck_status": "interrupted",
@@ -49,7 +49,7 @@
     "Catalog symbol run_recovery_gate was invoked on a disposable fixture (it SIGKILLs only its own host/resident).",
     "stuck is recovered as INTERRUPTED, not failed: a crash is not a verifier failure."
   ],
-  "output": "phase one SIGKILL rc=-9 mission=restart-fixed-id\nlock left=True recovered=True rec={'acquired_at': 1788374089.936343, 'pid': 20591, 'start_time': '1788374089.837375', 'unit_id': 'stuck'}\nfrom_workspace id=restart-fixed-id units=['done1', 'later', 'stuck'] done1=completed stuck=interrupted task=external-grok-task-1\nran=['later', 'stuck'] final={'done1': 'completed', 'later': 'completed', 'stuck': 'completed'}\nrun_recovery_gate status=FAILED checks={'recovery': False, 'malformed_json': True, 'network_unavailable': True, 'benchmark_rejected': True, 'nonsense_model': True}",
+  "output": "phase one SIGKILL rc=-9 mission=restart-fixed-id\nlock left=True recovered=True rec={'acquired_at': 1788374683.747385, 'pid': 47377, 'start_time': '1788374683.648155', 'unit_id': 'stuck'}\nfrom_workspace id=restart-fixed-id units=['done1', 'later', 'stuck'] done1=completed stuck=interrupted task=external-grok-task-1\nran=['later', 'stuck'] final={'done1': 'completed', 'later': 'completed', 'stuck': 'completed'}\nrun_recovery_gate status=PASSED checks={'recovery': True, 'malformed_json': True, 'network_unavailable': True, 'benchmark_rejected': True, 'nonsense_model': True}",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

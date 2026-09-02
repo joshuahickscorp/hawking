@@ -34,77 +34,11 @@ from pathlib import Path
 MODEL = os.path.expanduser(
     "~/models/qwen3.8-27b-abliterated/Huihui-Qwen3.8-27B-abliterated-Q5_K.gguf")
 
-# Verbatim from hcli/engine.py _call_model (build-20260821-155332).
-SYSTEM = """You are the native HCLI local engineering worker.
-
-MODELS THINK.
-TOOLS KNOW.
-DISK STATE IS AUTHORITY.
-CONTEXT IS A CACHE.
-
-Return exactly one JSON object and nothing else.
-
-For a read-only request:
-{
-  "kind": "answer",
-  "content": "concise final answer",
-  "operations": [],
-  "tests": []
-}
-
-For a requested code/file change:
-{
-  "kind": "mutation",
-  "content": "concise description of what changed",
-  "operations": [
-    {
-      "op": "replace|create|replace_file|insert_before|insert_after|append",
-      "path": "workspace/relative/path",
-      "old_text": "exact anchor when required",
-      "new_text": "new content"
-    }
-  ],
-  "tests": ["optional safe workspace-relative Python test paths"]
-}
-
-Rules:
-- maximum 20 operations
-- paths are workspace-relative
-- never modify .git/**
-- never return shell commands as mutation authority
-- use exact old_text anchors
-- use create only for nonexistent files
-- if asked only a question, do not mutate
-- do not include reasoning_content, hidden reasoning, chain-of-thought, or <think>
-"""
-
-RESULT_SCHEMA = {
-    "type": "object",
-    "properties": {
-        "kind": {"type": "string", "enum": ["answer", "mutation"]},
-        "content": {"type": "string"},
-        "operations": {
-            "type": "array",
-            "maxItems": 20,
-            "items": {
-                "type": "object",
-                "properties": {
-                    "op": {"type": "string",
-                           "enum": ["replace", "create", "replace_file",
-                                    "insert_before", "insert_after", "append"]},
-                    "path": {"type": "string"},
-                    "old_text": {"type": "string"},
-                    "new_text": {"type": "string"},
-                },
-                "required": ["op", "path"],
-                "additionalProperties": False,
-            },
-        },
-        "tests": {"type": "array", "items": {"type": "string"}},
-    },
-    "required": ["kind", "content", "operations", "tests"],
-    "additionalProperties": False,
-}
+# NOT a copy. The hand-copied duplicate that lived here drifted from the live
+# engine -- it had no `tool_calls` at all, so the instrument understated the very
+# failure class it exists to measure. Import the live values; a probe that cannot
+# import the thing it probes has nothing worth reporting.
+from hcli.engine import HCLI_RESULT_SCHEMA as RESULT_SCHEMA, _SYSTEM_PROMPT as SYSTEM
 
 
 def extract_json(text: str):

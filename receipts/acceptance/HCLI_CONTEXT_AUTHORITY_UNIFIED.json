@@ -43,7 +43,7 @@
     "usable_input_tokens": 2816,
     "source": "fallback:DEFAULT_PER_SLOT_CTX",
     "model_ceiling": null,
-    "object_id": 4418499792
+    "object_id": 4413764816
   },
   "root_preflight": {
     "ok": true,
@@ -53,7 +53,7 @@
     "shortfall": 0,
     "kind": "root",
     "remedy": "request fits: demand 8210 <= per_request_ctx 11008 (n_parallel=3, total_ctx=32768, source=fallback:DEFAULT_PER_SLOT_CTX)",
-    "budget_object_id": 4418499792,
+    "budget_object_id": 4413764816,
     "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
   },
   "worker_preflight": {
@@ -64,7 +64,7 @@
     "shortfall": 0,
     "kind": "worker",
     "remedy": "request fits: demand 8207 <= per_request_ctx 11008 (n_parallel=3, total_ctx=32768, source=fallback:DEFAULT_PER_SLOT_CTX)",
-    "budget_object_id": 4418499792,
+    "budget_object_id": 4413764816,
     "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
   },
   "oversize_root_preflight": {
@@ -75,7 +75,7 @@
     "shortfall": 8193,
     "kind": "root",
     "remedy": "demand 19201 exceeds per-request context 11008 by 8193 tokens (kind=root). Levers: reduce n_parallel (currently 3; n_parallel=1 yields per_request_ctx 32768); raise HCLI_CTX_SIZE/--ctx-size (currently 32768); or shrink inlined evidence so prompt_tokens fall below usable_input_tokens 2816.",
-    "budget_object_id": 4418499792,
+    "budget_object_id": 4413764816,
     "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
   },
   "worker_packet_preflight": {
@@ -86,7 +86,7 @@
     "shortfall": 0,
     "kind": "worker",
     "remedy": "request fits: demand 8267 <= per_request_ctx 11008 (n_parallel=3, total_ctx=32768, source=fallback:DEFAULT_PER_SLOT_CTX)",
-    "budget_object_id": 4418499792,
+    "budget_object_id": 4413764816,
     "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
   },
   "checks": {
@@ -114,7 +114,7 @@
   },
   "schema": "hawking.acceptance.gate.v1",
   "gate": "HCLI_CONTEXT_AUTHORITY_UNIFIED",
-  "generated_at": "2026-09-02T18:34:52Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:46Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "criterion_altered": false
 }

@@ -74,7 +74,7 @@
   },
   "schema": "hawking.acceptance.gate.v1",
   "gate": "HCLI_CONTEXT_FOCUSED_WORKUNITS",
-  "generated_at": "2026-09-02T18:34:52Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:46Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "criterion_altered": false
 }

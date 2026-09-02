@@ -2,7 +2,7 @@
   "blocker": null,
   "checks": [
     {
-      "detail": "ee3d49fd196e23bca61d43e9ecb70bf6225d8d6abe50b51360428bee0ff202de",
+      "detail": "f9940b25a62d67ac576b2941e8cfb027422731cfb8dd40ac45435b7df7233139",
       "id": "observe_file_called",
       "ok": true
     },
@@ -40,9 +40,9 @@
     },
     {
       "detail": {
-        "capture_id": "ee3d49fd196e23bca61d43e9ecb70bf6225d8d6abe50b51360428bee0ff202de",
+        "capture_id": "f9940b25a62d67ac576b2941e8cfb027422731cfb8dd40ac45435b7df7233139",
         "failures": [],
-        "manifest_digest": "0635d8183ca2734606874c87402a39db20336f0981668e13aec3696b180bdc90",
+        "manifest_digest": "ff00631980e540b2502953b61cbb7ac8c5cb5d5181a6b5043aa43d49d49616a2",
         "scope": "stored_capture",
         "status": "COMPLETE",
         "valid": true,
@@ -89,28 +89,28 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 23.737,
+  "elapsed_ms": 29.373,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_RECEIPT_LAW",
-  "generated_at": "2026-09-02T18:34:59Z",
+  "generated_at": "2026-09-02T18:44:53Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 18.585,
+      "elapsed_ms": 22.854,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
     },
     {
-      "elapsed_ms": 1.534,
+      "elapsed_ms": 1.706,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.verify_capture"
     },
     {
-      "elapsed_ms": 0.696,
+      "elapsed_ms": 0.808,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -128,16 +128,16 @@
         "restored": true,
         "stale_after_mutation": true
       },
-      "elapsed_ms": 18.585,
+      "elapsed_ms": 22.854,
       "input_hashes": [
         "abafd07705042100aa13fabf93a32842dff4a55ef0971f91e9f827726c39636e"
       ],
       "input_ids": [
-        "file:/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-f57zfoic/claim.txt"
+        "file:/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-_dhql9ex/claim.txt"
       ],
       "invocation": {
         "adapter": "file.eye",
-        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-f57zfoic/claim.txt"
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-receipt-_dhql9ex/claim.txt"
       },
       "limitations": [
         "none"
@@ -146,9 +146,9 @@
         "abafd07705042100aa13fabf93a32842dff4a55ef0971f91e9f827726c39636e"
       ],
       "output_ids": [
-        "ee3d49fd196e23bca61d43e9ecb70bf6225d8d6abe50b51360428bee0ff202de"
+        "f9940b25a62d67ac576b2941e8cfb027422731cfb8dd40ac45435b7df7233139"
       ],
-      "started_at": 1788374099.451774,
+      "started_at": 1788374693.532449,
       "status": "COMPLETE",
       "tool": "file.eye",
       "verifier": {
@@ -162,7 +162,7 @@
   },
   "output": {
     "observe": {
-      "capture_id": "ee3d49fd196e23bca61d43e9ecb70bf6225d8d6abe50b51360428bee0ff202de",
+      "capture_id": "f9940b25a62d67ac576b2941e8cfb027422731cfb8dd40ac45435b7df7233139",
       "status": "COMPLETE"
     }
   },

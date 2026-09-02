@@ -10,8 +10,8 @@
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_PERSISTENCE_SINGLE_AUTHORITY",
-  "generated_at": "2026-09-02T18:34:48Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:42Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "acquire_after_release": true,
@@ -20,7 +20,7 @@
       "Goal/DAG": {
         "canary": true,
         "canonical_store": ".hcli/dag.json plus mission/state.json compiled",
-        "generation_checksum": "53a689f3-0519-4d50-90f9-04d1ef755f8a:1788374088.538190",
+        "generation_checksum": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
         "reader": "Mission.from_workspace",
         "reconciliation_rule": "same checkpoint_id on both files",
         "restart_path": "Mission.from_workspace",
@@ -54,7 +54,7 @@
         "canary": "units.u.id == 'u' and checkpoint_id shared",
         "canonical_store": ".hcli/dag.json",
         "checkpoint_order": "DAG first, then mission/state.json",
-        "generation_checksum": "53a689f3-0519-4d50-90f9-04d1ef755f8a:1788374088.538190",
+        "generation_checksum": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
         "reader": "Scheduler.from_workspace / DagStore.load",
         "reconciliation_rule": "DAG is authoritative; state.json is the fallback copy",
         "restart_path": "DagStore.load(recover_running=True)",
@@ -77,7 +77,7 @@
         "writer": "WorkUnit field persisted by DagStore.save"
       },
       "background jobs": {
-        "canary": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-dyyk4rcp/m/.hcli/background/jobs",
+        "canary": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-6py2town/m/.hcli/background/jobs",
         "canonical_store": ".hcli/background/jobs/job-*.json",
         "reader": "BackgroundJobStore.inspect/list",
         "reconciliation_rule": "same job_id, never a silent second supervisor",
@@ -88,7 +88,7 @@
         "canary": true,
         "canonical_store": ".hcli/dag.json and .hcli/mission/state.json",
         "checkpoint_order": "DAG then state; same checkpoint_id",
-        "generation_checksum": "53a689f3-0519-4d50-90f9-04d1ef755f8a:1788374088.538190",
+        "generation_checksum": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
         "reader": "Mission.from_workspace prefers DAG",
         "reconciliation_rule": "crash between writes: recover the DAG generation, never a zip of both",
         "restart_path": "from_workspace",
@@ -144,7 +144,7 @@
       },
       "steering": {
         "canary": true,
-        "canonical_store": ".hcli/steering/53a689f3-0519-4d50-90f9-04d1ef755f8a.json",
+        "canonical_store": ".hcli/steering/e3197325-431f-46c0-8a05-ab4a99b69dff.json",
         "reader": "SteeringQueue._load",
         "reconciliation_rule": "steer changes future work, not verified history",
         "restart_path": "Mission.from_workspace reconstructs the queue",
@@ -159,7 +159,7 @@
         "writer": "Scheduler.complete (refuses UnverifiedCompletion)"
       }
     },
-    "checkpoint_id": "53a689f3-0519-4d50-90f9-04d1ef755f8a:1788374088.538190",
+    "checkpoint_id": "e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
     "child_acquired_while_held": false,
     "d3_fields_audited": [
       "Goal/DAG",
@@ -211,7 +211,7 @@
     "hcli.persist.atomic_write_text is the crash-safe writer (tmp + fsync + os.replace).",
     "WorkUnit state has one authoritative store (dag.json); state.json is a stamped copy."
   ],
-  "output": "parent acquire=True child_stdout='CHILD False\\n' child_got=False child_blocked_until_timeout=False\nacquire after release=True\nrace rc=None out='' err=TimeoutExpired timed_out=True\ncheckpoint /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-dyyk4rcp/m/.hcli/mission/state.json shared_id=True id=53a689f3-0519-4d50-90f9-04d1ef755f8a:1788374088.538190",
+  "output": "parent acquire=True child_stdout='CHILD False\\n' child_got=False child_blocked_until_timeout=False\nacquire after release=True\nrace rc=None out='' err=TimeoutExpired timed_out=True\ncheckpoint /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-persist-6py2town/m/.hcli/mission/state.json shared_id=True id=e3197325-431f-46c0-8a05-ab4a99b69dff:1788374682.336035",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {

@@ -28,12 +28,12 @@
       "ok": true
     },
     {
-      "detail": "cda81795a73577c5e8897ca65d862631030a0bf4071acbafa13562aaf71a7cf4",
+      "detail": "bb451ae523f8427b6c2d3f868aaa8f4c40952e48a32ef95eccc6f1443f99e880",
       "id": "observe_file_called",
       "ok": true
     },
     {
-      "detail": "493592b3b5ab16522aeb6ea32d55041ae3779aa62d77a1d934c49e4d91ba1165",
+      "detail": "0ade57e0d3207d585a922158297e3c1eafdcc1b4e7b1efadb93d988ffa7c21b3",
       "id": "digest_of_canonical_sensory_state",
       "ok": true
     },
@@ -64,28 +64,35 @@
     "weakened": false
   },
   "criterion_weakened": false,
-  "elapsed_ms": 29.373,
+  "elapsed_ms": 29.83,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "VMCP_DEEP_DIGEST",
-  "generated_at": "2026-09-02T18:34:59Z",
+  "generated_at": "2026-09-02T18:44:53Z",
   "gpu_authority": false,
   "invoked_symbols": [
     {
-      "elapsed_ms": 0.14,
+      "elapsed_ms": 0.134,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.future.vmcp.see"
     },
     {
-      "elapsed_ms": 19.308,
+      "elapsed_ms": 20.042,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "tools.headless.hcli_vmcp_integration.observe_file"
     },
     {
-      "elapsed_ms": 0.009,
+      "elapsed_ms": 0.008,
+      "error": null,
+      "kind": "call",
+      "raised": false,
+      "symbol": "visionmcp.worldir.canonical.content_digest"
+    },
+    {
+      "elapsed_ms": 0.004,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -99,21 +106,14 @@
       "symbol": "visionmcp.worldir.canonical.content_digest"
     },
     {
-      "elapsed_ms": 0.003,
+      "elapsed_ms": 0.006,
       "error": null,
       "kind": "call",
       "raised": false,
       "symbol": "visionmcp.worldir.canonical.content_digest"
     },
     {
-      "elapsed_ms": 0.005,
-      "error": null,
-      "kind": "call",
-      "raised": false,
-      "symbol": "visionmcp.worldir.canonical.content_digest"
-    },
-    {
-      "elapsed_ms": 0.654,
+      "elapsed_ms": 0.662,
       "error": null,
       "kind": "call",
       "raised": false,
@@ -121,10 +121,10 @@
     }
   ],
   "measured": {
-    "capture_id": "cda81795a73577c5e8897ca65d862631030a0bf4071acbafa13562aaf71a7cf4",
+    "capture_id": "bb451ae523f8427b6c2d3f868aaa8f4c40952e48a32ef95eccc6f1443f99e880",
     "content_digest": "c2985c5ba6f7d2a55e768f92490ca09388e95bc4cccb9fdf11b15f4d42f93e73",
     "file_sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
-    "sensory_digest": "493592b3b5ab16522aeb6ea32d55041ae3779aa62d77a1d934c49e4d91ba1165"
+    "sensory_digest": "0ade57e0d3207d585a922158297e3c1eafdcc1b4e7b1efadb93d988ffa7c21b3"
   },
   "output": {
     "observe_status": "COMPLETE",
@@ -145,7 +145,7 @@
     "see": {
       "act": "see",
       "artifacts": [
-        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-kqbz4lp7/state.txt"
+        "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-w4ykepua/state.txt"
       ],
       "classification": {
         "container": "text",
@@ -154,7 +154,7 @@
         "magic": "63616e6f6e696361"
       },
       "container": "text",
-      "deep_digest": "d774c65ff0efdebbc6c871d01b6e86ef247e454dc011bec03ca89a0d7544dcf0",
+      "deep_digest": "a71ed40e795d4a23681b8a202a88552f068cf3aad2aff8cd87bb2ae2ac17910c",
       "empty_success": false,
       "evidence": [
         {
@@ -166,7 +166,7 @@
           },
           "hashed_bytes": 27,
           "mode": "0o100644",
-          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-kqbz4lp7/state.txt",
+          "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-w4ykepua/state.txt",
           "present": true,
           "sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
           "size": 27
@@ -191,12 +191,12 @@
       "next_actions": [],
       "note": "stdlib magic/header classification of a real local file; not CaptureBus, not Ghidra, not a GPU measurement",
       "organ": "file",
-      "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-kqbz4lp7/state.txt",
+      "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-digest-w4ykepua/state.txt",
       "present": true,
       "residuals": [],
       "sha256": "5981a04b1cf8f91257452311e14b8aacc90e911e1ba84a1ca4c8122263ed23b1",
       "size": 27,
-      "started_at": "2026-09-02T18:34:59Z",
+      "started_at": "2026-09-02T18:44:53Z",
       "status": "CONNECTED",
       "strings": [
         "canonical-sensory-state-v1"

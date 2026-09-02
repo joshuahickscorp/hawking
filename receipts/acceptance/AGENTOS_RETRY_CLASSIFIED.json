@@ -10,8 +10,8 @@
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_RETRY_CLASSIFIED",
-  "generated_at": "2026-09-02T18:32:47Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:42:41Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "classified_samples": {

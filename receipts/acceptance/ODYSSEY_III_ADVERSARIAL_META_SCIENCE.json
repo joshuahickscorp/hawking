@@ -14,7 +14,7 @@
   "criterion_altered": false,
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "ODYSSEY_III_ADVERSARIAL_META_SCIENCE",
-  "generated_at": "2026-09-02T18:34:54Z",
+  "generated_at": "2026-09-02T18:44:47Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "file": "tools/future/autonomy_scars.py",
@@ -112,10 +112,10 @@
         }
       ]
     },
-    "wall_s": 0.043
+    "wall_s": 0.046
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "cf10a6170d36eb62a3963baf6b20ed82a82ffaa7b780618662c70e6da1426846",
+  "seal_sha256": "626cb2c14a19ad48569eed12ecc07d39bfa02ac825b746e67d4b3d53380a9a41",
   "section_6_output": "broken laws, corrected priors, stronger verifiers, causal robustness",
   "verdict": "BLOCKED"
 }

@@ -10,7 +10,7 @@
   "criterion_altered": false,
   "evidence_tier": "STATIC",
   "gate": "ODYSSEY_I_DISCOVERY",
-  "generated_at": "2026-09-02T18:34:53Z",
+  "generated_at": "2026-09-02T18:44:47Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "file": "tools/odyssey_ctl.py",
@@ -43,7 +43,7 @@
         "stored_bpw": 16.0,
         "total_bytes": 15171309760,
         "total_params": 7585654880,
-        "wall_s": 0.004
+        "wall_s": 0.003
       },
       "qwen3_0.6b": {
         "arch": "Qwen3ForCausalLM",
@@ -204,10 +204,10 @@
         "read_only": true
       }
     },
-    "wall_s": 0.056
+    "wall_s": 0.027
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "56f47dad6ecf57a113b2c346742131ac4402b48c18ad088666bdb02c8aca93a5",
+  "seal_sha256": "e6f9576222b2f4f05e26940984dcad3f009f4855552c6176915e27d197dcc643",
   "section_6_output": "first-principles model/device laws, scars, genomes, ModelLake school",
   "verdict": "ACCEPTED"
 }

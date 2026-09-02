@@ -34,7 +34,7 @@
       {
         "path": "notes.txt",
         "size": 13,
-        "mtime_ns": 1788374092603567598,
+        "mtime_ns": 1788374686383227810,
         "sha256": "92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19"
       }
     ],
@@ -42,17 +42,17 @@
       "gathered": {
         "path": "notes.txt",
         "size": 13,
-        "mtime_ns": 1788374092603567598,
+        "mtime_ns": 1788374686383227810,
         "sha256": "92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19"
       },
       "now": {
         "path": "notes.txt",
         "size": 13,
-        "mtime_ns": 1788374092603988224,
+        "mtime_ns": 1788374686383733354,
         "sha256": "b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
       },
       "stale_raised": true,
-      "stale_message": "stale evidence refused: notes.txt gathered size=13 mtime_ns=1788374092603567598 sha256=92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19; now size=13 mtime_ns=1788374092603988224 sha256=b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
+      "stale_message": "stale evidence refused: notes.txt gathered size=13 mtime_ns=1788374686383227810 sha256=92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19; now size=13 mtime_ns=1788374686383733354 sha256=b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
     },
     "recompiled_sha256": "b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
   },
@@ -69,13 +69,13 @@
   "verdict": "ACCEPTED",
   "blocker": null,
   "output": {
-    "stale_message": "stale evidence refused: notes.txt gathered size=13 mtime_ns=1788374092603567598 sha256=92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19; now size=13 mtime_ns=1788374092603988224 sha256=b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371",
+    "stale_message": "stale evidence refused: notes.txt gathered size=13 mtime_ns=1788374686383227810 sha256=92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19; now size=13 mtime_ns=1788374686383733354 sha256=b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371",
     "gathered_sha256": "92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19",
     "now_sha256": "b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
   },
   "schema": "hawking.acceptance.gate.v1",
   "gate": "HCLI_CONTEXT_INVALIDATION",
-  "generated_at": "2026-09-02T18:34:52Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:46Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "criterion_altered": false
 }

@@ -14,7 +14,7 @@
   "criterion_altered": false,
   "evidence_tier": "STATIC",
   "gate": "ODYSSEY_II_TRANSFER",
-  "generated_at": "2026-09-02T18:34:54Z",
+  "generated_at": "2026-09-02T18:44:47Z",
   "generated_by": "tools.acceptance.odyssey.run",
   "invoked_symbol": {
     "file": "tools/future/qualification_pipeline.py",
@@ -82,7 +82,7 @@
     "wall_s": 0.033
   },
   "schema": "hawking.acceptance.gate.v1",
-  "seal_sha256": "77a9f3c6baf751c88291a4c1a187165e55425af3e2786ad85893a7b06f943923",
+  "seal_sha256": "fed610f7eee97ad12f0c57b46e25788d6c3b2e2225abc6b610414e65e9b417d9",
   "section_6_output": "measurable reduction in experiments/time/cost on unseen models and devices",
   "verdict": "BLOCKED"
 }

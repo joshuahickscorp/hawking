@@ -10,8 +10,8 @@
   },
   "evidence_tier": "FUNCTIONAL_SIM",
   "gate": "AGENTOS_CHECKPOINT_ATOMICITY",
-  "generated_at": "2026-09-02T18:34:49Z",
-  "git_head": "7d64280068d7f1e1d239e3ffb783a10af485d037",
+  "generated_at": "2026-09-02T18:44:43Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
   "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
   "measured": {
     "atomic_write_json_symbol": "hcli.persist.atomic_write_json",
@@ -50,7 +50,7 @@
     "Mission.checkpoint writes DAG first. SIGKILL between the two files leaves them disagreeing; Mission.from_workspace recovers the DAG generation (running/interrupted + backend_task_id), not a zip with the stale pending state.",
     "Catalog symbol write_program_checkpoint was invoked with emit= to a temp path."
   ],
-  "output": "atomic_write kill={'pid': 20539, 'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True, 'exited_before_kill': False, 'stderr_tail': ''} live_head='OLD_INTACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' tmp_leftovers=1\nbetween kill={'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True} dag_status=running dag_task=task-GEN1 state_status=pending state_task=None disagree=True\nrecovered status=interrupted task=task-GEN1 idle=pending coherent=True mixture=False\nwrite_program_checkpoint schema=hcli.agentos.program_checkpoint.v1 bytes=871146 path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-ckpt-csubjm9t/program_checkpoint.json\ntwo checkpoints id-probe:1788374089.821573 -> id-probe:1788374089.822204 dag=id-probe:1788374089.822204 ids_ok=True",
+  "output": "atomic_write kill={'pid': 47231, 'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True, 'exited_before_kill': False, 'stderr_tail': ''} live_head='OLD_INTACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' tmp_leftovers=1\nbetween kill={'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True} dag_status=running dag_task=task-GEN1 state_status=pending state_task=None disagree=True\nrecovered status=interrupted task=task-GEN1 idle=pending coherent=True mixture=False\nwrite_program_checkpoint schema=hcli.agentos.program_checkpoint.v1 bytes=871147 path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-ckpt-kzeja_5u/program_checkpoint.json\ntwo checkpoints id-probe:1788374683.629921 -> id-probe:1788374683.630679 dag=id-probe:1788374683.630679 ids_ok=True",
   "schema": "hawking.acceptance.gate.v1",
   "symbols_invoked": [
     {
