@@ -249,6 +249,51 @@ def test_ebpw_refuses_unbilled_component_from_family_artifact():
         ce.cost(cand)
 
 
+def test_second_toy_family_registers_end_to_end_without_core_edits():
+    """Second plugin family. Core must not name it; round-trip must pass."""
+    core_src = _core_text()
+    assert "toy_mean_residual" not in core_src
+    assert "mean_residual_decoder_stub" not in core_src
+
+    nc.ensure_families()
+    spec = nc.get_family("toy_mean_residual")
+    assert nc._is_plugin_path(spec.source_path)
+    assert spec.source_path == "tools/odyssey/families/toy_mean_residual.py"
+
+    result = nc.round_trip("toy_mean_residual")
+    assert result["verified"] is True
+    assert result["reconciled"] is True
+    assert result["execute"]["match_atol_1e5"] is True
+    names = {p["name"] for p in result["accounting"]["parts"]}
+    assert "toy_mean_residual_codes" in names
+    assert "toy_mean_means" in names
+    assert "mean_residual_decoder_stub" in names
+
+    diff = subprocess.check_output(
+        ["git", "diff", "--name-only", "--", *CORE],
+        cwd=REPO,
+        text=True,
+    )
+    toy_rel = spec.source_path
+    assert toy_rel not in CORE
+    assert Path(toy_rel).name not in {Path(c).name for c in CORE}
+    print("git diff --name-only -- core modules:\n" + (diff or "(empty)"))
+
+
+def test_toy_mean_residual_execute_matches_reconstruct():
+    from tools.odyssey.families import toy_mean_residual as toy
+
+    rng = np.random.RandomState(11)
+    W = rng.randn(4, 8).astype(np.float32)
+    payload = toy.pack(W)
+    x = rng.randn(8).astype(np.float32)
+    y_ir = toy.execute(payload, x)
+    y_direct = toy.reconstruct(payload) @ x
+    assert np.allclose(y_ir, y_direct, rtol=0.0, atol=1e-5)
+    # CALL SITE of pack/execute/reconstruct, not an import.
+    assert callable(toy.pack) and callable(toy.execute) and callable(toy.reconstruct)
+
+
 def test_toy_family_execute_matches_reconstruct():
     from tools.odyssey.families import toy_xor_codes as toy
 

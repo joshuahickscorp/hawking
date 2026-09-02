@@ -145,6 +145,56 @@ def test_build_runs_both_evaluators_and_seals_receipt():
     _assert_no_hardware_claims(doc)
 
 
+def test_representation_family_hook_scores_the_same_axes():
+    """CALL SITE: score_representation_family. An import is not a score."""
+    axes = {k: 1 if k not in {"execute_match", "chain_complete", "is_sub2_executable",
+                               "reconstructs_dense_parent", "consumes_representation_directly"}
+            else True
+            for k in ce.REPRESENTATION_AXES}
+    axes["complete_ebpw"] = 4.0
+    axes["stored_bytes"] = 100
+    axes["stored_bpw"] = 4.0
+    axes["billed_ms"] = 0.1
+    axes["executable_bytes"] = 100
+    axes["is_sub2_executable"] = False
+    axes["reconstructs_dense_parent"] = False
+    axes["consumes_representation_directly"] = True
+    axes["execute_match"] = True
+    axes["chain_complete"] = True
+    incumbent = dict(axes)
+    candidate = dict(axes)
+    candidate["complete_ebpw"] = 3.0
+    candidate["stored_bytes"] = 80
+    candidate["stored_bpw"] = 3.2
+    candidate["billed_ms"] = 0.05
+    candidate["executable_bytes"] = 80
+    # CALL SITE of the hook, not an import.
+    score = ce.score_representation_family(
+        candidate_id="cand",
+        candidate=candidate,
+        incumbent_id="inc",
+        incumbent=incumbent,
+    )
+    assert score["same_axes_as_incumbent"] is True
+    assert score["subject_kind"] == "representation"
+    assert score["axes"] == list(ce.REPRESENTATION_AXES)
+    assert score["per_axis"]["complete_ebpw"]["candidate_smaller"] is True
+    assert score["hardcoded_benchmark"] is None
+
+
+def test_representation_family_hook_refuses_a_partial_axis_set():
+    cand = {k: 0 for k in ce.REPRESENTATION_AXES}
+    inc = {k: 0 for k in ce.REPRESENTATION_AXES}
+    del cand["billed_ms"]
+    with pytest.raises(ce.EvalRefused, match="missing"):
+        ce.score_representation_family(
+            candidate_id="cand",
+            candidate=cand,
+            incumbent_id="inc",
+            incumbent=inc,
+        )
+
+
 def test_registry_refuses_unknown_evaluator():
     reg = ce.default_registry()
     with pytest.raises(ce.EvalRefused, match="no evaluator"):
