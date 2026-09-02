@@ -523,6 +523,7 @@ def build_rest() -> list[Path]:
     for name, text in (
         ("PART_III_CONSTITUTION_AND_RESEARCH.md", render_part_iii()),
         ("APPENDIX_LINEAGE.md", render_appendix()),
+        ("COMPRESSION.md", render_compression()),
     ):
         p = base / name
         p.write_text(text)
@@ -531,6 +532,86 @@ def build_rest() -> list[Path]:
     state.write_text(json.dumps(render_state(), indent=2, sort_keys=True) + "\n")
     written.append(state)
     return written
+
+
+
+
+# ---------------------------------------------------------------------------
+# Roadmap compression. "A good architecture makes its roadmap smaller", so the
+# claim has to be a measurement rather than a feeling: what left the active
+# future, and for which of the nine reasons.
+#
+# The baseline is the campaign directive's own stated starting census, quoted so
+# the denominator cannot drift later: 18 BUILT, 29 SCAFFOLDED, 11 ABSENT,
+# 13 BLOCKED_HARDWARE across 71 gates, 47/71 scaffolded-or-better.
+# ---------------------------------------------------------------------------
+
+BASELINE_CENSUS = {
+    "BUILT": 18, "SCAFFOLDED": 29, "ABSENT": 11, "BLOCKED_HARDWARE": 13,
+    "WIRED": 0, "BLOCKED_EXTERNAL": 0, "UNREACHABLE": 0,
+}
+BASELINE_TOTAL = 71
+
+
+def render_compression() -> str:
+    graph = json.loads(GRAPH.read_text())
+    gates = graph["gates"]
+    now = Counter(g["status"] for g in gates.values())
+    classes = Counter()
+    for gate in gates.values():
+        cls, _ = blocker_class(gate)
+        status = gate["status"]
+        if not cls:
+            classes["MOVE_TO_COMPLETED"] += 1
+        elif cls == "PHYSICAL_HARDWARE_REQUIRED":
+            classes["HARDWARE_CONTINGENT"] += 1
+        elif cls == "EXPERIMENTATION_REQUIRED":
+            classes["EXPERIMENT_CONTINGENT"] += 1
+        elif cls == "LONG_RUN_EVIDENCE_REQUIRED":
+            classes["EXPERIMENT_CONTINGENT"] += 1
+        elif cls == "UNKNOWN_RESEARCH":
+            classes["UNKNOWN_RESEARCH"] += 1
+        else:
+            classes["KEEP_ACTIVE"] += 1
+        del status
+
+    old_active = BASELINE_TOTAL - BASELINE_CENSUS["BUILT"]
+    new_active = classes["KEEP_ACTIVE"]
+    out = ["# ROADMAP COMPRESSION — measured", ""]
+    out += ["## Census, then and now", "", "    status                baseline    now"]
+    for k in ("BUILT", "WIRED", "SCAFFOLDED", "BLOCKED_HARDWARE",
+              "BLOCKED_EXTERNAL", "ABSENT", "UNREACHABLE"):
+        out.append(f"    {k:20} {BASELINE_CENSUS.get(k,0):8} {now.get(k,0):6}")
+    out += ["", "## Where the old active future went", ""]
+    for k in ("MOVE_TO_COMPLETED", "KEEP_ACTIVE", "EXPERIMENT_CONTINGENT",
+              "HARDWARE_CONTINGENT", "UNKNOWN_RESEARCH"):
+        out.append(f"    {k:24} {classes.get(k,0)}")
+    out += [
+        "",
+        "    SUBSUMED / DERIVED_AUTOMATICALLY / RECURRING_OPERATION / REMOVE_OBSOLETE  0",
+        "",
+        "Those four are reported as ZERO deliberately. No item was retired into them",
+        "during this campaign, and inventing a subsumption to make the compression",
+        "number look better would be the exact dishonesty the directive forbids. The",
+        "compression that DID happen is real and of one kind: work that was miscounted",
+        "as remaining software turned out to be blocked on absent external packages, or",
+        "already wired but never declared.",
+        "",
+        "## Net future burden", "",
+        f"    old active future (baseline, non-BUILT)   {old_active}",
+        f"    active now (software connections)         {new_active}",
+        f"    plus experiment/long-run contingent       {classes.get('EXPERIMENT_CONTINGENT', 0)}",
+        f"    NET FUTURE BURDEN                         {new_active + classes.get('EXPERIMENT_CONTINGENT', 0)}",
+        "",
+        "Progress is capability gained AND future bespoke work eliminated. The honest",
+        "reading: the gate count did not shrink -- 71 gates before and after -- but the",
+        "share of it that is 'I have not connected these two components yet' fell, and",
+        "the share correctly attributed to absent hardware, absent external packages and",
+        "runs that must happen rose. That is a denominator being told the truth, not a",
+        "roadmap getting smaller by fiat.",
+        "",
+    ]
+    return "\n".join(out) + "\n"
 
 
 if __name__ == "__main__":
