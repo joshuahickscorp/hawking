@@ -1,9 +1,7 @@
 """Git-backed source view.
 
 This worktree is a sparse checkout. A path missing from disk is not evidence
-the file does not exist. Default reads go: overlay -> HEAD blob. Dirty
-working-tree bytes are invisible unless SourceView(source='worktree') is
-constructed explicitly.
+the file does not exist. Reads go: overlay -> working tree -> `git show HEAD`.
 """
 from __future__ import annotations
 
@@ -12,6 +10,16 @@ from pathlib import Path
 from typing import Iterable
 
 REPO = Path(__file__).resolve().parents[2]
+
+_HEAD_COMMIT: str | None = None
+_HEAD_PATHS: frozenset[str] | None = None
+_BLOB_CACHE: dict[tuple[str, str], str | None] = {}
+# Keyed by SOURCE, not global. A SourceView can read HEAD blobs or the working
+# tree, and those are DIFFERENT file sets: `ls-tree HEAD` omits untracked files,
+# `ls-files` includes staged-but-uncommitted ones. A single global cache let
+# whichever view ran first decide what every later view saw, which is the
+# order-dependent-verdict bug removed in lane s3. Do not collapse this back.
+_TRACKED_PY_BY_SOURCE: dict[str, list[str]] = {}
 
 
 def _git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
@@ -24,52 +32,129 @@ def _git(*args: str, check: bool = True) -> subprocess.CompletedProcess[str]:
 
 
 def head_commit() -> str:
-    return _git("rev-parse", "HEAD").stdout.strip()
+    global _HEAD_COMMIT
+    if _HEAD_COMMIT is None:
+        _HEAD_COMMIT = _git("rev-parse", "HEAD").stdout.strip()
+    return _HEAD_COMMIT
+
+
+def head_paths() -> frozenset[str]:
+    """Every path in HEAD. One `ls-tree`, not one `cat-file -e` per exists()."""
+    global _HEAD_PATHS
+    if _HEAD_PATHS is None:
+        out = _git("ls-tree", "-r", "--name-only", "-z", "HEAD").stdout
+        _HEAD_PATHS = frozenset(p for p in out.split("\0") if p)
+    return _HEAD_PATHS
+
+
+def _parse_cat_file_batch(data: bytes, rels: list[str]) -> dict[str, str | None]:
+    out: dict[str, str | None] = {}
+    idx = 0
+    for rel in rels:
+        if idx >= len(data):
+            out[rel] = None
+            continue
+        nl = data.find(b"\n", idx)
+        if nl < 0:
+            out[rel] = None
+            break
+        header = data[idx:nl].decode("utf-8", errors="replace")
+        idx = nl + 1
+        if " missing" in header:
+            out[rel] = None
+            continue
+        parts = header.split()
+        if len(parts) < 3 or parts[1] != "blob":
+            out[rel] = None
+            continue
+        try:
+            size = int(parts[2])
+        except ValueError:
+            out[rel] = None
+            continue
+        blob = data[idx : idx + size]
+        idx = idx + size
+        if idx < len(data) and data[idx : idx + 1] == b"\n":
+            idx += 1
+        out[rel] = blob.decode("utf-8", errors="replace")
+    return out
+
+
+def _cat_file_batch(commit: str, rels: list[str]) -> dict[str, str | None]:
+    """One `git cat-file --batch` for many `commit:rel` blobs."""
+    if not rels:
+        return {}
+    specs = "\n".join(f"{commit}:{rel}" for rel in rels) + "\n"
+    try:
+        proc = subprocess.run(
+            ["git", "--no-optional-locks", "-C", str(REPO), "cat-file", "--batch"],
+            input=specs.encode("utf-8"),
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        return {rel: None for rel in rels}
+    return _parse_cat_file_batch(proc.stdout or b"", rels)
+
+
+def prefetch_blobs(commit: str, rels: Iterable[str]) -> None:
+    pending: list[str] = []
+    seen: set[str] = set()
+    for rel in rels:
+        if not rel or rel in seen:
+            continue
+        seen.add(rel)
+        if (commit, rel) in _BLOB_CACHE:
+            continue
+        pending.append(rel)
+    if not pending:
+        return
+    fetched = _cat_file_batch(commit, pending)
+    for rel, text in fetched.items():
+        _BLOB_CACHE[(commit, rel)] = text
 
 
 def blob_text(commit: str, rel: str) -> str | None:
     """File text at `commit:rel`, or None if that blob does not exist."""
     if not commit or not rel:
         return None
-    cp = _git("cat-file", "-p", f"{commit}:{rel}", check=False)
-    if cp.returncode != 0:
-        return None
-    return cp.stdout
+    key = (commit, rel)
+    if key in _BLOB_CACHE:
+        return _BLOB_CACHE[key]
+    prefetch_blobs(commit, [rel])
+    return _BLOB_CACHE.get(key)
 
 
 class SourceView:
-    """Readable snapshot of HEAD plus an optional overlay used by mutation checks.
+    """Readable snapshot of HEAD plus an optional overlay used by mutation checks."""
 
-    `source` is the file source of truth. Default ``head``: commit blobs, never
-    the working tree. Pass ``source='worktree'`` only for an explicit
-    working-tree view (overlay still wins).
-    """
-
-    def __init__(self, *, source: str = "head") -> None:
-        raw = (source or "head").strip().lower()
-        self.source = (
-            "worktree"
-            if raw in {"worktree", "working-tree", "working_tree", "disk", "wt"}
-            else "head"
-        )
+    def __init__(self) -> None:
         self.overlay: dict[str, str] = {}
         self._cache: dict[str, str] = {}
         self._exists_cache: dict[str, bool] = {}
         self._grep_cache: dict[str, list[str]] = {}
         self._py_files: list[str] | None = None
 
+    def head_paths(self) -> frozenset[str]:
+        return head_paths()
+
     def tracked_py(self) -> list[str]:
         if self._py_files is None:
-            if self.source == "head":
-                out = _git("ls-tree", "-r", "--name-only", "HEAD").stdout.splitlines()
-                self._py_files = [
-                    line
-                    for line in out
-                    if line.endswith(".py") and line and "__pycache__" not in line
-                ]
-            else:
-                out = _git("ls-files", "*.py").stdout.splitlines()
-                self._py_files = [line for line in out if line and "__pycache__" not in line]
+            key = str(self.source)
+            cached = _TRACKED_PY_BY_SOURCE.get(key)
+            if cached is None:
+                if key == "head":
+                    out = _git("ls-tree", "-r", "--name-only", "HEAD").stdout.splitlines()
+                    cached = [
+                        line
+                        for line in out
+                        if line.endswith(".py") and line and "__pycache__" not in line
+                    ]
+                else:
+                    out = _git("ls-files", "*.py").stdout.splitlines()
+                    cached = [line for line in out if line and "__pycache__" not in line]
+                _TRACKED_PY_BY_SOURCE[key] = cached
+            self._py_files = cached
         files = list(self._py_files)
         for rel in self.overlay:
             if rel.endswith(".py") and rel not in files:
@@ -81,30 +166,54 @@ class SourceView:
             return True
         if rel in self._exists_cache:
             return self._exists_cache[rel]
-        if self.source != "head":
-            disk = REPO / rel
-            if disk.is_file():
-                self._exists_cache[rel] = True
-                return True
-        cp = _git("cat-file", "-e", f"HEAD:{rel}", check=False)
-        present = cp.returncode == 0
+        disk = REPO / rel
+        if disk.is_file():
+            self._exists_cache[rel] = True
+            return True
+        present = rel in head_paths()
         self._exists_cache[rel] = present
         return present
+
+    def prefetch(self, rels: Iterable[str]) -> None:
+        """Fill the read/exists caches. Overlay wins; disk next; one cat-file batch for the rest."""
+        pending: list[str] = []
+        seen: set[str] = set()
+        for rel in rels:
+            if not rel or rel in seen:
+                continue
+            seen.add(rel)
+            if rel in self.overlay or rel in self._cache:
+                self._exists_cache[rel] = True
+                continue
+            disk = REPO / rel
+            if disk.is_file():
+                try:
+                    self._cache[rel] = disk.read_text(encoding="utf-8", errors="replace")
+                except OSError:
+                    self._cache[rel] = ""
+                self._exists_cache[rel] = True
+                continue
+            pending.append(rel)
+        if not pending:
+            return
+        commit = head_commit()
+        prefetch_blobs(commit, pending)
+        for rel in pending:
+            text = _BLOB_CACHE.get((commit, rel))
+            if text is None:
+                self._exists_cache[rel] = False
+                self._cache[rel] = ""
+            else:
+                self._exists_cache[rel] = True
+                self._cache[rel] = text
 
     def read(self, rel: str) -> str:
         if rel in self.overlay:
             return self.overlay[rel]
         if rel in self._cache:
             return self._cache[rel]
-        if self.source != "head":
-            disk = REPO / rel
-            if disk.is_file():
-                text = disk.read_text(encoding="utf-8", errors="replace")
-                self._cache[rel] = text
-                return text
-        text = blob_text("HEAD", rel) or ""
-        self._cache[rel] = text
-        return text
+        self.prefetch([rel])
+        return self._cache.get(rel, "")
 
     def grep_files(self, needle: str) -> list[str]:
         """Candidate files whose HEAD blob contains `needle`. Overlay files are always included."""
