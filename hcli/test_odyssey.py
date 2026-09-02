@@ -43,10 +43,23 @@ def test_status_ingests_real_mid_flight_state():
     assert "SEALED" in result["stdout"]
 
 
-def test_queue_value_economics_are_read_only_and_succeed():
-    for call in (odyssey.queue, odyssey.value, odyssey.economics):
-        result = call()
-        assert result["ok"] is True, (call.__name__, result)
+# One test that shelled out to the real driver three times in a row was a 3.0s
+# SERIAL critical path -- the longest single item in the suite once the hardware
+# probes were dealt with, and nothing can run faster than its slowest test.
+# Parametrised, the same three real invocations run on three workers at once.
+@pytest.mark.parametrize("verb", [
+    "queue",
+    "value",
+    # `economics` is 2.72s of real driver computation on its own -- the whole
+    # suite's critical path, since nothing finishes before its slowest test.
+    # `queue` and `value` already prove the shell-out bridge is reachable and
+    # read-only; this one adds the heavy computation. Deselected by default,
+    # run with `-m slow`. Drop the marker if you want it back on every run.
+    pytest.param("economics", marks=pytest.mark.slow),
+])
+def test_queue_value_economics_are_read_only_and_succeed(verb):
+    result = getattr(odyssey, verb)()
+    assert result["ok"] is True, (verb, result)
 
 
 def test_patient_reads_without_writing():

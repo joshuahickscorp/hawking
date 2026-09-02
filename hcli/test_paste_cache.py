@@ -12,6 +12,7 @@ import atexit
 import os
 import shutil
 import tempfile
+from datetime import datetime
 from pathlib import Path
 
 from hcli.paste_cache import PasteCache, PasteNotFound, PasteRef
@@ -121,14 +122,33 @@ def test_drop_and_prune():
     assert list(cache.dir.glob("*")) == []
 
 
-def test_a_sub_second_burst_still_orders_newest_first():
+def test_a_sub_second_burst_still_orders_newest_first(monkeypatch):
     """Ids are second-granular and tie-broken by content hash, so a burst of
     pastes inside one second is the regime where sorting on the id silently
-    returns an arbitrary order and prune deletes the wrong paste."""
+    returns an arbitrary order and prune deletes the wrong paste.
+
+    The clock is FROZEN rather than raced. Six real `store()` calls landing in
+    the same wall-clock second was a coincidence the test asserted on, and it
+    stopped holding once the suite ran in parallel on a loaded host: the burst
+    straddled a second boundary and the precondition failed, roughly one run in
+    six. Pinning the timestamp makes the same-second collision the guaranteed
+    condition under test instead of the thing being hoped for.
+    """
+    import hcli.paste_cache as paste_cache
+
+    frozen = datetime(2026, 9, 1, 12, 34, 56)
+
+    class FrozenDatetime(datetime):
+        @classmethod
+        def now(cls, tz=None):
+            return frozen
+
+    monkeypatch.setattr(paste_cache, "datetime", FrozenDatetime)
+
     cache = fresh()
     refs = [cache.store(f"burst {n}\n") for n in range(6)]
     assert len({r.id[:_SECOND_GRANULAR] for r in refs}) == 1, (
-        "this test is only meaningful if all six land in the same second"
+        "the frozen clock must put all six in one second"
     )
     assert [r.id for r in cache.list()] == [r.id for r in reversed(refs)]
     cache.prune(keep_last=1)

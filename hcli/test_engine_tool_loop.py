@@ -18,6 +18,7 @@ import pytest
 
 from hcli.engine import Engine, HCLI_RESULT_SCHEMA
 from hcli.tool_registry import default_tool_registry
+from hcli.workspace import Workspace
 
 REPO = Path(__file__).resolve().parents[1]
 
@@ -103,6 +104,61 @@ def test_the_catalog_tells_the_model_the_arguments_not_just_the_names():
     assert "root:string" in line and "root*" not in line, "optional marked required"
 
 
+def test_observation_round_catalog_is_alias_aware_and_focused():
+    registry = _registry()
+    full = Engine._tool_catalog(registry)
+    focused = Engine._compact_tool_catalog(
+        registry,
+        focus="list the python files in the hcli directory",
+    )
+    assert len(focused) < len(full) // 2, (len(full), len(focused))
+    assert "fs.list|filesystem.list" in focused
+    assert "git.checkout-safe" not in focused  # destructive capability is opt-in
+    assert "git.checkout/revert-safe" not in focused  # slash alias stays callable but not model-facing
+    assert "odyssey:" not in focused
+
+    rollback = Engine._compact_tool_catalog(registry, focus="inspect git revert safety")
+    assert "git.checkout-safe|git.revert-safe" in rollback
+    assert "git.checkout/revert-safe" not in rollback
+
+
+def test_compact_catalog_expands_the_domain_selected_by_the_goal():
+    catalog = Engine._compact_tool_catalog(
+        _registry(),
+        focus="audit Odyssey and the Gravity compression experiment",
+    )
+    assert "odyssey:" in catalog
+    assert "gravity:" in catalog
+    assert "odyssey: " in catalog and "status()" in catalog
+
+
+def test_tools_catalog_reveals_a_focused_signature_without_running_it():
+    registry = _registry()
+    result = registry.invoke("tools.catalog", {"focus": "directory listing"})
+
+    assert result.ok, result.error
+    names = {item["name"] for item in result.value["matches"]}
+    assert "fs.list" in names
+    assert result.value["provenance"] == "hcli.tool_registry.ToolRegistry.describe"
+
+
+def test_context_recall_is_a_bounded_typed_tool(tmp_path):
+    from hcli.knowledge import KnowledgeStore
+
+    store = KnowledgeStore(tmp_path)
+    store.record_note("remember the overnight production gate", source="test")
+    registry = default_tool_registry(tmp_path, repo_root=tmp_path)
+
+    result = registry.invoke("context.recall", {"focus": "overnight production"})
+
+    assert result.ok, result.error
+    assert result.value["retrieval"]["mode"] == "cold_recall"
+    assert any(
+        "overnight production gate" in json.dumps(item)
+        for item in result.value["records"]
+    )
+
+
 def test_a_directory_listing_verb_exists():
     """It did not, and that cost an entire tool budget on the first real query.
 
@@ -117,6 +173,41 @@ def test_a_directory_listing_verb_exists():
     names = {row["path"] for row in result.value["files"]}
     assert "engine.py" in names and "tool_registry.py" in names
     assert all(row["path"].endswith(".py") for row in result.value["files"])
+
+
+def test_directory_listing_includes_immediate_directories(tmp_path):
+    (tmp_path / "child").mkdir()
+    (tmp_path / "note.txt").write_text("observed\n", encoding="utf-8")
+    registry = default_tool_registry(tmp_path, repo_root=tmp_path)
+
+    result = registry.invoke(
+        "fs.list",
+        {"path": ".", "recursive": False, "max_results": 10},
+    )
+
+    assert result.ok, result.error
+    assert result.value["directories"] == [{"path": "child", "kind": "directory"}]
+    assert result.value["files"] == [{"path": "note.txt", "bytes": 9}]
+
+
+def test_obvious_directory_question_uses_the_typed_tool_without_model_startup(tmp_path):
+    (tmp_path / "child").mkdir()
+    (tmp_path / "note.txt").write_text("observed\n", encoding="utf-8")
+
+    class ModelMustNotStart:
+        def complete(self, **_kwargs):
+            raise AssertionError("simple directory listing should not cold-start the model")
+
+    engine = Engine(Workspace(str(tmp_path)), model_client=ModelMustNotStart())
+    result = engine.execute(
+        "What is in this directory? Inspect it with the available tools and answer from observed files."
+    )
+
+    assert result["status"] == "completed"
+    assert "[directory] child/" in result["content"]
+    assert "[file] note.txt (9 bytes)" in result["content"]
+    assert result["receipt"].endswith(".json")
+    assert engine._model_calls == []
 
 
 def test_tool_output_never_enters_the_evidence_list():

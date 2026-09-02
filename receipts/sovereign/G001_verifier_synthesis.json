@@ -1,0 +1,76 @@
+{
+  "schema": "sovereign.gate.G001.verifier_synthesis/1",
+  "produced_by": "tools/sovereign/g001_verifier_synthesis.py",
+  "produced_at": "2026-09-02T07:52:21+00:00",
+  "command": "python3 tools/sovereign/g001_verifier_synthesis.py",
+  "status": "completed",
+  "goal_text_compiled": "# Sovereign resident hardening\n\n## Atomic mission persistence\nhcli/persist.py must expose `atomic_write` so a crash mid-save cannot corrupt\nthe mission file.\n\n## Live swap probe\nhcli/resident.py must provide a `SwapoutsProbe` class that reads the live\ndelta, because the boot high-water mark is not a live reading.\n\n## Receipt source constant\nhcli/ledger.py must define `RECEIPT_SOURCE` at module scope so every receipt\nnames the producer that wrote it.\n\n## Reachability report\ntools/reach.py must expose `report_unreachable()` and a `CallGraph` class, or\na capability with no call site reads as present when it is not.\n",
+  "obligations_compiled": 4,
+  "cases_measured": 4,
+  "distinct_verifiers": 4,
+  "how_measured": "each synthesised verifier ran three times as a real subprocess in a fresh scratch git work tree: capability absent, capability present, capability removed. The recorded integers are the actual exit codes, not expectations.",
+  "evidence": [
+    "G001 'Atomic mission persistence': exit 1 absent -> 0 present -> 1 removed",
+    "G002 'Live swap probe': exit 1 absent -> 0 present -> 1 removed",
+    "G003 'Receipt source constant': exit 1 absent -> 0 present -> 1 removed",
+    "G004 'Reachability report': exit 1 absent -> 0 present -> 1 removed"
+  ],
+  "cases": [
+    {
+      "obligation_id": "G001",
+      "obligation_text": "Atomic mission persistence",
+      "goal_text": "Atomic mission persistence\nhcli/persist.py must expose `atomic_write` so a crash mid-save cannot corrupt\nthe mission file.",
+      "names_a_test_file": false,
+      "verifier": "git grep -qE -- '(def|class)[[:space:]]+atomic_write[^A-Za-z0-9_]|^[[:space:]]*atomic_write[[:space:]]*=[^=]' -- 'hcli/persist.py'",
+      "verifier_admissible": true,
+      "exit_capability_absent": 1,
+      "exit_capability_present": 0,
+      "exit_capability_removed": 1,
+      "red_before_green": true,
+      "negative_control_failed": true,
+      "measured": true
+    },
+    {
+      "obligation_id": "G002",
+      "obligation_text": "Live swap probe",
+      "goal_text": "Live swap probe\nhcli/resident.py must provide a `SwapoutsProbe` class that reads the live\ndelta, because the boot high-water mark is not a live reading.",
+      "names_a_test_file": false,
+      "verifier": "git grep -qE -- '(def|class)[[:space:]]+SwapoutsProbe[^A-Za-z0-9_]|^[[:space:]]*SwapoutsProbe[[:space:]]*=[^=]' -- 'hcli/resident.py'",
+      "verifier_admissible": true,
+      "exit_capability_absent": 1,
+      "exit_capability_present": 0,
+      "exit_capability_removed": 1,
+      "red_before_green": true,
+      "negative_control_failed": true,
+      "measured": true
+    },
+    {
+      "obligation_id": "G003",
+      "obligation_text": "Receipt source constant",
+      "goal_text": "Receipt source constant\nhcli/ledger.py must define `RECEIPT_SOURCE` at module scope so every receipt\nnames the producer that wrote it.",
+      "names_a_test_file": false,
+      "verifier": "git grep -qE -- '(def|class)[[:space:]]+RECEIPT_SOURCE[^A-Za-z0-9_]|^[[:space:]]*RECEIPT_SOURCE[[:space:]]*=[^=]' -- 'hcli/ledger.py'",
+      "verifier_admissible": true,
+      "exit_capability_absent": 1,
+      "exit_capability_present": 0,
+      "exit_capability_removed": 1,
+      "red_before_green": true,
+      "negative_control_failed": true,
+      "measured": true
+    },
+    {
+      "obligation_id": "G004",
+      "obligation_text": "Reachability report",
+      "goal_text": "Reachability report\ntools/reach.py must expose `report_unreachable()` and a `CallGraph` class, or\na capability with no call site reads as present when it is not.",
+      "names_a_test_file": false,
+      "verifier": "git grep -qE -- '(def|class)[[:space:]]+report_unreachable[^A-Za-z0-9_]|^[[:space:]]*report_unreachable[[:space:]]*=[^=]' -- 'tools/reach.py' && git grep -qE -- '(def|class)[[:space:]]+CallGraph[^A-Za-z0-9_]|^[[:space:]]*CallGraph[[:space:]]*=[^=]' -- 'tools/reach.py'",
+      "verifier_admissible": true,
+      "exit_capability_absent": 1,
+      "exit_capability_present": 0,
+      "exit_capability_removed": 1,
+      "red_before_green": true,
+      "negative_control_failed": true,
+      "measured": true
+    }
+  ]
+}

@@ -10,6 +10,7 @@ not evidence the shell-only lab is now HCLI-callable.
 """
 from __future__ import annotations
 
+import inspect
 import json
 
 import pytest
@@ -77,6 +78,7 @@ def test_run_forbidden_fruit_lab_refuses_a_missing_fixture(tmp_path):
     assert json.loads(emit.read_text())["status"] == "REFUSED"
 
 
+@pytest.mark.slow
 def test_run_forbidden_fruit_lab_runs_the_real_fixture_and_reports_observed_placement(tmp_path):
     """End-to-end: compiles and runs the real probes against the real fixture.
 
@@ -95,3 +97,47 @@ def test_run_forbidden_fruit_lab_runs_the_real_fixture_and_reports_observed_plac
     assert report["concurrent_pair"]["instances"] == 2
     written = json.loads(emit.read_text())
     assert written["receipt_path"] == report["receipt_path"]
+
+
+def test_forbidden_fruit_lab_is_reachable_through_the_typed_registry(tmp_path, monkeypatch):
+    """The tool a resident actually calls, not the function underneath it.
+
+    Every test above calls ``ff.run_forbidden_fruit_lab`` directly and stayed
+    green while ``registry.invoke("forbidden_fruit.lab", ...)`` raised
+    ``TypeError: unexpected keyword argument 'timeout_s'`` on every call --
+    the handler forwarded a schema property the function never accepted, so
+    the only route a model has to this lab was dead. Exercise the registry
+    path, or a signature drift here is invisible again.
+    """
+    from hcli.tool_registry import default_tool_registry
+
+    registry = default_tool_registry(tmp_path, repo_root=tmp_path)
+    spec = registry.get("forbidden_fruit.lab")
+    assert spec is not None, "forbidden_fruit.lab is not registered"
+
+    # The schema may not advertise an argument the handler cannot deliver.
+    declared = set((spec.input_schema.get("properties") or {}))
+    accepted = set(
+        inspect.signature(ff.run_forbidden_fruit_lab).parameters
+    )
+    assert declared <= accepted, (
+        f"forbidden_fruit.lab advertises {sorted(declared - accepted)}, "
+        f"which run_forbidden_fruit_lab() does not accept"
+    )
+
+    # The handler must actually reach the function, with arguments it accepts.
+    # Stubbed on purpose: the real lab compiles Swift and runs the fixture, and
+    # `test_run_forbidden_fruit_lab_runs_the_real_fixture...` already owns that
+    # evidence. Re-running it here cost 26.26s of a 77.82s suite and proved
+    # nothing the assertion above does not.
+    seen = {}
+
+    def fake(**kwargs):
+        seen.update(kwargs)
+        return {"status": "PASSED", "stubbed": True}
+
+    monkeypatch.setattr(ff, "run_forbidden_fruit_lab", fake)
+    result = registry.invoke("forbidden_fruit.lab", {})
+    assert result.ok, result.error
+    assert result.value["status"] == "PASSED"
+    assert set(seen) <= accepted, f"handler passed {sorted(set(seen) - accepted)}"

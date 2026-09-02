@@ -1,0 +1,30 @@
+{
+  "schema": "hcli.sovereign.verifier_manifest.v1",
+  "produced_at": "2026-09-02T06:52:31Z",
+  "produced_by": "claude-phase0-cutover",
+  "command": "sha256 over each protected sovereign verifier",
+  "policy": "These gates are PROTECTED. The sovereign resident may not edit them to pass. A verifier believed scientifically wrong must be SUPERSEDED through protected review with a negative control, producing a new versioned gate; the superseded one is retained. Landing refuses any proposal touching these paths.",
+  "red_at_creation": {
+    "failed": 71,
+    "passed": 1,
+    "passing_gate": "test_watch_is_read_only_and_opens_no_body (already true: watch_resident is read-only)"
+  },
+  "negative_control": "stub receipts with correct shape and no evidence were rejected by every gate",
+  "gates": {
+    "hcli/test_autonomous_frontier_metabolism.py": "c704a72b15cd8c8b943ee72cb5070ebf122d52ba68ec58ad2fff5fc4dfe0353c",
+    "hcli/test_capability_callsite_reachability.py": "66a01fef0401b11d6e236d5382ddc986a0dbd78e3c7d1514d551661b34f4f360",
+    "hcli/test_context_compiler_runtime.py": "88ac0167d7111705ea4edbf902cfae119fe073003ad5173ca9d0b9a150bbe5a4",
+    "hcli/test_deltanet_state_checkpoint.py": "661ab41d94bc82cad448651450bf4e65c7ad96a55e5580ebe8d512ceb445705b",
+    "hcli/test_goal_verifier_synthesis.py": "35c51ff84123c8363c257ad75a652f6aaf2c9576163857e6e7e7ee3c3c3d4116",
+    "hcli/test_hcli_overhead.py": "f3e69f2c08e6cf72e71ae0ad314e6b436fdcd78f0714d9e04389b6adc5f1696e",
+    "hcli/test_long_context_runtime.py": "934bf849a04234fde5a4a2a284c5939e428824c4731def6f3d0a925a730a6ada",
+    "hcli/test_negative_science_runtime.py": "494fc5a389cb779bdfdca4700189f3d04a2e88817278ef58b9796da36116c72c",
+    "hcli/test_qwen38_prefill_pipeline.py": "7c5bab5dc61de42cc26ca005a41b8bd0e0e63365eaf6e48b939d5b7973ea3b5f",
+    "hcli/test_resident_protected_performance.py": "c576301b94f8c5e3b99e8d2421a8629c7f66b25e38720fb60c8e913233dbf992",
+    "hcli/test_resident_successor_handoff.py": "c7f4d39afdafd64793874d77b642d229087194e614dcee786c7d236869ce3f14",
+    "hcli/test_resident_watch_control_plane.py": "aa120048eacb90cccb63fe8f0a6e0cbcee65264e73fc17f850d2c61bd7ed8a58",
+    "hcli/test_self_mutation_e2e.py": "18599cadca6cb1a0e71851db8ca16000c6fc3f887e0f0ee1a8cd189ef5f1e91d",
+    "tools/odyssey/test_modellake_retained_bytes.py": "371d5c51ace789a9c0cd357647644c4b2c28b6205e087237c0576dbe58f3f454",
+    "tools/odyssey/test_odyssey_streaming_runtime.py": "566075686c74763963a6f2d2477b1743ee9f486ee3dbad9b053329a237bb42d2"
+  }
+}
