@@ -141,7 +141,19 @@ KNOWN_TEMP_BYTES = 20_000_000_000
 # A rate dip arms recovery telemetry, but never terminates a session by itself.
 # Refresh still requires no durable byte growth, so a slow-but-healthy shard is
 # left alone.  The short arm window improves recovery from genuine stalls.
-RATE_BASED_REFRESH_ENABLED = True
+# MEASURED 2026-09-02: this path, NOT the stale path, is what fires on this
+# host. In a 15-minute window every one of 7 refreshes carried
+# "no partial-byte growth after sustained rate decline", and the GLM lane
+# lost 9.25 GB of ALREADY-VERIFIED final shards (confirmed not promotion:
+# no promotion event, no specimen on disk). LOW_RX_BYTES_PER_SEC is
+# 150 MB/s while the lake volume is a 2.5" USB HDD that absorbs ~87 MB/s
+# total -- the floor is above what the hardware can sustain, so the rate
+# path can never be satisfied and fires forever. Overridable so it can be
+# isolated without editing source. Read at import; needs a kickstart.
+RATE_BASED_REFRESH_ENABLED = (
+    os.environ.get("HAWKING_MODELLAKE_RATE_REFRESH", "1").strip().lower()
+    not in ("0", "false", "no", "off")
+)
 RATE_ARM_SECONDS = 3
 RATE_STALL_REFRESH_SECONDS = 10
 # A session with no growth in the actual Hub partial cache for the full
@@ -377,7 +389,10 @@ QUEUE = [
     job("microsoft/bitnet-b1.58-2B-4T-bf16", "276681394656abdadb8e80e5b2c3db5e5d7fcaff", "safe", "P1-S"),
     job("LiquidAI/LFM2.5-2.6B-Base", "c57bdaed1ef166fe3095dda07f4a5e789ad5321e", "safe", "P1-A"),
     job("ai21labs/AI21-Jamba2-3B", "525c6c8e1d9f5bddedfbdc1dbb0ade2df84230c9", "safe", "P1-A"),
-    job("stabilityai/stable-audio-open-1.0", "f21265c1e2710b3bd2386596943f0007f55f802e", "stable_audio", "P1-A"),
+    # Gated 2026-09-02: hf download returned "Access denied. This
+    # repository requires approval." Re-enable once accepted upstream.
+    {**job("stabilityai/stable-audio-open-1.0", "f21265c1e2710b3bd2386596943f0007f55f802e", "stable_audio", "P1-A"),
+     "requires_manual_auth": True},
     job("arcinstitute/evo2_7b", "bda0089f92582d5baabf0f22d9fc85f3588f6b58", "all", "P1-S"),
     job("facebook/musicgen-large", "15ccdc92099879e47b6da12c350cdb71d4eab3ca", "musicgen", "P2-A"),
     job("lerobot/pi0_base", "25c379b52ba2ff8788cab921758a3cc3fe3f77f2", "safe", "P2-HIGH"),
@@ -389,10 +404,17 @@ QUEUE = [
     job("GSAI-ML/iLLaDA-8B-Base", "a1b5b5f8a31a3854a46205ee584178c04b45ec9a", "safe", "P1-S"),
     # Metadata is public, but file access still requires explicit upstream
     # approval; keep this fail-closed until a file probe succeeds.
-    {**job("nvidia/personaplex-7b-v1", "fdaf4090a61cb315c138a1faee287ffd6c716309", "all", "P2-GATED"),
-     "requires_manual_auth": True},
+    # REMOVED 2026-09-02: nvidia/personaplex-7b-v1, google/gemma-3-4b-it and
+    # meta-llama/Llama-4-Scout-17B-16E-Instruct each need a human to accept
+    # upstream terms on the model page before any token can fetch them. The
+    # watcher was correctly refusing them and emitting admission_blocked_auth
+    # on every pass, which is noise for work that can never start unattended.
+    # Re-add them (with requires_manual_auth) once the licences are accepted.
     job("nvidia/audio-flamingo-3", "ee26c58423988d7d7cda7b85dd3ce5d97ee8753d", "all", "P2-HIGH"),
-    job("facebook/blt-7b", "b65201dce04b0a824f0dedeb13bb16fc3a918048", "blt", "P1-S"),
+    # Gated 2026-09-02: hf download returned "Access denied. This
+    # repository requires approval." Re-enable once accepted upstream.
+    {**job("facebook/blt-7b", "b65201dce04b0a824f0dedeb13bb16fc3a918048", "blt", "P1-S"),
+     "requires_manual_auth": True},
     job("RWKV/RWKV7-13.3B-20260805", "64ffe5934178f40fb2c6de13f12cffaf9058f243", "safe", "P1-S"),
     job("microsoft/Phi-4-reasoning-plus", "69baf8528e1bcf05f475034d9e5dd32875ed125f", "safe", "P1-A"),
     job("LiquidAI/LFM2-24B-A2B", "a3bbacd91a678b97712f0e323e52f8c24ba29542", "safe", "P1-A"),
@@ -413,10 +435,6 @@ QUEUE = [
     job("microsoft/Phi-4-mini-instruct", "cfbefacb99257ffa30c83adab238a50856ac3083", "safe", "P1-SMALL"),
     job("Qwen/Qwen3-4B-Instruct-2507", "cdbee75f17c01a7cc42f958dc650907174af0554", "safe", "P1-SMALL"),
     job("Qwen/Qwen3-Coder-30B-A3B-Instruct", "b2cff646eb4bb1d68355c01b18ae02e7cf42d120", "safe", "P1-DIVERSITY"),
-    {**job("google/gemma-3-4b-it", "093f9f388b31de276ce2de164bdc2081324b9767", "safe", "P1-DIVERSITY"),
-     "requires_manual_auth": True},
-    {**job("meta-llama/Llama-4-Scout-17B-16E-Instruct", "92f3b1597a195b523d8d9e5700e57e4fbb8f20d3", "safe", "P1-DIVERSITY"),
-     "requires_manual_auth": True},
     job("Qwen/Qwen3-14B", "40c069824f4251a91eefaf281ebe4c544efd3e18", "safe", "P1-DIVERSITY"),
     # Dense multimodal 20-40B control: distinct from the existing LFM2
     # 24B-A2B MoE and pinned to the verified Apache-2.0 upstream revision.
@@ -1009,6 +1027,7 @@ def main() -> int:
 
     emit("watcher_started", pid=os.getpid(), floor_bytes=FLOOR_BYTES,
          recovery_refresh_seconds=RECOVERY_REFRESH_SECONDS,
+         rate_based_refresh=RATE_BASED_REFRESH_ENABLED,
          max_download_jobs=MAX_DOWNLOAD_JOBS, max_workers=MAX_WORKERS,
          ssd_xet_cache=str(SSD_XET_CACHE),
          ssd_xet_image_capacity_bytes=SSD_XET_IMAGE_CAPACITY_BYTES,
@@ -1191,7 +1210,12 @@ def main() -> int:
         # Admit queued specimens even while the remaining P0 giant runs. The
         # four-job cap and conservative storage reservation still apply, and
         # QUEUE order is deliberately smallest selected manifest first.
-        active_count = len(active_tags) + len(children)
+        # A job this watcher launched is in `children` AND is found again by
+        # the pid scan that fills `active_tags`. Summing them double-counted
+        # every live download, so with MAX_DOWNLOAD_JOBS=2 a single transfer
+        # saturated the cap and the queue below was never reached. Lines 1311
+        # and 1410 already union these two sets; this was the outlier.
+        active_count = len(active_tags | set(children))
         for item in QUEUE:
             if active_count >= MAX_DOWNLOAD_JOBS:
                 break
@@ -1222,8 +1246,17 @@ def main() -> int:
                 # A queued job may have an old partial destination. Reserve
                 # the full selected manifest until an exact post-exit check
                 # proves otherwise; this is intentionally conservative.
-                present = None
-                remaining = expected
+                # Reserving the FULL manifest for a job that is nearly done
+                # is not conservatism, it is a deadlock: Inkling-Small sat at
+                # 515.9 of 531.9 GB needing 16 GB, and every admission pass
+                # emitted admission_blocked_storage because it reserved 531.9
+                # against a 519 GB drive. A model can then never finish on a
+                # disk smaller than its own total size, however little is left.
+                # durable_bytes() is the same exact-manifest accounting the
+                # stall detector already trusts, so use it here too and keep
+                # the scratch/uncertainty margins on the REMAINING bytes.
+                present = durable_bytes(item, files, sizes)
+                remaining = max(0, expected - present)
                 scratch = max(10_000_000_000, int(remaining * 0.05))
                 uncertainty = max(5_000_000_000, int(remaining * 0.02))
                 projected = free - active_remaining - remaining - scratch - uncertainty - KNOWN_TEMP_BYTES

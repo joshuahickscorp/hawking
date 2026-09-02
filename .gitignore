@@ -239,6 +239,10 @@ receipts/**/*.tar.xz
 *.sparseimage
 workspace/campaign/odyssey/downloads/
 workspace/campaign/odyssey/ssd-xet-cache/
+# The larger 410 GB Xet chunk-cache image mounts here; the directory is a
+# mount point, not content. Committing it captures an empty shell of a
+# volume that is not in the repo.
+workspace/campaign/odyssey/ssd-xet-cache-large/
 # launchd stdio and lock files for the ModelLake watcher: process state, not source.
 workspace/campaign/odyssey/modellake-watch.launchd.*
 workspace/campaign/odyssey/.modellake-watch.lock
