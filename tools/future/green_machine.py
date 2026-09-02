@@ -27,6 +27,7 @@ import ctypes
 import ctypes.util
 import json
 import os
+import statistics
 import subprocess
 import sys
 import time
@@ -211,15 +212,18 @@ CITED_IDLE_GPU_WATTS_SOURCE = (
 TOKEN_INTERVAL_RECEIPT = "receipts/future/TOKEN_NS_OBJECTIVE.json"
 
 HONESTY_RULE = (
-    "Any metric that is not trustworthily measurable is UNKNOWN. Never an "
-    "estimate, never a TDP-derived guess, never a FLOP-derived CMOS guess, "
-    "never an idle GPU-rail sample presented as joules_per_token, never a "
-    "number with invented precision. write_receipt already refuses a numeric "
-    "joules_per_token. This module does not catch that error, does not add "
-    "fields to HARDWARE_FIELDS, and does not convert UNKNOWN into 0 or into "
-    "a datasheet watt. Saying UNKNOWN clearly is the deliverable. This "
-    "sidecar produces STATIC_ONLY with bench state UNKNOWN; it produces "
-    "neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE."
+    "Token-attributed metrics (joules_per_token, joules_per_accepted_token, "
+    "work_units_per_kwh, the contracted idle/active J/s, thermal_state) stay "
+    "UNKNOWN: this sidecar has no GPU lease and does not wrap TOKEN_NS. "
+    "Process-attributed ri_energy_nj idle-vs-active on this pid is a real "
+    "sample and is labeled HARDWARE_MEASURED; it is not joules_per_token. "
+    "A unit conversion of a sampled integral (nJ to J, J over the same "
+    "window to mean watts) stays HARDWARE_MEASURED. Multiplying a wattage "
+    "by a cited ms/token from another receipt is COST_MODEL. FPGA/U50 is "
+    "absent and is never HARDWARE_MEASURED. write_receipt still refuses a "
+    "numeric joules_per_token. This sidecar produces STATIC_ONLY for the "
+    "token contract; it produces neither DIAGNOSTIC_RELATIVE nor "
+    "PROTECTED_ABSOLUTE."
 )
 
 SCOREBOARD_SLOT = {
@@ -737,12 +741,28 @@ def _load_ioreport() -> tuple[Any, Any]:
     lib.IOReportChannelGetChannelName.restype = ctypes.c_void_p
     lib.IOReportChannelGetChannelName.argtypes = [ctypes.c_void_p]
     lib.IOReportCreateSamples.restype = ctypes.c_void_p
-    lib.IOReportCreateSamples.argtypes = [ctypes.c_void_p, ctypes.c_void_p]
+    lib.IOReportCreateSamples.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+    ]
+    lib.IOReportCreateSamplesDelta.restype = ctypes.c_void_p
+    lib.IOReportCreateSamplesDelta.argtypes = [
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+        ctypes.c_void_p,
+    ]
     lib.IOReportSimpleGetIntegerValue.restype = ctypes.c_uint64
     lib.IOReportSimpleGetIntegerValue.argtypes = [
         ctypes.c_void_p,
         ctypes.POINTER(ctypes.c_int),
     ]
+    lib.IOReportChannelGetFormat.restype = ctypes.c_int
+    lib.IOReportChannelGetFormat.argtypes = [ctypes.c_void_p]
+    lib.IOReportArrayGetValueAtIndex.restype = ctypes.c_uint64
+    lib.IOReportArrayGetValueAtIndex.argtypes = [ctypes.c_void_p, ctypes.c_int]
+    lib.IOReportChannelGetUnitLabel.restype = ctypes.c_void_p
+    lib.IOReportChannelGetUnitLabel.argtypes = [ctypes.c_void_p]
     return cf, lib
 
 
@@ -784,6 +804,7 @@ def _ioreport_inprocess() -> dict[str, Any]:
             n for n in unique if n.endswith("CPU Energy")
         ),
         "subscription_obtained": obtained,
+        "sandbox_iokit_open_denied": _iokit_open_denied(),
         "libioreport_dlopen_without_root": True,
     }
 
@@ -798,8 +819,8 @@ _ENERGY_CHANNEL_UNITS: dict[str, str] = {
 }
 
 
-def _ioreport_energy_snapshot(cf: Any, lib: Any) -> dict[str, Any]:
-    """One IOReport Energy Model snapshot. May crash; call via subprocess."""
+def _ioreport_open(cf: Any, lib: Any) -> dict[str, Any]:
+    """One Energy Model subscription. May crash; call via subprocess."""
     group = _cfstr(cf, "Energy Model")
     if not group:
         return {"subscription_obtained": False, "error": "CFString Energy Model failed"}
@@ -813,26 +834,38 @@ def _ioreport_energy_snapshot(cf: Any, lib: Any) -> dict[str, Any]:
     subbed = ctypes.c_void_p()
     sub = lib.IOReportCreateSubscription(None, channels, ctypes.byref(subbed), 0, None)
     if not sub or not subbed:
+        denied = _iokit_open_denied()
+        why = "IOReportCreateSubscription returned null"
+        if denied:
+            why += (
+                "; sandbox_check(iokit-open-user-client)=denied. "
+                "CopyChannelsInGroup still works (catalog); live samples need "
+                "an IOKit user client this seatbelt profile does not allow."
+            )
         return {
             "subscription_obtained": False,
-            "error": "IOReportCreateSubscription returned null",
+            "error": why,
+            "sandbox_iokit_open_denied": denied,
         }
-    samples = lib.IOReportCreateSamples(sub, subbed)
+    return {
+        "subscription_obtained": True,
+        "error": None,
+        "channels": channels,
+        "sub": sub,
+        "subbed": subbed,
+    }
+
+
+def _ioreport_read_channels(cf: Any, lib: Any, sub: Any, subbed: Any) -> dict[str, Any]:
+    """Read wanted Energy Model channels from one CreateSamples snapshot."""
+    samples = lib.IOReportCreateSamples(sub, subbed, None)
     if not samples:
-        return {
-            "subscription_obtained": True,
-            "error": "IOReportCreateSamples returned null",
-            "channels": {},
-        }
+        return {"error": "IOReportCreateSamples returned null", "channels": {}}
     key = _cfstr(cf, "IOReportChannels")
     arr = cf.CFDictionaryGetValue(samples, key)
     cf.CFRelease(key)
     if not arr:
-        return {
-            "subscription_obtained": True,
-            "error": "samples missing IOReportChannels",
-            "channels": {},
-        }
+        return {"error": "samples missing IOReportChannels", "channels": {}, "samples": samples}
     dict_tid = cf.CFDictionaryGetTypeID()
     n = int(cf.CFArrayGetCount(arr))
     wanted = set(_ENERGY_CHANNEL_UNITS)
@@ -849,13 +882,35 @@ def _ioreport_energy_snapshot(cf: Any, lib: Any) -> dict[str, Any]:
         ok = ctypes.c_int(0)
         raw = int(lib.IOReportSimpleGetIntegerValue(item, ctypes.byref(ok)))
         valid = int(ok.value) > 0 and raw != _ENERGY_SENTINEL
+        fmt = None
+        array_sum = None
+        try:
+            fmt = int(lib.IOReportChannelGetFormat(item))
+        except Exception:  # noqa: BLE001
+            fmt = None
+        if fmt == 4:
+            total = 0
+            for idx in range(16):
+                total += int(lib.IOReportArrayGetValueAtIndex(item, idx))
+            array_sum = total
+            if not valid and array_sum != 0:
+                raw = array_sum
+                valid = True
+        unit_label = None
+        try:
+            unit_label = _cf_to_str(cf, lib.IOReportChannelGetUnitLabel(item))
+        except Exception:  # noqa: BLE001
+            unit_label = None
         out[name] = {
             "raw": raw if valid else None,
             "ok": int(ok.value),
             "unit": _ENERGY_CHANNEL_UNITS.get(name, "unknown"),
+            "unit_label": unit_label,
+            "format": fmt,
+            "array_sum": array_sum,
             "valid": valid,
         }
-    return {"subscription_obtained": True, "error": None, "channels": out}
+    return {"error": None, "channels": out, "samples": samples}
 
 
 def _cpu_burn(seconds: float) -> int:
@@ -865,6 +920,495 @@ def _cpu_burn(seconds: float) -> int:
     while time.perf_counter() < end:
         n += 1
     return n
+
+
+# ---------------------------------------------------------------------------
+# Process-attributed energy: proc_pid_rusage ri_energy_nj
+# sys/resource.h RUSAGE_INFO_V6. Call site is measure_process_energy().
+# ---------------------------------------------------------------------------
+
+RUSAGE_INFO_V6 = 6
+PROC_ALL_PIDS = 1
+_SANDBOX_FILTER_NONE = 0
+_ENERGY_NJ_QUANTIZATION_J = 1.0e-9
+_TIMING_UNCERTAINTY_S = 0.001
+_USEFUL_WORK_DENOMINATOR = "cpu_burn_iterations"
+_USEFUL_WORK_DEFENSE = (
+    "The only useful work this sidecar performed is the CPU-burn loop "
+    "counted in the busy window. Tokens were not emitted and WorkUnits "
+    "were not sealed, so J/token and WU/kWh stay UNKNOWN/COST_MODEL. "
+    "Process CPU-seconds is a time axis (restating watts), not a work "
+    "axis. Iterations are counted on the same closed wall as the joule "
+    "integral. This is a calibration of integer-loop work on this M3 "
+    "Ultra, not a token and not a WorkUnit."
+)
+
+# Contention name/path needles. argv matching uses pgrep -lf.
+_CONTENTION_PGREP = (
+    "hawkingd",
+    "ascension_qwen38_resident",
+    "hcli.agentos.resident",
+)
+
+
+class _RusageInfoV6(ctypes.Structure):
+    """Layout from MacOSX.sdk usr/include/sys/resource.h rusage_info_v6."""
+
+    _fields_ = [
+        ("ri_uuid", ctypes.c_uint8 * 16),
+        ("ri_user_time", ctypes.c_uint64),
+        ("ri_system_time", ctypes.c_uint64),
+        ("ri_pkg_idle_wkups", ctypes.c_uint64),
+        ("ri_interrupt_wkups", ctypes.c_uint64),
+        ("ri_pageins", ctypes.c_uint64),
+        ("ri_wired_size", ctypes.c_uint64),
+        ("ri_resident_size", ctypes.c_uint64),
+        ("ri_phys_footprint", ctypes.c_uint64),
+        ("ri_proc_start_abstime", ctypes.c_uint64),
+        ("ri_proc_exit_abstime", ctypes.c_uint64),
+        ("ri_child_user_time", ctypes.c_uint64),
+        ("ri_child_system_time", ctypes.c_uint64),
+        ("ri_child_pkg_idle_wkups", ctypes.c_uint64),
+        ("ri_child_interrupt_wkups", ctypes.c_uint64),
+        ("ri_child_pageins", ctypes.c_uint64),
+        ("ri_child_elapsed_abstime", ctypes.c_uint64),
+        ("ri_diskio_bytesread", ctypes.c_uint64),
+        ("ri_diskio_byteswritten", ctypes.c_uint64),
+        ("ri_cpu_time_qos_default", ctypes.c_uint64),
+        ("ri_cpu_time_qos_maintenance", ctypes.c_uint64),
+        ("ri_cpu_time_qos_background", ctypes.c_uint64),
+        ("ri_cpu_time_qos_utility", ctypes.c_uint64),
+        ("ri_cpu_time_qos_legacy", ctypes.c_uint64),
+        ("ri_cpu_time_qos_user_initiated", ctypes.c_uint64),
+        ("ri_cpu_time_qos_user_interactive", ctypes.c_uint64),
+        ("ri_billed_system_time", ctypes.c_uint64),
+        ("ri_serviced_system_time", ctypes.c_uint64),
+        ("ri_logical_writes", ctypes.c_uint64),
+        ("ri_lifetime_max_phys_footprint", ctypes.c_uint64),
+        ("ri_instructions", ctypes.c_uint64),
+        ("ri_cycles", ctypes.c_uint64),
+        ("ri_billed_energy", ctypes.c_uint64),
+        ("ri_serviced_energy", ctypes.c_uint64),
+        ("ri_interval_max_phys_footprint", ctypes.c_uint64),
+        ("ri_runnable_time", ctypes.c_uint64),
+        ("ri_flags", ctypes.c_uint64),
+        ("ri_user_ptime", ctypes.c_uint64),
+        ("ri_system_ptime", ctypes.c_uint64),
+        ("ri_pinstructions", ctypes.c_uint64),
+        ("ri_pcycles", ctypes.c_uint64),
+        ("ri_energy_nj", ctypes.c_uint64),
+        ("ri_penergy_nj", ctypes.c_uint64),
+        ("ri_secure_time_in_system", ctypes.c_uint64),
+        ("ri_secure_ptime_in_system", ctypes.c_uint64),
+        ("ri_neural_footprint", ctypes.c_uint64),
+        ("ri_lifetime_max_neural_footprint", ctypes.c_uint64),
+        ("ri_interval_max_neural_footprint", ctypes.c_uint64),
+        ("ri_conclave_footprint", ctypes.c_uint64),
+        ("ri_page_wait_time_mach", ctypes.c_uint64),
+        ("ri_page_cache_hits", ctypes.c_uint64),
+        ("ri_reserved", ctypes.c_uint64 * 6),
+    ]
+
+
+def _libsystem() -> Any:
+    return ctypes.CDLL("/usr/lib/libSystem.B.dylib")
+
+
+def _iokit_open_denied() -> bool | None:
+    """sandbox_check: 0 allowed, 1 denied, -1 unknown op / error."""
+    try:
+        libc = _libsystem()
+        libc.sandbox_check.restype = ctypes.c_int
+        rc = libc.sandbox_check(
+            os.getpid(), b"iokit-open-user-client", _SANDBOX_FILTER_NONE
+        )
+        if rc == 1:
+            return True
+        if rc == 0:
+            return False
+        return None
+    except Exception:  # noqa: BLE001
+        return None
+
+
+def proc_pid_rusage(pid: int) -> dict[str, Any] | None:
+    """One RUSAGE_INFO_V6 snapshot. Returns None if the syscall fails.
+
+    Call site of the kernel gate: this function invokes proc_pid_rusage.
+    measure_process_energy calls this; tests call measure_process_energy
+    and also this symbol directly.
+    """
+    libc = _libsystem()
+    libc.proc_pid_rusage.argtypes = [ctypes.c_int, ctypes.c_int, ctypes.c_void_p]
+    libc.proc_pid_rusage.restype = ctypes.c_int
+    info = _RusageInfoV6()
+    rc = int(libc.proc_pid_rusage(int(pid), RUSAGE_INFO_V6, ctypes.byref(info)))
+    if rc != 0:
+        return None
+    return {
+        "pid": int(pid),
+        "rc": rc,
+        "energy_nj": int(info.ri_energy_nj),
+        "penergy_nj": int(info.ri_penergy_nj),
+        "billed_energy": int(info.ri_billed_energy),
+        "serviced_energy": int(info.ri_serviced_energy),
+        "cycles": int(info.ri_cycles),
+        "instructions": int(info.ri_instructions),
+        "pcycles": int(info.ri_pcycles),
+        "pinstructions": int(info.ri_pinstructions),
+        "neural_footprint": int(info.ri_neural_footprint),
+        "phys_footprint": int(info.ri_phys_footprint),
+    }
+
+
+def _pgrep_lf(pattern: str) -> list[dict[str, Any]]:
+    run = _run(["/usr/bin/pgrep", "-lf", pattern], timeout=5)
+    rows: list[dict[str, Any]] = []
+    if run.get("returncode") not in (0, 1):
+        return rows
+    for line in (run.get("stdout") or "").splitlines():
+        line = line.strip()
+        if not line:
+            continue
+        pid_s, _, rest = line.partition(" ")
+        if not pid_s.isdigit():
+            continue
+        rows.append({"pid": int(pid_s), "command": rest[:240], "pattern": pattern})
+    return rows
+
+
+def observe_contention() -> dict[str, Any]:
+    """Read-only snapshot of other energy consumers. Never signals a pid."""
+    denied = _iokit_open_denied()
+    try:
+        load = list(os.getloadavg())
+    except (OSError, AttributeError):
+        load = None
+    peers: list[dict[str, Any]] = []
+    seen: set[int] = set()
+    hawkingd_present = False
+    resident_present = False
+    for pattern in _CONTENTION_PGREP:
+        for row in _pgrep_lf(pattern):
+            pid = row["pid"]
+            if pid in seen or pid == os.getpid():
+                continue
+            seen.add(pid)
+            if pattern == "hawkingd":
+                hawkingd_present = True
+            if pattern == "ascension_qwen38_resident":
+                resident_present = True
+            snap = proc_pid_rusage(pid)
+            peers.append(
+                {
+                    "pid": pid,
+                    "command": row["command"],
+                    "matched": pattern,
+                    "energy_nj": None if snap is None else snap["energy_nj"],
+                    "cycles": None if snap is None else snap["cycles"],
+                    "phys_footprint": None if snap is None else snap["phys_footprint"],
+                    "rusage_ok": snap is not None,
+                }
+            )
+    return {
+        "self_pid": os.getpid(),
+        "loadavg": load,
+        "sandbox_iokit_open_user_client_denied": denied,
+        "hawkingd_process_present": hawkingd_present,
+        "ascension_resident_present": resident_present,
+        "peers": peers[:16],
+        "signaled": False,
+        "gpu_touched": False,
+        "why": (
+            "proc_pid_rusage and pgrep -lf are read-only. No process was "
+            "killed, restarted, or sent a signal. IOReport live samples "
+            "need iokit-open-user-client; when that is denied the GPU/CPU "
+            "package rails are not this measurement. ri_energy_nj is "
+            "task-attributed, so peer energy is not in our numerator; "
+            "peers still contend for the same package (DIRTY frequency/"
+            "thermal)."
+        ),
+    }
+
+
+def _mean(xs: Sequence[float]) -> float | None:
+    return None if not xs else float(sum(xs) / len(xs))
+
+
+def _stdev(xs: Sequence[float]) -> float | None:
+    if len(xs) < 2:
+        return None
+    return float(statistics.stdev(xs))
+
+
+def _window_from_rusage(
+    a: Mapping[str, Any],
+    b: Mapping[str, Any],
+    *,
+    window_s: float,
+    label: str,
+    cpu_burn_iters: int,
+) -> dict[str, Any]:
+    delta_nj = int(b["energy_nj"]) - int(a["energy_nj"])
+    joules = delta_nj / 1.0e9
+    watts = None if window_s <= 0 else joules / window_s
+    return {
+        "label": label,
+        "window_s": window_s,
+        "energy_nj_t0": int(a["energy_nj"]),
+        "energy_nj_t1": int(b["energy_nj"]),
+        "delta_nj": delta_nj,
+        "joules": joules,
+        "watts": watts,
+        "penergy_delta_nj": int(b["penergy_nj"]) - int(a["penergy_nj"]),
+        "cycles_delta": int(b["cycles"]) - int(a["cycles"]),
+        "instructions_delta": int(b["instructions"]) - int(a["instructions"]),
+        "neural_footprint_t1": int(b["neural_footprint"]),
+        "cpu_burn_iters": cpu_burn_iters,
+        "evidence_tier": TIER_HARDWARE_MEASURED,
+        "increments": delta_nj > 0,
+    }
+
+
+def measure_process_energy(
+    *,
+    idle_s: float = 0.25,
+    busy_s: float = 0.25,
+    repeats: int = 1,
+    contention: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Idle vs CPU-busy process energy on THIS pid via proc_pid_rusage.
+
+    Production call site: build() -> roadmap_categories -> this function.
+    Tests call this symbol directly. GPU is not touched. The live resident
+    is observed with a read-only rusage snapshot, never signaled.
+
+    Raw energy_nj bookends are HARDWARE_MEASURED. Watts and J/iteration
+    are the same integral over the measured window / the counted
+    iterations — not a TDP model. J/token is not this function.
+    """
+    pid = os.getpid()
+    if contention is None:
+        contention = observe_contention()
+    method = {
+        "source": "proc_pid_rusage",
+        "flavor": "RUSAGE_INFO_V6",
+        "field": "ri_energy_nj",
+        "field_unit": "nJ",
+        "header": (
+            "/Library/Developer/CommandLineTools/SDKs/MacOSX.sdk/"
+            "usr/include/sys/resource.h rusage_info_v6.ri_energy_nj"
+        ),
+        "sampling": (
+            "bookend snapshots at each window boundary; not a polling rate. "
+            f"Requested idle_s={idle_s}, busy_s={busy_s}, repeats={repeats}."
+        ),
+        "workload": (
+            "idle = time.sleep; busy = _cpu_burn tight integer increment. "
+            "GPU untouched; no Metal, no TOKEN_NS wrap, no resident call."
+        ),
+        "clock": "time.perf_counter",
+        "pid": pid,
+    }
+    s0 = proc_pid_rusage(pid)
+    if s0 is None:
+        return {
+            "ok": False,
+            "error": "proc_pid_rusage failed on self",
+            "evidence_tier": TIER_STATIC,
+            "gpu_touched": False,
+            "method": method,
+            "contention": dict(contention),
+        }
+
+    resident_pids = [
+        p["pid"]
+        for p in (contention.get("peers") or [])
+        if p.get("matched") == "ascension_qwen38_resident"
+    ]
+    resident_t0 = proc_pid_rusage(resident_pids[0]) if resident_pids else None
+
+    repeats_n = max(1, int(repeats))
+    idle_s = max(0.05, float(idle_s))
+    busy_s = max(0.05, float(busy_s))
+    rows: list[dict[str, Any]] = []
+    for _ in range(repeats_n):
+        a = proc_pid_rusage(pid)
+        t0 = time.perf_counter()
+        time.sleep(idle_s)
+        t1 = time.perf_counter()
+        b = proc_pid_rusage(pid)
+        if a is None or b is None:
+            continue
+        idle = _window_from_rusage(
+            a, b, window_s=t1 - t0, label="idle", cpu_burn_iters=0
+        )
+        t_busy0 = time.perf_counter()
+        iters = _cpu_burn(busy_s)
+        t_busy1 = time.perf_counter()
+        c = proc_pid_rusage(pid)
+        if c is None:
+            continue
+        busy = _window_from_rusage(
+            b, c, window_s=t_busy1 - t_busy0, label="cpu_busy_gpu_untouched",
+            cpu_burn_iters=iters,
+        )
+        idle_watts = idle["watts"]
+        work_j = None
+        if idle_watts is not None and busy["joules"] is not None:
+            work_j = float(busy["joules"]) - float(idle_watts) * float(busy["window_s"])
+        j_per_iter = None
+        if work_j is not None and iters > 0:
+            j_per_iter = work_j / float(iters)
+        rows.append(
+            {
+                "idle": idle,
+                "busy": busy,
+                "work_joules_idle_subtracted": work_j,
+                "joules_per_iteration": j_per_iter,
+            }
+        )
+
+    resident_t1 = proc_pid_rusage(resident_pids[0]) if resident_pids else None
+    resident_during = None
+    if resident_t0 and resident_t1:
+        resident_during = {
+            "pid": resident_pids[0],
+            "energy_nj_t0": resident_t0["energy_nj"],
+            "energy_nj_t1": resident_t1["energy_nj"],
+            "delta_nj": int(resident_t1["energy_nj"]) - int(resident_t0["energy_nj"]),
+            "cycles_delta": int(resident_t1["cycles"]) - int(resident_t0["cycles"]),
+            "evidence_tier": TIER_HARDWARE_MEASURED,
+            "why": (
+                "proc_pid_rusage on ascension_qwen38_resident over the same "
+                "wall as this sidecar's idle+busy windows. Read-only; the "
+                "resident was not signaled."
+            ),
+        }
+
+    idle_j = [r["idle"]["joules"] for r in rows]
+    busy_j = [r["busy"]["joules"] for r in rows]
+    idle_w = [r["idle"]["watts"] for r in rows if r["idle"]["watts"] is not None]
+    busy_w = [r["busy"]["watts"] for r in rows if r["busy"]["watts"] is not None]
+    work_j = [r["work_joules_idle_subtracted"] for r in rows if r["work_joules_idle_subtracted"] is not None]
+    j_iter = [r["joules_per_iteration"] for r in rows if r["joules_per_iteration"] is not None]
+    iters = [r["busy"]["cpu_burn_iters"] for r in rows]
+    idle_win = [r["idle"]["window_s"] for r in rows]
+    busy_win = [r["busy"]["window_s"] for r in rows]
+
+    mean_idle_j, mean_busy_j = _mean(idle_j), _mean(busy_j)
+    mean_idle_w, mean_busy_w = _mean(idle_w), _mean(busy_w)
+    mean_work_j = _mean(work_j)
+    mean_j_iter = _mean(j_iter)
+    mean_iters = _mean(iters)
+    mean_idle_win, mean_busy_win = _mean(idle_win), _mean(busy_win)
+    stdev_work_j = _stdev(work_j)
+    stdev_busy_j = _stdev(busy_j)
+
+    watts_for_budget = mean_busy_w if mean_busy_w is not None else 0.0
+    timing_j = abs(watts_for_budget) * _TIMING_UNCERTAINTY_S
+    empirical_j = (2.0 * stdev_work_j) if stdev_work_j is not None else 0.0
+    error_budget_j = max(_ENERGY_NJ_QUANTIZATION_J, timing_j, empirical_j)
+    error_budget_j_iter = (
+        None if not mean_iters or mean_iters <= 0 else error_budget_j / mean_iters
+    )
+
+    differential_ok = (
+        mean_busy_j is not None
+        and mean_idle_j is not None
+        and mean_busy_j > mean_idle_j
+        and any(r["busy"]["increments"] for r in rows)
+    )
+    iterations_per_kwh = None
+    if mean_work_j is not None and mean_work_j > 0 and mean_iters is not None:
+        kwh = mean_work_j / 3.6e6
+        if kwh > 0:
+            iterations_per_kwh = mean_iters / kwh
+
+    return {
+        "ok": bool(rows) and differential_ok,
+        "error": None if rows else "no successful rusage windows",
+        "evidence_tier": TIER_HARDWARE_MEASURED if rows else TIER_STATIC,
+        "gpu_touched": False,
+        "token_ns_wrap": False,
+        "pid": pid,
+        "method": method,
+        "error_budget": {
+            "quantization_j": _ENERGY_NJ_QUANTIZATION_J,
+            "timing_uncertainty_s": _TIMING_UNCERTAINTY_S,
+            "timing_term_j": timing_j,
+            "repeat_stdev_work_j": stdev_work_j,
+            "repeat_stdev_busy_j": stdev_busy_j,
+            "combined_j": error_budget_j,
+            "combined_j_per_iteration": error_budget_j_iter,
+            "rule": (
+                "max(1 nJ, |busy_watts| * 1 ms, 2 * sample_stdev of "
+                "idle-subtracted work joules). Bookend sampling, not a Hz rate."
+            ),
+            "repeats": repeats_n,
+        },
+        "contention": dict(contention),
+        "resident_during_measurement": resident_during,
+        "repeats": rows,
+        "idle": {
+            "mean_joules": mean_idle_j,
+            "mean_watts": mean_idle_w,
+            "mean_window_s": mean_idle_win,
+            "stdev_joules": _stdev(idle_j),
+            "evidence_tier": TIER_HARDWARE_MEASURED,
+            "raw_field": "ri_energy_nj",
+        },
+        "busy": {
+            "mean_joules": mean_busy_j,
+            "mean_watts": mean_busy_w,
+            "mean_window_s": mean_busy_win,
+            "mean_cpu_burn_iters": mean_iters,
+            "stdev_joules": stdev_busy_j,
+            "evidence_tier": TIER_HARDWARE_MEASURED,
+            "raw_field": "ri_energy_nj",
+        },
+        "differential": {
+            "id": "idle_vs_active_joules",
+            "mean_work_joules": mean_work_j,
+            "mean_busy_minus_mean_idle_joules": (
+                None
+                if mean_busy_j is None or mean_idle_j is None
+                else mean_busy_j - mean_idle_j
+            ),
+            "busy_gt_idle": differential_ok,
+            "evidence_tier": TIER_HARDWARE_MEASURED if differential_ok else TIER_STATIC,
+            "why": (
+                "Both windows are proc_pid_rusage ri_energy_nj on this pid. "
+                "work_joules = busy_joules - idle_watts * busy_window_s. "
+                "That is a subtraction of two samples, not of two guesses."
+            ),
+        },
+        "useful_work": {
+            "denominator": _USEFUL_WORK_DENOMINATOR,
+            "denominator_definition": (
+                "Iterations of a tight integer increment loop completed by "
+                "this process during the busy window (_cpu_burn)."
+            ),
+            "defense": _USEFUL_WORK_DEFENSE,
+            "mean_iterations": mean_iters,
+            "joules_per_iteration": mean_j_iter,
+            "iterations_per_kwh": iterations_per_kwh,
+            "error_budget_j_per_iteration": error_budget_j_iter,
+            "evidence_tier": TIER_HARDWARE_MEASURED if mean_j_iter is not None else TIER_STATIC,
+            "not": (
+                "J/token, J/accepted-token, WU/kWh — those denominators "
+                "were not produced in this interval."
+            ),
+        },
+        "billed_energy_unused": {
+            "ri_billed_energy": s0["billed_energy"],
+            "ri_serviced_energy": s0["serviced_energy"],
+            "why": (
+                "ri_billed_energy and ri_serviced_energy were 0 on this "
+                "host in probe; they are not the measurement."
+            ),
+        },
+    }
 
 
 def _delta_to_watts(delta_raw: int | None, unit: str, window_s: float) -> float | None:
@@ -882,23 +1426,36 @@ def _delta_to_watts(delta_raw: int | None, unit: str, window_s: float) -> float 
 
 
 def _ioreport_sample_inprocess(idle_s: float, busy_s: float) -> dict[str, Any]:
-    """Idle then CPU-busy IOReport windows. GPU work is forbidden (no lease)."""
+    """Idle then CPU-busy IOReport windows on ONE subscription. GPU untouched."""
     cf, lib = _load_ioreport()
-    t_wall0 = time.perf_counter()
-    s0 = _ioreport_energy_snapshot(cf, lib)
-    if not s0.get("subscription_obtained"):
+    opened = _ioreport_open(cf, lib)
+    if not opened.get("subscription_obtained"):
         return {
             "subscription_obtained": False,
-            "error": s0.get("error"),
+            "error": opened.get("error"),
+            "sandbox_iokit_open_denied": opened.get("sandbox_iokit_open_denied"),
             "idle": None,
             "cpu_busy": None,
         }
+    sub, subbed = opened["sub"], opened["subbed"]
+    t_wall0 = time.perf_counter()
+    s0 = _ioreport_read_channels(cf, lib, sub, subbed)
     time.sleep(max(0.05, idle_s))
     t_wall1 = time.perf_counter()
-    s1 = _ioreport_energy_snapshot(cf, lib)
+    s1 = _ioreport_read_channels(cf, lib, sub, subbed)
     iters = _cpu_burn(max(0.05, busy_s))
     t_wall2 = time.perf_counter()
-    s2 = _ioreport_energy_snapshot(cf, lib)
+    s2 = _ioreport_read_channels(cf, lib, sub, subbed)
+
+    delta_idle = None
+    delta_busy = None
+    try:
+        if s0.get("samples") and s1.get("samples"):
+            delta_idle = bool(lib.IOReportCreateSamplesDelta(s0["samples"], s1["samples"], None))
+        if s1.get("samples") and s2.get("samples"):
+            delta_busy = bool(lib.IOReportCreateSamplesDelta(s1["samples"], s2["samples"], None))
+    except Exception as exc:  # noqa: BLE001
+        delta_idle = f"delta_exc:{type(exc).__name__}"
 
     def _window(a: dict[str, Any], b: dict[str, Any], dt: float, label: str) -> dict[str, Any]:
         ch_a = a.get("channels") or {}
@@ -921,19 +1478,23 @@ def _ioreport_sample_inprocess(idle_s: float, busy_s: float) -> dict[str, Any]:
                     "window_s": dt,
                     "watts": watts,
                     "increments": bool(delta is not None and delta > 0),
+                    "format": ub.get("format"),
                 }
             )
         return {"label": label, "window_s": dt, "channels": rows}
 
     return {
         "subscription_obtained": True,
-        "error": None,
+        "error": s0.get("error") or s1.get("error") or s2.get("error"),
         "cpu_burn_iters": iters,
         "idle": _window(s0, s1, t_wall1 - t_wall0, "idle"),
         "cpu_busy": _window(s1, s2, t_wall2 - t_wall1, "cpu_busy_gpu_untouched"),
+        "create_samples_delta_idle": delta_idle,
+        "create_samples_delta_busy": delta_busy,
         "note": (
             "GPU-token-active is not sampled: this sidecar has no GPU lease and "
-            "must not disturb the live resident. cpu_busy is CPU-only."
+            "must not disturb the live resident. cpu_busy is CPU-only. "
+            "One subscription, three CreateSamples, optional CreateSamplesDelta."
         ),
     }
 
@@ -1028,27 +1589,29 @@ def probe_ioreport_subscription() -> dict[str, Any]:
     obtained = bool(raw.get("subscription_obtained"))
     out["command_ok"] = True
     out["succeeded"] = obtained
+    denied = raw.get("sandbox_iokit_open_denied")
     if obtained:
         out["observation"] = {
             "subscription_obtained": True,
+            "sandbox_iokit_open_denied": denied,
             "note": (
-                "Live samples would still not be joules_per_token: this "
+                "Live IOReport samples are still not joules_per_token: this "
                 "sidecar has no GPU lease and does not wrap TOKEN_NS. "
-                "Numeric nJ is deliberately not recorded."
+                "Process energy is measured via proc_pid_rusage, not here."
             ),
         }
         return out
     out["missing_dependency"] = "IOReportCreateSubscription"
     out["observation"] = {
         "subscription_obtained": False,
+        "sandbox_iokit_open_denied": denied,
         "error": "IOReportCreateSubscription returned null",
         "note": (
-            "crates/hawking-core/src/token_ns/energy.rs documents a "
-            "2026-08-16 standing finding that GPU Energy (nJ) incremented "
-            "without root. This sidecar process cannot obtain a "
-            "subscription, so live samples are not reproduced here. "
-            "Channel catalog (probe ioreport_energy_model_catalog) is "
-            "the part that still holds."
+            "energy.rs documents GPU Energy (nJ) incrementing without root "
+            "on 2026-08-16. This seatbelt profile denies iokit-open-user-client "
+            f"(denied={denied!r}), so this process cannot subscribe. "
+            "The channel catalog still holds. Process ri_energy_nj is the "
+            "measurement this sidecar actually took."
         ),
     }
     return out
@@ -1423,12 +1986,23 @@ def roadmap_categories(
     cpu_cost: Mapping[str, Any] | None = None,
     host: Mapping[str, Any] | None = None,
     scheduler_decision: Mapping[str, Any] | None = None,
+    process_energy: Mapping[str, Any] | None = None,
+    contention: Mapping[str, Any] | None = None,
 ) -> dict[str, Any]:
     """II-E SUBGENES as categories, each value carrying its own evidence tier."""
     probes = list(probes) if probes is not None else run_probes()
     rails = dict(rails) if rails is not None else sample_energy_rails()
     cpu_cost = dict(cpu_cost) if cpu_cost is not None else measure_idle_vs_active_cpu()
     host = dict(host) if host is not None else measure_host_identity()
+    if contention is None:
+        contention = observe_contention()
+    else:
+        contention = dict(contention)
+    if process_energy is None:
+        # Production call site of measure_process_energy (also invoked from build).
+        process_energy = measure_process_energy(contention=contention)
+    else:
+        process_energy = dict(process_energy)
     if scheduler_decision is None:
         scheduler_decision = EnergyAwareScheduler().schedule(
             {"id": "green-machine-categories"}, unknown_metrics()
@@ -1480,6 +2054,44 @@ def roadmap_categories(
                     ),
                 ),
                 gpu_watts,
+                _cat_value(
+                    "process_energy_watts_idle",
+                    (process_energy.get("idle") or {}).get("mean_watts"),
+                    unit="W",
+                    evidence_tier=(
+                        TIER_HARDWARE_MEASURED
+                        if process_energy.get("ok")
+                        else TIER_STATIC
+                    ),
+                    why=(
+                        "Mean ri_energy_nj / window_s over idle sleep on this "
+                        "pid. Process-attributed kernel energy, not the GPU "
+                        "rail, not joules_per_token."
+                    ),
+                    token_ns_wrap=False,
+                    source="proc_pid_rusage.ri_energy_nj",
+                    window_s=(process_energy.get("idle") or {}).get("mean_window_s"),
+                ),
+                _cat_value(
+                    "process_energy_watts_busy",
+                    (process_energy.get("busy") or {}).get("mean_watts"),
+                    unit="W",
+                    evidence_tier=(
+                        TIER_HARDWARE_MEASURED
+                        if process_energy.get("ok")
+                        else TIER_STATIC
+                    ),
+                    why=(
+                        "Mean ri_energy_nj / window_s over a CPU-only burn on "
+                        "this pid. GPU untouched. Not GPU-token-active."
+                    ),
+                    token_ns_wrap=False,
+                    source="proc_pid_rusage.ri_energy_nj",
+                    window_s=(process_energy.get("busy") or {}).get("mean_window_s"),
+                    cpu_burn_iters=(process_energy.get("busy") or {}).get(
+                        "mean_cpu_burn_iters"
+                    ),
+                ),
                 _cat_value(
                     "fpga_power_watts",
                     None,
@@ -1545,7 +2157,10 @@ def roadmap_categories(
                     why=(
                         "No WorkUnit completion count shares a closed wall with "
                         "a joule integral. Formula WU / (J / 3.6e6) is defined; "
-                        "the numerator is missing, so the value is not filled."
+                        "the numerator is missing, so the value is not filled. "
+                        "cpu_burn_iterations_per_kwh is a different denominator "
+                        "and lives under idle-vs-active / useful_work; it is "
+                        "not this metric."
                     ),
                     token_ns_wrap=False,
                     model="work_units_completed / (joules / 3.6e6)",
@@ -1601,17 +2216,80 @@ def roadmap_categories(
                     cpu_burn_iters=cpu_cost.get("cpu_burn_iters"),
                 ),
                 _cat_value(
-                    "idle_vs_active_joules",
-                    None,
+                    "idle_process_energy_j",
+                    (process_energy.get("idle") or {}).get("mean_joules"),
                     unit="J",
-                    evidence_tier=TIER_COST_MODEL,
+                    evidence_tier=(
+                        TIER_HARDWARE_MEASURED
+                        if process_energy.get("ok")
+                        else TIER_STATIC
+                    ),
                     why=(
-                        "Joule idle-vs-active needs incrementing energy rails "
-                        "over both windows. GPU-token-active is not sampled "
-                        "(no lease). CPU-seconds above are the measured cost "
-                        "axis; joules stay a model."
+                        "Raw sampled ri_energy_nj delta over idle sleep, "
+                        "converted nJ→J. Bookend proc_pid_rusage on this pid."
+                    ),
+                    window_s=(process_energy.get("idle") or {}).get("mean_window_s"),
+                    raw_field="ri_energy_nj",
+                ),
+                _cat_value(
+                    "active_process_energy_j",
+                    (process_energy.get("busy") or {}).get("mean_joules"),
+                    unit="J",
+                    evidence_tier=(
+                        TIER_HARDWARE_MEASURED
+                        if process_energy.get("ok")
+                        else TIER_STATIC
+                    ),
+                    why=(
+                        "Raw sampled ri_energy_nj delta over CPU-only burn, "
+                        "converted nJ→J. GPU untouched."
+                    ),
+                    window_s=(process_energy.get("busy") or {}).get("mean_window_s"),
+                    raw_field="ri_energy_nj",
+                    cpu_burn_iters=(process_energy.get("busy") or {}).get(
+                        "mean_cpu_burn_iters"
+                    ),
+                ),
+                _cat_value(
+                    "idle_vs_active_joules",
+                    (process_energy.get("differential") or {}).get("mean_work_joules"),
+                    unit="J",
+                    evidence_tier=(
+                        TIER_HARDWARE_MEASURED
+                        if (process_energy.get("differential") or {}).get("busy_gt_idle")
+                        else TIER_STATIC
+                    ),
+                    why=(
+                        "busy_joules - idle_watts * busy_window_s from two "
+                        "proc_pid_rusage windows on this pid. A real "
+                        "differential of two samples, not two guesses. "
+                        "Process-attributed; not GPU-token-active; not a "
+                        "TOKEN_NS wrap."
                     ),
                     token_ns_wrap=False,
+                    error_budget_j=(process_energy.get("error_budget") or {}).get(
+                        "combined_j"
+                    ),
+                ),
+                _cat_value(
+                    "joules_per_cpu_burn_iteration",
+                    (process_energy.get("useful_work") or {}).get("joules_per_iteration"),
+                    unit="J/iteration",
+                    evidence_tier=(
+                        TIER_HARDWARE_MEASURED
+                        if (process_energy.get("useful_work") or {}).get(
+                            "joules_per_iteration"
+                        )
+                        is not None
+                        else TIER_STATIC
+                    ),
+                    why=_USEFUL_WORK_DEFENSE,
+                    denominator=_USEFUL_WORK_DENOMINATOR,
+                    token_ns_wrap=False,
+                    error_budget_j_per_iteration=(
+                        process_energy.get("useful_work") or {}
+                    ).get("error_budget_j_per_iteration"),
+                    not_j_token=True,
                 ),
             ],
         },
@@ -1659,6 +2337,8 @@ def roadmap_categories(
         "host": host,
         "cpu_cost": cpu_cost,
         "rails": rails,
+        "process_energy": process_energy,
+        "contention": contention,
     }
 
 
@@ -1684,10 +2364,12 @@ def recover_implementation() -> list[dict[str, Any]]:
             ),
             "adequate_for_this_lane": False,
             "why_not_adequate": (
-                "Rust runtime under crates/; sidecar must not mutate it. It "
-                "fills pJ only from a caller joule or a wrap. It is not a "
-                "scoreboard contract, not an inert scheduler, and this "
-                "session could not reproduce live IOReport samples."
+                "Rust runtime under crates/; sidecar must not mutate it. "
+                "EnergySampler wraps IOReport GPU Energy (nJ) around TOKEN_NS; "
+                "this sidecar has no GPU lease and iokit-open-user-client is "
+                "denied in the seatbelt profile, so that path is not this "
+                "measurement. proc_pid_rusage ri_energy_nj is the working "
+                "non-root process energy gate; energy.rs does not call it."
             ),
         },
         {
@@ -1846,8 +2528,11 @@ def _gaps_closed() -> list[str]:
         "Named the scoreboard slot (JOULES_PER_TOKEN, JOULES_PER_ACCEPTED_TOKEN, WORK_UNITS_PER_KWH) as ABSENT/UNKNOWN cells.",
         "Cited recovered Codex energy.rs / orch scheduler / EnergyMode / accepted-token ledger so this is not a fork of them.",
         "Emitted II-E SUBGENES as roadmap_categories with per-value evidence tiers (HARDWARE_MEASURED vs COST_MODEL vs STATIC vs FUNCTIONAL_SIM).",
-        "Measured what this M3 Ultra can: IOReport Energy Model catalog, pmset power source/thermal warning log, sysctl identity, process CPU-seconds idle vs busy.",
-        "Modeled what it cannot: FPGA power, J/token, J/accepted-token, WU/kWh, die temperature, GPU-token-active joules.",
+        "Measured a genuine idle-vs-active energy differential on this pid via proc_pid_rusage ri_energy_nj (kernel nJ), with stated method and error budget.",
+        "Defined the useful-work denominator as cpu_burn_iterations of the same closed window; J/token and WU/kWh stay unfilled.",
+        "Recorded live-resident / hcli / sandbox contention without signaling any process.",
+        "Measured what this M3 Ultra can without iokit-open: process energy, IOReport catalog, pmset power source/thermal warning log, sysctl identity, process CPU-seconds.",
+        "Modeled what it cannot: FPGA power, J/token, J/accepted-token, WU/kWh, die temperature, GPU-token-active joules, IOReport live rails under this seatbelt profile.",
         "Power-cap policy refuses unless the wattage is HARDWARE_MEASURED; still does not enforce a cap without a GPU lease.",
     ]
 
@@ -1892,9 +2577,17 @@ def build() -> Any:
         ),
     )
 
+    contention = observe_contention()
+    # Receipt measurement: 1 s windows × 3 repeats. Tests call
+    # measure_process_energy() directly with shorter windows.
+    process_energy = measure_process_energy(
+        idle_s=1.0, busy_s=1.0, repeats=3, contention=contention
+    )
     packed = roadmap_categories(
         probes=probes,
         scheduler_decision=decision.as_dict(),
+        process_energy=process_energy,
+        contention=contention,
     )
     categories = packed["categories"]
     assert_tier_honesty(categories)
@@ -1930,6 +2623,20 @@ def build() -> Any:
         "host": packed["host"],
         "cpu_cost": packed["cpu_cost"],
         "rail_samples": packed["rails"],
+        "process_energy": packed["process_energy"],
+        "contention": packed["contention"],
+        "measurement": {
+            "symbol": "measure_process_energy",
+            "ok": bool(process_energy.get("ok")),
+            "method": process_energy.get("method"),
+            "error_budget": process_energy.get("error_budget"),
+            "useful_work": process_energy.get("useful_work"),
+            "resident_during_measurement": process_energy.get(
+                "resident_during_measurement"
+            ),
+            "gpu_touched": False,
+            "token_ns_wrap": False,
+        },
         "cited_token_interval": packed["cited_token_interval"],
         "power_cap": packed["power_cap"],
         "probes": probes,
@@ -2041,6 +2748,14 @@ def main() -> int:
 if __name__ == "__main__":
     from _common import require_known_flags
     require_known_flags(
-        ["--ioreport-worker", "--ioreport-sample", "--idle-s", "--busy-s"]
+        [
+            "--build",
+            "--probe",
+            "--selftest",
+            "--ioreport-worker",
+            "--ioreport-sample",
+            "--idle-s",
+            "--busy-s",
+        ]
     )
     raise SystemExit(main())

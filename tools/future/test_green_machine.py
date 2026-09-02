@@ -7,6 +7,7 @@ converts UNKNOWN into a default number.
 from __future__ import annotations
 
 import json
+import os
 
 import pytest
 
@@ -333,14 +334,22 @@ def test_receipt_emits_roadmap_categories_with_per_value_tiers():
     assert vals["WU/kWh"]["evidence_tier"] == gm.TIER_COST_MODEL
     assert vals["fpga_power_watts"]["evidence_tier"] == gm.TIER_COST_MODEL
     assert vals["fpga_power_watts"]["hardware_present"] is False
-    assert vals["idle_vs_active_joules"]["evidence_tier"] == gm.TIER_COST_MODEL
+    assert vals["idle_vs_active_joules"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert isinstance(vals["idle_vs_active_joules"]["value"], (int, float))
+    assert vals["idle_vs_active_joules"]["value"] > 0
+    assert vals["joules_per_cpu_burn_iteration"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert vals["joules_per_cpu_burn_iteration"]["denominator"] == "cpu_burn_iterations"
     assert vals["thermal_warning_recorded"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
     assert vals["idle_process_cpu_s"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
     assert vals["active_process_cpu_s"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert vals["idle_process_energy_j"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert vals["active_process_energy_j"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
     assert vals["scheduler_action"]["evidence_tier"] == gm.TIER_FUNCTIONAL_SIM
     assert vals["power_cap_action"]["evidence_tier"] == gm.TIER_FUNCTIONAL_SIM
     # Token-attributed contract is still UNKNOWN — we did not smuggle a number in.
     assert doc["metrics"]["joules_per_token"]["value"] == "UNKNOWN"
+    assert vals["process_energy_watts_busy"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert vals["process_energy_watts_idle"]["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
 
 
 def test_hardware_measured_cpu_idle_vs_active_is_a_real_call():
@@ -414,4 +423,97 @@ def test_build_calls_decide_power_cap_and_roadmap_categories():
     assert doc["roadmap"]["gene"] == "II-E_GREEN_MACHINE"
     assert doc["cpu_cost"]["gpu_touched"] is False
     _assert_no_hardware_claims(doc)
+
+
+def test_proc_pid_rusage_is_a_real_call():
+    snap = gm.proc_pid_rusage(os.getpid())
+    assert snap is not None
+    assert snap["rc"] == 0
+    assert snap["energy_nj"] >= 0
+    assert snap["pid"] == os.getpid()
+
+
+def test_measure_process_energy_idle_vs_busy_is_a_real_differential():
+    """Call site of the measurement gate. Importing the module is not enough."""
+    out = gm.measure_process_energy(idle_s=0.15, busy_s=0.15, repeats=1)
+    assert out["ok"] is True
+    assert out["gpu_touched"] is False
+    assert out["token_ns_wrap"] is False
+    assert out["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    idle = out["idle"]
+    busy = out["busy"]
+    diff = out["differential"]
+    assert idle["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert busy["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert diff["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert busy["mean_joules"] > idle["mean_joules"]
+    assert diff["busy_gt_idle"] is True
+    assert diff["mean_work_joules"] > 0
+    raw = out["repeats"][0]
+    assert raw["idle"]["delta_nj"] >= 0
+    assert raw["busy"]["delta_nj"] > raw["idle"]["delta_nj"]
+    assert raw["busy"]["energy_nj_t1"] > raw["busy"]["energy_nj_t0"]
+    method = out["method"]
+    assert method["source"] == "proc_pid_rusage"
+    assert method["field"] == "ri_energy_nj"
+    budget = out["error_budget"]
+    assert budget["quantization_j"] == 1.0e-9
+    assert budget["combined_j"] > 0
+    assert "bookend" in budget["rule"].lower() or "Bookend" in budget["rule"]
+    work = out["useful_work"]
+    assert work["denominator"] == "cpu_burn_iterations"
+    assert work["joules_per_iteration"] > 0
+    assert work["evidence_tier"] == gm.TIER_HARDWARE_MEASURED
+    assert "token" in work["not"].lower()
+    assert out["contention"]["signaled"] is False
+    assert out["contention"]["gpu_touched"] is False
+
+
+def test_useful_work_denominator_is_iterations_not_tokens():
+    out = gm.measure_process_energy(idle_s=0.1, busy_s=0.1, repeats=1)
+    work = out["useful_work"]
+    assert work["denominator"] == gm._USEFUL_WORK_DENOMINATOR
+    assert "cpu_burn" in work["denominator_definition"]
+    assert "WorkUnit" in work["defense"] or "token" in work["defense"].lower()
+    assert work["mean_iterations"] > 0
+    # Contracted token metrics remain a different axis.
+    assert "J/token" in work["not"]
+
+
+def test_receipt_records_contention_and_method():
+    doc = json.loads(gm.build().read_text())
+    meas = doc["measurement"]
+    assert meas["symbol"] == "measure_process_energy"
+    assert meas["ok"] is True
+    assert meas["gpu_touched"] is False
+    assert meas["method"]["field"] == "ri_energy_nj"
+    assert meas["error_budget"]["combined_j"] > 0
+    assert meas["useful_work"]["denominator"] == "cpu_burn_iterations"
+    contention = doc["contention"]
+    assert contention["signaled"] is False
+    assert "loadavg" in contention
+    assert isinstance(contention["sandbox_iokit_open_user_client_denied"], (bool, type(None)))
+    pe = doc["process_energy"]
+    assert pe["ok"] is True
+    assert pe["differential"]["busy_gt_idle"] is True
+    raw0 = pe["repeats"][0]["busy"]
+    assert raw0["energy_nj_t0"] is not None
+    assert raw0["energy_nj_t1"] > raw0["energy_nj_t0"]
+    # J/token in the receipt is still COST_MODEL / UNKNOWN in metrics.
+    assert doc["metrics"]["joules_per_token"]["value"] == "UNKNOWN"
+    cats = doc["roadmap_categories"]
+    jtok = next(v for v in cats["J/token"]["values"] if v["id"] == "J/token")
+    assert jtok["evidence_tier"] == gm.TIER_COST_MODEL
+    assert jtok.get("token_ns_wrap") is False
+
+
+def test_rusage_struct_matches_sdk_layout():
+    import ctypes
+
+    assert ctypes.sizeof(gm._RusageInfoV6) == 464
+    names = [n for n, _t in gm._RusageInfoV6._fields_]
+    assert names[names.index("ri_energy_nj") - 0] == "ri_energy_nj"
+    assert "ri_penergy_nj" in names
+    # energy_nj is after pcycles in the SDK header.
+    assert names.index("ri_energy_nj") == names.index("ri_pcycles") + 1
 
