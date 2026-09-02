@@ -31,7 +31,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:19:32Z",
+  "recorded_at": "2026-09-02T07:10:50Z",
   "recorded_by": "tools/future/addressing_gap.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -880,10 +880,10 @@
   }
  ],
  "schema": "hawking.future.addressing_gap.v1",
- "seal_sha256": "f9a2ad294e120a141d165c2b3c300778a716c0f3eacb677e39c91f007f69a1c8",
+ "seal_sha256": "2bf2482a53812f424f52eb0579057b559b45c1b0eab31fe98c36c59f8fe854a8",
  "self_timing": {
   "class": "SELF_MEASURED_DIRTY",
-  "cpu_parse_s": 0.04740683303680271,
+  "cpu_parse_s": 0.051492667058482766,
   "not": "a GPU measurement, a lease, a TPS, a roof, or evidence the cited probes still hold on this contaminated host"
  },
  "silicon_vs_datasheet": {

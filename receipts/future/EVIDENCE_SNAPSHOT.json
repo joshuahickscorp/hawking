@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:21:11Z",
+  "recorded_at": "2026-09-02T06:56:43Z",
   "recorded_by": "tools/future/evidence_snapshot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -59,8 +59,8 @@
    "name": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
    "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
    "snapshot_path": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-   "source_mtime_epoch": 1788321461.806,
-   "source_mtime_utc": "2026-09-02T03:57:41Z",
+   "source_mtime_epoch": 1788331891.867,
+   "source_mtime_utc": "2026-09-02T06:51:31Z",
    "source_path": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
   },
   {
@@ -347,8 +347,8 @@
    "name": "HCLI_MODELLAKE_FLASH_CENSUS.json",
    "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "snapshot_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_mtime_epoch": 1788322768.918,
-   "source_mtime_utc": "2026-09-02T04:19:28Z",
+   "source_mtime_epoch": 1788332164.111,
+   "source_mtime_utc": "2026-09-02T06:56:04Z",
    "source_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
   },
   {
@@ -439,6 +439,6 @@
  "purpose": "Pinned copy of the Codex receipts sidecar lanes read. Lanes run in sparse git worktrees where the live, uncommitted receipts are invisible; without this snapshot a lane would silently fall back to a fixture and its conclusions would be attached to nothing.",
  "read_only_guarantee": "Codex originals are opened read-only and never modified.",
  "schema": "hawking.future.evidence_snapshot.v1",
- "seal_sha256": "4959824dff81b0763cff51c50cf04136a7ae482e695cf66a79b5a2e40981babe",
+ "seal_sha256": "ec9a44ab2f4700596bc2d4d1dc09834ba9df35cdf871dde3ef79fadc5f2025c2",
  "version": 1
 }

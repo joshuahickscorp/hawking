@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:10:17Z",
+  "recorded_at": "2026-09-02T06:31:41Z",
   "recorded_by": "tools/audit/reachability_triage.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -14,35 +14,35 @@
   "by_classification": {
    "ARCHIVE_CANDIDATE": 0,
    "BUILT": 9,
-   "DORMANT": 216,
+   "DORMANT": 219,
    "SCAFFOLDED": 1,
-   "UNREACHABLE": 305
+   "UNREACHABLE": 304
   },
   "by_disposition": {
    "ARCHIVE_CANDIDATE": 1,
    "CONNECTED": 9,
-   "PARKED": 521
+   "PARKED": 523
   },
   "by_tree": {
    "tools/accelerator": 37,
-   "tools/future": 259,
+   "tools/future": 261,
    "tools/headless": 169,
    "tools/odyssey": 66
   },
-  "callable_outside_tests": 225,
-  "called_outside_tests": 194,
+  "callable_outside_tests": 228,
+  "called_outside_tests": 197,
   "connected_import_only": 0,
   "hcli_imported": 50,
   "hcli_reachable": 9,
   "import_only_callable": 31,
-  "import_sites": 1407,
-  "modules": 531,
+  "import_sites": 1419,
+  "modules": 533,
   "orchestration_bound": 107,
   "parked_missing_wake": 0,
   "produces_receipt": 264,
   "state_transition_exits_missing": 1,
   "state_transition_findings": 5,
-  "symbol_call_sites": 3403,
+  "symbol_call_sites": 3423,
   "undispositioned": 0
  },
  "engine": {
@@ -54,16 +54,16 @@
    "build_repo_index result cached for assemble()+triage sharing"
   ],
   "sidecar_counts": {
-   "capabilities": 337,
+   "capabilities": 339,
    "dead_surface": 186,
    "named_callable": 12,
    "named_capabilities": 14,
-   "sidecar_callable": 127,
-   "sidecar_modules": 257,
+   "sidecar_callable": 130,
+   "sidecar_modules": 259,
    "sidecar_registered": 0,
    "typed_tools": 65,
-   "typed_tools_callable": 11,
-   "typed_tools_dead": 54
+   "typed_tools_callable": 10,
+   "typed_tools_dead": 55
   }
  },
  "evidence_tier": "STATIC",
@@ -6182,7 +6182,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 45
+     "line": 50
     },
     {
      "file": "tools/future/abi_verdicts.py",
@@ -6658,6 +6658,21 @@
      "file": "tools/future/executable_economics.py",
      "kind": "import",
      "line": 50
+    },
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 440
+    },
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 441
+    },
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 442
     },
     {
      "file": "tools/future/external_specimen_seal.py",
@@ -7650,6 +7665,11 @@
      "line": 28
     },
     {
+     "file": "tools/future/static_kernel_verify_parity.py",
+     "kind": "import",
+     "line": 28
+    },
+    {
      "file": "tools/future/succession_trial.py",
      "kind": "import",
      "line": 39
@@ -7717,7 +7737,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "import",
-     "line": 959
+     "line": 971
     },
     {
      "file": "tools/odyssey/noetic_compiler.py",
@@ -7727,7 +7747,7 @@
     {
      "file": "tools/roadmap/reach.py",
      "kind": "import",
-     "line": 27
+     "line": 28
     },
     {
      "file": "tools/theia/intake.py",
@@ -7755,7 +7775,7 @@
    "module": "tools/future/__init__.py",
    "n_classes": 0,
    "n_functions": 0,
-   "n_import_sites": 321,
+   "n_import_sites": 325,
    "n_symbol_call_sites": 0,
    "orchestration_bound": false,
    "produces_receipt": false,
@@ -7847,6 +7867,7 @@
     "tools/future/test_evidence_snapshot.py",
     "tools/future/test_executable_economics.py",
     "tools/future/test_experiment_policy.py",
+    "tools/future/test_experiment_receipt.py",
     "tools/future/test_expert_bank_school.py",
     "tools/future/test_external_specimen_seal.py",
     "tools/future/test_fallback_resident.py",
@@ -7878,6 +7899,7 @@
     "tools/future/test_hcli_self_profile.py",
     "tools/future/test_hmf_objects.py",
     "tools/future/test_hwir.py",
+    "tools/future/test_hwir_sealed_predictions.py",
     "tools/future/test_improvement_metabolism.py",
     "tools/future/test_improvement_trial.py",
     "tools/future/test_integration_attack.py",
@@ -8008,6 +8030,7 @@
     "tools/future/test_trial_freeze.py",
     "tools/future/test_trial_workload.py",
     "tools/future/test_turnaround.py",
+    "tools/future/test_u50_carrier.py",
     "tools/future/test_uma_resource_ledger.py",
     "tools/future/test_vmcp.py",
     "tools/future/test_wakeup.py",
@@ -8734,6 +8757,21 @@
      "line": 8
     },
     {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 14
+    },
+    {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 15
+    },
+    {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 135
+    },
+    {
      "file": "tools/future/test_expert_bank_school.py",
      "kind": "import",
      "line": 5
@@ -8937,6 +8975,11 @@
      "file": "tools/future/test_hwir.py",
      "kind": "import",
      "line": 6
+    },
+    {
+     "file": "tools/future/test_hwir_sealed_predictions.py",
+     "kind": "import",
+     "line": 8
     },
     {
      "file": "tools/future/test_improvement_metabolism.py",
@@ -10179,6 +10222,11 @@
      "line": 12
     },
     {
+     "file": "tools/future/test_u50_carrier.py",
+     "kind": "import",
+     "line": 11
+    },
+    {
      "file": "tools/future/test_uma_resource_ledger.py",
      "kind": "import",
      "line": 11
@@ -10257,7 +10305,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 37
+     "line": 42
     },
     {
      "file": "tools/future/abi_verdicts.py",
@@ -10357,12 +10405,12 @@
     {
      "file": "tools/future/ba_delta_ab.py",
      "kind": "import",
-     "line": 25
+     "line": 28
     },
     {
      "file": "tools/future/ba_delta_ab.py",
      "kind": "import",
-     "line": 182
+     "line": 256
     },
     {
      "file": "tools/future/baseline_staleness.py",
@@ -10407,7 +10455,7 @@
     {
      "file": "tools/future/capability_eval.py",
      "kind": "import",
-     "line": 557
+     "line": 601
     },
     {
      "file": "tools/future/capability_information_map.py",
@@ -10670,6 +10718,11 @@
      "line": 51
     },
     {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 26
+    },
+    {
      "file": "tools/future/expert_bank_school.py",
      "kind": "import",
      "line": 23
@@ -10867,7 +10920,7 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "import",
-     "line": 35
+     "line": 45
     },
     {
      "file": "tools/future/improvement_metabolism.py",
@@ -11557,7 +11610,7 @@
     {
      "file": "tools/future/static_kernel_verify.py",
      "kind": "import",
-     "line": 27
+     "line": 32
     },
     {
      "file": "tools/future/static_skeleton.py",
@@ -11752,7 +11805,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "import",
-     "line": 960
+     "line": 972
     },
     {
      "file": "tools/theia/engine.py",
@@ -11780,8 +11833,8 @@
    "module": "tools/future/_common.py",
    "n_classes": 4,
    "n_functions": 14,
-   "n_import_sites": 301,
-   "n_symbol_call_sites": 797,
+   "n_import_sites": 302,
+   "n_symbol_call_sites": 807,
    "orchestration_bound": false,
    "produces_receipt": false,
    "public_classes": [
@@ -11870,47 +11923,57 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 270
+     "line": 275
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1515
+     "line": 1520
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1681
+     "line": 1686
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1758
+     "line": 1763
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1776
+     "line": 1787
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1791
+     "line": 1813
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 2217
+     "line": 2302
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 2218
+     "line": 2303
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 2676
+     "line": 2387
+    },
+    {
+     "file": "tools/audit/reachability_triage.py",
+     "kind": "call",
+     "line": 2388
+    },
+    {
+     "file": "tools/audit/reachability_triage.py",
+     "kind": "call",
+     "line": 2889
     },
     {
      "file": "tools/future/abi_verdicts.py",
@@ -12220,7 +12283,7 @@
     {
      "file": "tools/future/ba_delta_ab.py",
      "kind": "call",
-     "line": 183
+     "line": 257
     },
     {
      "file": "tools/future/baseline_staleness.py",
@@ -12335,22 +12398,22 @@
     {
      "file": "tools/future/capability_eval.py",
      "kind": "call",
-     "line": 529
-    },
-    {
-     "file": "tools/future/capability_eval.py",
-     "kind": "call",
      "line": 530
     },
     {
      "file": "tools/future/capability_eval.py",
      "kind": "call",
-     "line": 545
+     "line": 531
     },
     {
      "file": "tools/future/capability_eval.py",
      "kind": "call",
-     "line": 559
+     "line": 589
+    },
+    {
+     "file": "tools/future/capability_eval.py",
+     "kind": "call",
+     "line": 603
     },
     {
      "file": "tools/future/capability_information_map.py",
@@ -12360,27 +12423,32 @@
     {
      "file": "tools/future/capability_reachability.py",
      "kind": "call",
-     "line": 105
+     "line": 111
     },
     {
      "file": "tools/future/capability_reachability.py",
      "kind": "call",
-     "line": 1030
+     "line": 125
     },
     {
      "file": "tools/future/capability_reachability.py",
      "kind": "call",
-     "line": 1035
+     "line": 1287
     },
     {
      "file": "tools/future/capability_reachability.py",
      "kind": "call",
-     "line": 1072
+     "line": 1292
     },
     {
      "file": "tools/future/capability_reachability.py",
      "kind": "call",
-     "line": 1075
+     "line": 1427
+    },
+    {
+     "file": "tools/future/capability_reachability.py",
+     "kind": "call",
+     "line": 1443
     },
     {
      "file": "tools/future/capability_stages.py",
@@ -13043,6 +13111,11 @@
      "line": 2118
     },
     {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "call",
+     "line": 170
+    },
+    {
      "file": "tools/future/expert_bank_school.py",
      "kind": "call",
      "line": 975
@@ -13610,32 +13683,57 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 574
+     "line": 618
     },
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 1135
+     "line": 1179
     },
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 1155
+     "line": 1199
     },
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 2785
+     "line": 4229
     },
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 2786
+     "line": 4230
     },
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 2951
+     "line": 4849
+    },
+    {
+     "file": "tools/future/hwir.py",
+     "kind": "call",
+     "line": 4890
+    },
+    {
+     "file": "tools/future/hwir.py",
+     "kind": "call",
+     "line": 5147
+    },
+    {
+     "file": "tools/future/hwir.py",
+     "kind": "call",
+     "line": 5156
+    },
+    {
+     "file": "tools/future/hwir.py",
+     "kind": "call",
+     "line": 5157
+    },
+    {
+     "file": "tools/future/hwir.py",
+     "kind": "call",
+     "line": 5375
     },
     {
      "file": "tools/future/improvement_metabolism.py",
@@ -13740,12 +13838,12 @@
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 527
+     "line": 528
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 535
+     "line": 579
     },
     {
      "file": "tools/future/lpc_dataset.py",
@@ -15270,7 +15368,12 @@
     {
      "file": "tools/future/science_corpus.py",
      "kind": "call",
-     "line": 935
+     "line": 128
+    },
+    {
+     "file": "tools/future/science_corpus.py",
+     "kind": "call",
+     "line": 1016
     },
     {
      "file": "tools/future/sealed_default_absolute.py",
@@ -15400,17 +15503,17 @@
     {
      "file": "tools/future/static_kernel_verify.py",
      "kind": "call",
-     "line": 1879
+     "line": 1886
     },
     {
      "file": "tools/future/static_kernel_verify.py",
      "kind": "call",
-     "line": 1880
+     "line": 1887
     },
     {
      "file": "tools/future/static_kernel_verify.py",
      "kind": "call",
-     "line": 2000
+     "line": 2079
     },
     {
      "file": "tools/future/static_skeleton.py",
@@ -15845,7 +15948,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 963
+     "line": 975
     },
     {
      "file": "tools/theia/engine.py",
@@ -15935,6 +16038,7 @@
     "tools/future/test_hcli_self_profile.py",
     "tools/future/test_hmf_objects.py",
     "tools/future/test_hwir.py",
+    "tools/future/test_hwir_sealed_predictions.py",
     "tools/future/test_improvement_metabolism.py",
     "tools/future/test_improvement_trial.py",
     "tools/future/test_integration_attack.py",
@@ -16477,6 +16581,11 @@
      "file": "tools/future/test_hwir.py",
      "kind": "import",
      "line": 7
+    },
+    {
+     "file": "tools/future/test_hwir_sealed_predictions.py",
+     "kind": "import",
+     "line": 9
     },
     {
      "file": "tools/future/test_improvement_metabolism.py",
@@ -21808,16 +21917,22 @@
   "tools/future/ba_delta_ab.py": {
    "archive": null,
    "archive_reason": null,
-   "call_sites": [],
-   "callable_outside_tests": false,
-   "called_outside_tests": false,
-   "classification": "UNREACHABLE",
+   "call_sites": [
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 440
+    }
+   ],
+   "callable_outside_tests": true,
+   "called_outside_tests": true,
+   "classification": "DORMANT",
    "disposition": "PARKED",
-   "disposition_full": "PARKED(first production importer; currently uncalled and untested)",
+   "disposition_full": "PARKED(first HCLI entry-point Call of an exported symbol (CLI verb, tool registry, mission executor, or resident); currently only called inside the sidecar cluster, not from HCLI)",
    "dotted": "tools.future.ba_delta_ab",
    "evidence_tier": "STATIC",
    "has_main": true,
-   "has_test": false,
+   "has_test": true,
    "hcli_import_path": null,
    "hcli_imported": false,
    "hcli_invocations": [],
@@ -21829,8 +21944,8 @@
    "module": "tools/future/ba_delta_ab.py",
    "n_classes": 0,
    "n_functions": 3,
-   "n_import_sites": 0,
-   "n_symbol_call_sites": 0,
+   "n_import_sites": 1,
+   "n_symbol_call_sites": 1,
    "orchestration_bound": false,
    "produces_receipt": false,
    "public_classes": [],
@@ -21852,18 +21967,32 @@
    "receipt_producer_called": false,
    "retired": null,
    "summary": "FUSE_BA_DELTA removes 48 dispatches, token-identical, and it is not enabled.",
-   "symbol_call_sites": [],
-   "test_exercises": false,
-   "test_files": [],
-   "test_only_sites": [],
+   "symbol_call_sites": [
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "call",
+     "line": 446
+    }
+   ],
+   "test_exercises": true,
+   "test_files": [
+    "tools/future/test_experiment_receipt.py"
+   ],
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 135
+    }
+   ],
    "test_reads_receipt_only": false,
    "tree": "tools/future",
    "wake": {
-    "blocker": "currently uncalled and untested",
+    "blocker": "currently only imported inside the sidecar cluster; no HCLI Call node of an exported symbol",
     "evidence_tier": "STATIC",
-    "kind": "PRODUCTION_SYMBOL_CALL",
+    "kind": "HCLI_SYMBOL_CALL",
     "orchestration_module": null,
-    "predicate": "first production AST Call of an exported symbol of this module (a test file does not count; an import does not count)",
+    "predicate": "production AST Call of an exported symbol of this module from an HCLI entry (CLI verb, tool registry, mission executor, or resident)",
     "required_caller_prefix": "hcli/",
     "required_kind": "call",
     "required_symbol": "tools.future.ba_delta_ab.build",
@@ -21885,7 +22014,7 @@
     ],
     "schema": "hawking.audit.wake_condition.v1"
    },
-   "wake_condition": "first production importer; currently uncalled and untested"
+   "wake_condition": "first HCLI entry-point Call of an exported symbol (CLI verb, tool registry, mission executor, or resident); currently only called inside the sidecar cluster, not from HCLI"
   },
   "tools/future/baseline_staleness.py": {
    "archive": null,
@@ -23279,12 +23408,18 @@
   "tools/future/capability_eval.py": {
    "archive": null,
    "archive_reason": null,
-   "call_sites": [],
-   "callable_outside_tests": false,
-   "called_outside_tests": false,
-   "classification": "UNREACHABLE",
+   "call_sites": [
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 441
+    }
+   ],
+   "callable_outside_tests": true,
+   "called_outside_tests": true,
+   "classification": "DORMANT",
    "disposition": "PARKED",
-   "disposition_full": "PARKED(first production importer; tests exercise the module but nothing outside tests calls it)",
+   "disposition_full": "PARKED(first HCLI entry-point Call of an exported symbol (CLI verb, tool registry, mission executor, or resident); currently only called inside the sidecar cluster, not from HCLI)",
    "dotted": "tools.future.capability_eval",
    "evidence_tier": "STATIC",
    "has_main": true,
@@ -23300,8 +23435,8 @@
    "module": "tools/future/capability_eval.py",
    "n_classes": 11,
    "n_functions": 8,
-   "n_import_sites": 0,
-   "n_symbol_call_sites": 0,
+   "n_import_sites": 1,
+   "n_symbol_call_sites": 1,
    "orchestration_bound": false,
    "produces_receipt": true,
    "public_classes": [
@@ -23368,10 +23503,16 @@
    "receipt_names": [
     "CAPABILITY_EVAL.json"
    ],
-   "receipt_producer_called": false,
+   "receipt_producer_called": true,
    "retired": null,
    "summary": "Generic capability evaluation \u2014 no single hardcoded benchmark.",
-   "symbol_call_sites": [],
+   "symbol_call_sites": [
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "call",
+     "line": 453
+    }
+   ],
    "test_exercises": true,
    "test_files": [
     "tools/future/test_capability_eval.py"
@@ -23386,11 +23527,11 @@
    "test_reads_receipt_only": false,
    "tree": "tools/future",
    "wake": {
-    "blocker": "tests exercise the module but nothing outside tests calls an exported symbol",
+    "blocker": "currently only imported inside the sidecar cluster; no HCLI Call node of an exported symbol",
     "evidence_tier": "STATIC",
-    "kind": "PRODUCTION_SYMBOL_CALL",
+    "kind": "HCLI_SYMBOL_CALL",
     "orchestration_module": null,
-    "predicate": "first production AST Call of an exported symbol of this module (a test file does not count; an import does not count)",
+    "predicate": "production AST Call of an exported symbol of this module from an HCLI entry (CLI verb, tool registry, mission executor, or resident)",
     "required_caller_prefix": "hcli/",
     "required_kind": "call",
     "required_symbol": "tools.future.capability_eval.build",
@@ -23412,7 +23553,7 @@
     ],
     "schema": "hawking.audit.wake_condition.v1"
    },
-   "wake_condition": "first production importer; tests exercise the module but nothing outside tests calls it"
+   "wake_condition": "first HCLI entry-point Call of an exported symbol (CLI verb, tool registry, mission executor, or resident); currently only called inside the sidecar cluster, not from HCLI"
   },
   "tools/future/capability_information_map.py": {
    "archive": null,
@@ -23914,12 +24055,12 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 45
+     "line": 50
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "import",
-     "line": 27
+     "line": 28
     }
    ],
    "callable_outside_tests": true,
@@ -23941,9 +24082,9 @@
    "is_stub": false,
    "module": "tools/future/capability_reachability.py",
    "n_classes": 2,
-   "n_functions": 32,
+   "n_functions": 44,
    "n_import_sites": 2,
-   "n_symbol_call_sites": 57,
+   "n_symbol_call_sites": 56,
    "orchestration_bound": false,
    "produces_receipt": true,
    "public_classes": [
@@ -23958,6 +24099,22 @@
     {
      "args": [],
      "name": "repo_py_files"
+    },
+    {
+     "args": [],
+     "name": "tracked_py_set"
+    },
+    {
+     "args": [
+      "path"
+     ],
+     "name": "source_exists"
+    },
+    {
+     "args": [
+      "files"
+     ],
+     "name": "prefetch_texts"
     },
     {
      "args": [
@@ -24072,6 +24229,12 @@
      "name": "recover_registered_future_tool_names"
     },
     {
+     "args": [
+      "facts"
+     ],
+     "name": "repo_index_from_facts"
+    },
+    {
      "args": [],
      "name": "assemble"
     },
@@ -24082,6 +24245,17 @@
     {
      "args": [],
      "name": "selftest"
+    },
+    {
+     "args": [
+      "rust_caps",
+      "python_caps"
+     ],
+     "name": "compare_capability_maps"
+    },
+    {
+     "args": [],
+     "name": "run_parity"
     },
     {
      "args": [],
@@ -24098,67 +24272,62 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 131
+     "line": 136
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 138
+     "line": 143
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 219
+     "line": 224
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 228
+     "line": 233
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 232
+     "line": 237
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 278
+     "line": 283
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 281
+     "line": 286
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 428
+     "line": 433
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 468
+     "line": 473
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 471
+     "line": 476
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 492
+     "line": 497
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 503
-    },
-    {
-     "file": "tools/audit/reachability_triage.py",
-     "kind": "call",
-     "line": 521
+     "line": 508
     },
     {
      "file": "tools/audit/reachability_triage.py",
@@ -24168,77 +24337,77 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 638
+     "line": 531
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 639
+     "line": 643
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 652
+     "line": 644
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1061
+     "line": 657
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1062
+     "line": 1066
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1069
+     "line": 1067
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1204
+     "line": 1074
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1205
+     "line": 1209
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1211
+     "line": 1210
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1214
+     "line": 1216
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1256
+     "line": 1219
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1265
+     "line": 1261
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1287
+     "line": 1270
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1320
+     "line": 1292
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1321
+     "line": 1325
     },
     {
      "file": "tools/audit/reachability_triage.py",
@@ -24248,32 +24417,27 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1333
+     "line": 1331
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1334
+     "line": 1338
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1349
+     "line": 1339
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1350
+     "line": 1354
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1351
-    },
-    {
-     "file": "tools/audit/reachability_triage.py",
-     "kind": "call",
-     "line": 1353
+     "line": 1355
     },
     {
      "file": "tools/audit/reachability_triage.py",
@@ -24283,17 +24447,22 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1366
+     "line": 1358
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1555
+     "line": 1361
     },
     {
-     "file": "tools/roadmap/reach.py",
+     "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 52
+     "line": 1371
+    },
+    {
+     "file": "tools/audit/reachability_triage.py",
+     "kind": "call",
+     "line": 1560
     },
     {
      "file": "tools/roadmap/reach.py",
@@ -24323,37 +24492,32 @@
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 250
+     "line": 275
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 254
+     "line": 279
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 257
+     "line": 282
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 277
+     "line": 302
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 295
+     "line": 320
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 299
-    },
-    {
-     "file": "tools/roadmap/reach.py",
-     "kind": "call",
-     "line": 307
+     "line": 324
     },
     {
      "file": "tools/roadmap/reach.py",
@@ -24363,22 +24527,27 @@
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 341
+     "line": 357
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 410
+     "line": 366
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 420
+     "line": 832
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "call",
-     "line": 474
+     "line": 842
+    },
+    {
+     "file": "tools/roadmap/reach.py",
+     "kind": "call",
+     "line": 896
     }
    ],
    "test_exercises": true,
@@ -24401,7 +24570,7 @@
     {
      "file": "tools/roadmap/test_roadmap_graph.py",
      "kind": "import",
-     "line": 213
+     "line": 215
     }
    ],
    "test_reads_receipt_only": false,
@@ -24652,7 +24821,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1931
+     "line": 2012
     }
    ],
    "callable_outside_tests": true,
@@ -24722,7 +24891,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1938
+     "line": 2019
     }
    ],
    "test_exercises": true,
@@ -33056,7 +33225,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1965
+     "line": 2046
     },
     {
      "file": "tools/future/abliteration.py",
@@ -33242,12 +33411,12 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1969
+     "line": 2050
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1973
+     "line": 2054
     },
     {
      "file": "tools/future/abliteration.py",
@@ -34367,7 +34536,7 @@
     {
      "file": "tools/future/science_corpus.py",
      "kind": "call",
-     "line": 298
+     "line": 311
     }
    ],
    "test_exercises": true,
@@ -34405,6 +34574,215 @@
       "how": "add a WIRED entry and an AST Call of the named symbol in tools/audit/capability_manifest.py; an import is not enough",
       "required_kind": "call",
       "required_symbol": "tools.future.experiment_policy.expected_payoff",
+      "where": "tools/audit/capability_manifest.py"
+     }
+    ],
+    "schema": "hawking.audit.wake_condition.v1"
+   },
+   "wake_condition": "first HCLI entry-point Call of an exported symbol (CLI verb, tool registry, mission executor, or resident); currently only called inside the sidecar cluster, not from HCLI"
+  },
+  "tools/future/experiment_receipt.py": {
+   "archive": null,
+   "archive_reason": null,
+   "call_sites": [
+    {
+     "file": "tools/future/ba_delta_ab.py",
+     "kind": "import",
+     "line": 29
+    },
+    {
+     "file": "tools/future/capability_eval.py",
+     "kind": "import",
+     "line": 40
+    },
+    {
+     "file": "tools/future/lpc_baselines.py",
+     "kind": "import",
+     "line": 28
+    }
+   ],
+   "callable_outside_tests": true,
+   "called_outside_tests": true,
+   "classification": "DORMANT",
+   "disposition": "PARKED",
+   "disposition_full": "PARKED(first HCLI entry-point Call of an exported symbol (CLI verb, tool registry, mission executor, or resident); currently only called inside the sidecar cluster, not from HCLI)",
+   "dotted": "tools.future.experiment_receipt",
+   "evidence_tier": "STATIC",
+   "has_main": false,
+   "has_test": true,
+   "hcli_import_path": null,
+   "hcli_imported": false,
+   "hcli_invocations": [],
+   "hcli_path": null,
+   "hcli_reachable": false,
+   "import_only": false,
+   "is_package_marker": false,
+   "is_stub": false,
+   "module": "tools/future/experiment_receipt.py",
+   "n_classes": 1,
+   "n_functions": 17,
+   "n_import_sites": 3,
+   "n_symbol_call_sites": 5,
+   "orchestration_bound": false,
+   "produces_receipt": false,
+   "public_classes": [
+    {
+     "name": "ContractError"
+    }
+   ],
+   "public_functions": [
+    {
+     "args": [
+      "value"
+     ],
+     "name": "canonical_dumps"
+    },
+    {
+     "args": [
+      "text"
+     ],
+     "name": "sha256_text"
+    },
+    {
+     "args": [
+      "payload"
+     ],
+     "name": "content_seal"
+    },
+    {
+     "args": [
+      "inputs"
+     ],
+     "name": "canonicalize_inputs"
+    },
+    {
+     "args": [
+      "role",
+      "payload"
+     ],
+     "name": "input_ref"
+    },
+    {
+     "args": [],
+     "name": "current_commit"
+    },
+    {
+     "args": [],
+     "name": "current_machine"
+    },
+    {
+     "args": [],
+     "name": "identity_material"
+    },
+    {
+     "args": [
+      "material"
+     ],
+     "name": "identity_key"
+    },
+    {
+     "args": [],
+     "name": "artifact_identity"
+    },
+    {
+     "args": [
+      "ident"
+     ],
+     "name": "validate_artifact_identity"
+    },
+    {
+     "args": [],
+     "name": "experiment_receipt"
+    },
+    {
+     "args": [
+      "env"
+     ],
+     "name": "validate_experiment_receipt"
+    },
+    {
+     "args": [
+      "doc"
+     ],
+     "name": "attach"
+    },
+    {
+     "args": [
+      "doc"
+     ],
+     "name": "extract_receipt"
+    },
+    {
+     "args": [],
+     "name": "emit_named_producers"
+    }
+   ],
+   "receipt_names": [],
+   "receipt_producer_called": false,
+   "retired": null,
+   "summary": "Shared ArtifactIdentity + ExperimentReceipt emission contract.",
+   "symbol_call_sites": [
+    {
+     "file": "tools/future/ba_delta_ab.py",
+     "kind": "call",
+     "line": 177
+    },
+    {
+     "file": "tools/future/ba_delta_ab.py",
+     "kind": "call",
+     "line": 181
+    },
+    {
+     "file": "tools/future/capability_eval.py",
+     "kind": "call",
+     "line": 546
+    },
+    {
+     "file": "tools/future/lpc_baselines.py",
+     "kind": "call",
+     "line": 536
+    },
+    {
+     "file": "tools/future/lpc_baselines.py",
+     "kind": "call",
+     "line": 540
+    }
+   ],
+   "test_exercises": true,
+   "test_files": [
+    "tools/future/test_experiment_receipt.py"
+   ],
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 14
+    }
+   ],
+   "test_reads_receipt_only": false,
+   "tree": "tools/future",
+   "wake": {
+    "blocker": "currently only imported inside the sidecar cluster; no HCLI Call node of an exported symbol",
+    "evidence_tier": "STATIC",
+    "kind": "HCLI_SYMBOL_CALL",
+    "orchestration_module": null,
+    "predicate": "production AST Call of an exported symbol of this module from an HCLI entry (CLI verb, tool registry, mission executor, or resident)",
+    "required_caller_prefix": "hcli/",
+    "required_kind": "call",
+    "required_symbol": "tools.future.experiment_receipt.canonical_dumps",
+    "satisfy_by": [
+     {
+      "channel": "hcli",
+      "how": "a production file under hcli/ must contain an AST Call of an exported symbol of this module (not an Import/ImportFrom)",
+      "required_kind": "call",
+      "required_symbol": "tools.future.experiment_receipt.canonical_dumps",
+      "where": "hcli/"
+     },
+     {
+      "channel": "adapter",
+      "how": "add a WIRED entry and an AST Call of the named symbol in tools/audit/capability_manifest.py; an import is not enough",
+      "required_kind": "call",
+      "required_symbol": "tools.future.experiment_receipt.canonical_dumps",
       "where": "tools/audit/capability_manifest.py"
      }
     ],
@@ -35197,7 +35575,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1948
+     "line": 2029
     }
    ],
    "callable_outside_tests": true,
@@ -35267,7 +35645,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1955
+     "line": 2036
     }
    ],
    "test_exercises": true,
@@ -37586,7 +37964,7 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "import",
-     "line": 2211
+     "line": 3455
     },
     {
      "file": "tools/future/p6_projection.py",
@@ -37826,7 +38204,7 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 2215
+     "line": 3459
     }
    ],
    "test_exercises": true,
@@ -41572,8 +41950,8 @@
    "is_package_marker": false,
    "is_stub": false,
    "module": "tools/future/hwir.py",
-   "n_classes": 11,
-   "n_functions": 61,
+   "n_classes": 15,
+   "n_functions": 113,
    "n_import_sites": 4,
    "n_symbol_call_sites": 20,
    "orchestration_bound": true,
@@ -41610,7 +41988,19 @@
      "name": "DeviceProfile"
     },
     {
+     "name": "CarrierEnvelope"
+    },
+    {
      "name": "QGemvKernel"
+    },
+    {
+     "name": "PredictionRefused"
+    },
+    {
+     "name": "TamperedPrediction"
+    },
+    {
+     "name": "ScoringRefused"
     }
    ],
    "public_functions": [
@@ -41727,8 +42117,108 @@
      "name": "synthetic_device"
     },
     {
+     "args": [
+      "value",
+      "document_class",
+      "citation",
+      "note"
+     ],
+     "name": "sourced_field"
+    },
+    {
+     "args": [
+      "reason"
+     ],
+     "name": "unpinned_field"
+    },
+    {
+     "args": [
+      "profile"
+     ],
+     "name": "assert_variant_provenance"
+    },
+    {
+     "args": [
+      "generation",
+      "lanes"
+     ],
+     "name": "pcie_payload_beat"
+    },
+    {
+     "args": [
+      "variant"
+     ],
+     "name": "u50_family_profile"
+    },
+    {
+     "args": [],
+     "name": "list_u50_family_profiles"
+    },
+    {
+     "args": [
+      "name"
+     ],
+     "name": "select_device_profile"
+    },
+    {
+     "args": [],
+     "name": "chestnut_theoretical"
+    },
+    {
+     "args": [],
+     "name": "chestnut_current_firmware"
+    },
+    {
+     "args": [],
+     "name": "chestnut_hawking_optimized"
+    },
+    {
+     "args": [
+      "local_bytes_consumed",
+      "carrier_bytes_transferred"
+     ],
+     "name": "residency_ratio"
+    },
+    {
+     "args": [
+      "device",
+      "carrier"
+     ],
+     "name": "constrain_device_profile"
+    },
+    {
+     "args": [],
+     "name": "example_full_airflow_server_slot"
+    },
+    {
+     "args": [],
+     "name": "example_constrained_low_power_slot"
+    },
+    {
+     "args": [],
+     "name": "unpinned_real_carrier"
+    },
+    {
+     "args": [
+      "name"
+     ],
+     "name": "select_carrier_envelope"
+    },
+    {
+     "args": [
+      "kernel",
+      "device",
+      "carrier"
+     ],
+     "name": "admissible_plan"
+    },
+    {
      "args": [],
      "name": "canonical_qgemv_kernel"
+    },
+    {
+     "args": [],
+     "name": "planning_qgemv_kernel"
     },
     {
      "args": [],
@@ -41737,6 +42227,10 @@
     {
      "args": [],
      "name": "overflow_probe_kernel"
+    },
+    {
+     "args": [],
+     "name": "brochure_fit_kernel"
     },
     {
      "args": [
@@ -41827,9 +42321,78 @@
      "args": [
       "kernel",
       "device",
-      "operands"
+      "operands",
+      "carrier"
      ],
      "name": "run_qgemv_preboard"
+    },
+    {
+     "args": [
+      "pred"
+     ],
+     "name": "prediction_content_sha256"
+    },
+    {
+     "args": [
+      "pred"
+     ],
+     "name": "verify_prediction_seal"
+    },
+    {
+     "args": [
+      "device"
+     ],
+     "name": "declared_planning_coefficients"
+    },
+    {
+     "args": [],
+     "name": "seal_prediction"
+    },
+    {
+     "args": [
+      "predictions"
+     ],
+     "name": "prediction_set_digest"
+    },
+    {
+     "args": [],
+     "name": "load_u50_wake_condition"
+    },
+    {
+     "args": [
+      "device"
+     ],
+     "name": "inbound_board_predictions"
+    },
+    {
+     "args": [
+      "pred",
+      "observation"
+     ],
+     "name": "grade_prediction"
+    },
+    {
+     "args": [
+      "predictions",
+      "observations"
+     ],
+     "name": "score_prediction_set"
+    },
+    {
+     "args": [
+      "device"
+     ],
+     "name": "synthetic_rehearsal_observations"
+    },
+    {
+     "args": [
+      "predictions"
+     ],
+     "name": "write_sealed_predictions_receipt"
+    },
+    {
+     "args": [],
+     "name": "run_synthetic_arrival_rehearsal"
     },
     {
      "args": [],
@@ -41956,7 +42519,9 @@
    "test_files": [
     "tools/accelerator/test_fusion_bridge.py",
     "tools/future/test_hwir.py",
-    "tools/future/test_p6_projection.py"
+    "tools/future/test_hwir_sealed_predictions.py",
+    "tools/future/test_p6_projection.py",
+    "tools/future/test_u50_carrier.py"
    ],
    "test_only_sites": [
     {
@@ -41975,9 +42540,19 @@
      "line": 6
     },
     {
+     "file": "tools/future/test_hwir_sealed_predictions.py",
+     "kind": "import",
+     "line": 8
+    },
+    {
      "file": "tools/future/test_p6_projection.py",
      "kind": "import",
      "line": 17
+    },
+    {
+     "file": "tools/future/test_u50_carrier.py",
+     "kind": "import",
+     "line": 11
     }
    ],
    "test_reads_receipt_only": false,
@@ -43249,6 +43824,11 @@
    "archive_reason": null,
    "call_sites": [
     {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 442
+    },
+    {
      "file": "tools/future/lpc_dataset.py",
      "kind": "import",
      "line": 868
@@ -43284,8 +43864,8 @@
    "module": "tools/future/lpc_baselines.py",
    "n_classes": 3,
    "n_functions": 19,
-   "n_import_sites": 3,
-   "n_symbol_call_sites": 5,
+   "n_import_sites": 4,
+   "n_symbol_call_sites": 6,
    "orchestration_bound": true,
    "produces_receipt": true,
    "public_classes": [
@@ -43378,6 +43958,11 @@
    "summary": "LPC_BASELINES \u2014 honest baselines with calibrated uncertainty and ABSTENTION.",
    "symbol_call_sites": [
     {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "call",
+     "line": 449
+    },
+    {
      "file": "tools/future/lpc_dataset.py",
      "kind": "call",
      "line": 869
@@ -43464,7 +44049,7 @@
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "import",
-     "line": 28
+     "line": 29
     },
     {
      "file": "tools/future/physical_compiler_predict.py",
@@ -43621,37 +44206,32 @@
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 146
-    },
-    {
-     "file": "tools/future/lpc_baselines.py",
-     "kind": "call",
      "line": 147
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 180
+     "line": 148
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 191
+     "line": 181
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 207
+     "line": 192
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 263
+     "line": 208
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 271
+     "line": 264
     },
     {
      "file": "tools/future/lpc_baselines.py",
@@ -43666,17 +44246,22 @@
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 364
+     "line": 274
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 459
+     "line": 365
     },
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "call",
-     "line": 465
+     "line": 460
+    },
+    {
+     "file": "tools/future/lpc_baselines.py",
+     "kind": "call",
+     "line": 466
     },
     {
      "file": "tools/future/physical_compiler_predict.py",
@@ -50294,7 +50879,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "import",
-     "line": 959
+     "line": 971
     }
    ],
    "callable_outside_tests": true,
@@ -50388,7 +50973,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 962
+     "line": 974
     }
    ],
    "test_exercises": true,
@@ -57791,7 +58376,7 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "import",
-     "line": 1890
+     "line": 3134
     },
     {
      "file": "tools/future/mlp_auxiliary_information.py",
@@ -57992,7 +58577,7 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "call",
-     "line": 1892
+     "line": 3136
     },
     {
      "file": "tools/future/propagate.py",
@@ -65913,7 +66498,7 @@
    "is_stub": false,
    "module": "tools/future/science_corpus.py",
    "n_classes": 1,
-   "n_functions": 26,
+   "n_functions": 27,
    "n_import_sites": 1,
    "n_symbol_call_sites": 1,
    "orchestration_bound": false,
@@ -66019,6 +66604,12 @@
      "args": [
       "doc"
      ],
+     "name": "adapt_experiment_receipt"
+    },
+    {
+     "args": [
+      "doc"
+     ],
      "name": "adapt_meta_funnel"
     },
     {
@@ -66066,6 +66657,7 @@
    "test_exercises": true,
    "test_files": [
     "tools/future/test_experiment_policy.py",
+    "tools/future/test_experiment_receipt.py",
     "tools/future/test_science_corpus.py"
    ],
    "test_only_sites": [
@@ -66073,6 +66665,11 @@
      "file": "tools/future/test_experiment_policy.py",
      "kind": "import",
      "line": 8
+    },
+    {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 15
     },
     {
      "file": "tools/future/test_science_corpus.py",
@@ -66468,7 +67065,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "import",
-     "line": 568
+     "line": 580
     }
    ],
    "callable_outside_tests": true,
@@ -66637,7 +67234,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 574
+     "line": 586
     }
    ],
    "test_exercises": true,
@@ -68440,6 +69037,11 @@
      "file": "tools/future/qualification_pipeline.py",
      "kind": "import",
      "line": 39
+    },
+    {
+     "file": "tools/future/static_kernel_verify_parity.py",
+     "kind": "import",
+     "line": 28
     }
    ],
    "callable_outside_tests": true,
@@ -68461,9 +69063,9 @@
    "is_stub": false,
    "module": "tools/future/static_kernel_verify.py",
    "n_classes": 7,
-   "n_functions": 35,
-   "n_import_sites": 2,
-   "n_symbol_call_sites": 2,
+   "n_functions": 37,
+   "n_import_sites": 3,
+   "n_symbol_call_sites": 5,
    "orchestration_bound": true,
    "produces_receipt": true,
    "public_classes": [
@@ -68605,6 +69207,21 @@
      "file": "tools/future/qualification_pipeline.py",
      "kind": "call",
      "line": 308
+    },
+    {
+     "file": "tools/future/static_kernel_verify_parity.py",
+     "kind": "call",
+     "line": 39
+    },
+    {
+     "file": "tools/future/static_kernel_verify_parity.py",
+     "kind": "call",
+     "line": 41
+    },
+    {
+     "file": "tools/future/static_kernel_verify_parity.py",
+     "kind": "call",
+     "line": 42
     }
    ],
    "test_exercises": true,
@@ -68648,6 +69265,99 @@
     "schema": "hawking.audit.wake_condition.v1"
    },
    "wake_condition": "production tools.future.orchestration.invoke('static_kernel_verify.py') from an HCLI entry (CLI verb, tool registry, mission executor, or resident); listed in BINDINGS but invoke() is not statically reached from HCLI"
+  },
+  "tools/future/static_kernel_verify_parity.py": {
+   "archive": null,
+   "archive_reason": null,
+   "call_sites": [],
+   "callable_outside_tests": false,
+   "called_outside_tests": false,
+   "classification": "UNREACHABLE",
+   "disposition": "PARKED",
+   "disposition_full": "PARKED(first production importer; currently uncalled and untested)",
+   "dotted": "tools.future.static_kernel_verify_parity",
+   "evidence_tier": "STATIC",
+   "has_main": true,
+   "has_test": false,
+   "hcli_import_path": null,
+   "hcli_imported": false,
+   "hcli_invocations": [],
+   "hcli_path": null,
+   "hcli_reachable": false,
+   "import_only": false,
+   "is_package_marker": false,
+   "is_stub": false,
+   "module": "tools/future/static_kernel_verify_parity.py",
+   "n_classes": 0,
+   "n_functions": 5,
+   "n_import_sites": 0,
+   "n_symbol_call_sites": 0,
+   "orchestration_bound": false,
+   "produces_receipt": false,
+   "public_classes": [],
+   "public_functions": [
+    {
+     "args": [
+      "doc"
+     ],
+     "name": "canonical"
+    },
+    {
+     "args": [
+      "repo"
+     ],
+     "name": "python_scan"
+    },
+    {
+     "args": [
+      "bin_path",
+      "repo"
+     ],
+     "name": "rust_scan"
+    },
+    {
+     "args": [],
+     "name": "main"
+    }
+   ],
+   "receipt_names": [],
+   "receipt_producer_called": false,
+   "retired": null,
+   "summary": "Parity gate: Rust static_kernel_verify vs Python on real hawking-core sources.",
+   "symbol_call_sites": [],
+   "test_exercises": false,
+   "test_files": [],
+   "test_only_sites": [],
+   "test_reads_receipt_only": false,
+   "tree": "tools/future",
+   "wake": {
+    "blocker": "currently uncalled and untested",
+    "evidence_tier": "STATIC",
+    "kind": "PRODUCTION_SYMBOL_CALL",
+    "orchestration_module": null,
+    "predicate": "first production AST Call of an exported symbol of this module (a test file does not count; an import does not count)",
+    "required_caller_prefix": "hcli/",
+    "required_kind": "call",
+    "required_symbol": "tools.future.static_kernel_verify_parity.canonical",
+    "satisfy_by": [
+     {
+      "channel": "hcli",
+      "how": "a production file under hcli/ must contain an AST Call of an exported symbol of this module (not an Import/ImportFrom)",
+      "required_kind": "call",
+      "required_symbol": "tools.future.static_kernel_verify_parity.canonical",
+      "where": "hcli/"
+     },
+     {
+      "channel": "adapter",
+      "how": "add a WIRED entry and an AST Call of the named symbol in tools/audit/capability_manifest.py; an import is not enough",
+      "required_kind": "call",
+      "required_symbol": "tools.future.static_kernel_verify_parity.canonical",
+      "where": "tools/audit/capability_manifest.py"
+     }
+    ],
+    "schema": "hawking.audit.wake_condition.v1"
+   },
+   "wake_condition": "first production importer; currently uncalled and untested"
   },
   "tools/future/static_skeleton.py": {
    "archive": null,
@@ -70581,12 +71291,12 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1983
+     "line": 2064
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1986
+     "line": 2067
     },
     {
      "file": "tools/future/abliteration.py",
@@ -70836,12 +71546,12 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 1990
+     "line": 2071
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 2002
+     "line": 2083
     },
     {
      "file": "tools/future/abliteration.py",
@@ -73575,7 +74285,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 2012
+     "line": 2093
     }
    ],
    "callable_outside_tests": true,
@@ -73672,7 +74382,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "call",
-     "line": 2016
+     "line": 2097
     }
    ],
    "test_exercises": true,
@@ -73739,7 +74449,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "import",
-     "line": 572
+     "line": 584
     }
    ],
    "callable_outside_tests": true,
@@ -73924,7 +74634,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 579
+     "line": 591
     }
    ],
    "test_exercises": true,
@@ -74775,7 +75485,7 @@
    "evidence_tier": "STATIC",
    "has_main": true,
    "has_test": true,
-   "hcli_import_path": "hcli.acquisition -> tools.odyssey.modellake_watch -> tools.future.sleeping_specimens -> tools.future.workunit_species",
+   "hcli_import_path": "hcli.acquisition -> tools.odyssey.modellake_watch -> tools.future.wakeup -> tools.future.workunit_species",
    "hcli_imported": true,
    "hcli_invocations": [],
    "hcli_path": null,
@@ -118408,17 +119118,17 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 606
+     "line": 618
     },
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 719
+     "line": 731
     },
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 742
+     "line": 754
     }
    ],
    "test_exercises": true,
@@ -121239,7 +121949,7 @@
  },
  "purpose": "Authoritative reachability inventory for every non-test Python module under tools/future, tools/accelerator, tools/odyssey, tools/headless. A definition is not a capability.",
  "schema": "hawking.audit.reachability_triage.v1",
- "seal_sha256": "2fece092e8de00f039c0e00e42cea3f08f283e2b80f0ce27d82903931d751027",
+ "seal_sha256": "2bcb873ea05d5cb9058fd19db623c71db0f5834e9df1db37ad29d5d8264a311a",
  "state_transitions": [
   {
    "class": "complete_artifact_without_promotion",

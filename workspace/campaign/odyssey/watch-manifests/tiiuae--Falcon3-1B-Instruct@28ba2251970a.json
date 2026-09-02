@@ -1,0 +1,27 @@
+{
+  "expected": 3348992577,
+  "files": [
+    ".gitattributes",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "model.safetensors",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "tiiuae/Falcon3-1B-Instruct",
+  "resolved_sha": "28ba2251970a01dd1edc7ba7dad2eb71216ccfdf",
+  "revision": "28ba2251970a01dd1edc7ba7dad2eb71216ccfdf",
+  "sizes": {
+    ".gitattributes": 1519,
+    "README.md": 7454,
+    "config.json": 656,
+    "generation_config.json": 113,
+    "model.safetensors": 3338836632,
+    "special_tokens_map.json": 826,
+    "tokenizer.json": 9780754,
+    "tokenizer_config.json": 364623
+  }
+}

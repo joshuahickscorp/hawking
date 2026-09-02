@@ -59,7 +59,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:16:57Z",
+  "recorded_at": "2026-09-02T07:08:04Z",
   "recorded_by": "tools/future/flash_bpw_ladder.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -2221,7 +2221,7 @@
   "Seven EBPW types imported from flash_nr_complete; mixed arithmetic still raises CategoryError; none redefined here."
  ],
  "gpu_authority": false,
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
  "measurement_class": "STATIC_ONLY",
  "negative_findings": [
   {
@@ -2895,7 +2895,7 @@
   "surface_gate_pass": false,
   "why_this_is_not_a_win": "A diagnostic factor bpw below 1 sat alongside a held-out error far above contract. Smaller number, representation that does not work."
  },
- "seal_sha256": "9db4aaf922dbd11dfb2482e0aa6945503812501a22d5b8855bdf402c584ac19a",
+ "seal_sha256": "93b6862829460fedcd2175716eef62235abd3663ee8dc69c13936c61db6c06b8",
  "selftest": {
   "above_target_verdict": "REFUSED",
   "all_six_wrong_classes_refused": true,

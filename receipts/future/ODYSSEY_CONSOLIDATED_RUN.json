@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:12:31Z",
+  "recorded_at": "2026-09-02T07:03:23Z",
   "recorded_by": "tools/future/consolidated_run.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -642,7 +642,7 @@
    "unmet": [],
    "verdict": "LAUNCH"
   },
-  "git_head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+  "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
   "gpu_authority": false,
   "machine_genome": {
    "reason": null,
@@ -3056,12 +3056,12 @@
       "note": "durable workgraph exists (selftest / scheduler). It is not an Odyssey I run restart until a descriptor has launched.",
       "odyssey_run": false,
       "schema": "hawking.future.workgraph.durable.v1",
-      "tick": 299
+      "tick": 337
      }
     }
    }
   },
-  "run_id": "odyssey-i-20260902T041231Z-b76580b272ed",
+  "run_id": "odyssey-i-20260902T070323Z-36691aa32412",
   "schema": "hawking.future.odyssey_i.run_descriptor.v1",
   "source_specimens": {
    "curriculum_n_ready": 5,
@@ -3169,7 +3169,7 @@
     "resolved": "/Users/scammermike/Downloads/hawking/receipts/future/SPECIMEN_VERIFICATION.json"
    }
   },
-  "start_time": "2026-09-02T04:12:31Z",
+  "start_time": "2026-09-02T07:03:23Z",
   "time_budget": {
    "declared_trial_catalog": {
     "ids": [
@@ -6249,7 +6249,7 @@
       "note": "durable workgraph exists (selftest / scheduler). It is not an Odyssey I run restart until a descriptor has launched.",
       "odyssey_run": false,
       "schema": "hawking.future.workgraph.durable.v1",
-      "tick": 299
+      "tick": 337
      }
     }
    }
@@ -6442,7 +6442,7 @@
   "verdict": "LAUNCH"
  },
  "gpu_authority": false,
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
  "met": [
   "resident_autonomy_trial_pass",
   "specimen_curriculum_ready",
@@ -6501,7 +6501,7 @@
   "workunit": "one CPU_ANALYSIS unit; odyssey-i.consolidated-run; refuses rather than emitting a launch-shaped descriptor"
  },
  "schema": "hawking.future.consolidated_run.v1",
- "seal_sha256": "97ae9d4cc2b57cbd88be801c291e7fe5bbead6a2a7c6843027e46c6da9e96a80",
+ "seal_sha256": "9710ca2357aea7951b6495f1810059d887018f3623c94f2a1ff2ede61e925a20",
  "unmet": [],
  "verdict": "LAUNCH",
  "version": 1,

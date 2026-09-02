@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:21:56Z",
+  "recorded_at": "2026-09-02T06:56:41Z",
   "recorded_by": "tools/future/odyssey_launch.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -161,6 +161,11 @@
       "reason": "present in ModelLake, not a first-wave curriculum role",
       "repo": "Qwen/Qwen3-30B-A3B",
       "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
+     },
+     {
+      "reason": "present in ModelLake, not a first-wave curriculum role",
+      "repo": "Qwen/Qwen3-4B-Instruct-2507",
+      "revision": "cdbee75f17c0"
      },
      {
       "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -351,6 +356,11 @@
       "reason": "present in ModelLake, not a first-wave curriculum role",
       "repo": "zai-org/GLM-4.5-Air",
       "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
+     },
+     {
+      "reason": "present in ModelLake, not a first-wave curriculum role",
+      "repo": "zai-org/GLM-5.3-Flash",
+      "revision": "04c4e9e95c5d"
      }
     ],
     "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",
@@ -2001,16 +2011,16 @@
     "would_lower": "a demonstration that the observation is consistent with the claim being false",
     "would_raise": "independent replication of the same probe"
    },
-   "direct_observation": "dir_present=True n_json=324 path=/Users/scammermike/Downloads/hawking/receipts/future flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
+   "direct_observation": "dir_present=True n_json=327 path=/Users/scammermike/Downloads/hawking/receipts/future flags={'discover': True, 'invoke': True, 'schedule': True, 'verify': True, 'frontier': True, 'persist': True, 'refill': True}",
    "evidence": [
     {
-     "n_json": 324,
+     "n_json": 327,
      "receipts_future": "/Users/scammermike/Downloads/hawking/receipts/future"
     }
    ],
    "falsifier": "an independent probe of the same object the status names, not a reread of the status",
    "id": "receipts",
-   "interpretation": "receipts/future is present with n_json=324 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields",
+   "interpretation": "receipts/future is present with n_json=327 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields",
    "met": true,
    "operational": {
     "cli_is_not_enough": true,
@@ -2031,7 +2041,7 @@
    },
    "probe_kind": "measured_flags",
    "probe_performed": "Path.is_dir() and glob('*.json') on receipts/future; write_receipt seals STATIC_ONLY and raises on hardware fields",
-   "reason": "receipts/future is present with n_json=324 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields"
+   "reason": "receipts/future is present with n_json=327 (derived); write_receipt seals STATIC_ONLY and raises on hardware fields"
   }
  ],
  "criterion_ids": [
@@ -2782,7 +2792,7 @@
   "workspace": "repo-root"
  },
  "gpu_authority": false,
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
  "integration_points": {
   "autonomy_trial": "tools/future/autonomy_trial.py \u2014 persisted --verify verdict in AUTONOMY_TRIALS.json (plural)",
   "dirty_measure": "tools/future/dirty_measure.py \u2014 dirty-class measurement that cannot launder into PROTECTED_ABSOLUTE",
@@ -2951,6 +2961,11 @@
      "reason": "present in ModelLake, not a first-wave curriculum role",
      "repo": "Qwen/Qwen3-30B-A3B",
      "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
+    },
+    {
+     "reason": "present in ModelLake, not a first-wave curriculum role",
+     "repo": "Qwen/Qwen3-4B-Instruct-2507",
+     "revision": "cdbee75f17c0"
     },
     {
      "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -3141,6 +3156,11 @@
      "reason": "present in ModelLake, not a first-wave curriculum role",
      "repo": "zai-org/GLM-4.5-Air",
      "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
+    },
+    {
+     "reason": "present in ModelLake, not a first-wave curriculum role",
+     "repo": "zai-org/GLM-5.3-Flash",
+     "revision": "04c4e9e95c5d"
     }
    ],
    "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",
@@ -5027,7 +5047,7 @@
   "unmet_not_from_this_rewire": []
  },
  "schema": "hawking.future.odyssey_launch.v1",
- "seal_sha256": "17670cf15f392c46844fc298303e625a4b46723a1a66f6f2064638bccee09f63",
+ "seal_sha256": "513fa4c4a69928d22a8669255f4eaa15e4a0c791ee52c6326d3ddf91d7d5f278",
  "sleeping_workunits": [
   {
    "assigned_backend": null,
@@ -5292,6 +5312,11 @@
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-4B-Instruct-2507",
+    "revision": "cdbee75f17c0"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "Qwen/Qwen3-Embedding-0.6B",
     "revision": "97b0c614be4d"
    },
@@ -5479,6 +5504,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "zai-org/GLM-4.5-Air",
     "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "zai-org/GLM-5.3-Flash",
+    "revision": "04c4e9e95c5d"
    }
   ],
   "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",

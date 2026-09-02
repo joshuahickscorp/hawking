@@ -8,32 +8,32 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:21:31Z",
+  "recorded_at": "2026-09-02T06:18:41Z",
   "recorded_by": "tools/future/static_kernel_verify.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "blocking_defect_count": 2,
+ "blocking_defect_count": 5,
  "branch": "odyssey-i",
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
-  "ERROR": 2,
+  "ERROR": 5,
   "INFO_pass_like": 867,
   "UNVERIFIABLE": 533,
   "WARNING": 76
  },
  "coverage": {
   "binding_pairs_with_matching_index_sets": 749,
-  "dispatches_resolved": 778,
+  "dispatches_resolved": 784,
   "dispatches_unverifiable_name": 93,
   "honesty": "PASS-like INFO is only recorded when the checker followed both sides to a concrete index or layout. A bind it could not follow is UNVERIFIABLE, never PASS. Matching indices are not a speed claim.",
-  "host_dispatches": 871,
-  "host_files_with_dispatch": 66,
+  "host_dispatches": 877,
+  "host_files_with_dispatch": 67,
   "metal_files": 45,
   "metal_generated_kernels": 19,
   "metal_kernels": 785,
   "metal_source_kernels": 766,
-  "referenced_kernel_names": 772,
+  "referenced_kernel_names": 775,
   "shaders_not_in_metalcontext_library": [
    "affine2_group32_matvec.metal",
    "bandwidth_roof.metal",
@@ -84,6 +84,48 @@
  "does_not_substitute_for_protected_measurement": true,
  "evidence_class": "STATIC_ONLY",
  "findings": [
+  {
+   "check": "kernel_existence",
+   "extra": {
+    "host_sites": [
+     "crates/hawking-core/src/static_kernel_verify.rs:2589",
+     "crates/hawking-core/src/static_kernel_verify.rs:2601",
+     "crates/hawking-core/src/static_kernel_verify.rs:2667",
+     "crates/hawking-core/src/static_kernel_verify.rs:2686"
+    ]
+   },
+   "host": "crates/hawking-core/src/static_kernel_verify.rs:2589",
+   "kernel": "demo_k",
+   "message": "host references kernel 'demo_k' but no shader defines `kernel void demo_k(`",
+   "severity": "ERROR",
+   "shader": null
+  },
+  {
+   "check": "kernel_existence",
+   "extra": {
+    "host_sites": [
+     "crates/hawking-core/src/static_kernel_verify.rs:2654"
+    ]
+   },
+   "host": "crates/hawking-core/src/static_kernel_verify.rs:2654",
+   "kernel": "no_such_kernel",
+   "message": "host references kernel 'no_such_kernel' but no shader defines `kernel void no_such_kernel(`",
+   "severity": "ERROR",
+   "shader": null
+  },
+  {
+   "check": "kernel_existence",
+   "extra": {
+    "host_sites": [
+     "crates/hawking-core/src/static_kernel_verify.rs:2717"
+    ]
+   },
+   "host": "crates/hawking-core/src/static_kernel_verify.rs:2717",
+   "kernel": "pack_k",
+   "message": "host references kernel 'pack_k' but no shader defines `kernel void pack_k(`",
+   "severity": "ERROR",
+   "shader": null
+  },
   {
    "check": "kernel_existence",
    "extra": {
@@ -2000,7 +2042,7 @@
    "verification": "NAME_RECOVERED_FROM_MACRO; body binding and PSO geometry remain compiler/runtime checks"
   }
  },
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "c8f7ab8de9031bf44a85f99820a465cd395c9e71",
  "library_membership_files": [
   [
    "attn.metal",
@@ -2181,7 +2223,7 @@
   "metal_mod_trace_name_tests": "crates/hawking-core/src/metal/mod.rs \u2014 static_kernel_name plus per-family `SHADER_X.contains(kernel void {name}()` tests. Compile/trace-name contract, not host bind vs [[buffer(N)]]."
  },
  "schema": "hawking.future.static_kernel_verify.v1",
- "seal_sha256": "c1da1cb25d73b3a66d2219688bfd4cba135013ab5fcebf943a642201187baba8",
+ "seal_sha256": "b4d124047f5d5620d25c16fefbf45b30946ba85badb450e468a00b6abccdddfa",
  "static_correctness_does_not_prove_speed": "Static correctness does NOT prove speed and does NOT substitute for a protected measurement. A finding of no static ERROR is not a tps number, not a token_ns, not a complete-token, and not PROTECTED_ABSOLUTE. This tool exists to stop wasting a protected GPU window on a defect that was detectable from the .metal sources and their Rust hosts. It produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE. Everything here is STATIC_ONLY with bench state UNKNOWN.",
  "version": 1,
  "would_waste_a_protected_window": true

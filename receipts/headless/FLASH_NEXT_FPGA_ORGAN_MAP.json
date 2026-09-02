@@ -1,4 +1,216 @@
 {
+  "architecture_repatriation": {
+    "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+    "atlas_schema": "hawking.accelerator.architecture_atlas.v1",
+    "backend": "fpga",
+    "claim_boundary": "Derived atlas-to-HWIR projection only. No physical FPGA board, bitstream, hardware timing, or U50 performance is claimed.",
+    "dynamic_slots": [
+      "static_dynamic_skeleton",
+      "direct_routed_accumulate"
+    ],
+    "hwir_realizations": [
+      {
+        "behavior_id": "move_or_recompute",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "MoveOrRecompute",
+        "status": "IMPLEMENTED"
+      },
+      {
+        "behavior_id": "persistent_physical_region",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "PersistentPhysicalRegion",
+        "status": "IMPLEMENTED"
+      },
+      {
+        "behavior_id": "fused_decode_compute",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "FusedDecodeCompute",
+        "status": "PHYSICALLY_MEASURED"
+      },
+      {
+        "behavior_id": "local_state_machine",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "LocalStateMachine",
+        "status": "IMPLEMENTED"
+      },
+      {
+        "behavior_id": "graph_replay",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "GraphReplay",
+        "status": "DIAGNOSTIC"
+      },
+      {
+        "behavior_id": "layout_algebra",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "LayoutTransform",
+        "status": "DIAGNOSTIC"
+      },
+      {
+        "behavior_id": "static_dynamic_skeleton",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "ConditionalPhysicalProgram",
+        "status": "IMPLEMENTED"
+      },
+      {
+        "behavior_id": "stationary_representation",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "StationaryRepresentation",
+        "status": "IMPLEMENTED"
+      },
+      {
+        "behavior_id": "semantic_transport",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "SemanticTransportEdge",
+        "status": "IMPLEMENTED"
+      },
+      {
+        "behavior_id": "collective_region",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "CollectiveRegion",
+        "status": "IMPLEMENTED"
+      },
+      {
+        "behavior_id": "async_double_buffer",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "DoubleBufferedTile",
+        "status": "MAPPED"
+      },
+      {
+        "behavior_id": "spatial_local_pipeline",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "SpatialPipeline",
+        "status": "MAPPED"
+      },
+      {
+        "behavior_id": "direct_routed_accumulate",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "DirectRoutedAccumulate",
+        "status": "DIAGNOSTIC"
+      },
+      {
+        "behavior_id": "sparse_conditional_execution",
+        "node_kind": "spatial_dataflow_hypothesis",
+        "primitive": "SparseSkip",
+        "status": "DIAGNOSTIC"
+      }
+    ],
+    "label": "[D]",
+    "model": "flash-next",
+    "physical_graph_mappings": {
+      "async_double_buffer": {
+        "execution_policy": "overlap_when_measured",
+        "memory": "double_buffered_tiles",
+        "synchronization": "producer_consumer_fences"
+      },
+      "collective_region": {
+        "dependencies": "semantic_transport",
+        "device_placement": "topology_aware",
+        "synchronization": "collective_algorithm"
+      },
+      "direct_routed_accumulate": {
+        "computation": "route_then_native_expert",
+        "data": "selected_payload_only",
+        "state": "route_metadata_resident"
+      },
+      "fused_decode_compute": {
+        "computation": "projection_plus_decode",
+        "memory": "no_dense_rematerialization",
+        "representation": "native_decode"
+      },
+      "graph_replay": {
+        "execution_policy.dynamic_slots": [
+          "token",
+          "position",
+          "route",
+          "sampling"
+        ],
+        "execution_policy.pipeline_state": "compile_once_reuse"
+      },
+      "layout_algebra": {
+        "computation": "tile_and_lane_mapping",
+        "precision": "representation_grouping",
+        "representation": "layout_algebra"
+      },
+      "local_state_machine": {
+        "execution_policy": "fixed_state_transitions",
+        "state": "authoritative_resident_owner",
+        "synchronization": "state_update_edges"
+      },
+      "move_or_recompute": {
+        "dependencies": "costed_dependency_queries",
+        "device_placement": "topology_aware",
+        "execution_policy": "measured_complete_wall"
+      },
+      "persistent_physical_region": {
+        "execution_policy.process": "long_lived_executor",
+        "residency.state": "sequence",
+        "residency.weights": "resident"
+      },
+      "semantic_transport": {
+        "dependencies": "typed_transport_edges",
+        "device_placement": "topology_aware",
+        "synchronization": "edge_ownership_and_order"
+      },
+      "sparse_conditional_execution": {
+        "computation": "conditional_regions",
+        "data": "sparse_indices_and_payloads",
+        "qualification": "parity_required"
+      },
+      "spatial_local_pipeline": {
+        "computation": "spatial_regions",
+        "data": "semantic_edges",
+        "memory": "local_intermediates"
+      },
+      "static_dynamic_skeleton": {
+        "dependencies": "precomputed",
+        "execution_policy": "static_skeleton_plus_dynamic_slots",
+        "synchronization": "precomputed_where_safe"
+      },
+      "stationary_representation": {
+        "memory": "tier_is_executable_identity",
+        "representation": "packed_native",
+        "residency": "stationarity_contract"
+      }
+    },
+    "selected_behavior_ids": [
+      "move_or_recompute",
+      "persistent_physical_region",
+      "fused_decode_compute",
+      "local_state_machine",
+      "graph_replay",
+      "layout_algebra",
+      "static_dynamic_skeleton",
+      "stationary_representation",
+      "semantic_transport",
+      "collective_region",
+      "async_double_buffer",
+      "spatial_local_pipeline",
+      "direct_routed_accumulate",
+      "sparse_conditional_execution"
+    ],
+    "selected_primitives": [
+      "MoveOrRecompute",
+      "PersistentPhysicalRegion",
+      "FusedDecodeCompute",
+      "LocalStateMachine",
+      "GraphReplay",
+      "LayoutTransform",
+      "ConditionalPhysicalProgram",
+      "StationaryRepresentation",
+      "SemanticTransportEdge",
+      "CollectiveRegion",
+      "DoubleBufferedTile",
+      "SpatialPipeline",
+      "DirectRoutedAccumulate",
+      "SparseSkip"
+    ],
+    "static_skeleton": [
+      "graph_replay",
+      "static_dynamic_skeleton",
+      "collective_region"
+    ],
+    "status": "PROJECTED"
+  },
   "claim_boundary": "Candidate FPGA mapping only. [D] denotes a derived hypothesis and [S] denotes executable link/partition simulation. No physical board, bitstream, hardware timing, or U50 performance is claimed.",
   "device_genome": {
     "device_id": "unselected-fpga-device",
@@ -73,6 +285,218 @@
     "status": "[D] TARGET_UNSELECTED"
   },
   "hwir": {
+    "architecture_repatriation": {
+      "atlas_fingerprint": "e763623e8a4ddcfc8350d6b5f680284a23db68f8bfbca53428e258d24adfc2ab",
+      "atlas_schema": "hawking.accelerator.architecture_atlas.v1",
+      "backend": "fpga",
+      "claim_boundary": "Derived atlas-to-HWIR projection only. No physical FPGA board, bitstream, hardware timing, or U50 performance is claimed.",
+      "dynamic_slots": [
+        "static_dynamic_skeleton",
+        "direct_routed_accumulate"
+      ],
+      "hwir_realizations": [
+        {
+          "behavior_id": "move_or_recompute",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "MoveOrRecompute",
+          "status": "IMPLEMENTED"
+        },
+        {
+          "behavior_id": "persistent_physical_region",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "PersistentPhysicalRegion",
+          "status": "IMPLEMENTED"
+        },
+        {
+          "behavior_id": "fused_decode_compute",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "FusedDecodeCompute",
+          "status": "PHYSICALLY_MEASURED"
+        },
+        {
+          "behavior_id": "local_state_machine",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "LocalStateMachine",
+          "status": "IMPLEMENTED"
+        },
+        {
+          "behavior_id": "graph_replay",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "GraphReplay",
+          "status": "DIAGNOSTIC"
+        },
+        {
+          "behavior_id": "layout_algebra",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "LayoutTransform",
+          "status": "DIAGNOSTIC"
+        },
+        {
+          "behavior_id": "static_dynamic_skeleton",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "ConditionalPhysicalProgram",
+          "status": "IMPLEMENTED"
+        },
+        {
+          "behavior_id": "stationary_representation",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "StationaryRepresentation",
+          "status": "IMPLEMENTED"
+        },
+        {
+          "behavior_id": "semantic_transport",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "SemanticTransportEdge",
+          "status": "IMPLEMENTED"
+        },
+        {
+          "behavior_id": "collective_region",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "CollectiveRegion",
+          "status": "IMPLEMENTED"
+        },
+        {
+          "behavior_id": "async_double_buffer",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "DoubleBufferedTile",
+          "status": "MAPPED"
+        },
+        {
+          "behavior_id": "spatial_local_pipeline",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "SpatialPipeline",
+          "status": "MAPPED"
+        },
+        {
+          "behavior_id": "direct_routed_accumulate",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "DirectRoutedAccumulate",
+          "status": "DIAGNOSTIC"
+        },
+        {
+          "behavior_id": "sparse_conditional_execution",
+          "node_kind": "spatial_dataflow_hypothesis",
+          "primitive": "SparseSkip",
+          "status": "DIAGNOSTIC"
+        }
+      ],
+      "label": "[D]",
+      "model": "flash-next",
+      "physical_graph_mappings": {
+        "async_double_buffer": {
+          "execution_policy": "overlap_when_measured",
+          "memory": "double_buffered_tiles",
+          "synchronization": "producer_consumer_fences"
+        },
+        "collective_region": {
+          "dependencies": "semantic_transport",
+          "device_placement": "topology_aware",
+          "synchronization": "collective_algorithm"
+        },
+        "direct_routed_accumulate": {
+          "computation": "route_then_native_expert",
+          "data": "selected_payload_only",
+          "state": "route_metadata_resident"
+        },
+        "fused_decode_compute": {
+          "computation": "projection_plus_decode",
+          "memory": "no_dense_rematerialization",
+          "representation": "native_decode"
+        },
+        "graph_replay": {
+          "execution_policy.dynamic_slots": [
+            "token",
+            "position",
+            "route",
+            "sampling"
+          ],
+          "execution_policy.pipeline_state": "compile_once_reuse"
+        },
+        "layout_algebra": {
+          "computation": "tile_and_lane_mapping",
+          "precision": "representation_grouping",
+          "representation": "layout_algebra"
+        },
+        "local_state_machine": {
+          "execution_policy": "fixed_state_transitions",
+          "state": "authoritative_resident_owner",
+          "synchronization": "state_update_edges"
+        },
+        "move_or_recompute": {
+          "dependencies": "costed_dependency_queries",
+          "device_placement": "topology_aware",
+          "execution_policy": "measured_complete_wall"
+        },
+        "persistent_physical_region": {
+          "execution_policy.process": "long_lived_executor",
+          "residency.state": "sequence",
+          "residency.weights": "resident"
+        },
+        "semantic_transport": {
+          "dependencies": "typed_transport_edges",
+          "device_placement": "topology_aware",
+          "synchronization": "edge_ownership_and_order"
+        },
+        "sparse_conditional_execution": {
+          "computation": "conditional_regions",
+          "data": "sparse_indices_and_payloads",
+          "qualification": "parity_required"
+        },
+        "spatial_local_pipeline": {
+          "computation": "spatial_regions",
+          "data": "semantic_edges",
+          "memory": "local_intermediates"
+        },
+        "static_dynamic_skeleton": {
+          "dependencies": "precomputed",
+          "execution_policy": "static_skeleton_plus_dynamic_slots",
+          "synchronization": "precomputed_where_safe"
+        },
+        "stationary_representation": {
+          "memory": "tier_is_executable_identity",
+          "representation": "packed_native",
+          "residency": "stationarity_contract"
+        }
+      },
+      "selected_behavior_ids": [
+        "move_or_recompute",
+        "persistent_physical_region",
+        "fused_decode_compute",
+        "local_state_machine",
+        "graph_replay",
+        "layout_algebra",
+        "static_dynamic_skeleton",
+        "stationary_representation",
+        "semantic_transport",
+        "collective_region",
+        "async_double_buffer",
+        "spatial_local_pipeline",
+        "direct_routed_accumulate",
+        "sparse_conditional_execution"
+      ],
+      "selected_primitives": [
+        "MoveOrRecompute",
+        "PersistentPhysicalRegion",
+        "FusedDecodeCompute",
+        "LocalStateMachine",
+        "GraphReplay",
+        "LayoutTransform",
+        "ConditionalPhysicalProgram",
+        "StationaryRepresentation",
+        "SemanticTransportEdge",
+        "CollectiveRegion",
+        "DoubleBufferedTile",
+        "SpatialPipeline",
+        "DirectRoutedAccumulate",
+        "SparseSkip"
+      ],
+      "static_skeleton": [
+        "graph_replay",
+        "static_dynamic_skeleton",
+        "collective_region"
+      ],
+      "status": "PROJECTED"
+    },
     "buffers": [
       {
         "id": "resident_weight_shards",
@@ -137,7 +561,7 @@
         "to": "mtp_draft_verify_rollback"
       }
     ],
-    "fingerprint": "460bb86269b868ac42be538dfc7d271b7289708230c594fd98ca27eb7579828f",
+    "fingerprint": "f877b721f1091470d65a9e29adcfee5e8b01593c5e4908aa0daf0e1ab0396044",
     "label": "[D]",
     "model": "flash-next",
     "nodes": [
@@ -727,14 +1151,5 @@
     ],
     "schema": "hcli.fpga.link.v1",
     "status": "SIMULATION_ONLY"
-  },
-  "bench": {
-    "state": "UNKNOWN",
-    "recorded_at": "2026-08-26T00:00:00Z",
-    "recorded_by": "S032 \u00a73 backfill, tools/accelerator/stamp_bench_state.py",
-    "machine": "Apple M3 Ultra, 60 GPU cores, 96 GiB (receipts/headless/MACHINE_GENOME.json)",
-    "quiescence": null,
-    "rule": "S032 \u00a73 -- if quiescence is unknown the state is UNKNOWN, not quiet",
-    "provenance": "this receipt recorded no quiescence. UNKNOWN is what it was measured under, not a claim that the machine was busy"
   }
 }

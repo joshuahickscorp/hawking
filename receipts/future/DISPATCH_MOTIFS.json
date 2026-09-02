@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:16:38Z",
+  "recorded_at": "2026-09-02T07:07:44Z",
   "recorded_by": "tools/future.dispatch_motifs.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -2868,10 +2868,10 @@
   "receipt": "receipts/future/DISPATCH_MOTIFS.json"
  },
  "schema": "hawking.future.dispatch_motifs.v1",
- "seal_sha256": "d332a07d359bcaf8c713dc750fb632b9e783b1222c48fd1ba1516cd07865fbb8",
+ "seal_sha256": "c6a3e296aa2cd7cac9e115af2c5a720b7b0703afc0262c15572363b885514f7b",
  "self_timing": {
   "class": "SELF_MEASURED_DIRTY",
-  "cpu_parse_s": 0.0029165000887587667,
+  "cpu_parse_s": 0.002817832981236279,
   "not": "a GPU measurement, a lease, a qualified TPS, a roof, or evidence the cited 6.25 us still holds on this host",
   "numbers_decide_nothing": true
  },

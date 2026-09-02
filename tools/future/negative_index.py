@@ -97,6 +97,10 @@ SEED_SOURCES: tuple[str, ...] = (
     # that priced two of the schools above. Listed here so refuse_if_dead can
     # refuse the next candidate whose whole case is a byte count.
     "receipts/future/ECONOMICS_CALIBRATION.json",
+    # G014. Landed by tools/sovereign/g014_negative_science.py, same SKIP_PREFIXES
+    # reason as every receipts/future/ row above: discovery does not sweep it, so
+    # without this line refuse_if_dead cannot key these scars at all.
+    "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
 )
 
 SKIP_PREFIXES = ("tools/future/", "receipts/future/", "crates/")

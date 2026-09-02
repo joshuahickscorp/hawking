@@ -1,6 +1,6 @@
 {
   "gate": "REPAIR_HOMEOSTASIS",
-  "generated_at": "2026-08-23T08:48:30Z",
+  "generated_at": "2026-09-02T02:36:23Z",
   "max_repair_depth": 3,
   "results": [
     {
@@ -41,12 +41,12 @@
     {
       "name": "with cycle detection defeated, the per-root COUNT cap bounds the tree",
       "ok": true,
-      "detail": "6 repairs for one root, cap is 6 (depth bound alone allowed 3+9+27=39 before this cap existed)"
+      "detail": "6 repairs for one root, cap is 6; unique signatures issued=6; exhausted=[('dead', 'repair budget exhausted: 6 repairs already emitted for root dead'), ('dead.repair.1', 'repair budget exhausted: 6 repairs already emitted for root dead'), ('dead.repair.1.repair.1', 'repair budget exhausted: 6 repairs already emitted for root dead'), ('dead.repair.2', 'repair budget exhausted: 6 repairs already emitted for root dead'), ('dead.repair.1.repair.1.repair.1', 'repair budget exhausted at depth 3 for root dead'), ('dead.repair.1.repair.2', 'repair budget exhausted: 6 repairs already emitted for root dead'), ('dead.repair.2.repair.1', 'repair budget exhausted: 6 repairs already emitted for root dead')] (depth bound alone allowed 3+9+27=39 before this cap existed)"
     },
     {
       "name": "NEGATIVE CONTROL: raising the bound really does let the lineage grow",
       "ok": true,
-      "detail": "deepest=12 with both bounds lifted (defaults: depth 3, per-root 6)"
+      "detail": "deepest=12 with both bounds lifted (defaults: depth 3, per-root 6); unique signatures issued=500"
     }
   ],
   "failed": [],

@@ -153,7 +153,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:06:59Z",
+  "recorded_at": "2026-09-02T08:14:20Z",
   "recorded_by": "tools/future/negative_index.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -883,6 +883,10 @@
     "n": 1
    },
    {
+    "family": "receipts_sovereign_g014_negative_science_json",
+    "n": 1
+   },
+   {
     "family": "recompute_immutable_identity_sha_256_st_dev_geometry_parse_manifest_scan_inside_the_token_loop",
     "n": 1
    },
@@ -940,7 +944,7 @@
    },
    {
     "family": "shared_basis",
-    "n": 1
+    "n": 2
    },
    {
     "family": "shared_index_bare_commit_sweeps_foreign_stage",
@@ -956,7 +960,7 @@
    },
    {
     "family": "spec_decode",
-    "n": 2
+    "n": 3
    },
    {
     "family": "spec_exactshared_as_is",
@@ -1075,6 +1079,14 @@
     "n": 1
    },
    {
+    "family": "weight_space_cosine_as_a_proxy_for_real_activation_error",
+    "n": 1
+   },
+   {
+    "family": "whole_model_composition_of_locally_adequate_mlp_codec",
+    "n": 1
+   },
+   {
     "family": "widening_the_calibration_corpus_to_fix_under_fitted_organs",
     "n": 1
    },
@@ -1114,19 +1126,19 @@
    },
    {
     "model": "qwen3-30b-a3b",
-    "n": 126
+    "n": 127
    },
    {
     "model": "qwen3-80b",
-    "n": 380
+    "n": 381
    },
    {
     "model": "qwen3.8-27b",
-    "n": 55
+    "n": 57
    },
    {
     "model": "unrecorded",
-    "n": 87
+    "n": 88
    }
   ],
   "by_source": [
@@ -1271,6 +1283,13 @@
     "path": "receipts/future/MLP_STRUCTURED_OPERATOR.json"
    },
    {
+    "n_parsed": 4,
+    "n_scars": 4,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json"
+   },
+   {
     "n_parsed": 3,
     "n_scars": 3,
     "n_unparsed": 0,
@@ -1313,6 +1332,13 @@
     "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
    },
    {
+    "n_parsed": 1,
+    "n_scars": 1,
+    "n_unparsed": 0,
+    "origin": "disk",
+    "path": "receipts/sovereign/G014_negative_science.json"
+   },
+   {
     "n_parsed": 14,
     "n_scars": 14,
     "n_unparsed": 0,
@@ -1332,6 +1358,13 @@
     "n_unparsed": 1,
     "origin": "disk",
     "path": "tools/headless/noetic_negative_science.py"
+   },
+   {
+    "n_parsed": 0,
+    "n_scars": 1,
+    "n_unparsed": 1,
+    "origin": "disk",
+    "path": "tools/sovereign/g014_negative_science.py"
    },
    {
     "n_parsed": 7,
@@ -1455,11 +1488,11 @@
    "ramanujan.scaffold.core.stores Graveyard (in-process bury/revive, not a corpus index).",
    "Worktrees and grok/* branches the noetic sweeper walked; this index is HEAD + disk only."
   ],
-  "n_parsed": 671,
-  "n_refuse_eligible": 599,
-  "n_scars": 685,
-  "n_sources": 45,
-  "n_unparsed": 14
+  "n_parsed": 676,
+  "n_refuse_eligible": 603,
+  "n_scars": 691,
+  "n_sources": 48,
+  "n_unparsed": 15
  },
  "evidence_class": "STATIC_ONLY",
  "gaps_closed": [
@@ -1472,7 +1505,7 @@
   "Sparse-checkout ingest via git show HEAD:<path> so missing-on-disk is not treated as missing-in-git."
  ],
  "gpu_authority": false,
- "head": "ec0d4d1fb89bf7f9b4b38f4a797e3bf999c8f15e",
+ "head": "b4a3857d4a78082e8a2f636981740461cf3cea88",
  "how_to_use": {
   "proposal_keys": [
    "model",
@@ -4498,6 +4531,110 @@
    "verdict": "MEASURED_NEGATIVE"
   },
   {
+   "claim_refuted": "Does a high draft acceptance rate imply a speedup for self-speculative decoding on this machine?",
+   "failure_mechanism": "Acceptance rate was never the binding variable; the draft-to-verify COST RATIO is, and on this machine it is 0.75 where it needs to be about 0.5 or lower. The codec only moves the GEMV term (25.568 -> 17.811 ms) while the 5.869 ms non-GEMV floor does not shrink with the representation at all, so no acceptance rate rescues a scheme that already loses at 100% acceptance.",
+   "hypothesis_family": "spec_decode",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3-80b",
+   "models": [
+    "qwen3-80b"
+   ],
+   "organ": "whole_model",
+   "organs": [
+    "whole_model"
+   ],
+   "original_id": "self speculative decoding acceptance rate",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a draft tier costing under 15.063 ms/token at K=4 on this machine; or any draft whose NON-GEMV cost falls too, not just its GEMV; or verify-side amortization better than 2.57x; or a draft of a different shape.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#self speculative decoding acceptance rate",
+   "source_origin": "disk",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+   "failure_mechanism": "Both coupled frontiers stay at q2f. No K in {2,4,8} heals held-out real activation on the 64-layer joint fit, and the one point that IS denser than q2f is 2.17x slower per complete token. Density without coherence is not an executable, and fewer bits did not buy fewer ns.",
+   "hypothesis_family": "shared_basis",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "shared basis mlp below q2f",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+   "source_origin": "disk",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "Does weight-space cosine predict real-activation error, so a representation can be screened without ever touching real activations?",
+   "failure_mechanism": "The proxy's sign is organ-dependent, so a screen built on it silently inverts the ranking on attention. Every fidelity number screened this way on q_proj ordered the candidates backwards; the failure is not scale-invariance, because scale-aware weight rel_err anti-predicts identically at Spearman -1.000.",
+   "hypothesis_family": "weight_space_cosine_as_a_proxy_for_real_activation_error",
+   "keys_filled": 4,
+   "level": "FAMILY",
+   "machine": "unrecorded",
+   "model": "qwen3-30b-a3b",
+   "models": [
+    "qwen3-30b-a3b"
+   ],
+   "organ": "attention",
+   "organs": [
+    "attention"
+   ],
+   "original_id": "weight space cosine as a proxy for real activation error",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "the Spearman sign re-measured against real activations on an organ other than attention q_proj, on a representation other than q4_g64, or at a layer other than 0 -- any of those is a different measurement, not a retry of this one.",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#weight space cosine as a proxy for real activation error",
+   "source_origin": "disk",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
+   "claim_refuted": "Does a per-tensor codec that is locally adequate on every MLP tensor compose into a whole model that still emits the teacher's next token?",
+   "failure_mechanism": "Local per-tensor adequacy does not compose. Ternary grouped-64 across every MLP tensor in all 64 layers changes the greedy next token while q3-g64 and q2f-g64 under the same harness do not. Error accumulation is measured, not assumed, and is NOT monotonic (14 recorded layer transitions move free-run rel_l2 DOWN), so a per-layer bound cannot be summed into a whole-model bound.",
+   "hypothesis_family": "whole_model_composition_of_locally_adequate_mlp_codec",
+   "keys_filled": 4,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "qwen3.8-27b",
+   "models": [
+    "qwen3.8-27b"
+   ],
+   "organ": "mlp",
+   "organs": [
+    "mlp"
+   ],
+   "original_id": "whole_model_composition_of_locally_adequate_mlp_codec",
+   "parse_status": "PARSED",
+   "refuse_eligible": true,
+   "reopen_condition": "a ternary-class MLP codec whose whole-model complete_token_loop reproduces the teacher argmax under this harness; or evidence that one greedy token from a 16-token prompt is the wrong proxy (a multi-token generate disagreeing with it).",
+   "representation": "unrecorded",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#whole_model_composition_of_locally_adequate_mlp_codec",
+   "source_origin": "disk",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED_NEGATIVE"
+  },
+  {
    "claim_refuted": "The 24% did not follow the catalog indirection. Isolating host catalog lookup off the GPU addr-probe timestamp left the gap in place. What the 24% tracks instead is dispatch topology and mixed organ sizes: the marginal cost of a dispatch (~15us for this host/catalog ceremony class) multiplied by how many the token issues, plus the fact that organs of very different sizes do not amortise a dispatch equally.",
    "failure_mechanism": "catalog_addressing_not_primary_703_530_cause",
    "hypothesis_family": "catalog_addressing_not_primary_703_530_cause",
@@ -5568,6 +5705,32 @@
    "verdict": "LIVE_REOPEN_HOLDS"
   },
   {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "receipts/sovereign/G014_negative_science.json",
+   "hypothesis_family": "receipts_sovereign_g014_negative_science_json",
+   "keys_filled": 2,
+   "level": "MODEL_SPECIFIC",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "g014_negative_science",
+   "parse_status": "PARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "receipts/sovereign/G014_negative_science.json#g014_negative_science",
+   "source_origin": "disk",
+   "source_path": "receipts/sovereign/G014_negative_science.json",
+   "unparsed_reason": "",
+   "verdict": "MEASURED"
+  },
+  {
    "claim_refuted": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
    "failure_mechanism": "routing-frequency allocation calibrated on ~88 tokens",
    "hypothesis_family": "calibration_88_tokens_routing_frequency_allocation_calibrated_on_88_tokens",
@@ -6207,6 +6370,32 @@
    "source_origin": "disk",
    "source_path": "tools/headless/noetic_negative_science.py",
    "unparsed_reason": "python implementation (catalog lives in its receipt; not re-extracted)",
+   "verdict": "unrecorded"
+  },
+  {
+   "claim_refuted": "unrecorded",
+   "failure_mechanism": "unrecorded",
+   "hypothesis_family": "unrecorded",
+   "keys_filled": 0,
+   "level": "UNRECORDED",
+   "machine": "unrecorded",
+   "model": "unrecorded",
+   "models": [
+    "unrecorded"
+   ],
+   "organ": "unrecorded",
+   "organs": [
+    "unrecorded"
+   ],
+   "original_id": "tools/sovereign/g014_negative_science.py#UNPARSED",
+   "parse_status": "UNPARSED",
+   "refuse_eligible": false,
+   "reopen_condition": "unrecorded",
+   "representation": "unrecorded",
+   "scar_id": "tools/sovereign/g014_negative_science.py#UNPARSED",
+   "source_origin": "disk",
+   "source_path": "tools/sovereign/g014_negative_science.py",
+   "unparsed_reason": "python file; no dict(id=...) catalog extracted",
    "verdict": "unrecorded"
   },
   {
@@ -19479,6 +19668,6 @@
   }
  ],
  "schema": "hawking.future.negative_index.v1",
- "seal_sha256": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
+ "seal_sha256": "4868f23d93d2bcd7d5a91c307a86cae9a2a6126e6bb889f896826edd1c7756ca",
  "version": 1
 }

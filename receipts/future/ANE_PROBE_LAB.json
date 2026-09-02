@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:19:43Z",
+  "recorded_at": "2026-09-02T07:11:00Z",
   "recorded_by": "tools/future/ane_probe_lab.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -27,15 +27,15 @@
   "cpu_listed": true,
   "devices": [
    {
-    "description": "<MLNeuralEngineComputeDevice: 0x1051b7320>",
+    "description": "<MLNeuralEngineComputeDevice: 0x100b3b320>",
     "kind": "NEURAL_ENGINE"
    },
    {
-    "description": "<MLGPUComputeDevice: 0x1051c2f50> Apple M3 Ultra",
+    "description": "<MLGPUComputeDevice: 0x100b46f50> Apple M3 Ultra",
     "kind": "GPU"
    },
    {
-    "description": "<MLCPUComputeDevice: 0x1051c37f0>",
+    "description": "<MLCPUComputeDevice: 0x100b477f0>",
     "kind": "CPU"
    }
   ],
@@ -296,7 +296,7 @@
  },
  "runnable_now_plain": "GPU_ONLY=False ANE_ONLY=False SERIAL=False CONCURRENT=False",
  "schema": "hawking.future.ane_probe_lab.v1",
- "seal_sha256": "22af467feb2cc8ed90c39b0c81478123dba58c07a99cae543d02275d060fdbc0",
+ "seal_sha256": "f33c868d081342cd44793c9beb2d8eec117b624ac740371a1ccd9b04e4410993",
  "supported_specs": [
   "add/elementwise",
   "matmul/linear",

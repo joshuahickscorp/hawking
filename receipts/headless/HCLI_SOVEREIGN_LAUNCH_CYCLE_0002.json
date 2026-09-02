@@ -1,0 +1,267 @@
+{
+  "admission": {
+    "heavy_resident": "BLOCKED",
+    "modellake": "existing watcher/downloads remain sole acquisition owner",
+    "reason": "swap remains above conservative resident ceiling; model-free CPU lanes admitted"
+  },
+  "child_harvest": {
+    "capability_census_post_catalog": {
+      "counts": {
+        "capabilities": 330,
+        "dead_surface": 188,
+        "typed_tools": 64,
+        "typed_tools_static_zero_callsite": 54
+      },
+      "log": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-6963fad5-5f0a-4b3b-bdab-aa627ccdc0d0.log",
+      "status": "PASSED"
+    },
+    "capability_census_post_context_recall": {
+      "command": "python3 tools/future/capability_reachability.py --selftest",
+      "counts": {
+        "capabilities": 331,
+        "dead_surface": 188,
+        "typed_tools": 65,
+        "typed_tools_static_zero_callsite": 54
+      },
+      "receipt": "/Users/scammermike/Downloads/hawking/receipts/future/HCLI_CAPABILITY_REACHABILITY.json",
+      "status": "PASSED"
+    },
+    "engine_targeted_after_catalog": {
+      "command": "python3 -m pytest -q hcli/test_engine_tool_loop.py tools/future/test_tool_reachability.py hcli/test_workunit_can_call_tools.py",
+      "status": "PASSED",
+      "tests": 25
+    },
+    "full_hcli": {
+      "command": "python3 -m pytest -q hcli",
+      "elapsed_s": 99.17,
+      "skipped": 1,
+      "status": "PASSED",
+      "tests": 444
+    },
+    "full_hcli_latest": {
+      "command": "python3 -m pytest -q hcli",
+      "elapsed_s": 50.79,
+      "skipped": 1,
+      "status": "PASSED",
+      "tests": 450
+    },
+    "installed_shim_semantic_probe": {
+      "exit_code": 0,
+      "fresh_directory": true,
+      "literal_backslash_bank": true,
+      "model_loaded": false,
+      "status": "PASSED"
+    },
+    "installed_shim_semantic_probe_after_fast_path": {
+      "exit_code": 0,
+      "fresh_directory": true,
+      "literal_backslash_bank": true,
+      "model_loaded": false,
+      "natural_directory_question": true,
+      "queued_goals": 2,
+      "runtime_started": false,
+      "shim_build": "build-20260902-003125",
+      "status": "PASSED"
+    },
+    "latest_regression": {
+      "command": "python3 -m pytest -q hcli/test_context_memory.py hcli/test_engine_tool_loop.py hcli/test_tui_frame.py hcli/test_goal_bank.py",
+      "status": "PASSED",
+      "tests": 41
+    },
+    "tool_reachability": {
+      "log": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-f138e961-fa11-4b87-b645-0e76d9403080.log",
+      "status": "PASSED",
+      "tests": 13
+    }
+  },
+  "cycle": 2,
+  "frontiers": [
+    "TOOL_SURFACE/reachability-and-alias-consolidation",
+    "CAPABILITY_GRAPH/static-census"
+  ],
+  "git_head": "caf83078f24374fdd594cb5114a6c590e7df5f06",
+  "grok_and_claude_probe": {
+    "claude_cli": "/Users/scammermike/.local/bin/claude",
+    "claude_version": "2.1.226 (Claude Code)",
+    "grok_launch_attempted": false,
+    "grok_run_installed": false,
+    "grok_swarm_propose": "PASSED",
+    "grok_swarm_proposed_lanes": 2,
+    "interpretation": "HCLI can validate bounded Grok lane contracts and can launch them only when grok-run is installed; this cycle did not spend a cloud/model call."
+  },
+  "launched_children": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q",
+        "tools/future/test_tool_reachability.py",
+        "hcli/test_engine_tool_loop.py"
+      ],
+      "created_at": 1788307596.113444,
+      "cwd": "/Users/scammermike/Downloads/hawking",
+      "error": null,
+      "finished_at": 1788307596.5094259,
+      "job_id": "job-f138e961-fa11-4b87-b645-0e76d9403080",
+      "label": "sovereign-tool-reachability-gate",
+      "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-f138e961-fa11-4b87-b645-0e76d9403080.log",
+      "parent_job_id": "resident-74d3a4d8-2326-4b44-b467-f73ad1717a77",
+      "pid": 28997,
+      "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+      "resumable": true,
+      "returncode": 0,
+      "schema": "hcli.agentos.background_job.v1",
+      "started_at": 1788307596.113444,
+      "state": "COMPLETED",
+      "timeout_s": 900.0
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/future/capability_reachability.py",
+        "--selftest"
+      ],
+      "created_at": 1788307596.120458,
+      "cwd": "/Users/scammermike/Downloads/hawking",
+      "error": null,
+      "finished_at": 1788307653.235713,
+      "job_id": "job-bfe533f0-2520-462d-a6fe-6a64e81e8fcd",
+      "label": "sovereign-capability-census",
+      "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-bfe533f0-2520-462d-a6fe-6a64e81e8fcd.log",
+      "parent_job_id": "resident-74d3a4d8-2326-4b44-b467-f73ad1717a77",
+      "pid": 28998,
+      "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+      "resumable": true,
+      "returncode": 0,
+      "schema": "hcli.agentos.background_job.v1",
+      "started_at": 1788307596.120458,
+      "state": "COMPLETED",
+      "timeout_s": 900.0
+    },
+    {
+      "argv": [
+        "python3",
+        "tools/future/capability_reachability.py",
+        "--selftest"
+      ],
+      "created_at": 1788307954.536861,
+      "cwd": "/Users/scammermike/Downloads/hawking",
+      "error": null,
+      "finished_at": 1788307990.6115808,
+      "job_id": "job-6963fad5-5f0a-4b3b-bdab-aa627ccdc0d0",
+      "label": "sovereign-capability-census-post-catalog",
+      "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-6963fad5-5f0a-4b3b-bdab-aa627ccdc0d0.log",
+      "parent_job_id": "resident-74d3a4d8-2326-4b44-b467-f73ad1717a77",
+      "pid": 38272,
+      "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+      "resumable": true,
+      "returncode": 0,
+      "schema": "hcli.agentos.background_job.v1",
+      "started_at": 1788307954.536862,
+      "state": "COMPLETED",
+      "timeout_s": 900.0
+    }
+  ],
+  "next_action": "Leave ModelLake acquisition with its sole watcher; schedule the next model-selection/alias telemetry window only after resident admission is safe.",
+  "observations": [
+    "The fresh-folder slash-command probe completed with model_loaded=false and literal backslash bank accepted.",
+    "The first fresh-folder natural-language probe started the default native resident and timed out during first Metal decode; that historical result is retained in semantic_natural_language_probe.",
+    "After moving the directory fast path ahead of runtime/evidence budgeting, the same natural-language probe completed immediately with model_loaded=false."
+  ],
+  "outcome": {
+    "deferred": [
+      "heavy resident admission remains blocked while swap exceeds the conservative 2 GiB ceiling",
+      "do not interpret 54 static zero-callsite tool names as unreachable from NL without semantic probes",
+      "do not refactor semantically distinct verbs solely because their handlers share implementation code"
+    ],
+    "green": [
+      "model-free tool reachability and focused catalog tests",
+      "dynamic tools.catalog discovery for natural-language focus",
+      "full hcli suite: 444 passed, 1 skipped",
+      "post-change static capability census sealed",
+      "installed shim fresh-folder semantic probe",
+      "model-free natural-language directory semantic probe after ordering fix",
+      "focus-ranked hot memory and bounded cold context recall",
+      "post-context-recall capability census: 331 capabilities, 65 typed tools"
+    ]
+  },
+  "parent_resident_id": "resident-74d3a4d8-2326-4b44-b467-f73ad1717a77",
+  "schema": "hcli.sovereign_launch.cycle.v1",
+  "semantic_natural_language_probe": {
+    "answer_observed": false,
+    "follow_up": "Bound or stream first-turn progress before repeating a heavy native semantic probe; keep HCLI_MODEL_TIMEOUT configurable for overnight work.",
+    "fresh_directory": true,
+    "interpretation": "cold-start/first-generation latency was observed; this does not prove fs.list failed. Slash commands, /status, /bank, and literal backslash-bank remain model-free.",
+    "model_loaded": true,
+    "observation_window_s": "over 150",
+    "observed": "HCLI lazily spawned ascension_qwen38_resident; the resident loaded the native catalog and reached Metal decode, but emitted no answer or tool_use result during the bounded observation window.",
+    "probe_terminated": true,
+    "question": "What is in this directory? Inspect it with the available tools and answer from observed files.",
+    "resident": "ascension_qwen38_resident",
+    "resident_physical_footprint": "~11.4 GiB",
+    "shared_processes_touched": false,
+    "status": "TIMED_OUT",
+    "tool_call_observed": false
+  },
+  "semantic_natural_language_probe_after_fast_path": {
+    "exit_code": 0,
+    "fresh_directory": true,
+    "installed_shim": "/Users/scammermike/.local/share/hcli/build-20260902-002722/hcli",
+    "interpretation": "The deterministic fast path now runs before evidence-budget discovery, so an obvious directory read does not cold-start the native resident.",
+    "model_loaded": false,
+    "observed_answer": "Observed directory /private/tmp/...: 1 directory, 0 files; [directory] .hcli/.",
+    "question": "What is in this directory? Inspect it with the available tools and answer from observed files.",
+    "runtime_started": false,
+    "status": "PASSED",
+    "tool": "fs.list",
+    "tool_result_included": true
+  },
+  "started_at": 1788307596.125227,
+  "status": "COMPLETED",
+  "termination": "bounded shell-free supervisors; no credentials or model load",
+  "tool_surface_audit": {
+    "distinct_handler_objects": 57,
+    "dynamic_discovery": "tools.catalog(focus) returns exact typed signatures without running handlers; context.recall retrieves old facts on demand",
+    "exact_handler_alias_groups": [
+      [
+        "fs.read",
+        "filesystem.read"
+      ],
+      [
+        "fs.search",
+        "filesystem.search"
+      ],
+      [
+        "fs.list",
+        "filesystem.list"
+      ],
+      [
+        "git.checkout-safe",
+        "git.revert-safe",
+        "git.checkout/revert-safe"
+      ],
+      [
+        "receipt.read",
+        "receipt.inspect",
+        "benchmark.inspect"
+      ],
+      [
+        "huggingface.resolve",
+        "huggingface.manifest"
+      ]
+    ],
+    "focused_catalog_reduction_pct": 70.3,
+    "focused_first_round_catalog_chars": 1354,
+    "full_catalog_chars": 4560,
+    "registered_names": 65,
+    "static_reachability": {
+      "capabilities": 331,
+      "dead_surface": 188,
+      "interpretation": "static source analyzer only; runtime WorkUnit.tool strings and natural-language dispatch are not visible to it",
+      "typed_tools": 65,
+      "typed_tools_static_zero_callsite": 54
+    }
+  },
+  "updated_at": 1788309158.52803
+}

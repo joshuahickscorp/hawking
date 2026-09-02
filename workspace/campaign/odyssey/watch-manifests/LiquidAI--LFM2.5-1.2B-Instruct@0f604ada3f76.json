@@ -1,0 +1,31 @@
+{
+  "expected": 2345559281,
+  "files": [
+    ".gitattributes",
+    "LICENSE",
+    "README.md",
+    "chat_template.jinja",
+    "config.json",
+    "generation_config.json",
+    "model.safetensors",
+    "special_tokens_map.json",
+    "tokenizer.json",
+    "tokenizer_config.json"
+  ],
+  "mode": "safe",
+  "repo": "LiquidAI/LFM2.5-1.2B-Instruct",
+  "resolved_sha": "0f604ada3f766f9f257460c4c9f0b5d6f69d431b",
+  "revision": "0f604ada3f766f9f257460c4c9f0b5d6f69d431b",
+  "sizes": {
+    ".gitattributes": 1519,
+    "LICENSE": 10644,
+    "README.md": 16291,
+    "chat_template.jinja": 5487,
+    "config.json": 1224,
+    "generation_config.json": 132,
+    "model.safetensors": 2340697936,
+    "special_tokens_map.json": 434,
+    "tokenizer.json": 4733389,
+    "tokenizer_config.json": 92225
+  }
+}

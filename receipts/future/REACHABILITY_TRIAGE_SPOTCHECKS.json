@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:00:41Z",
+  "recorded_at": "2026-09-02T06:16:47Z",
   "recorded_by": "tools/audit/reachability_triage.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -125,7 +125,7 @@
    "hcli_path": "hcli/agentos/autonomy_gate.py:101 (call)",
    "module": "tools/future/status_causality.py",
    "n_matches": 13,
-   "output_head": "HEAD:tools/future/campaign_scars.py:26:from tools.future.status_causality import (\nHEAD:tools/future/campaign_scars.py:483:            \"implemented_in\": \"tools.future.status_causality.check_claim\",\nHEAD:tools/future/capability_reachability.py:403:    ToolRegistry -- see tools.future.status_causality for why this matters:\nHEAD:tools/future/status_causality.py:530:    \"calls\": \"tools.future.status_causality.emit\",\nHEAD:tools/future/status_causality.py:1654:        \"emit_entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2611:            \"entry_point\": \"tools.future.status_causality.challenge()\",\nHEAD:tools/future/status_causality.py:2612:            \"emit_entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2613:            \"stamp_entry_point\": \"tools.future.status_causality.stamp()\",\nHEAD:tools/future/status_causality.py:2628:            \"entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2629:            \"stamp\": \"tools.future.status_causality.stamp()\",\nHEAD:tools/future/test_status_causality.py:352:    assert doc[\"resident_callable\"][\"entry_point\"] == \"tools.future.status_causality.challenge()\"\nHEAD:tools/future/test_status_causality.py:626:    assert iii[\"calls\"] == \"tools.future.status_causality.emit\"\nHEAD:tools/future/test_status_causality.py:634:        \"tools.future.status_causality.emit()\"",
+   "output_head": "HEAD:tools/future/campaign_scars.py:26:from tools.future.status_causality import (\nHEAD:tools/future/campaign_scars.py:483:            \"implemented_in\": \"tools.future.status_causality.check_claim\",\nHEAD:tools/future/capability_reachability.py:533:    ToolRegistry -- see tools.future.status_causality for why this matters:\nHEAD:tools/future/status_causality.py:530:    \"calls\": \"tools.future.status_causality.emit\",\nHEAD:tools/future/status_causality.py:1654:        \"emit_entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2611:            \"entry_point\": \"tools.future.status_causality.challenge()\",\nHEAD:tools/future/status_causality.py:2612:            \"emit_entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2613:            \"stamp_entry_point\": \"tools.future.status_causality.stamp()\",\nHEAD:tools/future/status_causality.py:2628:            \"entry_point\": \"tools.future.status_causality.emit()\",\nHEAD:tools/future/status_causality.py:2629:            \"stamp\": \"tools.future.status_causality.stamp()\",\nHEAD:tools/future/test_status_causality.py:352:    assert doc[\"resident_callable\"][\"entry_point\"] == \"tools.future.status_causality.challenge()\"\nHEAD:tools/future/test_status_causality.py:626:    assert iii[\"calls\"] == \"tools.future.status_causality.emit\"\nHEAD:tools/future/test_status_causality.py:634:        \"tools.future.status_causality.emit()\"",
    "verdict": "CONNECTED"
   },
   {
@@ -146,7 +146,7 @@
    "hcli_path": "hcli/acquisition.py:120 (call)",
    "module": "tools/odyssey/modellake_promote.py",
    "n_matches": 5,
-   "output_head": "HEAD:tools/odyssey/modellake_watch.py:37:# tools.odyssey.modellake_promote.PARTIAL_ROOT would silently not affect the\nHEAD:tools/odyssey/product_boundary.py:313:            \"promote is tools.odyssey.modellake_promote.promote; this plan \"\nHEAD:tools/odyssey/test_modellake_watch.py:363:    tools.odyssey.modellake_promote -- a test (or future caller) patching\nHEAD:tools/roadmap/catalog.py:285:        modules=(\"tools.odyssey.modellake_promote\",),\nHEAD:tools/roadmap/catalog.py:286:        symbols=((\"tools.odyssey.modellake_promote\", \"promote\"),),",
+   "output_head": "HEAD:tools/odyssey/modellake_watch.py:37:# tools.odyssey.modellake_promote.PARTIAL_ROOT would silently not affect the\nHEAD:tools/odyssey/product_boundary.py:313:            \"promote is tools.odyssey.modellake_promote.promote; this plan \"\nHEAD:tools/odyssey/test_modellake_watch.py:363:    tools.odyssey.modellake_promote -- a test (or future caller) patching\nHEAD:tools/roadmap/catalog.py:287:        modules=(\"tools.odyssey.modellake_promote\",),\nHEAD:tools/roadmap/catalog.py:288:        symbols=((\"tools.odyssey.modellake_promote\", \"promote\"),),",
    "verdict": "CONNECTED"
   },
   {
@@ -221,7 +221,7 @@
  "evidence_tier": "STATIC",
  "purpose": "Mandatory 5 UNREACHABLE + 5 CONNECTED hand verification via git grep -nE",
  "schema": "hawking.audit.reachability_triage_spotchecks.v1",
- "seal_sha256": "5aca8fa5373e05000c33f3f43ae25297c8d57bc65b96aa3fe83207cb602ba8c2",
+ "seal_sha256": "7a2bb9f31fa60f4cdce0583dba4a5da96180fad25ee9d95dc41ff29315cf5ca9",
  "unreachable": [
   "tools/accelerator/ane_micrograph_author.py",
   "tools/future/abi_verdicts.py",

@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:19:18Z",
+  "recorded_at": "2026-09-02T07:10:34Z",
   "recorded_by": "tools/future/green_machine.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -23,13 +23,13 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "claim_class": "STATIC_ONLY",
  "cpu_cost": {
-  "active_process_cpu_s": 0.19950200000005225,
-  "active_window_s": 0.2000090000219643,
-  "cpu_burn_iters": 5066798,
+  "active_process_cpu_s": 0.19983400000000984,
+  "active_window_s": 0.20001183298882097,
+  "cpu_burn_iters": 4910726,
   "evidence_tier": "HARDWARE_MEASURED",
   "gpu_touched": false,
-  "idle_process_cpu_s": 3.800000001774606e-05,
-  "idle_window_s": 0.20421266602352262,
+  "idle_process_cpu_s": 4.200000000764703e-05,
+  "idle_window_s": 0.20504833303857595,
   "why": "time.process_time() and time.perf_counter() on this process. CPU-seconds, not joules. GPU was not touched."
  },
  "evidence_tiers_present": [
@@ -51,15 +51,15 @@
   "Power-cap policy refuses unless the wattage is HARDWARE_MEASURED; still does not enforce a cap without a GPU lease."
  ],
  "gpu_authority": false,
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
  "honesty_rule": "Any metric that is not trustworthily measurable is UNKNOWN. Never an estimate, never a TDP-derived guess, never a FLOP-derived CMOS guess, never an idle GPU-rail sample presented as joules_per_token, never a number with invented precision. write_receipt already refuses a numeric joules_per_token. This module does not catch that error, does not add fields to HARDWARE_FIELDS, and does not convert UNKNOWN into 0 or into a datasheet watt. Saying UNKNOWN clearly is the deliverable. This sidecar produces STATIC_ONLY with bench state UNKNOWN; it produces neither DIAGNOSTIC_RELATIVE nor PROTECTED_ABSOLUTE.",
  "host": {
   "chip": "Apple M3 Ultra",
   "evidence_tier": "HARDWARE_MEASURED",
   "loadavg": [
-   12.6494140625,
-   8.7412109375,
-   8.5771484375
+   6.6083984375,
+   7.4228515625,
+   7.658203125
   ],
   "mem_bytes": 103079215104,
   "ncpu": 28,
@@ -349,7 +349,7 @@
  "protected_lease": false,
  "purpose": "II-E Green Machine / H-ROADMAP \u00a724: emit the gene-card SUBGENES with per-value evidence tiers. Token-attributed joules stay UNKNOWN; measurable M3 Ultra observations are HARDWARE_MEASURED; the rest are COST_MODEL.",
  "rail_samples": {
-  "cpu_burn_iters": 6378176,
+  "cpu_burn_iters": 6075577,
   "cpu_busy": {
    "channels": [
     {
@@ -360,7 +360,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.3266487920191139
+     "window_s": 0.3253044169396162
     },
     {
      "channel": "DIE_1_CPU Energy",
@@ -370,7 +370,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.3266487920191139
+     "window_s": 0.3253044169396162
     },
     {
      "channel": "DRAM0_0",
@@ -380,7 +380,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.3266487920191139
+     "window_s": 0.3253044169396162
     },
     {
      "channel": "DRAM0_1",
@@ -390,7 +390,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.3266487920191139
+     "window_s": 0.3253044169396162
     },
     {
      "channel": "GPU Energy",
@@ -400,11 +400,11 @@
      "raw_t1": null,
      "unit": "nJ",
      "watts": null,
-     "window_s": 0.3266487920191139
+     "window_s": 0.3253044169396162
     }
    ],
    "label": "cpu_busy_gpu_untouched",
-   "window_s": 0.3266487920191139
+   "window_s": 0.3253044169396162
   },
   "error": null,
   "idle": {
@@ -417,7 +417,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.33406241599004716
+     "window_s": 0.33259941707365215
     },
     {
      "channel": "DIE_1_CPU Energy",
@@ -427,7 +427,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.33406241599004716
+     "window_s": 0.33259941707365215
     },
     {
      "channel": "DRAM0_0",
@@ -437,7 +437,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.33406241599004716
+     "window_s": 0.33259941707365215
     },
     {
      "channel": "DRAM0_1",
@@ -447,7 +447,7 @@
      "raw_t1": null,
      "unit": "mJ",
      "watts": null,
-     "window_s": 0.33406241599004716
+     "window_s": 0.33259941707365215
     },
     {
      "channel": "GPU Energy",
@@ -457,11 +457,11 @@
      "raw_t1": null,
      "unit": "nJ",
      "watts": null,
-     "window_s": 0.33406241599004716
+     "window_s": 0.33259941707365215
     }
    ],
    "label": "idle",
-   "window_s": 0.33406241599004716
+   "window_s": 0.33259941707365215
   },
   "note": "GPU-token-active is not sampled: this sidecar has no GPU lease and must not disturb the live resident. cpu_busy is CPU-only.",
   "subscription_obtained": true
@@ -706,18 +706,18 @@
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "idle_process_cpu_s",
      "unit": "s",
-     "value": 3.800000001774606e-05,
+     "value": 4.200000000764703e-05,
      "why": "time.process_time() and time.perf_counter() on this process. CPU-seconds, not joules. GPU was not touched.",
-     "window_s": 0.20421266602352262
+     "window_s": 0.20504833303857595
     },
     {
-     "cpu_burn_iters": 5066798,
+     "cpu_burn_iters": 4910726,
      "evidence_tier": "HARDWARE_MEASURED",
      "id": "active_process_cpu_s",
      "unit": "s",
-     "value": 0.19950200000005225,
+     "value": 0.19983400000000984,
      "why": "process CPU-seconds over a CPU-only burn; GPU untouched",
-     "window_s": 0.2000090000219643
+     "window_s": 0.20001183298882097
     },
     {
      "evidence_tier": "COST_MODEL",
@@ -823,6 +823,6 @@
    "path": "receipts/headless/NOETIC_SCOREBOARD.json"
   }
  },
- "seal_sha256": "5d5d33bb1d2d999e3ed20d37b4856875237743fc1a2cb57b8e25f2f7431717f1",
+ "seal_sha256": "9fcbc51402b1d9fb19f8985afd0e0d35d2c89e925d3f6e722975337535c2669c",
  "version": 1
 }

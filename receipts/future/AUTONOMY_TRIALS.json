@@ -8,7 +8,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:17:29Z",
+  "recorded_at": "2026-09-02T06:36:41Z",
   "recorded_by": "tools/future/autonomy_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -33,9 +33,9 @@
   },
   "n_entries": 20,
   "n_live": 14,
-  "n_resolved": 6,
+  "n_resolved": 5,
   "n_safe_cpu": 10,
-  "n_stale": 0,
+  "n_stale": 1,
   "path_taken": "disk:receipts/future/CLAUDE_GLOBAL_FRONTIER.json",
   "present": true,
   "safe_cpu_ids": [
@@ -1240,7 +1240,7 @@
    "path_taken": "disk:receipts/future/QUALIFICATION_PIPELINE.json"
   }
  ],
- "head": "a1f415c100345380e702b07b36d43d1711309ee8",
+ "head": "c8f7ab8de9031bf44a85f99820a465cd395c9e71",
  "integration_points": {
   "codex_behaviors.py": "Codex blocker list is data in CODEX_REPORTED_BLOCKERS plus pinned evidence.",
   "debugger.py": "Process recovery is judged from process_failed/completed + process_recovered.",
@@ -1288,7 +1288,7 @@
    "path_taken": "disk:receipts/future/HCLI_AUTONOMY_BUILD.json",
    "substrate_verdict": "INVALIDATED_BY_SUBSTRATE_MUTATION",
    "trial": "15m",
-   "why": "4 code path(s) moved"
+   "why": "5 code path(s) moved"
   },
   "frozen_build_manifest_digest": "049db0abed2fbdad39f6508207989dd0ca40bd513ff3c78816ce4c3ad4704ca9",
   "gpu_authority": false,
@@ -1310,7 +1310,7 @@
    "why": "timeline has no internal seal_sha256; file digest is the transcript seal"
   },
   "timeline_not_rewritten": true,
-  "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-2912/test_cli_verify_exit_codes0/bad.json",
+  "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-3028/test_cli_verify_exit_codes0/bad.json",
   "timeline_seal_digest": "7d1f761ef6230cda5d7bfb9195a57087c3766a1a7d2a737d3ed5357aa4623484",
   "trial": "15m",
   "verdict": "FAIL"
@@ -1467,7 +1467,7 @@
     "path_taken": "disk:receipts/future/HCLI_AUTONOMY_BUILD.json",
     "substrate_verdict": "INVALIDATED_BY_SUBSTRATE_MUTATION",
     "trial": "15m",
-    "why": "4 code path(s) moved"
+    "why": "5 code path(s) moved"
    },
    "frozen_build_manifest_digest": "049db0abed2fbdad39f6508207989dd0ca40bd513ff3c78816ce4c3ad4704ca9",
    "gpu_authority": false,
@@ -1489,7 +1489,7 @@
     "why": "timeline has no internal seal_sha256; file digest is the transcript seal"
    },
    "timeline_not_rewritten": true,
-   "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-2912/test_cli_verify_exit_codes0/bad.json",
+   "timeline_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/pytest-of-scammermike/pytest-3028/test_cli_verify_exit_codes0/bad.json",
    "timeline_seal_digest": "7d1f761ef6230cda5d7bfb9195a57087c3766a1a7d2a737d3ed5357aa4623484",
    "trial": "15m",
    "verdict": "FAIL"
@@ -1727,7 +1727,7 @@
   ]
  },
  "schema": "hawking.future.autonomy_trial.v1",
- "seal_sha256": "dfd097429cf68c776d55b5916f28e81e752d67ced62368d02f0d6b0d1428704e",
+ "seal_sha256": "f1cf1035d2b04ec0b7ae8257dd632614117d8bf5536e660541e8e2c9773cea77",
  "thirteen_acceptance_conditions": [
   "recover_state",
   "identify_live_frontier",

@@ -30,7 +30,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T05:34:51Z",
+  "recorded_at": "2026-09-02T05:37:25Z",
   "recorded_by": "tools/future/hwir.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -75,7 +75,7 @@
   "synthetic-arrival rehearsal grades divergent predictions FALSIFIED and names the implicated coefficient; not an arrival",
   "tampered sealed predictions are detected and rejected"
  ],
- "head": "fde672fecfb54dd26ff22f7c804e25f65bd19b02",
+ "head": "763a0f2e4ea0d02cc799a1f86fd706bf0ddc7f01",
  "hwir_hypotheses": [
   {
    "behavior_id": "move_or_recompute",
@@ -1318,7 +1318,7 @@
   "URAM"
  ],
  "schema": "hawking.future.hwir.v1",
- "seal_sha256": "2b5743348f8e60229db79b39afbdef9fd7240b18e58f3f6a72ba00852b70de91",
+ "seal_sha256": "130b7917b45b08232e383b59eb0c0e0542431e022ffd67fdc4bf420d77345c26",
  "sealed_predictions": {
   "count": 12,
   "ids": [
@@ -1438,6 +1438,8 @@
     "kind": "CARRIER_ENVELOPE",
     "mechanical_limit": "low_profile_ok",
     "note": "LABELED EXAMPLE. Constrained low-power / few-lane slot. NOT the inbound comma-device carrier. The operator reports the inbound card will hang off a comma device. That carrier is UNPINNED. Example envelopes are labeled examples, not that carrier. Pin CarrierEnvelope in one constructor call when numbers are known. Do not invent the comma-device specifications.",
+    "observed_payload_beat": "UNPINNED",
+    "observed_payload_bytes_per_s": "UNPINNED",
     "origin": "EXAMPLE_ENVELOPE_NOT_THE_REAL_CARRIER",
     "pcie_generation": 3,
     "pcie_lanes": 4,
@@ -1508,6 +1510,8 @@
     "kind": "CARRIER_ENVELOPE",
     "mechanical_limit": "full_height_full_length_ok",
     "note": "LABELED EXAMPLE. Full-airflow server slot matching a 75W PCIe card's own datasheet load. NOT the inbound comma-device carrier. The operator reports the inbound card will hang off a comma device. That carrier is UNPINNED. Example envelopes are labeled examples, not that carrier. Pin CarrierEnvelope in one constructor call when numbers are known. Do not invent the comma-device specifications.",
+    "observed_payload_beat": "UNPINNED",
+    "observed_payload_bytes_per_s": "UNPINNED",
     "origin": "EXAMPLE_ENVELOPE_NOT_THE_REAL_CARRIER",
     "pcie_generation": 4,
     "pcie_lanes": 16,
@@ -1578,6 +1582,8 @@
     "kind": "CARRIER_ENVELOPE",
     "mechanical_limit": "UNPINNED",
     "note": "The operator reports the inbound card will hang off a comma device. That carrier is UNPINNED. Example envelopes are labeled examples, not that carrier. Pin CarrierEnvelope in one constructor call when numbers are known. Do not invent the comma-device specifications.",
+    "observed_payload_beat": "UNPINNED",
+    "observed_payload_bytes_per_s": "UNPINNED",
     "origin": "REAL_CARRIER_UNPINNED",
     "pcie_generation": "UNPINNED",
     "pcie_lanes": "UNPINNED",

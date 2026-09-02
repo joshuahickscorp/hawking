@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:29:10Z",
+  "recorded_at": "2026-09-02T06:34:45Z",
   "recorded_by": "tools/future/global_frontier.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -17,8 +17,8 @@
    "WEAK": 4
   },
   "probes_holding": 14,
-  "probes_resolved_by_sidecar": 6,
-  "probes_stale": 0,
+  "probes_resolved_by_sidecar": 5,
+  "probes_stale": 1,
   "total": 20
  },
  "entries": [
@@ -88,6 +88,9 @@
    "probe_result": {
     "hits": [
      "./receipts/future/HWIR_V1.json",
+     "./receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json",
+     "./receipts/future/HWIR_SEALED_PREDICTIONS.json",
+     "./tools/future/test_hwir_sealed_predictions.py",
      "./tools/future/hwir.py",
      "./tools/future/test_hwir.py"
     ],
@@ -97,6 +100,9 @@
     "resolved_by_sidecar": true,
     "resolving_paths": [
      "./receipts/future/HWIR_V1.json",
+     "./receipts/future/HWIR_SYNTHETIC_ARRIVAL_REHEARSAL.json",
+     "./receipts/future/HWIR_SEALED_PREDICTIONS.json",
+     "./tools/future/test_hwir_sealed_predictions.py",
      "./tools/future/hwir.py",
      "./tools/future/test_hwir.py"
     ]
@@ -383,14 +389,19 @@
    },
    "probe_result": {
     "hits": [
+     "./tools/future/static_kernel_verify_parity.py",
      "./tools/future/static_kernel_verify.py",
-     "./tools/future/test_static_kernel_verify.py"
+     "./tools/future/test_static_kernel_verify.py",
+     "./crates/hawking-core/src/static_kernel_verify.rs",
+     "./workspace/ops/build/rust/release/deps/hawking_static_kernel_verify-22ab1681c35da344.d",
+     "./workspace/ops/build/rust/release/deps/hawking_static_kernel_verify-22ab1681c35da344"
     ],
     "holds": false,
     "kind": "absent",
     "pattern": "*static_kernel_verify*",
-    "resolved_by_sidecar": true,
+    "resolved_by_sidecar": false,
     "resolving_paths": [
+     "./tools/future/static_kernel_verify_parity.py",
      "./tools/future/static_kernel_verify.py",
      "./tools/future/test_static_kernel_verify.py"
     ]
@@ -552,13 +563,14 @@
   "F004",
   "F005",
   "F006",
-  "F010",
-  "F014"
+  "F010"
  ],
  "resolved_meaning": "A MISSING claim whose probe now finds ONLY sidecar files: this campaign closed the gap. The entry is retired, not refuted.",
  "schema": "hawking.future.claude_global_frontier.v1",
- "seal_sha256": "a870a57939e0eacf32508b0986d922149567b741cbcaeef909352611c4374fff",
- "stale_entries": [],
+ "seal_sha256": "29275e41dacc3b3d49af5a32366acd915f4cc4813fa54f1d31855fce2243b826",
+ "stale_entries": [
+  "F014"
+ ],
  "stale_meaning": "A stale probe means the claim no longer matches disk -- usually because Codex or a sidecar lane built the thing. Retire or reclassify the entry; do not silently keep it.",
  "version": 1
 }

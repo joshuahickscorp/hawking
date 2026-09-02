@@ -20,7 +20,7 @@
   "gpu_authority": false,
   "machine": "Apple host; CPU operator fit / rollout, no GPU lease",
   "measurement_state": "DIAGNOSTIC_RELATIVE",
-  "recorded_at": "2026-09-02T04:12:42Z",
+  "recorded_at": "2026-09-02T07:03:35Z",
   "recorded_by": "tools/future/deltanet_generated_transition.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -323,7 +323,7 @@
   "total_bytes_eliminated": 0
  },
  "schema": "hawking.future.deltanet_generated_transition.v1",
- "seal_sha256": "6d3fbeba98366218a84585e4e7b274f00bd1e2fc201e94447782ebbe5371963d",
+ "seal_sha256": "73deb342a6aff94fefa6d92b2fb0022ce88b1b117d22a1f3fc6c7d77e94ce7e7",
  "selftest": {
   "bytes_added_total": 4548560,
   "bytes_removed_total": 2139096960,
@@ -372,7 +372,7 @@
   },
   "model_id": "qwen3.8-27b-sealed-3.14",
   "organ": "attention.linear_qkvz",
-  "pinned_revision": "b76580b272ed17cc5b178a3fe438763699716ff8",
+  "pinned_revision": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
   "protocol": "hawking.qwen38.resident.v1",
   "require_fusion_env": true,
   "resident_binary": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release/examples/ascension_qwen38_resident",

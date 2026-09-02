@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:11:59Z",
+  "recorded_at": "2026-09-02T07:02:51Z",
   "recorded_by": "tools/future/concurrency_doctor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,8 +11,8 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. Partial GPU occupancy is not available compute. A utilisation percentage is not a complete-token. SLEEPING physical work is never filled with a synthetic TPS.",
  "decision": {
   "experiment_state": "SLEEPING",
-  "reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
-  "resident_presence": "UNDECLARED",
+  "reason": "sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+  "resident_presence": "PRESENT",
   "verdict": null,
   "wake_condition": {
    "all_of": [
@@ -44,7 +44,7 @@
  "host_capability": {
   "evidence_class": "STATIC_ONLY",
   "gpu_authority": false,
-  "gpu_occupancy_class": "LOW",
+  "gpu_occupancy_class": "HIGH",
   "gpu_occupancy_probe_status": "OK",
   "is_a_measurement": false,
   "memory_pressure": "warn",
@@ -57,7 +57,6 @@
    "why": "Apple M3 Ultra reports as this host's chip; Apple silicon carries an integrated Metal GPU"
   },
   "not_runnable_reasons": [
-   "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour",
    "sidecar has no GPU authority and will not take a lease",
    "no protected GPU lease is held",
    "quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment",
@@ -68,10 +67,10 @@
   "protected_lease": false,
   "quiescence": "UNKNOWN",
   "quiescence_reason": "this sidecar did not run contamination.snapshot as a promotion gate; UNKNOWN is not QUIESCENT",
-  "resident_bytes": null,
-  "resident_pid": null,
-  "resident_presence": "UNDECLARED",
-  "resident_reason": "no resident pid declared (argument or HAWKING_RESIDENT_PID); will not invent one from the largest RSS neighbour (dirty_measure.identify_resident_loaded is a contamination envelope, not identity)",
+  "resident_bytes": 40206336,
+  "resident_pid": 5953,
+  "resident_presence": "PRESENT",
+  "resident_reason": null,
   "runnable_today": false,
   "suggested_scope": {
    "context_regime": null,
@@ -83,7 +82,7 @@
   "swap": {
    "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
    "status": "OK",
-   "swap_ins": 117460958
+   "swap_ins": 124188074
   }
  },
  "is_a_measurement": false,
@@ -107,14 +106,14 @@
  "live_observations": [
   {
    "capability_envelope": {
-    "gpu_occupancy_class": "LOW",
+    "gpu_occupancy_class": "HIGH",
     "memory_pressure": "warn",
     "occupancy_is_not_available_compute": true,
-    "resident_bytes": null,
+    "resident_bytes": 40206336,
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 117460958
+     "swap_ins": 124188074
     }
    },
    "concurrency": 1,
@@ -132,7 +131,7 @@
     "wall_ns": null
    },
    "is_a_measurement": false,
-   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "reason": "resident is PRESENT but this sidecar has no GPU lease; useful-work / token_ns / TTFT / dispatch / sync stay UNKNOWN",
    "slots": {
     "accepted_tps": null,
     "aggregate_token_cost_class": null,
@@ -165,14 +164,14 @@
   },
   {
    "capability_envelope": {
-    "gpu_occupancy_class": "LOW",
+    "gpu_occupancy_class": "HIGH",
     "memory_pressure": "warn",
     "occupancy_is_not_available_compute": true,
-    "resident_bytes": null,
+    "resident_bytes": 40206336,
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 117460958
+     "swap_ins": 124188074
     }
    },
    "concurrency": 2,
@@ -190,7 +189,7 @@
     "wall_ns": null
    },
    "is_a_measurement": false,
-   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "reason": "resident is PRESENT but this sidecar has no GPU lease; useful-work / token_ns / TTFT / dispatch / sync stay UNKNOWN",
    "slots": {
     "accepted_tps": null,
     "aggregate_token_cost_class": null,
@@ -223,14 +222,14 @@
   },
   {
    "capability_envelope": {
-    "gpu_occupancy_class": "LOW",
+    "gpu_occupancy_class": "HIGH",
     "memory_pressure": "warn",
     "occupancy_is_not_available_compute": true,
-    "resident_bytes": null,
+    "resident_bytes": 40206336,
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 117460958
+     "swap_ins": 124188074
     }
    },
    "concurrency": 3,
@@ -248,7 +247,7 @@
     "wall_ns": null
    },
    "is_a_measurement": false,
-   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "reason": "resident is PRESENT but this sidecar has no GPU lease; useful-work / token_ns / TTFT / dispatch / sync stay UNKNOWN",
    "slots": {
     "accepted_tps": null,
     "aggregate_token_cost_class": null,
@@ -281,14 +280,14 @@
   },
   {
    "capability_envelope": {
-    "gpu_occupancy_class": "LOW",
+    "gpu_occupancy_class": "HIGH",
     "memory_pressure": "warn",
     "occupancy_is_not_available_compute": true,
-    "resident_bytes": null,
+    "resident_bytes": 40206336,
     "swap": {
      "note": "cumulative vm_stat Swapins, not a per-level experiment rate",
      "status": "OK",
-     "swap_ins": 117460958
+     "swap_ins": 124188074
     }
    },
    "concurrency": 4,
@@ -306,7 +305,7 @@
     "wall_ns": null
    },
    "is_a_measurement": false,
-   "reason": "no resident process (presence='UNDECLARED'); refusing a concurrency observation rather than inventing one",
+   "reason": "resident is PRESENT but this sidecar has no GPU lease; useful-work / token_ns / TTFT / dispatch / sync stay UNKNOWN",
    "slots": {
     "accepted_tps": null,
     "aggregate_token_cost_class": null,
@@ -345,8 +344,7 @@
   "the recovered ACCELERATOR_CONCURRENCY_SWEEP is a 4 MiB kernel in SMALL_KERNEL_LAUNCH_BOUND; citing it as a whole-body law is the exact mixing this scoping refuses",
   "orchestration BINDINGS / frontiers catalog were outside this lane's WRITE list, so this module is not glued into invoke() by this receipt",
   "host_ceremony_class cannot be observed live without token_ns / dispatch_ns this sidecar will not record",
-  "a doctor that cannot run today is still worth building; a doctor that fabricates a TPS is worse than none",
-  "resident presence at build is 'UNDECLARED'; the experiment is SLEEPING"
+  "a doctor that cannot run today is still worth building; a doctor that fabricates a TPS is worse than none"
  ],
  "objective": "verified useful work per wall second, never utilisation",
  "plan": {
@@ -564,14 +562,14 @@
   "workunit": "one CPU_ANALYSIS unit for the plan; the live experiment is GPU_EXCLUSIVE and SLEEPING until resident+lease+quiescence"
  },
  "schema": "hawking.future.concurrency_doctor.v1",
- "seal_sha256": "5ff18de6ff6bf58ea1958be38e090ffe80e6cdbaa46420a3dee8759b5b922f48",
+ "seal_sha256": "5955cf26254964c1a1e10924de4024fa95d564cc0700d2e940c0f26d986f1515",
  "sleeping_workunit": {
   "assigned_backend": null,
   "assigned_runtime": null,
   "attempts": 0,
   "backend_task_id": null,
   "bench_state": "UNKNOWN",
-  "blocked_reason": "resident presence is 'UNDECLARED', not PRESENT; will not invent a pid from the largest RSS neighbour; sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
+  "blocked_reason": "sidecar has no GPU authority and will not take a lease; no protected GPU lease is held; quiescence is 'UNKNOWN', not QUIESCENT; a DIAGNOSTIC_RELATIVE number on a busy machine is not this experiment; this sidecar is structurally unable to execute the protected ladder; a process with PROTECTED_ABSOLUTE authority must run observe() on hardware",
   "candidate_status": "SLEEPING",
   "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. Partial GPU occupancy is not available compute. A utilisation percentage is not a complete-token. SLEEPING physical work is never filled with a synthetic TPS.",
   "classification": "SLEEPING",

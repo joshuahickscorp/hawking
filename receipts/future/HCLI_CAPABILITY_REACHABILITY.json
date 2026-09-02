@@ -4,7 +4,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1786
+    "line": 1665
    },
    "kind": "typed_tool",
    "name": "tool:git.checkout-safe",
@@ -15,7 +15,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1786
+    "line": 1665
    },
    "kind": "typed_tool",
    "name": "tool:git.revert-safe",
@@ -26,7 +26,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1786
+    "line": 1665
    },
    "kind": "typed_tool",
    "name": "tool:git.checkout/revert-safe",
@@ -37,7 +37,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:roadmap.read",
@@ -48,7 +48,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:vmcp.capabilities",
@@ -59,7 +59,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:doctor.inspect",
@@ -70,7 +70,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:gravity.inspect",
@@ -81,7 +81,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:accelerator.inspect",
@@ -92,7 +92,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.status",
@@ -103,7 +103,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.queue",
@@ -114,7 +114,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.value",
@@ -125,7 +125,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.economics",
@@ -136,7 +136,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:add_to_eligibility",
@@ -147,7 +147,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:park_specimen",
@@ -158,7 +158,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:record_law",
@@ -169,7 +169,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:record_scar",
@@ -180,7 +180,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:create_transfer_probe",
@@ -191,7 +191,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:create_adversarial_probe",
@@ -202,29 +202,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1676
-   },
-   "kind": "typed_tool",
-   "name": "tool:tools.catalog",
-   "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
-   "tested": true
-  },
-  {
-   "defined": true,
-   "definition": {
-    "file": "hcli/tool_registry.py",
-    "line": 1693
-   },
-   "kind": "typed_tool",
-   "name": "tool:context.recall",
-   "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
-   "tested": true
-  },
-  {
-   "defined": true,
-   "definition": {
-    "file": "hcli/tool_registry.py",
-    "line": 1720
+    "line": 1599
    },
    "kind": "typed_tool",
    "name": "tool:filesystem.read",
@@ -235,7 +213,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1727
+    "line": 1606
    },
    "kind": "typed_tool",
    "name": "tool:filesystem.search",
@@ -246,7 +224,18 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1744
+    "line": 1619
+   },
+   "kind": "typed_tool",
+   "name": "tool:fs.list",
+   "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
+   "tested": true
+  },
+  {
+   "defined": true,
+   "definition": {
+    "file": "hcli/tool_registry.py",
+    "line": 1623
    },
    "kind": "typed_tool",
    "name": "tool:filesystem.list",
@@ -257,7 +246,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1757
+    "line": 1636
    },
    "kind": "typed_tool",
    "name": "tool:shell.readonly",
@@ -268,7 +257,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1762
+    "line": 1641
    },
    "kind": "typed_tool",
    "name": "tool:shell.exec",
@@ -279,7 +268,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1771
+    "line": 1650
    },
    "kind": "typed_tool",
    "name": "tool:git.status",
@@ -290,7 +279,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1776
+    "line": 1655
    },
    "kind": "typed_tool",
    "name": "tool:git.log",
@@ -301,7 +290,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1794
+    "line": 1673
    },
    "kind": "typed_tool",
    "name": "tool:git.land.propose",
@@ -312,7 +301,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1822
+    "line": 1701
    },
    "kind": "typed_tool",
    "name": "tool:github.fetch",
@@ -323,7 +312,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1823
+    "line": 1702
    },
    "kind": "typed_tool",
    "name": "tool:web.search",
@@ -334,7 +323,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1830
+    "line": 1709
    },
    "kind": "typed_tool",
    "name": "tool:github.search",
@@ -345,7 +334,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1837
+    "line": 1716
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.resolve",
@@ -356,7 +345,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1842
+    "line": 1721
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.manifest",
@@ -367,7 +356,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1847
+    "line": 1726
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.fetch_file",
@@ -378,7 +367,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1852
+    "line": 1731
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.history",
@@ -389,7 +378,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1857
+    "line": 1736
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.download",
@@ -400,7 +389,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1865
+    "line": 1744
    },
    "kind": "typed_tool",
    "name": "tool:receipt.inspect",
@@ -411,7 +400,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1895
+    "line": 1774
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.cycle",
@@ -422,18 +411,18 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1904
+    "line": 1783
    },
    "kind": "typed_tool",
    "name": "tool:forbidden_fruit.lab",
    "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
-   "tested": true
+   "tested": false
   },
   {
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1924
+    "line": 1799
    },
    "kind": "typed_tool",
    "name": "tool:frontier.decide",
@@ -444,7 +433,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1930
+    "line": 1805
    },
    "kind": "typed_tool",
    "name": "tool:specimens.registry",
@@ -455,7 +444,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1937
+    "line": 1812
    },
    "kind": "typed_tool",
    "name": "tool:acquisition.propose",
@@ -466,7 +455,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1943
+    "line": 1818
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.ingest",
@@ -477,7 +466,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1969
+    "line": 1844
    },
    "kind": "typed_tool",
    "name": "tool:tests.list",
@@ -488,7 +477,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1980
+    "line": 1855
    },
    "kind": "typed_tool",
    "name": "tool:vmcp.inspect",
@@ -499,7 +488,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1985
+    "line": 1860
    },
    "kind": "typed_tool",
    "name": "tool:vmcp.query",
@@ -510,7 +499,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1999
+    "line": 1874
    },
    "kind": "typed_tool",
    "name": "tool:doctor.query",
@@ -521,7 +510,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2005
+    "line": 1880
    },
    "kind": "typed_tool",
    "name": "tool:gravity.experiment",
@@ -532,7 +521,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2011
+    "line": 1886
    },
    "kind": "typed_tool",
    "name": "tool:accelerator.benchmark",
@@ -543,7 +532,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2023
+    "line": 1898
    },
    "kind": "typed_tool",
    "name": "tool:roadmap.inspect",
@@ -554,7 +543,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2028
+    "line": 1903
    },
    "kind": "typed_tool",
    "name": "tool:benchmark.inspect",
@@ -565,7 +554,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2039
+    "line": 1914
    },
    "kind": "typed_tool",
    "name": "tool:frontier.escalate",
@@ -576,7 +565,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2071
+    "line": 1946
    },
    "kind": "typed_tool",
    "name": "tool:grok.swarm.propose",
@@ -587,7 +576,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2079
+    "line": 1954
    },
    "kind": "typed_tool",
    "name": "tool:grok.swarm.launch",
@@ -707,17 +696,6 @@
   {
    "defined": true,
    "definition": {
-    "file": "tools/future/ba_delta_ab.py",
-    "line": null
-   },
-   "kind": "sidecar_module",
-   "name": "tools.future.ba_delta_ab",
-   "note": null,
-   "tested": false
-  },
-  {
-   "defined": true,
-   "definition": {
     "file": "tools/future/baseline_staleness.py",
     "line": null
    },
@@ -767,17 +745,6 @@
    },
    "kind": "sidecar_module",
    "name": "tools.future.capability_byte_elimination",
-   "note": null,
-   "tested": true
-  },
-  {
-   "defined": true,
-   "definition": {
-    "file": "tools/future/capability_eval.py",
-    "line": null
-   },
-   "kind": "sidecar_module",
-   "name": "tools.future.capability_eval",
    "note": null,
    "tested": true
   },
@@ -1917,6 +1884,17 @@
   {
    "defined": true,
    "definition": {
+    "file": "tools/future/static_kernel_verify_parity.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.static_kernel_verify_parity",
+   "note": null,
+   "tested": false
+  },
+  {
+   "defined": true,
+   "definition": {
     "file": "tools/future/sub2_unified_plan.py",
     "line": null
    },
@@ -2051,7 +2029,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:09:53Z",
+  "recorded_at": "2026-09-02T06:55:03Z",
   "recorded_by": "tools/future/capability_reachability.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -2062,7 +2040,7 @@
     {
      "file": "hcli/agentos/resident.py",
      "kind": "call",
-     "line": 701
+     "line": 629
     }
    ],
    "callable": true,
@@ -2080,17 +2058,17 @@
     {
      "file": "hcli/agentos/test_resident_orphan.py",
      "kind": "call",
-     "line": 142
+     "line": 138
     },
     {
      "file": "hcli/agentos/test_resident_orphan.py",
      "kind": "call",
-     "line": 158
+     "line": 154
     },
     {
      "file": "hcli/agentos/test_resident_orphan.py",
      "kind": "call",
-     "line": 173
+     "line": 169
     }
    ],
    "tested": true
@@ -2100,7 +2078,7 @@
     {
      "file": "hcli/agentos/__init__.py",
      "kind": "import",
-     "line": 60
+     "line": 58
     }
    ],
    "callable": true,
@@ -2160,17 +2138,17 @@
     {
      "file": "hcli/tool_registry.py",
      "kind": "import",
-     "line": 1514
+     "line": 1424
     },
     {
      "file": "hcli/tool_registry.py",
      "kind": "import",
-     "line": 1636
+     "line": 1548
     },
     {
      "file": "hcli/tool_registry.py",
      "kind": "import",
-     "line": 1644
+     "line": 1556
     }
    ],
    "callable": true,
@@ -2198,7 +2176,7 @@
     {
      "file": "hcli/tool_registry.py",
      "kind": "call",
-     "line": 1516
+     "line": 1426
     }
    ],
    "callable": true,
@@ -2236,7 +2214,7 @@
     {
      "file": "hcli/tool_registry.py",
      "kind": "call",
-     "line": 1646
+     "line": 1558
     }
    ],
    "callable": true,
@@ -2269,7 +2247,7 @@
     {
      "file": "hcli/tool_registry.py",
      "kind": "call",
-     "line": 1638
+     "line": 1550
     }
    ],
    "callable": true,
@@ -2417,7 +2395,7 @@
     {
      "file": "hcli/agentos/runtime.py",
      "kind": "call",
-     "line": 91
+     "line": 89
     },
     {
      "file": "hcli/agentos/vmcp_gate.py",
@@ -2427,12 +2405,12 @@
     {
      "file": "hcli/commands.py",
      "kind": "call",
-     "line": 1040
+     "line": 1032
     },
     {
      "file": "hcli/engine.py",
      "kind": "call",
-     "line": 572
+     "line": 537
     },
     {
      "file": "hcli/executors.py",
@@ -2465,17 +2443,7 @@
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "call",
-     "line": 27
-    },
-    {
-     "file": "hcli/test_engine_tool_loop.py",
-     "kind": "call",
-     "line": 150
-    },
-    {
-     "file": "hcli/test_engine_tool_loop.py",
-     "kind": "call",
-     "line": 181
+     "line": 26
     },
     {
      "file": "hcli/test_escalation.py",
@@ -2486,11 +2454,6 @@
      "file": "hcli/test_escalation.py",
      "kind": "call",
      "line": 231
-    },
-    {
-     "file": "hcli/test_forbidden_fruit.py",
-     "kind": "call",
-     "line": 114
     },
     {
      "file": "hcli/test_landing.py",
@@ -2516,7 +2479,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2011
+    "line": 1886
    },
    "kind": "typed_tool",
    "name": "tool:accelerator.benchmark",
@@ -2532,7 +2495,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:accelerator.inspect",
@@ -2548,7 +2511,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1937
+    "line": 1812
    },
    "kind": "typed_tool",
    "name": "tool:acquisition.propose",
@@ -2564,7 +2527,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:add_to_eligibility",
@@ -2586,7 +2549,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1994
+    "line": 1869
    },
    "kind": "typed_tool",
    "name": "tool:architecture.inspect",
@@ -2602,7 +2565,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2028
+    "line": 1903
    },
    "kind": "typed_tool",
    "name": "tool:benchmark.inspect",
@@ -2624,7 +2587,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2017
+    "line": 1892
    },
    "kind": "typed_tool",
    "name": "tool:benchmark.run",
@@ -2634,35 +2597,13 @@
    "test_only_sites": [],
    "tested": false
   },
-  "tool:context.recall": {
-   "call_sites": [],
-   "callable": false,
-   "defined": true,
-   "definition": {
-    "file": "hcli/tool_registry.py",
-    "line": 1693
-   },
-   "kind": "typed_tool",
-   "name": "tool:context.recall",
-   "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
-   "registered": true,
-   "resident_visible": true,
-   "test_only_sites": [
-    {
-     "file": "hcli/test_engine_tool_loop.py",
-     "kind": "literal",
-     "line": 152
-    }
-   ],
-   "tested": true
-  },
   "tool:create_adversarial_probe": {
    "call_sites": [],
    "callable": false,
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:create_adversarial_probe",
@@ -2678,7 +2619,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:create_transfer_probe",
@@ -2694,7 +2635,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:doctor.inspect",
@@ -2710,7 +2651,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1999
+    "line": 1874
    },
    "kind": "typed_tool",
    "name": "tool:doctor.query",
@@ -2726,7 +2667,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1744
+    "line": 1623
    },
    "kind": "typed_tool",
    "name": "tool:filesystem.list",
@@ -2742,7 +2683,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1720
+    "line": 1599
    },
    "kind": "typed_tool",
    "name": "tool:filesystem.read",
@@ -2753,7 +2694,7 @@
     {
      "file": "hcli/agentos/test_resident_orphan.py",
      "kind": "literal",
-     "line": 145
+     "line": 141
     },
     {
      "file": "hcli/test_workunit_can_call_tools.py",
@@ -2774,7 +2715,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1727
+    "line": 1606
    },
    "kind": "typed_tool",
    "name": "tool:filesystem.search",
@@ -2796,7 +2737,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1748
+    "line": 1627
    },
    "kind": "typed_tool",
    "name": "tool:filesystem.write",
@@ -2812,26 +2753,15 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1904
+    "line": 1783
    },
    "kind": "typed_tool",
    "name": "tool:forbidden_fruit.lab",
    "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
    "registered": true,
    "resident_visible": true,
-   "test_only_sites": [
-    {
-     "file": "hcli/test_forbidden_fruit.py",
-     "kind": "literal",
-     "line": 106
-    },
-    {
-     "file": "hcli/test_forbidden_fruit.py",
-     "kind": "literal",
-     "line": 140
-    }
-   ],
-   "tested": true
+   "test_only_sites": [],
+   "tested": false
   },
   "tool:frontier.decide": {
    "call_sites": [],
@@ -2839,7 +2769,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1924
+    "line": 1799
    },
    "kind": "typed_tool",
    "name": "tool:frontier.decide",
@@ -2855,7 +2785,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2039
+    "line": 1914
    },
    "kind": "typed_tool",
    "name": "tool:frontier.escalate",
@@ -2872,59 +2802,43 @@
    "tested": true
   },
   "tool:fs.list": {
-   "call_sites": [
-    {
-     "file": "hcli/engine.py",
-     "kind": "literal",
-     "line": 654
-    },
-    {
-     "file": "hcli/engine.py",
-     "kind": "literal",
-     "line": 682
-    },
-    {
-     "file": "hcli/engine.py",
-     "kind": "literal",
-     "line": 704
-    }
-   ],
-   "callable": true,
+   "call_sites": [],
+   "callable": false,
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1740
+    "line": 1619
    },
    "kind": "typed_tool",
    "name": "tool:fs.list",
-   "note": "resident_visible because default_tool_registry() registers every tool unconditionally; callable is real here -- see call_sites for the static `\"tool\": 'fs.list'` catalog entry (or other quoted use) that proves it, outside any test file.",
+   "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
    "registered": true,
    "resident_visible": true,
    "test_only_sites": [
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "literal",
-     "line": 56
+     "line": 55
     },
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "literal",
-     "line": 69
+     "line": 68
     },
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "literal",
-     "line": 171
+     "line": 115
     },
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "literal",
-     "line": 221
+     "line": 130
     },
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "literal",
-     "line": 236
+     "line": 145
     }
    ],
    "tested": true
@@ -2941,7 +2855,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1719
+    "line": 1598
    },
    "kind": "typed_tool",
    "name": "tool:fs.read",
@@ -2952,7 +2866,7 @@
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "literal",
-     "line": 86
+     "line": 85
     },
     {
      "file": "tools/future/test_hcli_self_profile.py",
@@ -2984,7 +2898,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1721
+    "line": 1600
    },
    "kind": "typed_tool",
    "name": "tool:fs.search",
@@ -2995,7 +2909,7 @@
     {
      "file": "hcli/test_engine_tool_loop.py",
      "kind": "literal",
-     "line": 85
+     "line": 84
     }
    ],
    "tested": true
@@ -3006,7 +2920,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1786
+    "line": 1665
    },
    "kind": "typed_tool",
    "name": "tool:git.checkout-safe",
@@ -3022,7 +2936,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1786
+    "line": 1665
    },
    "kind": "typed_tool",
    "name": "tool:git.checkout/revert-safe",
@@ -3044,7 +2958,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1781
+    "line": 1660
    },
    "kind": "typed_tool",
    "name": "tool:git.diff",
@@ -3060,7 +2974,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1794
+    "line": 1673
    },
    "kind": "typed_tool",
    "name": "tool:git.land.propose",
@@ -3092,7 +3006,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1776
+    "line": 1655
    },
    "kind": "typed_tool",
    "name": "tool:git.log",
@@ -3108,7 +3022,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1786
+    "line": 1665
    },
    "kind": "typed_tool",
    "name": "tool:git.revert-safe",
@@ -3124,7 +3038,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1771
+    "line": 1650
    },
    "kind": "typed_tool",
    "name": "tool:git.status",
@@ -3135,7 +3049,7 @@
     {
      "file": "hcli/agentos/test_resident_orphan.py",
      "kind": "literal",
-     "line": 168
+     "line": 164
     },
     {
      "file": "hcli/test_workunit_can_call_tools.py",
@@ -3160,7 +3074,7 @@
     {
      "file": "tools/future/test_capability_reachability.py",
      "kind": "literal",
-     "line": 167
+     "line": 172
     },
     {
      "file": "tools/future/test_hcli_self_profile.py",
@@ -3176,7 +3090,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1822
+    "line": 1701
    },
    "kind": "typed_tool",
    "name": "tool:github.fetch",
@@ -3192,7 +3106,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1830
+    "line": 1709
    },
    "kind": "typed_tool",
    "name": "tool:github.search",
@@ -3208,7 +3122,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2005
+    "line": 1880
    },
    "kind": "typed_tool",
    "name": "tool:gravity.experiment",
@@ -3224,7 +3138,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:gravity.inspect",
@@ -3240,7 +3154,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2079
+    "line": 1954
    },
    "kind": "typed_tool",
    "name": "tool:grok.swarm.launch",
@@ -3262,7 +3176,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2071
+    "line": 1946
    },
    "kind": "typed_tool",
    "name": "tool:grok.swarm.propose",
@@ -3278,7 +3192,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1857
+    "line": 1736
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.download",
@@ -3294,7 +3208,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1847
+    "line": 1726
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.fetch_file",
@@ -3310,7 +3224,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1852
+    "line": 1731
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.history",
@@ -3326,7 +3240,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1842
+    "line": 1721
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.manifest",
@@ -3342,7 +3256,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1837
+    "line": 1716
    },
    "kind": "typed_tool",
    "name": "tool:huggingface.resolve",
@@ -3364,7 +3278,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:modellake.status",
@@ -3380,7 +3294,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1895
+    "line": 1774
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.cycle",
@@ -3396,7 +3310,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.economics",
@@ -3412,7 +3326,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1943
+    "line": 1818
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.ingest",
@@ -3428,7 +3342,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.queue",
@@ -3444,7 +3358,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.status",
@@ -3460,7 +3374,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1884
+    "line": 1763
    },
    "kind": "typed_tool",
    "name": "tool:odyssey.value",
@@ -3476,7 +3390,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:park_specimen",
@@ -3492,7 +3406,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1865
+    "line": 1744
    },
    "kind": "typed_tool",
    "name": "tool:receipt.inspect",
@@ -3554,7 +3468,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1864
+    "line": 1743
    },
    "kind": "typed_tool",
    "name": "tool:receipt.read",
@@ -3570,7 +3484,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:record_law",
@@ -3586,7 +3500,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1949
+    "line": 1824
    },
    "kind": "typed_tool",
    "name": "tool:record_scar",
@@ -3602,7 +3516,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 2023
+    "line": 1898
    },
    "kind": "typed_tool",
    "name": "tool:roadmap.inspect",
@@ -3618,7 +3532,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:roadmap.read",
@@ -3634,7 +3548,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1762
+    "line": 1641
    },
    "kind": "typed_tool",
    "name": "tool:shell.exec",
@@ -3656,7 +3570,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1757
+    "line": 1636
    },
    "kind": "typed_tool",
    "name": "tool:shell.readonly",
@@ -3678,7 +3592,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1930
+    "line": 1805
    },
    "kind": "typed_tool",
    "name": "tool:specimens.registry",
@@ -3694,7 +3608,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1969
+    "line": 1844
    },
    "kind": "typed_tool",
    "name": "tool:tests.list",
@@ -3716,7 +3630,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1974
+    "line": 1849
    },
    "kind": "typed_tool",
    "name": "tool:tests.run",
@@ -3726,35 +3640,13 @@
    "test_only_sites": [],
    "tested": false
   },
-  "tool:tools.catalog": {
-   "call_sites": [],
-   "callable": false,
-   "defined": true,
-   "definition": {
-    "file": "hcli/tool_registry.py",
-    "line": 1676
-   },
-   "kind": "typed_tool",
-   "name": "tool:tools.catalog",
-   "note": "resident_visible because default_tool_registry() registers every tool unconditionally and AgentOS.tools is that registry; callable requires a quoted use of the tool's string key outside hcli/tool_registry.py and outside any test file. No static gate catalog and no other reference names this tool; the model could still propose it as a runtime WorkUnit.tool string, which no static search can see, so callable=false means 'no deterministic path', not 'never invoked'.",
-   "registered": true,
-   "resident_visible": true,
-   "test_only_sites": [
-    {
-     "file": "hcli/test_engine_tool_loop.py",
-     "kind": "literal",
-     "line": 137
-    }
-   ],
-   "tested": true
-  },
   "tool:vmcp.capabilities": {
    "call_sites": [],
    "callable": false,
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1866
+    "line": 1745
    },
    "kind": "typed_tool",
    "name": "tool:vmcp.capabilities",
@@ -3770,7 +3662,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1980
+    "line": 1855
    },
    "kind": "typed_tool",
    "name": "tool:vmcp.inspect",
@@ -3786,7 +3678,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1985
+    "line": 1860
    },
    "kind": "typed_tool",
    "name": "tool:vmcp.query",
@@ -3808,7 +3700,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1821
+    "line": 1700
    },
    "kind": "typed_tool",
    "name": "tool:web.fetch",
@@ -3830,7 +3722,7 @@
    "defined": true,
    "definition": {
     "file": "hcli/tool_registry.py",
-    "line": 1823
+    "line": 1702
    },
    "kind": "typed_tool",
    "name": "tool:web.search",
@@ -4527,8 +4419,14 @@
    "tested": true
   },
   "tools.future.ba_delta_ab": {
-   "call_sites": [],
-   "callable": false,
+   "call_sites": [
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 440
+    }
+   ],
+   "callable": true,
    "defined": true,
    "definition": {
     "file": "tools/future/ba_delta_ab.py",
@@ -4539,8 +4437,14 @@
    "note": null,
    "registered": false,
    "resident_visible": false,
-   "test_only_sites": [],
-   "tested": false
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 135
+    }
+   ],
+   "tested": true
   },
   "tools.future.baseline_staleness": {
    "call_sites": [],
@@ -4754,8 +4658,14 @@
    "tested": true
   },
   "tools.future.capability_eval": {
-   "call_sites": [],
-   "callable": false,
+   "call_sites": [
+    {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 441
+    }
+   ],
+   "callable": true,
    "defined": true,
    "definition": {
     "file": "tools/future/capability_eval.py",
@@ -4838,12 +4748,12 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 45
+     "line": 50
     },
     {
      "file": "tools/roadmap/reach.py",
      "kind": "import",
-     "line": 27
+     "line": 28
     }
    ],
    "callable": true,
@@ -4866,12 +4776,12 @@
     {
      "file": "tools/future/test_capability_reachability.py",
      "kind": "import",
-     "line": 19
+     "line": 20
     },
     {
      "file": "tools/roadmap/test_roadmap_graph.py",
      "kind": "import",
-     "line": 213
+     "line": 215
     }
    ],
    "tested": true
@@ -4914,7 +4824,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1931
+     "line": 2012
     }
    ],
    "callable": true,
@@ -6195,7 +6105,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1965
+     "line": 2046
     },
     {
      "file": "tools/future/abliteration.py",
@@ -6521,6 +6431,44 @@
    ],
    "tested": true
   },
+  "tools.future.experiment_receipt": {
+   "call_sites": [
+    {
+     "file": "tools/future/ba_delta_ab.py",
+     "kind": "import",
+     "line": 29
+    },
+    {
+     "file": "tools/future/capability_eval.py",
+     "kind": "import",
+     "line": 40
+    },
+    {
+     "file": "tools/future/lpc_baselines.py",
+     "kind": "import",
+     "line": 28
+    }
+   ],
+   "callable": true,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/experiment_receipt.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.experiment_receipt",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [
+    {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 14
+    }
+   ],
+   "tested": true
+  },
   "tools.future.expert_bank_school": {
    "call_sites": [
     {
@@ -6672,7 +6620,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1948
+     "line": 2029
     }
    ],
    "callable": true,
@@ -7001,7 +6949,7 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "import",
-     "line": 2211
+     "line": 3455
     },
     {
      "file": "tools/future/p6_projection.py",
@@ -7655,9 +7603,19 @@
      "line": 6
     },
     {
+     "file": "tools/future/test_hwir_sealed_predictions.py",
+     "kind": "import",
+     "line": 8
+    },
+    {
      "file": "tools/future/test_p6_projection.py",
      "kind": "import",
      "line": 17
+    },
+    {
+     "file": "tools/future/test_u50_carrier.py",
+     "kind": "import",
+     "line": 11
     }
    ],
    "tested": true
@@ -7876,6 +7834,11 @@
   "tools.future.lpc_baselines": {
    "call_sites": [
     {
+     "file": "tools/future/experiment_receipt.py",
+     "kind": "import",
+     "line": 442
+    },
+    {
      "file": "tools/future/lpc_dataset.py",
      "kind": "import",
      "line": 868
@@ -7926,7 +7889,7 @@
     {
      "file": "tools/future/lpc_baselines.py",
      "kind": "import",
-     "line": 28
+     "line": 29
     },
     {
      "file": "tools/future/physical_compiler_predict.py",
@@ -8873,7 +8836,7 @@
     {
      "file": "tools/odyssey/modellake_watch.py",
      "kind": "call",
-     "line": 974
+     "line": 962
     }
    ],
    "callable": true,
@@ -9972,6 +9935,36 @@
   "tools.future.orchestration": {
    "call_sites": [
     {
+     "file": "receipts/future/nowait-15m-95125/_bound_run.py",
+     "kind": "import",
+     "line": 5
+    },
+    {
+     "file": "receipts/future/nowait-30m-22571/_bound_run.py",
+     "kind": "import",
+     "line": 5
+    },
+    {
+     "file": "receipts/future/nowait-30m-55675/_bound_run.py",
+     "kind": "import",
+     "line": 5
+    },
+    {
+     "file": "receipts/future/nowait-30m-55878/_bound_run.py",
+     "kind": "import",
+     "line": 5
+    },
+    {
+     "file": "receipts/future/nowait-30m-60327/_bound_run.py",
+     "kind": "import",
+     "line": 5
+    },
+    {
+     "file": "receipts/future/nowait-30m-71829/_bound_run.py",
+     "kind": "import",
+     "line": 5
+    },
+    {
      "file": "tools/future/autonomy_run.py",
      "kind": "import",
      "line": 57
@@ -10332,7 +10325,7 @@
     {
      "file": "tools/future/hwir.py",
      "kind": "import",
-     "line": 1890
+     "line": 3134
     },
     {
      "file": "tools/future/mlp_auxiliary_information.py",
@@ -11692,6 +11685,11 @@
      "line": 8
     },
     {
+     "file": "tools/future/test_experiment_receipt.py",
+     "kind": "import",
+     "line": 15
+    },
+    {
      "file": "tools/future/test_science_corpus.py",
      "kind": "import",
      "line": 8
@@ -12180,6 +12178,11 @@
      "file": "tools/future/qualification_pipeline.py",
      "kind": "import",
      "line": 39
+    },
+    {
+     "file": "tools/future/static_kernel_verify_parity.py",
+     "kind": "import",
+     "line": 28
     }
    ],
    "callable": true,
@@ -12201,6 +12204,22 @@
     }
    ],
    "tested": true
+  },
+  "tools.future.static_kernel_verify_parity": {
+   "call_sites": [],
+   "callable": false,
+   "defined": true,
+   "definition": {
+    "file": "tools/future/static_kernel_verify_parity.py",
+    "line": null
+   },
+   "kind": "sidecar_module",
+   "name": "tools.future.static_kernel_verify_parity",
+   "note": null,
+   "registered": false,
+   "resident_visible": false,
+   "test_only_sites": [],
+   "tested": false
   },
   "tools.future.static_skeleton": {
    "call_sites": [
@@ -12563,12 +12582,12 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1983
+     "line": 2064
     },
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 1986
+     "line": 2067
     },
     {
      "file": "tools/future/abliteration.py",
@@ -13061,7 +13080,7 @@
     {
      "file": "tools/audit/reachability_triage.py",
      "kind": "import",
-     "line": 2012
+     "line": 2093
     }
    ],
    "callable": true,
@@ -13544,16 +13563,17 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "counts": {
   "capabilities": 337,
-  "dead_surface": 186,
+  "dead_surface": 184,
   "named_callable": 12,
   "named_capabilities": 14,
-  "sidecar_callable": 127,
-  "sidecar_modules": 257,
+  "sidecar_callable": 130,
+  "sidecar_modules": 259,
   "sidecar_registered": 0,
-  "typed_tools": 65,
-  "typed_tools_callable": 11,
-  "typed_tools_dead": 54
+  "typed_tools": 63,
+  "typed_tools_callable": 10,
+  "typed_tools_dead": 53
  },
+ "facts_source": "hawking-index",
  "fields": [
   "defined",
   "registered",
@@ -13562,15 +13582,16 @@
   "tested"
  ],
  "law": "A capability nothing calls does not exist. Grep for call sites, not definitions.",
- "method": "Static source analysis only (AST import/call graph + quoted-literal search) over every git-tracked *.py file. Cannot see runtime-only dispatch (a model-proposed WorkUnit.tool string); see the module docstring's 'Hard limit' section.",
+ "method": "Static source analysis only (AST import/call graph + quoted-literal search) over every HEAD `*.py` blob (`git ls-tree`). Cannot see runtime-only dispatch (a model-proposed WorkUnit.tool string); see the module docstring's 'Hard limit' section.",
  "negative_findings": [
-  "54 of 65 typed tools have zero call sites outside hcli/tool_registry.py and outside every test file.",
-  "257 of 257 tools/future sidecar modules are registered in no ToolSpec; a resident cannot discover them via AgentOS.tools.discover().",
-  "130 of 257 tools/future sidecar modules have zero call sites outside their own test files.",
+  "53 of 63 typed tools have zero call sites outside hcli/tool_registry.py and outside every test file.",
+  "259 of 259 tools/future sidecar modules are registered in no ToolSpec; a resident cannot discover them via AgentOS.tools.discover().",
+  "129 of 259 tools/future sidecar modules have zero call sites outside their own test files.",
   "hcli.ane_provider.ANEProvider, tools.future.hcli_compactor each have a passing test and zero callers outside it; a green test does not make a capability reachable."
  ],
  "purpose": "Answer, per capability and from evidence only: who calls it. A definition count is not a capability.",
  "schema": "hawking.future.capability_reachability.v1",
- "seal_sha256": "23ff7bc06d4f19b335b5282029c753282f54b8b6bf2b64dde0cb20bcaff704fa",
+ "seal_sha256": "c68e96268af1cdd9a00b230c38e5c8b810471ff0d34c8c2a9694714a9f116a7f",
+ "source": "head",
  "version": 1
 }

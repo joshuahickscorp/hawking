@@ -5,7 +5,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:19:29Z",
+  "recorded_at": "2026-09-02T06:31:44Z",
   "recorded_by": "tools/future/abi_verdicts.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -66,6 +66,522 @@
  "codex_files_untouched": true,
  "does_not_substitute_for_protected_measurement": true,
  "dossiers": [
+  {
+   "check": "kernel_existence",
+   "class_responses": {
+    "ABI_MISMATCH": {
+     "harness_action": "reclassify kernel_existence|demo_k|static_kernel_verify.rs:2589 to abi_mismatch; do not exempt type_width as a class",
+     "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
+     "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
+    },
+    "CONFIRMED_BUG": {
+     "harness_action": "install RegressionFixture for kernel_existence|demo_k|static_kernel_verify.rs:2589; regression_still_detectable() must keep returning True",
+     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'demo_k' so a future checker edit cannot silently drop the class.",
+     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/static_kernel_verify.rs:2589 for 'demo_k'."
+    },
+    "DEAD_CODE": {
+     "harness_action": "store reachability for kernel_existence|demo_k|static_kernel_verify.rs:2589; re-emit check=reachability severity=WARNING",
+     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for go. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
+     "would_mean": "Host path go at crates/hawking-core/src/static_kernel_verify.rs:2589 cannot run, so this mismatch cannot waste a protected GPU window."
+    },
+    "FALSE_POSITIVE": {
+     "harness_action": "register ExemptionRule pinned to kernel_existence|demo_k|static_kernel_verify.rs:2589's pattern",
+     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=demo_k host=crates/hawking-core/src/static_kernel_verify.rs:2589 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
+     "would_mean": "The checker mis-modelled this site. The source may be legal."
+    },
+    "GENERATED_KERNEL": {
+     "harness_action": "register GeneratorSeam for kernel_existence|demo_k|static_kernel_verify.rs:2589; produced_names derived from source, not a count",
+     "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
+     "would_mean": "'demo_k' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'demo_k' is not among them (a different generator would be required)."
+    },
+    "INTENTIONAL_ALIAS": {
+     "harness_action": "register KernelAlias for 'demo_k'; requires evidence.alias_of",
+     "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
+     "would_mean": "Host name 'demo_k' is an alias for a different shader symbol. Nearby literal kernel void exists at crates/hawking-core/shaders/attn.metal:414 (kv_append_f32); signatures may still differ."
+    }
+   },
+   "codex_status": null,
+   "finding_id": "kernel_existence|demo_k|static_kernel_verify.rs:2589",
+   "host_site": {
+    "enclosing_fn": {
+     "line": 2587,
+     "name": "go",
+     "path": "crates/hawking-core/src/static_kernel_verify.rs",
+     "path_taken": "read_from_worktree"
+    },
+    "extra_host_sites": [
+     "crates/hawking-core/src/static_kernel_verify.rs:2589",
+     "crates/hawking-core/src/static_kernel_verify.rs:2601",
+     "crates/hawking-core/src/static_kernel_verify.rs:2667",
+     "crates/hawking-core/src/static_kernel_verify.rs:2686"
+    ],
+    "host_construct": "dispatch_threads_literal_name",
+    "line": 2589,
+    "path": "crates/hawking-core/src/static_kernel_verify.rs",
+    "preflight": "crates/hawking-core/src/static_kernel_verify.rs:2589",
+    "snippet": {
+     "end_line": 2593,
+     "line": 2589,
+     "path": "crates/hawking-core/src/static_kernel_verify.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 2585,
+     "text": "2585|\n2586|    const GOOD_HOST: &str = r#\"\n2587|fn go(ctx: &MetalContext, x: &Buffer, out: &Buffer) {\n2588|    const TG: u32 = 64;\n2589|    ctx.dispatch_threads(\"demo_k\", (64, 1, 1), (TG, 1, 1), |enc| {\n2590|        enc.set_buffer(0, Some(x), 0);\n2591|        enc.set_buffer(1, Some(out), 0);\n2592|        enc.set_u32(2, n);\n2593|        enc.set_f32(3, eps);"
+    }
+   },
+   "kernel": "demo_k",
+   "message": "host references kernel 'demo_k' but no shader defines `kernel void demo_k(`",
+   "reviewer_evidence": {
+    "argbuf_dispatcher_comment": {
+     "end_line": 447,
+     "line": 443,
+     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 439,
+     "text": "439|\n440|    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in\n441|    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,\n442|    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from\n443|    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`\n444|    /// \u2014 not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,\n445|    /// which leaves `args.cols` undefined in the synthetic test setup.\n446|    #[repr(C)]\n447|    #[derive(Copy, Clone)]"
+    },
+    "buffer_index": null,
+    "common_argbuf_structs": {
+     "end_line": 43,
+     "line": 31,
+     "path": "crates/hawking-core/shaders/common.metal",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 19,
+     "text": "19|//   add_inplace           \u2014 element-wise residual add: a[i] += b[i].\n20|//                           [Phase 4 Wedge 4a]\n21|\n22|#include <metal_stdlib>\n23|using namespace metal;\n24|\n25|// \u2500\u2500 Phase 3 argbuf structs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n26|// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the\n27|// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index\n28|// that previously held the first `set_bytes` arg.\n29|\n30|/// (rows: u32, cols: u32) \u2014 used by GEMV kernels with weight+activation buffers.\n31|struct ArgbufRowsCols { uint rows; uint cols; };\n32|\n33|/// (hidden: u32, eps: f32) \u2014 used by rmsnorm_f32 TCB path.\n34|struct ArgbufRmsnorm { uint hidden; float eps; };\n35|\n36|/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)\n37|/// \u2014 used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected\n38|/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on\n39|/// single-thread dispatch.\n40|struct ArgbufTopkGate {\n41|    uint n_experts;\n42|    uint top_k;\n43|    float tie_epsilon;"
+    },
+    "encode_gemv_f32_attn_pinned_set_bytes": {
+     "end_line": 5437,
+     "line": 5432,
+     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 5427,
+     "text": "5427|        )\n5428|    }\n5429|\n5430|    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.\n5431|    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch\n5432|    /// without allocation or readback. Use this to coalesce two independent\n5433|    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.\n5434|    pub(crate) fn encode_gemv_f32_attn_pinned(\n5435|        batch: &mut CommandBatch<'_>,\n5436|        w_buf: &PinnedBuffer,\n5437|        rows: usize,"
+    },
+    "host_fns_sharing_kernel_prefix": [],
+    "host_kind": null,
+    "identity_map": {
+     "line": null,
+     "path": "crates/hawking-core/src/metal/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": false
+    },
+    "nearby_kv_append_f32": [
+     {
+      "line": 414,
+      "path": "crates/hawking-core/shaders/attn.metal",
+      "path_taken": "read_from_worktree"
+     }
+    ],
+    "qwen_macro_seam": {
+     "macros": [
+      {
+       "define_line": 1240,
+       "invocations": [
+        "1",
+        "2",
+        "4",
+        "8"
+       ],
+       "macro": "QWEN_UNIFORM_Q4_MATMUL_K",
+       "prefix": "qwen_uniform_q4_group64_matmul_k",
+       "produced_names": [
+        "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+       ],
+       "suffix": "_geo_tpr64_tg128"
+      },
+      {
+       "define_line": 1490,
+       "invocations": [
+        "1",
+        "2",
+        "3"
+       ],
+       "macro": "QWEN_BINARY_PLANES",
+       "prefix": "qwen_binary_planes_k",
+       "produced_names": [
+        "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+        "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+        "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
+       ],
+       "suffix": "_matvec_geo_tpr64_tg128"
+      }
+     ],
+     "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+     "path_taken": "read_from_worktree",
+     "produced_names": [
+      "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+      "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+      "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+     ]
+    },
+    "shader_kind": null
+   },
+   "ruled_by": null,
+   "severity_as_raised": "ERROR",
+   "shader_site": {
+    "line_as_raised": null,
+    "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
+    "literal_kernel_void_now": [],
+    "observed_now": null,
+    "path": null,
+    "preflight": null,
+    "snippet_at_raised_line": null
+   },
+   "verdict": null,
+   "verdict_status": "PENDING"
+  },
+  {
+   "check": "kernel_existence",
+   "class_responses": {
+    "ABI_MISMATCH": {
+     "harness_action": "reclassify kernel_existence|no_such_kernel|static_kernel_verify.rs:2654 to abi_mismatch; do not exempt type_width as a class",
+     "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
+     "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
+    },
+    "CONFIRMED_BUG": {
+     "harness_action": "install RegressionFixture for kernel_existence|no_such_kernel|static_kernel_verify.rs:2654; regression_still_detectable() must keep returning True",
+     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'no_such_kernel' so a future checker edit cannot silently drop the class.",
+     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/static_kernel_verify.rs:2654 for 'no_such_kernel'."
+    },
+    "DEAD_CODE": {
+     "harness_action": "store reachability for kernel_existence|no_such_kernel|static_kernel_verify.rs:2654; re-emit check=reachability severity=WARNING",
+     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for go. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
+     "would_mean": "Host path go at crates/hawking-core/src/static_kernel_verify.rs:2654 cannot run, so this mismatch cannot waste a protected GPU window."
+    },
+    "FALSE_POSITIVE": {
+     "harness_action": "register ExemptionRule pinned to kernel_existence|no_such_kernel|static_kernel_verify.rs:2654's pattern",
+     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=no_such_kernel host=crates/hawking-core/src/static_kernel_verify.rs:2654 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
+     "would_mean": "The checker mis-modelled this site. The source may be legal."
+    },
+    "GENERATED_KERNEL": {
+     "harness_action": "register GeneratorSeam for kernel_existence|no_such_kernel|static_kernel_verify.rs:2654; produced_names derived from source, not a count",
+     "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
+     "would_mean": "'no_such_kernel' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'no_such_kernel' is not among them (a different generator would be required)."
+    },
+    "INTENTIONAL_ALIAS": {
+     "harness_action": "register KernelAlias for 'no_such_kernel'; requires evidence.alias_of",
+     "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
+     "would_mean": "Host name 'no_such_kernel' is an alias for a different shader symbol. Nearby literal kernel void exists at crates/hawking-core/shaders/attn.metal:414 (kv_append_f32); signatures may still differ."
+    }
+   },
+   "codex_status": null,
+   "finding_id": "kernel_existence|no_such_kernel|static_kernel_verify.rs:2654",
+   "host_site": {
+    "enclosing_fn": {
+     "line": 2653,
+     "name": "go",
+     "path": "crates/hawking-core/src/static_kernel_verify.rs",
+     "path_taken": "read_from_worktree"
+    },
+    "extra_host_sites": [
+     "crates/hawking-core/src/static_kernel_verify.rs:2654"
+    ],
+    "host_construct": "dispatch_threads_literal_name",
+    "line": 2654,
+    "path": "crates/hawking-core/src/static_kernel_verify.rs",
+    "preflight": "crates/hawking-core/src/static_kernel_verify.rs:2654",
+    "snippet": {
+     "end_line": 2658,
+     "line": 2654,
+     "path": "crates/hawking-core/src/static_kernel_verify.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 2650,
+     "text": "2650|    #[test]\n2651|    fn missing_kernel_name_is_error() {\n2652|        let host = r#\"\n2653|fn go(ctx: &MetalContext) {\n2654|    ctx.dispatch_threads(\"no_such_kernel\", (1, 1, 1), (1, 1, 1), |enc| {\n2655|        enc.set_buffer(0, Some(x), 0);\n2656|    });\n2657|}\n2658|\"#;"
+    }
+   },
+   "kernel": "no_such_kernel",
+   "message": "host references kernel 'no_such_kernel' but no shader defines `kernel void no_such_kernel(`",
+   "reviewer_evidence": {
+    "argbuf_dispatcher_comment": {
+     "end_line": 447,
+     "line": 443,
+     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 439,
+     "text": "439|\n440|    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in\n441|    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,\n442|    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from\n443|    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`\n444|    /// \u2014 not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,\n445|    /// which leaves `args.cols` undefined in the synthetic test setup.\n446|    #[repr(C)]\n447|    #[derive(Copy, Clone)]"
+    },
+    "buffer_index": null,
+    "common_argbuf_structs": {
+     "end_line": 43,
+     "line": 31,
+     "path": "crates/hawking-core/shaders/common.metal",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 19,
+     "text": "19|//   add_inplace           \u2014 element-wise residual add: a[i] += b[i].\n20|//                           [Phase 4 Wedge 4a]\n21|\n22|#include <metal_stdlib>\n23|using namespace metal;\n24|\n25|// \u2500\u2500 Phase 3 argbuf structs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n26|// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the\n27|// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index\n28|// that previously held the first `set_bytes` arg.\n29|\n30|/// (rows: u32, cols: u32) \u2014 used by GEMV kernels with weight+activation buffers.\n31|struct ArgbufRowsCols { uint rows; uint cols; };\n32|\n33|/// (hidden: u32, eps: f32) \u2014 used by rmsnorm_f32 TCB path.\n34|struct ArgbufRmsnorm { uint hidden; float eps; };\n35|\n36|/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)\n37|/// \u2014 used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected\n38|/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on\n39|/// single-thread dispatch.\n40|struct ArgbufTopkGate {\n41|    uint n_experts;\n42|    uint top_k;\n43|    float tie_epsilon;"
+    },
+    "encode_gemv_f32_attn_pinned_set_bytes": {
+     "end_line": 5437,
+     "line": 5432,
+     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 5427,
+     "text": "5427|        )\n5428|    }\n5429|\n5430|    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.\n5431|    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch\n5432|    /// without allocation or readback. Use this to coalesce two independent\n5433|    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.\n5434|    pub(crate) fn encode_gemv_f32_attn_pinned(\n5435|        batch: &mut CommandBatch<'_>,\n5436|        w_buf: &PinnedBuffer,\n5437|        rows: usize,"
+    },
+    "host_fns_sharing_kernel_prefix": [],
+    "host_kind": null,
+    "identity_map": {
+     "line": null,
+     "path": "crates/hawking-core/src/metal/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": false
+    },
+    "nearby_kv_append_f32": [
+     {
+      "line": 414,
+      "path": "crates/hawking-core/shaders/attn.metal",
+      "path_taken": "read_from_worktree"
+     }
+    ],
+    "qwen_macro_seam": {
+     "macros": [
+      {
+       "define_line": 1240,
+       "invocations": [
+        "1",
+        "2",
+        "4",
+        "8"
+       ],
+       "macro": "QWEN_UNIFORM_Q4_MATMUL_K",
+       "prefix": "qwen_uniform_q4_group64_matmul_k",
+       "produced_names": [
+        "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+       ],
+       "suffix": "_geo_tpr64_tg128"
+      },
+      {
+       "define_line": 1490,
+       "invocations": [
+        "1",
+        "2",
+        "3"
+       ],
+       "macro": "QWEN_BINARY_PLANES",
+       "prefix": "qwen_binary_planes_k",
+       "produced_names": [
+        "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+        "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+        "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
+       ],
+       "suffix": "_matvec_geo_tpr64_tg128"
+      }
+     ],
+     "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+     "path_taken": "read_from_worktree",
+     "produced_names": [
+      "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+      "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+      "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+     ]
+    },
+    "shader_kind": null
+   },
+   "ruled_by": null,
+   "severity_as_raised": "ERROR",
+   "shader_site": {
+    "line_as_raised": null,
+    "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
+    "literal_kernel_void_now": [],
+    "observed_now": null,
+    "path": null,
+    "preflight": null,
+    "snippet_at_raised_line": null
+   },
+   "verdict": null,
+   "verdict_status": "PENDING"
+  },
+  {
+   "check": "kernel_existence",
+   "class_responses": {
+    "ABI_MISMATCH": {
+     "harness_action": "reclassify kernel_existence|pack_k|static_kernel_verify.rs:2717 to abi_mismatch; do not exempt type_width as a class",
+     "preflight_change": "Reclassify this finding to check=abi_mismatch and keep ERROR. Add a checker for consecutive set_u32 at i,i+1 against a constant struct at i. Primitive kind mismatches (set_u32 onto device*) stay type_width.",
+     "would_mean": "The host and shader disagree on the contract (packing / field order / scalar-sequence vs struct), which is not a primitive type_width error."
+    },
+    "CONFIRMED_BUG": {
+     "harness_action": "install RegressionFixture for kernel_existence|pack_k|static_kernel_verify.rs:2717; regression_still_detectable() must keep returning True",
+     "preflight_change": "Keep this finding ERROR. Add a synthetic regression fixture (metal + host pair under the harness, never under crates/) that reproduces kernel_existence for 'pack_k' so a future checker edit cannot silently drop the class.",
+     "would_mean": "The kernel_existence check was right at crates/hawking-core/src/static_kernel_verify.rs:2717 for 'pack_k'."
+    },
+    "DEAD_CODE": {
+     "harness_action": "store reachability for kernel_existence|pack_k|static_kernel_verify.rs:2717; re-emit check=reachability severity=WARNING",
+     "preflight_change": "Downgrade this one finding to WARNING and emit a reachability record for go. Do not disable kernel_existence. Reachable sites of the same check stay ERROR.",
+     "would_mean": "Host path go at crates/hawking-core/src/static_kernel_verify.rs:2717 cannot run, so this mismatch cannot waste a protected GPU window."
+    },
+    "FALSE_POSITIVE": {
+     "harness_action": "register ExemptionRule pinned to kernel_existence|pack_k|static_kernel_verify.rs:2717's pattern",
+     "preflight_change": "Register a NARROW exemption for this pattern only: check=kernel_existence kernel=pack_k host=crates/hawking-core/src/static_kernel_verify.rs:2717 construct=dispatch_threads_literal_name. A different kernel, a different buffer index, or a different host construct of kernel_existence must still fire.",
+     "would_mean": "The checker mis-modelled this site. The source may be legal."
+    },
+    "GENERATED_KERNEL": {
+     "harness_action": "register GeneratorSeam for kernel_existence|pack_k|static_kernel_verify.rs:2717; produced_names derived from source, not a count",
+     "preflight_change": "Teach parse_metal (or this harness's resolver) the generator seam: expand `#define MAC(ARG) kernel void pre##ARG##suf` plus invocations, and/or runtime source strings. Names the seam does not produce still fail kernel_existence.",
+     "would_mean": "'pack_k' is produced by a generator, not a literal kernel void. Current qwen_uniform_q4.metal preprocessor seam produces 7 names; 'pack_k' is not among them (a different generator would be required)."
+    },
+    "INTENTIONAL_ALIAS": {
+     "harness_action": "register KernelAlias for 'pack_k'; requires evidence.alias_of",
+     "preflight_change": "Teach the name resolver host_name \u2192 shader_name from the evidence's alias_of. Existence and bind checks then run against the target. A name with no alias and no kernel void stays ERROR.",
+     "would_mean": "Host name 'pack_k' is an alias for a different shader symbol. Nearby literal kernel void exists at crates/hawking-core/shaders/attn.metal:414 (kv_append_f32); signatures may still differ."
+    }
+   },
+   "codex_status": null,
+   "finding_id": "kernel_existence|pack_k|static_kernel_verify.rs:2717",
+   "host_site": {
+    "enclosing_fn": {
+     "line": 2716,
+     "name": "go",
+     "path": "crates/hawking-core/src/static_kernel_verify.rs",
+     "path_taken": "read_from_worktree"
+    },
+    "extra_host_sites": [
+     "crates/hawking-core/src/static_kernel_verify.rs:2717"
+    ],
+    "host_construct": "dispatch_threads_literal_name",
+    "line": 2717,
+    "path": "crates/hawking-core/src/static_kernel_verify.rs",
+    "preflight": "crates/hawking-core/src/static_kernel_verify.rs:2717",
+    "snippet": {
+     "end_line": 2721,
+     "line": 2717,
+     "path": "crates/hawking-core/src/static_kernel_verify.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 2713,
+     "text": "2713|    pub a: u32,\n2714|    pub c: u32,\n2715|}\n2716|fn go(ctx: &MetalContext) {\n2717|    ctx.dispatch_threads(\"pack_k\", (1, 1, 1), (1, 1, 1), |enc| {\n2718|        enc.set_buffer(0, Some(ab.handle()), 0);\n2719|    });\n2720|}\n2721|\"#;"
+    }
+   },
+   "kernel": "pack_k",
+   "message": "host references kernel 'pack_k' but no shader defines `kernel void pack_k(`",
+   "reviewer_evidence": {
+    "argbuf_dispatcher_comment": {
+     "end_line": 447,
+     "line": 443,
+     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 439,
+     "text": "439|\n440|    /// Matches `struct ArgbufRowsCols { uint rows; uint cols; }` in\n441|    /// `shaders/common.metal`. Several kernels (gemv_f32_attn, gemv_f32_moe,\n442|    /// gemm_q4_k_m_fused_v2, gemm_q3_k_fused_v2) read this packed struct from\n443|    /// buffer 3. Dispatchers must send 8 bytes via a single `set_bytes(3, ...)`\n444|    /// \u2014 not two separate `set_bytes(3, u32)` + `set_bytes(4, u32)` calls,\n445|    /// which leaves `args.cols` undefined in the synthetic test setup.\n446|    #[repr(C)]\n447|    #[derive(Copy, Clone)]"
+    },
+    "buffer_index": null,
+    "common_argbuf_structs": {
+     "end_line": 43,
+     "line": 31,
+     "path": "crates/hawking-core/shaders/common.metal",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 19,
+     "text": "19|//   add_inplace           \u2014 element-wise residual add: a[i] += b[i].\n20|//                           [Phase 4 Wedge 4a]\n21|\n22|#include <metal_stdlib>\n23|using namespace metal;\n24|\n25|// \u2500\u2500 Phase 3 argbuf structs \u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\u2500\n26|// One packed struct per distinct scalar-arg pattern.  Kernels refactored to the\n27|// argbuf pattern declare `constant ArgbufXxx& args [[buffer(N)]]` at the index\n28|// that previously held the first `set_bytes` arg.\n29|\n30|/// (rows: u32, cols: u32) \u2014 used by GEMV kernels with weight+activation buffers.\n31|struct ArgbufRowsCols { uint rows; uint cols; };\n32|\n33|/// (hidden: u32, eps: f32) \u2014 used by rmsnorm_f32 TCB path.\n34|struct ArgbufRmsnorm { uint hidden; float eps; };\n35|\n36|/// (n_experts: u32, top_k: u32, tie_epsilon: f32, normalize_topk: u32)\n37|/// \u2014 used by moe_topk_gate. `normalize_topk != 0` re-normalizes the selected\n38|/// top-k weights in-kernel (Qwen3 `norm_topk_prob=true`), removing a follow-on\n39|/// single-thread dispatch.\n40|struct ArgbufTopkGate {\n41|    uint n_experts;\n42|    uint top_k;\n43|    float tie_epsilon;"
+    },
+    "encode_gemv_f32_attn_pinned_set_bytes": {
+     "end_line": 5437,
+     "line": 5432,
+     "path": "crates/hawking-core/src/kernels/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": true,
+     "start_line": 5427,
+     "text": "5427|        )\n5428|    }\n5429|\n5430|    /// v0.3.4 -- low-level batched encoder for `gemv_f32_attn`.\n5431|    /// Takes pre-allocated Metal buffers; encodes into an existing CommandBatch\n5432|    /// without allocation or readback. Use this to coalesce two independent\n5433|    /// fp32 GEMVs (e.g. q_a_proj + kv_a_proj) into a single command buffer.\n5434|    pub(crate) fn encode_gemv_f32_attn_pinned(\n5435|        batch: &mut CommandBatch<'_>,\n5436|        w_buf: &PinnedBuffer,\n5437|        rows: usize,"
+    },
+    "host_fns_sharing_kernel_prefix": [],
+    "host_kind": null,
+    "identity_map": {
+     "line": null,
+     "path": "crates/hawking-core/src/metal/mod.rs",
+     "path_taken": "read_from_worktree",
+     "present": false
+    },
+    "nearby_kv_append_f32": [
+     {
+      "line": 414,
+      "path": "crates/hawking-core/shaders/attn.metal",
+      "path_taken": "read_from_worktree"
+     }
+    ],
+    "qwen_macro_seam": {
+     "macros": [
+      {
+       "define_line": 1240,
+       "invocations": [
+        "1",
+        "2",
+        "4",
+        "8"
+       ],
+       "macro": "QWEN_UNIFORM_Q4_MATMUL_K",
+       "prefix": "qwen_uniform_q4_group64_matmul_k",
+       "produced_names": [
+        "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
+        "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+       ],
+       "suffix": "_geo_tpr64_tg128"
+      },
+      {
+       "define_line": 1490,
+       "invocations": [
+        "1",
+        "2",
+        "3"
+       ],
+       "macro": "QWEN_BINARY_PLANES",
+       "prefix": "qwen_binary_planes_k",
+       "produced_names": [
+        "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+        "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+        "qwen_binary_planes_k3_matvec_geo_tpr64_tg128"
+       ],
+       "suffix": "_matvec_geo_tpr64_tg128"
+      }
+     ],
+     "path": "crates/hawking-core/shaders/qwen_uniform_q4.metal",
+     "path_taken": "read_from_worktree",
+     "produced_names": [
+      "qwen_binary_planes_k1_matvec_geo_tpr64_tg128",
+      "qwen_binary_planes_k2_matvec_geo_tpr64_tg128",
+      "qwen_binary_planes_k3_matvec_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k1_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k2_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k4_geo_tpr64_tg128",
+      "qwen_uniform_q4_group64_matmul_k8_geo_tpr64_tg128"
+     ]
+    },
+    "shader_kind": null
+   },
+   "ruled_by": null,
+   "severity_as_raised": "ERROR",
+   "shader_site": {
+    "line_as_raised": null,
+    "line_drift_note": "Preflight line numbers are from STATIC_KERNEL_PREFLIGHT.json. observed_now is this checkout. Drift is evidence, not a verdict.",
+    "literal_kernel_void_now": [],
+    "observed_now": null,
+    "path": null,
+    "preflight": null,
+    "snippet_at_raised_line": null
+   },
+   "verdict": null,
+   "verdict_status": "PENDING"
+  },
   {
    "check": "kernel_existence",
    "class_responses": {
@@ -431,7 +947,7 @@
  ],
  "generator_seams": [],
  "gpu_authority": false,
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "c8f7ab8de9031bf44a85f99820a465cd395c9e71",
  "measurement_states_we_are_not": [
   "DIAGNOSTIC_RELATIVE",
   "PROTECTED_ABSOLUTE"
@@ -451,6 +967,33 @@
  "pending": [
   {
    "check": "kernel_existence",
+   "finding_id": "kernel_existence|demo_k|static_kernel_verify.rs:2589",
+   "host": "crates/hawking-core/src/static_kernel_verify.rs:2589",
+   "kernel": "demo_k",
+   "message": "host references kernel 'demo_k' but no shader defines `kernel void demo_k(`",
+   "shader": null,
+   "verdict_status": "PENDING"
+  },
+  {
+   "check": "kernel_existence",
+   "finding_id": "kernel_existence|no_such_kernel|static_kernel_verify.rs:2654",
+   "host": "crates/hawking-core/src/static_kernel_verify.rs:2654",
+   "kernel": "no_such_kernel",
+   "message": "host references kernel 'no_such_kernel' but no shader defines `kernel void no_such_kernel(`",
+   "shader": null,
+   "verdict_status": "PENDING"
+  },
+  {
+   "check": "kernel_existence",
+   "finding_id": "kernel_existence|pack_k|static_kernel_verify.rs:2717",
+   "host": "crates/hawking-core/src/static_kernel_verify.rs:2717",
+   "kernel": "pack_k",
+   "message": "host references kernel 'pack_k' but no shader defines `kernel void pack_k(`",
+   "shader": null,
+   "verdict_status": "PENDING"
+  },
+  {
+   "check": "kernel_existence",
    "finding_id": "kernel_existence|qwen_q2f_group64_matvec_pair_geo_tpr64_tg128|qwen38_hybrid_decode.rs:4333",
    "host": "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:4333",
    "kernel": "qwen_q2f_group64_matvec_pair_geo_tpr64_tg128",
@@ -468,8 +1011,8 @@
    "verdict_status": "PENDING"
   }
  ],
- "pending_count": 2,
- "preflight_error_count_derived": 2,
+ "pending_count": 5,
+ "preflight_error_count_derived": 5,
  "preflight_path_taken": "present",
  "preflight_receipt": "receipts/future/STATIC_KERNEL_PREFLIGHT.json",
  "purpose": "Prepare every possible ruling on the static preflight ERROR findings so that whichever way Codex falls, the checker permanently learns. This sidecar does not itself rule.",
@@ -484,11 +1027,11 @@
   "write_receipt": "tools/future/_common.py \u2014 seal + HardwareClaimError + bench UNKNOWN"
  },
  "regression_fixtures": {},
- "reported_count": 2,
+ "reported_count": 5,
  "rulings_issued_by_this_sidecar": 0,
  "rulings_recorded_from_external_authority": 0,
  "schema": "hawking.future.abi_verdicts.v1",
- "seal_sha256": "025d397d02a3697b93eabab4ac29f6677133baf0d2c15399720175a7c58e6a7d",
+ "seal_sha256": "a28dd7dacddaf8952f910926a642aa9b5e715cd149f5ab49893b08ce51b75f30",
  "snapshot_captured_count": 46,
  "snapshot_manifest": "receipts/future/EVIDENCE_SNAPSHOT.json",
  "snapshot_path_taken": "present",

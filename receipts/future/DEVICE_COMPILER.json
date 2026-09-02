@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:16:34Z",
+  "recorded_at": "2026-09-02T07:07:40Z",
   "recorded_by": "tools/future/device_compiler.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -58,7 +58,7 @@
    {
     "compiled_identity": {
      "archive_bytes": 15888,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/embed.mtlarchive",
+     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/embed.mtlarchive",
      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
      "device": null,
      "entry_point": "organ_embed_gather",
@@ -104,7 +104,7 @@
    {
     "compiled_identity": {
      "archive_bytes": 19952,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/gqa_attention.mtlarchive",
+     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/gqa_attention.mtlarchive",
      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
      "device": null,
      "entry_point": "organ_gqa_decode",
@@ -154,7 +154,7 @@
    {
     "compiled_identity": {
      "archive_bytes": 15888,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/lm_head.mtlarchive",
+     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/lm_head.mtlarchive",
      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
      "device": null,
      "entry_point": "organ_lm_head_gemv",
@@ -200,7 +200,7 @@
    {
     "compiled_identity": {
      "archive_bytes": 15888,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/mlp_down.mtlarchive",
+     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_down.mtlarchive",
      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
      "device": null,
      "entry_point": "organ_mlp_down_gemv",
@@ -246,7 +246,7 @@
    {
     "compiled_identity": {
      "archive_bytes": 16944,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/mlp_gate_up.mtlarchive",
+     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_gate_up.mtlarchive",
      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
      "device": null,
      "entry_point": "organ_mlp_gate_up_swiglu",
@@ -292,7 +292,7 @@
    {
     "compiled_identity": {
      "archive_bytes": 16480,
-     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/rmsnorm.mtlarchive",
+     "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/rmsnorm.mtlarchive",
      "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
      "device": null,
      "entry_point": "organ_rmsnorm",
@@ -379,7 +379,7 @@
     {
      "compiled_identity": {
       "archive_bytes": 15888,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/embed.mtlarchive",
+      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/embed.mtlarchive",
       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
       "device": null,
       "entry_point": "organ_embed_gather",
@@ -412,7 +412,7 @@
     {
      "compiled_identity": {
       "archive_bytes": 19952,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/gqa_attention.mtlarchive",
+      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/gqa_attention.mtlarchive",
       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
       "device": null,
       "entry_point": "organ_gqa_decode",
@@ -445,7 +445,7 @@
     {
      "compiled_identity": {
       "archive_bytes": 15888,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/lm_head.mtlarchive",
+      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/lm_head.mtlarchive",
       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
       "device": null,
       "entry_point": "organ_lm_head_gemv",
@@ -478,7 +478,7 @@
     {
      "compiled_identity": {
       "archive_bytes": 15888,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/mlp_down.mtlarchive",
+      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_down.mtlarchive",
       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
       "device": null,
       "entry_point": "organ_mlp_down_gemv",
@@ -511,7 +511,7 @@
     {
      "compiled_identity": {
       "archive_bytes": 16944,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/mlp_gate_up.mtlarchive",
+      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/mlp_gate_up.mtlarchive",
       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
       "device": null,
       "entry_point": "organ_mlp_gate_up_swiglu",
@@ -544,7 +544,7 @@
     {
      "compiled_identity": {
       "archive_bytes": 16480,
-      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-36ku72tl/rmsnorm.mtlarchive",
+      "archive_path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-dc-archives-mndhpa3d/rmsnorm.mtlarchive",
       "claim_boundary": "MTLComputePipelineState created from a source-compiled MTLLibrary. shader_hash is sha256 of the serialized MTLBinaryArchive. No command queue, no dispatch, not a hardware measurement.",
       "device": null,
       "entry_point": "organ_rmsnorm",
@@ -676,7 +676,7 @@
   "receipt": "receipts/future/DEVICE_COMPILER.json"
  },
  "schema": "hawking.future.device_compiler.v1",
- "seal_sha256": "406dddc958998b594e1d72d646773fe1fb6fa4c5002b1a654ef0c32bc124c3b5",
+ "seal_sha256": "4f7ab90e7e9e64ed71c865138c42c32459ee483b2b46284933fa3d08c02f1c81",
  "version": 1,
  "what_this_cannot_establish": [
   "protected complete-token performance or physical EBPW",

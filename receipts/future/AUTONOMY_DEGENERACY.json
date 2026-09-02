@@ -9,7 +9,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:20:41Z",
+  "recorded_at": "2026-09-02T07:11:57Z",
   "recorded_by": "tools/future/autonomy_degeneracy.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -32,7 +32,7 @@
  "evidence_class": "STATIC_ONLY",
  "fails_on_degeneracy_even_when_nominal_conditions_met": true,
  "gpu_authority": false,
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
  "measurement_class": "STATIC_ONLY",
  "named_axes": [
   "rejections",
@@ -284,7 +284,7 @@
     }
    ],
    "degenerate_axes": [],
-   "elapsed_s": 130.25924706459045,
+   "elapsed_s": 129.50581693649292,
    "fails_on_degeneracy_even_when_nominal_conditions_met": true,
    "must_verdict": "PASS",
    "n_argv0_labelled": 0,
@@ -317,10 +317,10 @@
      "consecutive_emissions_identical": false,
      "consecutive_identical_pairs": 0,
      "degenerate": false,
-     "elapsed_after_last_s": 5.095921,
+     "elapsed_after_last_s": 5.103195,
      "fail_eligible": true,
      "largest_repeat_run": 1,
-     "last_t_s": 125.16332578659058,
+     "last_t_s": 124.40262198448181,
      "max_item_count": 1,
      "most_repeated": "[\"WU.DETACHED_TRIAL.ind.0000\",\"WU.DETACHED_TRIAL.ind.0001\"]",
      "n_events": 49,
@@ -395,8 +395,8 @@
      "most_repeated": "WORK_REFILLED:[\"WU.DETACHED_TRIAL.ind.0000\",\"WU.DETACHED_TRIAL.ind.0001\"]",
      "n_events": 54,
      "reason": "decisions unique=54 total=54 under thresholds",
-     "t_s_max": 128.34697008132935,
-     "t_s_min": 0.2695300579071045,
+     "t_s_max": 128.37335777282715,
+     "t_s_min": 0.23886895179748535,
      "total": 54,
      "unique": 54,
      "unique_ratio": 1.0
@@ -422,10 +422,10 @@
     }
    ],
    "provenance": {
-    "n_bytes": 104305,
+    "n_bytes": 104292,
     "present": true,
     "rel": "receipts/future/DETACHED_WORK_TRIAL.json",
-    "sha256": "98d5b185697ab5b5db09f4cf99b6600100e96f8868c61ecc32613f81f473c09d"
+    "sha256": "2ce448b683d238e8c660c5fc48e8f111f457fc8d60cbfa0fc06cabcd6de004d9"
    },
    "reason": "every named axis is non-degenerate under the stated thresholds",
    "score": null,
@@ -439,7 +439,7 @@
   "opposite_verdicts": true
  },
  "schema": "hawking.future.autonomy_degeneracy.v1",
- "seal_sha256": "ac5603500666468ed754a00aded5a9727011df0dd921793f9a58ff7ca248c0ac",
+ "seal_sha256": "f58efbd59bc614dde32f39a735b8c63da3de6fc72234d7a73ef1b29a2697b94a",
  "table_not_a_score": true,
  "threshold_defense": {
   "dead_scar_relaunches_max": "Zero: relaunching a family the trial already killed as a scar is dead_scar_repetition. The 1h table-replay of refusals is caught by the rejection ratio; this line is the improvement-trial control so the two mechanisms agree on that run.",

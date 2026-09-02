@@ -33,7 +33,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:02:39Z",
+  "recorded_at": "2026-09-02T06:52:33Z",
   "recorded_by": "tools.future.p6_projection.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -80,8 +80,6 @@
    "consulted": [
     "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
     "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
-    "/Users/scammermike/.claude-grok/worktrees/d1-vmcp-tabula-disposition-20260901-231744/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
-    "/Users/scammermike/.claude-grok/worktrees/d2-modellake-product-boundary-20260901-231757/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
     "receipts/future/evidence/ACCELERATOR_FRONT_G_P6.json"
    ],
    "evidence_source": "live_headless",
@@ -92,8 +90,6 @@
    "consulted": [
     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
     "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-    "/Users/scammermike/.claude-grok/worktrees/d1-vmcp-tabula-disposition-20260901-231744/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
-    "/Users/scammermike/.claude-grok/worktrees/d2-modellake-product-boundary-20260901-231757/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
     "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    ],
    "evidence_source": "live_headless",
@@ -121,7 +117,7 @@
   "FPGA form cites fpga_engines functional references; no HDL, no backend."
  ],
  "gpu_authority": false,
- "head": "b76580b272ed17cc5b178a3fe438763699716ff8",
+ "head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
  "negative_findings": [
   "No protected GPU lease: every hardware quantity remains UNKNOWN.",
   "No FPGA board, bitstream, or cycle-accurate model; FPGA forms are hypotheses.",
@@ -5124,7 +5120,7 @@
   "p6_projection_module_existed": false
  },
  "schema": "hawking.future.p6_projection.v1",
- "seal_sha256": "172e1234bf5c832a367d1370bfc7327055fb42328a4b82b58c58e366013013e7",
+ "seal_sha256": "66d5f53a3774ec8f879c79ace6cd3bb2f15a1be254fd3476ed98be92c6f95493",
  "spatially_not_meaningful_ids": [
   "flash-p6-hash-single-command-buffer",
   "flash-p6-learned-reader-reuse"
