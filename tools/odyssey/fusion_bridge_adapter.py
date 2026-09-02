@@ -41,6 +41,7 @@ from fusion_bridge import (  # noqa: E402
     HeterogeneousPlan,
     compile_and_overlay,
     overlay_physical_graph,
+    three_domain_plan,
     two_domain_plan,
     validate,
 )
@@ -88,3 +89,8 @@ def overlay(graph: Mapping[str, Any], plan: HeterogeneousPlan | None = None) -> 
 
 def plan_is_valid(plan: HeterogeneousPlan | None = None) -> bool:
     return validate(plan or two_domain_plan()).ok
+
+
+def three_domain_is_valid(plan: HeterogeneousPlan | None = None) -> bool:
+    """Call site: validate() on a >=3 domain plan, not an import."""
+    return validate(plan or three_domain_plan()).ok

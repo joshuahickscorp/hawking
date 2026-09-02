@@ -131,6 +131,46 @@ class SyncRequirement(str, Enum):
     PRODUCER_CONSUMER = "producer_consumer"
 
 
+class OrderingGuarantee(IntEnum):
+    """Happens-before a link provides, or a plan claims.
+
+    Parallel to CoherencyAssumption: an assumption whose rank exceeds what
+    the transport actually guarantees is illegal. NONE is -1 so it is
+    strictly weaker than every named protocol.
+
+        NONE                 no happens-before (torn/late/never are legal)
+        FENCE                explicit barrier the consumer waits on
+        ACQUIRE_RELEASE      ownership-synchronized acquire/release
+        PRODUCER_CONSUMER    full handshake; producer will not overwrite
+                             until the consumer has acquired
+    """
+    NONE = -1
+    FENCE = 0
+    ACQUIRE_RELEASE = 1
+    PRODUCER_CONSUMER = 2
+
+
+_SYNC_TO_ORDERING = {
+    SyncRequirement.NONE: OrderingGuarantee.NONE,
+    SyncRequirement.FENCE: OrderingGuarantee.FENCE,
+    SyncRequirement.ACQUIRE_RELEASE: OrderingGuarantee.ACQUIRE_RELEASE,
+    SyncRequirement.PRODUCER_CONSUMER: OrderingGuarantee.PRODUCER_CONSUMER,
+}
+
+
+def ordering_from_sync(sync: SyncRequirement) -> OrderingGuarantee:
+    """Map a requested protocol onto the happens-before it provides.
+
+    A software fence/handshake is a protocol, not hardware coherency: it
+    is provided even on a link whose coherency is NONE, because the
+    consumer actually waits. Requesting NONE provides nothing.
+    """
+    try:
+        return _SYNC_TO_ORDERING[sync]
+    except KeyError as exc:
+        raise SemanticTransportError(f"unknown SyncRequirement {sync!r}") from exc
+
+
 class CoherencyAssumption(IntEnum):
     """§16.2 ladder plus an explicit NONE. Integer values are the rank used
     by the overclaim check: an assumption whose rank exceeds the link's
@@ -286,6 +326,12 @@ class SemanticTransportEdge:
     claims about that link. The validator refuses assumption > provided.
     Both default independently; a caller who wants a coherent plan over a
     non-coherent link has to say so, and then be refused.
+
+    `ordering_assumption` is the same pattern for happens-before.
+    None means honest: the plan assumes exactly the protocol it requested
+    (`sync_requirement`). Setting a stronger assumption than the protocol
+    provides is constructible and then refused -- a plan that assumes an
+    ordering the transport does not guarantee is illegal.
     """
     source: str
     destination: str
@@ -300,6 +346,7 @@ class SemanticTransportEdge:
     organ_id: str = ""
     token_id: str = ""
     representation_id: str = ""
+    ordering_assumption: OrderingGuarantee | None = None
 
     def __post_init__(self) -> None:
         if not self.source or not self.destination:
@@ -320,6 +367,34 @@ class SemanticTransportEdge:
     def assumes_stronger_than_link(self) -> bool:
         return int(self.coherency_assumption) > int(self.link_coherency)
 
+    @property
+    def provided_ordering(self) -> OrderingGuarantee:
+        """Happens-before this edge actually guarantees: the protocol it
+        requested. NONE requested => nothing guaranteed."""
+        return ordering_from_sync(self.sync_requirement)
+
+    @property
+    def effective_ordering_assumption(self) -> OrderingGuarantee:
+        if self.ordering_assumption is None:
+            return self.provided_ordering
+        return self.ordering_assumption
+
+    @property
+    def assumes_unguaranteed_ordering(self) -> bool:
+        return int(self.effective_ordering_assumption) > int(self.provided_ordering)
+
+    @property
+    def ownership_handoff_unguaranteed(self) -> bool:
+        """Exclusive write-authority moved with no happens-before on a
+        non-coherent link. KEEP and SHARE_READ do not move exclusive
+        write, so they are not this bug. TRANSFER + FENCE is a software
+        ordered handoff and is legal; TRANSFER + silent NONE is not."""
+        if self.ownership_transfer is not OwnershipTransfer.TRANSFER:
+            return False
+        if self.link_coherency is not CoherencyAssumption.NONE:
+            return False
+        return self.provided_ordering is OrderingGuarantee.NONE
+
     def to_dict(self) -> dict:
         return {
             "coherency_assumption": self.coherency_assumption.name,
@@ -328,9 +403,11 @@ class SemanticTransportEdge:
             "in_transit_transforms": list(self.in_transit_transforms),
             "link_coherency": self.link_coherency.name,
             "object_id": self.object_id,
+            "ordering_assumption": self.effective_ordering_assumption.name,
             "organ_id": self.organ_id,
             "ownership_transfer": self.ownership_transfer.value,
             "payload_semantics": self.payload_semantics.value,
+            "provided_ordering": self.provided_ordering.name,
             "representation_id": self.representation_id,
             "source": self.source,
             "sync_requirement": self.sync_requirement.value,

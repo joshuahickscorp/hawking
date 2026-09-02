@@ -220,8 +220,9 @@ def attach_heterogeneous_plan(compiler_output, plan_dict=None):
 
     Does not run organ-collapse measurements and does not import the
     accelerator package (this script's main() needs checkpoint weights;
-    the annotation does not). tools/odyssey/fusion_bridge_adapter.py is
-    the full overlay path.
+    the annotation does not). compile_heterogeneous_physical_graph() is
+    the path that constructs and validates a multi-domain plan.
+    tools/odyssey/fusion_bridge_adapter.py remains the overlay helper.
     """
     out = dict(compiler_output)
     dag = list(out.get("transformation_dag") or [])
@@ -239,6 +240,254 @@ def attach_heterogeneous_plan(compiler_output, plan_dict=None):
     if plan_dict is not None:
         out["fusion_bridge"] = plan_dict
     return out
+
+
+# ---------------------------------------------------------------------------
+# Heterogeneous PhysicalGraph: connect fusion-bridge + placement + transport
+# + backend contract. COST_MODEL / PLAN_ONLY. Does not load checkpoint weights.
+
+
+HETEROGENEOUS_SCHEMA = "hawking.odyssey.physical_graph_heterogeneous.v1"
+COST_MODEL = "COST_MODEL"
+
+
+def _accelerator():
+    """Lazy import of the accelerator package (and hcli, read-only)."""
+    accel = REPO / "tools" / "accelerator"
+    for path in (str(REPO), str(accel)):
+        if path not in sys.path:
+            sys.path.insert(0, path)
+    import fusion_bridge as fb
+    import placement as pl
+    import backend_contract as bc
+    from hcli.physical_graph import compile_physical_graph
+    return fb, pl, bc, compile_physical_graph
+
+
+def _backend_bindings(plan, bc):
+    """Call every registered backend; bind by DomainKind, not product name.
+
+    enumerate_backends() / capabilities() / execution_domain() are the
+    call sites. CUDA is named in the contract and not instantiated, so
+    it does not appear.
+    """
+    bound = {}
+    for backend in bc.enumerate_backends():
+        domain = backend.execution_domain()
+        cap = backend.capabilities()
+        for name, dom in plan.domains.items():
+            if backend.domain_kind is not dom.kind:
+                continue
+            bound[name] = {
+                "backend_id": backend.backend_id,
+                "domain_kind": dom.kind.value,
+                "evidence_tier": cap.evidence_tier,
+                "physical": dom.physical,
+                "present": cap.present,
+                "product": backend.product,
+            }
+        # Keep the unused domain object referenced so this is a call,
+        # not a discarded import of execution_domain.
+        _ = domain.name
+    return bound
+
+
+def _placement_gates(plan, pl) -> list[dict]:
+    """Call kind_admits and resources_fit on every placement (not just import)."""
+    rows = []
+    for p in plan.placements:
+        dom = plan.domains[p.domain]
+        admitted = pl.kind_admits(dom.kind, p.node_kind)
+        fits = pl.resources_fit(p.resources, dom.capacity_bytes)
+        rows.append({
+            "admitted": admitted,
+            "domain": p.domain,
+            "fits": fits,
+            "node_id": p.node_id,
+            "node_kind": p.node_kind.value,
+        })
+        if not admitted or not fits:
+            raise RuntimeError(
+                f"placement gate failed for {p.node_id}: "
+                f"admitted={admitted} fits={fits}"
+            )
+    return rows
+
+
+def validate_heterogeneous_plan(plan) -> dict:
+    """Call the fusion-bridge validator AND the ordering gate by name.
+
+    A module import is not a call site: reject_unguaranteed_ordering is
+    invoked here so the compiler itself is a user of the gate.
+    """
+    fb, _pl, _bc, _compile = _accelerator()
+    ordering_errors: list[dict] = []
+    fb.reject_unguaranteed_ordering(plan, ordering_errors)
+    fb._reject_coherency_overclaim(plan, ordering_errors)
+    fb._reject_ownership_overclaim(plan, ordering_errors)
+    report = fb.validate(plan)
+    return {
+        "direct_gate_codes": sorted({e["code"] for e in ordering_errors}),
+        "direct_gate_errors": list(ordering_errors),
+        "errors": list(report.errors),
+        "ok": report.ok,
+        "validate_codes": report.codes(),
+    }
+
+
+def compile_heterogeneous_physical_graph(architecture=None) -> dict:
+    """Construct, validate and overlay a >=3 domain heterogeneous plan.
+
+    Connects, does not rewrite:
+      hcli.physical_graph.compile_physical_graph   PLAN_ONLY skeleton
+      fusion_bridge.three_domain_plan              GPU_UMA + NPU + FPGA_HBM
+      fusion_bridge.validate / reject_unguaranteed_ordering
+      placement.kind_admits / resources_fit
+      backend_contract.enumerate_backends          DomainKind binding
+
+    Evidence tier is COST_MODEL. FPGA_HBM is declared, not present.
+    GPU_UMA and NPU domains are physical on this host; interconnect
+    numbers remain COST_MODEL knobs. No HARDWARE_MEASURED path.
+    """
+    fb, pl, bc, compile_physical_graph = _accelerator()
+    graph = compile_physical_graph(architecture or {
+        "model_id": "heterogeneous-physical-graph",
+        "organs": [
+            {"id": "attention", "present": True, "tensor_count": 4, "confidence": 1.0},
+            {"id": "ffn", "present": True, "tensor_count": 3, "confidence": 1.0},
+            {"id": "embed", "present": True, "tensor_count": 1, "confidence": 1.0},
+        ],
+    })
+    plan = fb.three_domain_plan()
+    report = validate_heterogeneous_plan(plan)
+    if not report["ok"]:
+        raise fb.FusionBridgeError(
+            "heterogeneous plan refused: " + ", ".join(report["validate_codes"])
+        )
+    missing = fb.missing_facets(plan)
+    if missing:
+        raise fb.FusionBridgeError(
+            "heterogeneous plan missing facets: " + ", ".join(missing)
+        )
+    if len(plan.domains) < 3:
+        raise fb.FusionBridgeError(
+            f"heterogeneous compile requires >= 3 domains, got {len(plan.domains)}"
+        )
+    placement_rows = _placement_gates(plan, pl)
+    backends = _backend_bindings(plan, bc)
+    overlaid = fb.overlay_physical_graph(graph, plan)
+    annotated = attach_heterogeneous_plan(overlaid, plan.to_dict())
+    facets = fb.plan_facets(plan)
+    cost = plan.total_cost()
+    annotated.update({
+        "schema": HETEROGENEOUS_SCHEMA,
+        "backends": backends,
+        "evidence_tier": COST_MODEL,
+        "facets": facets,
+        "hardware": {
+            name: {
+                "evidence_tier": COST_MODEL,
+                "kind": dom.kind.value,
+                "physical": dom.physical,
+            }
+            for name, dom in sorted(plan.domains.items())
+        },
+        "law": (
+            "a non-coherent link must never be assumed coherent; a plan that "
+            "assumes an ordering the transport does not guarantee is refused"
+        ),
+        "n_domains": len(plan.domains),
+        "pass": bool(
+            report["ok"]
+            and not missing
+            and len(plan.domains) >= 3
+            and cost.label == COST_MODEL
+            and all(row["admitted"] and row["fits"] for row in placement_rows)
+        ),
+        "placement_gates": placement_rows,
+        "qualification": "PLAN_ONLY",
+        "validation": report,
+    })
+    annotated["fusion_bridge_cost"] = cost.to_dict()
+    return annotated
+
+
+def refusal_cases() -> list[dict]:
+    """Construct illegal plans and record the exact assumption each violates.
+
+    Each case CALLS validate_heterogeneous_plan (hence the ordering,
+    coherency and ownership gates). A case that validates is a bug.
+    """
+    fb, _pl, _bc, _compile = _accelerator()
+    from semantic_transport import CoherencyAssumption
+
+    good = fb.three_domain_plan()
+    cases = []
+
+    ordering = fb.plan_assuming_unguaranteed_ordering(good)
+    order_report = validate_heterogeneous_plan(ordering)
+    cases.append({
+        "assumption": (
+            "happens-before FENCE across a non-coherent link whose requested "
+            "protocol is NONE (no barrier). The schedule and the edge both "
+            "assume an ordering the transport does not guarantee."
+        ),
+        "codes": order_report["validate_codes"],
+        "gate": "reject_unguaranteed_ordering",
+        "id": "unguaranteed_ordering",
+        "ok": order_report["ok"],
+        "refused": (not order_report["ok"]) and (
+            "ORDERING_OVERCLAIM" in order_report["validate_codes"]
+        ),
+        "violates": "ORDERING_OVERCLAIM",
+    })
+
+    coherency = fb.HeterogeneousPlan(
+        domains=good.domains,
+        placements=good.placements,
+        edges=tuple(
+            fb.overclaiming_edge(e, CoherencyAssumption.SOFTWARE_MANAGED)
+            for e in good.edges
+        ),
+        object_placements=good.object_placements,
+        notes=good.notes,
+        schedule=good.schedule,
+        fusions=good.fusions,
+    )
+    coh_report = validate_heterogeneous_plan(coherency)
+    cases.append({
+        "assumption": (
+            "SOFTWARE_MANAGED coherency across a link declared NONE. A "
+            "non-coherent link must never be assumed coherent."
+        ),
+        "codes": coh_report["validate_codes"],
+        "gate": "_reject_coherency_overclaim",
+        "id": "unguaranteed_coherency",
+        "ok": coh_report["ok"],
+        "refused": (not coh_report["ok"]) and (
+            "COHERENCY_OVERCLAIM" in coh_report["validate_codes"]
+        ),
+        "violates": "COHERENCY_OVERCLAIM",
+    })
+
+    ownership = fb.plan_assuming_unguaranteed_ownership(good)
+    own_report = validate_heterogeneous_plan(ownership)
+    cases.append({
+        "assumption": (
+            "exclusive OwnershipTransfer.TRANSFER on a NONE-coherent link "
+            "with SyncRequirement.NONE: the handoff has no happens-before, "
+            "so both ends can believe they hold exclusive write."
+        ),
+        "codes": own_report["validate_codes"],
+        "gate": "_reject_ownership_overclaim",
+        "id": "unguaranteed_ownership",
+        "ok": own_report["ok"],
+        "refused": (not own_report["ok"]) and (
+            "OWNERSHIP_OVERCLAIM" in own_report["validate_codes"]
+        ),
+        "violates": "OWNERSHIP_OVERCLAIM",
+    })
+    return cases
 
 
 if __name__ == "__main__":

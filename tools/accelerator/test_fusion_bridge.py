@@ -452,3 +452,166 @@ def test_atlas_primitive_name_matches_hwir_and_architecture_atlas():
     assert st.ATLAS_PRIMITIVE == "SemanticTransportEdge"
     assert st.ATLAS_PRIMITIVE in atlas.PRIMITIVES
     assert hwir.PRIMITIVE_TO_NODE_KIND[st.ATLAS_PRIMITIVE] == st.HWIR_NODE_KIND
+
+
+# ---------------------------------------------------------------- 3-domain + ordering / ownership
+
+
+def test_three_domain_plan_constructs_and_validates():
+    """Acceptance: a heterogeneous plan across >= 3 domains constructs
+    and validates. GPU_UMA and NPU are physical on this host; FPGA_HBM
+    is declared (COST_MODEL, not a measurement)."""
+    plan = fb.three_domain_plan()
+    report = fb.validate(plan)
+    assert report.ok, report.errors
+    assert len(plan.domains) >= 3
+    assert set(plan.domains) == {fb.HOST_GPU_UMA, fb.HOST_NPU, fb.DECLARED_FPGA_HBM}
+    assert plan.domains[fb.HOST_GPU_UMA].kind is DomainKind.GPU_UMA
+    assert plan.domains[fb.HOST_GPU_UMA].physical is True
+    assert plan.domains[fb.HOST_NPU].kind is DomainKind.NPU
+    assert plan.domains[fb.HOST_NPU].physical is True
+    assert plan.domains[fb.DECLARED_FPGA_HBM].kind is DomainKind.FPGA_HBM
+    assert plan.domains[fb.DECLARED_FPGA_HBM].physical is False
+    assert all(e.link_coherency is CoherencyAssumption.NONE for e in plan.edges)
+    assert all(e.coherency_assumption is CoherencyAssumption.NONE for e in plan.edges)
+    assert all(e.sync_requirement is SyncRequirement.FENCE for e in plan.edges)
+    assert plan.total_cost().label == COST_MODEL
+    assert plan.qualification == "PLAN_ONLY"
+    assert fb.missing_facets(plan) == []
+
+
+def test_three_domain_plan_expresses_required_facets():
+    plan = fb.three_domain_plan()
+    facets = fb.plan_facets(plan)
+    for name in fb.REQUIRED_FACETS:
+        assert facets[name], f"facet {name} is empty"
+    kinds = {p.node_kind for p in plan.placements}
+    assert pl.NodeKind.COMPUTATION in kinds
+    assert pl.NodeKind.STORAGE in kinds
+    assert pl.NodeKind.STATE in kinds
+    assert plan.schedule
+    assert plan.fusions
+    assert plan.fusions[0].physical_op == "gate_up_swiglu"
+    assert plan.fusions[0].domain == fb.DECLARED_FPGA_HBM
+    assert all(p.resources.bytes >= 0 for p in plan.placements)
+
+
+def test_unguaranteed_ordering_is_refused():
+    """THE load-bearing ordering test. A plan that assumes FENCE across a
+    non-coherent link whose requested protocol is NONE must be refused.
+    Mutation of reject_unguaranteed_ordering must make this FAIL."""
+    plan = fb.plan_assuming_unguaranteed_ordering()
+    edge = plan.edges[0]
+    assert edge.link_coherency is CoherencyAssumption.NONE
+    assert edge.sync_requirement is SyncRequirement.NONE
+    assert edge.effective_ordering_assumption is st.OrderingGuarantee.FENCE
+    assert edge.assumes_unguaranteed_ordering is True
+    report = fb.validate(plan)
+    assert report.ok is False
+    assert "ORDERING_OVERCLAIM" in report.codes()
+
+
+def test_compose_refuses_unguaranteed_ordering():
+    good = fb.three_domain_plan()
+    bad_edges = tuple(
+        fb.overclaiming_ordering_edge(
+            e, st.OrderingGuarantee.PRODUCER_CONSUMER,
+            sync=SyncRequirement.FENCE,
+        )
+        for e in good.edges
+    )
+    with pytest.raises(fb.FusionBridgeError, match="ORDERING_OVERCLAIM"):
+        fb.compose(
+            good.domains, good.placements, bad_edges,
+            object_placements=good.object_placements,
+            schedule=good.schedule,
+            fusions=good.fusions,
+        )
+
+
+def test_weaker_ordering_on_a_stronger_protocol_is_legal():
+    """Assuming NONE on a FENCE protocol is conservative, not an overclaim."""
+    good = fb.three_domain_plan()
+    conservative = tuple(
+        fb.overclaiming_ordering_edge(e, st.OrderingGuarantee.NONE)
+        for e in good.edges
+    )
+    schedule = tuple(
+        fb.ScheduleConstraint(
+            predecessor=c.predecessor,
+            successor=c.successor,
+            assumed_ordering=st.OrderingGuarantee.NONE,
+            via=c.via,
+            reason="conservative",
+        )
+        for c in good.schedule
+    )
+    plan = fb.compose(
+        good.domains, good.placements, conservative,
+        object_placements=good.object_placements,
+        schedule=schedule,
+        fusions=good.fusions,
+    )
+    assert fb.validate(plan).ok is True
+
+
+def test_unguaranteed_ownership_is_refused():
+    """Exclusive TRANSFER with no happens-before on a NONE link is refused.
+    Exact assumption: write-authority moved without an ordered handoff."""
+    plan = fb.plan_assuming_unguaranteed_ownership()
+    edge = plan.edges[0]
+    assert edge.ownership_transfer is OwnershipTransfer.TRANSFER
+    assert edge.sync_requirement is SyncRequirement.NONE
+    assert edge.link_coherency is CoherencyAssumption.NONE
+    assert edge.ownership_handoff_unguaranteed is True
+    report = fb.validate(plan)
+    assert report.ok is False
+    assert "OWNERSHIP_OVERCLAIM" in report.codes()
+
+
+def test_three_domain_overlay_carries_schedule_and_fusion():
+    plan = fb.three_domain_plan()
+    over = fb.overlay_physical_graph(
+        {"device_placement": {}, "synchronization": [], "dependencies": []},
+        plan,
+    )
+    assert any(s.get("kind") == "happens_before" for s in over["scheduling"])
+    assert any(f.get("physical_op") == "gate_up_swiglu" for f in over["fusion"])
+    assert any(
+        s.get("provided_ordering") == "FENCE" for s in over["synchronization"]
+        if s.get("kind") == "semantic_transport"
+    )
+    assert over["fusion_bridge"]["n_domains"] >= 3
+    assert over["device_placement"]["fusion_bridge"]["cost"]["label"] == COST_MODEL
+
+
+def test_hwir_lowering_still_works_on_three_domain_fpga_placements():
+    from tools.future import hwir
+
+    plan = fb.three_domain_plan()
+    graph = fb.lower_fpga_domain_to_hwir(plan)
+    report = graph.validate()
+    assert report.ok, report.errors
+    dma = [n for n in graph.nodes if n.kind == "dma-transport"]
+    assert dma
+    assert all(n.primitive == "SemanticTransportEdge" for n in dma)
+    assert graph.device_budget.declared_not_measured is True
+
+
+def test_ordering_gate_is_called_from_validate_not_just_imported():
+    """A module import is not a call site. validate() must invoke
+    reject_unguaranteed_ordering by name."""
+    tree = ast.parse((ACCEL / "fusion_bridge.py").read_text())
+    calls = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        name = None
+        if isinstance(func, ast.Name):
+            name = func.id
+        elif isinstance(func, ast.Attribute):
+            name = func.attr
+        if name == "reject_unguaranteed_ordering":
+            calls.append(node.lineno)
+    assert calls, "validate() never calls reject_unguaranteed_ordering"
