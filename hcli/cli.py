@@ -220,12 +220,21 @@ def warn_if_stale() -> None:
     )
 
 
+DAEMON_SHIM = "hawkingd"
+
+
 def install_shims(home: Optional[str] = None) -> int:
-    """Install `hcli` and `jhcli` shims plus a timestamped package copy.
+    """Install the `hcli`/`jhcli` client and the `hawkingd` daemon shims.
 
     There is no pre-existing install script in this repo; this subcommand is
-    the source of the ~/.local/bin shims. Both names exec `python -m hcli`
-    with PYTHONPATH pointing at ~/.local/share/hcli/current.
+    the source of the ~/.local/bin shims. The client names exec `python -m
+    hcli`; `hawkingd` execs `python -m hcli.hawkingd`, so a supervisor
+    or worker shows up in `ps` under the daemon's own name rather than under
+    the interpreter hosting it. The daemon is deliberately not named for any
+    one model -- a supervisor may hold several bodies, in parallel or in
+    succession -- while `hcli` stays the client that talks to it.
+
+    All shims share PYTHONPATH pointing at ~/.local/share/hcli/current.
     """
     home_path = Path(home).expanduser() if home else Path.home()
     src = Path(__file__).resolve().parent
@@ -273,17 +282,27 @@ def install_shims(home: Optional[str] = None) -> int:
         print(f"reaped {reaped} old snapshot(s), kept {KEEP_BUILDS}")
 
     python = _shim_python()
-    script = (
-        "#!/bin/sh\n"
-        'BASE="$HOME/.local/share/hcli/current"\n'
-        'export PYTHONPATH="$BASE${PYTHONPATH:+:$PYTHONPATH}"\n'
-        f'exec "{python}" -m hcli "$@"\n'
-    )
+
+    def _script(module: str) -> str:
+        return (
+            "#!/bin/sh\n"
+            'BASE="$HOME/.local/share/hcli/current"\n'
+            'export PYTHONPATH="$BASE${PYTHONPATH:+:$PYTHONPATH}"\n'
+            f'exec "{python}" -m {module} "$@"\n'
+        )
+
     bin_dir = home_path / ".local" / "bin"
     bin_dir.mkdir(parents=True, exist_ok=True)
-    for name in ("hcli", "jhcli"):
+    # `hawkingd` is a separate entry point, not an alias: resident.py's
+    # __main__ routes --supervise/--worker, so `ps` reads
+    # "hawkingd --supervise <state>" instead of a bare interpreter line.
+    for name, module in (
+        ("hcli", "hcli"),
+        ("jhcli", "hcli"),
+        (DAEMON_SHIM, "hcli.hawkingd"),
+    ):
         path = bin_dir / name
-        path.write_text(script, encoding="utf-8")
+        path.write_text(_script(module), encoding="utf-8")
         path.chmod(0o755)
         print(f"installed {path}")
     print(f"package {dest_pkg}")

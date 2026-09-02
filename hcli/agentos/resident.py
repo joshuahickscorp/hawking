@@ -1162,13 +1162,7 @@ class ResidentSupervisor:
             [source_root] + ([env["PYTHONPATH"]] if env.get("PYTHONPATH") else [])
         )
         proc = subprocess.Popen(
-            [
-                sys.executable,
-                "-m",
-                "hcli.agentos.resident",
-                "--worker",
-                str(self.state_path),
-            ],
+            daemon_argv("--worker", str(self.state_path)),
             cwd=config.workspace,
             env=env,
             stdin=subprocess.DEVNULL,
@@ -2040,7 +2034,7 @@ def start_resident(
     # An explicit flag turns that race into a fact.
     env[DETACHED_ENV] = "1"
     proc = subprocess.Popen(
-        [sys.executable, "-m", "hcli.agentos.resident", "--supervise", str(daemon.store.state_path)],
+        daemon_argv("--supervise", str(daemon.store.state_path)),
         cwd=config.workspace,
         env=env,
         stdin=subprocess.DEVNULL,
@@ -2254,12 +2248,55 @@ def main(argv: Optional[Sequence[str]] = None) -> int:
     return 0
 
 
+DAEMON_PROGRAM = "hawkingd"
+
+
+def daemon_argv(role: str, state_path: str) -> List[str]:
+    """argv that launches this daemon, preferring the `hawkingd` executable.
+
+    The process a human sees in `ps` should be named for the daemon, not for
+    one model: a supervisor may come to hold several bodies, in parallel or in
+    succession, and `python3 -m hcli.agentos.resident` says nothing about
+    either. `hawkingd --supervise <state>` is model-neutral and reads like the
+    daemon it is, with `hcli` remaining the client that talks to it.
+
+    Falling back to the module form matters: a source checkout that has not
+    been `pip install -e .`-ed has no console script, and a daemon that cannot
+    start because its own name is missing would be a poor trade for a nicer
+    `ps` line. Ownership is decided by pid plus start token
+    (`hcli.resources.process_start_token`), never by argv, so an incumbent
+    launched under either name stays owned across this change.
+    """
+    if role not in ("--supervise", "--worker"):
+        raise ValueError(f"unknown daemon role {role!r}")
+    program = shutil.which(DAEMON_PROGRAM)
+    if program is None:
+        # A detached supervisor does not necessarily inherit the PATH that
+        # installed the script, so look beside the interpreter running us.
+        candidate = Path(sys.executable).with_name(DAEMON_PROGRAM)
+        if candidate.is_file() and os.access(candidate, os.X_OK):
+            program = str(candidate)
+    if program is not None:
+        return [program, role, str(state_path)]
+    return [sys.executable, "-m", "hcli.hawkingd", role, str(state_path)]
+
+
+def daemon_main(argv: Optional[Sequence[str]] = None) -> int:
+    """Entry point for the `hawkingd` console script.
+
+    Routes the two long-lived roles and otherwise defers to the same parser
+    `hcli resident` uses, so both names accept the same verbs.
+    """
+    args = list(sys.argv[1:] if argv is None else argv)
+    if "--supervise" in args:
+        return ResidentSupervisor(args[args.index("--supervise") + 1]).run()
+    if "--worker" in args:
+        return _worker_main(args[args.index("--worker") + 1])
+    return main(args)
+
+
 if __name__ == "__main__":
-    if "--supervise" in sys.argv:
-        raise SystemExit(ResidentSupervisor(sys.argv[sys.argv.index("--supervise") + 1]).run())
-    if "--worker" in sys.argv:
-        raise SystemExit(_worker_main(sys.argv[sys.argv.index("--worker") + 1]))
-    raise SystemExit(main(sys.argv[1:]))
+    raise SystemExit(daemon_main(sys.argv[1:]))
 
 
 __all__ = [

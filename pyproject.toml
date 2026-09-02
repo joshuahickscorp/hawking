@@ -11,6 +11,12 @@ requires-python = ">=3.10"
 [project.scripts]
 hcli = "hcli.cli:main"
 jhcli = "hcli.cli:main"
+# The long-lived daemon gets its own name so `ps` describes the process rather
+# than the interpreter that happens to host it. `hcli` is the client; hawkingd
+# is what keeps running after the client exits, and it is deliberately not
+# named for any one model -- a supervisor may hold several bodies, in parallel
+# or in succession.
+hawkingd = "hcli.hawkingd:main"
 
 [tool.setuptools.packages.find]
 include = ["hcli*"]
