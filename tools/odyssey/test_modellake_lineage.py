@@ -224,3 +224,22 @@ def test_empty_slug_is_a_lineage_error():
     except lin.LineageError:
         return
     raise AssertionError("empty slug must refuse")
+
+
+def test_lineage_index_wrappers_call_the_index_module():
+    """An import is not a call site. These wrappers must CALL the index."""
+    assert "build" in lin.build_lake_index.__code__.co_names
+    assert "query_specimen" in lin.query_lake_specimen.__code__.co_names
+    assert "update_specimen" in lin.update_lake_specimen.__code__.co_names
+    assert "load_catalog" in lin.lake_index.__code__.co_names
+    assert "layout" in lin.lake_layout.__code__.co_names
+
+
+def test_main_calls_index_symbols():
+    import inspect
+    src = inspect.getsource(ml.main)
+    assert "out = build_lake_index(" in src
+    assert "out = query_lake_specimen(" in src
+    assert "out = update_lake_specimen(" in src
+    assert "out = lake_index(" in src
+    assert "out = express_lineage(" in src

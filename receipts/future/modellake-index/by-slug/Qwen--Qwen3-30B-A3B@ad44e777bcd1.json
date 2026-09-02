@@ -1,0 +1,384 @@
+{
+ "architecture_family": "qwen3_moe",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Qwen3MoeForCausalLM"
+  ],
+  "hidden_size": 2048,
+  "loaded_weights": false,
+  "model_type": "qwen3_moe",
+  "n_tensors": 18867,
+  "num_attention_heads": 32,
+  "num_hidden_layers": 48,
+  "num_key_value_heads": 4,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.self_attn.k_proj.weight",
+     "model.layers.0.self_attn.o_proj.weight"
+    ],
+    "n_layers": 48,
+    "n_tensors": 192,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.experts.0.down_proj.weight",
+     "model.layers.0.mlp.experts.0.gate_proj.weight"
+    ],
+    "n_layers": 48,
+    "n_tensors": 18432,
+    "organ": "moe_expert",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.gate.weight",
+     "model.layers.1.mlp.gate.weight"
+    ],
+    "n_layers": 48,
+    "n_tensors": 48,
+    "organ": "moe_router",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.input_layernorm.weight",
+     "model.layers.0.post_attention_layernorm.weight"
+    ],
+    "n_layers": 48,
+    "n_tensors": 193,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 151936
+ },
+ "bytes": 61084187391,
+ "dir_mtime_ns": 1787616635122744279,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1570,
+   "mtime_ns": 1787615899911232231,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 11343,
+   "mtime_ns": 1787615899995849480,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 16798,
+   "mtime_ns": 1787615899945849125,
+   "path": "README.md",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 963,
+   "mtime_ns": 1787615899901853620,
+   "path": "config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 239,
+   "mtime_ns": 1787615899909197350,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1671853,
+   "mtime_ns": 1787615900154932573,
+   "path": "merges.txt",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999417504,
+   "mtime_ns": 1787616259597723016,
+   "path": "model-00001-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999974192,
+   "mtime_ns": 1787616259068845252,
+   "path": "model-00002-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3997360832,
+   "mtime_ns": 1787616261637349642,
+   "path": "model-00003-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975056,
+   "mtime_ns": 1787616281034352174,
+   "path": "model-00004-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975400,
+   "mtime_ns": 1787616266196168598,
+   "path": "model-00005-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975400,
+   "mtime_ns": 1787616266504157046,
+   "path": "model-00006-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975472,
+   "mtime_ns": 1787616263950440948,
+   "path": "model-00007-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3997362064,
+   "mtime_ns": 1787616312252924072,
+   "path": "model-00008-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975408,
+   "mtime_ns": 1787616574450349717,
+   "path": "model-00009-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975400,
+   "mtime_ns": 1787616582207738834,
+   "path": "model-00010-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975408,
+   "mtime_ns": 1787616587444497617,
+   "path": "model-00011-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3987400496,
+   "mtime_ns": 1787616613743188539,
+   "path": "model-00012-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3997353632,
+   "mtime_ns": 1787616633780736913,
+   "path": "model-00013-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975400,
+   "mtime_ns": 1787616595966239441,
+   "path": "model-00014-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 3999975400,
+   "mtime_ns": 1787616634742386660,
+   "path": "model-00015-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1087928584,
+   "mtime_ns": 1787616435907878534,
+   "path": "model-00016-of-00016.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1699758,
+   "mtime_ns": 1787616436940803781,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 11422654,
+   "mtime_ns": 1787616463922305337,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 9732,
+   "mtime_ns": 1787616468512822678,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 2776833,
+   "mtime_ns": 1787616468696382551,
+   "path": "vocab.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  }
+ ],
+ "has_lake_manifest": true,
+ "has_watch_manifest": false,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": 61087084544,
+ "n_files": 26,
+ "n_shards": 16,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+ "repo": "Qwen/Qwen3-30B-A3B",
+ "resolved_sha": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+ "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "MoE",
+  "roles": [
+   "MoE",
+   "extreme expert count",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "UNSEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 16,
+  "n_shards": 16,
+  "present": 16
+ },
+ "slug": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": null,
+ "wrote_specimen": false
+}

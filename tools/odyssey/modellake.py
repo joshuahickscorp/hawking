@@ -20,7 +20,13 @@ REPO = Path(__file__).resolve().parents[2]
 # below; live workers must not move.
 if str(REPO) not in sys.path:
     sys.path.insert(0, str(REPO))
-from tools.odyssey.modellake_lineage import express_lineage  # noqa: E402
+from tools.odyssey.modellake_lineage import (  # noqa: E402
+    build_lake_index,
+    express_lineage,
+    lake_index,
+    query_lake_specimen,
+    update_lake_specimen,
+)
 from tools.odyssey.product_boundary import (  # noqa: E402
     discover_config,
     discover_machine,
@@ -417,17 +423,46 @@ def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["acquire", "stage", "retire", "status", "admit",
                                     "demo-cycle", "verify",
-                                    "lineage", "resolve", "discover-machine", "boundary"])
+                                    "lineage", "resolve", "discover-machine", "boundary",
+                                    "index", "query", "index-update"])
     ap.add_argument("--repo"); ap.add_argument("--revision"); ap.add_argument("--slug")
     ap.add_argument("--bytes", type=int); ap.add_argument("--tier", type=int, default=2)
     ap.add_argument("--emit")
     ap.add_argument("--config")
     ap.add_argument("--artifact")
     ap.add_argument("--manifest-dir")
+    ap.add_argument("--index-dir")
+    ap.add_argument("--force", action="store_true")
     a = ap.parse_args()
 
     if a.cmd == "demo-cycle":
         return demo_cycle(a.repo, a.revision, a.emit or "/dev/stdout")
+    if a.cmd == "index":
+        out = build_lake_index(force=a.force, index_dir=a.index_dir,
+                               manifest_dir=a.manifest_dir)
+        print(json.dumps(out, indent=1))
+        if a.emit:
+            Path(a.emit).write_text(json.dumps(out, indent=1))
+        return 0
+    if a.cmd == "query":
+        if a.slug:
+            out = query_lake_specimen(a.slug, index_dir=a.index_dir)
+        else:
+            out = lake_index(index_dir=a.index_dir)
+        print(json.dumps(out, indent=1))
+        if a.emit:
+            Path(a.emit).write_text(json.dumps(out, indent=1))
+        return 0
+    if a.cmd == "index-update":
+        if not a.slug:
+            print("index-update requires --slug", file=sys.stderr)
+            return 2
+        out = update_lake_specimen(a.slug, index_dir=a.index_dir,
+                                   manifest_dir=a.manifest_dir)
+        print(json.dumps(out, indent=1))
+        if a.emit:
+            Path(a.emit).write_text(json.dumps(out, indent=1))
+        return 0
     if a.cmd in ("lineage", "resolve", "discover-machine", "boundary"):
         if a.cmd == "discover-machine":
             out = discover_machine()

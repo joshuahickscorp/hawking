@@ -1,0 +1,223 @@
+{
+ "architecture_family": "qwen3",
+ "architecture_fingerprint": {
+  "architectures": [
+   "Qwen3ForCausalLM"
+  ],
+  "hidden_size": 1024,
+  "loaded_weights": false,
+  "model_type": "qwen3",
+  "n_tensors": 311,
+  "num_attention_heads": 16,
+  "num_hidden_layers": 28,
+  "num_key_value_heads": 8,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.self_attn.k_proj.weight",
+     "model.layers.0.self_attn.o_proj.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 112,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.down_proj.weight",
+     "model.layers.1.mlp.down_proj.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 28,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.gate_proj.weight",
+     "model.layers.0.mlp.up_proj.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 56,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.input_layernorm.weight",
+     "model.layers.0.post_attention_layernorm.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 113,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 151936
+ },
+ "bytes": 1519209243,
+ "dir_mtime_ns": 1787950304726177916,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1570,
+   "mtime_ns": 1787949369490079131,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1570
+   }
+  },
+  {
+   "bytes": 11343,
+   "mtime_ns": 1787949369490000297,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 11343
+   }
+  },
+  {
+   "bytes": 13965,
+   "mtime_ns": 1787949369082312842,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 13965
+   }
+  },
+  {
+   "bytes": 726,
+   "mtime_ns": 1787949369352275653,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 726
+   }
+  },
+  {
+   "bytes": 239,
+   "mtime_ns": 1787949369170401939,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 239
+   }
+  },
+  {
+   "bytes": 1671853,
+   "mtime_ns": 1787949369847234952,
+   "path": "merges.txt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1671853
+   }
+  },
+  {
+   "bytes": 1503300328,
+   "mtime_ns": 1787950304051685710,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1503300328
+   }
+  },
+  {
+   "bytes": 11422654,
+   "mtime_ns": 1787949370671661685,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 11422654
+   }
+  },
+  {
+   "bytes": 9732,
+   "mtime_ns": 1787949369490004964,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9732
+   }
+  },
+  {
+   "bytes": 2776833,
+   "mtime_ns": 1787949369629712031,
+   "path": "vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2776833
+   }
+  }
+ ],
+ "has_lake_manifest": true,
+ "has_watch_manifest": true,
+ "lifecycle": "SSD_STAGED",
+ "lifecycle_derived_from": "specimen directory exists under the configured SSD stage",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": 1519280128,
+ "n_files": 10,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+ "repo": "Qwen/Qwen3-0.6B",
+ "resolved_sha": "c1899de289a04d12100db370d81485cdf75e47ca",
+ "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "Qwen--Qwen3-0.6B@c1899de289a0",
+ "storage_role": "TIER1_HOT",
+ "watch_expected_bytes": 1519209243,
+ "wrote_specimen": false
+}

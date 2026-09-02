@@ -1,0 +1,95 @@
+{
+ "architecture_family": "UNKNOWN",
+ "architecture_fingerprint": {
+  "architectures": null,
+  "hidden_size": null,
+  "loaded_weights": false,
+  "model_type": null,
+  "n_tensors": null,
+  "num_attention_heads": null,
+  "num_hidden_layers": null,
+  "num_key_value_heads": null,
+  "organs": [],
+  "strength": "CONFIG_ONLY",
+  "vocab_size": null
+ },
+ "bytes": 4348702182,
+ "dir_mtime_ns": 1787954986656907432,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1787953862567831705,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 24,
+   "mtime_ns": 1787953862567823039,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 24
+   }
+  },
+  {
+   "bytes": 2062139170,
+   "mtime_ns": 1787954883793387567,
+   "path": "boltz2_aff.ckpt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2062139170
+   }
+  },
+  {
+   "bytes": 2286561469,
+   "mtime_ns": 1787954983584040910,
+   "path": "boltz2_conf.ckpt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 2286561469
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "READY_COLD",
+ "lifecycle_derived_from": "specimen directory exists under the configured specimens root",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 4,
+ "n_shards": 2,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/boltz-community--boltz-2@6fdef46d763f",
+ "repo": "boltz-community/boltz-2",
+ "resolved_sha": "6fdef46d763fee7fbb83ca5501ccceff43b85607",
+ "revision": "6fdef46d763fee7fbb83ca5501ccceff43b85607",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 2,
+  "present": 2
+ },
+ "slug": "boltz-community--boltz-2@6fdef46d763f",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 4348702182,
+ "wrote_specimen": false
+}

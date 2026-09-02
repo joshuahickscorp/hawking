@@ -1,0 +1,118 @@
+{
+ "architecture_family": "depth_anything",
+ "architecture_fingerprint": {
+  "architectures": [
+   "DepthAnythingForDepthEstimation"
+  ],
+  "hidden_size": null,
+  "loaded_weights": false,
+  "model_type": "depth_anything",
+  "n_tensors": 503,
+  "num_attention_heads": null,
+  "num_hidden_layers": null,
+  "num_key_value_heads": null,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "backbone.layernorm.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": null
+ },
+ "bytes": 1341331020,
+ "dir_mtime_ns": 1787949465052720404,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1787949369170400606,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 4427,
+   "mtime_ns": 1787949369082332467,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4427
+   }
+  },
+  {
+   "bytes": 1431,
+   "mtime_ns": 1787949369082297425,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1431
+   }
+  },
+  {
+   "bytes": 1341322868,
+   "mtime_ns": 1787949463045941989,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1341322868
+   }
+  },
+  {
+   "bytes": 775,
+   "mtime_ns": 1787949369351431108,
+   "path": "preprocessor_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 775
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 5,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+ "repo": "depth-anything/Depth-Anything-V2-Large-hf",
+ "resolved_sha": "7581137eff8d4e94f6e796d3baea0e9fa79b22d2",
+ "revision": "7581137eff8d4e94f6e796d3baea0e9fa79b22d2",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "multimodal",
+  "roles": [
+   "multimodal"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 1341331020,
+ "wrote_specimen": false
+}

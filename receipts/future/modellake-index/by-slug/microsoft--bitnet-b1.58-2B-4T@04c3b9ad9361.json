@@ -1,0 +1,213 @@
+{
+ "architecture_family": "bitnet",
+ "architecture_fingerprint": {
+  "architectures": [
+   "BitNetForCausalLM"
+  ],
+  "hidden_size": 2560,
+  "loaded_weights": false,
+  "model_type": "bitnet",
+  "n_tensors": 542,
+  "num_attention_heads": 20,
+  "num_hidden_layers": 30,
+  "num_key_value_heads": 5,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.self_attn.k_proj.weight_scale",
+     "model.layers.0.self_attn.o_proj.weight_scale"
+    ],
+    "n_layers": 30,
+    "n_tensors": 240,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.down_proj.weight_scale",
+     "model.layers.1.mlp.down_proj.weight_scale"
+    ],
+    "n_layers": 30,
+    "n_tensors": 60,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.gate_proj.weight_scale",
+     "model.layers.0.mlp.up_proj.weight_scale"
+    ],
+    "n_layers": 30,
+    "n_tensors": 120,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.input_layernorm.weight",
+     "model.layers.0.mlp.ffn_sub_norm.weight"
+    ],
+    "n_layers": 30,
+    "n_tensors": 121,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 128256
+ },
+ "bytes": 1187777736,
+ "dir_mtime_ns": 1787951338715843879,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1787949558420397027,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 1073,
+   "mtime_ns": 1787949558431895150,
+   "path": "LICENSE",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1073
+   }
+  },
+  {
+   "bytes": 9647,
+   "mtime_ns": 1787949558306264506,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9647
+   }
+  },
+  {
+   "bytes": 844,
+   "mtime_ns": 1787949558219613914,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 844
+   }
+  },
+  {
+   "bytes": 3861,
+   "mtime_ns": 1787949558280462708,
+   "path": "data_summary_card.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3861
+   }
+  },
+  {
+   "bytes": 199,
+   "mtime_ns": 1787949558328884793,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 199
+   }
+  },
+  {
+   "bytes": 1178623988,
+   "mtime_ns": 1787951336409471149,
+   "path": "model.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1178623988
+   }
+  },
+  {
+   "bytes": 73,
+   "mtime_ns": 1787949558280471458,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 73
+   }
+  },
+  {
+   "bytes": 9085698,
+   "mtime_ns": 1787949558766866103,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9085698
+   }
+  },
+  {
+   "bytes": 50834,
+   "mtime_ns": 1787949558280325166,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 50834
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 10,
+ "n_shards": 1,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+ "repo": "microsoft/bitnet-b1.58-2B-4T",
+ "resolved_sha": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+ "revision": "04c3b9ad9361b824064a1f25ea60a8be9599b127",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder",
+   "very-low-bit published checkpoint"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:31Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 1,
+  "present": 1
+ },
+ "slug": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 1187777736,
+ "wrote_specimen": false
+}

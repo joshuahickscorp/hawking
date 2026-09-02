@@ -1,0 +1,284 @@
+{
+ "architecture_family": "falcon_h1",
+ "architecture_fingerprint": {
+  "architectures": [
+   "FalconH1ForCausalLM"
+  ],
+  "hidden_size": 3072,
+  "loaded_weights": false,
+  "model_type": "falcon_h1",
+  "n_tensors": 751,
+  "num_attention_heads": 12,
+  "num_hidden_layers": 44,
+  "num_key_value_heads": 2,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.self_attn.k_proj.weight",
+     "model.layers.0.self_attn.o_proj.weight"
+    ],
+    "n_layers": 44,
+    "n_tensors": 176,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.feed_forward.down_proj.weight",
+     "model.layers.1.feed_forward.down_proj.weight"
+    ],
+    "n_layers": 44,
+    "n_tensors": 44,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.feed_forward.gate_proj.weight",
+     "model.layers.0.feed_forward.up_proj.weight"
+    ],
+    "n_layers": 44,
+    "n_tensors": 88,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mamba.A_log",
+     "model.layers.0.mamba.D"
+    ],
+    "n_layers": 44,
+    "n_tensors": 352,
+    "organ": "recurrent_state",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.final_layernorm.weight",
+     "model.layers.0.input_layernorm.weight"
+    ],
+    "n_layers": 44,
+    "n_tensors": 89,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 130049
+ },
+ "bytes": 15182221781,
+ "dir_mtime_ns": 1787890483723625543,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1570,
+   "mtime_ns": 1787617309957636968,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1050,
+   "mtime_ns": 1787890483723387459,
+   "path": "MODEL_LAKE_SPECIMEN_SEAL.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 96,
+   "mtime_ns": 1787890486679282516,
+   "path": "MODEL_LAKE_SPECIMEN_SEAL.sha256",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 5688,
+   "mtime_ns": 1787617310024781925,
+   "path": "README.md",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1151,
+   "mtime_ns": 1787617309971322385,
+   "path": "chat_template.jinja",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 1639,
+   "mtime_ns": 1787617309930048133,
+   "path": "config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 145,
+   "mtime_ns": 1787617309950768822,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4960322992,
+   "mtime_ns": 1787617477579116321,
+   "path": "model-00001-of-00004.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4935762112,
+   "mtime_ns": 1787617479585001135,
+   "path": "model-00002-of-00004.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 4476288016,
+   "mtime_ns": 1787617499326695834,
+   "path": "model-00003-of-00004.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 799021184,
+   "mtime_ns": 1787617347542287674,
+   "path": "model-00004-of-00004.safetensors",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 60253,
+   "mtime_ns": 1787617310034549164,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 18981,
+   "mtime_ns": 1787617310024786259,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 10534488,
+   "mtime_ns": 1787617311908843113,
+   "path": "tokenizer.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  },
+  {
+   "bytes": 202416,
+   "mtime_ns": 1787617310088984040,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "disk_stat",
+    "size_match": null,
+    "watch_bytes": null
+   }
+  }
+ ],
+ "has_lake_manifest": true,
+ "has_watch_manifest": false,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": 15183298560,
+ "n_files": 15,
+ "n_shards": 4,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+ "repo": "tiiuae/Falcon-H1-7B-Instruct",
+ "resolved_sha": "41e72f27effbab80cd45b6e884688452253a3686",
+ "revision": "41e72f27effbab80cd45b6e884688452253a3686",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:33Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "UNSEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 4,
+  "n_shards": 4,
+  "present": 4
+ },
+ "slug": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": null,
+ "wrote_specimen": false
+}

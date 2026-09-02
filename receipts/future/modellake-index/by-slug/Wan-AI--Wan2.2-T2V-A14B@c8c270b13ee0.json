@@ -1,0 +1,376 @@
+{
+ "architecture_family": "UNKNOWN",
+ "architecture_fingerprint": {
+  "architectures": null,
+  "hidden_size": null,
+  "loaded_weights": false,
+  "model_type": null,
+  "n_tensors": null,
+  "num_attention_heads": null,
+  "num_hidden_layers": null,
+  "num_key_value_heads": null,
+  "organs": [],
+  "strength": "CONFIG_ONLY",
+  "vocab_size": null
+ },
+ "bytes": 126201624837,
+ "dir_mtime_ns": 1788001800279909063,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1807,
+   "mtime_ns": 1787992702195537749,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1807
+   }
+  },
+  {
+   "bytes": 17169,
+   "mtime_ns": 1787992705261101921,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 17169
+   }
+  },
+  {
+   "bytes": 507609880,
+   "mtime_ns": 1787993143844379677,
+   "path": "Wan2.1_VAE.pth",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 507609880
+   }
+  },
+  {
+   "bytes": 202156,
+   "mtime_ns": 1787992705261341131,
+   "path": "assets/comp_effic.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 202156
+   }
+  },
+  {
+   "bytes": 56322,
+   "mtime_ns": 1787992706468144415,
+   "path": "assets/logo.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 56322
+   }
+  },
+  {
+   "bytes": 527914,
+   "mtime_ns": 1787992705261891424,
+   "path": "assets/moe_2.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 527914
+   }
+  },
+  {
+   "bytes": 74900,
+   "mtime_ns": 1787992705980856666,
+   "path": "assets/moe_arch.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 74900
+   }
+  },
+  {
+   "bytes": 306535,
+   "mtime_ns": 1787992702344421335,
+   "path": "assets/performance.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 306535
+   }
+  },
+  {
+   "bytes": 165486,
+   "mtime_ns": 1787992702329837736,
+   "path": "assets/vae.png",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 165486
+   }
+  },
+  {
+   "bytes": 47,
+   "mtime_ns": 1787992702100310583,
+   "path": "configuration.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 47
+   }
+  },
+  {
+   "bytes": 6623,
+   "mtime_ns": 1787992702195542916,
+   "path": "google/umt5-xxl/special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 6623
+   }
+  },
+  {
+   "bytes": 4548313,
+   "mtime_ns": 1787992703291912141,
+   "path": "google/umt5-xxl/spiece.model",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4548313
+   }
+  },
+  {
+   "bytes": 16837417,
+   "mtime_ns": 1787992705262102467,
+   "path": "google/umt5-xxl/tokenizer.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 16837417
+   }
+  },
+  {
+   "bytes": 61728,
+   "mtime_ns": 1787992703290339594,
+   "path": "google/umt5-xxl/tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 61728
+   }
+  },
+  {
+   "bytes": 250,
+   "mtime_ns": 1787992703290400385,
+   "path": "high_noise_model/config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 250
+   }
+  },
+  {
+   "bytes": 9992481544,
+   "mtime_ns": 1787999717136232397,
+   "path": "high_noise_model/diffusion_pytorch_model-00001-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9992481544
+   }
+  },
+  {
+   "bytes": 9943937936,
+   "mtime_ns": 1787999610797050396,
+   "path": "high_noise_model/diffusion_pytorch_model-00002-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9943937936
+   }
+  },
+  {
+   "bytes": 9943979184,
+   "mtime_ns": 1787999692672189468,
+   "path": "high_noise_model/diffusion_pytorch_model-00003-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9943979184
+   }
+  },
+  {
+   "bytes": 9839059744,
+   "mtime_ns": 1787999688524553845,
+   "path": "high_noise_model/diffusion_pytorch_model-00004-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9839059744
+   }
+  },
+  {
+   "bytes": 9839059744,
+   "mtime_ns": 1787999690903064418,
+   "path": "high_noise_model/diffusion_pytorch_model-00005-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9839059744
+   }
+  },
+  {
+   "bytes": 7595559224,
+   "mtime_ns": 1787998563659843470,
+   "path": "high_noise_model/diffusion_pytorch_model-00006-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 7595559224
+   }
+  },
+  {
+   "bytes": 96805,
+   "mtime_ns": 1787992705980902499,
+   "path": "high_noise_model/diffusion_pytorch_model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 96805
+   }
+  },
+  {
+   "bytes": 250,
+   "mtime_ns": 1787992706468132040,
+   "path": "low_noise_model/config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 250
+   }
+  },
+  {
+   "bytes": 9992481544,
+   "mtime_ns": 1787999711307859539,
+   "path": "low_noise_model/diffusion_pytorch_model-00001-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9992481544
+   }
+  },
+  {
+   "bytes": 9943937936,
+   "mtime_ns": 1787999765300108371,
+   "path": "low_noise_model/diffusion_pytorch_model-00002-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9943937936
+   }
+  },
+  {
+   "bytes": 9943979184,
+   "mtime_ns": 1788001059043193962,
+   "path": "low_noise_model/diffusion_pytorch_model-00003-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9943979184
+   }
+  },
+  {
+   "bytes": 9839059744,
+   "mtime_ns": 1788001403894382263,
+   "path": "low_noise_model/diffusion_pytorch_model-00004-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9839059744
+   }
+  },
+  {
+   "bytes": 9839059744,
+   "mtime_ns": 1788001408854101305,
+   "path": "low_noise_model/diffusion_pytorch_model-00005-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 9839059744
+   }
+  },
+  {
+   "bytes": 7595559224,
+   "mtime_ns": 1788001062173199356,
+   "path": "low_noise_model/diffusion_pytorch_model-00006-of-00006.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 7595559224
+   }
+  },
+  {
+   "bytes": 96805,
+   "mtime_ns": 1787992709839393038,
+   "path": "low_noise_model/diffusion_pytorch_model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 96805
+   }
+  },
+  {
+   "bytes": 11361920418,
+   "mtime_ns": 1788001794001114632,
+   "path": "models_t5_umt5-xxl-enc-bf16.pth",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 11361920418
+   }
+  },
+  {
+   "bytes": 939260,
+   "mtime_ns": 1787992708813717549,
+   "path": "nohup.out",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 939260
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "READY_COLD",
+ "lifecycle_derived_from": "specimen directory exists under the configured specimens root",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 32,
+ "n_shards": 14,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+ "repo": "Wan-AI/Wan2.2-T2V-A14B",
+ "resolved_sha": "c8c270b13ee05bfa474194ac9fb07a5868a97cea",
+ "revision": "c8c270b13ee05bfa474194ac9fb07a5868a97cea",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "multimodal",
+  "roles": [
+   "multimodal",
+   "MoE"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "WEIGHTS_PRESENT_ONLY",
+  "complete": true,
+  "expected": null,
+  "n_shards": 14,
+  "present": 14
+ },
+ "slug": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 126201624837,
+ "wrote_specimen": false
+}

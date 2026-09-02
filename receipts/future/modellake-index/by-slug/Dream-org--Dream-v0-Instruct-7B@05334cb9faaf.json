@@ -1,0 +1,303 @@
+{
+ "architecture_family": "Dream",
+ "architecture_fingerprint": {
+  "architectures": [
+   "DreamModel"
+  ],
+  "hidden_size": 3584,
+  "loaded_weights": false,
+  "model_type": "Dream",
+  "n_tensors": 339,
+  "num_attention_heads": 28,
+  "num_hidden_layers": 28,
+  "num_key_value_heads": 4,
+  "organs": [
+   {
+    "confidence": 0.32,
+    "example": [
+     "model.embed_tokens.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "embed",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.self_attn.k_proj.weight",
+     "model.layers.0.self_attn.o_proj.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 112,
+    "organ": "gqa_attention",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.32,
+    "example": [
+     "lm_head.weight"
+    ],
+    "n_layers": 0,
+    "n_tensors": 1,
+    "organ": "lm_head",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.down_proj.weight",
+     "model.layers.1.mlp.down_proj.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 28,
+    "organ": "mlp_down",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.mlp.gate_proj.weight",
+     "model.layers.0.mlp.up_proj.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 56,
+    "organ": "mlp_gate_up",
+    "status": "NOVEL"
+   },
+   {
+    "confidence": 0.98,
+    "example": [
+     "model.layers.0.input_layernorm.weight",
+     "model.layers.0.post_attention_layernorm.weight"
+    ],
+    "n_layers": 28,
+    "n_tensors": 57,
+    "organ": "rmsnorm",
+    "status": "NOVEL"
+   }
+  ],
+  "strength": "ORGAN_FINGERPRINT",
+  "vocab_size": 152064
+ },
+ "bytes": 15236443179,
+ "dir_mtime_ns": 1787980163435025405,
+ "evidence_tier": "STATIC",
+ "files": [
+  {
+   "bytes": 1519,
+   "mtime_ns": 1787970609264893038,
+   "path": ".gitattributes",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1519
+   }
+  },
+  {
+   "bytes": 408,
+   "mtime_ns": 1787970609264892871,
+   "path": "README.md",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 408
+   }
+  },
+  {
+   "bytes": 656,
+   "mtime_ns": 1787970609050698446,
+   "path": "added_tokens.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 656
+   }
+  },
+  {
+   "bytes": 927,
+   "mtime_ns": 1787970609133329056,
+   "path": "config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 927
+   }
+  },
+  {
+   "bytes": 3197,
+   "mtime_ns": 1787970609230490048,
+   "path": "configuration_dream.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3197
+   }
+  },
+  {
+   "bytes": 326,
+   "mtime_ns": 1787970609175807698,
+   "path": "generation_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 326
+   }
+  },
+  {
+   "bytes": 22332,
+   "mtime_ns": 1787970609175859823,
+   "path": "generation_utils.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 22332
+   }
+  },
+  {
+   "bytes": 1671853,
+   "mtime_ns": 1787970609210224647,
+   "path": "merges.txt",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1671853
+   }
+  },
+  {
+   "bytes": 4877660776,
+   "mtime_ns": 1787980148507280791,
+   "path": "model-00001-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4877660776
+   }
+  },
+  {
+   "bytes": 4932751008,
+   "mtime_ns": 1787980162238648589,
+   "path": "model-00002-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4932751008
+   }
+  },
+  {
+   "bytes": 4330865200,
+   "mtime_ns": 1787980080481257986,
+   "path": "model-00003-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 4330865200
+   }
+  },
+  {
+   "bytes": 1089994880,
+   "mtime_ns": 1787979601898122828,
+   "path": "model-00004-of-00004.safetensors",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 1089994880
+   }
+  },
+  {
+   "bytes": 27752,
+   "mtime_ns": 1787970609076877450,
+   "path": "model.safetensors.index.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 27752
+   }
+  },
+  {
+   "bytes": 36763,
+   "mtime_ns": 1787970609175638364,
+   "path": "modeling_dream.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 36763
+   }
+  },
+  {
+   "bytes": 661,
+   "mtime_ns": 1787970609155560255,
+   "path": "special_tokens_map.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 661
+   }
+  },
+  {
+   "bytes": 14028,
+   "mtime_ns": 1787970609089147325,
+   "path": "tokenization_dream.py",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 14028
+   }
+  },
+  {
+   "bytes": 7486,
+   "mtime_ns": 1787970609206409884,
+   "path": "tokenizer_config.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 7486
+   }
+  },
+  {
+   "bytes": 3383407,
+   "mtime_ns": 1787970609445466935,
+   "path": "vocab.json",
+   "seal": {
+    "kind": "watch_size",
+    "size_match": true,
+    "watch_bytes": 3383407
+   }
+  }
+ ],
+ "has_lake_manifest": false,
+ "has_watch_manifest": true,
+ "lifecycle": "CENSUSED",
+ "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
+ "loaded_weights": false,
+ "location": "specimens",
+ "manifest_bytes": null,
+ "n_files": 18,
+ "n_shards": 4,
+ "path": "/Volumes/corpdrive/hawking-modellake/specimens/Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+ "repo": "Dream-org/Dream-v0-Instruct-7B",
+ "resolved_sha": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+ "revision": "05334cb9faaf763692dcf9d8737c642be2b2a6ae",
+ "role": {
+  "evidence_tier": "STATIC",
+  "primary": "dense decoder",
+  "roles": [
+   "dense decoder",
+   "long-context"
+  ]
+ },
+ "scanned_at": "2026-09-02T09:13:30Z",
+ "schema": "hawking.modellake.index.specimen.v1",
+ "seal_status": "SEALED",
+ "shards": {
+  "check_strength": "INDEX_MATCHED",
+  "complete": true,
+  "expected": 4,
+  "n_shards": 4,
+  "present": 4
+ },
+ "slug": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf",
+ "storage_role": "TIER2_COLD",
+ "watch_expected_bytes": 15236443179,
+ "wrote_specimen": false
+}
