@@ -1365,6 +1365,11 @@ class HawkingNativeConnector:
             "resident_health": resident_health,
             "native_metrics": native_metrics,
             "grammar_enforced": body.get("grammar_enforced") is True,
+            # How much prefill the resident actually skipped. Without this the
+            # only evidence of KV reuse is a wall clock, and a wall clock cannot
+            # distinguish "reuse worked" from "the prompt was shorter".
+            "prefix_reused_tokens": body.get("prefix_reused_tokens"),
+            "prefill_tokens_stepped": body.get("prefill_tokens_stepped"),
         }
         return {
             "id": f"hawking-chat-{uuid.uuid4()}",
