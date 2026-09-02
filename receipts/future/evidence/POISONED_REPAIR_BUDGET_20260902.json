@@ -1,0 +1,130 @@
+{
+ "_note": "Captured from .hcli/dag.json while mission 89e411d8 was running. repair_signatures/repair_counts for 11 units were inherited from PREVIOUS missions because retire_incumbent archived .hcli/mission/ and left the DAG. G001.work's FIRST failure in this mission matched dde822de73f818bc already in the set and was refused a repair at depth 0. This is why accepted stayed 0.",
+ "_units_pre_spent": [
+  "G001.work",
+  "G002.work",
+  "G003.work",
+  "G005.work",
+  "G006.work",
+  "G007.work",
+  "G009.work",
+  "G010.work",
+  "G011.work",
+  "G012.work",
+  "G013.work"
+ ],
+ "active_decode_limit": 1,
+ "active_decode_limit_source": "fallback",
+ "fingerprints": [],
+ "last_dispatch": {
+  "admitted": {},
+  "mutation_blocked": 0,
+  "occupancy": {
+   "GPU_DECODE": 1
+  },
+  "overhead_s": 0.00010629100142978132,
+  "requested": {
+   "GPU_DECODE": 32
+  }
+ },
+ "no_progress_threshold": 3,
+ "repair_budget": {
+  "counts": {
+   "G001.work": 1,
+   "G002.work": 1,
+   "G003.work": 1,
+   "G005.work": 1,
+   "G006.work": 1,
+   "G007.work": 1,
+   "G009.work": 1,
+   "G010.work": 1,
+   "G011.work": 1,
+   "G012.work": 1,
+   "G013.work": 1
+  },
+  "signatures": {
+   "G001.work": [
+    "dde822de73f818bc"
+   ],
+   "G002.work": [
+    "dde822de73f818bc"
+   ],
+   "G003.work": [
+    "dde822de73f818bc"
+   ],
+   "G005.work": [
+    "0e9e638cbb5ddbd7"
+   ],
+   "G006.work": [
+    "a5afc605d7df685a"
+   ],
+   "G007.work": [
+    "34b93f3d0ed96b9c"
+   ],
+   "G009.work": [
+    "8fcf7f787cf76f49"
+   ],
+   "G010.work": [
+    "c7bd87ea51d362b4"
+   ],
+   "G011.work": [
+    "37f773d9b9c794db"
+   ],
+   "G012.work": [
+    "8fcf7f787cf76f49"
+   ],
+   "G013.work": [
+    "aa594f8374ab4d10"
+   ]
+  }
+ },
+ "repair_counts": {
+  "G001.work": 1,
+  "G002.work": 1,
+  "G003.work": 1,
+  "G005.work": 1,
+  "G006.work": 1,
+  "G007.work": 1,
+  "G009.work": 1,
+  "G010.work": 1,
+  "G011.work": 1,
+  "G012.work": 1,
+  "G013.work": 1
+ },
+ "repair_signatures": {
+  "G001.work": [
+   "dde822de73f818bc"
+  ],
+  "G002.work": [
+   "dde822de73f818bc"
+  ],
+  "G003.work": [
+   "dde822de73f818bc"
+  ],
+  "G005.work": [
+   "0e9e638cbb5ddbd7"
+  ],
+  "G006.work": [
+   "a5afc605d7df685a"
+  ],
+  "G007.work": [
+   "34b93f3d0ed96b9c"
+  ],
+  "G009.work": [
+   "8fcf7f787cf76f49"
+  ],
+  "G010.work": [
+   "c7bd87ea51d362b4"
+  ],
+  "G011.work": [
+   "37f773d9b9c794db"
+  ],
+  "G012.work": [
+   "8fcf7f787cf76f49"
+  ],
+  "G013.work": [
+   "aa594f8374ab4d10"
+  ]
+ },
+ "version": 1
+}

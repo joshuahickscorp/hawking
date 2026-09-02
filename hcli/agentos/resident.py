@@ -2027,6 +2027,23 @@ def retire_incumbent(daemon: "ResidentDaemon", timeout_s: float = 30.0) -> Dict[
         retired.parent.mkdir(parents=True, exist_ok=True)
         shutil.move(str(mission_dir), str(retired))
         report["archived_mission"] = str(retired)
+        # The DAG is the OTHER HALF of the same generation, and leaving it
+        # behind is not a tidiness problem -- it carries `repair_signatures`
+        # and `repair_counts`. A fresh mission rebuilt its repair budget from
+        # the previous mission's spent one, so the FIRST failure of a unit
+        # matched a signature already in the inherited set and was refused a
+        # repair at depth 0:
+        #
+        #   repair_exhausted G001.work depth=0
+        #   "repair cycle: failure signature already seen in lineage G001.work"
+        #
+        # Every unit got exactly one attempt and no repair, across every
+        # restart, forever. Observed with 11 units pre-spent in `.hcli/dag.json`
+        # before mission 89e411d8 had run a single one of them.
+        dag_path = Path(daemon.workspace) / ".hcli" / "dag.json"
+        if dag_path.is_file():
+            shutil.move(str(dag_path), str(Path(retired) / "dag.json"))
+            report["archived_dag"] = str(Path(retired) / "dag.json")
     return report
 
 
