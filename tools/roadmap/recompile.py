@@ -17,6 +17,11 @@ from __future__ import annotations
 import json
 import re
 from collections import Counter, defaultdict
+
+from tools.roadmap.axes import EVIDENCE_TIER_MEANING, axes, derived_status
+from tools.roadmap.blockers import CLASSES as BLOCKER_CLASSES_V2
+from tools.roadmap.blockers import classify as _classify_v2
+from tools.roadmap.frontier import hot_frontier, rank
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
@@ -485,8 +490,29 @@ def render_state() -> dict:
     evidence_levels = Counter(v.get("evidence_tier") for v in gates.values())
 
     software_remaining = len(buckets["active_actions"])
+    ranked = rank(gates)
+    unresolved = len(ranked)
+    by_class = Counter(r["blocker_class"] for r in ranked)
+    non_hardware = unresolved - by_class.get("PHYSICAL_HARDWARE_REQUIRED", 0)
     return {
-        "schema": "hawking.roadmap.state.v2",
+        "schema": "hawking.roadmap.state.v3",
+        # Three DIFFERENT numbers, named so none can stand in for another. 41 was
+        # being read as "41 things remain in all of Hawking"; it never was.
+        "TOTAL_UNRESOLVED_GATES": unresolved,
+        "ACTIVE_NONHARDWARE_BURDEN": non_hardware,
+        "counts_explained": {
+            "TOTAL_UNRESOLVED_GATES": "every gate with any remaining blocker, including hardware",
+            "ACTIVE_NONHARDWARE_BURDEN": "unresolved minus those waiting on absent silicon",
+            "SOFTWARE_CONNECTION_REMAINING": "the parts exist and nothing calls or checks them",
+            "integrated_capabilities": "gates with NO remaining blocker AND a test citing them",
+            "completed_capabilities": "gates the auditor calls BUILT: wired AND acceptance-passed, which does NOT require a verifier -- the difference from integrated_capabilities is built_but_no_verifier",
+        },
+        "blocker_census": dict(by_class),
+        "axes": {gid: axes(g) for gid, g in sorted(gates.items())},
+        "derived_status": {gid: derived_status(g) for gid, g in sorted(gates.items())},
+        "evidence_tier_meaning": EVIDENCE_TIER_MEANING,
+        "hot_frontier": hot_frontier(gates),
+        "ranked_remaining": ranked,
         "generated_from": "civilization/CAPABILITY_GRAPH.json",
         "completed_capabilities": completed,
         "integrated_capabilities": buckets["integrated_capabilities"],
