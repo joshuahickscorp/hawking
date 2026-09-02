@@ -191,6 +191,10 @@ files and a search in one reply is one round; asking for them one at a time is
 three rounds and roughly two hundred times the wall clock for the same answer.
 List up to 16 calls at once. Do not pace yourself.
 
+Never list the SAME call twice. Duplicates are discarded, not executed, and a
+reply that repeats one call sixteen times has asked for one thing. Fill the
+budget with DIFFERENT questions or ask for fewer.
+
 Prefer looking over guessing: an answer that says evidence is missing when a
 tool could have fetched it is a wrong answer.
 

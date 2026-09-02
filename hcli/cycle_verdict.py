@@ -191,16 +191,21 @@ def evaluate(
     # 5. No tool loop: the same call re-issued after it already answered.
     repeats = [r for r in events if r.get("type") == "tool_call_repeated"]
     invoked = [r for r in events if r.get("type") == "tool_invoked"]
-    if not invoked:
+    # A repeat is SUPPRESSED, so it never appears in `tool_invoked`. Dividing by
+    # the executed count alone produced ratios above 1 ("11 repeated of 10"),
+    # which is not a fraction of anything. The denominator is what the model
+    # ASKED for: executed plus suppressed.
+    asked = len(invoked) + len(repeats)
+    if not asked:
         record("no_tool_loops", UNKNOWN, "no tool calls yet")
-    elif len(repeats) > len(invoked) // 4:
+    elif len(repeats) > asked // 4:
         record(
             "no_tool_loops",
             FAIL,
-            f"{len(repeats)} repeated of {len(invoked)} invocations",
+            f"{len(repeats)} of {asked} requested calls were duplicates",
         )
     else:
-        record("no_tool_loops", PASS, f"{len(repeats)} repeated of {len(invoked)}")
+        record("no_tool_loops", PASS, f"{len(repeats)} of {asked} were duplicates")
 
     # 6. The worker is not burning its restart budget.
     if daemon is None:
@@ -317,15 +322,34 @@ def evaluate(
         for c in calls
         if c.get("prefix_reused_tokens") is not None and c.get("prompt_tokens")
     ]
+    single_round = measured.get("mean_rounds_per_goal") is not None and (
+        measured["mean_rounds_per_goal"] <= 1.0
+    )
+    if reused:
+        # Recorded before the verdict branches: the measured figure is the
+        # signal even when the criterion does not apply.
+        measured["realized_reuse_fraction"] = round(
+            sum(r for r, _ in reused) / max(1e-9, sum(t for _, t in reused)), 4
+        )
     if not reused:
         record(
             "kv_reuse",
             UNKNOWN,
             "the resident reported no prefix_reused_tokens; unmeasured, NOT zero",
         )
+    elif single_round:
+        # Reuse needs a SECOND turn in the same conversation. When every goal
+        # answers in one round there is no prefix to reuse, and scoring that as
+        # a failure would mark the best case red -- one round is the outcome the
+        # round-economy work is FOR.
+        record(
+            "kv_reuse",
+            UNKNOWN,
+            "not applicable: 1 model call per goal, so there is no prior turn "
+            "to reuse a prefix from",
+        )
     else:
-        fraction = sum(r for r, _ in reused) / max(1e-9, sum(t for _, t in reused))
-        measured["realized_reuse_fraction"] = round(fraction, 4)
+        fraction = measured["realized_reuse_fraction"]
         budget = budgets["realized_reuse_fraction"]
         record(
             "kv_reuse",

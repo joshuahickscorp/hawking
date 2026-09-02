@@ -1279,8 +1279,25 @@ def _list_tests(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
         raise PermissionError(f"test root is outside the AgentOS read roots: {root}")
     if not root.is_dir():
         raise NotADirectoryError(root)
-    paths = sorted(str(path) for path in root.rglob("test_*.py") if path.is_file())
-    return {"root": str(root), "count": len(paths), "paths": paths[:2000], "truncated": len(paths) > 2000}
+    # Bounded WALK, not a bounded slice. Enumerating the whole tree and then
+    # taking the first 2000 costs the whole tree: measured at 2072 ms against
+    # fs.read's 4 ms. Stop when the cap is full.
+    limit = max(1, min(2000, int(args.get("max_results") or 2000)))
+    found: List[str] = []
+    truncated = False
+    for path in root.rglob("test_*.py"):
+        if len(found) >= limit:
+            truncated = True
+            break
+        if path.is_file():
+            found.append(str(path))
+    found.sort()
+    return {
+        "root": str(root),
+        "count": len(found),
+        "paths": found,
+        "truncated": truncated,
+    }
 
 
 def _filesystem_write(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
