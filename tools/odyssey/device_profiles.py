@@ -151,16 +151,20 @@ def economics_from_genome(genome: Mapping[str, Any],
         "external_accelerator_present": _domain_present(genome, "EXTERNAL_ACCELERATOR"),
         "storage": per_mount,
         "bodies": bodies,
+        "specimen_open": specimen_open_economics(),
+        "warm_set": warm_set_policy(),
         "evidence_tier": "COST_MODEL",
         "inputs_evidence": {
             "uma_bytes": "HARDWARE_MEASURED" if uma_bytes else "STATIC",
             "storage_capacity": "HARDWARE_MEASURED",
             "g023_winners": "STATIC",
+            "specimen_open": "HARDWARE_MEASURED when FAST_SPECIMEN_OPEN.json exists, else STATIC",
         },
         "note": (
             "Derived affordances (time-to-stage, headroom) are COST_MODEL. "
             "G023 INTERACTIVE/MAXX winners are cited STATIC; this function "
-            "does not re-run the token benchmark."
+            "does not re-run the token benchmark. Specimen-open timings are "
+            "HARDWARE_MEASURED inputs when present; the overlay is COST_MODEL."
         ),
     }
 
@@ -252,6 +256,181 @@ def select_resident(economics: Mapping[str, Any],
         "genome_digest": economics.get("genome_digest"),
         "evidence_tier": "COST_MODEL",
         "note": "Decision record only. device_ascension.promote must not install.",
+    }
+
+
+def metadata_open(path: str | Path, **kwargs: Any) -> dict[str, Any]:
+    """Production call site for the metadata-only gate.
+
+    Invokes specimen_open.read_header. An import of specimen_open is not a
+    call site; this function is. Weight bytes raise WeightBytesRefused.
+    """
+    from tools.odyssey.specimen_open import WeightBytesRefused, read_header
+    view = read_header(path, **kwargs)
+    if view.get("touched_weight_bytes") or int(view["bytes_read"]) > int(view["header_bytes"]):
+        raise WeightBytesRefused(
+            f"metadata_open read {view['bytes_read']} bytes past header {view['header_bytes']}"
+        )
+    return view
+
+
+def first_tensor_open(path: str | Path, name: str | None = None, **kwargs: Any) -> dict[str, Any]:
+    """Production call site for a ranged first-tensor read. Invokes read_tensor."""
+    from tools.odyssey.specimen_open import read_tensor
+    row = read_tensor(path, name, **kwargs)
+    row.pop("payload", None)
+    return row
+
+
+def specimen_open_economics(receipt: Mapping[str, Any] | None = None) -> dict[str, Any]:
+    """COST_MODEL overlay on HARDWARE_MEASURED specimen-open timings.
+
+    Calls specimen_open.load_receipt. Missing receipt is BLOCKED, not a guess.
+    """
+    from tools.odyssey.specimen_open import load_receipt
+    rec = receipt if receipt is not None else load_receipt()
+    if not rec:
+        return {
+            "status": "BLOCKED",
+            "reason": "no FAST_SPECIMEN_OPEN receipt; refusing to invent open times",
+            "evidence_tier": "STATIC",
+            "called": "specimen_open.load_receipt",
+        }
+    seq = rec.get("sequential_rate") or {}
+    per = rec.get("per_specimen") or []
+    rows = []
+    for s in per:
+        meta = s.get("metadata_only") or {}
+        first = s.get("first_usable_tensor") or {}
+        full = s.get("full_shards") or {}
+        ba = s.get("before_after") or {}
+        rows.append({
+            "id": s.get("id"),
+            "file_bytes": s.get("file_bytes"),
+            "metadata_cold_s": meta.get("cold_s"),
+            "metadata_warm_s": meta.get("warm_s"),
+            "metadata_cache_hit_s": meta.get("cache_hit_s"),
+            "metadata_bytes_read": meta.get("bytes_read_cold"),
+            "metadata_touched_weight_bytes": meta.get("touched_weight_bytes"),
+            "first_usable_smallest_cold_s": (first.get("smallest_cold") or {}).get("seconds"),
+            "full_cold_s": full.get("cold_s"),
+            "full_warm_s": full.get("warm_s"),
+            "full_cold_gb_s": full.get("cold_gb_s"),
+            "before_after": ba,
+            "inputs_evidence_tier": "HARDWARE_MEASURED",
+        })
+    return {
+        "status": "OK",
+        "called": "specimen_open.load_receipt",
+        "schema": rec.get("schema"),
+        "sequential_cold_gb_s": seq.get("median_cold_gb_s"),
+        "sequential_evidence_tier": seq.get("evidence_tier") or "HARDWARE_MEASURED",
+        "volume": seq.get("volume"),
+        "specimens": rows,
+        "bottleneck": rec.get("bottleneck"),
+        "evidence_tier": "COST_MODEL",
+        "note": (
+            "Open timings and sequential GB/s are HARDWARE_MEASURED inputs. "
+            "This overlay does not re-time them; derived scheduling use is COST_MODEL."
+        ),
+    }
+
+
+def warm_set_policy(
+    candidates: Sequence[Mapping[str, Any]] | None = None,
+    *,
+    budget: int | None = None,
+    max_n: int = 2,
+    stage_dir: str | Path | None = None,
+) -> dict[str, Any]:
+    """Which specimens are worth keeping hot on the SSD. Does not copy.
+
+    Tier 1 is a hot bench for at most `max_n` specimens and `budget` bytes
+    (TIER1_BUDGET = 140 GiB, two specimens' worth). A request that would turn
+    the SSD into a second archive is refused. This is a decision record,
+    parallel to select_resident: installed=False, copied=False.
+
+    Called by economics_from_genome. An import of modellake.TIER1_BUDGET is
+    not the policy; this function is.
+    """
+    from tools.odyssey.modellake import SSD_STAGE, TIER1_BUDGET, du
+    budget = TIER1_BUDGET if budget is None else int(budget)
+    stage = Path(stage_dir) if stage_dir is not None else SSD_STAGE
+
+    already: list[dict[str, Any]] = []
+    if stage.is_dir():
+        for p in sorted(stage.iterdir()):
+            if not p.is_dir() or p.name.startswith(".") or p.name.startswith("_"):
+                continue
+            # Empty nameplates (config-only stubs) are not a hot specimen.
+            if not any(p.glob("*.safetensors")):
+                continue
+            already.append({"id": p.name, "path": str(p), "bytes": du(p), "already_on_stage": True})
+
+    pool: list[dict[str, Any]] = []
+    if candidates is None:
+        pool = list(already)
+    else:
+        by_id = {r["id"]: r for r in already}
+        for c in candidates:
+            cid = str(c.get("id") or c.get("slug") or "")
+            nbytes = int(c.get("bytes") or c.get("resident_bytes") or 0)
+            row = {
+                "id": cid,
+                "bytes": nbytes,
+                "already_on_stage": cid in by_id,
+            }
+            if cid in by_id:
+                row["bytes"] = by_id[cid]["bytes"]
+                row["path"] = by_id[cid]["path"]
+            pool.append(row)
+
+    # Prefer already-hot, then cheaper (smaller) bodies. Never more than max_n,
+    # never over budget. A single body larger than the budget is refused.
+    ranked = sorted(pool, key=lambda r: (not r.get("already_on_stage"), int(r.get("bytes") or 0), r.get("id") or ""))
+    selected: list[dict[str, Any]] = []
+    refused: list[dict[str, Any]] = []
+    used = 0
+    for row in ranked:
+        nbytes = int(row.get("bytes") or 0)
+        cid = row.get("id") or ""
+        if not cid:
+            refused.append({**row, "refused": "missing id"})
+            continue
+        if nbytes <= 0:
+            refused.append({**row, "refused": "bytes unknown; refuse rather than guess"})
+            continue
+        if nbytes > budget:
+            refused.append({**row, "refused": f"{nbytes} exceeds tier1 budget {budget}"})
+            continue
+        if len(selected) >= max_n:
+            refused.append({**row, "refused": f"tier1 holds at most {max_n} specimens"})
+            continue
+        if used + nbytes > budget:
+            refused.append({**row, "refused": f"used {used} + {nbytes} would exceed {budget}"})
+            continue
+        selected.append(row)
+        used += nbytes
+
+    overflow = [r for r in already if r["id"] not in {s["id"] for s in selected}]
+    return {
+        "schema": "hawking.odyssey.warm_set.v1",
+        "budget_bytes": budget,
+        "max_n": max_n,
+        "used_bytes": used,
+        "stage_dir": str(stage),
+        "selected": selected,
+        "refused": refused,
+        "already_on_stage_not_selected": overflow,
+        "installed": False,
+        "copied": False,
+        "copied_the_lake": False,
+        "called": "modellake.TIER1_BUDGET",
+        "evidence_tier": "COST_MODEL",
+        "note": (
+            "Decision record. Does not copy, clone, or delete. Tier 1 is a "
+            "hot bench for at most two specimens' worth, not a second archive."
+        ),
     }
 
 
