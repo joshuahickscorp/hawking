@@ -1,0 +1,261 @@
+{
+  "criterion": {
+    "span": [
+      7361,
+      7379
+    ],
+    "quoted": "## D.2 Failure taxonomy\n\n- `TRANSIENT_BACKEND`\n- `RATE_LIMIT`\n- `BACKEND_UNAVAILABLE`\n- `VERIFIER_FAILED`\n- `IMPLEMENTATION_FAILED`\n- `INVALID_OUTPUT`\n- `DEPENDENCY_BLOCKED`\n- `CONTRACT_IMPOSSIBLE`\n- `CANCELLED`\n- `RESOURCE_DENIED`\n- `AUTHORIZATION_REQUIRED`\n- `STATE_AMBIGUOUS`\n- `PERSISTENCE_CORRUPT`\n- `TOOLCHAIN_BLOCKED`\n- `BENCHMARK_CONTAMINATED`\n- `THERMAL_RESOURCE_BLOCK`\n- `DISK_HEADROOM_BLOCK`",
+    "meaning": "Backend failures classify into the D.2 taxonomy and do not take independent work down."
+  },
+  "symbol": {
+    "qualname": "terminate_pid",
+    "module": "hcli.backends",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/backends.py",
+    "line": 294
+  },
+  "invocations": [
+    {
+      "symbol": "hcli.backends.terminate_pid",
+      "pid": 24314
+    },
+    {
+      "symbol": "hcli.resources.classify_failure"
+    },
+    {
+      "symbol": "hcli.mission.Mission.run",
+      "note": "isolation checks"
+    }
+  ],
+  "command": "python3 -m tools.acceptance.context --gate BACKEND_FAILURE_ISOLATION",
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "failure_kinds_implemented": [
+    "TRANSIENT_BACKEND",
+    "VERIFIER_FAILURE",
+    "DETERMINISTIC_IMPLEMENTATION",
+    "INVALID_OUTPUT",
+    "RATE_LIMIT",
+    "UNAVAILABLE_DEPENDENCY",
+    "IMPOSSIBLE_CONTRACT"
+  ],
+  "d2_coverage": [
+    {
+      "d2": "TRANSIENT_BACKEND",
+      "implemented_as": "TRANSIENT_BACKEND",
+      "present": true
+    },
+    {
+      "d2": "RATE_LIMIT",
+      "implemented_as": "RATE_LIMIT",
+      "present": true
+    },
+    {
+      "d2": "BACKEND_UNAVAILABLE",
+      "implemented_as": "UNAVAILABLE_DEPENDENCY",
+      "present": true
+    },
+    {
+      "d2": "VERIFIER_FAILED",
+      "implemented_as": "VERIFIER_FAILURE",
+      "present": true
+    },
+    {
+      "d2": "IMPLEMENTATION_FAILED",
+      "implemented_as": "DETERMINISTIC_IMPLEMENTATION",
+      "present": true
+    },
+    {
+      "d2": "INVALID_OUTPUT",
+      "implemented_as": "INVALID_OUTPUT",
+      "present": true
+    },
+    {
+      "d2": "DEPENDENCY_BLOCKED",
+      "implemented_as": "UNAVAILABLE_DEPENDENCY",
+      "present": true
+    },
+    {
+      "d2": "CONTRACT_IMPOSSIBLE",
+      "implemented_as": "IMPOSSIBLE_CONTRACT",
+      "present": true
+    },
+    {
+      "d2": "CANCELLED",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "RESOURCE_DENIED",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "AUTHORIZATION_REQUIRED",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "STATE_AMBIGUOUS",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "PERSISTENCE_CORRUPT",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "TOOLCHAIN_BLOCKED",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "BENCHMARK_CONTAMINATED",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "THERMAL_RESOURCE_BLOCK",
+      "implemented_as": null,
+      "present": false
+    },
+    {
+      "d2": "DISK_HEADROOM_BLOCK",
+      "implemented_as": null,
+      "present": false
+    }
+  ],
+  "d2_missing": [
+    "CANCELLED",
+    "RESOURCE_DENIED",
+    "AUTHORIZATION_REQUIRED",
+    "STATE_AMBIGUOUS",
+    "PERSISTENCE_CORRUPT",
+    "TOOLCHAIN_BLOCKED",
+    "BENCHMARK_CONTAMINATED",
+    "THERMAL_RESOURCE_BLOCK",
+    "DISK_HEADROOM_BLOCK"
+  ],
+  "classified": [
+    {
+      "context": "{'http_status': 429}",
+      "expect": "RATE_LIMIT",
+      "kind": "RATE_LIMIT",
+      "retryable": true,
+      "observed": "HTTP 429",
+      "match": true
+    },
+    {
+      "context": "{'http_status': 503}",
+      "expect": "TRANSIENT_BACKEND",
+      "kind": "TRANSIENT_BACKEND",
+      "retryable": true,
+      "observed": "HTTP 503",
+      "match": true
+    },
+    {
+      "context": "{'reason': 'TEST_FAILED'}",
+      "expect": "VERIFIER_FAILURE",
+      "kind": "VERIFIER_FAILURE",
+      "retryable": true,
+      "observed": "TEST_FAILED",
+      "match": true
+    },
+    {
+      "context": "{'reason': 'INVALID_OUTPUT'}",
+      "expect": "INVALID_OUTPUT",
+      "kind": "INVALID_OUTPUT",
+      "retryable": true,
+      "observed": "INVALID_OUTPUT",
+      "match": true
+    },
+    {
+      "context": "{'reason': 'GrokNotAvailable'}",
+      "expect": "UNAVAILABLE_DEPENDENCY",
+      "kind": "UNAVAILABLE_DEPENDENCY",
+      "retryable": false,
+      "observed": "GrokNotAvailable",
+      "match": true
+    },
+    {
+      "context": "{'reason': 'GrokContractError'}",
+      "expect": "IMPOSSIBLE_CONTRACT",
+      "kind": "IMPOSSIBLE_CONTRACT",
+      "retryable": false,
+      "observed": "GrokContractError",
+      "match": true
+    },
+    {
+      "context": "{'reason': 'NO_OP_MUTATION'}",
+      "expect": "DETERMINISTIC_IMPLEMENTATION",
+      "kind": "DETERMINISTIC_IMPLEMENTATION",
+      "retryable": false,
+      "observed": "NO_OP_MUTATION",
+      "match": true
+    },
+    {
+      "context": "ConnectionRefusedError('backend down')",
+      "expect": "TRANSIENT_BACKEND",
+      "kind": "TRANSIENT_BACKEND",
+      "retryable": true,
+      "observed": "ConnectionRefusedError",
+      "match": true
+    }
+  ],
+  "terminate_pid": {
+    "pid": 24314,
+    "term": true,
+    "kill": false,
+    "gone": true
+  },
+  "isolation_results": [
+    {
+      "name": "an injected engine failure does not stop independent units",
+      "ok": true,
+      "detail": "statuses={'boom': 'failed', 'ok1': 'completed', 'ok2': 'completed', 'ok3': 'completed', 'boom.repair.1': 'completed'}"
+    },
+    {
+      "name": "a failing CPU verifier fails only its own unit",
+      "ok": true,
+      "detail": "statuses={'badver': 'failed', 'goodver': 'completed', 'engine_ok': 'completed', 'badver.repair.1': 'failed'}"
+    },
+    {
+      "name": "a Grok backend outage fails only its own unit",
+      "ok": true,
+      "detail": "statuses={'grokfail': 'failed', 'ok1': 'completed', 'ok2': 'completed', 'grokfail.repair.1': 'failed'}"
+    }
+  ],
+  "checks": {
+    "terminate_pid_invoked_on_owned_child": true,
+    "classify_failure_matches_probes": true,
+    "injected_backend_failure_does_not_stop_independent_units": true,
+    "did_not_signal_live_daemon": true
+  },
+  "verdict": "ACCEPTED",
+  "blocker": null,
+  "output": {
+    "isolation_passed": true,
+    "d2_missing": [
+      "CANCELLED",
+      "RESOURCE_DENIED",
+      "AUTHORIZATION_REQUIRED",
+      "STATE_AMBIGUOUS",
+      "PERSISTENCE_CORRUPT",
+      "TOOLCHAIN_BLOCKED",
+      "BENCHMARK_CONTAMINATED",
+      "THERMAL_RESOURCE_BLOCK",
+      "DISK_HEADROOM_BLOCK"
+    ],
+    "terminate_pid": {
+      "pid": 24314,
+      "term": true,
+      "kill": false,
+      "gone": true
+    }
+  },
+  "notes": "D.2 names not present in FAILURE_KINDS are listed in d2_missing. They are not treated as implemented under an alias unless D2_ALIASES says so. Isolation is the load-bearing check.",
+  "schema": "hawking.acceptance.gate.v1",
+  "gate": "BACKEND_FAILURE_ISOLATION",
+  "generated_at": "2026-09-02T09:05:34Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "criterion_altered": false
+}

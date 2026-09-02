@@ -1,0 +1,81 @@
+{
+  "criterion": {
+    "span": [
+      7420,
+      7447
+    ],
+    "quoted": "## D.4 Context authority\n\n```text\nDISTINGUISH:\nmodel_architectural_ceiling\nphysically_qualified_context\nallocated_runtime_context\nusable_request_context\ngeneration_reserve\ntool_reserve\nsafety_reserve\nworker_context_target\nactive_sequence_KV_cost\n\nROOT CONTEXT:\n    ultragoal + global invariants + current authority\n\nWORKER CONTEXT:\n    global invariants\n  + current phase\n  + one WorkUnit\n  + dependency neighborhood\n  + exact evidence\n  + acceptance criteria\n\nChanged evidence invalidates stale compiled context.\nDo not feed every worker the entire civilization roadmap.\n```",
+    "meaning": "Changed evidence invalidates stale compiled context."
+  },
+  "symbol": {
+    "qualname": "assert_evidence_fresh",
+    "module": "hcli.goal",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/goal.py",
+    "line": 918
+  },
+  "invocations": [
+    {
+      "symbol": "hcli.goal.compile_worker_context"
+    },
+    {
+      "symbol": "hcli.goal.assert_evidence_fresh"
+    },
+    {
+      "symbol": "hcli.goal.assert_packet_evidence_fresh"
+    },
+    {
+      "symbol": "hcli.goal.identity_for_path"
+    }
+  ],
+  "command": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_INVALIDATION",
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "hops": {
+    "unchanged_accepted": [
+      {
+        "path": "notes.txt",
+        "size": 13,
+        "mtime_ns": 1788339932710020884,
+        "sha256": "92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19"
+      }
+    ],
+    "after_mutation": {
+      "gathered": {
+        "path": "notes.txt",
+        "size": 13,
+        "mtime_ns": 1788339932710020884,
+        "sha256": "92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19"
+      },
+      "now": {
+        "path": "notes.txt",
+        "size": 13,
+        "mtime_ns": 1788339932710518718,
+        "sha256": "b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
+      },
+      "stale_raised": true,
+      "stale_message": "stale evidence refused: notes.txt gathered size=13 mtime_ns=1788339932710020884 sha256=92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19; now size=13 mtime_ns=1788339932710518718 sha256=b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
+    },
+    "recompiled_sha256": "b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
+  },
+  "checks": {
+    "assert_evidence_fresh_invoked": true,
+    "unchanged_accepted": true,
+    "stale_raised": true,
+    "stale_names_path": true,
+    "stale_names_old_digest": true,
+    "stale_names_new_digest": true,
+    "digests_differ": true,
+    "recompile_picks_up_new_digest": true
+  },
+  "verdict": "ACCEPTED",
+  "blocker": null,
+  "output": {
+    "stale_message": "stale evidence refused: notes.txt gathered size=13 mtime_ns=1788339932710020884 sha256=92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19; now size=13 mtime_ns=1788339932710518718 sha256=b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371",
+    "gathered_sha256": "92573cfc7f0919b6ff2c0c0dd4a9021c3ae4b116bf88a04e3bcd02f788f87f19",
+    "now_sha256": "b44dfe76c9e6dd80aef4c0dc80f7909864d24e5f03e73c0f974925e28d360371"
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "gate": "HCLI_CONTEXT_INVALIDATION",
+  "generated_at": "2026-09-02T09:05:32Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "criterion_altered": false
+}

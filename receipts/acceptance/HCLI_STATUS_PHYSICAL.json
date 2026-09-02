@@ -1,0 +1,155 @@
+{
+  "criterion": {
+    "span": [
+      7537,
+      7575
+    ],
+    "quoted": "## D.9 Physical /status contract\n\n```text\nMISSION\n  id / phase / goal / last_progress\n\nWORKUNITS\n  ready / running / blocked / verified / failed\n\nPROVIDERS\n  resident / active / queued / health / context / throughput\n\nEXTERNAL TASKS\n  admitted / active / queued / terminal / failed / throttled\n\nCPU / TOOLS\n  active / queued\n\nVERIFICATION\n  active / backlog / pass / fail\n\nMUTATION\n  owner / waiters / lease age\n\nREPAIR\n  active chains / max depth / exhausted\n\nPERSISTENCE\n  generation / checkpoint age / digest\n\nTHROUGHPUT\n  verified WU/hour / marginal trend\n\nRESOURCE\n  GPU / CPU / RAM / swap / disk / I/O / benchmark qualification\n\nSTAGNATION\n  no-progress tier / current reason\n```",
+    "meaning": "Physical /status exposes mission, workunits, providers, external tasks, CPU/tools, verification, mutation, repair, persistence, throughput, resource, stagnation."
+  },
+  "symbol": {
+    "qualname": "format_status",
+    "module": "hcli.commands",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/commands.py",
+    "line": 246
+  },
+  "invocations": [
+    {
+      "symbol": "hcli.commands.format_status"
+    },
+    {
+      "symbol": "hcli.max_policy.grok_pool_snapshot"
+    }
+  ],
+  "command": "python3 -m tools.acceptance.context --gate HCLI_STATUS_PHYSICAL",
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "rendered": "mission acc2-status-physical  phase=running bank=0\nGoal: demonstrate D.9 physical /status\nWU ready=1 running=2 blocked=0 completed=4 failed=1\nRuntime health=ok resident=1 active=1 queued=0 n_ctx=32768 prompt=1200 tps=12.5\nGrok admitted=1 active=17 queued=0 done=537 failed=14 latency=787s\nResident RUNNING supervisor=live cycles=3 event=acceptance-probe age=90s\nCPU decode=1 compile=0 test=1 tool=0\nMutation held=false pid=unknown owner=unknown waiters=0\nVerifier backlog=2  accepted/h=unknown  ckpt=12s  watchdog=clear",
+  "rendered_line_count": 9,
+  "d9": {
+    "present": {
+      "MISSION.id": true,
+      "MISSION.phase": true,
+      "MISSION.goal": true,
+      "MISSION.last_progress": false,
+      "WORKUNITS.ready": true,
+      "WORKUNITS.running": true,
+      "WORKUNITS.blocked": true,
+      "WORKUNITS.verified": true,
+      "WORKUNITS.failed": true,
+      "PROVIDERS.resident": true,
+      "PROVIDERS.active": true,
+      "PROVIDERS.queued": true,
+      "PROVIDERS.health": true,
+      "PROVIDERS.context": true,
+      "PROVIDERS.throughput": true,
+      "EXTERNAL.admitted": true,
+      "EXTERNAL.active": true,
+      "EXTERNAL.queued": true,
+      "EXTERNAL.terminal": true,
+      "EXTERNAL.failed": true,
+      "EXTERNAL.throttled": false,
+      "CPU_TOOLS.active": true,
+      "CPU_TOOLS.queued": true,
+      "VERIFICATION.active": false,
+      "VERIFICATION.backlog": true,
+      "VERIFICATION.pass": true,
+      "VERIFICATION.fail": false,
+      "MUTATION.owner": true,
+      "MUTATION.waiters": true,
+      "MUTATION.lease_age": false,
+      "REPAIR.active_chains": false,
+      "REPAIR.max_depth": false,
+      "REPAIR.exhausted": false,
+      "PERSISTENCE.generation": false,
+      "PERSISTENCE.checkpoint_age": true,
+      "PERSISTENCE.digest": false,
+      "THROUGHPUT.verified_wu_per_hour": true,
+      "THROUGHPUT.marginal_trend": false,
+      "RESOURCE.GPU": false,
+      "RESOURCE.CPU": true,
+      "RESOURCE.RAM": false,
+      "RESOURCE.swap": false,
+      "RESOURCE.disk": false,
+      "RESOURCE.IO": false,
+      "RESOURCE.benchmark_qualification": false,
+      "STAGNATION.tier": true,
+      "STAGNATION.reason": false
+    },
+    "missing": [
+      "MISSION.last_progress",
+      "EXTERNAL.throttled",
+      "VERIFICATION.active",
+      "VERIFICATION.fail",
+      "MUTATION.lease_age",
+      "REPAIR.active_chains",
+      "REPAIR.max_depth",
+      "REPAIR.exhausted",
+      "PERSISTENCE.generation",
+      "PERSISTENCE.digest",
+      "THROUGHPUT.marginal_trend",
+      "RESOURCE.GPU",
+      "RESOURCE.RAM",
+      "RESOURCE.swap",
+      "RESOURCE.disk",
+      "RESOURCE.IO",
+      "RESOURCE.benchmark_qualification",
+      "STAGNATION.reason"
+    ],
+    "missing_count": 18
+  },
+  "load_bearing_missing": [
+    "MISSION.last_progress",
+    "EXTERNAL.throttled",
+    "VERIFICATION.active",
+    "VERIFICATION.fail",
+    "MUTATION.lease_age",
+    "REPAIR.active_chains",
+    "REPAIR.max_depth",
+    "REPAIR.exhausted",
+    "PERSISTENCE.generation",
+    "PERSISTENCE.digest",
+    "THROUGHPUT.marginal_trend",
+    "RESOURCE.GPU",
+    "RESOURCE.RAM",
+    "RESOURCE.swap",
+    "RESOURCE.disk",
+    "RESOURCE.IO",
+    "RESOURCE.benchmark_qualification"
+  ],
+  "live_grok_snapshot": {
+    "admitted": 1,
+    "admitted_source": "fallback",
+    "active": 17,
+    "queued": 0,
+    "done": 537,
+    "failed": 14,
+    "stale": 14,
+    "latency_s": 786.7310149669647,
+    "throttle": "   \"input_tokens\": 242957,\n    \"cache_read_input_tokens\": 10197504,\n    \"cache_creation_input_tokens\": 0,\n    \"output_tokens\": 53323,\n    \"reasoning_tokens\": 48425,\n    \"total_tokens\": 10493784\n  },\n "
+  },
+  "checks": {
+    "format_status_invoked": true,
+    "rendered_nonempty": true,
+    "d9_complete": false
+  },
+  "verdict": "BLOCKED",
+  "blocker": "format_status does not render the D.9 physical /status contract. Missing fields from a fully populated snapshot: MISSION.last_progress, EXTERNAL.throttled, VERIFICATION.active, VERIFICATION.fail, MUTATION.lease_age, REPAIR.active_chains, REPAIR.max_depth, REPAIR.exhausted, PERSISTENCE.generation, PERSISTENCE.digest, THROUGHPUT.marginal_trend, RESOURCE.GPU, RESOURCE.RAM, RESOURCE.swap, RESOURCE.disk, RESOURCE.IO, RESOURCE.benchmark_qualification, STAGNATION.reason. This is not a missing live mission; the renderer drops the sections.",
+  "output": {
+    "first_lines": [
+      "mission acc2-status-physical  phase=running bank=0",
+      "Goal: demonstrate D.9 physical /status",
+      "WU ready=1 running=2 blocked=0 completed=4 failed=1",
+      "Runtime health=ok resident=1 active=1 queued=0 n_ctx=32768 prompt=1200 tps=12.5",
+      "Grok admitted=1 active=17 queued=0 done=537 failed=14 latency=787s",
+      "Resident RUNNING supervisor=live cycles=3 event=acceptance-probe age=90s",
+      "CPU decode=1 compile=0 test=1 tool=0",
+      "Mutation held=false pid=unknown owner=unknown waiters=0",
+      "Verifier backlog=2  accepted/h=unknown  ckpt=12s  watchdog=clear"
+    ]
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "gate": "HCLI_STATUS_PHYSICAL",
+  "generated_at": "2026-09-02T09:05:32Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "criterion_altered": false
+}

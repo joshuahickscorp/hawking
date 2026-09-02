@@ -1,5 +1,5 @@
-"""Acceptance demonstrations for roadmap gates.
+"""Acceptance evidence: does a gate's own criterion actually hold.
 
-Each subpackage owns one lane. Tests here must invoke the gate's implementing
-symbol and record a real run; a receipt that merely exists is not acceptance.
+One package per gate cluster. A gate is ACCEPTED only when a real run
+demonstrates its stated criterion -- a call site proves reachable, not works.
 """

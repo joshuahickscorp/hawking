@@ -1,0 +1,98 @@
+{
+  "criterion": {
+    "span": [
+      7678,
+      7680
+    ],
+    "quoted": "### HCLI_SELF_OPTIMIZATION_BOOTSTRAP\n**Meaning:** Evidence chooses and improves next bottleneck.\n**Proof obligation:** Two linked iterations with independent verification.",
+    "meaning": "Evidence chooses and improves next bottleneck.",
+    "proof_obligation": "Two linked iterations with independent verification.",
+    "d11": "5. Shared mutation single-writer.\n6. External tasks reconcilable.\n7. Resident execution measured.\n8. Mixed failures isolated.\n9. Checkpoints coherent.\n10. Steering durable.\n11. Status exposes physical truth.\n12. MAX has a measured useful equilibrium.\n13. No known P0/P1 defect can manufacture VERIFIED or unbounded work.\n\n\n## D.11 Self-optimization two-iteration law\n\n```text\nITERATION 1\nsense\n\u2192 measured bottleneck\n\u2192 bounded hypotheses\n\u2192 cheap screens\n\u2192 correctness gate\n\u2192 usefulness/performance gate\n\u2192 promote/reject\n\u2192 receipt + positive/negative science\n\u2192 update priors\n\nITERATION 2\nMUST be selected partly from evidence produced by iteration 1.\nA prewritten second task does not prove self-optimization.\n```"
+  },
+  "symbol": {
+    "qualname": "run_autonomy_gate",
+    "module": "hcli.agentos.autonomy_gate",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/agentos/autonomy_gate.py",
+    "line": 984
+  },
+  "invocations": [],
+  "symbol_inspected_not_invoked": {
+    "qualname": "run_autonomy_gate",
+    "module": "hcli.agentos.autonomy_gate",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/agentos/autonomy_gate.py",
+    "line": 984
+  },
+  "why_not_invoked": "run_autonomy_gate A3/A4 kill processes; invoking it would violate the live-daemon rule. Inspection of the source is STATIC and is not acceptance.",
+  "command": "python3 -m tools.acceptance.context --gate HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+  "evidence_tier": "STATIC",
+  "source_excerpt": [
+    "def run_autonomy_gate(",
+    "    *,",
+    "    repo_root: Optional[str | os.PathLike[str]] = None,",
+    "    profile: Optional[str | os.PathLike[str]] = None,",
+    "    emit: Optional[str | os.PathLike[str]] = None,",
+    "    stage: str = \"all\",",
+    "    count: int = 10,",
+    ") -> Dict[str, Any]:",
+    "    \"\"\"Run A1-A5 and persist one machine-readable qualification receipt.\"\"\"",
+    "    repo = _repo_root(repo_root)",
+    "    native_profile = _profile_path(repo, profile)",
+    "    selected = str(stage or \"all\").strip().lower()",
+    "    started = time.time()",
+    "    report: Dict[str, Any] = {",
+    "        \"schema\": SCHEMA,",
+    "        \"status\": \"RUNNING\",",
+    "        \"qualification\": \"LIVE_AGENTOS_AUTONOMY_CONTROL_PLANE\",",
+    "        \"started_at\": started,",
+    "        \"repo_root\": str(repo),",
+    "        \"profile_path\": str(native_profile),",
+    "        \"stages_requested\": selected,",
+    "        \"claim_boundary\": \"native cognition proposes; typed tools, persisted WorkUnits, and fixed verifiers decide; no sovereignty claim\",",
+    "        \"stages\": {},",
+    "    }",
+    "    try:",
+    "        if selected in {\"all\", \"a1\"}:",
+    "            report[\"stages\"][\"A1_three_workunits\"] = run_census_mission(repo_root=repo, profile=native_profile, count=3, prefix=\"a1\")",
+    "        if selected in {\"all\", \"a2\"}:",
+    "            report[\"stages\"][\"A2_ten_workunits\"] = run_census_mission(repo_root=repo, profile=native_profile, count=max(10, int(count)), prefix=\"a2\")",
+    "        if selected in {\"all\", \"a3\", \"resident-kill\"}:",
+    "            report[\"stages\"][\"A3_resident_kill\"] = run_resident_kill(repo_root=repo, profile=native_profile)",
+    "        if selected in {\"all\", \"a4\", \"process-kill\"}:",
+    "            report[\"stages\"][\"A4_hcli_process_kill\"] = run_process_kill(repo_root=repo)",
+    "        if selected in {\"all\", \"a5\", \"idempotency\"}:",
+    "            report[\"stages\"][\"A5_post_mutation_crash\"] = run_idempotency_crash(repo_root=repo)",
+    "        if not report[\"stages\"]:",
+    "            raise ValueError(f\"unknown autonomy stage: {stage}\")",
+    "        stage_status = {name: value.get(\"status\") for name, value in report[\"stages\"].items()}",
+    "        report[\"stage_status\"] = stage_status",
+    "        report[\"checks\"] = {"
+  ],
+  "kill_stages_in_source": [
+    "if selected in {\"all\", \"a3\", \"resident-kill\"}:",
+    "report[\"stages\"][\"A3_resident_kill\"] = run_resident_kill(repo_root=repo, profile=native_profile)",
+    "if selected in {\"all\", \"a4\", \"process-kill\"}:",
+    "report[\"stages\"][\"A4_hcli_process_kill\"] = run_process_kill(repo_root=repo)",
+    "\"a3_resident_recovery\": report[\"stages\"].get(\"A3_resident_kill\", {}).get(\"status\") == \"PASSED\" if \"A3_resident_kill\" in report[\"stages\"] else True,",
+    "\"a4_process_recovery\": report[\"stages\"].get(\"A4_hcli_process_kill\", {}).get(\"status\") == \"PASSED\" if \"A4_hcli_process_kill\" in report[\"stages\"] else True,"
+  ],
+  "existing_receipts_cited_as_data": {
+    "iteration_1": "receipts/headless/HCLI_SELF_OPT_ITERATION_1.json",
+    "iteration_2": "receipts/headless/HCLI_SELF_OPT_ITERATION_2.json",
+    "iteration_2_remeasured": "receipts/headless/HCLI_SELF_OPT_ITERATION_2_REMEASURED.json"
+  },
+  "checks": {
+    "run_autonomy_gate_not_invoked": true,
+    "two_linked_iterations_with_independent_verification": false,
+    "did_not_treat_prewritten_iteration_2_as_proof": true
+  },
+  "verdict": "BLOCKED",
+  "blocker": "D.11 two-iteration law is not demonstrable in this lane. (1) run_autonomy_gate stages A3_resident_kill and A4_hcli_process_kill send SIGTERM/SIGKILL; this lane must not signal the live HCLI daemon or any other process. Even stage=a1 is census qualification, not self-optimization. (2) receipts/headless/HCLI_SELF_OPT_ITERATION_2.json is a prewritten second task (raise RuntimePool admission) \u2014 D.11: 'A prewritten second task does not prove self-optimization.' (3) HCLI_SELF_OPT_ITERATION_2_REMEASURED.json records that the perf gate never entered the mutated RuntimePool. (4) Promoting a bounded improvement would require editing hcli/, which this lane must not touch. Missing input: a kill-free, evidence-chosen iteration-2 loop that independently verifies an improvement without mutating hcli/ or signalling processes.",
+  "output": {
+    "invoked": false
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "gate": "HCLI_SELF_OPTIMIZATION_BOOTSTRAP",
+  "generated_at": "2026-09-02T09:05:34Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "criterion_altered": false
+}

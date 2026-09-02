@@ -1,0 +1,120 @@
+{
+  "criterion": {
+    "span": [
+      7642,
+      7644
+    ],
+    "quoted": "### HCLI_CONTEXT_AUTHORITY_UNIFIED\n**Meaning:** One context-budget authority drives root and worker admission.\n**Proof obligation:** Live root/worker requests and source path agree.",
+    "meaning": "One context-budget authority drives root and worker admission.",
+    "proof_obligation": "Live root/worker requests and source path agree."
+  },
+  "symbol": {
+    "qualname": "resolve",
+    "module": "hcli.context_budget",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/context_budget.py",
+    "line": 476
+  },
+  "invocations": [
+    {
+      "symbol": "hcli.context_budget.resolve",
+      "note": "single authority"
+    },
+    {
+      "symbol": "hcli.context_budget.preflight",
+      "kind": "root"
+    },
+    {
+      "symbol": "hcli.context_budget.preflight_packet",
+      "kind": "worker"
+    },
+    {
+      "symbol": "hcli.goal.compile_worker_context",
+      "note": "worker packet then preflighted on the same budget"
+    }
+  ],
+  "command": "python3 -m tools.acceptance.context --gate HCLI_CONTEXT_AUTHORITY_UNIFIED",
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "budget": {
+    "total_ctx": 32768,
+    "n_parallel": 3,
+    "per_request_ctx": 11008,
+    "generation_reserve": 4096,
+    "framing_reserve": 4096,
+    "usable_input_tokens": 2816,
+    "source": "fallback:DEFAULT_PER_SLOT_CTX",
+    "model_ceiling": null,
+    "object_id": 4347395584
+  },
+  "root_preflight": {
+    "ok": true,
+    "demand": 8210,
+    "usable": 2816,
+    "per_request_ctx": 11008,
+    "shortfall": 0,
+    "kind": "root",
+    "remedy": "request fits: demand 8210 <= per_request_ctx 11008 (n_parallel=3, total_ctx=32768, source=fallback:DEFAULT_PER_SLOT_CTX)",
+    "budget_object_id": 4347395584,
+    "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
+  },
+  "worker_preflight": {
+    "ok": true,
+    "demand": 8207,
+    "usable": 2816,
+    "per_request_ctx": 11008,
+    "shortfall": 0,
+    "kind": "worker",
+    "remedy": "request fits: demand 8207 <= per_request_ctx 11008 (n_parallel=3, total_ctx=32768, source=fallback:DEFAULT_PER_SLOT_CTX)",
+    "budget_object_id": 4347395584,
+    "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
+  },
+  "oversize_root_preflight": {
+    "ok": false,
+    "demand": 19201,
+    "usable": 2816,
+    "per_request_ctx": 11008,
+    "shortfall": 8193,
+    "kind": "root",
+    "remedy": "demand 19201 exceeds per-request context 11008 by 8193 tokens (kind=root). Levers: reduce n_parallel (currently 3; n_parallel=1 yields per_request_ctx 32768); raise HCLI_CTX_SIZE/--ctx-size (currently 32768); or shrink inlined evidence so prompt_tokens fall below usable_input_tokens 2816.",
+    "budget_object_id": 4347395584,
+    "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
+  },
+  "worker_packet_preflight": {
+    "ok": true,
+    "demand": 8267,
+    "usable": 2816,
+    "per_request_ctx": 11008,
+    "shortfall": 0,
+    "kind": "worker",
+    "remedy": "request fits: demand 8267 <= per_request_ctx 11008 (n_parallel=3, total_ctx=32768, source=fallback:DEFAULT_PER_SLOT_CTX)",
+    "budget_object_id": 4347395584,
+    "budget_source": "fallback:DEFAULT_PER_SLOT_CTX"
+  },
+  "checks": {
+    "resolve_invoked": true,
+    "preflight_root_kind": true,
+    "preflight_worker_kind": true,
+    "same_budget_object": true,
+    "same_source": true,
+    "same_per_request_ctx": true,
+    "small_root_admitted": true,
+    "small_worker_admitted": true,
+    "oversize_root_refused": true,
+    "refuse_names_source": true,
+    "worker_packet_preflighted_on_same_budget": true,
+    "symbol_file_is_context_budget": true
+  },
+  "verdict": "ACCEPTED",
+  "blocker": null,
+  "output": {
+    "source": "fallback:DEFAULT_PER_SLOT_CTX",
+    "per_request_ctx": 11008,
+    "usable_input_tokens": 2816,
+    "oversize_shortfall": 8193,
+    "oversize_remedy": "demand 19201 exceeds per-request context 11008 by 8193 tokens (kind=root). Levers: reduce n_parallel (currently 3; n_parallel=1 yields per_request_ctx 32768); raise HCLI_CTX_SIZE/--ctx-size (currently 32768); or shrink inlined evidence so prompt_tokens fall below usable_input_tokens 2816."
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "gate": "HCLI_CONTEXT_AUTHORITY_UNIFIED",
+  "generated_at": "2026-09-02T09:05:32Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "criterion_altered": false
+}
