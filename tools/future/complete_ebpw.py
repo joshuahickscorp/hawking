@@ -88,6 +88,20 @@ PART_CATEGORIES = (
     "model_specific_code",
 )
 
+# Axes a candidate and an incumbent are both scored on. A missing axis is a
+# refusal, not a silent zero. capability_eval.score_representation_family
+# consumes this same set (plus fidelity flags the accountant does not own).
+COMPARE_AXES = (
+    "complete_ebpw",
+    "stored_bytes",
+    "stored_bpw",
+    "billed_ms",
+    "executable_bytes",
+    "is_sub2_executable",
+    "reconstructs_dense_parent",
+    "consumes_representation_directly",
+)
+
 REQUIRED_CANDIDATE_KEYS = (
     "id",
     "parent_params",
@@ -675,19 +689,139 @@ def cost(
         base = versus if "complete_ebpw" in versus and "billed_ms" in versus else cost(
             versus, rates=spec
         )
-        bytes_saved = int(base["executable_bytes"]) - int(executable_bytes)
-        ms_saved = _r(float(base["billed_ms"]) - float(executable_ms), 6)
-        row["versus"] = {
-            "id": base.get("id"),
-            "bytes_saved": bytes_saved,
-            "gb_saved": _gb(bytes_saved),
-            "ms_saved": ms_saved,
-            "bpw_delta": float(base["complete_ebpw"]) - complete_ebpw,
-            "baseline_executable_bytes": int(base["executable_bytes"]),
-            "baseline_billed_ms": float(base["billed_ms"]),
-            "baseline_complete_ebpw": float(base["complete_ebpw"]),
-        }
+        row["versus"] = _versus_block(
+            complete_ebpw=complete_ebpw,
+            executable_bytes=executable_bytes,
+            executable_ms=executable_ms,
+            base=base,
+        )
     return row
+
+
+def empty_parts() -> dict[str, list]:
+    """Every billed category present as an explicit list. An omitted key is a refusal."""
+    return {c: [] for c in PART_CATEGORIES}
+
+
+def axes_of(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract the shared compare-axes from a cost() row. Partial sets refuse."""
+    missing = [k for k in COMPARE_AXES if k not in row]
+    if missing:
+        raise CompleteEbpwRefused(
+            f"cost row missing axes {missing}; refusing to score on a partial axis set"
+        )
+    return {k: row[k] for k in COMPARE_AXES}
+
+
+def _versus_block(
+    *,
+    complete_ebpw: float,
+    executable_bytes: int,
+    executable_ms: float,
+    base: Mapping[str, Any],
+) -> dict[str, Any]:
+    bytes_saved = int(base["executable_bytes"]) - int(executable_bytes)
+    ms_saved = _r(float(base["billed_ms"]) - float(executable_ms), 6)
+    return {
+        "id": base.get("id"),
+        "bytes_saved": bytes_saved,
+        "gb_saved": _gb(bytes_saved),
+        "ms_saved": ms_saved,
+        "bpw_delta": float(base["complete_ebpw"]) - complete_ebpw,
+        "baseline_executable_bytes": int(base["executable_bytes"]),
+        "baseline_billed_ms": float(base["billed_ms"]),
+        "baseline_complete_ebpw": float(base["complete_ebpw"]),
+    }
+
+
+def candidate_from_parts(
+    *,
+    family_id: str,
+    parent_params: int,
+    parts: Mapping[str, Any],
+    reconstructs_dense_parent: bool = False,
+    consumes_representation_directly: bool = True,
+    parent_executable_bytes: int | None = None,
+    parent_stream_class: str | None = None,
+) -> dict[str, Any]:
+    """Build a candidate from a family's bill_parts() mapping. Extra keys refuse."""
+    extra = set(parts) - set(PART_CATEGORIES)
+    if extra:
+        raise CompleteEbpwRefused(
+            f"unbilled component {sorted(extra)}; hidden free information is "
+            "refused (a codebook, sidecar, residual or table that is not in "
+            f"{list(PART_CATEGORIES)} does not bill and must not pass)"
+        )
+    missing = [c for c in PART_CATEGORIES if c not in parts]
+    if missing:
+        raise CompleteEbpwRefused(
+            f"candidate is missing {missing}; refusing to default a missing "
+            "input (an omitted generator is not a zero-byte generator)"
+        )
+    probe = {
+        "id": family_id,
+        "parent_params": parent_params,
+        "stated_total_bytes": 0,
+        **{c: list(parts[c]) for c in PART_CATEGORIES},
+        "reconstructs_dense_parent": reconstructs_dense_parent,
+        "consumes_representation_directly": consumes_representation_directly,
+    }
+    if parent_executable_bytes is not None:
+        probe["parent_executable_bytes"] = parent_executable_bytes
+    if parent_stream_class is not None:
+        probe["parent_stream_class"] = parent_stream_class
+    refuse_unbilled_components(probe)
+    stated = 0
+    for cat in PART_CATEGORIES:
+        for i, row in enumerate(probe[cat]):
+            stated += int(_normalize_part(row, category=cat, index=i)["bytes"])
+    probe["stated_total_bytes"] = stated
+    return probe
+
+
+def compare_to_incumbent(
+    candidate: Mapping[str, Any],
+    *,
+    incumbent: Mapping[str, Any] | None = None,
+    rates: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Bill candidate and incumbent on COMPARE_AXES. Nothing is free on either side.
+
+    `incumbent` defaults to the sealed-3.14 mix. A family micro-site should pass
+    a local dense-f32 incumbent of the same W so the axes stay commensurate.
+    """
+    spec = rates if rates is not None else stream_rates()
+    inc_input: Mapping[str, Any] = (
+        incumbent if incumbent is not None else incumbent_candidate()
+    )
+    inc_row = (
+        inc_input
+        if "complete_ebpw" in inc_input and "billed_ms" in inc_input
+        else cost(inc_input, rates=spec)
+    )
+    cand_row = (
+        dict(candidate)
+        if "complete_ebpw" in candidate and "billed_ms" in candidate
+        else cost(candidate, versus=inc_row, rates=spec)
+    )
+    if "versus" not in cand_row:
+        cand_row["versus"] = _versus_block(
+            complete_ebpw=float(cand_row["complete_ebpw"]),
+            executable_bytes=int(cand_row["executable_bytes"]),
+            executable_ms=float(cand_row["billed_ms"]),
+            base=inc_row,
+        )
+    return {
+        "candidate_id": cand_row.get("id"),
+        "incumbent_id": inc_row.get("id"),
+        "candidate_axes": axes_of(cand_row),
+        "incumbent_axes": axes_of(inc_row),
+        "versus": cand_row["versus"],
+        "same_axes": list(COMPARE_AXES),
+        "nothing_is_free": cand_row.get("nothing_is_free"),
+        "candidate_row": cand_row,
+        "incumbent_row": inc_row,
+    }
 
 
 def _selftest() -> dict[str, Any]:
@@ -755,6 +889,23 @@ def _selftest() -> dict[str, Any]:
     aux_zero = float(aux["versus"]["ms_saved"]) == 0.0
     aux_bytes = int(aux["versus"]["bytes_saved"]) > 0
 
+    unbilled_refused = False
+    hidden = {
+        **inc_cand,
+        "sidecar_codebook": [
+            {
+                "name": "hidden_free_codebook",
+                "bytes": 8,
+                "stream_class": STREAM_WEIGHT_CODES,
+            }
+        ],
+    }
+    try:
+        cost(hidden)
+    except CompleteEbpwRefused as exc:
+        msg = str(exc).lower()
+        unbilled_refused = "unbilled" in msg or "hidden free" in msg
+
     failed = [
         name
         for name, held in (
@@ -764,6 +915,7 @@ def _selftest() -> dict[str, Any]:
             ("remat_not_sub2", remat_not_sub2),
             ("aux_zero", aux_zero),
             ("aux_bytes", aux_bytes),
+            ("unbilled_refused", unbilled_refused),
         )
         if not held
     ]
@@ -778,6 +930,7 @@ def _selftest() -> dict[str, Any]:
         "aux_only_cut_ms_saved": 0.0,
         "aux_only_cut_bytes_saved": int(aux["versus"]["bytes_saved"]),
         "aux_only_cut_ms_saved_is_zero": True,
+        "unbilled_component_refused": True,
     }
 
 

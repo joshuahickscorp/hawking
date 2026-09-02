@@ -60,6 +60,22 @@ ADMITTED_SUBJECT_KINDS: tuple[str, ...] = (
     "heterogeneous",
 )
 
+# Axes a representation candidate and an incumbent are both scored on.
+# Billing axes match tools.future.complete_ebpw.COMPARE_AXES; fidelity
+# flags (execute_match, chain_complete) are owned by the family chain.
+REPRESENTATION_AXES: tuple[str, ...] = (
+    "complete_ebpw",
+    "stored_bytes",
+    "stored_bpw",
+    "billed_ms",
+    "executable_bytes",
+    "is_sub2_executable",
+    "reconstructs_dense_parent",
+    "consumes_representation_directly",
+    "execute_match",
+    "chain_complete",
+)
+
 EVIDENCE_TIERS: tuple[str, ...] = (
     "STATIC",
     "FUNCTIONAL_SIM",
@@ -385,6 +401,75 @@ class CapabilityEvalRegistry:
         for eid in self.list_evaluators():
             out[eid] = self.run(eid, subject, source)
         return out
+
+
+def score_representation_family(
+    *,
+    candidate_id: str,
+    candidate: Mapping[str, Any],
+    incumbent_id: str,
+    incumbent: Mapping[str, Any],
+) -> dict[str, Any]:
+    """Hook: score a candidate family on the same axes as an incumbent.
+
+    CALL SITE: tools.future.representation_lab.verify_family. An import of
+    this function is not a score. A missing axis is a refusal, not a zero.
+    Live-resident subjects are out of scope.
+    """
+    subject = EvalSubject(kind="representation", identity=candidate_id)
+    missing_c = [k for k in REPRESENTATION_AXES if k not in candidate]
+    missing_i = [k for k in REPRESENTATION_AXES if k not in incumbent]
+    if missing_c or missing_i:
+        raise EvalRefused(
+            f"candidate missing {missing_c}, incumbent missing {missing_i}; "
+            "scoring on different axes is refused"
+        )
+    per_axis: dict[str, Any] = {}
+    numeric_wins = 0
+    numeric_n = 0
+    for axis in REPRESENTATION_AXES:
+        c_val = candidate[axis]
+        i_val = incumbent[axis]
+        cell: dict[str, Any] = {"candidate": c_val, "incumbent": i_val}
+        if isinstance(c_val, bool) and isinstance(i_val, bool):
+            cell["same"] = c_val == i_val
+        elif isinstance(c_val, (int, float)) and isinstance(i_val, (int, float)) and not (
+            isinstance(c_val, bool) or isinstance(i_val, bool)
+        ):
+            delta = float(c_val) - float(i_val)
+            cell["delta"] = delta
+            numeric_n += 1
+            # Lower complete_ebpw / stored_bytes / billed_ms / executable_bytes
+            # is a win; booleans are not ranked here.
+            if axis in {
+                "complete_ebpw",
+                "stored_bytes",
+                "stored_bpw",
+                "billed_ms",
+                "executable_bytes",
+            }:
+                cell["candidate_smaller"] = delta < 0
+                if delta < 0:
+                    numeric_wins += 1
+        per_axis[axis] = cell
+    return {
+        "evaluator_id": "representation.family_axes",
+        "domain": "domain_capability",
+        "subject_kind": subject.kind,
+        "subject_identity": subject.identity,
+        "incumbent_id": incumbent_id,
+        "axes": list(REPRESENTATION_AXES),
+        "per_axis": per_axis,
+        "n_axes": len(REPRESENTATION_AXES),
+        "n_cost_axes_candidate_smaller": numeric_wins,
+        "n_cost_axes": numeric_n,
+        "same_axes_as_incumbent": True,
+        "hardcoded_benchmark": None,
+        "evidence_tier": "STATIC",
+        "call_site": (
+            "score_representation_family -> EvalSubject(kind='representation')"
+        ),
+    }
 
 
 def passing_scripted_source() -> ScriptedSource:

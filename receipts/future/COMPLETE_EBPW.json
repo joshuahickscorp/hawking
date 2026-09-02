@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-02T04:11:58Z",
+  "recorded_at": "2026-09-02T09:07:44Z",
   "recorded_by": "tools/future/complete_ebpw.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -189,7 +189,7 @@
   "policy_learned": false,
   "policy_option_id": "ebpw:incumbent_sealed_3_14"
  },
- "seal_sha256": "d3f0772194a590b185e2d873e50d1a70f4536d519008df4fc3fb742f6ec9c6cc",
+ "seal_sha256": "1727b7a3bad30cf94a18edea0f6d301f8804967e5616e9c3c73ae672968ef844",
  "selftest": {
   "aux_only_cut_bytes_saved": 58176,
   "aux_only_cut_ms_saved": 0.0,
@@ -198,6 +198,7 @@
   "incumbent_bpw": 3.139300850311054,
   "incumbent_bpw_within_0_001_of_3_1393": true,
   "remat_complete_ebpw_is_not_the_stored_figure": true,
+  "unbilled_component_refused": true,
   "unreconciled_refused": true
  },
  "stream_rates": {
