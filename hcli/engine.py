@@ -751,6 +751,8 @@ class Engine:
         return value
 
     MAX_TOOL_ROUNDS = 6
+    # Bounded: an event stream is a trail, not a transcript.
+    TOOL_ERROR_EVENT_CHARS = 400
 
     def _tool_registry(self):
         """The one already built for the executor. Not a second registry."""
@@ -976,13 +978,18 @@ class Engine:
                 "ok": ok,
                 "text": text[: self.MAX_EVIDENCE_CHARS_PER_FILE],
             })
+            # `ok: false` with no reason is not observability. Five fs.read
+            # failures in one goal said only that they failed; the cause (a
+            # directory passed where a file was wanted) had to be reproduced by
+            # hand afterwards. The reason travels with the event now, bounded.
+            failure = None if ok else str(text)[: self.TOOL_ERROR_EVENT_CHARS]
             self._emit("tool_call_finished", {
                 "goal_id": goal_id, "tool": name, "ok": ok,
-                "elapsed_s": elapsed,
+                "elapsed_s": elapsed, "error": failure,
             })
             self._emit("tool_invoked", {
                 "goal_id": goal_id, "tool": name, "ok": ok,
-                "elapsed_s": elapsed,
+                "elapsed_s": elapsed, "error": failure,
             })
         return out
 

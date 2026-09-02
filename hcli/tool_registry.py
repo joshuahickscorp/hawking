@@ -508,6 +508,16 @@ def _text_limit(value: Any, default: int = 64 * 1024, maximum: int = _MAX_READ_B
 
 def _read_file(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     path = context.resolve_read_path(args.get("path"))
+    if path.is_dir():
+        # NOT FileNotFoundError. Measured: the model listed `hcli`, called
+        # fs.read on it, was told the path did not exist, concluded it had the
+        # path wrong, and spent five retries and eight model calls hunting a
+        # path that was correct all along. An error that misdescribes the
+        # situation cannot be recovered from -- say what it is and what to use.
+        raise IsADirectoryError(
+            f"{path} is a directory, not a file. Use fs.list to see what is "
+            f"inside it, then fs.read one of the files it names."
+        )
     if not path.is_file():
         raise FileNotFoundError(path)
     limit = _text_limit(args.get("max_bytes"))

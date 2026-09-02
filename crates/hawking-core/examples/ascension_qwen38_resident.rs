@@ -29,7 +29,8 @@ use std::time::Instant;
 use hawking_core::json_constrain::{JsonConstraint, JsonVocabIndex};
 #[cfg(target_os = "macos")]
 use hawking_core::model::qwen38_hybrid_decode::{
-    generate_constrained, generate_greedy, load_qwen38_tokenizer, Qwen38HybridDecodeSession,
+    generate_constrained, generate_greedy_reusing, load_qwen38_tokenizer,
+    Qwen38HybridDecodeSession,
     Qwen38HybridWeights,
 };
 
@@ -148,6 +149,9 @@ fn run_resident(args: Args) -> Result<(), String> {
     // Built on the first grammar=json request, not at startup: indexing the
     // tokenizer calls decode_one once per vocab id.
     let mut json_vocab_index: Option<JsonVocabIndex> = None;
+    // Exactly the token sequence currently held in the session's KV and
+    // recurrent state: the last request's prompt followed by what it generated.
+    let mut resident_context: Vec<u32> = Vec::new();
 
     let pid = process::id();
     let mut stdout = io::BufWriter::new(io::stdout().lock());
@@ -201,6 +205,7 @@ fn run_resident(args: Args) -> Result<(), String> {
             &args,
             pid,
             &body,
+            &mut resident_context,
         ) {
             Ok(reply) => reply,
             Err(error) => error_reply(&id, error),
@@ -211,6 +216,12 @@ fn run_resident(args: Args) -> Result<(), String> {
 }
 
 #[cfg(target_os = "macos")]
+/// Length of the longest common prefix. The whole soundness of KV reuse rests
+/// on this being an EXACT token comparison, not a hash or a heuristic.
+fn shared_prefix_len(a: &[u32], b: &[u32]) -> usize {
+    a.iter().zip(b.iter()).take_while(|(x, y)| x == y).count()
+}
+
 fn serve_request(
     session: &mut Qwen38HybridDecodeSession,
     tokenizer: &hawking_core::tokenizer::Tokenizer,
@@ -218,6 +229,7 @@ fn serve_request(
     args: &Args,
     pid: u32,
     body: &Value,
+    resident_context: &mut Vec<u32>,
 ) -> Result<Value, String> {
     let id = request_id(body);
     if id.is_empty() {
@@ -275,10 +287,38 @@ fn serve_request(
         ));
     }
 
-    // The same session is reused, but recurrent and KV state is never shared
-    // across HCLI requests. generate_greedy also resets defensively; keeping
-    // this explicit here makes the resident isolation contract visible.
-    session.reset();
+    // KV and recurrent state ARE shared across requests now, but only when this
+    // request's prompt begins with exactly the tokens already in the session.
+    //
+    // Measured before this: one trivial goal ("count the .py files in hcli")
+    // cost 13 model calls, 635 s, and 20,935 re-prefilled prompt tokens at
+    // ~33 prompt tok/s. Eleven of those calls carried the SAME prefix_key and
+    // still paid full prefill, because the resident reset unconditionally. A
+    // tool loop appends an observation and re-sends; re-reading the other 1,500
+    // tokens each round is the whole latency.
+    //
+    // PURE APPEND ONLY, and the check is exact. DeltaNet state is recurrent --
+    // a running summary with no per-position index -- so it cannot be rewound
+    // or truncated. A prompt that DIVERGES from the resident context, however
+    // late, resets: reusing a diverged prefix would condition generation on
+    // tokens that are not in the prompt, and nothing downstream could see it.
+    let reuse = shared_prefix_len(resident_context, &prompt_ids);
+    // `generate_constrained` still resets internally, so claiming a reuse there
+    // would skip prompt tokens against a cleared state. Constrained requests
+    // take the full prefill until that path learns the same trick.
+    let reuse = if !constrain_json
+        && reuse == resident_context.len()
+        && reuse > 0
+        && reuse < prompt_ids.len()
+    {
+        reuse
+    } else {
+        0
+    };
+    if reuse == 0 {
+        session.reset();
+        resident_context.clear();
+    }
     let started = Instant::now();
     let result = if constrain_json {
         let vocab = json_vocab_index.get_or_insert_with(|| {
@@ -296,10 +336,15 @@ fn serve_request(
             max_new,
         )
     } else {
-        generate_greedy(session, &prompt_ids, max_new)
+        generate_greedy_reusing(session, &prompt_ids, max_new, reuse)
     }
     .map_err(|e| format!("native generation: {e}"))?;
     let wall_ns = started.elapsed().as_nanos() as u64;
+    // What the session now holds: this prompt plus everything it just produced.
+    // Written only on success -- a failed generation leaves the session in an
+    // unknown state, and the next request must reset rather than trust it.
+    resident_context.clear();
+    resident_context.extend_from_slice(&result.tokens);
     let generated = result.new_tokens().to_vec();
     let generated_count = generated.len();
     let split = result.prompt_len.min(result.gpu_ns.len());
@@ -346,6 +391,8 @@ fn serve_request(
         "resident_identity": args.resident_identity,
         "resident_pid": pid,
         "grammar_enforced": constrain_json,
+        "prefix_reused_tokens": reuse,
+        "prefill_tokens_stepped": prompt_ids.len().saturating_sub(reuse),
         "text": text,
         "generated_text": text,
         "new_token_ids": generated,
@@ -439,5 +486,79 @@ fn main() {
     let args = parse_args();
     if let Err(error) = run_resident(args) {
         fail(error);
+    }
+}
+
+#[cfg(test)]
+mod prefix_reuse_tests {
+    use super::shared_prefix_len;
+
+    /// The reuse decision, exactly as `serve_request` makes it.
+    ///
+    /// Kept in one place so the rule can be tested without a 27B model: reuse
+    /// ONLY when the resident context is a proper prefix of the new prompt.
+    fn reuse_for(resident: &[u32], prompt: &[u32], constrain_json: bool) -> usize {
+        let shared = shared_prefix_len(resident, prompt);
+        if !constrain_json && shared == resident.len() && shared > 0 && shared < prompt.len() {
+            shared
+        } else {
+            0
+        }
+    }
+
+    #[test]
+    fn a_pure_append_reuses_everything_already_resident() {
+        // The tool loop: same conversation plus one observation.
+        let resident = [1u32, 2, 3, 4];
+        let prompt = [1u32, 2, 3, 4, 9, 9, 9];
+        assert_eq!(reuse_for(&resident, &prompt, false), 4);
+    }
+
+    #[test]
+    fn divergence_resets_however_late_it_happens() {
+        // The load-bearing one. DeltaNet state is a running summary with no
+        // per-position index: it cannot be rewound. Reusing a diverged prefix
+        // would condition generation on tokens that are not in the prompt, and
+        // nothing downstream could detect it.
+        let resident = [1u32, 2, 3, 4];
+        assert_eq!(reuse_for(&resident, &[1, 2, 3, 5, 6], false), 0, "late divergence");
+        assert_eq!(reuse_for(&resident, &[9, 2, 3, 4, 5], false), 0, "first token differs");
+    }
+
+    #[test]
+    fn a_shorter_prompt_resets_because_state_cannot_be_truncated() {
+        let resident = [1u32, 2, 3, 4, 5, 6];
+        assert_eq!(reuse_for(&resident, &[1, 2, 3], false), 0);
+    }
+
+    #[test]
+    fn an_identical_prompt_resets_so_a_token_is_always_stepped() {
+        // `next` is the argmax the last stepped token produced. With nothing
+        // stepped there is none, so full equality must not claim reuse.
+        let resident = [1u32, 2, 3];
+        assert_eq!(reuse_for(&resident, &[1, 2, 3], false), 0);
+    }
+
+    #[test]
+    fn a_cold_session_resets() {
+        assert_eq!(reuse_for(&[], &[1, 2, 3], false), 0);
+    }
+
+    #[test]
+    fn the_constrained_path_never_claims_reuse() {
+        // generate_constrained still resets internally; claiming reuse there
+        // would skip prompt tokens against a cleared state.
+        let resident = [1u32, 2, 3, 4];
+        let prompt = [1u32, 2, 3, 4, 5];
+        assert_eq!(reuse_for(&resident, &prompt, false), 4);
+        assert_eq!(reuse_for(&resident, &prompt, true), 0);
+    }
+
+    #[test]
+    fn shared_prefix_len_is_an_exact_token_comparison() {
+        assert_eq!(shared_prefix_len(&[1, 2, 3], &[1, 2, 3, 4]), 3);
+        assert_eq!(shared_prefix_len(&[1, 2, 3], &[1, 2]), 2);
+        assert_eq!(shared_prefix_len(&[1], &[2]), 0);
+        assert_eq!(shared_prefix_len(&[], &[1]), 0);
     }
 }

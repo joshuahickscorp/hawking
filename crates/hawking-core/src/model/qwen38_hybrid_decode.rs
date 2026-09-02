@@ -7427,10 +7427,40 @@ mod device {
         prompt: &[u32],
         max_new_tokens: usize,
     ) -> Result<Qwen38GenerateResult> {
+        generate_greedy_reusing(session, prompt, max_new_tokens, 0)
+    }
+
+    /// `generate_greedy`, but the first `reuse` prompt tokens are already
+    /// resident in the session's KV and recurrent state and are NOT re-stepped.
+    ///
+    /// `reuse == 0` resets and prefills everything -- byte-identical to the old
+    /// behaviour, which is what `generate_greedy` still is.
+    ///
+    /// PURE APPEND ONLY. The caller must have verified that the resident
+    /// context is an exact prefix of `prompt`. DeltaNet state is RECURRENT: it
+    /// is a running summary with no per-position index, so it cannot be
+    /// truncated or rewound. Reusing a prefix that diverged would silently
+    /// condition generation on tokens that are not in the prompt.
+    pub fn generate_greedy_reusing(
+        session: &mut Qwen38HybridDecodeSession,
+        prompt: &[u32],
+        max_new_tokens: usize,
+        reuse: usize,
+    ) -> Result<Qwen38GenerateResult> {
         if prompt.is_empty() {
             return Err(Error::Model("qwen38 prompt is empty".into()));
         }
-        session.reset();
+        if reuse >= prompt.len() {
+            // At least one token must be stepped: `next` is the argmax the last
+            // stepped token produced, and with nothing stepped there is none.
+            return Err(Error::Model(format!(
+                "qwen38 reuse {reuse} leaves no prompt token to step (prompt is {})",
+                prompt.len()
+            )));
+        }
+        if reuse == 0 {
+            session.reset();
+        }
         // Every prompt token is stepped once, followed by at most
         // `max_new_tokens` sampled ids. Reserve the complete known envelope so
         // request-result growth never adds realloc/copy work to the measured
@@ -7450,11 +7480,11 @@ mod device {
         let mut next = 0u32;
         let prefill = Instant::now();
         let mut first_step_wall_ns = 0u64;
-        for (i, &token) in prompt.iter().enumerate() {
+        for (i, &token) in prompt.iter().enumerate().skip(reuse) {
             let step_wall = Instant::now();
             let (sampled, timing) = session.step(token)?;
             let step_ns = step_wall.elapsed().as_nanos() as u64;
-            if i == 0 {
+            if i == reuse {
                 first_step_wall_ns = step_ns;
             }
             wall_ns_per_step.push(step_ns);
@@ -8087,7 +8117,7 @@ impl Qwen38GenerateResult {
 #[cfg(target_os = "macos")]
 pub use device::{
     generate_constrained, generate_greedy, generate_greedy_complete_wall, generate_greedy_parallel,
-    generate_greedy_unmeasured,
+    generate_greedy_reusing, generate_greedy_unmeasured,
     measure_shared_weight_fanout, Qwen38HybridDecodeSession, Qwen38HybridWeights,
     Qwen38WeightFanout,
 };
