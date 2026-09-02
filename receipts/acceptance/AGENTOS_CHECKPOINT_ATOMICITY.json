@@ -1,0 +1,68 @@
+{
+  "blocker": null,
+  "command": "python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_checkpoint_atomicity -o addopts=''",
+  "criterion_altered": false,
+  "criterion_quoted": "A crash must recover one coherent generation or the previous coherent generation, never a random hybrid. Use atomic replacement / generation IDs / checksums as appropriate.\n\n## D.3 Persistence authority audit\n\n```text\nFor every durable field record:\n\nFIELD\nWRITER\nCANONICAL STORE\nGENERATION / CHECKSUM\nCHECKPOINT ORDER\nREADER\nRESTART PATH\nRECONCILIATION RULE\nCANARY\n\nAudit at minimum:\nWorkUnit state\nGoal/DAG\nbackend_task_id\nprovider/runtime provenance\ndependencies\nverifier result\nrepair lineage\nretry state\nmutation lease\nsteering\ncontext calibration\nMAX calibration\nbackend health\ncheckpoint generation\nbackground jobs\nVMCP evidence references\nModelLake worker identity\n```\n\nA crash must recover one coherent generation or the previous coherent generation, never a random hybrid. Use atomic replacement/generation IDs/checksums as appropriate.",
+  "criterion_source": {
+    "end_line": 7417,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 7382
+  },
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "AGENTOS_CHECKPOINT_ATOMICITY",
+  "generated_at": "2026-09-02T09:09:22Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
+  "measured": {
+    "atomic_write_json_symbol": "hcli.persist.atomic_write_json",
+    "atomic_write_sigkill": {
+      "kill": {
+        "is_sigkill": true,
+        "returncode": -9,
+        "saw_sentinel": true
+      },
+      "live_has_new": false,
+      "live_has_old": true,
+      "ok": true
+    },
+    "atomic_write_text_symbol": "hcli.persist.atomic_write_text",
+    "between_writes": {
+      "coherent": true,
+      "dag_backend_task_id": "task-GEN1",
+      "dag_dispatched_status": "running",
+      "files_disagree_pre_recovery": true,
+      "kill": {
+        "is_sigkill": true,
+        "returncode": -9,
+        "saw_sentinel": true
+      },
+      "mixture": false,
+      "recovered_backend_task_id": "task-GEN1",
+      "recovered_status": "interrupted",
+      "state_dispatched_status": "pending"
+    },
+    "shared_checkpoint_ids": true,
+    "write_program_checkpoint_invoked": true,
+    "write_program_checkpoint_schema": "hcli.agentos.program_checkpoint.v1"
+  },
+  "notes": [
+    "atomic_write_text: SIGKILL after the tmp is written but before os.replace leaves the live dest at the previous generation (OLD_INTACT), never a hybrid.",
+    "Mission.checkpoint writes DAG first. SIGKILL between the two files leaves them disagreeing; Mission.from_workspace recovers the DAG generation (running/interrupted + backend_task_id), not a zip with the stale pending state.",
+    "Catalog symbol write_program_checkpoint was invoked with emit= to a temp path."
+  ],
+  "output": "atomic_write kill={'pid': 31433, 'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True, 'exited_before_kill': False, 'stderr_tail': ''} live_head='OLD_INTACTAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA' tmp_leftovers=1\nbetween kill={'returncode': -9, 'saw_sentinel': True, 'is_sigkill': True} dag_status=running dag_task=task-GEN1 state_status=pending state_task=None disagree=True\nrecovered status=interrupted task=task-GEN1 idle=pending coherent=True mixture=False\nwrite_program_checkpoint schema=hcli.agentos.program_checkpoint.v1 bytes=99797 path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc-ckpt-7s7yvuxh/program_checkpoint.json\ntwo checkpoints id-probe:1788340162.843306 -> id-probe:1788340162.844728 dag=id-probe:1788340162.844728 ids_ok=True",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbols_invoked": [
+    {
+      "module": "hcli.agentos.checkpoint",
+      "symbol": "write_program_checkpoint",
+      "via": "direct call, emit to temp"
+    },
+    {
+      "module": "hcli.persist",
+      "symbol": "atomic_write_text",
+      "via": "SIGKILL mid-replace"
+    }
+  ],
+  "verdict": "ACCEPTED"
+}

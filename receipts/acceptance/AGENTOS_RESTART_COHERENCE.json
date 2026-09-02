@@ -1,0 +1,67 @@
+{
+  "blocker": null,
+  "command": "python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_restart_coherence -o addopts=''",
+  "criterion_altered": false,
+  "criterion_quoted": "HCLI_RESTART_RESUME / AGENTOS_RESTART_COHERENCE: same mission survives process death. Completed work not replayed; pending work reconciled.\n\n### HCLI_RESTART_RESUME\n**Meaning:** Same mission survives process death.\n**Proof obligation:** Completed work not replayed; pending work reconciled.",
+  "criterion_source": {
+    "end_line": 7664,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 7662
+  },
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "AGENTOS_RESTART_COHERENCE",
+  "generated_at": "2026-09-02T09:09:25Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
+  "measured": {
+    "backend_task_id_survived": true,
+    "completed_not_replayed": true,
+    "completed_still_completed": true,
+    "dead_pid_lock_recoverable": true,
+    "final": {
+      "done1": "completed",
+      "later": "completed",
+      "stuck": "completed"
+    },
+    "later_completed": true,
+    "lock_left_behind": true,
+    "mission_id_survived": true,
+    "phase_one_returncode": -9,
+    "run_recovery_gate_checks": {
+      "benchmark_rejected": true,
+      "malformed_json": true,
+      "network_unavailable": true,
+      "nonsense_model": true,
+      "recovery": true
+    },
+    "run_recovery_gate_status": "PASSED",
+    "stuck_completed_after_resume": true,
+    "stuck_interrupted": true,
+    "stuck_status": "interrupted",
+    "unit_ids_survived": true,
+    "units_executed_after_restart": [
+      "later",
+      "stuck"
+    ]
+  },
+  "notes": [
+    "Phase one is a real child SIGKILLed after checkpoint. Phase two is a fresh interpreter that only sees the workspace.",
+    "Catalog symbol run_recovery_gate was invoked on a disposable fixture (it SIGKILLs only its own host/resident).",
+    "stuck is recovered as INTERRUPTED, not failed: a crash is not a verifier failure."
+  ],
+  "output": "phase one SIGKILL rc=-9 mission=restart-fixed-id\nlock left=True recovered=True rec={'acquired_at': 1788340163.0146172, 'pid': 31483, 'start_time': '1788340162.872559', 'unit_id': 'stuck'}\nfrom_workspace id=restart-fixed-id units=['done1', 'later', 'stuck'] done1=completed stuck=interrupted task=external-grok-task-1\nran=['later', 'stuck'] final={'done1': 'completed', 'later': 'completed', 'stuck': 'completed'}\nrun_recovery_gate status=PASSED checks={'recovery': True, 'malformed_json': True, 'network_unavailable': True, 'benchmark_rejected': True, 'nonsense_model': True}",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbols_invoked": [
+    {
+      "module": "hcli.agentos.recovery",
+      "symbol": "run_recovery_gate",
+      "via": "direct call"
+    },
+    {
+      "module": "hcli.mission",
+      "symbol": "Mission.from_workspace",
+      "via": "phase-two restart"
+    }
+  ],
+  "verdict": "ACCEPTED"
+}

@@ -1,0 +1,150 @@
+{
+  "blocker": "Scheduler.fail does not consult classify_failure (measured: NO_OP_MUTATION still emitted repair 'noop.repair.1'). classify_failure is not on the retry path. D.2 lists 17 class names; FAILURE_KINDS implements 7 tokens. Exact overlap=['INVALID_OUTPUT', 'RATE_LIMIT', 'TRANSIENT_BACKEND']; aliased={'VERIFIER_FAILED': 'VERIFIER_FAILURE', 'IMPLEMENTATION_FAILED': 'DETERMINISTIC_IMPLEMENTATION', 'BACKEND_UNAVAILABLE': 'UNAVAILABLE_DEPENDENCY', 'DEPENDENCY_BLOCKED': 'UNAVAILABLE_DEPENDENCY', 'CONTRACT_IMPOSSIBLE': 'IMPOSSIBLE_CONTRACT'}; unimplemented D.2 classes=['AUTHORIZATION_REQUIRED', 'BENCHMARK_CONTAMINATED', 'CANCELLED', 'DISK_HEADROOM_BLOCK', 'PERSISTENCE_CORRUPT', 'RESOURCE_DENIED', 'STATE_AMBIGUOUS', 'THERMAL_RESOURCE_BLOCK', 'TOOLCHAIN_BLOCKED']. Retries are therefore not classified by the gate's own taxonomy.",
+  "command": "python3 -m pytest tools/acceptance/agentos/test_agentos_acceptance.py::test_retry_classified -o addopts=''",
+  "criterion_altered": false,
+  "criterion_quoted": "Retries are classified by the D.2 failure taxonomy. Transient provider failure may retry; deterministic verifier / non-retryable failures must not become a blind retry loop.\n\n## D.2 Failure taxonomy\n\n- `TRANSIENT_BACKEND`\n- `RATE_LIMIT`\n- `BACKEND_UNAVAILABLE`\n- `VERIFIER_FAILED`\n- `IMPLEMENTATION_FAILED`\n- `INVALID_OUTPUT`\n- `DEPENDENCY_BLOCKED`\n- `CONTRACT_IMPOSSIBLE`\n- `CANCELLED`\n- `RESOURCE_DENIED`\n- `AUTHORIZATION_REQUIRED`\n- `STATE_AMBIGUOUS`\n- `PERSISTENCE_CORRUPT`\n- `TOOLCHAIN_BLOCKED`\n- `BENCHMARK_CONTAMINATED`\n- `THERMAL_RESOURCE_BLOCK`\n- `DISK_HEADROOM_BLOCK`",
+  "criterion_source": {
+    "end_line": 7379,
+    "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 7361
+  },
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "gate": "AGENTOS_RETRY_CLASSIFIED",
+  "generated_at": "2026-09-02T09:09:20Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "hcli_file": "/Users/scammermike/Downloads/hawking/hcli/__init__.py",
+  "measured": {
+    "classified_samples": {
+      "DETERMINISTIC_IMPLEMENTATION": {
+        "counts_toward_budget": false,
+        "kind": "DETERMINISTIC_IMPLEMENTATION",
+        "observed": "NO_OP_MUTATION",
+        "retryable": false
+      },
+      "IMPOSSIBLE_CONTRACT": {
+        "counts_toward_budget": false,
+        "kind": "IMPOSSIBLE_CONTRACT",
+        "observed": "GrokContractError",
+        "retryable": false
+      },
+      "INVALID_OUTPUT": {
+        "counts_toward_budget": true,
+        "kind": "INVALID_OUTPUT",
+        "observed": "invalid JSON",
+        "retryable": true
+      },
+      "RATE_LIMIT": {
+        "counts_toward_budget": true,
+        "kind": "RATE_LIMIT",
+        "observed": "HTTP 429",
+        "retryable": true
+      },
+      "TRANSIENT_BACKEND": {
+        "counts_toward_budget": true,
+        "kind": "TRANSIENT_BACKEND",
+        "observed": "HTTP 503",
+        "retryable": true
+      },
+      "UNAVAILABLE_DEPENDENCY": {
+        "counts_toward_budget": false,
+        "kind": "UNAVAILABLE_DEPENDENCY",
+        "observed": "GrokNotAvailable",
+        "retryable": false
+      },
+      "VERIFIER_FAILURE": {
+        "counts_toward_budget": true,
+        "kind": "VERIFIER_FAILURE",
+        "observed": "TEST_FAILED",
+        "retryable": true
+      }
+    },
+    "classify_failure_module": "/Users/scammermike/Downloads/hawking/hcli/resources.py",
+    "d2_aliased": {
+      "BACKEND_UNAVAILABLE": "UNAVAILABLE_DEPENDENCY",
+      "CONTRACT_IMPOSSIBLE": "IMPOSSIBLE_CONTRACT",
+      "DEPENDENCY_BLOCKED": "UNAVAILABLE_DEPENDENCY",
+      "IMPLEMENTATION_FAILED": "DETERMINISTIC_IMPLEMENTATION",
+      "VERIFIER_FAILED": "VERIFIER_FAILURE"
+    },
+    "d2_exact_overlap": [
+      "INVALID_OUTPUT",
+      "RATE_LIMIT",
+      "TRANSIENT_BACKEND"
+    ],
+    "d2_missing": [
+      "AUTHORIZATION_REQUIRED",
+      "BENCHMARK_CONTAMINATED",
+      "CANCELLED",
+      "DISK_HEADROOM_BLOCK",
+      "PERSISTENCE_CORRUPT",
+      "RESOURCE_DENIED",
+      "STATE_AMBIGUOUS",
+      "THERMAL_RESOURCE_BLOCK",
+      "TOOLCHAIN_BLOCKED"
+    ],
+    "d2_taxonomy": [
+      "TRANSIENT_BACKEND",
+      "RATE_LIMIT",
+      "BACKEND_UNAVAILABLE",
+      "VERIFIER_FAILED",
+      "IMPLEMENTATION_FAILED",
+      "INVALID_OUTPUT",
+      "DEPENDENCY_BLOCKED",
+      "CONTRACT_IMPOSSIBLE",
+      "CANCELLED",
+      "RESOURCE_DENIED",
+      "AUTHORIZATION_REQUIRED",
+      "STATE_AMBIGUOUS",
+      "PERSISTENCE_CORRUPT",
+      "TOOLCHAIN_BLOCKED",
+      "BENCHMARK_CONTAMINATED",
+      "THERMAL_RESOURCE_BLOCK",
+      "DISK_HEADROOM_BLOCK"
+    ],
+    "failure_kinds_implemented": [
+      "TRANSIENT_BACKEND",
+      "VERIFIER_FAILURE",
+      "DETERMINISTIC_IMPLEMENTATION",
+      "INVALID_OUTPUT",
+      "RATE_LIMIT",
+      "UNAVAILABLE_DEPENDENCY",
+      "IMPOSSIBLE_CONTRACT"
+    ],
+    "non_retryable": [
+      "ContextPreflightError",
+      "EMPTY_COMMAND",
+      "GrokContractError",
+      "GrokNotAvailable",
+      "NO_OP_MUTATION",
+      "VACUOUS_COMMAND"
+    ],
+    "non_retryable_still_emits_repair": "noop.repair.1",
+    "record_fingerprint_invoked_via_complete": true,
+    "record_fingerprint_raised_no_progress": true,
+    "scheduler_fail_consults_classify_failure": false,
+    "scheduler_module": "/Users/scammermike/Downloads/hawking/hcli/scheduler.py"
+  },
+  "notes": [
+    "Catalog symbol is _record_fingerprint (progress-fingerprint circuit), which is not the D.2 taxonomy. Both were invoked. Acceptance follows the roadmap span, not the catalog symbol mismatch."
+  ],
+  "output": "classify TRANSIENT_BACKEND -> {'kind': 'TRANSIENT_BACKEND', 'retryable': True, 'observed': 'HTTP 503', 'counts_toward_budget': True}\nclassify RATE_LIMIT -> {'kind': 'RATE_LIMIT', 'retryable': True, 'observed': 'HTTP 429', 'counts_toward_budget': True}\nclassify VERIFIER_FAILURE -> {'kind': 'VERIFIER_FAILURE', 'retryable': True, 'observed': 'TEST_FAILED', 'counts_toward_budget': True}\nclassify DETERMINISTIC_IMPLEMENTATION -> {'kind': 'DETERMINISTIC_IMPLEMENTATION', 'retryable': False, 'observed': 'NO_OP_MUTATION', 'counts_toward_budget': False}\nclassify INVALID_OUTPUT -> {'kind': 'INVALID_OUTPUT', 'retryable': True, 'observed': 'invalid JSON', 'counts_toward_budget': True}\nclassify UNAVAILABLE_DEPENDENCY -> {'kind': 'UNAVAILABLE_DEPENDENCY', 'retryable': False, 'observed': 'GrokNotAvailable', 'counts_toward_budget': False}\nclassify IMPOSSIBLE_CONTRACT -> {'kind': 'IMPOSSIBLE_CONTRACT', 'retryable': False, 'observed': 'GrokContractError', 'counts_toward_budget': False}\nScheduler.fail(NO_OP_MUTATION) consults classifier=False emitted=noop.repair.1\n_record_fingerprint via complete raised NO_PROGRESS=True",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbols_invoked": [
+    {
+      "module": "hcli.scheduler",
+      "symbol": "_record_fingerprint",
+      "via": "Scheduler.complete"
+    },
+    {
+      "module": "hcli.resources",
+      "symbol": "classify_failure",
+      "via": "direct call of the D.2 classifier"
+    },
+    {
+      "module": "hcli.scheduler",
+      "symbol": "Scheduler.fail",
+      "via": "retry path that should consult the classifier"
+    }
+  ],
+  "verdict": "BLOCKED"
+}
