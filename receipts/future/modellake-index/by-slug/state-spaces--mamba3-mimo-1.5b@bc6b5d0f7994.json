@@ -58,13 +58,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "READY_COLD",
- "lifecycle_derived_from": "specimen directory exists under the configured specimens root",
+ "lifecycle_derived_from": "lake manifest records resolved_sha and the specimen directory exists",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 2994284299,
  "n_files": 4,
  "n_shards": 1,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
@@ -79,7 +79,7 @@
    "state-heavy architecture"
   ]
  },
- "scanned_at": "2026-09-02T09:13:33Z",
+ "scanned_at": "2026-09-02T18:58:00Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

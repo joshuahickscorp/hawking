@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "embed",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -31,7 +31,7 @@
     "n_layers": 27,
     "n_tensors": 177,
     "organ": "gqa_attention",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.32,
@@ -41,7 +41,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "lm_head",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -52,7 +52,7 @@
     "n_layers": 24,
     "n_tensors": 24,
     "organ": "mlp_down",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -63,7 +63,7 @@
     "n_layers": 24,
     "n_tensors": 48,
     "organ": "mlp_gate_up",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -74,7 +74,7 @@
     "n_layers": 27,
     "n_tensors": 54,
     "organ": "recurrent_state",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -85,7 +85,7 @@
     "n_layers": 24,
     "n_tensors": 50,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -96,7 +96,7 @@
     "n_layers": 27,
     "n_tensors": 301,
     "organ": "vision_encoder",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -267,13 +267,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 8992155310,
  "n_files": 16,
  "n_shards": 2,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
@@ -287,7 +287,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T09:13:30Z",
+ "scanned_at": "2026-09-02T18:57:29Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

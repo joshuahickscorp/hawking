@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "embed",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -31,7 +31,7 @@
     "n_layers": 36,
     "n_tensors": 144,
     "organ": "gqa_attention",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -42,7 +42,7 @@
     "n_layers": 36,
     "n_tensors": 36,
     "organ": "mlp_down",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -53,7 +53,7 @@
     "n_layers": 36,
     "n_tensors": 72,
     "organ": "mlp_gate_up",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -64,7 +64,7 @@
     "n_layers": 36,
     "n_tensors": 145,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -205,13 +205,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 8060917568,
  "n_files": 13,
  "n_shards": 3,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
@@ -226,7 +226,7 @@
    "long-context"
   ]
  },
- "scanned_at": "2026-09-02T09:13:30Z",
+ "scanned_at": "2026-09-02T18:57:29Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "embed",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -31,7 +31,7 @@
     "n_layers": 13,
     "n_tensors": 52,
     "organ": "gqa_attention",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.32,
@@ -41,7 +41,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "lm_head",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.4,
@@ -52,7 +52,7 @@
     "n_layers": 0,
     "n_tensors": 5,
     "organ": "mm_projector",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -63,7 +63,7 @@
     "n_layers": 48,
     "n_tensors": 98,
     "organ": "moe_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -74,7 +74,7 @@
     "n_layers": 48,
     "n_tensors": 98,
     "organ": "moe_router",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -85,7 +85,7 @@
     "n_layers": 36,
     "n_tensors": 325,
     "organ": "recurrent_state",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -96,7 +96,7 @@
     "n_layers": 48,
     "n_tensors": 153,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -107,7 +107,7 @@
     "n_layers": 48,
     "n_tensors": 147,
     "organ": "shared_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -118,7 +118,7 @@
     "n_layers": 27,
     "n_tensors": 327,
     "organ": "vision_encoder",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -1575,7 +1575,7 @@
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": 360053432320,
+ "manifest_bytes": 360023286454,
  "n_files": 144,
  "n_shards": 131,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
@@ -1589,7 +1589,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T09:13:30Z",
+ "scanned_at": "2026-09-02T18:57:30Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "UNSEALED",
  "shards": {

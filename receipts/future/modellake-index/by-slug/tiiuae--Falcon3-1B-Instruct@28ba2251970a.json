@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "embed",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -31,7 +31,7 @@
     "n_layers": 18,
     "n_tensors": 72,
     "organ": "gqa_attention",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.32,
@@ -41,7 +41,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "lm_head",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -52,7 +52,7 @@
     "n_layers": 18,
     "n_tensors": 18,
     "organ": "mlp_down",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -63,7 +63,7 @@
     "n_layers": 18,
     "n_tensors": 36,
     "organ": "mlp_gate_up",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -74,7 +74,7 @@
     "n_layers": 18,
     "n_tensors": 37,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -165,13 +165,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 3348992577,
  "n_files": 8,
  "n_shards": 1,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon3-1B-Instruct@28ba2251970a",
@@ -185,7 +185,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T09:13:33Z",
+ "scanned_at": "2026-09-02T18:58:01Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

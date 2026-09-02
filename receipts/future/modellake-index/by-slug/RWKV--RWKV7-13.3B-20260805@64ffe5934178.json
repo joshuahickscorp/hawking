@@ -21,7 +21,7 @@
     "n_layers": 61,
     "n_tensors": 61,
     "organ": "lm_head",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -252,13 +252,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 26542898184,
  "n_files": 22,
  "n_shards": 6,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/RWKV--RWKV7-13.3B-20260805@64ffe5934178",
@@ -273,7 +273,7 @@
    "state-heavy architecture"
   ]
  },
- "scanned_at": "2026-09-02T09:13:30Z",
+ "scanned_at": "2026-09-02T18:57:30Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

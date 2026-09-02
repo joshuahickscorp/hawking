@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "lm_head",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.894,
@@ -31,7 +31,7 @@
     "n_layers": 3,
     "n_tensors": 122,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -132,13 +132,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 3135902327,
  "n_files": 9,
  "n_shards": 1,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--flan-t5-large@0613663d0d48",
@@ -152,7 +152,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T09:13:31Z",
+ "scanned_at": "2026-09-02T18:57:51Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

@@ -21,7 +21,7 @@
     "n_layers": 28,
     "n_tensors": 58,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -102,13 +102,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 1585710451,
  "n_files": 7,
  "n_shards": 1,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/answerdotai--ModernBERT-large@45bb4654a4d5",
@@ -122,7 +122,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T09:13:30Z",
+ "scanned_at": "2026-09-02T18:57:41Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

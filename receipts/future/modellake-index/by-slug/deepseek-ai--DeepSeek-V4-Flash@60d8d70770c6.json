@@ -21,7 +21,7 @@
     "n_layers": 0,
     "n_tensors": 67584,
     "organ": "moe_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.6,
@@ -32,7 +32,7 @@
     "n_layers": 0,
     "n_tensors": 106,
     "organ": "moe_router",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.6,
@@ -43,7 +43,7 @@
     "n_layers": 0,
     "n_tensors": 242,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.6,
@@ -54,7 +54,7 @@
     "n_layers": 0,
     "n_tensors": 264,
     "organ": "shared_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -801,7 +801,7 @@
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": 159630491648,
+ "manifest_bytes": 159630041626,
  "n_files": 73,
  "n_shards": 46,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
@@ -817,7 +817,7 @@
    "long-context"
   ]
  },
- "scanned_at": "2026-09-02T09:13:31Z",
+ "scanned_at": "2026-09-02T18:57:50Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "UNSEALED",
  "shards": {

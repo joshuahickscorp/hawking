@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "embed",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -31,7 +31,7 @@
     "n_layers": 27,
     "n_tensors": 135,
     "organ": "latent_attention",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.32,
@@ -41,7 +41,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "lm_head",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.552,
@@ -51,7 +51,7 @@
     "n_layers": 1,
     "n_tensors": 1,
     "organ": "mlp_down",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.554,
@@ -62,7 +62,7 @@
     "n_layers": 1,
     "n_tensors": 2,
     "organ": "mlp_gate_up",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.4,
@@ -73,7 +73,7 @@
     "n_layers": 0,
     "n_tensors": 5,
     "organ": "mm_projector",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -84,7 +84,7 @@
     "n_layers": 26,
     "n_tensors": 4992,
     "organ": "moe_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -95,7 +95,7 @@
     "n_layers": 26,
     "n_tensors": 26,
     "organ": "moe_router",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -106,7 +106,7 @@
     "n_layers": 27,
     "n_tensors": 57,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -117,7 +117,7 @@
     "n_layers": 26,
     "n_tensors": 78,
     "organ": "shared_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -128,7 +128,7 @@
     "n_layers": 27,
     "n_tensors": 328,
     "organ": "vision_encoder",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -395,7 +395,7 @@
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": 32823230464,
+ "manifest_bytes": 32823063084,
  "n_files": 25,
  "n_shards": 7,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
@@ -411,7 +411,7 @@
    "alternative tokenizer"
   ]
  },
- "scanned_at": "2026-09-02T09:13:33Z",
+ "scanned_at": "2026-09-02T18:58:00Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "UNSEALED",
  "shards": {

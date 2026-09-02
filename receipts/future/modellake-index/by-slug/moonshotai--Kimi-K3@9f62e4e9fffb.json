@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "embed",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -31,7 +31,7 @@
     "n_layers": 93,
     "n_tensors": 420,
     "organ": "latent_attention",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.32,
@@ -41,7 +41,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "lm_head",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.552,
@@ -51,7 +51,7 @@
     "n_layers": 1,
     "n_tensors": 1,
     "organ": "mlp_down",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.554,
@@ -62,7 +62,7 @@
     "n_layers": 1,
     "n_tensors": 2,
     "organ": "mlp_gate_up",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.34,
@@ -73,7 +73,7 @@
     "n_layers": 0,
     "n_tensors": 2,
     "organ": "mm_projector",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -84,7 +84,7 @@
     "n_layers": 92,
     "n_tensors": 494592,
     "organ": "moe_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -95,7 +95,7 @@
     "n_layers": 92,
     "n_tensors": 92,
     "organ": "moe_router",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -106,7 +106,7 @@
     "n_layers": 69,
     "n_tensors": 345,
     "organ": "recurrent_state",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -117,7 +117,7 @@
     "n_layers": 93,
     "n_tensors": 561,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -128,7 +128,7 @@
     "n_layers": 92,
     "n_tensors": 276,
     "organ": "shared_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -139,7 +139,7 @@
     "n_layers": 27,
     "n_tensors": 164,
     "organ": "vision_encoder",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -1351,7 +1351,7 @@
    "alternative tokenizer"
   ]
  },
- "scanned_at": "2026-09-02T09:13:33Z",
+ "scanned_at": "2026-09-02T18:57:59Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

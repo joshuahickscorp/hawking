@@ -20,7 +20,7 @@
     "n_layers": 0,
     "n_tensors": 1,
     "organ": "embed",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -31,7 +31,7 @@
     "n_layers": 32,
     "n_tensors": 241,
     "organ": "gqa_attention",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -42,7 +42,7 @@
     "n_layers": 32,
     "n_tensors": 160,
     "organ": "mlp_down",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -53,7 +53,7 @@
     "n_layers": 32,
     "n_tensors": 160,
     "organ": "mlp_gate_up",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -64,7 +64,7 @@
     "n_layers": 27,
     "n_tensors": 56,
     "organ": "recurrent_state",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -75,7 +75,7 @@
     "n_layers": 32,
     "n_tensors": 163,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -636,13 +636,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 12878588835,
  "n_files": 55,
  "n_shards": 3,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/microsoft--Phi-4-multimodal-instruct@93f923e1a772",
@@ -657,7 +657,7 @@
    "long-context"
   ]
  },
- "scanned_at": "2026-09-02T09:13:31Z",
+ "scanned_at": "2026-09-02T18:57:53Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

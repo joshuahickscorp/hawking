@@ -21,7 +21,7 @@
     "n_layers": 40,
     "n_tensors": 40,
     "organ": "moe_router",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -32,7 +32,7 @@
     "n_layers": 42,
     "n_tensors": 220,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.98,
@@ -43,7 +43,7 @@
     "n_layers": 40,
     "n_tensors": 80,
     "organ": "shared_expert",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    },
    {
     "confidence": 0.44,
@@ -54,7 +54,7 @@
     "n_layers": 0,
     "n_tensors": 7,
     "organ": "vision_encoder",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -495,13 +495,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 531944668170,
  "n_files": 43,
  "n_shards": 33,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/thinkingmachines--Inkling-Small@8cc5877b44d3",
@@ -516,7 +516,7 @@
    "alternative tokenizer"
   ]
  },
- "scanned_at": "2026-09-02T09:13:33Z",
+ "scanned_at": "2026-09-02T18:58:00Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

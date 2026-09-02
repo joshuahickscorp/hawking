@@ -21,7 +21,7 @@
     "n_layers": 50,
     "n_tensors": 200,
     "organ": "gqa_attention",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -32,7 +32,7 @@
     "n_layers": 50,
     "n_tensors": 50,
     "organ": "mlp_down",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -43,7 +43,7 @@
     "n_layers": 50,
     "n_tensors": 50,
     "organ": "mlp_gate_up",
-    "status": "NOVEL"
+    "status": "KNOWN"
    },
    {
     "confidence": 0.98,
@@ -54,7 +54,7 @@
     "n_layers": 50,
     "n_tensors": 100,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -105,13 +105,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 1995416592,
  "n_files": 4,
  "n_shards": 1,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/google--timesfm-2.0-500m-pytorch@dc2443792ce5",
@@ -125,7 +125,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T09:13:31Z",
+ "scanned_at": "2026-09-02T18:57:51Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {

@@ -21,7 +21,7 @@
     "n_layers": 0,
     "n_tensors": 2,
     "organ": "rmsnorm",
-    "status": "NOVEL"
+    "status": "DECLARED_UNMEASURED"
    }
   ],
   "strength": "ORGAN_FINGERPRINT",
@@ -102,13 +102,13 @@
    }
   }
  ],
- "has_lake_manifest": false,
+ "has_lake_manifest": true,
  "has_watch_manifest": true,
  "lifecycle": "CENSUSED",
  "lifecycle_derived_from": "sealed source plus an architecture fingerprint",
  "loaded_weights": false,
  "location": "specimens",
- "manifest_bytes": null,
+ "manifest_bytes": 4138867523,
  "n_files": 7,
  "n_shards": 1,
  "path": "/Volumes/corpdrive/hawking-modellake/specimens/facebook--vjepa2-vitg-fpc64-256@875c192b7b70",
@@ -122,7 +122,7 @@
    "dense decoder"
   ]
  },
- "scanned_at": "2026-09-02T09:13:31Z",
+ "scanned_at": "2026-09-02T18:57:51Z",
  "schema": "hawking.modellake.index.specimen.v1",
  "seal_status": "SEALED",
  "shards": {
