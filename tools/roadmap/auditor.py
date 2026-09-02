@@ -26,6 +26,8 @@ Evidence tier is STATIC: this auditor does not take hardware measurements.
 """
 from __future__ import annotations
 
+import fcntl
+import hashlib
 import json
 from collections import Counter
 from datetime import datetime, timezone
@@ -34,7 +36,14 @@ from typing import Any, Iterable
 
 from tools.roadmap import EVIDENCE_TIER, GRAPH_REL, SCHEMA, VERSION
 from tools.roadmap import catalog
-from tools.roadmap.gitfs import REPO, SourceView, blob_text, head_commit
+from tools.roadmap.gitfs import (
+    REPO,
+    SourceView,
+    blob_text,
+    head_commit,
+    head_paths,
+    prefetch_blobs,
+)
 from tools.roadmap.hardware import probe, probe_all
 from tools.roadmap.parse import load_existing_state, parse_roadmap, span
 from tools.roadmap import index_client
@@ -312,29 +321,40 @@ def citation_bound_violations(doc: dict[str, Any], view: SourceView | None = Non
     return out
 
 
+_LS_FILES_CACHE: dict[str, list[str]] = {}
+
+
+def _git_ls_files(pattern: str) -> list[str]:
+    cached = _LS_FILES_CACHE.get(pattern)
+    if cached is not None:
+        return cached
+    import subprocess
+
+    cp = subprocess.run(
+        ["git", "-C", str(REPO), "ls-files", "--", pattern],
+        capture_output=True,
+        text=True,
+        check=False,
+    )
+    rows = [line for line in cp.stdout.splitlines() if line]
+    _LS_FILES_CACHE[pattern] = rows
+    return rows
+
+
 def _receipt_hits(globs: list[str], view: SourceView) -> list[str]:
     hits: list[str] = []
+    from glob import glob as _glob
+
     for pattern in globs:
         # glob against the working tree AND git ls-files via Python pathlib on REPO
         # plus git ls-files. Missing-from-disk receipts still count as citations,
         # never as BUILT evidence.
-        from glob import glob as _glob
-
         disk = [p for p in _glob(str(REPO / pattern), recursive=True)]
         for p in disk:
             rel = str(Path(p).resolve().relative_to(REPO)) if Path(p).exists() else p
             hits.append(Path(rel).as_posix() if Path(rel).is_absolute() is False else str(Path(p).relative_to(REPO)))
-        # git-tracked matches
-        import subprocess
-
-        cp = subprocess.run(
-            ["git", "-C", str(REPO), "ls-files", pattern],
-            capture_output=True,
-            text=True,
-            check=False,
-        )
-        for line in cp.stdout.splitlines():
-            if line and line not in hits:
+        for line in _git_ls_files(pattern):
+            if line not in hits:
                 hits.append(line)
     return sorted(set(hits))
 
@@ -625,14 +645,7 @@ def _credit_disk_truth(view: SourceView) -> list[dict[str, Any]]:
 
 
 def _verify_absent_claims(view: SourceView) -> list[dict[str, Any]]:
-    import subprocess
-
-    ls = subprocess.run(
-        ["git", "-C", str(REPO), "ls-tree", "-r", "--name-only", "HEAD"],
-        capture_output=True,
-        text=True,
-        check=True,
-    ).stdout.splitlines()
+    ls = list(head_paths())
     out = []
     for name, meaning in catalog.ABSENT_CLAIMS:
         hits = [
@@ -686,6 +699,18 @@ def _verify_absent_claims(view: SourceView) -> list[dict[str, Any]]:
     return out
 
 
+_AUDIT_MEMO: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+
+def _audit_cache_key(include_assemble: bool, roadmap: Path | None) -> tuple[Any, ...]:
+    return (
+        head_commit(),
+        include_assemble,
+        str(roadmap) if roadmap else "",
+        index_client.code_digest(),
+    )
+
+
 def audit(
     *,
     view: SourceView | None = None,
@@ -693,11 +718,49 @@ def audit(
     roadmap: Path | None = None,
 ) -> dict[str, Any]:
     view = view or SourceView()
+    if not view.overlay:
+        key = _audit_cache_key(include_assemble, roadmap)
+        memo = _AUDIT_MEMO.get(key)
+        if memo is not None:
+            return memo
+        digest = hashlib.sha256(repr(key).encode()).hexdigest()[:24]
+        disk = index_client.artifact_session_dir() / f"graph-{digest}.json"
+        lockp = disk.with_suffix(".lock")
+        with open(lockp, "a+") as lf:
+            fcntl.flock(lf, fcntl.LOCK_EX)
+            memo = _AUDIT_MEMO.get(key)
+            if memo is None and disk.is_file():
+                memo = json.loads(disk.read_text())
+                _AUDIT_MEMO[key] = memo
+            if memo is not None:
+                return memo
+            doc = _audit_uncached(
+                view=view, include_assemble=include_assemble, roadmap=roadmap
+            )
+            tmp = disk.with_suffix(".tmp")
+            tmp.write_text(json.dumps(doc))
+            tmp.replace(disk)
+            _AUDIT_MEMO[key] = doc
+            return doc
+    return _audit_uncached(view=view, include_assemble=include_assemble, roadmap=roadmap)
+
+
+def _audit_uncached(
+    *,
+    view: SourceView,
+    include_assemble: bool,
+    roadmap: Path | None,
+) -> dict[str, Any]:
     parsed = parse_roadmap(roadmap)
     road_file = parsed["roadmap_path"]
     hw_cache = probe_all()
     existing = load_existing_state()
     index_meta = None
+    prefetch_rels: list[str] = list(catalog.DISK_TRUTH_MODULES)
+    for table in (catalog.GATES, catalog.GENES):
+        for probe in table.values():
+            prefetch_rels.extend(probe.get("code_paths") or [])
+    view.prefetch(prefetch_rels)
     try:
         dump = index_client.warmup(view)
         if dump:
@@ -748,6 +811,13 @@ def audit(
         )
 
     emit_commit = (index_meta or {}).get("commit") or head_commit()
+    cite_rels: list[str] = []
+    for entry in list(gates.values()) + list(genes.values()):
+        for ref in _iter_citation_refs(entry):
+            rel = ref.get("file")
+            if rel and not str(rel).startswith("/"):
+                cite_rels.append(str(rel))
+    prefetch_blobs(emit_commit, cite_rels)
     bound_violations: list[str] = []
     for entry in list(gates.values()) + list(genes.values()):
         bound_violations.extend(_bind_entry_citations(entry, view, emit_commit))

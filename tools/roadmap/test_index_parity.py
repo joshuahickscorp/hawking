@@ -92,9 +92,10 @@ def test_index_and_ast_agree_on_synthetic_overlay(overlay_view):
     try:
         ast_look = reach.scan_probe_ast(overlay_view, probe, unique_paths=unique)
         os.environ["ROADMAP_REACH_BACKEND"] = "index"
-        # Force a dump of just the overlay by invoking the binary without git-head
-        # via load_python_facts (--git-head still sees overlay).
+        # Overlay-only dump: this test's corpus is the three synthetic files,
+        # not a 20s HEAD walk. The rust extractor still runs on that corpus.
         overlay_view._python_facts = None  # type: ignore[attr-defined]
+        index_client.load_python_facts(overlay_view, git_head=False)
         idx_look = reach.scan_probe(overlay_view, probe, unique_paths=unique)
     finally:
         os.environ.pop("ROADMAP_REACH_BACKEND", None)

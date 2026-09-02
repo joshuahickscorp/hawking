@@ -16,10 +16,13 @@ parsed from.
 """
 from __future__ import annotations
 
+import fcntl
+import hashlib
 import json
 import os
 import shutil
 import subprocess
+import tempfile
 from pathlib import Path
 from typing import Any
 
@@ -111,24 +114,74 @@ def catalog_watch_names() -> list[str]:
     return sorted(n for n in names if n)
 
 
-def load_python_facts(view: SourceView) -> dict[str, Any]:
-    """Run the rust dump against this view. Result is cached on the view."""
-    cached = getattr(view, "_python_facts", None)
-    if cached is not None:
-        return cached
+_FACTS_MEMO: dict[tuple[Any, ...], dict[str, Any]] = {}
+
+
+def code_digest() -> str:
+    """Hash of tools/roadmap production modules so a mutated auditor busts caches."""
+    h = hashlib.sha256()
+    root = Path(__file__).resolve().parent
+    for p in sorted(root.glob("*.py")):
+        if p.name.startswith("test_") or p.name == "conftest.py":
+            continue
+        h.update(p.name.encode())
+        h.update(b"\0")
+        h.update(p.read_bytes())
+        h.update(b"\0")
+    return h.hexdigest()[:16]
+
+
+def artifact_session_dir() -> Path:
+    sid = os.environ.get("ROADMAP_ARTIFACT_SESSION")
+    if not sid:
+        sid = str(os.getpid())
+        os.environ["ROADMAP_ARTIFACT_SESSION"] = sid
+    d = Path(tempfile.gettempdir()) / f"hawking-roadmap-art-{sid}"
+    d.mkdir(parents=True, exist_ok=True)
+    return d
+
+
+def _overlay_fingerprint(view: SourceView) -> str:
+    if not view.overlay:
+        return "-"
+    h = hashlib.sha256()
+    for path in sorted(view.overlay):
+        h.update(path.encode())
+        h.update(b"\0")
+        h.update(view.overlay[path].encode("utf-8", errors="replace"))
+        h.update(b"\0")
+    return h.hexdigest()[:16]
+
+
+def _facts_key(view: SourceView, git_head: bool) -> tuple[Any, ...]:
+    commit = head_commit() if git_head else None
+    return (commit, _overlay_fingerprint(view), git_head, code_digest())
+
+
+def _wrap_dump(dump: dict[str, Any], bin_path: Path, commit: str | None) -> dict[str, Any]:
+    raw_files = dump.get("files") or []
+    if isinstance(raw_files, dict):
+        by_path = {str(k): v for k, v in raw_files.items() if k}
+    else:
+        by_path = {f["path"]: f for f in raw_files if f.get("path")}
+    return {
+        "schema": dump["schema"],
+        "commit": dump.get("commit") or commit,
+        "files": by_path,
+        "file_count": len(by_path),
+        "bin": str(bin_path),
+    }
+
+
+def _invoke_dump(view: SourceView, *, git_head: bool) -> dict[str, Any]:
     bin_path = find_index_bin()
     if bin_path is None:
         raise FileNotFoundError("hawking-index-query binary not found")
-    commit = head_commit()
-    cmd = [
-        str(bin_path),
-        "python-facts",
-        "--git-head",
-        "--commit",
-        commit,
-        "--repo",
-        str(REPO),
-    ]
+    commit = head_commit() if git_head else None
+    cmd = [str(bin_path), "python-facts"]
+    if git_head:
+        assert commit is not None
+        cmd.extend(["--git-head", "--commit", commit, "--repo", str(REPO)])
     for name in catalog_watch_names():
         cmd.extend(["--watch", name])
     overlay = _overlay_ndjson(view)
@@ -149,17 +202,64 @@ def load_python_facts(view: SourceView) -> dict[str, Any]:
             f"python-facts schema {dump.get('schema')!r} != {SCHEMA}; "
             "r1/r2 JSON surfaces drifted"
         )
-    dump_commit = dump.get("commit") or commit
-    by_path = {f["path"]: f for f in dump.get("files") or [] if f.get("path")}
-    wrapped = {
-        "schema": dump["schema"],
-        "commit": dump_commit,
-        "files": by_path,
-        "file_count": len(by_path),
-        "bin": str(bin_path),
+    return _wrap_dump(dump, bin_path, commit)
+
+
+def _merge_head_and_overlay(
+    head: dict[str, Any], overlay: dict[str, Any], commit: str
+) -> dict[str, Any]:
+    files = dict(head["files"])
+    files.update(overlay["files"])
+    return {
+        "schema": head["schema"],
+        "commit": commit,
+        "files": files,
+        "file_count": len(files),
+        "bin": head.get("bin") or overlay.get("bin"),
     }
-    view._python_facts = wrapped  # type: ignore[attr-defined]
-    return wrapped
+
+
+def load_python_facts(view: SourceView, *, git_head: bool = True) -> dict[str, Any]:
+    """Run the rust dump against this view. Result is cached on the view,
+    in-process, and on disk for this pytest session (xdist workers share it).
+
+    Overlay views reuse a cached HEAD dump and dump only the overlay files
+    (equivalent to `--git-head` plus overlay NDJSON: overlay paths win and
+    do not inherit the commit stamp).
+    """
+    cached = getattr(view, "_python_facts", None)
+    if cached is not None:
+        return cached
+    key = _facts_key(view, git_head)
+    memo = _FACTS_MEMO.get(key)
+    if memo is not None:
+        view._python_facts = memo  # type: ignore[attr-defined]
+        return memo
+
+    digest = hashlib.sha256(repr(key).encode()).hexdigest()[:24]
+    disk = artifact_session_dir() / f"facts-{digest}.json"
+    lockp = disk.with_suffix(".lock")
+    with open(lockp, "a+") as lf:
+        fcntl.flock(lf, fcntl.LOCK_EX)
+        memo = _FACTS_MEMO.get(key)
+        if memo is None and disk.is_file():
+            loaded = json.loads(disk.read_text())
+            memo = _wrap_dump(loaded, Path(str(loaded.get("bin") or "")), loaded.get("commit"))
+            _FACTS_MEMO[key] = memo
+        if memo is None:
+            if git_head and view.overlay:
+                head_view = SourceView()
+                head = load_python_facts(head_view, git_head=True)
+                overlay = _invoke_dump(view, git_head=False)
+                memo = _merge_head_and_overlay(head, overlay, head_commit())
+            else:
+                memo = _invoke_dump(view, git_head=git_head)
+            tmp = disk.with_suffix(".tmp")
+            tmp.write_text(json.dumps(memo))
+            tmp.replace(disk)
+            _FACTS_MEMO[key] = memo
+    view._python_facts = memo  # type: ignore[attr-defined]
+    return memo
 
 
 def facts_for(view: SourceView) -> dict[str, Any] | None:

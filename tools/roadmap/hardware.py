@@ -33,14 +33,25 @@ WAKE_CONDITIONS: dict[str, str] = {
 }
 
 
+_CMD_CACHE: dict[tuple[str, ...], str] = {}
+_PROBE_ALL: dict[str, dict[str, Any]] | None = None
+
+
 def _run(argv: list[str], timeout: float = 8.0) -> str:
+    key = tuple(argv)
+    cached = _CMD_CACHE.get(key)
+    if cached is not None:
+        return cached
     try:
         cp = subprocess.run(
             argv, capture_output=True, text=True, timeout=timeout, check=False
         )
     except (OSError, subprocess.TimeoutExpired):
-        return ""
-    return (cp.stdout or "") + "\n" + (cp.stderr or "")
+        result = ""
+    else:
+        result = (cp.stdout or "") + "\n" + (cp.stderr or "")
+    _CMD_CACHE[key] = result
+    return result
 
 
 def _sysctl(key: str) -> str:
@@ -129,7 +140,10 @@ def probe(wake_id: str) -> dict[str, Any]:
 
 
 def probe_all() -> dict[str, dict[str, Any]]:
-    return {name: probe(name) for name in WAKE_CONDITIONS}
+    global _PROBE_ALL
+    if _PROBE_ALL is None:
+        _PROBE_ALL = {name: probe(name) for name in WAKE_CONDITIONS}
+    return _PROBE_ALL
 
 
 def blocked_hardware_wakes(gates: dict[str, Any]) -> list[tuple[str, str]]:

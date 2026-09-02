@@ -20,12 +20,12 @@ from tools.roadmap.__main__ import mutation_check
 ROADMAP = Path("/Users/scammermike/Downloads/H-ROADMAP.md")
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def parsed():
     return parse_roadmap(ROADMAP)
 
 
-@pytest.fixture(scope="module")
+@pytest.fixture(scope="session")
 def graph():
     return audit(include_assemble=False)
 
@@ -152,8 +152,8 @@ def test_graph_keeps_71_gates_25_genes_with_source_spans(graph):
         assert isinstance(span.get("end_line"), int) and span["end_line"] >= span["start_line"]
 
 
-def test_mutation_downgrades_a_built_gate():
-    result = mutation_check()
+def test_mutation_downgrades_a_built_gate(graph):
+    result = mutation_check(before=graph)
     assert result["before_status"] in {"BUILT", "WIRED"}
     assert result["after_status"] not in {"BUILT", "WIRED"}, (
         f"{result['gate']} stayed {result['after_status']} after overlaying "

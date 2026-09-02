@@ -53,10 +53,17 @@ def _strip_uses(text: str, needles: list[str]) -> str:
     return "".join(out)
 
 
-def mutation_check(prefer: str = "FLASH_COMPLETE_EBPW_LE_1") -> dict:
-    """Remove every production call site of a WIRED/BUILT gate in an overlay and re-audit."""
-    view = SourceView()
-    before = audit(view=view, include_assemble=False)
+def mutation_check(
+    prefer: str = "FLASH_COMPLETE_EBPW_LE_1",
+    before: dict | None = None,
+) -> dict:
+    """Remove every production call site of a WIRED/BUILT gate in an overlay and re-audit.
+
+    `before` is the unmutated audit. Tests share the session graph for this
+    first pass; the overlay audit still runs for real.
+    """
+    if before is None:
+        before = audit(view=SourceView(), include_assemble=False)
     gates = before["gates"]
     wired_statuses = {"BUILT", "WIRED"}
     target = None
