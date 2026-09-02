@@ -51,8 +51,13 @@ VALIDATOR LAW (roadmap §16.1 / §16.2):
   - HARDWARE_UMA on a multi-domain edge  ->  HARDWARE_UMA_ACROSS_DOMAINS
   - device_compute evidenced only by readback  ->  READBACK_IS_NOT_COMPUTE_VISIBILITY
   - any Cost.label other than COST_MODEL  ->  COST_LABEL_REFUSED
-The coherency check is _reject_coherency_overclaim; that is the mutation
-point the negative test is built on.
+  - ordering assumption > provided protocol  ->  ORDERING_OVERCLAIM
+  - exclusive TRANSFER with no happens-before on a NONE link
+        ->  OWNERSHIP_OVERCLAIM
+The coherency check is _reject_coherency_overclaim. The ordering check is
+reject_unguaranteed_ordering; THAT is the mutation point the heterogeneous
+depth negative test is built on. A plan that assumes an ordering the
+transport does not guarantee must be refused.
 
 NOT IMPLEMENTED, named rather than left silent:
   - No real transport, no FPGA bitstream, no discrete-GPU runtime.
@@ -62,7 +67,7 @@ NOT IMPLEMENTED, named rather than left silent:
 from __future__ import annotations
 
 import sys
-from dataclasses import dataclass
+from dataclasses import dataclass, replace
 from pathlib import Path
 from typing import Any, Mapping, Sequence
 
@@ -85,6 +90,7 @@ from semantic_transport import (
     DomainKind,
     DomainVisibility,
     ExecutionDomain,
+    OrderingGuarantee,
     OwnershipTransfer,
     PayloadSemantics,
     SemanticTransportEdge,
@@ -107,10 +113,29 @@ DECLARED_BRIDGE_BW_GB_S = 12.0
 DECLARED_BRIDGE_LATENCY_S = 2.5e-4
 
 # Demo domain names. Kinds, not products: GPU_UMA is the host unified-memory
-# GPU domain; FPGA_HBM is a declared future domain. Tests bind the first to
-# the host GPU and the second to a not-present FPGA.
+# GPU domain; NPU is the host neural-processor domain; FPGA_HBM is a
+# declared future domain. Tests bind the first two to devices present on
+# this host and the third to a not-present FPGA.
 HOST_GPU_UMA = "gpu_uma_0"
+HOST_NPU = "npu_0"
 DECLARED_FPGA_HBM = "fpga_hbm_0"
+
+# Host GPU_UMA <-> NPU interconnect knobs. Both devices are present; the
+# numbers are still COST_MODEL (no interconnect measurement in this layer).
+DECLARED_NPU_BRIDGE_BW_GB_S = 80.0
+DECLARED_NPU_BRIDGE_LATENCY_S = 1.0e-5
+
+REQUIRED_FACETS = (
+    "computation",
+    "storage",
+    "state",
+    "scheduling",
+    "backend_placement",
+    "semantic_transport",
+    "synchronization",
+    "fusion",
+    "resource_requirements",
+)
 
 
 class FusionBridgeError(RuntimeError):
@@ -133,6 +158,68 @@ def _err(code: str, path: str, message: str) -> dict[str, str]:
     return {"code": code, "message": message, "path": path}
 
 
+@dataclass(frozen=True)
+class ScheduleConstraint:
+    """A happens-before the plan claims between two placed nodes.
+
+    `via` names the transport edge (source domain, destination domain)
+    that is supposed to carry that happens-before. If the edge does not
+    actually guarantee `assumed_ordering`, the ordering gate refuses.
+    """
+    predecessor: str
+    successor: str
+    assumed_ordering: OrderingGuarantee
+    via: tuple[str, str] | None = None
+    reason: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.predecessor or not self.successor:
+            raise FusionBridgeError(
+                "ScheduleConstraint predecessor and successor must be non-empty")
+        if self.via is not None and (len(self.via) != 2 or not self.via[0] or not self.via[1]):
+            raise FusionBridgeError(
+                "ScheduleConstraint.via must be (source_domain, destination_domain)")
+
+    def to_dict(self) -> dict:
+        return {
+            "assumed_ordering": self.assumed_ordering.name,
+            "predecessor": self.predecessor,
+            "reason": self.reason,
+            "successor": self.successor,
+            "via": list(self.via) if self.via else None,
+        }
+
+
+@dataclass(frozen=True)
+class FusionRegion:
+    """A collapsed operator region placed on one domain.
+
+    Connects the organ-collapse compiler (gate_up_swiglu and friends) to
+    a Placement: the fused physical op runs where `domain` says. This is
+    a plan record, not a numerical-equivalence claim -- that check lives
+    in tools/odyssey/physical_graph_compiler.py on real weights.
+    """
+    region_id: str
+    collapsed_ops: tuple[str, ...]
+    physical_op: str
+    domain: str
+    justification: str = ""
+
+    def __post_init__(self) -> None:
+        if not self.region_id or not self.physical_op or not self.domain:
+            raise FusionBridgeError(
+                "FusionRegion region_id, physical_op and domain must be non-empty")
+
+    def to_dict(self) -> dict:
+        return {
+            "collapsed_ops": list(self.collapsed_ops),
+            "domain": self.domain,
+            "justification": self.justification,
+            "physical_op": self.physical_op,
+            "region_id": self.region_id,
+        }
+
+
 @dataclass
 class HeterogeneousPlan:
     """A plan across two or more execution domains. Construction does not
@@ -144,11 +231,15 @@ class HeterogeneousPlan:
     object_placements: tuple[fp.Placement, ...] = ()
     notes: tuple[str, ...] = ()
     qualification: str = QUALIFICATION
+    schedule: tuple[ScheduleConstraint, ...] = ()
+    fusions: tuple[FusionRegion, ...] = ()
 
     def to_dict(self) -> dict:
         return {
             "domains": {k: v.to_dict() for k, v in sorted(self.domains.items())},
             "edges": [e.to_dict() for e in self.edges],
+            "fusions": [f.to_dict() for f in self.fusions],
+            "n_domains": len(self.domains),
             "notes": list(self.notes),
             "object_placements": [
                 {"home": p.home, "identity": p.identity,
@@ -157,6 +248,7 @@ class HeterogeneousPlan:
             ],
             "placements": [p.to_dict() for p in self.placements],
             "qualification": self.qualification,
+            "schedule": [c.to_dict() for c in self.schedule],
             "schema": SCHEMA,
         }
 
@@ -174,6 +266,46 @@ class HeterogeneousPlan:
             note="sum of edge COST_MODEL estimates; not a hardware measurement",
             all_hops_physical=hops_physical,
         )
+
+
+def plan_facets(plan: HeterogeneousPlan) -> dict[str, Any]:
+    """Project a plan onto the nine things a heterogeneous compile must
+    express. Empty collections mean the facet is missing, not that it
+    was considered and found unnecessary."""
+    computation = [p.to_dict() for p in plan.placements if p.node_kind is NodeKind.COMPUTATION]
+    storage = [p.to_dict() for p in plan.placements if p.node_kind is NodeKind.STORAGE]
+    state = [p.to_dict() for p in plan.placements if p.node_kind is NodeKind.STATE]
+    return {
+        "backend_placement": {p.node_id: p.domain for p in plan.placements},
+        "computation": computation,
+        "fusion": [f.to_dict() for f in plan.fusions],
+        "resource_requirements": {p.node_id: p.resources.to_dict() for p in plan.placements},
+        "scheduling": [c.to_dict() for c in plan.schedule],
+        "semantic_transport": [e.to_dict() for e in plan.edges],
+        "state": state,
+        "storage": storage,
+        "synchronization": [
+            {
+                "destination": e.destination,
+                "link_coherency": e.link_coherency.name,
+                "ordering_assumption": e.effective_ordering_assumption.name,
+                "provided_ordering": e.provided_ordering.name,
+                "source": e.source,
+                "sync_requirement": e.sync_requirement.value,
+            }
+            for e in plan.edges
+        ],
+    }
+
+
+def missing_facets(plan: HeterogeneousPlan) -> list[str]:
+    facets = plan_facets(plan)
+    missing: list[str] = []
+    for name in REQUIRED_FACETS:
+        value = facets[name]
+        if not value:
+            missing.append(name)
+    return missing
 
 
 def cost_from_route(route: fp.Route, *, note: str = "") -> Cost:
@@ -210,6 +342,41 @@ def declared_heterogeneous_topology() -> fp.Topology:
     return t
 
 
+def declared_three_domain_topology() -> fp.Topology:
+    """Host GPU_UMA + host NPU + declared FPGA_HBM.
+
+    GPU_UMA and NPU domains are physical (devices present). Every link
+    is physical=False: bandwidth/latency are COST_MODEL knobs, not
+    interconnect measurements. FPGA_HBM is declared, not present.
+    """
+    t = fp.Topology()
+    t.add_domain(HOST_GPU_UMA, physical=True)
+    t.add_domain(HOST_NPU, physical=True)
+    t.add_domain(DECLARED_FPGA_HBM, physical=False)
+    t.add_link(
+        HOST_GPU_UMA, HOST_NPU,
+        bandwidth_gb_s=DECLARED_NPU_BRIDGE_BW_GB_S,
+        latency_s=DECLARED_NPU_BRIDGE_LATENCY_S,
+        physical=False,
+        note="declared host GPU_UMA to NPU interconnect; COST_MODEL knob",
+    )
+    t.add_link(
+        HOST_GPU_UMA, DECLARED_FPGA_HBM,
+        bandwidth_gb_s=DECLARED_BRIDGE_BW_GB_S,
+        latency_s=DECLARED_BRIDGE_LATENCY_S,
+        physical=False,
+        note="declared host-to-fpga interconnect; COST_MODEL knob",
+    )
+    t.add_link(
+        HOST_NPU, DECLARED_FPGA_HBM,
+        bandwidth_gb_s=DECLARED_BRIDGE_BW_GB_S,
+        latency_s=DECLARED_BRIDGE_LATENCY_S,
+        physical=False,
+        note="declared NPU-to-fpga interconnect; COST_MODEL knob",
+    )
+    return t
+
+
 def host_gpu_uma_domain(*, capacity_bytes: int | None = None) -> ExecutionDomain:
     return ExecutionDomain(
         name=HOST_GPU_UMA,
@@ -233,6 +400,24 @@ def declared_fpga_hbm_domain(*, capacity_bytes: int | None = None) -> ExecutionD
         name=DECLARED_FPGA_HBM,
         kind=DomainKind.FPGA_HBM,
         physical=False,
+        capacity_bytes=capacity_bytes,
+        visibility=DomainVisibility(
+            readback=True,
+            device_compute=True,
+            device_compute_evidence=ComputeVisibilityEvidence.EXPLICIT_CONTRACT,
+        ),
+        internal_coherency=CoherencyAssumption.SOFTWARE_MANAGED,
+    )
+
+
+def host_npu_domain(*, capacity_bytes: int | None = None) -> ExecutionDomain:
+    """Host NPU domain. physical=True because this machine has an NPU.
+    Internal coherency is SOFTWARE_MANAGED; a link from GPU_UMA to this
+    domain is not HARDWARE_UMA (rung 6 is intra-GPU_UMA only)."""
+    return ExecutionDomain(
+        name=HOST_NPU,
+        kind=DomainKind.NPU,
+        physical=True,
         capacity_bytes=capacity_bytes,
         visibility=DomainVisibility(
             readback=True,
@@ -306,10 +491,113 @@ def edge_cost_on(
 
 # --------------------------------------------------------------------------- validator
 #
-# _reject_coherency_overclaim is the mutation point. The negative test
-# constructs a plan whose coherency_assumption outranks link_coherency and
-# asserts that validate() returns COHERENCY_OVERCLAIM. Removing the call
-# below must make that test FAIL; restoring it must make the test PASS.
+# _reject_coherency_overclaim remains the coherency gate (do not regress).
+# reject_unguaranteed_ordering is the mutation point for this deepening.
+# The negative test constructs a plan whose ordering_assumption outranks
+# the protocol the edge requested, and/or whose schedule assumes a
+# happens-before the carrying edge does not provide, and asserts that
+# validate() returns ORDERING_OVERCLAIM. Removing the call below must
+# make that test FAIL; restoring it must make the test PASS.
+
+
+def reject_unguaranteed_ordering(
+    plan: HeterogeneousPlan, errors: list[dict[str, str]],
+) -> None:
+    """Refuse a plan that assumes a happens-before the transport does not
+    guarantee.
+
+    Two surfaces, one law:
+      - an edge whose ordering_assumption outranks the protocol it
+        requested (assumes_unguaranteed_ordering)
+      - a ScheduleConstraint whose assumed_ordering outranks the
+        provided_ordering of the edge it names as `via`
+
+    MUTATION_POINT for the heterogeneous-depth negative test.
+    """
+    for i, edge in enumerate(plan.edges):
+        if edge.assumes_unguaranteed_ordering:
+            errors.append(_err(
+                "ORDERING_OVERCLAIM",
+                f"edges[{i}]",
+                f"edge {edge.source}->{edge.destination} assumes "
+                f"{edge.effective_ordering_assumption.name} "
+                f"(rank {int(edge.effective_ordering_assumption)}) "
+                f"but the requested protocol {edge.sync_requirement.value} "
+                f"only guarantees {edge.provided_ordering.name} "
+                f"(rank {int(edge.provided_ordering)})",
+            ))
+    by_ends: dict[tuple[str, str], SemanticTransportEdge] = {
+        (e.source, e.destination): e for e in plan.edges
+    }
+    for j, constraint in enumerate(plan.schedule):
+        if constraint.via is None:
+            continue
+        edge = by_ends.get(constraint.via)
+        path = f"schedule[{j}]"
+        if edge is None:
+            errors.append(_err(
+                "UNKNOWN_TRANSPORT",
+                path,
+                f"schedule {constraint.predecessor}->{constraint.successor} "
+                f"names via {constraint.via} which is not a transport edge",
+            ))
+            continue
+        provided = edge.provided_ordering
+        if int(constraint.assumed_ordering) > int(provided):
+            errors.append(_err(
+                "ORDERING_OVERCLAIM",
+                path,
+                f"schedule {constraint.predecessor}->{constraint.successor} "
+                f"assumes {constraint.assumed_ordering.name} "
+                f"(rank {int(constraint.assumed_ordering)}) via "
+                f"{constraint.via[0]}->{constraint.via[1]} which only "
+                f"guarantees {provided.name} (rank {int(provided)}); "
+                f"protocol is {edge.sync_requirement.value}, "
+                f"link_coherency is {edge.link_coherency.name}",
+            ))
+
+
+def _reject_ownership_overclaim(
+    plan: HeterogeneousPlan, errors: list[dict[str, str]],
+) -> None:
+    """Refuse exclusive ownership movement the transport cannot order.
+
+    TRANSFER on a NONE-coherent, NONE-protocol link has no happens-before
+    for the handoff: source and destination can both believe they hold
+    exclusive write. KEEP is always legal. TRANSFER + FENCE is a
+    software-ordered handoff and is legal.
+    """
+    for i, edge in enumerate(plan.edges):
+        if edge.ownership_handoff_unguaranteed:
+            errors.append(_err(
+                "OWNERSHIP_OVERCLAIM",
+                f"edges[{i}]",
+                f"edge {edge.source}->{edge.destination} transfers exclusive "
+                f"write-authority with protocol {edge.sync_requirement.value} "
+                f"on a {edge.link_coherency.name} link; the handoff has no "
+                f"happens-before",
+            ))
+    placed_ids = {p.node_id for p in plan.placements}
+    transfer_pairs = {
+        (e.source, e.destination)
+        for e in plan.edges
+        if e.ownership_transfer is OwnershipTransfer.TRANSFER
+        and not e.ownership_handoff_unguaranteed
+    }
+    for i, p in enumerate(plan.placements):
+        if p.node_kind is not NodeKind.STATE:
+            continue
+        if p.owner == p.domain:
+            continue
+        if p.node_id not in placed_ids:
+            continue
+        if (p.owner, p.domain) not in transfer_pairs:
+            errors.append(_err(
+                "OWNERSHIP_OVERCLAIM",
+                f"placements[{i}]",
+                f"state node {p.node_id!r} is placed on {p.domain!r} but "
+                f"owned by {p.owner!r} with no ordered TRANSFER edge",
+            ))
 
 
 def _reject_coherency_overclaim(plan: HeterogeneousPlan, errors: list[dict[str, str]]) -> None:
@@ -441,6 +729,43 @@ def _reject_edge_errors(plan: HeterogeneousPlan, errors: list[dict[str, str]]) -
             ))
 
 
+def _reject_schedule_and_fusion_errors(
+    plan: HeterogeneousPlan, errors: list[dict[str, str]],
+) -> None:
+    placed = {p.node_id for p in plan.placements}
+    for j, constraint in enumerate(plan.schedule):
+        path = f"schedule[{j}]"
+        for end, label in (
+            (constraint.predecessor, "predecessor"),
+            (constraint.successor, "successor"),
+        ):
+            if end not in placed:
+                errors.append(_err(
+                    "UNKNOWN_NODE",
+                    f"{path}.{label}",
+                    f"schedule {label} {end!r} is not a placed node",
+                ))
+        if constraint.via is not None:
+            for end, label in (
+                (constraint.via[0], "via_source"),
+                (constraint.via[1], "via_destination"),
+            ):
+                if end not in plan.domains:
+                    errors.append(_err(
+                        "UNKNOWN_DOMAIN",
+                        f"{path}.{label}",
+                        f"schedule via {label} {end!r} is not in the plan",
+                    ))
+    for k, region in enumerate(plan.fusions):
+        if region.domain not in plan.domains:
+            errors.append(_err(
+                "UNKNOWN_DOMAIN",
+                f"fusions[{k}].domain",
+                f"fusion region {region.region_id!r} names domain "
+                f"{region.domain!r} which is not in the plan",
+            ))
+
+
 def validate(plan: HeterogeneousPlan) -> ValidationReport:
     errors: list[dict[str, str]] = []
     if len(plan.domains) < 2:
@@ -451,9 +776,12 @@ def validate(plan: HeterogeneousPlan) -> ValidationReport:
         ))
     _reject_placement_errors(plan, errors)
     _reject_edge_errors(plan, errors)
+    _reject_schedule_and_fusion_errors(plan, errors)
     _reject_readback_as_compute_visibility(plan, errors)
     _reject_bad_costs(plan, errors)
-    _reject_coherency_overclaim(plan, errors)  # MUTATION_POINT: coherency check
+    _reject_coherency_overclaim(plan, errors)  # coherency check; do not regress
+    _reject_ownership_overclaim(plan, errors)
+    reject_unguaranteed_ordering(plan, errors)  # MUTATION_POINT: ordering check
     errors.sort(key=lambda e: (e["code"], e["path"], e["message"]))
     return ValidationReport(ok=not errors, errors=errors)
 
@@ -465,6 +793,8 @@ def compose(
     *,
     object_placements: Sequence[fp.Placement] = (),
     notes: Sequence[str] = (),
+    schedule: Sequence[ScheduleConstraint] = (),
+    fusions: Sequence[FusionRegion] = (),
 ) -> HeterogeneousPlan:
     """Build and refuse unless validate() is clean. Illegal plans for the
     negative test must be constructed via HeterogeneousPlan(...) directly."""
@@ -474,6 +804,8 @@ def compose(
         edges=tuple(edges),
         object_placements=tuple(object_placements),
         notes=tuple(notes),
+        schedule=tuple(schedule),
+        fusions=tuple(fusions),
     )
     report = validate(plan)
     if not report.ok:
@@ -563,23 +895,297 @@ def two_domain_plan(
     )
 
 
+def three_domain_plan(
+    *,
+    activation_bytes: int = 1 << 20,
+    weight_bytes: int = 8 << 20,
+    codebook_bytes: int = 1 << 20,
+    kv_bytes: int = 1 << 16,
+    host_capacity: int | None = None,
+    npu_capacity: int | None = None,
+    fpga_capacity: int | None = None,
+) -> HeterogeneousPlan:
+    """Host GPU_UMA + host NPU + declared FPGA_HBM.
+
+    Attention/KV on GPU_UMA, compact projection on NPU, fused FFN decode
+    on the declared FPGA_HBM. Every inter-domain link is explicitly
+    non-coherent; every consumer waits on FENCE. FPGA costs are
+    COST_MODEL; GPU_UMA and NPU domains are physical (devices present)
+    but interconnect numbers remain COST_MODEL knobs.
+
+    This is the acceptance happy path for a plan across >= 3 domains.
+    """
+    topo = declared_three_domain_topology()
+    host = host_gpu_uma_domain(capacity_bytes=host_capacity)
+    npu = host_npu_domain(capacity_bytes=npu_capacity)
+    fpga = declared_fpga_hbm_domain(capacity_bytes=fpga_capacity)
+    domains = {host.name: host, npu.name: npu, fpga.name: fpga}
+
+    objects = [
+        fp.SemanticObject(
+            "weights", MemoryClass.IMMUTABLE_WEIGHTS, fp.Granularity.ORGAN,
+            weight_bytes, home_hint=DECLARED_FPGA_HBM,
+            consumers=(DECLARED_FPGA_HBM,),
+        ),
+        fp.SemanticObject(
+            "codebook", MemoryClass.IMMUTABLE_WEIGHTS, fp.Granularity.ORGAN,
+            codebook_bytes, home_hint=HOST_NPU,
+            consumers=(HOST_NPU,),
+        ),
+        fp.SemanticObject(
+            "kv_state", MemoryClass.KV_STATE, fp.Granularity.LAYER_GROUP,
+            kv_bytes, home_hint=HOST_GPU_UMA,
+            consumers=(HOST_GPU_UMA,),
+        ),
+    ]
+    storage, object_homes = lift_object_placements(topo, objects)
+
+    placements = storage + (
+        Placement(
+            node_id="attn_decode",
+            node_kind=NodeKind.COMPUTATION,
+            domain=HOST_GPU_UMA,
+            resources=ResourceRequirements(bytes=activation_bytes, compute_slots=1),
+            validity=ValidityCondition(reason="attention decode on host GPU_UMA"),
+            profile_hint="INTERACTIVE",
+        ),
+        Placement(
+            node_id="npu_project",
+            node_kind=NodeKind.COMPUTATION,
+            domain=HOST_NPU,
+            resources=ResourceRequirements(bytes=activation_bytes, compute_slots=1),
+            validity=ValidityCondition(reason="compact projection on host NPU"),
+            profile_hint="INTERACTIVE",
+        ),
+        Placement(
+            node_id="ffn_decode",
+            node_kind=NodeKind.COMPUTATION,
+            domain=DECLARED_FPGA_HBM,
+            resources=ResourceRequirements(bytes=activation_bytes, compute_slots=1),
+            validity=ValidityCondition(reason="fused FFN decode on declared FPGA_HBM"),
+            profile_hint="INTERACTIVE",
+        ),
+        Placement(
+            node_id="kv_update",
+            node_kind=NodeKind.STATE,
+            domain=HOST_GPU_UMA,
+            resources=ResourceRequirements(bytes=kv_bytes),
+            validity=ValidityCondition(reason="KV owner stays on host GPU_UMA"),
+            owner_domain=HOST_GPU_UMA,
+        ),
+    )
+
+    act_gpu_npu = edge_cost_on(
+        topo, HOST_GPU_UMA, HOST_NPU, activation_bytes,
+        note="activation host GPU_UMA -> host NPU; COST_MODEL",
+    )
+    act_npu_fpga = edge_cost_on(
+        topo, HOST_NPU, DECLARED_FPGA_HBM, activation_bytes,
+        note="activation host NPU -> declared FPGA_HBM; COST_MODEL",
+    )
+    red_fpga_gpu = edge_cost_on(
+        topo, DECLARED_FPGA_HBM, HOST_GPU_UMA, activation_bytes,
+        note="partial reduction declared FPGA_HBM -> host GPU_UMA; COST_MODEL",
+    )
+    edges = (
+        SemanticTransportEdge(
+            source=HOST_GPU_UMA,
+            destination=HOST_NPU,
+            payload_semantics=PayloadSemantics.ACTIVATION,
+            ownership_transfer=OwnershipTransfer.KEEP,
+            sync_requirement=SyncRequirement.FENCE,
+            coherency_assumption=CoherencyAssumption.NONE,
+            link_coherency=CoherencyAssumption.NONE,
+            cost=act_gpu_npu,
+            in_transit_transforms=("pack",),
+            object_id="activations",
+            organ_id="attention",
+        ),
+        SemanticTransportEdge(
+            source=HOST_NPU,
+            destination=DECLARED_FPGA_HBM,
+            payload_semantics=PayloadSemantics.ACTIVATION,
+            ownership_transfer=OwnershipTransfer.KEEP,
+            sync_requirement=SyncRequirement.FENCE,
+            coherency_assumption=CoherencyAssumption.NONE,
+            link_coherency=CoherencyAssumption.NONE,
+            cost=act_npu_fpga,
+            in_transit_transforms=("pack",),
+            object_id="activations",
+            organ_id="ffn",
+        ),
+        SemanticTransportEdge(
+            source=DECLARED_FPGA_HBM,
+            destination=HOST_GPU_UMA,
+            payload_semantics=PayloadSemantics.PARTIAL_REDUCTION,
+            ownership_transfer=OwnershipTransfer.KEEP,
+            sync_requirement=SyncRequirement.FENCE,
+            coherency_assumption=CoherencyAssumption.NONE,
+            link_coherency=CoherencyAssumption.NONE,
+            cost=red_fpga_gpu,
+            in_transit_transforms=("unpack",),
+            object_id="partial_reduction",
+            organ_id="ffn",
+        ),
+    )
+    schedule = (
+        ScheduleConstraint(
+            predecessor="attn_decode",
+            successor="npu_project",
+            assumed_ordering=OrderingGuarantee.FENCE,
+            via=(HOST_GPU_UMA, HOST_NPU),
+            reason="consumer waits on FENCE; link is NONE",
+        ),
+        ScheduleConstraint(
+            predecessor="npu_project",
+            successor="ffn_decode",
+            assumed_ordering=OrderingGuarantee.FENCE,
+            via=(HOST_NPU, DECLARED_FPGA_HBM),
+            reason="consumer waits on FENCE; link is NONE",
+        ),
+        ScheduleConstraint(
+            predecessor="ffn_decode",
+            successor="kv_update",
+            assumed_ordering=OrderingGuarantee.FENCE,
+            via=(DECLARED_FPGA_HBM, HOST_GPU_UMA),
+            reason="partial reduction visible before KV update; FENCE",
+        ),
+    )
+    fusions = (
+        FusionRegion(
+            region_id="gate_up_swiglu",
+            collapsed_ops=(
+                "gate_proj matvec",
+                "up_proj matvec",
+                "silu",
+                "elementwise multiply",
+            ),
+            physical_op="gate_up_swiglu",
+            domain=DECLARED_FPGA_HBM,
+            justification=(
+                "gate and up read the same activation and their outputs are "
+                "consumed only by the SwiGLU; intermediates are not observable "
+                "outside the region. Placement is COST_MODEL."
+            ),
+        ),
+    )
+    return compose(
+        domains, placements, edges,
+        object_placements=object_homes,
+        notes=(
+            "three domains: GPU_UMA (physical), NPU (physical), FPGA_HBM (declared)",
+            "every inter-domain link is explicitly non-coherent; consumer waits on FENCE",
+            "FPGA_HBM is declared, not present; every cost is COST_MODEL",
+            "schedule assumes FENCE, matching the protocol each edge requested",
+        ),
+        schedule=schedule,
+        fusions=fusions,
+    )
+
+
 def overclaiming_edge(base: SemanticTransportEdge,
                       assumption: CoherencyAssumption) -> SemanticTransportEdge:
     """Test helper: same edge with a (usually illegal) coherency assumption."""
-    return SemanticTransportEdge(
-        source=base.source,
-        destination=base.destination,
-        payload_semantics=base.payload_semantics,
-        ownership_transfer=base.ownership_transfer,
-        sync_requirement=base.sync_requirement,
-        coherency_assumption=assumption,
-        link_coherency=base.link_coherency,
-        cost=base.cost,
-        in_transit_transforms=base.in_transit_transforms,
-        object_id=base.object_id,
-        organ_id=base.organ_id,
-        token_id=base.token_id,
-        representation_id=base.representation_id,
+    return replace(base, coherency_assumption=assumption)
+
+
+def overclaiming_ordering_edge(
+    base: SemanticTransportEdge,
+    assumption: OrderingGuarantee,
+    *,
+    sync: SyncRequirement | None = None,
+) -> SemanticTransportEdge:
+    """Test helper: same edge with a (usually illegal) ordering assumption.
+
+    Default keeps the original protocol so an assumption stronger than
+    that protocol is an overclaim. Pass sync=NONE to also silence the
+    protocol (the schedule-level twin of this helper).
+    """
+    kwargs: dict[str, Any] = {"ordering_assumption": assumption}
+    if sync is not None:
+        kwargs["sync_requirement"] = sync
+    return replace(base, **kwargs)
+
+
+def plan_assuming_unguaranteed_ordering(
+    base: HeterogeneousPlan | None = None,
+) -> HeterogeneousPlan:
+    """Illegal plan: the first edge requests no barrier on a NONE link,
+    but both the edge and a schedule constraint assume FENCE.
+
+    Constructed, not composed, so the negative test can exist.
+    """
+    good = base if base is not None else three_domain_plan()
+    silent = overclaiming_ordering_edge(
+        good.edges[0],
+        OrderingGuarantee.FENCE,
+        sync=SyncRequirement.NONE,
+    )
+    edges = (silent,) + tuple(good.edges[1:])
+    via = (silent.source, silent.destination)
+    predecessor = good.schedule[0].predecessor if good.schedule else "attn_decode"
+    successor = good.schedule[0].successor if good.schedule else "npu_project"
+    schedule = (
+        ScheduleConstraint(
+            predecessor=predecessor,
+            successor=successor,
+            assumed_ordering=OrderingGuarantee.FENCE,
+            via=via,
+            reason="assumes producer-before-consumer on a silent non-coherent link",
+        ),
+    ) + tuple(good.schedule[1:])
+    return HeterogeneousPlan(
+        domains=good.domains,
+        placements=good.placements,
+        edges=edges,
+        object_placements=good.object_placements,
+        notes=good.notes,
+        schedule=schedule,
+        fusions=good.fusions,
+    )
+
+
+def plan_assuming_unguaranteed_ownership(
+    base: HeterogeneousPlan | None = None,
+) -> HeterogeneousPlan:
+    """Illegal plan: exclusive TRANSFER on a NONE-coherent link with no
+    happens-before. Constructed, not composed.
+
+    Schedule constraints that named the silenced edge are rewritten to
+    assume NONE so this case isolates OWNERSHIP_OVERCLAIM rather than
+    also tripping the ordering gate.
+    """
+    good = base if base is not None else three_domain_plan()
+    stolen = replace(
+        good.edges[0],
+        ownership_transfer=OwnershipTransfer.TRANSFER,
+        sync_requirement=SyncRequirement.NONE,
+        coherency_assumption=CoherencyAssumption.NONE,
+        link_coherency=CoherencyAssumption.NONE,
+        ordering_assumption=OrderingGuarantee.NONE,
+    )
+    edges = (stolen,) + tuple(good.edges[1:])
+    via = (stolen.source, stolen.destination)
+    schedule = []
+    for constraint in good.schedule:
+        if constraint.via == via:
+            schedule.append(ScheduleConstraint(
+                predecessor=constraint.predecessor,
+                successor=constraint.successor,
+                assumed_ordering=OrderingGuarantee.NONE,
+                via=constraint.via,
+                reason="honest: no happens-before claimed on the silent transfer",
+            ))
+        else:
+            schedule.append(constraint)
+    return HeterogeneousPlan(
+        domains=good.domains,
+        placements=good.placements,
+        edges=edges,
+        object_placements=good.object_placements,
+        notes=good.notes,
+        schedule=tuple(schedule),
+        fusions=good.fusions,
     )
 
 
@@ -675,6 +1281,8 @@ def overlay_physical_graph(graph: Mapping[str, Any], plan: HeterogeneousPlan) ->
             "sync_requirement": edge.sync_requirement.value,
             "link_coherency": edge.link_coherency.name,
             "coherency_assumption": edge.coherency_assumption.name,
+            "ordering_assumption": edge.effective_ordering_assumption.name,
+            "provided_ordering": edge.provided_ordering.name,
             "status": "planned",
         })
     out["synchronization"] = sync
@@ -689,6 +1297,20 @@ def overlay_physical_graph(graph: Mapping[str, Any], plan: HeterogeneousPlan) ->
             "object_id": edge.object_id,
         })
     out["dependencies"] = deps
+
+    scheduling = list(out.get("scheduling") or [])
+    for constraint in plan.schedule:
+        scheduling.append({
+            "kind": "happens_before",
+            **constraint.to_dict(),
+            "status": "planned",
+        })
+    out["scheduling"] = scheduling
+
+    fusion = list(out.get("fusion") or [])
+    for region in plan.fusions:
+        fusion.append(region.to_dict())
+    out["fusion"] = fusion
     out["fusion_bridge"] = plan.to_dict()
     return out
 
