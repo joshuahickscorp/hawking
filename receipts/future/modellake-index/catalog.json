@@ -150,8 +150,8 @@
    "openai--whisper-large-v3-turbo@41f01f3fe87f"
   ]
  },
- "build_wall_s": 2.859878,
- "built_at": "2026-09-02T20:54:46Z",
+ "build_wall_s": 2.867548,
+ "built_at": "2026-09-02T20:58:32Z",
  "bytes_are": "sum of st_size over regular files in specimens/ and partial/; directory metadata is not included. This is not `du` allocated blocks.",
  "dropped_slugs": [],
  "evidence_tier": "STATIC",

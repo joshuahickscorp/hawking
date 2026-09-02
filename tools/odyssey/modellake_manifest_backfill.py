@@ -136,6 +136,13 @@ def manifest_doc(rec: dict, *, prior: dict | None = None) -> dict:
             out.setdefault("backfill", {})["acquired_at_source"] = (
                 "latest write timestamp across the body's .metadata files (line 3), "
                 "i.e. when the last file landed. Observed, not invented.")
+        # A watcher-cache manifest (expected/mode/files/sizes) never carried a
+        # reacquisition line or an n_files count. retire() does
+        # json.loads(...)["reacquisition"], so such a body is still unretirable --
+        # it fails with a KeyError instead of the honest refusal. Both are
+        # derivable from what the manifest and the body already say.
+        out.setdefault("reacquisition", rec["reacquisition"])
+        out.setdefault("n_files", rec["n_files"])
         out["restated_at"] = now
         return out
     doc = {
