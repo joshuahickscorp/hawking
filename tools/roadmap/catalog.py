@@ -740,3 +740,36 @@ _VMCP_EXTERNAL_BLOCKERS: dict[str, str] = {
 
 for _gate, _blocker in _VMCP_EXTERNAL_BLOCKERS.items():
     GATES[_gate]["software_blocker"] = _blocker
+
+
+# Same defect as the VMCP organs above, three more times: the gate named no
+# symbol, so no call could match it and it read as unwired scaffolding.
+#
+# tools/acceptance/vmcp/gates.py:237-241 calls prove_deep_digest,
+# prove_truth_ledger, prove_asset_lattice and prove_decode_lattice directly.
+# All four live in tools/headless/vmcp_lattice_disposition.py -- including
+# prove_truth_ledger, which is why VMCP_TRUTH_LEDGER also gets that module
+# rather than only the forgery canary its catalogue row pointed at.
+_VMCP_LATTICE_SYMBOLS: dict[str, tuple[tuple[str, str], ...]] = {
+    "VMCP_STATE_LATTICE": (
+        ("tools.headless.vmcp_lattice_disposition", "prove_asset_lattice"),
+        ("tools.headless.vmcp_lattice_disposition", "prove_decode_lattice"),
+    ),
+    "VMCP_DEEP_DIGEST": (
+        ("tools.headless.vmcp_lattice_disposition", "prove_deep_digest"),
+    ),
+    "VMCP_TRUTH_LEDGER": (
+        ("tools.headless.vmcp_lattice_disposition", "prove_truth_ledger"),
+    ),
+}
+
+for _gate, _syms in _VMCP_LATTICE_SYMBOLS.items():
+    GATES[_gate]["symbols"] = [
+        {"module": _m, "symbol": _y} for _m, _y in _syms
+    ] + list(GATES[_gate].get("symbols") or [])
+    _mods = {_m for _m, _ in _syms}
+    GATES[_gate]["modules"] = sorted(_mods | set(GATES[_gate].get("modules") or []))
+    if "tools/headless/vmcp_lattice_disposition.py" not in (GATES[_gate].get("code_paths") or []):
+        GATES[_gate]["code_paths"] = ["tools/headless/vmcp_lattice_disposition.py"] + list(
+            GATES[_gate].get("code_paths") or []
+        )

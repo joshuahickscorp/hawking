@@ -249,6 +249,14 @@ def blocker_class(gate: dict) -> tuple[str, str]:
         wake = gate.get("wake_condition") or "the board"
         return "PHYSICAL_HARDWARE_REQUIRED", f"silicon absent; wakes on {wake}"
 
+    if gate["status"] == "UNREACHABLE":
+        # Its dependencies are unsatisfied, and for this gate they are silicon.
+        # Filing it as a software connection points the campaign at code that
+        # cannot be written until a board exists -- the blocker is inherited,
+        # not local.
+        deps = ", ".join(gate.get("dependencies") or []) or "unnamed dependencies"
+        return "PHYSICAL_HARDWARE_REQUIRED", f"dependencies unsatisfied: {deps}"
+
     if gate["status"] == "BLOCKED_EXTERNAL":
         blocker = str(gate.get("software_blocker") or "")
         # A THEIA rung needs a TRAINED MODEL, which is wall time and compute, not wiring.

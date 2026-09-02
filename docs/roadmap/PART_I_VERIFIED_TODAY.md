@@ -7,10 +7,10 @@ Nothing here is complete because a file exists: a field with no evidence prints 
 
 ## Status census
 
-    VERIFIED_INTEGRATED      20
-    SCAFFOLDED               14
+    VERIFIED_INTEGRATED      23
     BLOCKED_HARDWARE         13
     VERIFIED_BUILT           12
+    SCAFFOLDED               11
     BLOCKED_EVIDENCE         10
     ABSENT                   1
     UNREACHABLE              1
@@ -22,7 +22,7 @@ design, not by neglect: simulated is not measured.
 ## Evidence coverage across all gates
 
     defining property available     70 / 71
-    real (non-test) caller          33 / 71
+    real (non-test) caller          36 / 71
     any verifier                    49 / 71
     receipt cited                   12 / 71
 
@@ -166,7 +166,7 @@ design, not by neglect: simulated is not measured.
     defining property   `BACKEND_UNAVAILABLE`
     implementation      hcli/backends.py, hcli/providers.py, hcli/engine.py (+1 more)
     real caller         hcli/mission.py:1504, hcli/runtime.py:520, hcli/runtime.py:879 (+2 more)
-    verifier            hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+65 more)
+    verifier            hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+67 more)
     negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
     receipt             absent
     evidence level      STATIC
@@ -178,8 +178,8 @@ design, not by neglect: simulated is not measured.
     STATUS              VERIFIED_INTEGRATED
     defining property   **Meaning:** One context-budget authority drives root and worker admission.
     implementation      hcli/context_budget.py, hcli/engine.py, hcli/context_budget.py:476
-    real caller         hcli/backends.py:1320, hcli/config.py:131, hcli/engine.py:1899 (+4 more)
-    verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+70 more)
+    real caller         hcli/backends.py:1320, hcli/config.py:131, hcli/engine.py:1960 (+4 more)
+    verifier            hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8, hcli/test_context_reduction.py:16 (+72 more)
     negative control    hcli/test_context_reduction.py, hcli/test_goal_source_compile.py
     receipt             absent
     evidence level      STATIC
@@ -728,7 +728,7 @@ design, not by neglect: simulated is not measured.
 
 ## G. PERCEPTION / PRODUCT / VMCP / THEIA / PLATFORM
 
-19 capabilities. BLOCKED_EVIDENCE=10, SCAFFOLDED=5, VERIFIED_INTEGRATED=3, VERIFIED_BUILT=1
+19 capabilities. BLOCKED_EVIDENCE=10, VERIFIED_INTEGRATED=6, SCAFFOLDED=2, VERIFIED_BUILT=1
 
 ### THEIA_BOUNTY_GENERALIST_QUALIFIED
 
@@ -849,16 +849,16 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_DEEP_DIGEST
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   digest of canonical sensory/execution state
-    implementation      tools/headless/vmcp_lattice_disposition.py
-    real caller         absent — no non-test call site
+    implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_lattice_disposition.py:562
+    real caller         tools/acceptance/vmcp/gates.py:237
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail
     receipt             absent
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ### VMCP_FILE_CLASSIFIER
 
@@ -879,8 +879,8 @@ design, not by neglect: simulated is not measured.
     defining property   allowlisted environment metadata
     implementation      tools/vmcp/pty_eye.py, tools/headless/vmcp_capability_probe.py, tools/vmcp/pty_eye.py:239
     real caller         tools/future/vmcp.py:661, tools/future/vmcp.py:922, tools/future/vmcp.py:1000 (+1 more)
-    verifier            tools/vmcp/test_pty_eye.py:4, tools/vmcp/test_pty_eye.py:20, tools/vmcp/test_pty_eye.py:28 (+1 more)
-    negative control    tools/vmcp/test_pty_eye.py
+    verifier            tools/acceptance/vmcp/test_receipt_law_defining_property.py:24, tools/acceptance/vmcp/test_receipt_law_defining_property.py:65, tools/acceptance/vmcp/test_receipt_law_defining_property.py:82 (+5 more)
+    negative control    tools/acceptance/vmcp/test_receipt_law_defining_property.py, tools/vmcp/test_pty_eye.py
     receipt             absent
     evidence level      STATIC
     limitations         acceptance not demonstrated: acceptance verdict BLOCKED: {'error': None, 'missing': 'PTY slave open (os.open(ptsname))', 'ptsname': '/dev/ttys004', 'why': 'posix_openpt/grantpt/unlockpt/pts
@@ -914,16 +914,16 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_STATE_LATTICE
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   digest of canonical sensory/execution state
     implementation      tools/headless/vmcp_lattice_disposition.py, hcli/vmcp_adapter.py
-    real caller         absent — no non-test call site
+    real caller         tools/acceptance/vmcp/gates.py:240, tools/acceptance/vmcp/gates.py:241, tools/headless/vmcp_lattice_disposition.py:1283 (+1 more)
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/VMCP_LATTICE_DISPOSITION.json
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ### VMCP_TOOL_DOCTOR
 
@@ -940,16 +940,16 @@ design, not by neglect: simulated is not measured.
 
 ### VMCP_TRUTH_LEDGER
 
-    STATUS              SCAFFOLDED
+    STATUS              VERIFIED_INTEGRATED
     defining property   digest of canonical sensory/execution state
-    implementation      tools/headless/vmcp_forgery_canary.py
-    real caller         absent — no non-test call site
+    implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_forgery_canary.py
+    real caller         tools/acceptance/vmcp/gates.py:239, tools/headless/vmcp_lattice_disposition.py:1282
     verifier            absent — no test cites this gate
     negative control    absent — no cited test proves it can fail
     receipt             receipts/headless/VMCP_FORGERY_CANARY.json
     evidence level      STATIC
     limitations         none recorded
-    integration         wired=False accepted=True
+    integration         wired=True accepted=True
 
 ### VMCP_VISUAL_DIFF
 

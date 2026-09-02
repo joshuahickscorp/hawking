@@ -62,6 +62,7 @@ residual_factors / residual_factors_batch absorbing the projection into V.
 
 ## Hardware-gated futures (not tasks until the silicon exists)
 
+    FUSION_FIRST_HETEROGENEOUS_EXECUTABLE      wakes on None
     HMF_DEVICE_VISIBLE_TRUST                   wakes on HMF_PRESENT
     U50_34_TO_40                               wakes on U50_PRESENT
     U50_40_TO_50                               wakes on U50_PRESENT

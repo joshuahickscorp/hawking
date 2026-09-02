@@ -9,7 +9,6 @@
     "FPGA_LINK_SIM",
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
-    "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
     "HCLI_CONTEXT_INVALIDATION",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
@@ -27,7 +26,10 @@
     "FLASH_DENSE_VS_NF_AB",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
-    "VMCP_RECEIPT_LAW"
+    "VMCP_DEEP_DIGEST",
+    "VMCP_RECEIPT_LAW",
+    "VMCP_STATE_LATTICE",
+    "VMCP_TRUTH_LEDGER"
   ],
   "completed_capabilities": [
     "AGENTOS_CANCELLATION",
@@ -47,9 +49,12 @@
     "ODYSSEY_I_DISCOVERY",
     "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
     "QWEN27_RUNTIME_IDENTITY_FROZEN",
+    "VMCP_DEEP_DIGEST",
     "VMCP_FILE_CLASSIFIER",
     "VMCP_RECEIPT_LAW",
-    "VMCP_TOOL_DOCTOR"
+    "VMCP_STATE_LATTICE",
+    "VMCP_TOOL_DOCTOR",
+    "VMCP_TRUTH_LEDGER"
   ],
   "defining_properties": {
     "AGENTOS_BEHAVIOR_LAB": "acceptance_span in the superseded roadmap",
@@ -370,6 +375,7 @@
   "future_work_eliminated_count": 16,
   "generated_from": "civilization/CAPABILITY_GRAPH.json",
   "hardware_required": [
+    "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE",
     "HMF_DEVICE_VISIBLE_TRUST",
     "U50_34_TO_40",
     "U50_40_TO_50",
@@ -415,7 +421,7 @@
     "VMCP_WEB_CAPTURE"
   ],
   "multiplier_edges": [],
-  "net_future_burden": 41,
+  "net_future_burden": 40,
   "next_actions": [
     "AGENTOS_CIRCUIT_BREAKER",
     "AGENTOS_RETRY_CLASSIFIED",
@@ -426,12 +432,12 @@
     "FPGA_LINK_SIM",
     "FPGA_PARTITION_SIM",
     "FPGA_PREBOARD_SCHEMAS",
-    "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE"
+    "HCLI_CONTEXT_INVALIDATION"
   ],
   "not_physically_measured": "every gate is evidence_tier STATIC; no present capability rests on a physical measurement",
   "recurring_operations": [],
   "schema": "hawking.roadmap.state.v2",
-  "software_connection_remaining_count": 19,
+  "software_connection_remaining_count": 18,
   "subsumed_items": [],
   "unknown_research": [
     "AGENTOS_BEHAVIOR_LAB"
@@ -446,7 +452,7 @@
     "AGENTOS_REPAIR_BOUNDED": "hcli/test_abort_checkpoint_atomicity.py:21, hcli/test_cognition_unit_concurrency.py:14 (+105 more)",
     "AGENTOS_RESTART_COHERENCE": "hcli/agentos/test_resident_mission_corruption.py:23, hcli/agentos/test_resident_orphan.py:17 (+24 more)",
     "AGENTOS_RETRY_CLASSIFIED": "hcli/test_goal_compile.py:257, hcli/tests/test_core_authorities.py:25 (+11 more)",
-    "BACKEND_FAILURE_ISOLATION": "hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50 (+66 more)",
+    "BACKEND_FAILURE_ISOLATION": "hcli/test_constrained_decoding.py:40, hcli/test_constrained_decoding.py:50 (+68 more)",
     "FLASH_COMPLETE_EBPW_LE_1": "tools/future/test_complete_ebpw.py:14, tools/future/test_complete_ebpw.py:23 (+6 more)",
     "FLASH_FIRST_GRAVITY_ORGAN": "hcli/tests/test_agentos_general.py:265, hcli/tests/test_hcli_flash_science.py:14",
     "FLASH_FULL_NOETIC_EXECUTABLE": "hcli/tests/test_hcli_flash_science.py:5, hcli/tests/test_hcli_science_boundaries.py:12 (+3 more)",
@@ -456,7 +462,7 @@
     "FPGA_PARTITION_SIM": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23 (+2 more)",
     "FPGA_PREBOARD_SCHEMAS": "hcli/agentos/test_fpga_preboard.py:5, hcli/tests/test_hcli_science_boundaries.py:23",
     "FUSION_FIRST_HETEROGENEOUS_EXECUTABLE": "tools/future/test_fusion_sim.py:15",
-    "HCLI_CONTEXT_AUTHORITY_UNIFIED": "hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+71 more)",
+    "HCLI_CONTEXT_AUTHORITY_UNIFIED": "hcli/test_constrained_decoding.py:50, hcli/test_context_memory.py:8 (+73 more)",
     "HCLI_CONTEXT_FOCUSED_WORKUNITS": "hcli/test_cognition_unit_concurrency.py:12, hcli/test_goal_compile.py (+47 more)",
     "HCLI_CONTEXT_INVALIDATION": "hcli/test_cognition_unit_concurrency.py:12, hcli/test_context_reduction.py:69 (+31 more)",
     "HCLI_MIXED_MAX": "hcli/test_context_memory.py:7, hcli/test_goal_bank.py:7 (+22 more)",
@@ -484,7 +490,7 @@
     "U50_PURCHASE_ACCEPTANCE": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
     "U50_SAFE_COOLING": "tools/future/test_autonomy_run.py:124, tools/future/test_concurrency_doctor.py:435 (+2 more)",
     "VMCP_FILE_CLASSIFIER": "tools/vmcp/test_file_eye.py:10, tools/vmcp/test_file_eye.py:29 (+5 more)",
-    "VMCP_PTY_CAPTURE": "tools/vmcp/test_pty_eye.py:4, tools/vmcp/test_pty_eye.py:20 (+2 more)",
+    "VMCP_PTY_CAPTURE": "tools/acceptance/vmcp/test_receipt_law_defining_property.py:24, tools/acceptance/vmcp/test_receipt_law_defining_property.py:65 (+6 more)",
     "VMCP_TOOL_DOCTOR": "tools/vmcp/test_tool_doctor.py:6, tools/vmcp/test_tool_doctor.py:10 (+5 more)"
   }
 }

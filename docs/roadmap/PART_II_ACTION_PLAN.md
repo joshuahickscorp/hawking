@@ -7,20 +7,20 @@ components yet' from work that genuinely needs an experiment, wall time, or sili
 
 ## Blocker census
 
-    SOFTWARE_CONNECTION_REMAINING    19
+    SOFTWARE_CONNECTION_REMAINING    18
     EXPERIMENTATION_REQUIRED         12
     LONG_RUN_EVIDENCE_REQUIRED       10
-    PHYSICAL_HARDWARE_REQUIRED       13
+    PHYSICAL_HARDWARE_REQUIRED       14
     UNKNOWN_RESEARCH                 1
 
     TOTAL REMAINING                  55
 
-SOFTWARE_CONNECTION_REMAINING = 19 is the
+SOFTWARE_CONNECTION_REMAINING = 18 is the
 number this campaign exists to drive toward zero. Every other class is honest
 frontier: an experiment that must run, evidence that needs wall time, hardware that
 must physically exist, or a question whose answer nobody has.
 
-## SOFTWARE_CONNECTION_REMAINING (19)
+## SOFTWARE_CONNECTION_REMAINING (18)
 
 ### AGENTOS_CIRCUIT_BREAKER
     missing             no non-test call site reaches this capability
@@ -76,12 +76,6 @@ must physically exist, or a question whose answer nobody has.
     implementation      hcli/agentos/fpga_preboard.py, hcli/agentos/fpga_preboard.py:127
     unlocks             0 declared dependencies
 
-### FUSION_FIRST_HETEROGENEOUS_EXECUTABLE
-    missing             no non-test call site reaches this capability
-    shortest verifier   tools/future/test_fusion_sim.py:15
-    implementation      tools/accelerator/fusion_planner.py, tools/future/fusion_sim.py
-    unlocks             1 declared dependencies
-
 ### HCLI_CONTEXT_INVALIDATION
     missing             no non-test call site reaches this capability
     shortest verifier   hcli/test_cognition_unit_concurrency.py:12 (+32 more)
@@ -113,9 +107,9 @@ must physically exist, or a question whose answer nobody has.
     unlocks             0 declared dependencies
 
 ### VMCP_DEEP_DIGEST
-    missing             no non-test call site reaches this capability
+    missing             wired but nothing verifies it
     shortest verifier   must be written
-    implementation      tools/headless/vmcp_lattice_disposition.py
+    implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_lattice_disposition.py:562
     unlocks             1 declared dependencies
 
 ### VMCP_RECEIPT_LAW
@@ -125,15 +119,15 @@ must physically exist, or a question whose answer nobody has.
     unlocks             0 declared dependencies
 
 ### VMCP_STATE_LATTICE
-    missing             no non-test call site reaches this capability
+    missing             wired but nothing verifies it
     shortest verifier   must be written
     implementation      tools/headless/vmcp_lattice_disposition.py, hcli/vmcp_adapter.py
     unlocks             0 declared dependencies
 
 ### VMCP_TRUTH_LEDGER
-    missing             no non-test call site reaches this capability
+    missing             wired but nothing verifies it
     shortest verifier   must be written
-    implementation      tools/headless/vmcp_forgery_canary.py
+    implementation      tools/headless/vmcp_lattice_disposition.py, tools/headless/vmcp_forgery_canary.py
     unlocks             1 declared dependencies
 
 ## EXPERIMENTATION_REQUIRED (12)
@@ -206,7 +200,7 @@ must physically exist, or a question whose answer nobody has.
 
 ### VMCP_PTY_CAPTURE
     missing             wired and verified; its acceptance criterion has never been run
-    shortest verifier   tools/vmcp/test_pty_eye.py:4 (+3 more)
+    shortest verifier   tools/acceptance/vmcp/test_receipt_law_defining_property.py:24 (+7 more)
     implementation      tools/vmcp/pty_eye.py, tools/headless/vmcp_capability_probe.py (+1 more)
     unlocks             1 declared dependencies
 
@@ -272,7 +266,13 @@ must physically exist, or a question whose answer nobody has.
     implementation      tools/headless/vmcp_capability_probe.py
     unlocks             1 declared dependencies
 
-## PHYSICAL_HARDWARE_REQUIRED (13)
+## PHYSICAL_HARDWARE_REQUIRED (14)
+
+### FUSION_FIRST_HETEROGENEOUS_EXECUTABLE
+    missing             dependencies unsatisfied: HMF_DEVICE_VISIBLE_TRUST
+    shortest verifier   tools/future/test_fusion_sim.py:15
+    implementation      tools/accelerator/fusion_planner.py, tools/future/fusion_sim.py
+    unlocks             1 declared dependencies
 
 ### HMF_DEVICE_VISIBLE_TRUST
     missing             silicon absent; wakes on HMF_PRESENT
