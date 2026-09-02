@@ -106,13 +106,13 @@ class WorkUnitExecutor:
         name = select_backend_name(wu)
         wu.assigned_backend = name
         if name == BACKEND_GROK:
-            return self._run_grok(wu, context)
+            return self._emit_wrapped(wu, name, context, self._run_grok)
         if name == BACKEND_TOOL and str(getattr(wu, "tool", "") or "").strip():
-            return self._run_tool(wu, context)
+            return self._emit_wrapped(wu, name, context, self._run_tool)
         # `tool` without a named tool stays the historical alias for the
         # verifier-command path, so existing units keep working.
         if name in (BACKEND_CPU, BACKEND_TOOL):
-            return self._run_cpu(wu, context)
+            return self._emit_wrapped(wu, name, context, self._run_cpu)
         provider = context.get("provider_instance") or self.providers.get(name)
         # A provider may intentionally be the same object as the engine (the
         # AgentOS ``resident`` alias is the normal example).  Only the
@@ -120,8 +120,47 @@ class WorkUnitExecutor:
         # selected provider name must use the provider-neutral adapter so its
         # identity, capabilities, and receipt stay visible.
         if provider is not None and (provider is not self.engine or name != BACKEND_QWEN):
-            return self._run_provider(provider, name, wu, context)
+            return self._emit_wrapped(
+                wu, name, context,
+                lambda w, c: self._run_provider(provider, name, w, c),
+            )
+        # The qwen/engine path is the one backend that already emits its own
+        # tool_call_*/model_call_* events (Engine.execute -> self._emit), so
+        # it is deliberately not double-wrapped here.
         return self._run_engine(wu, context, backend_name=name)
+
+    def _emit_wrapped(self, wu, backend_name, context, fn):
+        """grok/tool/cpu/provider never touch ``self.engine`` in their own
+        bodies, so nothing they do reached the EventBus -- only the qwen
+        path did, via Engine.execute()'s own ``_emit`` calls. Rather than
+        teach each backend the bus, wrap them all at this one choke point
+        with the same ``tool_call_started``/``tool_call_finished`` shape
+        Engine already emits for its own tool calls, using the engine's own
+        ``_emit`` so it lands on the exact bus/EventSink the worker already
+        subscribes.
+        """
+        emit = getattr(self.engine, "_emit", None)
+        if not callable(emit):
+            return fn(wu, context)
+        label = str(getattr(wu, "tool", "") or backend_name)
+        unit_id = getattr(wu, "id", None)
+        started = time.time()
+        emit("tool_call_started", {"tool": label, "backend": backend_name, "unit_id": unit_id})
+        try:
+            result = fn(wu, context)
+        except Exception as exc:
+            emit("tool_call_finished", {
+                "tool": label, "backend": backend_name, "unit_id": unit_id,
+                "ok": False, "elapsed_s": round(time.time() - started, 3),
+                "error": f"{type(exc).__name__}: {exc}",
+            })
+            raise
+        ok = bool(((result or {}).get("validation") or {}).get("ok", True))
+        emit("tool_call_finished", {
+            "tool": label, "backend": backend_name, "unit_id": unit_id,
+            "ok": ok, "elapsed_s": round(time.time() - started, 3),
+        })
+        return result
 
     def _run_provider(
         self,
@@ -495,7 +534,12 @@ def execute_workunit(self: Any, wu: Any, context: Optional[Dict[str, Any]]) -> D
         compiled = {}
     evidence = gather_evidence_paths(self, paths)
 
-    return self.execute(prompt, evidence=evidence, compiled=compiled)
+    return self.execute(
+        prompt,
+        evidence=evidence,
+        compiled=compiled,
+        context_memory=context.get("context_memory"),
+    )
 
 
 def dispatch_workunit(engine: Any, wu: Any, context: Optional[Dict[str, Any]]) -> Any:
@@ -536,6 +580,7 @@ def _install_engine_hooks() -> None:
                 compiled: Any = None,
                 *,
                 kind: str = "worker",
+                context_memory: Any = None,
                 enable_thinking: Optional[bool] = None,
                 response_schema: Optional[bool] = None,
             ) -> Dict[str, Any]:
@@ -544,6 +589,7 @@ def _install_engine_hooks() -> None:
                     prompt,
                     evidence,
                     compiled,
+                    context_memory=context_memory,
                     enable_thinking=enable_thinking,
                     response_schema=response_schema,
                 )

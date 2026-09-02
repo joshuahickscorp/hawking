@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:22:08Z",
+  "recorded_at": "2026-09-02T09:07:44Z",
   "recorded_by": "tools/future/complete_ebpw.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -151,12 +151,45 @@
   "dense_parent_rematerialization": "flag DENSE_PARENT_REMATERIALIZATION; complete_ebpw is the parent working set; is_sub2_executable is false",
   "generator_codebook_lookup_table": "all bill",
   "missing_input": "REFUSE; never default a missing part category to empty-as-zero",
+  "representation_and_model_specific_code": "bill; required categories",
   "sub2_bpw": 2.0,
+  "unbilled_component": "REFUSE; hidden free information is not a silent zero",
   "unreconciled_stated_total": "REFUSE",
   "weight_codes_ms_per_gb": 0.547282
  },
  "schema": "hawking.future.complete_ebpw.v1",
- "seal_sha256": "b06a171c88caad2c6b08ab1c2a11b69e679fb6b2c3ff397442fdbb9fc3903ed0",
+ "science_dataset": {
+  "call_sites": [
+   "tools.future.science_corpus.measurement_from_ebpw_bill",
+   "tools.future.experiment_policy.option_from_ebpw_bill",
+   "tools.future.physical_compiler_predict.predict"
+  ],
+  "cost_authority": "deterministic complete_ebpw arithmetic; the unlearned predictor is not the billed figure",
+  "learned_compiler_prediction": {
+   "authority": "deterministic complete_ebpw arithmetic remains the cost authority; this predictor is unlearned and is not consulted for a billed figure",
+   "confidence": null,
+   "evidence_tier": "STATIC",
+   "features_seen": true,
+   "model_ignored": false,
+   "model_supplied": false,
+   "schema_is_not_a_learned_compiler": true,
+   "statement": "A schema is not a learned compiler. No model is trained in this process. predict() refuses to fabricate a cost, latency or TPS.",
+   "status": "UNLEARNED",
+   "trained": false,
+   "uncertainty": {
+    "kind": "UNDEFINED",
+    "reason": "no trained model; uncertainty is not estimable"
+   },
+   "value": null
+  },
+  "learned_compiler_value_used": false,
+  "measurement_kind": "measurement",
+  "measurement_record_id": "measurement:complete_ebpw:incumbent_sealed_3_14",
+  "policy_authority": "The current deterministic/resident policy remains the authority. This module is a typed representation so a future learned policy can plug in. It does not rank, sample or select experiments.",
+  "policy_learned": false,
+  "policy_option_id": "ebpw:incumbent_sealed_3_14"
+ },
+ "seal_sha256": "1727b7a3bad30cf94a18edea0f6d301f8804967e5616e9c3c73ae672968ef844",
  "selftest": {
   "aux_only_cut_bytes_saved": 58176,
   "aux_only_cut_ms_saved": 0.0,
@@ -165,6 +198,7 @@
   "incumbent_bpw": 3.139300850311054,
   "incumbent_bpw_within_0_001_of_3_1393": true,
   "remat_complete_ebpw_is_not_the_stored_figure": true,
+  "unbilled_component_refused": true,
   "unreconciled_refused": true
  },
  "stream_rates": {

@@ -19,6 +19,12 @@ LLAMA_KV_PAD = 256
 DEFAULT_PER_SLOT_CTX = 32768
 DEFAULT_FRAMING_RESERVE = 4096
 DEFAULT_GENERATION_RESERVE = 4096
+# A Hawking native resident is not a llama.cpp slot. The 4096 framing reserve
+# above exists for llama.cpp KV padding and slot framing; on the sealed-3.14
+# resident's 8192-token window, 4096 framing + 4096 generation leaves ZERO
+# usable input. The native transport renders one chat template and posts it
+# over a JSONL pipe, so its framing cost is small and measurable.
+NATIVE_FRAMING_RESERVE = 512
 # Matches engine._CHARS_PER_TOKEN. Packet preflight must use the same
 # estimator the HTTP path uses or a "fits" verdict here still overflows there.
 CHARS_PER_TOKEN = 3
@@ -323,10 +329,74 @@ def probe_server_context(
     }
 
 
+def native_profile_limits(
+    model_path: Optional[str],
+) -> tuple[Optional[int], Optional[int], Dict[str, Any]]:
+    """``(max_seq_len, max_new_tokens)`` for a Hawking native provider profile.
+
+    THE DEFECT THIS CLOSES: ``_discover_ceiling`` knew two ceilings, a GGUF
+    header and a llama-server ``/props`` port, and a native profile is neither.
+    So `resolve()` fell through to ``fallback:DEFAULT_PER_SLOT_CTX`` and told
+    the engine it had 32768 tokens with 24576 usable, while the resident it was
+    about to post to had ``max_seq_len: 8192``. A 12,456-token ultragoal passed
+    preflight (`ok=True, shortfall=0`) and was rejected by the runtime with
+    "no generation token fits" -- the guard could not see the real ceiling.
+
+    Read as plain JSON on purpose: this module must not import the runtime
+    graph merely to learn a number.
+    """
+    meta: Dict[str, Any] = {}
+    if not model_path or not str(model_path).endswith(".json"):
+        return None, None, meta
+    path = Path(str(model_path))
+    meta["path"] = str(path)
+    if not path.is_file():
+        meta["reason"] = "not a file"
+        return None, None, meta
+    try:
+        data = json.loads(path.read_text(encoding="utf-8"))
+    except (OSError, UnicodeError, json.JSONDecodeError):
+        meta["reason"] = "unreadable"
+        return None, None, meta
+    if not isinstance(data, dict):
+        meta["reason"] = "not an object"
+        return None, None, meta
+    # Identify a native profile without importing hawking_native.
+    if str(data.get("runtime") or "") != "hawking-native" and str(
+        data.get("provider") or ""
+    ) != "native":
+        meta["reason"] = "not a hawking-native profile"
+        return None, None, meta
+    try:
+        ceiling = int(data.get("max_seq_len") or 0)
+    except (TypeError, ValueError):
+        ceiling = 0
+    if ceiling <= 0:
+        meta["reason"] = "profile has no positive max_seq_len"
+        return None, None, meta
+    generation = data.get("generation")
+    new_tokens = None
+    if isinstance(generation, dict):
+        try:
+            candidate = int(generation.get("max_new_tokens") or 0)
+        except (TypeError, ValueError):
+            candidate = 0
+        if candidate > 0:
+            new_tokens = candidate
+    meta["max_seq_len"] = ceiling
+    meta["max_new_tokens"] = new_tokens
+    meta["resident_identity"] = data.get("resident_identity")
+    return ceiling, new_tokens, meta
+
+
 def _discover_ceiling(
     model_path: Optional[str], port: Optional[int]
 ) -> tuple[Optional[int], Optional[str], Dict[str, Any]]:
     meta: Dict[str, Any] = {}
+    native_ceiling, _native_gen, native_meta = native_profile_limits(model_path)
+    if native_ceiling:
+        meta["hawking_native"] = native_meta
+        return native_ceiling, "discovered:hawking_native_profile", meta
     gguf = None
     if model_path:
         gguf = gguf_context_length(model_path)
@@ -363,6 +433,7 @@ def _safe_policy_total(
     demand_tokens: Optional[int],
     generation_reserve: int,
     framing_reserve: int,
+    ceiling_is_declared: bool = False,
 ) -> tuple[int, int]:
     """Return (total_ctx, per_slot_target).
 
@@ -372,6 +443,17 @@ def _safe_policy_total(
     so the goal is not truncated: total_ctx = per_slot_target * n_parallel.
     """
     ceiling = max(1, int(model_ceiling))
+    if ceiling_is_declared:
+        # A Hawking native profile DECLARES its window; it is not a spawn-time
+        # allocation guess the way llama.cpp's --ctx-size is. Clamping it to
+        # DEFAULT_PER_SLOT_CTX silently contradicted the profile: a profile
+        # asking for 131072 was served 32768 with no diagnostic. Below 32768
+        # this is identical (min(8192, 32768) == 8192), so only a profile that
+        # deliberately asks for more is affected -- and it pays the KV for it:
+        # this model keeps KV on 16 of 64 layers (full_attention_interval=4),
+        # 65,536 bytes/token, so 32K costs 2 GB and 131K costs 8 GB.
+        per_slot_target = ceiling
+        return per_slot_target, per_slot_target
     if demand_tokens is None:
         per_slot_target = min(ceiling, DEFAULT_PER_SLOT_CTX)
         return per_slot_target, per_slot_target
@@ -403,7 +485,18 @@ def resolve(
 ) -> ContextBudget:
     del repo_root  # reserved for callers; profile lives on the machine genome
     n_parallel = max(1, int(n_parallel))
-    framing_reserve = DEFAULT_FRAMING_RESERVE
+    # A native profile carries its own arithmetic: the window it will actually
+    # accept and the generation headroom it will actually spend. Using the
+    # llama.cpp reserves here (4096 + 4096) would leave ZERO usable input on an
+    # 8192-token resident, so the budget must come from the profile when the
+    # profile is what we are about to post to. An explicit caller argument or
+    # HCLI_MODEL_TOKENS still wins, which is what `_generation_reserve` checks.
+    native_ceiling, native_new_tokens, _native_meta = native_profile_limits(model_path)
+    framing_reserve = (
+        NATIVE_FRAMING_RESERVE if native_ceiling else DEFAULT_FRAMING_RESERVE
+    )
+    if generation_reserve is None and native_ceiling and native_new_tokens:
+        generation_reserve = native_new_tokens
     generation_reserve = _generation_reserve(generation_reserve)
 
     override_val: Optional[int] = None
@@ -480,6 +573,9 @@ def resolve(
             demand_tokens,
             generation_reserve,
             framing_reserve,
+            ceiling_is_declared=(
+                discovered_source == "discovered:hawking_native_profile"
+            ),
         )
         source = discovered_source
         provenance["override"] = _lost(

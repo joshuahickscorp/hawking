@@ -34,12 +34,14 @@ class App:
         return self._run_interactive()
 
     def _run_headless(self, prompt: str, *, plain: bool = False) -> int:
+        # Headless/piped: never attach the TUI. stdout is the answer (or
+        # slash-command text). Live cursor control is how ANSI would leak.
         self.bus.emit("session_started", {"mode": "headless"})
         try:
             # A slash command is a command in every mode. Routing it through
             # execute() sends `hcli /help` to the model, which is both wrong
             # and expensive.
-            if prompt.startswith("/"):
+            if prompt.startswith(("/", "\\")):
                 # Print what the TUI would render, not the structured payload
                 # handle_command returns to programmatic callers. Both surfaces
                 # must show the operator the same text.
@@ -105,11 +107,23 @@ class App:
 
     def _run_interactive(self) -> int:
         model_name = self.controller.model_name or "local"
+        # The ledger belongs to the INTERACTIVE surface only. This is the one
+        # place a human is present to see the numbers and decide, which is the
+        # whole point of it: an unattended run records the same snapshot into
+        # mission evidence instead of offering a prompt nobody is there to
+        # answer. Constructed here rather than inside TUI so a view never reads
+        # the state of a repository nobody handed it.
+        from .session_ledger import SessionLedger
+
         tui = TUI(
             event_bus=self.bus,
             workspace=self.ws.root,
             model_name=model_name,
             runtime_count=self.runtime_count,
+            bank_snapshot_fn=self.controller.goal_bank_snapshot,
+            stream=sys.stdout,
+            tty=sys.stdout.isatty(),
+            ledger=SessionLedger(self.ws.root),
         )
         self.bus.emit("session_started", {"mode": "interactive"})
         try:
@@ -119,6 +133,6 @@ class App:
 
     def _handle_input(self, text: str):
         self.bus.emit("user_message", {"text": text})
-        if text.startswith("/"):
+        if text.startswith(("/", "\\")):
             return self.controller.handle_command(text)
         return self.controller.execute(text)

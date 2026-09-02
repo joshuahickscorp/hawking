@@ -5,13 +5,15 @@ The resident must never compute a bit-per-weight figure itself. It got
 17.113e9 x 2.25 / 8 wrong: a rounded element count, the 2.25 coherent-class
 floor instead of the packed 2.5, and only the MLP body. This module is the
 deterministic calculator. A candidate is its declared parts — per-region
-bitwidths, generators, metadata, tables, residuals, runtime auxiliaries —
-and every part bills. A generator, a codebook and a lookup table are not
-free. Declared parts that do not reconcile against a stated total are
-REFUSED. A candidate that stores small but reconstructs the full parent
-to execute is flagged DENSE_PARENT_REMATERIALIZATION; the complete
-executable BPW is the parent working set, not the flattering stored
-number, and it is not a sub-2 executable.
+bitwidths, generators, metadata, tables, residuals, runtime auxiliaries,
+representation payload, model-specific code — and every part bills. A
+generator, a codebook and a lookup table are not free. A part-like object
+sitting on an undeclared key is hidden free information and is REFUSED.
+Declared parts that do not reconcile against a stated total are REFUSED.
+A candidate that stores small but reconstructs the full parent to execute
+is flagged DENSE_PARENT_REMATERIALIZATION; the complete executable BPW is
+the parent working set, not the flattering stored number, and it is not a
+sub-2 executable.
 
 Time is billed at the stream-class rates from executable_economics /
 ECONOMICS_CALIBRATION.json: weight_codes 0.547282 ms/GB, broadcast_aux
@@ -36,6 +38,7 @@ _sys.path.insert(
 
 import argparse
 import json
+import subprocess
 from fractions import Fraction
 from pathlib import Path
 from typing import Any, Mapping
@@ -70,6 +73,10 @@ GB = 1e9
 CITED_WEIGHT_CODES_MS_PER_GB = 0.547282
 CITED_BROADCAST_AUX_MS_PER_GB = 0.0
 
+# Historical names (regions, generators) stay required so existing candidates
+# keep reconciling. The complete bill also requires the family-level payload
+# (representation) and any model-specific decoder/code (model_specific_code).
+# An omitted category is a refusal, not a zero.
 PART_CATEGORIES = (
     "regions",
     "generators",
@@ -77,6 +84,22 @@ PART_CATEGORIES = (
     "tables",
     "residuals",
     "runtime_auxiliaries",
+    "representation",
+    "model_specific_code",
+)
+
+# Axes a candidate and an incumbent are both scored on. A missing axis is a
+# refusal, not a silent zero. capability_eval.score_representation_family
+# consumes this same set (plus fidelity flags the accountant does not own).
+COMPARE_AXES = (
+    "complete_ebpw",
+    "stored_bytes",
+    "stored_bpw",
+    "billed_ms",
+    "executable_bytes",
+    "is_sub2_executable",
+    "reconstructs_dense_parent",
+    "consumes_representation_directly",
 )
 
 REQUIRED_CANDIDATE_KEYS = (
@@ -86,6 +109,21 @@ REQUIRED_CANDIDATE_KEYS = (
     *PART_CATEGORIES,
     "reconstructs_dense_parent",
     "consumes_representation_directly",
+)
+
+# Keys that are not billed parts. Anything else that looks like a payload is
+# hidden free information and is REFUSED.
+NON_PART_CANDIDATE_KEYS = frozenset(
+    {
+        "id",
+        "parent_params",
+        "stated_total_bytes",
+        "reconstructs_dense_parent",
+        "consumes_representation_directly",
+        "parent_executable_bytes",
+        "parent_stream_class",
+        "source",
+    }
 )
 
 CLAIM_BOUNDARY = (
@@ -182,10 +220,35 @@ def mix_report() -> dict[str, Any]:
     return d
 
 
+def _load_calibration() -> dict[str, Any]:
+    """Sealed stream-class rates. Sparse checkouts may not materialize receipts/.
+
+    Disk first; git HEAD next. Both are the same committed authority. Missing
+    still REFUSES — this is not a default.
+    """
+    p = REPO / ECON_REL
+    if p.is_file():
+        return _load_json(p, why="stream-class ms/GB is the time-cost authority")
+    raw = subprocess.run(
+        ["git", "-C", str(REPO), "show", f"HEAD:{ECON_REL}"],
+        capture_output=True,
+        text=True,
+    )
+    if raw.returncode != 0:
+        raise CompleteEbpwRefused(
+            f"{p} is not on disk and git show HEAD:{ECON_REL} failed; "
+            "stream-class ms/GB is the time-cost authority. A calculator "
+            "with a missing input is a guess wearing a receipt"
+        )
+    d = json.loads(raw.stdout)
+    if not isinstance(d, dict):
+        raise CompleteEbpwRefused(f"HEAD:{ECON_REL} is not a JSON object")
+    return d
+
+
 def stream_rates() -> dict[str, Any]:
     """Catalog ms/GB by stream class. Missing or mismatched calibration REFUSES."""
-    p = REPO / ECON_REL
-    d = _load_json(p, why="stream-class ms/GB is the time-cost authority")
+    d = _load_calibration()
     classes = d.get("stream_classes")
     if not isinstance(classes, dict):
         raise CompleteEbpwRefused(f"{ECON_REL} has no stream_classes object")
@@ -317,6 +380,37 @@ def _normalize_part(
     return part
 
 
+def _is_part_like(value: Any) -> bool:
+    """A payload object: bytes/elements/bitwidth, or a list of those."""
+    if isinstance(value, Mapping):
+        return any(k in value for k in ("bytes", "elements", "bitwidth", "stream_class"))
+    if isinstance(value, list):
+        return any(_is_part_like(item) for item in value)
+    return False
+
+
+def refuse_unbilled_components(candidate: Mapping[str, Any]) -> None:
+    """Hidden-free-information guard.
+
+    A part-like object on a key that is not a billed PART_CATEGORY is
+    information the accountant would otherwise skip. That is a refusal,
+    not a silent zero. Declared empty lists on billed categories are
+    explicit zeros and are allowed.
+    """
+    extra: list[str] = []
+    for key, value in candidate.items():
+        if key in PART_CATEGORIES or key in NON_PART_CANDIDATE_KEYS:
+            continue
+        if _is_part_like(value):
+            extra.append(key)
+    if extra:
+        raise CompleteEbpwRefused(
+            f"unbilled component {sorted(extra)}; hidden free information is "
+            "refused (a codebook, sidecar, residual or table that is not in "
+            f"{list(PART_CATEGORIES)} does not bill and must not pass)"
+        )
+
+
 def _parts_of(candidate: Mapping[str, Any]) -> list[dict[str, Any]]:
     missing = [k for k in REQUIRED_CANDIDATE_KEYS if k not in candidate]
     if missing:
@@ -324,6 +418,7 @@ def _parts_of(candidate: Mapping[str, Any]) -> list[dict[str, Any]]:
             f"candidate is missing {missing}; refusing to default a missing "
             "input (an omitted generator is not a zero-byte generator)"
         )
+    refuse_unbilled_components(candidate)
     out: list[dict[str, Any]] = []
     for category in PART_CATEGORIES:
         rows = candidate[category]
@@ -421,6 +516,8 @@ def incumbent_candidate() -> dict[str, Any]:
         "tables": [],
         "residuals": [],
         "runtime_auxiliaries": [],
+        "representation": [],
+        "model_specific_code": [],
         "reconstructs_dense_parent": False,
         "consumes_representation_directly": True,
         "source": str(MIX_REPORT),
@@ -582,27 +679,149 @@ def cost(
         "reconstructs_dense_parent": remat,
         "consumes_representation_directly": consumes,
         "nothing_is_free": (
-            "a generator, a codebook and a lookup table all bill; "
-            "omitting a part category is a refusal, not a zero"
+            "a generator, a codebook, a lookup table, representation payload "
+            "and model-specific code all bill; omitting a part category is a "
+            "refusal, not a zero; a part-like object on an undeclared key is "
+            "hidden free information and is refused"
         ),
     }
     if versus is not None:
         base = versus if "complete_ebpw" in versus and "billed_ms" in versus else cost(
             versus, rates=spec
         )
-        bytes_saved = int(base["executable_bytes"]) - int(executable_bytes)
-        ms_saved = _r(float(base["billed_ms"]) - float(executable_ms), 6)
-        row["versus"] = {
-            "id": base.get("id"),
-            "bytes_saved": bytes_saved,
-            "gb_saved": _gb(bytes_saved),
-            "ms_saved": ms_saved,
-            "bpw_delta": float(base["complete_ebpw"]) - complete_ebpw,
-            "baseline_executable_bytes": int(base["executable_bytes"]),
-            "baseline_billed_ms": float(base["billed_ms"]),
-            "baseline_complete_ebpw": float(base["complete_ebpw"]),
-        }
+        row["versus"] = _versus_block(
+            complete_ebpw=complete_ebpw,
+            executable_bytes=executable_bytes,
+            executable_ms=executable_ms,
+            base=base,
+        )
     return row
+
+
+def empty_parts() -> dict[str, list]:
+    """Every billed category present as an explicit list. An omitted key is a refusal."""
+    return {c: [] for c in PART_CATEGORIES}
+
+
+def axes_of(row: Mapping[str, Any]) -> dict[str, Any]:
+    """Extract the shared compare-axes from a cost() row. Partial sets refuse."""
+    missing = [k for k in COMPARE_AXES if k not in row]
+    if missing:
+        raise CompleteEbpwRefused(
+            f"cost row missing axes {missing}; refusing to score on a partial axis set"
+        )
+    return {k: row[k] for k in COMPARE_AXES}
+
+
+def _versus_block(
+    *,
+    complete_ebpw: float,
+    executable_bytes: int,
+    executable_ms: float,
+    base: Mapping[str, Any],
+) -> dict[str, Any]:
+    bytes_saved = int(base["executable_bytes"]) - int(executable_bytes)
+    ms_saved = _r(float(base["billed_ms"]) - float(executable_ms), 6)
+    return {
+        "id": base.get("id"),
+        "bytes_saved": bytes_saved,
+        "gb_saved": _gb(bytes_saved),
+        "ms_saved": ms_saved,
+        "bpw_delta": float(base["complete_ebpw"]) - complete_ebpw,
+        "baseline_executable_bytes": int(base["executable_bytes"]),
+        "baseline_billed_ms": float(base["billed_ms"]),
+        "baseline_complete_ebpw": float(base["complete_ebpw"]),
+    }
+
+
+def candidate_from_parts(
+    *,
+    family_id: str,
+    parent_params: int,
+    parts: Mapping[str, Any],
+    reconstructs_dense_parent: bool = False,
+    consumes_representation_directly: bool = True,
+    parent_executable_bytes: int | None = None,
+    parent_stream_class: str | None = None,
+) -> dict[str, Any]:
+    """Build a candidate from a family's bill_parts() mapping. Extra keys refuse."""
+    extra = set(parts) - set(PART_CATEGORIES)
+    if extra:
+        raise CompleteEbpwRefused(
+            f"unbilled component {sorted(extra)}; hidden free information is "
+            "refused (a codebook, sidecar, residual or table that is not in "
+            f"{list(PART_CATEGORIES)} does not bill and must not pass)"
+        )
+    missing = [c for c in PART_CATEGORIES if c not in parts]
+    if missing:
+        raise CompleteEbpwRefused(
+            f"candidate is missing {missing}; refusing to default a missing "
+            "input (an omitted generator is not a zero-byte generator)"
+        )
+    probe = {
+        "id": family_id,
+        "parent_params": parent_params,
+        "stated_total_bytes": 0,
+        **{c: list(parts[c]) for c in PART_CATEGORIES},
+        "reconstructs_dense_parent": reconstructs_dense_parent,
+        "consumes_representation_directly": consumes_representation_directly,
+    }
+    if parent_executable_bytes is not None:
+        probe["parent_executable_bytes"] = parent_executable_bytes
+    if parent_stream_class is not None:
+        probe["parent_stream_class"] = parent_stream_class
+    refuse_unbilled_components(probe)
+    stated = 0
+    for cat in PART_CATEGORIES:
+        for i, row in enumerate(probe[cat]):
+            stated += int(_normalize_part(row, category=cat, index=i)["bytes"])
+    probe["stated_total_bytes"] = stated
+    return probe
+
+
+def compare_to_incumbent(
+    candidate: Mapping[str, Any],
+    *,
+    incumbent: Mapping[str, Any] | None = None,
+    rates: Mapping[str, Any] | None = None,
+) -> dict[str, Any]:
+    """Bill candidate and incumbent on COMPARE_AXES. Nothing is free on either side.
+
+    `incumbent` defaults to the sealed-3.14 mix. A family micro-site should pass
+    a local dense-f32 incumbent of the same W so the axes stay commensurate.
+    """
+    spec = rates if rates is not None else stream_rates()
+    inc_input: Mapping[str, Any] = (
+        incumbent if incumbent is not None else incumbent_candidate()
+    )
+    inc_row = (
+        inc_input
+        if "complete_ebpw" in inc_input and "billed_ms" in inc_input
+        else cost(inc_input, rates=spec)
+    )
+    cand_row = (
+        dict(candidate)
+        if "complete_ebpw" in candidate and "billed_ms" in candidate
+        else cost(candidate, versus=inc_row, rates=spec)
+    )
+    if "versus" not in cand_row:
+        cand_row["versus"] = _versus_block(
+            complete_ebpw=float(cand_row["complete_ebpw"]),
+            executable_bytes=int(cand_row["executable_bytes"]),
+            executable_ms=float(cand_row["billed_ms"]),
+            base=inc_row,
+        )
+    return {
+        "candidate_id": cand_row.get("id"),
+        "incumbent_id": inc_row.get("id"),
+        "candidate_axes": axes_of(cand_row),
+        "incumbent_axes": axes_of(inc_row),
+        "versus": cand_row["versus"],
+        "same_axes": list(COMPARE_AXES),
+        "nothing_is_free": cand_row.get("nothing_is_free"),
+        "candidate_row": cand_row,
+        "incumbent_row": inc_row,
+    }
 
 
 def _selftest() -> dict[str, Any]:
@@ -670,6 +889,23 @@ def _selftest() -> dict[str, Any]:
     aux_zero = float(aux["versus"]["ms_saved"]) == 0.0
     aux_bytes = int(aux["versus"]["bytes_saved"]) > 0
 
+    unbilled_refused = False
+    hidden = {
+        **inc_cand,
+        "sidecar_codebook": [
+            {
+                "name": "hidden_free_codebook",
+                "bytes": 8,
+                "stream_class": STREAM_WEIGHT_CODES,
+            }
+        ],
+    }
+    try:
+        cost(hidden)
+    except CompleteEbpwRefused as exc:
+        msg = str(exc).lower()
+        unbilled_refused = "unbilled" in msg or "hidden free" in msg
+
     failed = [
         name
         for name, held in (
@@ -679,6 +915,7 @@ def _selftest() -> dict[str, Any]:
             ("remat_not_sub2", remat_not_sub2),
             ("aux_zero", aux_zero),
             ("aux_bytes", aux_bytes),
+            ("unbilled_refused", unbilled_refused),
         )
         if not held
     ]
@@ -693,6 +930,49 @@ def _selftest() -> dict[str, Any]:
         "aux_only_cut_ms_saved": 0.0,
         "aux_only_cut_bytes_saved": int(aux["versus"]["bytes_saved"]),
         "aux_only_cut_ms_saved_is_zero": True,
+        "unbilled_component_refused": True,
+    }
+
+
+def _science_dataset_hook(
+    inc_cand: Mapping[str, Any], inc: Mapping[str, Any]
+) -> dict[str, Any]:
+    """Plug-in surface for the science corpus / unlearned compiler.
+
+    CALL SITES (not imports): measurement_from_ebpw_bill, option_from_ebpw_bill,
+    physical_compiler_predict.predict. The billed figure is still `cost()`.
+    The learned compiler is unlearned and is never copied into complete_ebpw.
+    """
+    from tools.future.experiment_policy import POLICY_AUTHORITY, option_from_ebpw_bill
+    from tools.future.physical_compiler_predict import predict as learned_predict
+    from tools.future.science_corpus import measurement_from_ebpw_bill
+
+    measurement = measurement_from_ebpw_bill(inc)
+    opt = option_from_ebpw_bill(inc_cand, inc)
+    pred = learned_predict(
+        {
+            "organ": "mlp",
+            "backend": "metal",
+            "stored_bytes": inc.get("stored_bytes"),
+        }
+    )
+    return {
+        "measurement_record_id": measurement["record_id"],
+        "measurement_kind": measurement["kind"],
+        "policy_option_id": opt["option_id"],
+        "policy_learned": opt["learned"],
+        "policy_authority": POLICY_AUTHORITY,
+        "learned_compiler_prediction": pred,
+        "learned_compiler_value_used": False,
+        "cost_authority": (
+            "deterministic complete_ebpw arithmetic; the unlearned predictor "
+            "is not the billed figure"
+        ),
+        "call_sites": [
+            "tools.future.science_corpus.measurement_from_ebpw_bill",
+            "tools.future.experiment_policy.option_from_ebpw_bill",
+            "tools.future.physical_compiler_predict.predict",
+        ],
     }
 
 
@@ -702,6 +982,7 @@ def build() -> dict[str, Any]:
     inc_cand = incumbent_candidate()
     inc = cost(inc_cand, rates=rates)
     selftest = _selftest()
+    science_dataset = _science_dataset_hook(inc_cand, inc)
     return {
         "schema": SCHEMA,
         "version": VERSION,
@@ -758,7 +1039,9 @@ def build() -> dict[str, Any]:
         "rules": {
             "missing_input": "REFUSE; never default a missing part category to empty-as-zero",
             "unreconciled_stated_total": "REFUSE",
+            "unbilled_component": "REFUSE; hidden free information is not a silent zero",
             "generator_codebook_lookup_table": "all bill",
+            "representation_and_model_specific_code": "bill; required categories",
             "dense_parent_rematerialization": (
                 "flag DENSE_PARENT_REMATERIALIZATION; complete_ebpw is the "
                 "parent working set; is_sub2_executable is false"
@@ -780,6 +1063,7 @@ def build() -> dict[str, Any]:
             "q4_bytes is billed as one declared weight_codes part because "
             "MIX_REPORT does not split q4 codes from q4 scale."
         ),
+        "science_dataset": science_dataset,
         "load_bearing": [
             {
                 "id": "payload_bytes",

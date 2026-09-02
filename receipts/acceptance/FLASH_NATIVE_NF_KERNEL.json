@@ -1,0 +1,71 @@
+{
+  "artifacts": [
+    "receipts/acceptance/FLASH_NATIVE_NF_KERNEL.graph.json",
+    "receipts/acceptance/FLASH_NATIVE_NF_KERNEL.kernel.json"
+  ],
+  "blocker": "flash_noetic_q4_kernel_parity status=FAILED error='metal: no Metal-capable GPU'. This process cannot dispatch Metal (`metal: no Metal-capable GPU`) even though system_profiler reports Chipset Model Apple M3 Ultra / Metal Supported. run_flash_graph_component compiled a bounded graph from prior receipts; that is not a kernel dispatch. Historical receipts/headless/FLASH_NOETIC_Q4_KERNEL_PARITY.json is not this run.",
+  "claim_boundary": "HARDWARE_MEASURED kernel attempt failed in this process. GPU presence from system_profiler is STATIC inventory and is not merged into the kernel measurement. Graph-component PASSED is receipt composition, not Metal execution.",
+  "command": [
+    "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/workspace/ops/build/rust/debug/examples/flash_noetic_q4_kernel_parity",
+    "--root",
+    "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "--descriptor",
+    "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/tools/acceptance/flash/_cache/receipts/headless/FLASH_ROUTED_EXPERT_LOADER_ROUNDTRIP.json",
+    "--out",
+    "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_NATIVE_NF_KERNEL.kernel.json",
+    "--row-count",
+    "128",
+    "--warmup",
+    "1",
+    "--reps",
+    "3"
+  ],
+  "comparison": {
+    "measured_kernel_status": "FAILED",
+    "required": "native NF/Q4 Metal kernel dispatch with parity within_tolerance true",
+    "satisfied": false
+  },
+  "criterion": {
+    "acceptance_span": {
+      "end_line": 505,
+      "section": "I-C",
+      "start_line": 478
+    },
+    "quoted": "F5 first representation-native Metal operator / FLAS-004 native selected-expert kernel. Catalog symbol is run_flash_graph_component; the Metal producer is crates/hawking-core/examples/flash_noetic_q4_kernel_parity.rs kernel qwen_uniform_q4_group64_matvec.",
+    "source": {
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "lines": [
+        1756,
+        3893
+      ]
+    }
+  },
+  "criterion_altered": false,
+  "evidence_tier": "HARDWARE_MEASURED",
+  "finished_at": "2026-09-02T09:12:15Z",
+  "gate": "FLASH_NATIVE_NF_KERNEL",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "measured": {
+    "gpu_inventory_chipset": "Apple M3 Ultra",
+    "gpu_inventory_metal": "Supported",
+    "gpu_inventory_tier": "STATIC",
+    "graph_component_status": "BOUNDED_COMPONENT_COMPILED",
+    "graph_status": "PASSED",
+    "kernel_error": "metal: no Metal-capable GPU",
+    "kernel_status": "FAILED",
+    "parity_within_tolerance": null
+  },
+  "returncode": 1,
+  "schema": "hawking.acceptance.gate.v1",
+  "started_at": "2026-09-02T09:12:15Z",
+  "stderr": "Error: \"Flash noetic Q4 kernel parity failed; see the receipt\"\n",
+  "stdout": "{\"graph_status\": \"PASSED\", \"graph_component_status\": \"BOUNDED_COMPONENT_COMPILED\", \"kernel_status\": \"FAILED\", \"kernel_error\": \"metal: no Metal-capable GPU\", \"parity\": null}",
+  "symbol": {
+    "also_called": "flash_noetic_q4_kernel_parity (Metal example)",
+    "file": "tools/acceptance/flash/run_gates.py",
+    "kind": "call",
+    "module": "hcli.agentos.flash_graph_component",
+    "name": "run_flash_graph_component"
+  },
+  "verdict": "BLOCKED"
+}

@@ -1,0 +1,566 @@
+{
+ "schema": "hawking.future.nomenclature_audit.v1",
+ "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+ "recorded_at": "2026-09-01T07:48:33Z",
+ "recorded_by": "nomenclature-audit lane",
+ "head": "9f89e3e77",
+ "claim_boundary": "Static nomenclature audit. No hardware measurement. Recommend only; no source under hcli/, tools/, or crates/ was modified.",
+ "law": "Model identity is DATA (model_id, nx_id, architecture, revision, profile). Generic architectural roles are resident / resident_incumbent / resident_candidate / resident_child / resident_shadow. Historical receipts and sealed artifacts stay historical. Canonical FUTURE-FACING APIs may become generic via aliases. Do not mass-rename.",
+ "prior_census": {
+  "path": "receipts/headless/NOMENCLATURE_CENSUS.json",
+  "generated_at": "2026-08-27T07:02:07Z",
+  "classification_counts": {
+   "SURVIVING": 4,
+   "COMPONENT": 13,
+   "VESTIGIAL": 20,
+   "AMBIGUOUS": 9
+  },
+  "rename_plan_safe_entries": 2,
+  "rename_plan_unsafe_entries": 35,
+  "census_already_said": "There is no safe retroactive rename of a catalogued name. Forward-only new identifiers and alias tables; not git mv. Ascension owned_paths 4028 files / 1.82 GiB; Genesis 78 files; QwenPatients 4304 files / hawking.qwen38. and hawking.q80. schema prefixes.",
+  "this_audit_adds": "The live running body still carries a vestigial campaign name plus a patient name in the process/binary that occupies the generic resident role. The 2026-08-27 census classified Ascension as VESTIGIAL; it did not call out that the current resident argv0 is still ascension_qwen38_resident."
+ },
+ "live_body_observed": {
+  "wave_state_claimed_pid": 2186,
+  "pgrep_matches": [
+   "2186 /Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident --artifact-root /Users/scammermike/noetic/NOETIC_PARENT_A --tokenizer /Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json --max-seq-len 8192 --resident-identity sealed-3.14",
+   "42561 /Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident --artifact-root /Users/scammermike/noetic/NOETIC_PARENT_A --tokenizer /Users/scammermike/noetic/NOETIC_PARENT_A/tokenizer.json --max-seq-len 8192 --resident-identity sealed-3.14"
+  ],
+  "process_name": "ascension_qwen38_resident",
+  "identity_flag_is_data": "--resident-identity sealed-3.14",
+  "genesis_resident_pgrep": "no genesis-resident process",
+  "note": "Two PIDs matched the same argv at audit time. WAVE_STATE already answered the process/memory audit; this lane does not re-litigate duplicate load. The nomenclature fact is the argv0, not the PID count."
+ },
+ "counts_from_git_grep_HEAD": {
+  "ascension_qwen38_resident": {
+   "files": 84,
+   "hits": 372,
+   "receipt_files": 53,
+   "non_receipt_files": 31
+  },
+  "hawking.qwen38.resident.v1": {
+   "files": 60,
+   "hits": 188,
+   "receipt_files": 38,
+   "non_receipt_files": 22,
+   "source_tree_hcli_tools_crates_docs_lab": 12
+  },
+  "hawking.native.resident.v1": {
+   "files": 1,
+   "hits": 1,
+   "only_file": "hcli/hawking_native.py:30 PROTOCOL_SCHEMA"
+  },
+  "hawking.genesis.resident.v1": {
+   "files": 6,
+   "hits": 7
+  },
+  "genesis-resident": {
+   "files": 47,
+   "hits": 166,
+   "receipt_files": 11,
+   "non_receipt_files": 36
+  },
+  "genesis_resident": {
+   "files": 36,
+   "hits": 228
+  },
+  "HAWKING_QWEN38_": {
+   "files": 181,
+   "hits": 1436,
+   "receipt_files": 80,
+   "non_receipt_files": 101
+  },
+  "ResidentDaemon": {
+   "files": 8,
+   "hits": 39
+  },
+  "ResidentInstance": {
+   "files": 4,
+   "hits": 8
+  },
+  "resident_incumbent": {
+   "files": 0,
+   "hits": 0
+  },
+  "resident_candidate": {
+   "files": 1,
+   "hits": 2,
+   "note": "hcli/agentos/checkpoint.py local variable resident_candidates is a path list, not the canonical role token"
+  },
+  "resident_shadow": {
+   "files": 0,
+   "hits": 0
+  },
+  "resident_child": {
+   "files": 2,
+   "hits": 8,
+   "note": "HCLI CLI subparser resident child, not the succession role token"
+  },
+  "ascension_example_rs_files": 131,
+  "ascension_qwen38_example_rs_files": 17,
+  "qwen38_path_files": 223,
+  "catalog.hq38m20_content_files_all": 135,
+  "catalog.hq38m20_content_files_source_tree": 57
+ },
+ "model_specific_names_in_generic_roles": [
+  {
+   "name": "ascension_qwen38_resident",
+   "occupies_role": "resident",
+   "kind": "executable / process argv0 / cargo example name / default binary path",
+   "why_it_is_wrong": "The running body is THE resident. Ascension is a vestigial campaign (census class VESTIGIAL, 4028 owned files) that produced residents; Qwen3.8 is the current patient (DATA). Both are baked into the process name. Identity is already passed separately as --resident-identity sealed-3.14.",
+   "where": [
+    "crates/hawking-core/examples/ascension_qwen38_resident.rs (cargo autodiscovers the example name from the filename; usage() and fail() prefix the process name; const PROTOCOL)",
+    "hcli/hawking-native.sealed-3.14.json resident_binary and compiler.source",
+    "hcli/hawking_native.py HawkingNativeConfig.defaults() lines 335-342, 381",
+    "hcli/agentos/resident_gate.py:295 source key ascension_qwen38_resident.serve_request",
+    "hcli/agentos/handoff.py hardcoded .hcli/instrumented/ascension_qwen38_resident",
+    "tools/future/resident_provider.py PROBE_BINARY_REL and 15 other tools/future/* string constants",
+    "live argv0 observed by pgrep"
+   ],
+   "counts": {
+    "files": 84,
+    "hits": 372,
+    "receipt_files": 53,
+    "non_receipt_files": 31,
+    "source_lines_of_example": 406
+   },
+   "verdict": "UNSAFE_RENAME of the historical filename / sealed profile path / receipt citations; SAFE_RENAME only as a NEW cargo example alias plus HCLI fallback probe",
+   "mass_rename_would_break": [
+    "sealed profile hcli/hawking-native.sealed-3.14.json resident_binary and compiler.source",
+    "53 receipt files that cite the path",
+    "ARTIFACT_IDENTITY env/binary binding",
+    "cargo example autodiscovers from filename; git mv changes the built binary name every caller pgrep's"
+   ]
+  },
+  {
+   "name": "hawking.qwen38.resident.v1",
+   "occupies_role": "resident wire protocol",
+   "kind": "protocol / schema string",
+   "why_it_is_wrong": "The JSONL resident protocol is generic (ready/request/reply). The live body emits a patient-named protocol. A generic twin already exists as PROTOCOL_SCHEMA = hawking.native.resident.v1 but is unused on the wire: git grep finds it in exactly 1 file.",
+   "where": [
+    "crates/hawking-core/examples/ascension_qwen38_resident.rs:34 const PROTOCOL",
+    "ready and reply records emit protocol=PROTOCOL",
+    "hcli/hawking-native.sealed-3.14.json protocol field",
+    "hcli/hawking_native.py QWEN38_PROTOCOL_SCHEMA and defaults() protocol=",
+    "tools/future/resident_provider.py:62 PROTOCOL",
+    "tools/haider/hcli/tests/test_hawking_native.py fixture ready line"
+   ],
+   "counts": {
+    "files": 60,
+    "hits": 188,
+    "receipt_files": 38,
+    "source_tree_files": 12
+   },
+   "verdict": "UNSAFE_RENAME of the emitted/sealed string; SAFE_RENAME as a compatibility alias in the connector (accept hawking.native.resident.v1 in new profiles, keep emitting the old string from this NX until a new seal)",
+   "trap": "HawkingNativeConfig.validate() only enforces REQUIRED_FUSION_ENV when protocol == QWEN38_PROTOCOL_SCHEMA (hawking_native.py:425). Switching defaults() to PROTOCOL_SCHEMA without also keeping fusion checks would silently drop the sealed fusion pin."
+  },
+  {
+   "name": "HawkingNativeConfig.defaults() baked Qwen3.8 paths and family",
+   "occupies_role": "resident default identity",
+   "kind": "constructor / fallback when no profile is supplied",
+   "why_it_is_wrong": "from_file() already treats model_id, family, architecture, protocol, resident_binary as DATA from a profile. defaults() re-bakes family=qwen3.8, protocol=hawking.qwen38.resident.v1, model_id=qwen3.8-27b-sealed-3.14, and the ascension_qwen38_resident path as if they were the type. Callers: hcli/hawking_native.py:538,560 and hcli/backends.py:1977.",
+   "where": [
+    "hcli/hawking_native.py:324-401 HawkingNativeConfig.defaults",
+    "hcli/hawking_native.py:560 config_for_model_path fallback",
+    "hcli/backends.py:1977 NativeRuntimeBackend construction fallback"
+   ],
+   "counts": {
+    "defaults_call_sites_in_hcli": 3
+   },
+   "verdict": "SAFE_RENAME of the fallback constructor (probe generic binary name, then old name; do not bake family/protocol). Do not rewrite the sealed profile."
+  },
+  {
+   "name": "genesis-resident / hawking.genesis.resident.v1",
+   "occupies_role": "resident",
+   "kind": "second executable occupying the same generic body role under a vestigial campaign brand",
+   "why_it_is_wrong": "tools/agentos/genesis_body Cargo.toml package and [[bin]] name = genesis-resident; PROTOCOL hawking.genesis.resident.v1; default socket /tmp/hawking-genesis-resident.sock and workspace/ops/genesis-resident.sock. Census already classifies Genesis as VESTIGIAL (78 owned files, 12 schemas). pgrep found no live genesis-resident; the live body is ascension_qwen38_resident.",
+   "where": [
+    "tools/agentos/genesis_body/Cargo.toml name = genesis-resident",
+    "tools/agentos/genesis_body/src/main.rs PROTOCOL and argv0",
+    "tools/agentos/genesis_resident.py",
+    "docs/RESIDENT_DAEMON.md still tells operators to start genesis-resident with HAWKING_QWEN38_SERVE_UNTIMED"
+   ],
+   "counts": {
+    "genesis-resident_files": 47,
+    "genesis-resident_hits": 166,
+    "hawking.genesis.resident.v1_files": 6,
+    "live_pgrep": 0
+   },
+   "verdict": "UNSAFE_RENAME of the vestigial binary, sockets, launchd, and ascent-2026-08-16/genesis-resident receipts. SAFE only as a forward rule: new resident work does not spawn genesis-resident."
+  },
+  {
+   "name": "HAWKING_QWEN38_* (fusion, serve, fast, dn_state, q4_geo)",
+   "occupies_role": "resident runtime / fusion control plane",
+   "kind": "environment variables of the running body",
+   "why_it_is_wrong": "These flags control THE resident's decode graph. The sealed profile's fusion_env and ARTIFACT_IDENTITY env_hash are keyed on the Qwen38 names. A generic resident of another family cannot honestly share HAWKING_QWEN38_FUSE_MLP as its API.",
+   "where": [
+    "hcli/hawking_native.py REQUIRED_FUSION_ENV",
+    "hcli/hawking-native.sealed-3.14.json fusion_env",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs env readers",
+    "HAWKING_QWEN38_SERVE_UNTIMED in genesis_body and docs/RESIDENT_DAEMON.md"
+   ],
+   "counts": {
+    "files": 181,
+    "hits": 1436,
+    "receipt_files": 80
+   },
+   "verdict": "UNSAFE_RENAME of the env keys (sealed env_hash, fusion_env, 1436 hits). SAFE_RENAME only as additional generic aliases that the decoder also reads, with QWEN38 keys remaining authoritative for sealed-3.14."
+  },
+  {
+   "name": "hcli agentos qwen38-fusion-audit / qwen27-mlp-ab / qwen27-runtime-archaeology",
+   "occupies_role": "generic AgentOS diagnostics of the current resident (fusion audit, MLP A/B, runtime identity)",
+   "kind": "CLI verbs + module paths",
+   "why_it_is_wrong": "The control-plane verbs name the patient. Qwen27 and Qwen38 both refer to the same 27B Qwen3.8 resident (two patient nicknames occupying one body). Modules: hcli/agentos/qwen38_fusion_audit.py, qwen27_mlp_diagnostic.py, qwen27_runtime_identity.py.",
+   "where": [
+    "hcli/agentos_cli.py:198,207,217 parser names",
+    "hcli/agentos/handoff.py:1045-1047",
+    "hcli/agentos/protected_benchmark_watcher.py:36-37"
+   ],
+   "counts": {
+    "qwen27_agentos_modules": 2,
+    "qwen38_agentos_modules": 1
+   },
+   "verdict": "SAFE_RENAME of FUTURE CLI verbs via aliases (fusion-audit, mlp-ab, runtime-archaeology) keeping the qwen* verbs. UNSAFE to delete the old verbs or rewrite receipts/headless/HCLI_QWEN38_FUSION_SOURCE_AUDIT.json and QWEN27_* receipts."
+  },
+  {
+   "name": "catalog.hq38m20 / QWEN38_MIXED_CATALOG_NAME",
+   "occupies_role": "native artifact recognition (is_hawking_native_path) and packed catalog of the resident",
+   "kind": "on-disk format filename used as a generic 'this is a Hawking-native artifact' probe",
+   "why_it_is_wrong": "hcli/hawking_native.py:511 treats catalog.hq38m20 as the predicate for a Hawking-native artifact directory. That is a patient-format filename occupying the generic native-artifact role. The catalog format itself is legitimately patient-specific; the recognizer should not require that one name.",
+   "where": [
+    "hcli/hawking_native.py:508-511 is_hawking_native_path",
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs:38 QWEN38_MIXED_CATALOG_NAME"
+   ],
+   "counts": {
+    "content_files_all": 135,
+    "content_files_source_tree": 57,
+    "git_paths_matching_hq38m20": 1
+   },
+   "verdict": "UNSAFE_RENAME of existing catalogs (outside git, live artifact at NOETIC_PARENT_A). SAFE to also accept a MIX_REPORT-declared catalog name in is_hawking_native_path while still recognising catalog.hq38m20."
+  },
+  {
+   "name": "tools/future/* hardcoded PROBE_BINARY_REL / BINARY / SOURCE = .../ascension_qwen38_resident",
+   "occupies_role": "resident binary locator in future-facing science tools",
+   "kind": "string constants in new code that should read the profile",
+   "why_it_is_wrong": "Future tools re-encode the campaign+patient example name instead of reading hcli/hawking-native.sealed-3.14.json or HCLI_HAWKING_RESIDENT_BINARY. This is how the name keeps spreading.",
+   "where": [
+    "tools/future/resident_provider.py:64-66",
+    "tools/future/artifact_identity.py DEFAULT path",
+    "tools/future/resident_binary_drift.py BINARY/SOURCE",
+    "tools/future/tps_gap.py RESIDENT_SRC / RESIDENT_BIN",
+    "and the rest of the 31 non-receipt files from git grep -l ascension_qwen38_resident"
+   ],
+   "counts": {
+    "non_receipt_files_citing_the_example_name": 31
+   },
+   "verdict": "SAFE_RENAME of NEW lookups (profile/env first, constant as fallback alias). UNSAFE to rewrite existing receipts those tools already emitted."
+  }
+ ],
+ "genuinely_generic_already": [
+  {
+   "name": "Resident / ResidentInstance / hcli.nomenclature CANONICAL_PIPELINE[-1]",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "docs/HAWKING_NOMENCLATURE.md",
+    "hcli/nomenclature.py:31,45",
+    "tools/headless/nomenclature_census.py"
+   ],
+   "note": "docs/HAWKING_NOMENCLATURE.md:55 already says the sealed Qwen resident is the current local default profile, not an HCLI type assumption."
+  },
+  {
+   "name": "hcli.agentos.resident.ResidentDaemon and `hcli resident` / `hcli agentos resident` CLI",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "hcli/agentos/resident.py:649 SCHEMA hcli.agentos.resident_daemon.v1",
+    "hcli/agentos_cli.py:73-77",
+    "docs/RESIDENT_DAEMON.md"
+   ],
+   "counts": {
+    "ResidentDaemon_files": 8,
+    "hits": 39
+   },
+   "note": "Control-plane supervisor is model-free. The leak is the worker binary it launches, not this class."
+  },
+  {
+   "name": "hawking.native.resident.v1 (PROTOCOL_SCHEMA)",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "hcli/hawking_native.py:30"
+   ],
+   "counts": {
+    "files": 1,
+    "hits": 1
+   },
+   "note": "Generic protocol already exists and is the dataclass default, but defaults() and the live binary overwrite/emit hawking.qwen38.resident.v1. Defined, not live."
+  },
+  {
+   "name": "HCLI_HAWKING_RESIDENT_BINARY / HCLI_HAWKING_NATIVE_CONFIG / --resident-identity",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "hcli/hawking_native.py:338-340,360",
+    "crates/hawking-core/examples/ascension_qwen38_resident.rs:84"
+   ],
+   "note": "Env and flag already carry identity and binary as DATA. The defect is the hardcoded fallback when they are unset."
+  },
+  {
+   "name": "HawkingNativeConfig profile fields (model_id, family, architecture, protocol, resident_binary, resident_identity)",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "hcli/hawking_native.py:172-204 dataclass",
+    "hcli/hawking-native.sealed-3.14.json"
+   ],
+   "note": "The sealed profile already stores identity as DATA. from_mapping/from_file are generic. Do not rewrite the sealed JSON; it is the current specimen pin."
+  },
+  {
+   "name": "hcli.architecture recognizer (hcli.architecture.recognizer.v1)",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "hcli/architecture.py:1-5,18"
+   ],
+   "note": "Provider- and architecture-neutral metadata recognizer. Reads declared architecture as DATA."
+  },
+  {
+   "name": "Qwen38HybridDecodeSession / qwen38_geometry.rs / qwen38_hybrid_decode.rs",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "crates/hawking-core/src/model/qwen38_hybrid_decode.rs (10129 lines)",
+    "crates/hawking-core/src/model/qwen38_geometry.rs",
+    "crates/hawking-core/src/decode_family.rs:293 qwen38_geometry_is_an_admitted_specialization"
+   ],
+   "note": "NOT occupying a generic resident role. This is the Qwen3.8 architecture implementation (hybrid GQA+DeltaNet, 24/4 heads, rope_theta). Patient-named decoder code is correct. No action. A rename to HybridDecodeSession would pretend a 10k-line specialization is family-agnostic."
+  },
+  {
+   "name": "succession incumbent / candidate / child / shadow (unprefixed)",
+   "verdict": "ALREADY_GENERIC",
+   "where": [
+    "tools/future/succession.py:223 JUDGE_ROLE_NAMES",
+    "tools/future/succession.py:890 role=incumbent"
+   ],
+   "note": "Roles are already generic English, not patient-named. Canonical tokens resident_incumbent / resident_candidate / resident_child / resident_shadow have 0/1/2/0 source hits. Alignment is an alias table for NEW succession receipts, not a rewrite of SUCCESSION.json."
+  }
+ ],
+ "safe_renames": [
+  {
+   "target": "Add cargo [[example]] name = \"resident\" path = \"examples/ascension_qwen38_resident.rs\" in hawking-core. Keep autodiscoved ascension_qwen38_resident.",
+   "role": "resident",
+   "why_safe": "Census rename_plan SAFE already allows a NEW identifier going forward. Cargo will build both names from the same source. No git mv, no receipt rewrite, sealed compiler.source stays.",
+   "compatibility_alias": "ascension_qwen38_resident remains the historical cargo example and the sealed profile path",
+   "migration": "cargo run -p hawking-core --example resident -- --artifact-root ...  (after the extra [[example]] lands). Old --example ascension_qwen38_resident still works."
+  },
+  {
+   "target": "HawkingNativeConfig.defaults() resident_binary probe: .../examples/resident then .../examples/ascension_qwen38_resident; stop baking family/protocol/model_id as if they were the type when HCLI_HAWKING_NATIVE_CONFIG is unset.",
+   "role": "resident default identity",
+   "why_safe": "from_file() is already generic. Only the no-profile fallback changes. Three call sites. Env HCLI_HAWKING_RESIDENT_BINARY already overrides.",
+   "compatibility_alias": "If examples/resident is absent, fall back to the current sealed example path so today's tree still boots.",
+   "migration": "Prefer HCLI_HAWKING_NATIVE_CONFIG=hcli/hawking-native.sealed-3.14.json as the production path (already exists). defaults() becomes a probe, not an identity."
+  },
+  {
+   "target": "HCLI AgentOS CLI aliases: fusion-audit, mlp-ab, runtime-archaeology alongside qwen38-fusion-audit, qwen27-mlp-ab, qwen27-runtime-archaeology.",
+   "role": "resident diagnostics",
+   "why_safe": "Additive argparse aliases. Old verbs stay. Receipt filenames stay.",
+   "compatibility_alias": "keep qwen38-fusion-audit / qwen27-mlp-ab / qwen27-runtime-archaeology as the historical verbs",
+   "migration": "hcli agentos fusion-audit --profile hcli/hawking-native.sealed-3.14.json"
+  },
+  {
+   "target": "Connector accepts hawking.native.resident.v1 as the canonical future protocol AND hawking.qwen38.resident.v1 as the sealed body's dialect. Fusion-env pin must still apply to the sealed body even when a profile says the generic protocol.",
+   "role": "resident wire protocol",
+   "why_safe": "PROTOCOL_SCHEMA already exists. Additive accept-list. The live binary keeps emitting hawking.qwen38.resident.v1 until a new NX is sealed.",
+   "compatibility_alias": "hawking.qwen38.resident.v1 remains the sealed-3.14 dialect",
+   "migration": "New profiles may set protocol=hawking.native.resident.v1. validate() must not skip REQUIRED_FUSION_ENV solely because the protocol string changed (see hawking_native.py:425 trap)."
+  },
+  {
+   "target": "Future tools locate the resident binary from the sealed profile / HCLI_HAWKING_RESIDENT_BINARY, with the current example path as fallback constant.",
+   "role": "resident binary locator",
+   "why_safe": "Read path, do not rewrite receipts. Stops the name replicating into new science tools.",
+   "compatibility_alias": "PROBE_BINARY_REL = .../ascension_qwen38_resident remains the fallback string",
+   "migration": "load_authority() / HawkingNativeConfig.from_file already pin the path as DATA"
+  },
+  {
+   "target": "is_hawking_native_path also accepts a MIX_REPORT-declared catalog filename, while still recognising catalog.hq38m20.",
+   "role": "native artifact recognition",
+   "why_safe": "Additive predicate. Does not rename live catalogs under NOETIC_PARENT_A.",
+   "compatibility_alias": "catalog.hq38m20 remains a recognised name (QWEN38_MIXED_CATALOG_NAME)",
+   "migration": "Directory with MIX_REPORT.json plus whatever catalog MIX_REPORT names is native; hq38m20 stays sufficient."
+  },
+  {
+   "target": "NEW succession receipts may emit role=resident_incumbent|resident_candidate|resident_child|resident_shadow while still accepting incumbent|candidate|child|shadow.",
+   "role": "canonical role vocabulary",
+   "why_safe": "Additive alias on a sidecar that already uses generic English. Do not rewrite receipts/future/SUCCESSION.json.",
+   "compatibility_alias": "incumbent, candidate, child, shadow, parent, successor remain valid JUDGE_ROLE_NAMES",
+   "migration": "Extend JUDGE_ROLE_NAMES; keep make_incumbent() role field readable as either token."
+  }
+ ],
+ "unsafe_renames": [
+  {
+   "target": "git mv crates/hawking-core/examples/ascension_qwen38_resident.rs (and the 131 other ascension_* examples)",
+   "why_unsafe": "Cargo example name IS the filename. Sealed compiler.source, 53 receipt files, live pgrep, ARTIFACT_IDENTITY, and census Ascension owned_paths 4028 files / 1.82 GiB. Vestigial means keep, not rewrite. Census rename_plan already listed hawking.ascension.* and Ascension owned paths as UNSAFE.",
+   "hits": {
+    "ascension_example_rs_files": 131,
+    "ascension_qwen38_resident_files": 84,
+    "census_ascension_owned_files": 4028
+   }
+  },
+  {
+   "target": "Change const PROTOCOL in the live binary from hawking.qwen38.resident.v1, or rewrite that string in hcli/hawking-native.sealed-3.14.json",
+   "why_unsafe": "Sealed profile protocol field, RESIDENT_IDENTITY nx_id.protocol pin, 60 files / 188 hits including 38 receipts, fixture tests, env-independent identity tuple.",
+   "hits": {
+    "files": 60,
+    "hits": 188,
+    "receipt_files": 38
+   }
+  },
+  {
+   "target": "Rename HAWKING_QWEN38_* environment keys",
+   "why_unsafe": "Sealed fusion_env, ARTIFACT_IDENTITY env_hash 7f677c8208a879575c8c604f40c573da3d58fa314b6e58e48317ba384789771b, 181 files / 1436 hits. A renamed key is a different machine and cannot inherit the incumbent label.",
+   "hits": {
+    "files": 181,
+    "hits": 1436,
+    "receipt_files": 80
+   }
+  },
+  {
+   "target": "Rewrite receipts/**, evidence/resident-tps-recon/*, or hcli/hawking-native.sealed-3.14.json for aesthetics",
+   "why_unsafe": "Filenames and protocol/binary paths are lookup keys and identity pins. Census: historical receipt filenames under receipts/** are UNSAFE. The sealed profile is the current specimen pin, not a brand to erase."
+  },
+  {
+   "target": "Rename qwen38_hybrid_decode.rs / Qwen38HybridDecodeSession / qwen38_geometry.rs / shaders/qwen38_device_activations.metal",
+   "why_unsafe": "Architecture specialization, not a generic role. 10129-line decoder. 223 git paths contain qwen38. Census QwenPatients 4304 files / 1.84 GiB. Pretending this is family-agnostic is a lie, not a rename."
+  },
+  {
+   "target": "Rename genesis-resident package, sockets, hawking.genesis.resident.v1, receipts/ascent-2026-08-16/genesis-resident/",
+   "why_unsafe": "VESTIGIAL campaign evidence. 47 files name genesis-resident; 11 of the git-grep files are receipts; census Genesis 78 owned files, 12 schemas. Not live (pgrep empty) and not reclaimable."
+  },
+  {
+   "target": "Rename catalog.hq38m20 on the live artifact or QWEN38_MIXED_CATALOG_NAME as a breaking change",
+   "why_unsafe": "Live packed catalog at NOETIC_PARENT_A (outside git). 135 files cite the name. Loader binds HGRAV* codecs from that filename. Additive recognition is the safe path; renaming the file is a data migration of the sealed body."
+  }
+ ],
+ "compatibility_aliases_needed": [
+  {
+   "canonical_future": "resident (cargo example / process argv0)",
+   "historical_alias": "ascension_qwen38_resident",
+   "how": "Extra [[example]] name=resident on the same .rs; do not delete autodiscoved name. Sealed profile keeps the old path until a new profile is issued."
+  },
+  {
+   "canonical_future": "hawking.native.resident.v1",
+   "historical_alias": "hawking.qwen38.resident.v1",
+   "how": "Connector accept-list. Live NX keeps emitting the historical string. New profiles may declare the generic protocol. Fusion-env pin is independent of the protocol string."
+  },
+  {
+   "canonical_future": "HCLI_HAWKING_RESIDENT_BINARY and profile.resident_binary",
+   "historical_alias": "hardcoded .../examples/ascension_qwen38_resident",
+   "how": "Already exists as env. Make it the locator; keep the example path as fallback."
+  },
+  {
+   "canonical_future": "hcli agentos fusion-audit | mlp-ab | runtime-archaeology",
+   "historical_alias": "qwen38-fusion-audit | qwen27-mlp-ab | qwen27-runtime-archaeology",
+   "how": "Additive argparse aliases. Do not rename receipt filenames."
+  },
+  {
+   "canonical_future": "resident_incumbent | resident_candidate | resident_child | resident_shadow",
+   "historical_alias": "incumbent | candidate | child | shadow (and HCLI resident child subcommand)",
+   "how": "Extend JUDGE_ROLE_NAMES. Do not rewrite SUCCESSION.json."
+  },
+  {
+   "canonical_future": "MIX_REPORT-declared catalog name (plus generic native-artifact probe)",
+   "historical_alias": "catalog.hq38m20 / QWEN38_MIXED_CATALOG_NAME",
+   "how": "is_hawking_native_path OR, not XOR."
+  },
+  {
+   "canonical_future": "do not start new work as genesis-resident",
+   "historical_alias": "genesis-resident / hawking.genesis.resident.v1 / genesis-resident.sock",
+   "how": "Leave the vestigial binary and receipts. The live body is already the other executable."
+  },
+  {
+   "canonical_future": "optional HAWKING_RESIDENT_* env aliases IF a second family ever needs the same fusion-shaped controls",
+   "historical_alias": "HAWKING_QWEN38_* (authoritative for sealed-3.14)",
+   "how": "Decoder would read generic-or-Qwen38. Do not drop Qwen38 keys; env_hash is identity."
+  }
+ ],
+ "recommended_sequence": [
+  {
+   "order": 1,
+   "value_over_risk": "highest value / lowest risk",
+   "action": "Treat HCLI_HAWKING_NATIVE_CONFIG / hawking-native.sealed-3.14.json as the identity source. Change HawkingNativeConfig.defaults() from baking family=qwen3.8 and the ascension_qwen38_resident path into a probe: env, then .../examples/resident, then the historical example path. Do not bake protocol/family/model_id in the generic constructor.",
+   "alias": "historical example path remains the last fallback",
+   "do_not": "rewrite the sealed profile"
+  },
+  {
+   "order": 2,
+   "value_over_risk": "very cheap, unlocks a generic argv0 without touching history",
+   "action": "Add cargo [[example]] name=\"resident\" path=\"examples/ascension_qwen38_resident.rs\". Keep autodiscoved ascension_qwen38_resident.",
+   "alias": "ascension_qwen38_resident",
+   "do_not": "git mv the .rs file"
+  },
+  {
+   "order": 3,
+   "value_over_risk": "cheap public-surface alias",
+   "action": "Add AgentOS CLI aliases fusion-audit / mlp-ab / runtime-archaeology for the three qwen* verbs.",
+   "alias": "qwen38-fusion-audit, qwen27-mlp-ab, qwen27-runtime-archaeology",
+   "do_not": "rename receipts/headless/HCLI_QWEN38_* or QWEN27_*"
+  },
+  {
+   "order": 4,
+   "value_over_risk": "stops the name spreading into new science",
+   "action": "Future tools read resident_binary from the profile/env; keep the current example path as a named fallback constant, not as THE name of the role.",
+   "alias": "PROBE_BINARY_REL and friends stay as fallbacks",
+   "do_not": "rewrite already-emitted tools/future receipts"
+  },
+  {
+   "order": 5,
+   "value_over_risk": "protocol identity becomes DATA; watch the fusion-validate trap",
+   "action": "Connector accept-list: hawking.native.resident.v1 canonical for NEW profiles; hawking.qwen38.resident.v1 remains the sealed-3.14 dialect. Keep fusion-env enforcement on the sealed body even if a profile uses the generic protocol string.",
+   "alias": "hawking.qwen38.resident.v1",
+   "do_not": "change const PROTOCOL in ascension_qwen38_resident.rs or the sealed profile protocol field"
+  },
+  {
+   "order": 6,
+   "value_over_risk": "small recognizer fix, no artifact migration",
+   "action": "is_hawking_native_path accepts MIX_REPORT-declared catalog names as well as catalog.hq38m20.",
+   "alias": "catalog.hq38m20",
+   "do_not": "rename the live catalog file"
+  },
+  {
+   "order": 7,
+   "value_over_risk": "vocabulary alignment only, after the body/protocol aliases exist",
+   "action": "NEW succession receipts may use resident_incumbent / resident_candidate / resident_child / resident_shadow. Accept the unprefixed tokens forever.",
+   "alias": "incumbent, candidate, child, shadow",
+   "do_not": "rewrite SUCCESSION.json or JUDGE_ROLE_NAMES as a breaking change"
+  },
+  {
+   "order": 8,
+   "value_over_risk": "documentation / forward rule, zero code churn",
+   "action": "Record genesis-resident as a vestigial occupant of the resident role. New work launches the generic resident body. Leave genesis-* on disk.",
+   "alias": "genesis-resident remains runnable historical tooling",
+   "do_not": "mass-rename tools/agentos/genesis_body or ascent-2026-08-16/genesis-resident receipts"
+  }
+ ],
+ "do_not_do": [
+  "Dangerous mass rename of ascension_* examples, hawking.qwen38.* schemas, HAWKING_QWEN38_* keys, receipts, or the sealed profile.",
+  "Treat Qwen38HybridDecodeSession as a generic decoder and rename it.",
+  "Rewrite history so the live argv0 was always 'resident'."
+ ],
+ "commands": [
+  "cat /private/tmp/claude-503/-Users-scammermike-Downloads-hawking/9bc2a65f-af58-4c16-bedd-2dd3a74d76dd/scratchpad/WAVE_STATE.md",
+  "git ls-tree -r --name-only HEAD | rg -i 'qwen38|qwen3.?8|ascension_qwen|genesis.resident|resident_qwen|qwen.*resident|resident.*qwen'",
+  "rg -n -i --hidden -g '!receipts/**' -g '!target/**' 'ascension_qwen38_resident|genesis.resident|genesis_resident'",
+  "git grep -l -- 'ascension_qwen38_resident' HEAD | awk '...'  => files=84 receipts=53 other=31",
+  "git grep counts at HEAD: ascension_qwen38_resident files=84 hits=372; genesis-resident files=47 hits=166; genesis_resident files=36 hits=228; hawking.qwen38.resident.v1 files=60 hits=188; hawking.genesis.resident.v1 files=6 hits=7; HAWKING_QWEN38_ files=181 hits=1436; QWEN38_PROTOCOL files=1 hits=3; resident_incumbent files=0 hits=0; resident_candidate files=1 hits=2; resident_shadow files=0 hits=0; resident_child files=2 hits=8; ResidentDaemon files=8 hits=39; ResidentInstance files=4 hits=8",
+  "git grep pathspec-limited (hcli tools crates docs lab civilization src, excluding receipts/workspace): hawking.native.resident.v1 files=1 hits=1; HCLI_HAWKING_RESIDENT_BINARY files=1 hits=1; ascension_qwen38_hybrid_greedy files=86 hits=188",
+  "git ls-tree -r --name-only HEAD -- crates/hawking-core/examples | rg -c 'ascension_'  => 131; rg -c 'ascension_qwen38_' => 17",
+  "git ls-tree -r --name-only HEAD | rg -c -i 'qwen38|qwen3\\.8|qwen3_8'  => 223 qwen38-in-path files",
+  "git ls-tree -r --name-only HEAD -- hcli/agentos | rg -i 'qwen'  => qwen27_mlp_diagnostic.py qwen27_runtime_identity.py qwen38_fusion_audit.py",
+  "git grep -n -- 'PROTOCOL_SCHEMA\\|QWEN38_PROTOCOL_SCHEMA\\|hawking.native.resident.v1' HEAD -- hcli tools crates lab docs",
+  "git grep -n -- 'HawkingNativeConfig.defaults' HEAD -- hcli tools lab",
+  "git grep -l -- 'hawking.native.resident.v1' HEAD | wc -l  => 1",
+  "git grep -n -- 'HAWKING_QWEN38_SERVE_UNTIMED' HEAD -- hcli tools crates docs lab",
+  "pgrep -lf 'ascension_qwen38_resident|genesis-resident'",
+  "git show HEAD:crates/hawking-core/src/model/qwen38_hybrid_decode.rs | wc -l  => 10129",
+  "git show HEAD:crates/hawking-core/examples/ascension_qwen38_resident.rs | wc -l  => 406",
+  "git show HEAD:receipts/headless/NOMENCLATURE_CENSUS.json  (generated_at 2026-08-27T07:02:07Z; rename_plan SAFE=2 UNSAFE=35; Ascension VESTIGIAL 4028 files 1.82 GiB; Genesis VESTIGIAL 78 files; QwenPatients AMBIGUOUS 4304 files)",
+  "git grep -l -- 'catalog.hq38m20' HEAD | wc -l  => 135; source-tree 57; git ls-tree paths matching hq38m20 => 1",
+  "git grep -o -- 'hawking\\.qwen38\\.[A-Za-z0-9_.]*' HEAD -- hcli tools crates docs lab src ':!receipts' | sort | uniq -c  => resident.v1 17, shared_sessions.v1 5, host_admission.v1 2",
+  "git rev-parse --short HEAD  => 9f89e3e77",
+  "date -u +%Y-%m-%dT%H:%M:%SZ"
+ ]
+}

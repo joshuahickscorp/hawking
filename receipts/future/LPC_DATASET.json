@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:59:46Z",
+  "recorded_at": "2026-09-02T09:36:40Z",
   "recorded_by": "tools/future/lpc_dataset.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -80,7 +80,7 @@
   "held-out splits by architecture, organ, and device",
   "authority helper: PROTECTED_ABSOLUTE always outranks a model"
  ],
- "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "ingest": {
   "inventory": {
    "by_contamination": {
@@ -196,8 +196,8 @@
   },
   "machine_genome_source": {
    "in_git_HEAD": true,
-   "loaded_from": "disk",
-   "on_disk": true,
+   "loaded_from": "git_HEAD",
+   "on_disk": false,
    "path": "receipts/headless/MACHINE_GENOME.json"
   },
   "rows": null,
@@ -206,8 +206,8 @@
     "complete": 0,
     "in_git_HEAD": true,
     "invalid_null": 0,
-    "loaded_from": "disk",
-    "on_disk": true,
+    "loaded_from": "git_HEAD",
+    "on_disk": false,
     "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json",
     "projected": 13,
     "rejected": 0,
@@ -217,8 +217,8 @@
     "complete": 0,
     "in_git_HEAD": true,
     "invalid_null": 0,
-    "loaded_from": "disk",
-    "on_disk": true,
+    "loaded_from": "git_HEAD",
+    "on_disk": false,
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
     "projected": 49,
     "rejected": 0,
@@ -228,8 +228,8 @@
     "complete": 0,
     "in_git_HEAD": true,
     "invalid_null": 0,
-    "loaded_from": "disk",
-    "on_disk": true,
+    "loaded_from": "git_HEAD",
+    "on_disk": false,
     "path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json",
     "projected": 9,
     "rejected": 0,
@@ -506,6 +506,6 @@
   ]
  },
  "schema": "hawking.future.lpc_dataset.v1",
- "seal_sha256": "ef0f26ec046fe7c8e9627797c92d702637cf57cdc8c790190cc1d4450b348a4d",
+ "seal_sha256": "2be0042bfca2cbf92e0353621d6190c42f26d5954945e464fbfa49c376cbcfa4",
  "version": 1
 }

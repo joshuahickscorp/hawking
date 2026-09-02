@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:41:59Z",
+  "recorded_at": "2026-09-02T09:06:01Z",
   "recorded_by": "tools/future/resident_provider.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -167,7 +167,7 @@
      "identity": "sealed-3.14",
      "in_flight": null,
      "model_open_count": 1,
-     "pid": 79441,
+     "pid": 25668,
      "presence": "ABSENT",
      "queue_depth": 0,
      "ready": false,
@@ -190,7 +190,7 @@
      "requests_served": 0,
      "rss_bytes": null,
      "sessions": 0,
-     "start_token": "1788241319.436595",
+     "start_token": "1788339961.065466",
      "waiters": 0,
      "weight_upload_count": 1
     },
@@ -279,15 +279,15 @@
    },
    "restart_reaches_ready_and_serves": {
     "detail": {
-     "new": 79438,
-     "old": 79437,
+     "new": 25648,
+     "old": 25647,
      "text": "ok"
     },
     "fires": true
    },
    "reuse_same_pid": {
     "detail": {
-     "pid": 79437,
+     "pid": 25647,
      "served": 2
     },
     "fires": true
@@ -329,13 +329,13 @@
    "start_reaches_ready": {
     "detail": {
      "open": 1,
-     "pid": 79437
+     "pid": 25647
     },
     "fires": true
    },
    "stop_kills": {
     "detail": {
-     "pid": 79438
+     "pid": 25648
     },
     "fires": true
    },
@@ -377,20 +377,20 @@
      "concatenated": false,
      "generation": 1,
      "n": 2,
-     "pid": 79437,
+     "pid": 25647,
      "same_process": true,
      "second_model_body": false,
      "sessions": [
       {
        "id": "s1",
-       "last_request_id": "4b35ad3132a645228c4cf3164bdaf417",
+       "last_request_id": "b2dd6e9dfe6e49bfab839a9af9b380e2",
        "n_turns": 2,
        "process_generation": 1,
        "templated": true
       },
       {
        "id": "s2",
-       "last_request_id": "3ef407e1c9ea4f6fb42c4d90fa2b2244",
+       "last_request_id": "c6970eb8feef46e3a5edb74b2e81fd84",
        "n_turns": 1,
        "process_generation": 1,
        "templated": true
@@ -492,7 +492,7 @@
   "workunit": "one CPU_ANALYSIS unit; protocol-double start/templated-ask/stop+quality/sessions/health/stop/restart; does not take a GPU lease"
  },
  "schema": "hawking.future.resident_provider.v1",
- "seal_sha256": "ad57c39b1c5628fed49821b467b24a6619339fbeaa76df73eb478c7046c9d8a3",
+ "seal_sha256": "87e0560f0882c5361bb0be7191b46cdacddc5cab675d17ac61c1f9904a930955",
  "started_model_process": false,
  "started_protocol_double": true,
  "started_sealed_resident": false,

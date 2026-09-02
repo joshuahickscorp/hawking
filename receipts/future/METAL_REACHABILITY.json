@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:59:53Z",
+  "recorded_at": "2026-09-02T09:36:48Z",
   "recorded_by": "tools/future/metal_reachability.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -17,9 +17,9 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "claim_sites": [
   {
-   "carries_claim": true,
+   "carries_claim": false,
    "path": "receipts/headless/FLASH_META_TEACHER_L4_CAPTURE_BOUNDARY.json",
-   "present": true
+   "present": false
   },
   {
    "carries_claim": true,
@@ -43,20 +43,14 @@
   "this module cannot say why the Rust process saw no device"
  ],
  "observed": {
-  "devices": [
-   "Apple M3 Ultra"
-  ],
-  "n_devices": 1,
-  "recommended_max_working_set_bytes": 83494174720,
-  "system_default": "Apple M3 Ultra",
-  "unified_memory": true
+  "devices": [],
+  "n_devices": 0,
+  "system_default": null
  },
  "observed_runtime_binding": {
-  "function_lookup": "OK",
   "metal_crate_version": "0.29.0",
-  "n_devices": 1,
-  "runtime_source_compile": "OK",
-  "system_default": "Apple M3 Ultra"
+  "n_devices": 0,
+  "system_default": null
  },
  "purpose": "Test the campaign-wide claim that this host has no Metal-capable GPU, because a host property and a process property have different remedies.",
  "recovered_implementation": [
@@ -71,77 +65,66 @@
   "workunit": "one CPU_ANALYSIS unit; cheap; no GPU authority"
  },
  "schema": "hawking.future.metal_reachability.v1",
- "seal_sha256": "d6c35529da9dc9dfca62a527cfb4e6212054542e8729d1989e2a2b3853d26273",
+ "seal_sha256": "3bc32cd5878a1979596bcdc9e5182efb78a72618308d106681866babdf464813",
  "verdict": {
   "alternatives": [
    {
+    "consistent_with_claim": false,
+    "consistent_with_observation": true,
+    "hypothetical": "a world in which the observation holds and the claim does not"
+   },
+   {
     "consistent_with_claim": true,
     "consistent_with_observation": true,
-    "hypothetical": "this process saw a Metal device, so the host has one"
+    "hypothetical": "a world in which both hold"
    }
   ],
-  "causality_verdict": "SUPPORTED",
+  "causality_verdict": "OVERREACHING",
   "claim": "this host has no Metal-capable GPU",
-  "claim_kind": "device_present",
+  "claim_kind": "process_failure",
   "confidence": {
-   "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
-   "level": "HIGH",
-   "would_lower": "a demonstration that the observation is consistent with the claim being false",
-   "would_raise": "independent replication of the same probe"
+   "about": "whether the recorded probe entails the causal claim",
+   "level": "LOW",
+   "would_lower": "any additional world-state consistent with the same observation",
+   "would_raise": "repeat the enumeration; a device appearing or disappearing settles presence"
   },
-  "different_remedies": {
-   "a process that cannot see a present GPU": "change how the process is launched, then re-run the capture",
-   "if the host had no GPU": "acquire hardware; nothing else helps"
-  },
-  "direct_observation": "system_default='Apple M3 Ultra'; n_devices=1; devices=['Apple M3 Ultra']",
+  "direct_observation": "system_default=None; n_devices=0; devices=[]",
   "falsifier": "repeat the enumeration; a device appearing or disappearing settles presence",
-  "interpretation": "this process saw a Metal device ('Apple M3 Ultra'); the campaign claim 'this host has no Metal-capable GPU' is falsified as a host property",
+  "interpretation": "this ordinary process saw no Metal device; that is a process-side observation, not a completed host census",
   "probe_kind": "device_enumeration",
   "probe_performed": "Swift Metal enumeration: MTLCreateSystemDefaultDevice() and MTLCopyAllDevices(); no command queue created, no work submitted",
   "runtime_binding": {
    "alternatives": [
     {
+     "consistent_with_claim": false,
+     "consistent_with_observation": true,
+     "hypothetical": "a world in which the observation holds and the claim does not"
+    },
+    {
      "consistent_with_claim": true,
      "consistent_with_observation": true,
-     "hypothetical": "this process saw a Metal device, so the host has one"
+     "hypothetical": "a world in which both hold"
     }
    ],
-   "causality_verdict": "SUPPORTED",
+   "causality_verdict": "OVERREACHING",
    "claim": "this host has no Metal-capable GPU",
-   "claim_kind": "device_present",
+   "claim_kind": "process_failure",
    "confidence": {
-    "about": "whether the recorded probe entails the claim \u2014 not whether the world is that way for reasons this probe did not test",
-    "level": "HIGH",
-    "would_lower": "a demonstration that the observation is consistent with the claim being false",
-    "would_raise": "independent replication of the same probe"
+    "about": "whether the recorded probe entails the causal claim",
+    "level": "LOW",
+    "would_lower": "any additional world-state consistent with the same observation",
+    "would_raise": "repeat the enumeration; a device appearing or disappearing settles presence"
    },
-   "different_remedies": {
-    "a process that cannot see a present GPU": "change how the process is launched, then re-run the capture",
-    "if the host had no GPU": "acquire hardware; nothing else helps"
-   },
-   "direct_observation": "system_default='Apple M3 Ultra'; n_devices=1; devices=None",
+   "direct_observation": "system_default=None; n_devices=0; devices=None",
    "falsifier": "repeat the enumeration; a device appearing or disappearing settles presence",
-   "interpretation": "this process saw a Metal device ('Apple M3 Ultra'); the campaign claim 'this host has no Metal-capable GPU' is falsified as a host property",
+   "interpretation": "this ordinary process saw no Metal device; that is a process-side observation, not a completed host census",
    "probe_kind": "device_enumeration",
    "probe_performed": "Swift Metal enumeration: MTLCreateSystemDefaultDevice() and MTLCopyAllDevices(); no command queue created, no work submitted",
-   "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
-   "what_this_does_not_establish": [
-    "that the blocked capture will now succeed; that binary was not run here",
-    "the cause of the process-side failure; sandbox, launch context and build target are all consistent with what was observed and nothing here distinguishes them"
-   ],
-   "why": "metal crate 0.29.0 -- the same crate and the same Device::system_default() call the runtime uses -- returned 'Apple M3 Ultra' here. The language binding is not the suspect; it is the binding that failed in the blocked run."
+   "verdict": "CONFIRMED",
+   "why": "MTLCreateSystemDefaultDevice() returned nil from an ordinary process here"
   },
-  "shader_compilation": {
-   "runtime_source_compile": "OK",
-   "still_not_a_measurement": "the compiler service was exercised, not the GPU: no command queue was created and nothing was dispatched",
-   "why_it_matters": "load_or_compile_shader_library falls back to device.new_library_with_source when no metallib cache is warm, and the xcrun precompile path is optional and gated behind HAWKING_METALLIB_BUILD. So the absent offline compiler does not block execution here -- it forces source compilation on a cold start, which is a cost, not a wall."
-  },
-  "verdict": "FALSIFIED_AS_A_HOST_PROPERTY",
-  "what_this_does_not_establish": [
-   "that the blocked capture will now succeed; that binary was not run here",
-   "the cause of the process-side failure; sandbox, launch context and build target are all consistent with what was observed and nothing here distinguishes them"
-  ],
-  "why": "MTLCreateSystemDefaultDevice() returned 'Apple M3 Ultra' from an ordinary command-line process on this host, and MTLCopyAllDevices() reports 1 device(s). A Rust Device::system_default() returning None is therefore a property of that process, not of the machine."
+  "verdict": "CONFIRMED",
+  "why": "MTLCreateSystemDefaultDevice() returned nil from an ordinary process here"
  },
  "version": 1,
  "why_not_a_measurement": "device enumeration only. No command queue is created, no work is submitted, no lease is taken, and no timing is recorded."

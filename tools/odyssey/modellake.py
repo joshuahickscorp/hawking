@@ -15,6 +15,28 @@ import argparse, json, os, shutil, subprocess, sys, time, urllib.request
 from pathlib import Path
 
 REPO = Path(__file__).resolve().parents[2]
+# Package import identity so lineage / boundary call sites resolve when this
+# file is run as a script from any cwd. Acquire still uses the lake paths
+# below; live workers must not move.
+if str(REPO) not in sys.path:
+    sys.path.insert(0, str(REPO))
+from tools.odyssey.modellake_lineage import (  # noqa: E402
+    build_lake_index,
+    express_lineage,
+    lake_index,
+    query_lake_specimen,
+    update_lake_specimen,
+)
+from tools.odyssey.product_boundary import (  # noqa: E402
+    discover_config,
+    discover_machine,
+    install_plan,
+    load_config,
+    recover_plan,
+    resolve_artifact,
+    safe_defaults,
+    update_plan,
+)
 LAKE = Path("/Volumes/corpdrive/hawking-modellake")
 TIER2 = LAKE / "specimens"
 PARTIAL = LAKE / "partial"
@@ -51,6 +73,21 @@ def _api(repo, rev):
         return json.load(r)
 
 
+def logical_bytes(p):
+    """Sum of st_size over regular files, excluding the downloader's .cache.
+
+    This is the catalog's definition of a specimen's size. du() below reports
+    allocated blocks and includes .cache, which is the right number for capacity
+    admission and the wrong one for a manifest that must agree with the index.
+    """
+    p = Path(p)
+    if not p.exists():
+        return 0
+    return sum(f.stat().st_size for f in p.rglob("*")
+               if f.is_file() and not f.is_symlink()
+               and ".cache" not in f.relative_to(p).parts)
+
+
 def du(p):
     p = Path(p)
     if not p.exists():
@@ -82,11 +119,21 @@ def tier2_used():
 def admit(nbytes, tier):
     """Enforced, not advisory: an over-budget request is refused with a reason."""
     if tier == 2:
-        used, budget, avail = tier2_used(), TIER2_BUDGET, free("/Volumes/corpdrive")
+        budget = TIER2_BUDGET
     elif tier == 1:
-        used, budget, avail = du(SSD_STAGE), TIER1_BUDGET, free("/")
+        budget = TIER1_BUDGET
     else:
         raise ValueError(tier)
+    # A request larger than the entire tier can be rejected without touching a
+    # mounted filesystem. This matters for unattended callers: a busy or
+    # temporarily unavailable external volume must not turn an obvious refusal
+    # into an unbounded `du` wait.
+    if nbytes > budget:
+        return False, f"tier{tier} budget: request {nbytes} exceeds {budget}"
+    if tier == 2:
+        used, avail = tier2_used(), free("/Volumes/corpdrive")
+    else:
+        used, avail = du(SSD_STAGE), free("/")
     if used + nbytes > budget:
         return False, (f"tier{tier} budget: {used + nbytes} would exceed {budget} "
                        f"(used {used}, request {nbytes})")
@@ -168,9 +215,16 @@ def acquire(repo, rev, emit_progress=True):
                 "partial": str(part)}
 
     os.rename(part, final)                      # atomic: never half-visible in TIER2
+    # `bytes` is the sum of st_size over regular files outside .cache -- the same
+    # number modellake_index puts in the catalog. Recording du()'s allocated blocks
+    # here instead made every manifest disagree with the catalog by a few hundred KB
+    # and land in the stale_manifest_bytes anomaly list. The allocated figure is kept
+    # beside it because it is what the volume actually spends.
     manifest = {
         "repo": repo, "revision": rev, "resolved_sha": meta.get("sha"),
-        "path": str(final), "bytes": du(final), "n_files": len(sibs),
+        "path": str(final), "bytes": logical_bytes(final),
+        "bytes_are": "sum of st_size over regular files outside .cache",
+        "bytes_allocated": du(final), "n_files": len(sibs),
         "n_sha256_verified": len(verified), "n_size_only_verified": len(weak),
         "acquired_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
         "wall_s": round(time.time() - t0, 1),
@@ -390,14 +444,86 @@ def demo_cycle(repo, rev, emit):
 def main():
     ap = argparse.ArgumentParser()
     ap.add_argument("cmd", choices=["acquire", "stage", "retire", "status", "admit",
-                                    "demo-cycle", "verify"])
+                                    "demo-cycle", "verify",
+                                    "lineage", "resolve", "discover-machine", "boundary",
+                                    "index", "query", "index-update"])
     ap.add_argument("--repo"); ap.add_argument("--revision"); ap.add_argument("--slug")
     ap.add_argument("--bytes", type=int); ap.add_argument("--tier", type=int, default=2)
     ap.add_argument("--emit")
+    ap.add_argument("--config")
+    ap.add_argument("--artifact")
+    ap.add_argument("--manifest-dir")
+    ap.add_argument("--index-dir")
+    ap.add_argument("--force", action="store_true")
     a = ap.parse_args()
 
     if a.cmd == "demo-cycle":
         return demo_cycle(a.repo, a.revision, a.emit or "/dev/stdout")
+    if a.cmd == "index":
+        out = build_lake_index(force=a.force, index_dir=a.index_dir,
+                               manifest_dir=a.manifest_dir)
+        print(json.dumps(out, indent=1))
+        if a.emit:
+            Path(a.emit).write_text(json.dumps(out, indent=1))
+        return 0
+    if a.cmd == "query":
+        if a.slug:
+            out = query_lake_specimen(a.slug, index_dir=a.index_dir)
+        else:
+            out = lake_index(index_dir=a.index_dir)
+        print(json.dumps(out, indent=1))
+        if a.emit:
+            Path(a.emit).write_text(json.dumps(out, indent=1))
+        return 0
+    if a.cmd == "index-update":
+        if not a.slug:
+            print("index-update requires --slug", file=sys.stderr)
+            return 2
+        out = update_lake_specimen(a.slug, index_dir=a.index_dir,
+                                   manifest_dir=a.manifest_dir)
+        print(json.dumps(out, indent=1))
+        if a.emit:
+            Path(a.emit).write_text(json.dumps(out, indent=1))
+        return 0
+    if a.cmd in ("lineage", "resolve", "discover-machine", "boundary"):
+        if a.cmd == "discover-machine":
+            out = discover_machine()
+        else:
+            cfg_path = discover_config(explicit=a.config) if a.config else discover_config()
+            cfg = load_config(cfg_path) if cfg_path else safe_defaults()
+            if a.manifest_dir:
+                cfg.setdefault("artifact_roots", {})["watch_manifests"] = a.manifest_dir
+            if a.cmd == "lineage":
+                out = express_lineage(
+                    a.slug or "Qwen--Qwen3-0.6B@c1899de289a0",
+                    config=cfg, manifest_dir=a.manifest_dir,
+                )
+            elif a.cmd == "resolve":
+                name = a.artifact or a.slug
+                if not name:
+                    print("resolve requires --artifact", file=sys.stderr)
+                    return 2
+                out = resolve_artifact(name, cfg)
+            else:
+                slug = a.slug or "Qwen--Qwen3-0.6B@c1899de289a0"
+                rec = None
+                try:
+                    rec = express_lineage(slug, config=cfg, manifest_dir=a.manifest_dir)
+                    rec = (rec.get("provenance") or {}).get("reacquisition")
+                except Exception:
+                    rec = None
+                out = {
+                    "config_path": cfg.get("_config_path"),
+                    "artifact_roots": cfg.get("artifact_roots"),
+                    "machine": discover_machine(),
+                    "install": install_plan(slug, cfg),
+                    "updates": update_plan(cfg),
+                    "recovery": recover_plan(slug, cfg, reacquisition=rec),
+                }
+        print(json.dumps(out, indent=1))
+        if a.emit:
+            Path(a.emit).write_text(json.dumps(out, indent=1))
+        return 0
     if a.cmd == "verify":
         out = verify_only(a.repo, a.revision, TIER2 / a.slug)
     elif a.cmd == "acquire":

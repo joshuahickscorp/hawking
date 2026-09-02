@@ -1,19 +1,19 @@
 {
  "autonomy_1h_guards": {
   "decisions_after_two_minutes": {
-   "elapsed_s": 130.95046210289001,
-   "first_decision_t_s": 0.1445150375366211,
-   "last_decision_t_s": 130.94408226013184,
-   "n_decisions": 155,
-   "n_decisions_after_120": 17,
+   "elapsed_s": 130.65837001800537,
+   "first_decision_t_s": 0.1413288116455078,
+   "last_decision_t_s": 130.65455389022827,
+   "n_decisions": 154,
+   "n_decisions_after_120": 16,
    "passed": true,
-   "reason": "17 decision(s) after t_s 120; last_decision_t_s=130.944"
+   "reason": "16 decision(s) after t_s 120; last_decision_t_s=130.655"
   },
   "passed": true,
   "refill_novelty": {
    "identical_consecutive_refills": 0,
    "later_refills_had_novel_ids": true,
-   "n_refills": 49,
+   "n_refills": 48,
    "n_unique_ids": 50,
    "novel_ids_per_refill": [
     [
@@ -21,9 +21,7 @@
      "WU.DETACHED_TRIAL.ind.0001"
     ],
     [
-     "WU.DETACHED_TRIAL.ind.0003"
-    ],
-    [
+     "WU.DETACHED_TRIAL.ind.0003",
      "WU.DETACHED_TRIAL.ind.0004"
     ],
     [
@@ -183,7 +181,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:26:27Z",
+  "recorded_at": "2026-09-02T08:44:15Z",
   "recorded_by": "tools/future/detached_trial.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -192,16 +190,16 @@
  "child": {
   "argv0": "/opt/homebrew/opt/python@3.14/bin/python3.14",
   "argv_script": "/Users/scammermike/Downloads/hawking/tools/future/detached_trial.py",
-  "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/child/child.json",
+  "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/child/child.json",
   "identity_status_at_launch": "match",
-  "job_id": "WU-DETACHED_TRIAL-child-cd7406e2",
-  "launch_return_s": 0.08502070792019367,
-  "pid": 33618,
+  "job_id": "WU-DETACHED_TRIAL-child-35a3e2dc",
+  "launch_return_s": 0.08506683306768537,
+  "pid": 68737,
   "receipt_present": true,
   "returncode": 0,
   "start_new_session": true,
-  "start_token": "1788240256.267936",
-  "supervisor_pid": 33616,
+  "start_token": "1788338525.160818",
+  "supervisor_pid": 68736,
   "terminal": "completed-with-receipt",
   "unit_id": "WU.DETACHED_TRIAL.child"
  },
@@ -218,7 +216,7 @@
     "live_before": 2,
     "pid": null,
     "spawned": false,
-    "t_s": 0.2973501682281494,
+    "t_s": 0.30997681617736816,
     "unit_id": "WU.DETACHED_TRIAL.ind.0002"
    },
    {
@@ -227,173 +225,172 @@
     "live_before": 2,
     "pid": null,
     "spawned": false,
-    "t_s": 30.017278909683228,
+    "t_s": 30.02527904510498,
     "unit_id": "WU.DETACHED_TRIAL.ind.0013"
    }
   ]
  },
  "consumes_detached_py": true,
  "decision_t_s": [
-  0.1445150375366211,
-  0.21715402603149414,
-  0.29640698432922363,
-  0.29642510414123535,
-  0.2973511219024658,
-  5.362771272659302,
-  5.443742275238037,
-  5.443753957748413,
-  5.474528074264526,
-  5.549414157867432,
-  5.549424171447754,
-  10.529057025909424,
-  10.613205909729004,
-  10.613217115402222,
-  10.634716033935547,
-  10.710706233978271,
-  10.710715055465698,
-  15.74279499053955,
-  15.823575973510742,
-  15.823604106903076,
-  15.85458517074585,
-  15.927966117858887,
-  15.92798113822937,
-  20.96432089805603,
-  21.041491270065308,
-  21.04150700569153,
-  21.072420120239258,
-  21.160290002822876,
-  21.160308122634888,
-  26.169246196746826,
-  26.26184606552124,
-  26.261857986450195,
-  26.34896206855774,
-  26.431270122528076,
-  26.431281089782715,
-  30.017279863357544,
-  31.38566493988037,
-  31.489422082901,
-  31.48943519592285,
-  31.510353088378906,
-  31.58570909500122,
-  31.585721015930176,
-  36.649439096450806,
-  36.739907026290894,
-  36.73992204666138,
-  36.76137018203735,
-  36.857627153396606,
-  36.85763716697693,
-  41.89274597167969,
-  42.00985908508301,
-  42.009873151779175,
-  42.03601312637329,
-  42.133904218673706,
-  42.13391923904419,
-  47.18478512763977,
-  47.328938007354736,
-  47.3289520740509,
-  47.35481810569763,
-  47.429625034332275,
-  47.429632902145386,
-  52.42396807670593,
-  52.5064811706543,
-  52.50648903846741,
-  52.53695893287659,
-  52.61370587348938,
-  52.613715171813965,
-  57.62585425376892,
-  57.769607067108154,
-  57.76962208747864,
-  57.795340061187744,
-  57.87435007095337,
-  57.874361991882324,
-  62.942044258117676,
-  63.09508800506592,
-  63.0951030254364,
-  63.121092081069946,
-  63.2303569316864,
-  63.23037099838257,
-  68.3700442314148,
-  68.51127815246582,
-  68.51129603385925,
-  68.53716397285461,
-  68.64831209182739,
-  68.64832210540771,
-  73.67884516716003,
-  73.83615303039551,
-  73.83617210388184,
-  73.8578679561615,
-  73.93499517440796,
-  73.93500709533691,
-  78.92586421966553,
-  79.04277491569519,
-  79.04278707504272,
-  79.12460422515869,
-  79.25911903381348,
-  79.25913119316101,
-  84.12671208381653,
-  84.20000195503235,
-  84.20001411437988,
-  84.33771014213562,
-  84.41803002357483,
-  84.418044090271,
-  89.34629607200623,
-  89.42560911178589,
-  89.42562103271484,
-  89.50342607498169,
-  89.58288812637329,
-  89.58289813995361,
-  94.5111882686615,
-  94.59262895584106,
-  94.59264302253723,
-  94.6688220500946,
-  94.75015807151794,
-  94.75017428398132,
-  99.68947720527649,
-  99.76787304878235,
-  99.76788306236267,
-  99.87045288085938,
-  99.9494252204895,
-  99.94943618774414,
-  104.84299302101135,
-  104.91379904747009,
-  104.91381025314331,
-  105.06065106391907,
-  105.13705110549927,
-  105.1370632648468,
-  110.07442498207092,
-  110.14976811408997,
-  110.1497802734375,
-  110.23434519767761,
-  110.30819916725159,
-  110.30821013450623,
-  115.24124312400818,
-  115.31842017173767,
-  115.318430185318,
-  115.4182231426239,
-  115.49692797660828,
-  115.49693894386292,
-  120.4172899723053,
-  120.49660205841064,
-  120.49661302566528,
-  120.58378005027771,
-  120.65933609008789,
-  120.65934419631958,
-  125.58488011360168,
-  125.66117811203003,
-  125.66118597984314,
-  125.74404716491699,
-  125.82227516174316,
-  125.8222861289978,
-  128.4112560749054,
-  128.41278719902039,
-  128.41279888153076,
-  130.78773021697998,
-  130.94408226013184
+  0.1413288116455078,
+  0.2263638973236084,
+  0.30918288230895996,
+  0.3091928958892822,
+  0.3099789619445801,
+  5.412846088409424,
+  5.41286301612854,
+  5.498740911483765,
+  5.585271120071411,
+  5.58528208732605,
+  10.606590986251831,
+  10.693607807159424,
+  10.693615913391113,
+  10.720305919647217,
+  10.806578874588013,
+  10.806585788726807,
+  15.781533002853394,
+  15.867612838745117,
+  15.867621898651123,
+  15.91758394241333,
+  16.00201392173767,
+  16.00202488899231,
+  21.052385091781616,
+  21.1390540599823,
+  21.1390700340271,
+  21.223308086395264,
+  21.307942867279053,
+  21.30795192718506,
+  26.289185047149658,
+  26.38780188560486,
+  26.387815952301025,
+  26.412944793701172,
+  26.508400917053223,
+  26.50840973854065,
+  30.025279998779297,
+  31.479792833328247,
+  31.5746328830719,
+  31.574645042419434,
+  31.688636779785156,
+  31.774885892868042,
+  31.77489686012268,
+  36.67408990859985,
+  36.76086401939392,
+  36.76087498664856,
+  36.896347761154175,
+  36.984978914260864,
+  36.98499393463135,
+  41.86873912811279,
+  41.954468727111816,
+  41.954477071762085,
+  42.07943296432495,
+  42.16410803794861,
+  42.16411590576172,
+  47.070772886276245,
+  47.1574330329895,
+  47.15744686126709,
+  47.25837802886963,
+  47.342458963394165,
+  47.34246778488159,
+  52.30496573448181,
+  52.39114499092102,
+  52.39115381240845,
+  52.45092511177063,
+  52.537585973739624,
+  52.537598848342896,
+  57.498108863830566,
+  57.582515001297,
+  57.582523822784424,
+  57.64385485649109,
+  57.72730088233948,
+  57.72730994224548,
+  62.68260598182678,
+  62.76924014091492,
+  62.769251108169556,
+  62.85765886306763,
+  62.93959879875183,
+  62.939608097076416,
+  67.90728807449341,
+  67.99015593528748,
+  67.99016809463501,
+  68.03902578353882,
+  68.1237051486969,
+  68.12371683120728,
+  73.16300177574158,
+  73.26011800765991,
+  73.26012802124023,
+  73.28585600852966,
+  73.37137985229492,
+  73.37139201164246,
+  78.34244298934937,
+  78.43956303596497,
+  78.43957686424255,
+  78.48901510238647,
+  78.57498598098755,
+  78.57500076293945,
+  83.53346586227417,
+  83.61998391151428,
+  83.62001776695251,
+  83.65424990653992,
+  83.73811984062195,
+  83.73812985420227,
+  88.75459289550781,
+  88.84090805053711,
+  88.84092497825623,
+  88.86296081542969,
+  88.94983196258545,
+  88.94984292984009,
+  94.00964188575745,
+  94.1228837966919,
+  94.1229031085968,
+  94.14625692367554,
+  94.24441075325012,
+  94.24442911148071,
+  99.22154593467712,
+  99.30476999282837,
+  99.30478000640869,
+  99.36588788032532,
+  99.45215201377869,
+  99.45216488838196,
+  104.40480089187622,
+  104.49120903015137,
+  104.49121880531311,
+  104.57412195205688,
+  104.65945196151733,
+  104.65946292877197,
+  109.5827488899231,
+  109.6666579246521,
+  109.66667175292969,
+  109.75514912605286,
+  109.839772939682,
+  109.83978176116943,
+  114.78302097320557,
+  114.86728882789612,
+  114.8672981262207,
+  114.95624494552612,
+  115.04219603538513,
+  115.04220581054688,
+  119.95508885383606,
+  120.03961086273193,
+  120.03961992263794,
+  120.16295194625854,
+  120.24680280685425,
+  120.24681282043457,
+  125.13898587226868,
+  125.2339940071106,
+  125.23400497436523,
+  125.3744809627533,
+  125.45873689651489,
+  125.45874500274658,
+  128.36529302597046,
+  128.3653130531311,
+  128.39122986793518,
+  130.34742283821106,
+  130.65455389022827
  ],
  "does_not_call_subprocess_run_for_work": true,
  "does_not_call_wait_terminal_on_child": true,
  "does_not_fork_detached_py": true,
- "elapsed_s": 130.95046210289001,
+ "elapsed_s": 130.65837001800537,
  "eras": [
   "I Genesis of the Laboratory",
   "II Compounding Civilization",
@@ -411,458 +408,458 @@
   "the three AUTONOMY_TIMELINE_1h guards are evaluated on this run's timeline and can FAIL it"
  ],
  "gpu_authority": false,
- "head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "idle_is_autonomy_defect": false,
  "idle_runnable_seconds": 0.0,
  "independent": {
   "completed": [
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0000-2f288752",
-    "pid": 33620,
+    "job_id": "WU-DETACHED_TRIAL-ind-0000-173af48b",
+    "pid": 68739,
     "receipt_present": true,
-    "t_s": 5.362750291824341,
+    "t_s": 5.41281795501709,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0000"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0001-716215f3",
-    "pid": 33623,
+    "job_id": "WU-DETACHED_TRIAL-ind-0001-847f0635",
+    "pid": 68741,
     "receipt_present": true,
-    "t_s": 5.47451114654541,
-    "terminal": "completed-with-receipt",
+    "t_s": 5.412846803665161,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0001"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0003-c5e46607",
-    "pid": 33934,
+    "job_id": "WU-DETACHED_TRIAL-ind-0003-abfc1d91",
+    "pid": 68761,
     "receipt_present": true,
-    "t_s": 10.529030084609985,
+    "t_s": 10.606559991836548,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0003"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0004-ac01e85d",
-    "pid": 33951,
+    "job_id": "WU-DETACHED_TRIAL-ind-0004-c0d8bc51",
+    "pid": 68763,
     "receipt_present": true,
-    "t_s": 10.634700059890747,
+    "t_s": 10.720284938812256,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0004"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0005-100e1b9c",
-    "pid": 34062,
+    "job_id": "WU-DETACHED_TRIAL-ind-0005-5b38d271",
+    "pid": 68809,
     "receipt_present": true,
-    "t_s": 15.742769241333008,
+    "t_s": 15.781506061553955,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0005"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0006-1aa9572d",
-    "pid": 34064,
+    "job_id": "WU-DETACHED_TRIAL-ind-0006-42619544",
+    "pid": 68811,
     "receipt_present": true,
-    "t_s": 15.854565143585205,
+    "t_s": 15.917568922042847,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0006"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0007-76baa221",
-    "pid": 34139,
+    "job_id": "WU-DETACHED_TRIAL-ind-0007-52beab9d",
+    "pid": 68825,
     "receipt_present": true,
-    "t_s": 20.96429204940796,
-    "terminal": "unknown",
+    "t_s": 21.05235981941223,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0007"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0008-d77fe60a",
-    "pid": 34141,
+    "job_id": "WU-DETACHED_TRIAL-ind-0008-120620fa",
+    "pid": 68828,
     "receipt_present": true,
-    "t_s": 21.072391033172607,
-    "terminal": "completed-with-receipt",
+    "t_s": 21.223278760910034,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0008"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0009-e6f37788",
-    "pid": 34188,
+    "job_id": "WU-DETACHED_TRIAL-ind-0009-e4b6059a",
+    "pid": 68850,
     "receipt_present": true,
-    "t_s": 26.169182300567627,
-    "terminal": "unknown",
+    "t_s": 26.289160013198853,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0009"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0010-c27644f2",
-    "pid": 34190,
+    "job_id": "WU-DETACHED_TRIAL-ind-0010-973b2ee0",
+    "pid": 68854,
     "receipt_present": true,
-    "t_s": 26.348939895629883,
-    "terminal": "unknown",
+    "t_s": 26.412925958633423,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0010"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0011-ad756206",
-    "pid": 34233,
+    "job_id": "WU-DETACHED_TRIAL-ind-0011-30ffd73e",
+    "pid": 68898,
     "receipt_present": true,
-    "t_s": 31.385642051696777,
-    "terminal": "completed-with-receipt",
+    "t_s": 31.479760885238647,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0011"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0012-cfb253b5",
-    "pid": 34237,
+    "job_id": "WU-DETACHED_TRIAL-ind-0012-e26a59c9",
+    "pid": 68900,
     "receipt_present": true,
-    "t_s": 31.510338068008423,
+    "t_s": 31.68861174583435,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0012"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0014-bfd8f194",
-    "pid": 34258,
+    "job_id": "WU-DETACHED_TRIAL-ind-0014-6b821e5a",
+    "pid": 68944,
     "receipt_present": true,
-    "t_s": 36.6494140625,
+    "t_s": 36.674057960510254,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0014"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0015-63b9867a",
-    "pid": 34260,
+    "job_id": "WU-DETACHED_TRIAL-ind-0015-b318ca3d",
+    "pid": 68947,
     "receipt_present": true,
-    "t_s": 36.76135206222534,
+    "t_s": 36.89632201194763,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0015"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0016-6fb7f5ca",
-    "pid": 34325,
+    "job_id": "WU-DETACHED_TRIAL-ind-0016-289f1bcf",
+    "pid": 68996,
     "receipt_present": true,
-    "t_s": 41.89271020889282,
+    "t_s": 41.86871695518494,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0016"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0017-dfe1be16",
-    "pid": 34328,
+    "job_id": "WU-DETACHED_TRIAL-ind-0017-d3b52cd0",
+    "pid": 69000,
     "receipt_present": true,
-    "t_s": 42.03599500656128,
+    "t_s": 42.07941699028015,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0017"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0018-756b4174",
-    "pid": 34360,
+    "job_id": "WU-DETACHED_TRIAL-ind-0018-be53fb8a",
+    "pid": 69052,
     "receipt_present": true,
-    "t_s": 47.18476319313049,
+    "t_s": 47.07074785232544,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0018"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0019-cf0fe674",
-    "pid": 34363,
+    "job_id": "WU-DETACHED_TRIAL-ind-0019-66b605c7",
+    "pid": 69059,
     "receipt_present": true,
-    "t_s": 47.35479116439819,
+    "t_s": 47.25836181640625,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0019"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0020-2c7b1e23",
-    "pid": 34399,
+    "job_id": "WU-DETACHED_TRIAL-ind-0020-a919cf63",
+    "pid": 69144,
     "receipt_present": true,
-    "t_s": 52.4239342212677,
-    "terminal": "unknown",
+    "t_s": 52.30493187904358,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0020"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0021-761f6eef",
-    "pid": 34401,
+    "job_id": "WU-DETACHED_TRIAL-ind-0021-94af0213",
+    "pid": 69160,
     "receipt_present": true,
-    "t_s": 52.53690528869629,
+    "t_s": 52.45089411735535,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0021"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0022-18ef616a",
-    "pid": 34420,
+    "job_id": "WU-DETACHED_TRIAL-ind-0022-12903cff",
+    "pid": 69201,
     "receipt_present": true,
-    "t_s": 57.62583017349243,
-    "terminal": "completed-with-receipt",
+    "t_s": 57.498085737228394,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0022"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0023-51c5653c",
-    "pid": 34423,
+    "job_id": "WU-DETACHED_TRIAL-ind-0023-49564c84",
+    "pid": 69204,
     "receipt_present": true,
-    "t_s": 57.79532217979431,
-    "terminal": "completed-with-receipt",
+    "t_s": 57.64383316040039,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0023"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0024-c637eb53",
-    "pid": 34446,
+    "job_id": "WU-DETACHED_TRIAL-ind-0024-3de7810e",
+    "pid": 69247,
     "receipt_present": true,
-    "t_s": 62.942018032073975,
-    "terminal": "completed-with-receipt",
+    "t_s": 62.68258309364319,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0024"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0025-42df706f",
-    "pid": 34448,
+    "job_id": "WU-DETACHED_TRIAL-ind-0025-0f95801b",
+    "pid": 69251,
     "receipt_present": true,
-    "t_s": 63.12107515335083,
+    "t_s": 62.857635736465454,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0025"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0027-69cc1a26",
-    "pid": 34767,
+    "job_id": "WU-DETACHED_TRIAL-ind-0026-6d7035ec",
+    "pid": 69319,
     "receipt_present": true,
-    "t_s": 68.37001705169678,
+    "t_s": 67.9072539806366,
+    "terminal": "unknown",
+    "unit_id": "WU.DETACHED_TRIAL.ind.0026"
+   },
+   {
+    "child_still_running": true,
+    "job_id": "WU-DETACHED_TRIAL-ind-0027-18a11c46",
+    "pid": 69322,
+    "receipt_present": true,
+    "t_s": 68.03900790214539,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0027"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0026-81198ec6",
-    "pid": 34764,
+    "job_id": "WU-DETACHED_TRIAL-ind-0028-eabe6c5d",
+    "pid": 69361,
     "receipt_present": true,
-    "t_s": 68.5371470451355,
-    "terminal": "completed-with-receipt",
-    "unit_id": "WU.DETACHED_TRIAL.ind.0026"
-   },
-   {
-    "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0028-085ac391",
-    "pid": 34812,
-    "receipt_present": true,
-    "t_s": 73.67882204055786,
+    "t_s": 73.16297698020935,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0028"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0029-7f1b3106",
-    "pid": 34814,
+    "job_id": "WU-DETACHED_TRIAL-ind-0029-99490c33",
+    "pid": 69364,
     "receipt_present": true,
-    "t_s": 73.85785222053528,
+    "t_s": 73.28583979606628,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0029"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0030-206573dc",
-    "pid": 34907,
+    "job_id": "WU-DETACHED_TRIAL-ind-0030-5f176072",
+    "pid": 69426,
     "receipt_present": true,
-    "t_s": 78.92584323883057,
-    "terminal": "completed-with-receipt",
+    "t_s": 78.3424129486084,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0030"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0031-f0ffb5fe",
-    "pid": 34909,
+    "job_id": "WU-DETACHED_TRIAL-ind-0031-d2f95452",
+    "pid": 69428,
     "receipt_present": true,
-    "t_s": 79.1245801448822,
+    "t_s": 78.48899579048157,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0031"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0032-97fa8154",
-    "pid": 34964,
+    "job_id": "WU-DETACHED_TRIAL-ind-0032-8eaa7e21",
+    "pid": 69461,
     "receipt_present": true,
-    "t_s": 84.1266872882843,
-    "terminal": "unknown",
+    "t_s": 83.53344583511353,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0032"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0033-2cfb352a",
-    "pid": 34970,
+    "job_id": "WU-DETACHED_TRIAL-ind-0033-0556823f",
+    "pid": 69464,
     "receipt_present": true,
-    "t_s": 84.33768701553345,
+    "t_s": 83.6542227268219,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0033"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0034-aa0146da",
-    "pid": 35002,
+    "job_id": "WU-DETACHED_TRIAL-ind-0034-f151b0b5",
+    "pid": 69501,
     "receipt_present": true,
-    "t_s": 89.34626293182373,
-    "terminal": "unknown",
+    "t_s": 88.75457000732422,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0034"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0035-65d33e82",
-    "pid": 35005,
+    "job_id": "WU-DETACHED_TRIAL-ind-0035-5a00c91a",
+    "pid": 69510,
     "receipt_present": true,
-    "t_s": 89.50340390205383,
-    "terminal": "unknown",
+    "t_s": 88.86294198036194,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0035"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0036-a7206c08",
-    "pid": 35041,
+    "job_id": "WU-DETACHED_TRIAL-ind-0036-bb0ee39f",
+    "pid": 69584,
     "receipt_present": true,
-    "t_s": 94.5111632347107,
+    "t_s": 94.00961399078369,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0036"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0037-cd30e1ad",
-    "pid": 35044,
+    "job_id": "WU-DETACHED_TRIAL-ind-0037-fc05cdd4",
+    "pid": 69586,
     "receipt_present": true,
-    "t_s": 94.66880512237549,
+    "t_s": 94.14623785018921,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0037"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0038-0e5fa802",
-    "pid": 35084,
+    "job_id": "WU-DETACHED_TRIAL-ind-0038-e399f421",
+    "pid": 69627,
     "receipt_present": true,
-    "t_s": 99.68944931030273,
+    "t_s": 99.2215187549591,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0038"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0039-3e35f671",
-    "pid": 35088,
+    "job_id": "WU-DETACHED_TRIAL-ind-0039-ed618e91",
+    "pid": 69629,
     "receipt_present": true,
-    "t_s": 99.87043809890747,
-    "terminal": "completed-with-receipt",
+    "t_s": 99.36586904525757,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0039"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0040-ee2a3a58",
-    "pid": 35136,
+    "job_id": "WU-DETACHED_TRIAL-ind-0040-892203c4",
+    "pid": 69678,
     "receipt_present": true,
-    "t_s": 104.84296917915344,
-    "terminal": "unknown",
+    "t_s": 104.40477585792542,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0040"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0041-ead88c0b",
-    "pid": 35139,
+    "job_id": "WU-DETACHED_TRIAL-ind-0041-54a32221",
+    "pid": 69689,
     "receipt_present": true,
-    "t_s": 105.06062722206116,
-    "terminal": "completed-with-receipt",
+    "t_s": 104.57408094406128,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0041"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0042-8d8342ee",
-    "pid": 35215,
+    "job_id": "WU-DETACHED_TRIAL-ind-0042-e2be0563",
+    "pid": 69729,
     "receipt_present": true,
-    "t_s": 110.07439398765564,
+    "t_s": 109.58272099494934,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0042"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0043-dd5d0aa7",
-    "pid": 35218,
+    "job_id": "WU-DETACHED_TRIAL-ind-0043-6dcc97b3",
+    "pid": 69732,
     "receipt_present": true,
-    "t_s": 110.23433113098145,
-    "terminal": "completed-with-receipt",
+    "t_s": 109.75510287284851,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0043"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0044-52b76e5e",
-    "pid": 35307,
+    "job_id": "WU-DETACHED_TRIAL-ind-0044-0544412c",
+    "pid": 69774,
     "receipt_present": true,
-    "t_s": 115.24122214317322,
-    "terminal": "completed-with-receipt",
+    "t_s": 114.78298807144165,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0044"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0045-4744ca88",
-    "pid": 35309,
+    "job_id": "WU-DETACHED_TRIAL-ind-0045-1d8040c9",
+    "pid": 69777,
     "receipt_present": true,
-    "t_s": 115.41820788383484,
-    "terminal": "completed-with-receipt",
+    "t_s": 114.9562120437622,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0045"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0046-3ff64220",
-    "pid": 35342,
+    "job_id": "WU-DETACHED_TRIAL-ind-0046-cb8fbbb6",
+    "pid": 69808,
     "receipt_present": true,
-    "t_s": 120.4172739982605,
-    "terminal": "completed-with-receipt",
+    "t_s": 119.95506310462952,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0046"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0047-cfac790c",
-    "pid": 35345,
+    "job_id": "WU-DETACHED_TRIAL-ind-0047-898aeae5",
+    "pid": 69815,
     "receipt_present": true,
-    "t_s": 120.58375406265259,
-    "terminal": "unknown",
+    "t_s": 120.16293501853943,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0047"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0048-b28156d4",
-    "pid": 35394,
+    "job_id": "WU-DETACHED_TRIAL-ind-0048-37ac7ef8",
+    "pid": 69852,
     "receipt_present": true,
-    "t_s": 125.58486127853394,
-    "terminal": "completed-with-receipt",
+    "t_s": 125.13895606994629,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0048"
    },
    {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0049-6ad0bede",
-    "pid": 35397,
+    "job_id": "WU-DETACHED_TRIAL-ind-0049-7eb7a2b1",
+    "pid": 69855,
     "receipt_present": true,
-    "t_s": 125.7440230846405,
+    "t_s": 125.37445306777954,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0049"
    },
    {
     "child_still_running": false,
-    "job_id": "WU-DETACHED_TRIAL-ind-0050-0f25b608",
-    "pid": 35430,
+    "job_id": "WU-DETACHED_TRIAL-ind-0050-0b5385a5",
+    "pid": 69869,
     "receipt_present": true,
-    "t_s": 130.78769516944885,
-    "terminal": "unknown",
+    "t_s": 130.3473949432373,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0050"
    },
    {
     "child_still_running": false,
-    "job_id": "WU-DETACHED_TRIAL-ind-0051-574e23d7",
-    "pid": 35434,
+    "job_id": "WU-DETACHED_TRIAL-ind-0051-35bec46b",
+    "pid": 69872,
     "receipt_present": true,
-    "t_s": 130.94405698776245,
+    "t_s": 130.65452790260315,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0051"
    }
@@ -892,8 +889,8 @@
    "WU.DETACHED_TRIAL.ind.0023",
    "WU.DETACHED_TRIAL.ind.0024",
    "WU.DETACHED_TRIAL.ind.0025",
-   "WU.DETACHED_TRIAL.ind.0027",
    "WU.DETACHED_TRIAL.ind.0026",
+   "WU.DETACHED_TRIAL.ind.0027",
    "WU.DETACHED_TRIAL.ind.0028",
    "WU.DETACHED_TRIAL.ind.0029",
    "WU.DETACHED_TRIAL.ind.0030",
@@ -922,353 +919,353 @@
   "n_started": 50,
   "started": [
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0000-2f288752",
-    "pid": 33620,
-    "start_token": "1788240256.353199",
-    "t_s": 0.21715092658996582,
+    "job_id": "WU-DETACHED_TRIAL-ind-0000-173af48b",
+    "pid": 68739,
+    "start_token": "1788338525.252118",
+    "t_s": 0.22636103630065918,
     "unit_id": "WU.DETACHED_TRIAL.ind.0000"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0001-716215f3",
-    "pid": 33623,
-    "start_token": "1788240256.424589",
-    "t_s": 0.2964022159576416,
+    "job_id": "WU-DETACHED_TRIAL-ind-0001-847f0635",
+    "pid": 68741,
+    "start_token": "1788338525.332028",
+    "t_s": 0.30917882919311523,
     "unit_id": "WU.DETACHED_TRIAL.ind.0001"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0003-c5e46607",
-    "pid": 33934,
-    "start_token": "1788240261.569245",
-    "t_s": 5.443740129470825,
+    "job_id": "WU-DETACHED_TRIAL-ind-0003-abfc1d91",
+    "pid": 68761,
+    "start_token": "1788338530.524381",
+    "t_s": 5.498734712600708,
     "unit_id": "WU.DETACHED_TRIAL.ind.0003"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0004-ac01e85d",
-    "pid": 33951,
-    "start_token": "1788240261.679246",
-    "t_s": 5.549410104751587,
+    "job_id": "WU-DETACHED_TRIAL-ind-0004-c0d8bc51",
+    "pid": 68763,
+    "start_token": "1788338530.606217",
+    "t_s": 5.585266828536987,
     "unit_id": "WU.DETACHED_TRIAL.ind.0004"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0005-100e1b9c",
-    "pid": 34062,
-    "start_token": "1788240266.743557",
-    "t_s": 10.613203287124634,
+    "job_id": "WU-DETACHED_TRIAL-ind-0005-5b38d271",
+    "pid": 68809,
+    "start_token": "1788338535.718543",
+    "t_s": 10.693578004837036,
     "unit_id": "WU.DETACHED_TRIAL.ind.0005"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0006-1aa9572d",
-    "pid": 34064,
-    "start_token": "1788240266.841717",
-    "t_s": 10.710703134536743,
+    "job_id": "WU-DETACHED_TRIAL-ind-0006-42619544",
+    "pid": 68811,
+    "start_token": "1788338535.832438",
+    "t_s": 10.806575775146484,
     "unit_id": "WU.DETACHED_TRIAL.ind.0006"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0007-76baa221",
-    "pid": 34139,
-    "start_token": "1788240271.951423",
-    "t_s": 15.823572874069214,
+    "job_id": "WU-DETACHED_TRIAL-ind-0007-52beab9d",
+    "pid": 68825,
+    "start_token": "1788338540.891859",
+    "t_s": 15.867608785629272,
     "unit_id": "WU.DETACHED_TRIAL.ind.0007"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0008-d77fe60a",
-    "pid": 34141,
-    "start_token": "1788240272.060314",
-    "t_s": 15.927963018417358,
+    "job_id": "WU-DETACHED_TRIAL-ind-0008-120620fa",
+    "pid": 68828,
+    "start_token": "1788338541.027371",
+    "t_s": 16.001986980438232,
     "unit_id": "WU.DETACHED_TRIAL.ind.0008"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0009-e6f37788",
-    "pid": 34188,
-    "start_token": "1788240277.174426",
-    "t_s": 21.041486978530884,
+    "job_id": "WU-DETACHED_TRIAL-ind-0009-e4b6059a",
+    "pid": 68850,
+    "start_token": "1788338546.161836",
+    "t_s": 21.13904881477356,
     "unit_id": "WU.DETACHED_TRIAL.ind.0009"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0010-c27644f2",
-    "pid": 34190,
-    "start_token": "1788240277.282608",
-    "t_s": 21.16028618812561,
+    "job_id": "WU-DETACHED_TRIAL-ind-0010-973b2ee0",
+    "pid": 68854,
+    "start_token": "1788338546.328480",
+    "t_s": 21.307939052581787,
     "unit_id": "WU.DETACHED_TRIAL.ind.0010"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0011-ad756206",
-    "pid": 34233,
-    "start_token": "1788240282.389304",
-    "t_s": 26.26184320449829,
+    "job_id": "WU-DETACHED_TRIAL-ind-0011-30ffd73e",
+    "pid": 68898,
+    "start_token": "1788338551.410752",
+    "t_s": 26.387796878814697,
     "unit_id": "WU.DETACHED_TRIAL.ind.0011"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0012-cfb253b5",
-    "pid": 34237,
-    "start_token": "1788240282.555279",
-    "t_s": 26.431267023086548,
+    "job_id": "WU-DETACHED_TRIAL-ind-0012-e26a59c9",
+    "pid": 68900,
+    "start_token": "1788338551.529663",
+    "t_s": 26.50836205482483,
     "unit_id": "WU.DETACHED_TRIAL.ind.0012"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0014-bfd8f194",
-    "pid": 34258,
-    "start_token": "1788240287.613113",
-    "t_s": 31.489418983459473,
+    "job_id": "WU-DETACHED_TRIAL-ind-0014-6b821e5a",
+    "pid": 68944,
+    "start_token": "1788338556.595710",
+    "t_s": 31.57460594177246,
     "unit_id": "WU.DETACHED_TRIAL.ind.0014"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0015-63b9867a",
-    "pid": 34260,
-    "start_token": "1788240287.718353",
-    "t_s": 31.585705995559692,
+    "job_id": "WU-DETACHED_TRIAL-ind-0015-b318ca3d",
+    "pid": 68947,
+    "start_token": "1788338556.798244",
+    "t_s": 31.774851083755493,
     "unit_id": "WU.DETACHED_TRIAL.ind.0015"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0016-6fb7f5ca",
-    "pid": 34325,
-    "start_token": "1788240292.869592",
-    "t_s": 36.73990297317505,
+    "job_id": "WU-DETACHED_TRIAL-ind-0016-289f1bcf",
+    "pid": 68996,
+    "start_token": "1788338561.785943",
+    "t_s": 36.76086091995239,
     "unit_id": "WU.DETACHED_TRIAL.ind.0016"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0017-dfe1be16",
-    "pid": 34328,
-    "start_token": "1788240292.975255",
-    "t_s": 36.85762405395508,
+    "job_id": "WU-DETACHED_TRIAL-ind-0017-d3b52cd0",
+    "pid": 69000,
+    "start_token": "1788338562.009623",
+    "t_s": 36.98494482040405,
     "unit_id": "WU.DETACHED_TRIAL.ind.0017"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0018-756b4174",
-    "pid": 34360,
-    "start_token": "1788240298.133471",
-    "t_s": 42.00985503196716,
+    "job_id": "WU-DETACHED_TRIAL-ind-0018-be53fb8a",
+    "pid": 69052,
+    "start_token": "1788338566.977907",
+    "t_s": 41.954466104507446,
     "unit_id": "WU.DETACHED_TRIAL.ind.0018"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0019-cf0fe674",
-    "pid": 34363,
-    "start_token": "1788240298.262106",
-    "t_s": 42.13389992713928,
+    "job_id": "WU-DETACHED_TRIAL-ind-0019-66b605c7",
+    "pid": 69059,
+    "start_token": "1788338567.191248",
+    "t_s": 42.1640830039978,
     "unit_id": "WU.DETACHED_TRIAL.ind.0019"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0020-2c7b1e23",
-    "pid": 34399,
-    "start_token": "1788240303.434819",
-    "t_s": 47.32893419265747,
+    "job_id": "WU-DETACHED_TRIAL-ind-0020-a919cf63",
+    "pid": 69144,
+    "start_token": "1788338572.186120",
+    "t_s": 47.157429933547974,
     "unit_id": "WU.DETACHED_TRIAL.ind.0020"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0021-761f6eef",
-    "pid": 34401,
-    "start_token": "1788240303.563530",
-    "t_s": 47.42962193489075,
+    "job_id": "WU-DETACHED_TRIAL-ind-0021-94af0213",
+    "pid": 69160,
+    "start_token": "1788338572.369418",
+    "t_s": 47.34245705604553,
     "unit_id": "WU.DETACHED_TRIAL.ind.0021"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0022-18ef616a",
-    "pid": 34420,
-    "start_token": "1788240308.636355",
-    "t_s": 52.50647807121277,
+    "job_id": "WU-DETACHED_TRIAL-ind-0022-12903cff",
+    "pid": 69201,
+    "start_token": "1788338577.419155",
+    "t_s": 52.39111804962158,
     "unit_id": "WU.DETACHED_TRIAL.ind.0022"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0023-51c5653c",
-    "pid": 34423,
-    "start_token": "1788240308.741888",
-    "t_s": 52.61370325088501,
+    "job_id": "WU-DETACHED_TRIAL-ind-0023-49564c84",
+    "pid": 69204,
+    "start_token": "1788338577.563901",
+    "t_s": 52.537582874298096,
     "unit_id": "WU.DETACHED_TRIAL.ind.0023"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0024-c637eb53",
-    "pid": 34446,
-    "start_token": "1788240313.885628",
-    "t_s": 57.769603967666626,
+    "job_id": "WU-DETACHED_TRIAL-ind-0024-3de7810e",
+    "pid": 69247,
+    "start_token": "1788338582.608697",
+    "t_s": 57.58251190185547,
     "unit_id": "WU.DETACHED_TRIAL.ind.0024"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0025-42df706f",
-    "pid": 34448,
-    "start_token": "1788240314.001908",
-    "t_s": 57.87434792518616,
+    "job_id": "WU-DETACHED_TRIAL-ind-0025-0f95801b",
+    "pid": 69251,
+    "start_token": "1788338582.751457",
+    "t_s": 57.72729706764221,
     "unit_id": "WU.DETACHED_TRIAL.ind.0025"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0026-81198ec6",
-    "pid": 34764,
-    "start_token": "1788240319.225032",
-    "t_s": 63.09508395195007,
+    "job_id": "WU-DETACHED_TRIAL-ind-0026-6d7035ec",
+    "pid": 69319,
+    "start_token": "1788338587.794486",
+    "t_s": 62.769203901290894,
     "unit_id": "WU.DETACHED_TRIAL.ind.0026"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0027-69cc1a26",
-    "pid": 34767,
-    "start_token": "1788240319.364849",
-    "t_s": 63.23035407066345,
+    "job_id": "WU-DETACHED_TRIAL-ind-0027-18a11c46",
+    "pid": 69322,
+    "start_token": "1788338587.965465",
+    "t_s": 62.93959712982178,
     "unit_id": "WU.DETACHED_TRIAL.ind.0027"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0028-085ac391",
-    "pid": 34812,
-    "start_token": "1788240324.608370",
-    "t_s": 68.51127314567566,
+    "job_id": "WU-DETACHED_TRIAL-ind-0028-eabe6c5d",
+    "pid": 69361,
+    "start_token": "1788338593.019989",
+    "t_s": 67.99015188217163,
     "unit_id": "WU.DETACHED_TRIAL.ind.0028"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0029-7f1b3106",
-    "pid": 34814,
-    "start_token": "1788240324.783542",
-    "t_s": 68.64830827713013,
+    "job_id": "WU-DETACHED_TRIAL-ind-0029-99490c33",
+    "pid": 69364,
+    "start_token": "1788338593.152455",
+    "t_s": 68.12368369102478,
     "unit_id": "WU.DETACHED_TRIAL.ind.0029"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0030-206573dc",
-    "pid": 34907,
-    "start_token": "1788240329.912581",
-    "t_s": 73.83614826202393,
+    "job_id": "WU-DETACHED_TRIAL-ind-0030-5f176072",
+    "pid": 69426,
+    "start_token": "1788338598.278855",
+    "t_s": 73.26009392738342,
     "unit_id": "WU.DETACHED_TRIAL.ind.0030"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0031-f0ffb5fe",
-    "pid": 34909,
-    "start_token": "1788240330.062741",
-    "t_s": 73.9349901676178,
+    "job_id": "WU-DETACHED_TRIAL-ind-0031-d2f95452",
+    "pid": 69428,
+    "start_token": "1788338598.395390",
+    "t_s": 73.3713767528534,
     "unit_id": "WU.DETACHED_TRIAL.ind.0031"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0032-97fa8154",
-    "pid": 34964,
-    "start_token": "1788240335.162019",
-    "t_s": 79.04276919364929,
+    "job_id": "WU-DETACHED_TRIAL-ind-0032-8eaa7e21",
+    "pid": 69461,
+    "start_token": "1788338603.458827",
+    "t_s": 78.43953490257263,
     "unit_id": "WU.DETACHED_TRIAL.ind.0032"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0033-2cfb352a",
-    "pid": 34970,
-    "start_token": "1788240335.382001",
-    "t_s": 79.25911498069763,
+    "job_id": "WU-DETACHED_TRIAL-ind-0033-0556823f",
+    "pid": 69464,
+    "start_token": "1788338603.601596",
+    "t_s": 78.57496190071106,
     "unit_id": "WU.DETACHED_TRIAL.ind.0033"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0034-aa0146da",
-    "pid": 35002,
-    "start_token": "1788240340.332973",
-    "t_s": 84.19999814033508,
+    "job_id": "WU-DETACHED_TRIAL-ind-0034-f151b0b5",
+    "pid": 69501,
+    "start_token": "1788338608.639938",
+    "t_s": 83.61998105049133,
     "unit_id": "WU.DETACHED_TRIAL.ind.0034"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0035-65d33e82",
-    "pid": 35005,
-    "start_token": "1788240340.544182",
-    "t_s": 84.4180269241333,
+    "job_id": "WU-DETACHED_TRIAL-ind-0035-5a00c91a",
+    "pid": 69510,
+    "start_token": "1788338608.762099",
+    "t_s": 83.73811507225037,
     "unit_id": "WU.DETACHED_TRIAL.ind.0035"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0036-a7206c08",
-    "pid": 35041,
-    "start_token": "1788240345.553861",
-    "t_s": 89.42560505867004,
+    "job_id": "WU-DETACHED_TRIAL-ind-0036-bb0ee39f",
+    "pid": 69584,
+    "start_token": "1788338613.865465",
+    "t_s": 88.84090495109558,
     "unit_id": "WU.DETACHED_TRIAL.ind.0036"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0037-cd30e1ad",
-    "pid": 35044,
-    "start_token": "1788240345.707680",
-    "t_s": 89.58288502693176,
+    "job_id": "WU-DETACHED_TRIAL-ind-0037-fc05cdd4",
+    "pid": 69586,
+    "start_token": "1788338613.972428",
+    "t_s": 88.94982886314392,
     "unit_id": "WU.DETACHED_TRIAL.ind.0037"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0038-0e5fa802",
-    "pid": 35084,
-    "start_token": "1788240350.720264",
-    "t_s": 94.59262609481812,
+    "job_id": "WU-DETACHED_TRIAL-ind-0038-e399f421",
+    "pid": 69627,
+    "start_token": "1788338619.140465",
+    "t_s": 94.12287783622742,
     "unit_id": "WU.DETACHED_TRIAL.ind.0038"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0039-3e35f671",
-    "pid": 35088,
-    "start_token": "1788240350.878609",
-    "t_s": 94.75015330314636,
+    "job_id": "WU-DETACHED_TRIAL-ind-0039-ed618e91",
+    "pid": 69629,
+    "start_token": "1788338619.270243",
+    "t_s": 94.24440598487854,
     "unit_id": "WU.DETACHED_TRIAL.ind.0039"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0040-ee2a3a58",
-    "pid": 35136,
-    "start_token": "1788240355.895981",
-    "t_s": 99.76786923408508,
+    "job_id": "WU-DETACHED_TRIAL-ind-0040-892203c4",
+    "pid": 69678,
+    "start_token": "1788338624.332414",
+    "t_s": 99.30476498603821,
     "unit_id": "WU.DETACHED_TRIAL.ind.0040"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0041-ead88c0b",
-    "pid": 35139,
-    "start_token": "1788240356.080857",
-    "t_s": 99.94942212104797,
+    "job_id": "WU-DETACHED_TRIAL-ind-0041-54a32221",
+    "pid": 69689,
+    "start_token": "1788338624.474882",
+    "t_s": 99.45211601257324,
     "unit_id": "WU.DETACHED_TRIAL.ind.0041"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0042-8d8342ee",
-    "pid": 35215,
-    "start_token": "1788240361.049757",
-    "t_s": 104.91379499435425,
+    "job_id": "WU-DETACHED_TRIAL-ind-0042-e2be0563",
+    "pid": 69729,
+    "start_token": "1788338629.518738",
+    "t_s": 104.49120378494263,
     "unit_id": "WU.DETACHED_TRIAL.ind.0042"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0043-dd5d0aa7",
-    "pid": 35218,
-    "start_token": "1788240361.269288",
-    "t_s": 105.13704800605774,
+    "job_id": "WU-DETACHED_TRIAL-ind-0043-6dcc97b3",
+    "pid": 69732,
+    "start_token": "1788338629.685283",
+    "t_s": 104.65944910049438,
     "unit_id": "WU.DETACHED_TRIAL.ind.0043"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0044-52b76e5e",
-    "pid": 35307,
-    "start_token": "1788240366.281161",
-    "t_s": 110.14976501464844,
+    "job_id": "WU-DETACHED_TRIAL-ind-0044-0544412c",
+    "pid": 69774,
+    "start_token": "1788338634.692509",
+    "t_s": 109.66665482521057,
     "unit_id": "WU.DETACHED_TRIAL.ind.0044"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0045-4744ca88",
-    "pid": 35309,
-    "start_token": "1788240366.442133",
-    "t_s": 110.30819606781006,
+    "job_id": "WU-DETACHED_TRIAL-ind-0045-1d8040c9",
+    "pid": 69777,
+    "start_token": "1788338634.867560",
+    "t_s": 109.83976984024048,
     "unit_id": "WU.DETACHED_TRIAL.ind.0045"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0046-3ff64220",
-    "pid": 35342,
-    "start_token": "1788240371.449125",
-    "t_s": 115.31841707229614,
+    "job_id": "WU-DETACHED_TRIAL-ind-0046-cb8fbbb6",
+    "pid": 69808,
+    "start_token": "1788338639.897244",
+    "t_s": 114.86728286743164,
     "unit_id": "WU.DETACHED_TRIAL.ind.0046"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0047-cfac790c",
-    "pid": 35345,
-    "start_token": "1788240371.624241",
-    "t_s": 115.49692511558533,
+    "job_id": "WU-DETACHED_TRIAL-ind-0047-898aeae5",
+    "pid": 69815,
+    "start_token": "1788338640.064226",
+    "t_s": 115.0421929359436,
     "unit_id": "WU.DETACHED_TRIAL.ind.0047"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0048-b28156d4",
-    "pid": 35394,
-    "start_token": "1788240376.627152",
-    "t_s": 120.49659895896912,
+    "job_id": "WU-DETACHED_TRIAL-ind-0048-37ac7ef8",
+    "pid": 69852,
+    "start_token": "1788338645.062006",
+    "t_s": 120.03960609436035,
     "unit_id": "WU.DETACHED_TRIAL.ind.0048"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0049-6ad0bede",
-    "pid": 35397,
-    "start_token": "1788240376.790463",
-    "t_s": 120.65933299064636,
+    "job_id": "WU-DETACHED_TRIAL-ind-0049-7eb7a2b1",
+    "pid": 69855,
+    "start_token": "1788338645.273640",
+    "t_s": 120.2467987537384,
     "unit_id": "WU.DETACHED_TRIAL.ind.0049"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0050-0f25b608",
-    "pid": 35430,
-    "start_token": "1788240381.792487",
-    "t_s": 125.66117596626282,
+    "job_id": "WU-DETACHED_TRIAL-ind-0050-0b5385a5",
+    "pid": 69869,
+    "start_token": "1788338650.252781",
+    "t_s": 125.23396396636963,
     "unit_id": "WU.DETACHED_TRIAL.ind.0050"
    },
    {
-    "job_id": "WU-DETACHED_TRIAL-ind-0051-574e23d7",
-    "pid": 35434,
-    "start_token": "1788240381.953031",
-    "t_s": 125.82227301597595,
+    "job_id": "WU-DETACHED_TRIAL-ind-0051-35bec46b",
+    "pid": 69872,
+    "start_token": "1788338650.485917",
+    "t_s": 125.45870685577393,
     "unit_id": "WU.DETACHED_TRIAL.ind.0051"
    }
   ]
@@ -1297,19 +1294,19 @@
  "proofs": {
   "autonomy_1h_guards": {
    "decisions_after_two_minutes": {
-    "elapsed_s": 130.95046210289001,
-    "first_decision_t_s": 0.1445150375366211,
-    "last_decision_t_s": 130.94408226013184,
-    "n_decisions": 155,
-    "n_decisions_after_120": 17,
+    "elapsed_s": 130.65837001800537,
+    "first_decision_t_s": 0.1413288116455078,
+    "last_decision_t_s": 130.65455389022827,
+    "n_decisions": 154,
+    "n_decisions_after_120": 16,
     "passed": true,
-    "reason": "17 decision(s) after t_s 120; last_decision_t_s=130.944"
+    "reason": "16 decision(s) after t_s 120; last_decision_t_s=130.655"
    },
    "passed": true,
    "refill_novelty": {
     "identical_consecutive_refills": 0,
     "later_refills_had_novel_ids": true,
-    "n_refills": 49,
+    "n_refills": 48,
     "n_unique_ids": 50,
     "novel_ids_per_refill": [
      [
@@ -1317,9 +1314,7 @@
       "WU.DETACHED_TRIAL.ind.0001"
      ],
      [
-      "WU.DETACHED_TRIAL.ind.0003"
-     ],
-     [
+      "WU.DETACHED_TRIAL.ind.0003",
       "WU.DETACHED_TRIAL.ind.0004"
      ],
      [
@@ -1492,16 +1487,16 @@
   },
   "real_child": {
    "identity_status": "match",
-   "launch_return_s": 0.08502070792019367,
+   "launch_return_s": 0.08506683306768537,
    "passed": true,
-   "pid": 33618,
-   "start_token": "1788240256.267936"
+   "pid": 68737,
+   "start_token": "1788338525.160818"
   },
   "receipt_wakeup": {
-   "kqueue_latency_s": 0.0005240440368652344,
+   "kqueue_latency_s": 0.0006060600280761719,
    "mechanism": "kqueue EVFILT_VNODE",
    "passed": true,
-   "supervisor_reaction_latency_s": 0.03574991226196289
+   "supervisor_reaction_latency_s": 0.02643275260925293
   }
  },
  "proofs_all_passed": true,
@@ -1568,16 +1563,14 @@
    "WU.DETACHED_TRIAL.ind.0050",
    "WU.DETACHED_TRIAL.ind.0051"
   ],
-  "n": 49,
+  "n": 48,
   "sets": [
    [
     "WU.DETACHED_TRIAL.ind.0000",
     "WU.DETACHED_TRIAL.ind.0001"
    ],
    [
-    "WU.DETACHED_TRIAL.ind.0003"
-   ],
-   [
+    "WU.DETACHED_TRIAL.ind.0003",
     "WU.DETACHED_TRIAL.ind.0004"
    ],
    [
@@ -1787,7 +1780,7 @@
   "specimen_verification_ingests": 29
  },
  "schema": "hawking.future.detached_trial.v1",
- "seal_sha256": "2527c346fd1ef4d7287836b3465d813ca823eef0601c31dd6e23031405a5af40",
+ "seal_sha256": "2d69b10f08e356bc5b4dd060f9b3be21bfa9d2819498a17ba76a4c66120fd9da",
  "source_guards": {
   "module_imports_detached": true,
   "module_imports_wakeup": true,
@@ -1796,54 +1789,54 @@
   "run_real_trial_calls_wait_terminal": false
  },
  "synthetic": false,
- "t0_unix": 1788240256.145233,
+ "t0_unix": 1788338525.041207,
  "timeline": [
   {
    "kind": "CHILD_LAUNCHED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/child/child.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/child/child.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-child-cd7406e2",
-    "launch_return_s": 0.08502070792019367,
-    "pid": 33618,
+    "job_id": "WU-DETACHED_TRIAL-child-35a3e2dc",
+    "launch_return_s": 0.08506683306768537,
+    "pid": 68737,
     "start_new_session": true,
-    "start_token": "1788240256.267936",
-    "supervisor_pid": 33616,
+    "start_token": "1788338525.160818",
+    "supervisor_pid": 68736,
     "terminal_at_return": null,
     "unit_id": "WU.DETACHED_TRIAL.child",
     "work_alive": true
    },
    "seq": 0,
-   "t_s": 0.1445150375366211,
-   "t_unix": 1788240256.289748
+   "t_s": 0.1413288116455078,
+   "t_unix": 1788338525.182537
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0000.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0000.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0000-2f288752",
-    "pid": 33620,
-    "start_token": "1788240256.353199",
+    "job_id": "WU-DETACHED_TRIAL-ind-0000-173af48b",
+    "pid": 68739,
+    "start_token": "1788338525.252118",
     "unit_id": "WU.DETACHED_TRIAL.ind.0000"
    },
    "seq": 1,
-   "t_s": 0.21715402603149414,
-   "t_unix": 1788240256.362387
+   "t_s": 0.2263638973236084,
+   "t_unix": 1788338525.267571
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0001.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0001.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0001-716215f3",
-    "pid": 33623,
-    "start_token": "1788240256.424589",
+    "job_id": "WU-DETACHED_TRIAL-ind-0001-847f0635",
+    "pid": 68741,
+    "start_token": "1788338525.332028",
     "unit_id": "WU.DETACHED_TRIAL.ind.0001"
    },
    "seq": 2,
-   "t_s": 0.29640698432922363,
-   "t_unix": 1788240256.44164
+   "t_s": 0.30918288230895996,
+   "t_unix": 1788338525.35039
   },
   {
    "kind": "WORK_REFILLED",
@@ -1856,8 +1849,8 @@
     ]
    },
    "seq": 3,
-   "t_s": 0.29642510414123535,
-   "t_unix": 1788240256.441658
+   "t_s": 0.3091928958892822,
+   "t_unix": 1788338525.3504
   },
   {
    "kind": "CONCURRENCY_BOUND_REFUSED",
@@ -1870,75 +1863,62 @@
     "unit_id": "WU.DETACHED_TRIAL.ind.0002"
    },
    "seq": 4,
-   "t_s": 0.2973511219024658,
-   "t_unix": 1788240256.442584
+   "t_s": 0.3099789619445801,
+   "t_unix": 1788338525.351186
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0000-2f288752",
-    "pid": 33620,
+    "job_id": "WU-DETACHED_TRIAL-ind-0000-173af48b",
+    "pid": 68739,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0000"
    },
    "seq": 5,
-   "t_s": 5.362771272659302,
-   "t_unix": 1788240261.5080042
-  },
-  {
-   "kind": "INDEPENDENT_STARTED",
-   "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0003.json",
-    "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0003-c5e46607",
-    "pid": 33934,
-    "start_token": "1788240261.569245",
-    "unit_id": "WU.DETACHED_TRIAL.ind.0003"
-   },
-   "seq": 6,
-   "t_s": 5.443742275238037,
-   "t_unix": 1788240261.5889752
-  },
-  {
-   "kind": "WORK_REFILLED",
-   "payload": {
-    "novel_vs_prior": true,
-    "queue_depth": 2,
-    "unit_ids": [
-     "WU.DETACHED_TRIAL.ind.0003"
-    ]
-   },
-   "seq": 7,
-   "t_s": 5.443753957748413,
-   "t_unix": 1788240261.5889869
+   "t_s": 5.412846088409424,
+   "t_unix": 1788338530.4540532
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0001-716215f3",
-    "pid": 33623,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0001-847f0635",
+    "pid": 68741,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0001"
    },
-   "seq": 8,
-   "t_s": 5.474528074264526,
-   "t_unix": 1788240261.619761
+   "seq": 6,
+   "t_s": 5.41286301612854,
+   "t_unix": 1788338530.45407
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0004.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0003.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0004-ac01e85d",
-    "pid": 33951,
-    "start_token": "1788240261.679246",
+    "job_id": "WU-DETACHED_TRIAL-ind-0003-abfc1d91",
+    "pid": 68761,
+    "start_token": "1788338530.524381",
+    "unit_id": "WU.DETACHED_TRIAL.ind.0003"
+   },
+   "seq": 7,
+   "t_s": 5.498740911483765,
+   "t_unix": 1788338530.539948
+  },
+  {
+   "kind": "INDEPENDENT_STARTED",
+   "payload": {
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0004.json",
+    "identity_status": "match",
+    "job_id": "WU-DETACHED_TRIAL-ind-0004-c0d8bc51",
+    "pid": 68763,
+    "start_token": "1788338530.606217",
     "unit_id": "WU.DETACHED_TRIAL.ind.0004"
    },
-   "seq": 9,
-   "t_s": 5.549414157867432,
-   "t_unix": 1788240261.694647
+   "seq": 8,
+   "t_s": 5.585271120071411,
+   "t_unix": 1788338530.6264782
   },
   {
    "kind": "WORK_REFILLED",
@@ -1946,39 +1926,40 @@
     "novel_vs_prior": true,
     "queue_depth": 2,
     "unit_ids": [
+     "WU.DETACHED_TRIAL.ind.0003",
      "WU.DETACHED_TRIAL.ind.0004"
     ]
    },
-   "seq": 10,
-   "t_s": 5.549424171447754,
-   "t_unix": 1788240261.694657
+   "seq": 9,
+   "t_s": 5.58528208732605,
+   "t_unix": 1788338530.6264892
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0003-c5e46607",
-    "pid": 33934,
+    "job_id": "WU-DETACHED_TRIAL-ind-0003-abfc1d91",
+    "pid": 68761,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0003"
    },
-   "seq": 11,
-   "t_s": 10.529057025909424,
-   "t_unix": 1788240266.674291
+   "seq": 10,
+   "t_s": 10.606590986251831,
+   "t_unix": 1788338535.647798
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0005.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0005.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0005-100e1b9c",
-    "pid": 34062,
-    "start_token": "1788240266.743557",
+    "job_id": "WU-DETACHED_TRIAL-ind-0005-5b38d271",
+    "pid": 68809,
+    "start_token": "1788338535.718543",
     "unit_id": "WU.DETACHED_TRIAL.ind.0005"
    },
-   "seq": 12,
-   "t_s": 10.613205909729004,
-   "t_unix": 1788240266.7584388
+   "seq": 11,
+   "t_s": 10.693607807159424,
+   "t_unix": 1788338535.734815
   },
   {
    "kind": "WORK_REFILLED",
@@ -1989,36 +1970,36 @@
      "WU.DETACHED_TRIAL.ind.0005"
     ]
    },
-   "seq": 13,
-   "t_s": 10.613217115402222,
-   "t_unix": 1788240266.75845
+   "seq": 12,
+   "t_s": 10.693615913391113,
+   "t_unix": 1788338535.734823
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0004-ac01e85d",
-    "pid": 33951,
+    "job_id": "WU-DETACHED_TRIAL-ind-0004-c0d8bc51",
+    "pid": 68763,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0004"
    },
-   "seq": 14,
-   "t_s": 10.634716033935547,
-   "t_unix": 1788240266.779949
+   "seq": 13,
+   "t_s": 10.720305919647217,
+   "t_unix": 1788338535.761513
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0006.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0006.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0006-1aa9572d",
-    "pid": 34064,
-    "start_token": "1788240266.841717",
+    "job_id": "WU-DETACHED_TRIAL-ind-0006-42619544",
+    "pid": 68811,
+    "start_token": "1788338535.832438",
     "unit_id": "WU.DETACHED_TRIAL.ind.0006"
    },
-   "seq": 15,
-   "t_s": 10.710706233978271,
-   "t_unix": 1788240266.8559391
+   "seq": 14,
+   "t_s": 10.806578874588013,
+   "t_unix": 1788338535.847786
   },
   {
    "kind": "WORK_REFILLED",
@@ -2029,36 +2010,36 @@
      "WU.DETACHED_TRIAL.ind.0006"
     ]
    },
-   "seq": 16,
-   "t_s": 10.710715055465698,
-   "t_unix": 1788240266.855948
+   "seq": 15,
+   "t_s": 10.806585788726807,
+   "t_unix": 1788338535.8477929
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0005-100e1b9c",
-    "pid": 34062,
+    "job_id": "WU-DETACHED_TRIAL-ind-0005-5b38d271",
+    "pid": 68809,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0005"
    },
-   "seq": 17,
-   "t_s": 15.74279499053955,
-   "t_unix": 1788240271.888028
+   "seq": 16,
+   "t_s": 15.781533002853394,
+   "t_unix": 1788338540.82274
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0007.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0007.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0007-76baa221",
-    "pid": 34139,
-    "start_token": "1788240271.951423",
+    "job_id": "WU-DETACHED_TRIAL-ind-0007-52beab9d",
+    "pid": 68825,
+    "start_token": "1788338540.891859",
     "unit_id": "WU.DETACHED_TRIAL.ind.0007"
    },
-   "seq": 18,
-   "t_s": 15.823575973510742,
-   "t_unix": 1788240271.968809
+   "seq": 17,
+   "t_s": 15.867612838745117,
+   "t_unix": 1788338540.90882
   },
   {
    "kind": "WORK_REFILLED",
@@ -2069,36 +2050,36 @@
      "WU.DETACHED_TRIAL.ind.0007"
     ]
    },
-   "seq": 19,
-   "t_s": 15.823604106903076,
-   "t_unix": 1788240271.968838
+   "seq": 18,
+   "t_s": 15.867621898651123,
+   "t_unix": 1788338540.908829
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0006-1aa9572d",
-    "pid": 34064,
+    "job_id": "WU-DETACHED_TRIAL-ind-0006-42619544",
+    "pid": 68811,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0006"
    },
-   "seq": 20,
-   "t_s": 15.85458517074585,
-   "t_unix": 1788240271.999819
+   "seq": 19,
+   "t_s": 15.91758394241333,
+   "t_unix": 1788338540.958791
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0008.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0008.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0008-d77fe60a",
-    "pid": 34141,
-    "start_token": "1788240272.060314",
+    "job_id": "WU-DETACHED_TRIAL-ind-0008-120620fa",
+    "pid": 68828,
+    "start_token": "1788338541.027371",
     "unit_id": "WU.DETACHED_TRIAL.ind.0008"
    },
-   "seq": 21,
-   "t_s": 15.927966117858887,
-   "t_unix": 1788240272.073199
+   "seq": 20,
+   "t_s": 16.00201392173767,
+   "t_unix": 1788338541.043221
   },
   {
    "kind": "WORK_REFILLED",
@@ -2109,36 +2090,36 @@
      "WU.DETACHED_TRIAL.ind.0008"
     ]
    },
-   "seq": 22,
-   "t_s": 15.92798113822937,
-   "t_unix": 1788240272.073214
+   "seq": 21,
+   "t_s": 16.00202488899231,
+   "t_unix": 1788338541.043232
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0007-76baa221",
-    "pid": 34139,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0007-52beab9d",
+    "pid": 68825,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0007"
    },
-   "seq": 23,
-   "t_s": 20.96432089805603,
-   "t_unix": 1788240277.1095538
+   "seq": 22,
+   "t_s": 21.052385091781616,
+   "t_unix": 1788338546.0935922
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0009.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0009.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0009-e6f37788",
-    "pid": 34188,
-    "start_token": "1788240277.174426",
+    "job_id": "WU-DETACHED_TRIAL-ind-0009-e4b6059a",
+    "pid": 68850,
+    "start_token": "1788338546.161836",
     "unit_id": "WU.DETACHED_TRIAL.ind.0009"
    },
-   "seq": 24,
-   "t_s": 21.041491270065308,
-   "t_unix": 1788240277.1867242
+   "seq": 23,
+   "t_s": 21.1390540599823,
+   "t_unix": 1788338546.1802611
   },
   {
    "kind": "WORK_REFILLED",
@@ -2149,36 +2130,36 @@
      "WU.DETACHED_TRIAL.ind.0009"
     ]
    },
-   "seq": 25,
-   "t_s": 21.04150700569153,
-   "t_unix": 1788240277.18674
+   "seq": 24,
+   "t_s": 21.1390700340271,
+   "t_unix": 1788338546.180277
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0008-d77fe60a",
-    "pid": 34141,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0008-120620fa",
+    "pid": 68828,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0008"
    },
-   "seq": 26,
-   "t_s": 21.072420120239258,
-   "t_unix": 1788240277.217653
+   "seq": 25,
+   "t_s": 21.223308086395264,
+   "t_unix": 1788338546.2645152
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0010.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0010.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0010-c27644f2",
-    "pid": 34190,
-    "start_token": "1788240277.282608",
+    "job_id": "WU-DETACHED_TRIAL-ind-0010-973b2ee0",
+    "pid": 68854,
+    "start_token": "1788338546.328480",
     "unit_id": "WU.DETACHED_TRIAL.ind.0010"
    },
-   "seq": 27,
-   "t_s": 21.160290002822876,
-   "t_unix": 1788240277.305523
+   "seq": 26,
+   "t_s": 21.307942867279053,
+   "t_unix": 1788338546.34915
   },
   {
    "kind": "WORK_REFILLED",
@@ -2189,36 +2170,36 @@
      "WU.DETACHED_TRIAL.ind.0010"
     ]
    },
-   "seq": 28,
-   "t_s": 21.160308122634888,
-   "t_unix": 1788240277.305541
+   "seq": 27,
+   "t_s": 21.30795192718506,
+   "t_unix": 1788338546.349159
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0009-e6f37788",
-    "pid": 34188,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0009-e4b6059a",
+    "pid": 68850,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0009"
    },
-   "seq": 29,
-   "t_s": 26.169246196746826,
-   "t_unix": 1788240282.314479
+   "seq": 28,
+   "t_s": 26.289185047149658,
+   "t_unix": 1788338551.3303921
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0011.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0011.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0011-ad756206",
-    "pid": 34233,
-    "start_token": "1788240282.389304",
+    "job_id": "WU-DETACHED_TRIAL-ind-0011-30ffd73e",
+    "pid": 68898,
+    "start_token": "1788338551.410752",
     "unit_id": "WU.DETACHED_TRIAL.ind.0011"
    },
-   "seq": 30,
-   "t_s": 26.26184606552124,
-   "t_unix": 1788240282.407079
+   "seq": 29,
+   "t_s": 26.38780188560486,
+   "t_unix": 1788338551.429009
   },
   {
    "kind": "WORK_REFILLED",
@@ -2229,36 +2210,36 @@
      "WU.DETACHED_TRIAL.ind.0011"
     ]
    },
-   "seq": 31,
-   "t_s": 26.261857986450195,
-   "t_unix": 1788240282.407091
+   "seq": 30,
+   "t_s": 26.387815952301025,
+   "t_unix": 1788338551.429023
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0010-c27644f2",
-    "pid": 34190,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0010-973b2ee0",
+    "pid": 68854,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0010"
    },
-   "seq": 32,
-   "t_s": 26.34896206855774,
-   "t_unix": 1788240282.494195
+   "seq": 31,
+   "t_s": 26.412944793701172,
+   "t_unix": 1788338551.454153
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0012.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0012.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0012-cfb253b5",
-    "pid": 34237,
-    "start_token": "1788240282.555279",
+    "job_id": "WU-DETACHED_TRIAL-ind-0012-e26a59c9",
+    "pid": 68900,
+    "start_token": "1788338551.529663",
     "unit_id": "WU.DETACHED_TRIAL.ind.0012"
    },
-   "seq": 33,
-   "t_s": 26.431270122528076,
-   "t_unix": 1788240282.576503
+   "seq": 32,
+   "t_s": 26.508400917053223,
+   "t_unix": 1788338551.549608
   },
   {
    "kind": "WORK_REFILLED",
@@ -2269,9 +2250,9 @@
      "WU.DETACHED_TRIAL.ind.0012"
     ]
    },
-   "seq": 34,
-   "t_s": 26.431281089782715,
-   "t_unix": 1788240282.576514
+   "seq": 33,
+   "t_s": 26.50840973854065,
+   "t_unix": 1788338551.5496168
   },
   {
    "kind": "CONCURRENCY_BOUND_REFUSED",
@@ -2283,36 +2264,36 @@
     "spawned": false,
     "unit_id": "WU.DETACHED_TRIAL.ind.0013"
    },
-   "seq": 35,
-   "t_s": 30.017279863357544,
-   "t_unix": 1788240286.1625128
+   "seq": 34,
+   "t_s": 30.025279998779297,
+   "t_unix": 1788338555.066487
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0011-ad756206",
-    "pid": 34233,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0011-30ffd73e",
+    "pid": 68898,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0011"
    },
-   "seq": 36,
-   "t_s": 31.38566493988037,
-   "t_unix": 1788240287.5308979
+   "seq": 35,
+   "t_s": 31.479792833328247,
+   "t_unix": 1788338556.521
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0014.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0014.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0014-bfd8f194",
-    "pid": 34258,
-    "start_token": "1788240287.613113",
+    "job_id": "WU-DETACHED_TRIAL-ind-0014-6b821e5a",
+    "pid": 68944,
+    "start_token": "1788338556.595710",
     "unit_id": "WU.DETACHED_TRIAL.ind.0014"
    },
-   "seq": 37,
-   "t_s": 31.489422082901,
-   "t_unix": 1788240287.634655
+   "seq": 36,
+   "t_s": 31.5746328830719,
+   "t_unix": 1788338556.61584
   },
   {
    "kind": "WORK_REFILLED",
@@ -2323,36 +2304,36 @@
      "WU.DETACHED_TRIAL.ind.0014"
     ]
    },
-   "seq": 38,
-   "t_s": 31.48943519592285,
-   "t_unix": 1788240287.634669
+   "seq": 37,
+   "t_s": 31.574645042419434,
+   "t_unix": 1788338556.615852
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0012-cfb253b5",
-    "pid": 34237,
+    "job_id": "WU-DETACHED_TRIAL-ind-0012-e26a59c9",
+    "pid": 68900,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0012"
    },
-   "seq": 39,
-   "t_s": 31.510353088378906,
-   "t_unix": 1788240287.655586
+   "seq": 38,
+   "t_s": 31.688636779785156,
+   "t_unix": 1788338556.7298439
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0015.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0015.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0015-63b9867a",
-    "pid": 34260,
-    "start_token": "1788240287.718353",
+    "job_id": "WU-DETACHED_TRIAL-ind-0015-b318ca3d",
+    "pid": 68947,
+    "start_token": "1788338556.798244",
     "unit_id": "WU.DETACHED_TRIAL.ind.0015"
    },
-   "seq": 40,
-   "t_s": 31.58570909500122,
-   "t_unix": 1788240287.730943
+   "seq": 39,
+   "t_s": 31.774885892868042,
+   "t_unix": 1788338556.816093
   },
   {
    "kind": "WORK_REFILLED",
@@ -2363,36 +2344,36 @@
      "WU.DETACHED_TRIAL.ind.0015"
     ]
    },
-   "seq": 41,
-   "t_s": 31.585721015930176,
-   "t_unix": 1788240287.730954
+   "seq": 40,
+   "t_s": 31.77489686012268,
+   "t_unix": 1788338556.816104
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0014-bfd8f194",
-    "pid": 34258,
+    "job_id": "WU-DETACHED_TRIAL-ind-0014-6b821e5a",
+    "pid": 68944,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0014"
    },
-   "seq": 42,
-   "t_s": 36.649439096450806,
-   "t_unix": 1788240292.794672
+   "seq": 41,
+   "t_s": 36.67408990859985,
+   "t_unix": 1788338561.715297
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0016.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0016.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0016-6fb7f5ca",
-    "pid": 34325,
-    "start_token": "1788240292.869592",
+    "job_id": "WU-DETACHED_TRIAL-ind-0016-289f1bcf",
+    "pid": 68996,
+    "start_token": "1788338561.785943",
     "unit_id": "WU.DETACHED_TRIAL.ind.0016"
    },
-   "seq": 43,
-   "t_s": 36.739907026290894,
-   "t_unix": 1788240292.88514
+   "seq": 42,
+   "t_s": 36.76086401939392,
+   "t_unix": 1788338561.802071
   },
   {
    "kind": "WORK_REFILLED",
@@ -2403,36 +2384,36 @@
      "WU.DETACHED_TRIAL.ind.0016"
     ]
    },
-   "seq": 44,
-   "t_s": 36.73992204666138,
-   "t_unix": 1788240292.885155
+   "seq": 43,
+   "t_s": 36.76087498664856,
+   "t_unix": 1788338561.802082
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0015-63b9867a",
-    "pid": 34260,
+    "job_id": "WU-DETACHED_TRIAL-ind-0015-b318ca3d",
+    "pid": 68947,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0015"
    },
-   "seq": 45,
-   "t_s": 36.76137018203735,
-   "t_unix": 1788240292.906603
+   "seq": 44,
+   "t_s": 36.896347761154175,
+   "t_unix": 1788338561.9375548
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0017.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0017.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0017-dfe1be16",
-    "pid": 34328,
-    "start_token": "1788240292.975255",
+    "job_id": "WU-DETACHED_TRIAL-ind-0017-d3b52cd0",
+    "pid": 69000,
+    "start_token": "1788338562.009623",
     "unit_id": "WU.DETACHED_TRIAL.ind.0017"
    },
-   "seq": 46,
-   "t_s": 36.857627153396606,
-   "t_unix": 1788240293.00286
+   "seq": 45,
+   "t_s": 36.984978914260864,
+   "t_unix": 1788338562.026186
   },
   {
    "kind": "WORK_REFILLED",
@@ -2443,36 +2424,36 @@
      "WU.DETACHED_TRIAL.ind.0017"
     ]
    },
-   "seq": 47,
-   "t_s": 36.85763716697693,
-   "t_unix": 1788240293.00287
+   "seq": 46,
+   "t_s": 36.98499393463135,
+   "t_unix": 1788338562.026201
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0016-6fb7f5ca",
-    "pid": 34325,
+    "job_id": "WU-DETACHED_TRIAL-ind-0016-289f1bcf",
+    "pid": 68996,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0016"
    },
-   "seq": 48,
-   "t_s": 41.89274597167969,
-   "t_unix": 1788240298.037979
+   "seq": 47,
+   "t_s": 41.86873912811279,
+   "t_unix": 1788338566.9099462
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0018.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0018.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0018-756b4174",
-    "pid": 34360,
-    "start_token": "1788240298.133471",
+    "job_id": "WU-DETACHED_TRIAL-ind-0018-be53fb8a",
+    "pid": 69052,
+    "start_token": "1788338566.977907",
     "unit_id": "WU.DETACHED_TRIAL.ind.0018"
    },
-   "seq": 49,
-   "t_s": 42.00985908508301,
-   "t_unix": 1788240298.155092
+   "seq": 48,
+   "t_s": 41.954468727111816,
+   "t_unix": 1788338566.9956758
   },
   {
    "kind": "WORK_REFILLED",
@@ -2483,36 +2464,36 @@
      "WU.DETACHED_TRIAL.ind.0018"
     ]
    },
-   "seq": 50,
-   "t_s": 42.009873151779175,
-   "t_unix": 1788240298.155106
+   "seq": 49,
+   "t_s": 41.954477071762085,
+   "t_unix": 1788338566.9956841
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0017-dfe1be16",
-    "pid": 34328,
+    "job_id": "WU-DETACHED_TRIAL-ind-0017-d3b52cd0",
+    "pid": 69000,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0017"
    },
-   "seq": 51,
-   "t_s": 42.03601312637329,
-   "t_unix": 1788240298.181246
+   "seq": 50,
+   "t_s": 42.07943296432495,
+   "t_unix": 1788338567.12064
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0019.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0019.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0019-cf0fe674",
-    "pid": 34363,
-    "start_token": "1788240298.262106",
+    "job_id": "WU-DETACHED_TRIAL-ind-0019-66b605c7",
+    "pid": 69059,
+    "start_token": "1788338567.191248",
     "unit_id": "WU.DETACHED_TRIAL.ind.0019"
    },
-   "seq": 52,
-   "t_s": 42.133904218673706,
-   "t_unix": 1788240298.2791371
+   "seq": 51,
+   "t_s": 42.16410803794861,
+   "t_unix": 1788338567.205315
   },
   {
    "kind": "WORK_REFILLED",
@@ -2523,36 +2504,36 @@
      "WU.DETACHED_TRIAL.ind.0019"
     ]
    },
-   "seq": 53,
-   "t_s": 42.13391923904419,
-   "t_unix": 1788240298.2791522
+   "seq": 52,
+   "t_s": 42.16411590576172,
+   "t_unix": 1788338567.205323
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0018-756b4174",
-    "pid": 34360,
+    "job_id": "WU-DETACHED_TRIAL-ind-0018-be53fb8a",
+    "pid": 69052,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0018"
    },
-   "seq": 54,
-   "t_s": 47.18478512763977,
-   "t_unix": 1788240303.330018
+   "seq": 53,
+   "t_s": 47.070772886276245,
+   "t_unix": 1788338572.11198
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0020.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0020.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0020-2c7b1e23",
-    "pid": 34399,
-    "start_token": "1788240303.434819",
+    "job_id": "WU-DETACHED_TRIAL-ind-0020-a919cf63",
+    "pid": 69144,
+    "start_token": "1788338572.186120",
     "unit_id": "WU.DETACHED_TRIAL.ind.0020"
    },
-   "seq": 55,
-   "t_s": 47.328938007354736,
-   "t_unix": 1788240303.474171
+   "seq": 54,
+   "t_s": 47.1574330329895,
+   "t_unix": 1788338572.19864
   },
   {
    "kind": "WORK_REFILLED",
@@ -2563,36 +2544,36 @@
      "WU.DETACHED_TRIAL.ind.0020"
     ]
    },
-   "seq": 56,
-   "t_s": 47.3289520740509,
-   "t_unix": 1788240303.474185
+   "seq": 55,
+   "t_s": 47.15744686126709,
+   "t_unix": 1788338572.198654
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0019-cf0fe674",
-    "pid": 34363,
+    "job_id": "WU-DETACHED_TRIAL-ind-0019-66b605c7",
+    "pid": 69059,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0019"
    },
-   "seq": 57,
-   "t_s": 47.35481810569763,
-   "t_unix": 1788240303.500051
+   "seq": 56,
+   "t_s": 47.25837802886963,
+   "t_unix": 1788338572.299585
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0021.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0021.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0021-761f6eef",
-    "pid": 34401,
-    "start_token": "1788240303.563530",
+    "job_id": "WU-DETACHED_TRIAL-ind-0021-94af0213",
+    "pid": 69160,
+    "start_token": "1788338572.369418",
     "unit_id": "WU.DETACHED_TRIAL.ind.0021"
    },
-   "seq": 58,
-   "t_s": 47.429625034332275,
-   "t_unix": 1788240303.574858
+   "seq": 57,
+   "t_s": 47.342458963394165,
+   "t_unix": 1788338572.383666
   },
   {
    "kind": "WORK_REFILLED",
@@ -2603,36 +2584,36 @@
      "WU.DETACHED_TRIAL.ind.0021"
     ]
    },
-   "seq": 59,
-   "t_s": 47.429632902145386,
-   "t_unix": 1788240303.5748658
+   "seq": 58,
+   "t_s": 47.34246778488159,
+   "t_unix": 1788338572.3836749
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0020-2c7b1e23",
-    "pid": 34399,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0020-a919cf63",
+    "pid": 69144,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0020"
    },
-   "seq": 60,
-   "t_s": 52.42396807670593,
-   "t_unix": 1788240308.569201
+   "seq": 59,
+   "t_s": 52.30496573448181,
+   "t_unix": 1788338577.346174
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0022.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0022.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0022-18ef616a",
-    "pid": 34420,
-    "start_token": "1788240308.636355",
+    "job_id": "WU-DETACHED_TRIAL-ind-0022-12903cff",
+    "pid": 69201,
+    "start_token": "1788338577.419155",
     "unit_id": "WU.DETACHED_TRIAL.ind.0022"
    },
-   "seq": 61,
-   "t_s": 52.5064811706543,
-   "t_unix": 1788240308.651714
+   "seq": 60,
+   "t_s": 52.39114499092102,
+   "t_unix": 1788338577.432352
   },
   {
    "kind": "WORK_REFILLED",
@@ -2643,36 +2624,36 @@
      "WU.DETACHED_TRIAL.ind.0022"
     ]
    },
-   "seq": 62,
-   "t_s": 52.50648903846741,
-   "t_unix": 1788240308.651722
+   "seq": 61,
+   "t_s": 52.39115381240845,
+   "t_unix": 1788338577.432361
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0021-761f6eef",
-    "pid": 34401,
+    "job_id": "WU-DETACHED_TRIAL-ind-0021-94af0213",
+    "pid": 69160,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0021"
    },
-   "seq": 63,
-   "t_s": 52.53695893287659,
-   "t_unix": 1788240308.6821918
+   "seq": 62,
+   "t_s": 52.45092511177063,
+   "t_unix": 1788338577.4921322
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0023.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0023.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0023-51c5653c",
-    "pid": 34423,
-    "start_token": "1788240308.741888",
+    "job_id": "WU-DETACHED_TRIAL-ind-0023-49564c84",
+    "pid": 69204,
+    "start_token": "1788338577.563901",
     "unit_id": "WU.DETACHED_TRIAL.ind.0023"
    },
-   "seq": 64,
-   "t_s": 52.61370587348938,
-   "t_unix": 1788240308.7589388
+   "seq": 63,
+   "t_s": 52.537585973739624,
+   "t_unix": 1788338577.578793
   },
   {
    "kind": "WORK_REFILLED",
@@ -2683,36 +2664,36 @@
      "WU.DETACHED_TRIAL.ind.0023"
     ]
    },
-   "seq": 65,
-   "t_s": 52.613715171813965,
-   "t_unix": 1788240308.758948
+   "seq": 64,
+   "t_s": 52.537598848342896,
+   "t_unix": 1788338577.578806
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0022-18ef616a",
-    "pid": 34420,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0022-12903cff",
+    "pid": 69201,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0022"
    },
-   "seq": 66,
-   "t_s": 57.62585425376892,
-   "t_unix": 1788240313.7710872
+   "seq": 65,
+   "t_s": 57.498108863830566,
+   "t_unix": 1788338582.539316
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0024.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0024.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0024-c637eb53",
-    "pid": 34446,
-    "start_token": "1788240313.885628",
+    "job_id": "WU-DETACHED_TRIAL-ind-0024-3de7810e",
+    "pid": 69247,
+    "start_token": "1788338582.608697",
     "unit_id": "WU.DETACHED_TRIAL.ind.0024"
    },
-   "seq": 67,
-   "t_s": 57.769607067108154,
-   "t_unix": 1788240313.91484
+   "seq": 66,
+   "t_s": 57.582515001297,
+   "t_unix": 1788338582.623722
   },
   {
    "kind": "WORK_REFILLED",
@@ -2723,36 +2704,36 @@
      "WU.DETACHED_TRIAL.ind.0024"
     ]
    },
-   "seq": 68,
-   "t_s": 57.76962208747864,
-   "t_unix": 1788240313.914855
+   "seq": 67,
+   "t_s": 57.582523822784424,
+   "t_unix": 1788338582.623731
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0023-51c5653c",
-    "pid": 34423,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0023-49564c84",
+    "pid": 69204,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0023"
    },
-   "seq": 69,
-   "t_s": 57.795340061187744,
-   "t_unix": 1788240313.940573
+   "seq": 68,
+   "t_s": 57.64385485649109,
+   "t_unix": 1788338582.685062
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0025.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0025.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0025-42df706f",
-    "pid": 34448,
-    "start_token": "1788240314.001908",
+    "job_id": "WU-DETACHED_TRIAL-ind-0025-0f95801b",
+    "pid": 69251,
+    "start_token": "1788338582.751457",
     "unit_id": "WU.DETACHED_TRIAL.ind.0025"
    },
-   "seq": 70,
-   "t_s": 57.87435007095337,
-   "t_unix": 1788240314.019583
+   "seq": 69,
+   "t_s": 57.72730088233948,
+   "t_unix": 1788338582.768509
   },
   {
    "kind": "WORK_REFILLED",
@@ -2763,36 +2744,36 @@
      "WU.DETACHED_TRIAL.ind.0025"
     ]
    },
-   "seq": 71,
-   "t_s": 57.874361991882324,
-   "t_unix": 1788240314.019595
+   "seq": 70,
+   "t_s": 57.72730994224548,
+   "t_unix": 1788338582.768517
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0024-c637eb53",
-    "pid": 34446,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0024-3de7810e",
+    "pid": 69247,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0024"
    },
-   "seq": 72,
-   "t_s": 62.942044258117676,
-   "t_unix": 1788240319.0872772
+   "seq": 71,
+   "t_s": 62.68260598182678,
+   "t_unix": 1788338587.723813
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0026.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0026.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0026-81198ec6",
-    "pid": 34764,
-    "start_token": "1788240319.225032",
+    "job_id": "WU-DETACHED_TRIAL-ind-0026-6d7035ec",
+    "pid": 69319,
+    "start_token": "1788338587.794486",
     "unit_id": "WU.DETACHED_TRIAL.ind.0026"
    },
-   "seq": 73,
-   "t_s": 63.09508800506592,
-   "t_unix": 1788240319.240321
+   "seq": 72,
+   "t_s": 62.76924014091492,
+   "t_unix": 1788338587.8104472
   },
   {
    "kind": "WORK_REFILLED",
@@ -2803,36 +2784,36 @@
      "WU.DETACHED_TRIAL.ind.0026"
     ]
    },
-   "seq": 74,
-   "t_s": 63.0951030254364,
-   "t_unix": 1788240319.240336
+   "seq": 73,
+   "t_s": 62.769251108169556,
+   "t_unix": 1788338587.8104582
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0025-42df706f",
-    "pid": 34448,
+    "job_id": "WU-DETACHED_TRIAL-ind-0025-0f95801b",
+    "pid": 69251,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0025"
    },
-   "seq": 75,
-   "t_s": 63.121092081069946,
-   "t_unix": 1788240319.266325
+   "seq": 74,
+   "t_s": 62.85765886306763,
+   "t_unix": 1788338587.898866
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0027.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0027.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0027-69cc1a26",
-    "pid": 34767,
-    "start_token": "1788240319.364849",
+    "job_id": "WU-DETACHED_TRIAL-ind-0027-18a11c46",
+    "pid": 69322,
+    "start_token": "1788338587.965465",
     "unit_id": "WU.DETACHED_TRIAL.ind.0027"
    },
-   "seq": 76,
-   "t_s": 63.2303569316864,
-   "t_unix": 1788240319.3755898
+   "seq": 75,
+   "t_s": 62.93959879875183,
+   "t_unix": 1788338587.9808068
   },
   {
    "kind": "WORK_REFILLED",
@@ -2843,36 +2824,36 @@
      "WU.DETACHED_TRIAL.ind.0027"
     ]
    },
-   "seq": 77,
-   "t_s": 63.23037099838257,
-   "t_unix": 1788240319.375604
+   "seq": 76,
+   "t_s": 62.939608097076416,
+   "t_unix": 1788338587.9808152
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0027-69cc1a26",
-    "pid": 34767,
-    "terminal": "completed-with-receipt",
-    "unit_id": "WU.DETACHED_TRIAL.ind.0027"
+    "job_id": "WU-DETACHED_TRIAL-ind-0026-6d7035ec",
+    "pid": 69319,
+    "terminal": "unknown",
+    "unit_id": "WU.DETACHED_TRIAL.ind.0026"
    },
-   "seq": 78,
-   "t_s": 68.3700442314148,
-   "t_unix": 1788240324.5152771
+   "seq": 77,
+   "t_s": 67.90728807449341,
+   "t_unix": 1788338592.9484951
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0028.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0028.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0028-085ac391",
-    "pid": 34812,
-    "start_token": "1788240324.608370",
+    "job_id": "WU-DETACHED_TRIAL-ind-0028-eabe6c5d",
+    "pid": 69361,
+    "start_token": "1788338593.019989",
     "unit_id": "WU.DETACHED_TRIAL.ind.0028"
    },
-   "seq": 79,
-   "t_s": 68.51127815246582,
-   "t_unix": 1788240324.656511
+   "seq": 78,
+   "t_s": 67.99015593528748,
+   "t_unix": 1788338593.031363
   },
   {
    "kind": "WORK_REFILLED",
@@ -2883,36 +2864,36 @@
      "WU.DETACHED_TRIAL.ind.0028"
     ]
    },
-   "seq": 80,
-   "t_s": 68.51129603385925,
-   "t_unix": 1788240324.656529
+   "seq": 79,
+   "t_s": 67.99016809463501,
+   "t_unix": 1788338593.0313752
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0026-81198ec6",
-    "pid": 34764,
+    "job_id": "WU-DETACHED_TRIAL-ind-0027-18a11c46",
+    "pid": 69322,
     "terminal": "completed-with-receipt",
-    "unit_id": "WU.DETACHED_TRIAL.ind.0026"
+    "unit_id": "WU.DETACHED_TRIAL.ind.0027"
    },
-   "seq": 81,
-   "t_s": 68.53716397285461,
-   "t_unix": 1788240324.682397
+   "seq": 80,
+   "t_s": 68.03902578353882,
+   "t_unix": 1788338593.0802329
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0029.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0029.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0029-7f1b3106",
-    "pid": 34814,
-    "start_token": "1788240324.783542",
+    "job_id": "WU-DETACHED_TRIAL-ind-0029-99490c33",
+    "pid": 69364,
+    "start_token": "1788338593.152455",
     "unit_id": "WU.DETACHED_TRIAL.ind.0029"
    },
-   "seq": 82,
-   "t_s": 68.64831209182739,
-   "t_unix": 1788240324.793545
+   "seq": 81,
+   "t_s": 68.1237051486969,
+   "t_unix": 1788338593.1649122
   },
   {
    "kind": "WORK_REFILLED",
@@ -2923,36 +2904,36 @@
      "WU.DETACHED_TRIAL.ind.0029"
     ]
    },
-   "seq": 83,
-   "t_s": 68.64832210540771,
-   "t_unix": 1788240324.793555
+   "seq": 82,
+   "t_s": 68.12371683120728,
+   "t_unix": 1788338593.164924
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0028-085ac391",
-    "pid": 34812,
+    "job_id": "WU-DETACHED_TRIAL-ind-0028-eabe6c5d",
+    "pid": 69361,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0028"
    },
-   "seq": 84,
-   "t_s": 73.67884516716003,
-   "t_unix": 1788240329.824078
+   "seq": 83,
+   "t_s": 73.16300177574158,
+   "t_unix": 1788338598.2042089
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0030.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0030.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0030-206573dc",
-    "pid": 34907,
-    "start_token": "1788240329.912581",
+    "job_id": "WU-DETACHED_TRIAL-ind-0030-5f176072",
+    "pid": 69426,
+    "start_token": "1788338598.278855",
     "unit_id": "WU.DETACHED_TRIAL.ind.0030"
    },
-   "seq": 85,
-   "t_s": 73.83615303039551,
-   "t_unix": 1788240329.981386
+   "seq": 84,
+   "t_s": 73.26011800765991,
+   "t_unix": 1788338598.301325
   },
   {
    "kind": "WORK_REFILLED",
@@ -2963,36 +2944,36 @@
      "WU.DETACHED_TRIAL.ind.0030"
     ]
    },
-   "seq": 86,
-   "t_s": 73.83617210388184,
-   "t_unix": 1788240329.981405
+   "seq": 85,
+   "t_s": 73.26012802124023,
+   "t_unix": 1788338598.301335
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0029-7f1b3106",
-    "pid": 34814,
+    "job_id": "WU-DETACHED_TRIAL-ind-0029-99490c33",
+    "pid": 69364,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0029"
    },
-   "seq": 87,
-   "t_s": 73.8578679561615,
-   "t_unix": 1788240330.0031009
+   "seq": 86,
+   "t_s": 73.28585600852966,
+   "t_unix": 1788338598.327063
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0031.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0031.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0031-f0ffb5fe",
-    "pid": 34909,
-    "start_token": "1788240330.062741",
+    "job_id": "WU-DETACHED_TRIAL-ind-0031-d2f95452",
+    "pid": 69428,
+    "start_token": "1788338598.395390",
     "unit_id": "WU.DETACHED_TRIAL.ind.0031"
    },
-   "seq": 88,
-   "t_s": 73.93499517440796,
-   "t_unix": 1788240330.080228
+   "seq": 87,
+   "t_s": 73.37137985229492,
+   "t_unix": 1788338598.412587
   },
   {
    "kind": "WORK_REFILLED",
@@ -3003,36 +2984,36 @@
      "WU.DETACHED_TRIAL.ind.0031"
     ]
    },
-   "seq": 89,
-   "t_s": 73.93500709533691,
-   "t_unix": 1788240330.08024
+   "seq": 88,
+   "t_s": 73.37139201164246,
+   "t_unix": 1788338598.412599
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0030-206573dc",
-    "pid": 34907,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0030-5f176072",
+    "pid": 69426,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0030"
    },
-   "seq": 90,
-   "t_s": 78.92586421966553,
-   "t_unix": 1788240335.0710971
+   "seq": 89,
+   "t_s": 78.34244298934937,
+   "t_unix": 1788338603.38365
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0032.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0032.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0032-97fa8154",
-    "pid": 34964,
-    "start_token": "1788240335.162019",
+    "job_id": "WU-DETACHED_TRIAL-ind-0032-8eaa7e21",
+    "pid": 69461,
+    "start_token": "1788338603.458827",
     "unit_id": "WU.DETACHED_TRIAL.ind.0032"
    },
-   "seq": 91,
-   "t_s": 79.04277491569519,
-   "t_unix": 1788240335.1880078
+   "seq": 90,
+   "t_s": 78.43956303596497,
+   "t_unix": 1788338603.48077
   },
   {
    "kind": "WORK_REFILLED",
@@ -3043,36 +3024,36 @@
      "WU.DETACHED_TRIAL.ind.0032"
     ]
    },
-   "seq": 92,
-   "t_s": 79.04278707504272,
-   "t_unix": 1788240335.18802
+   "seq": 91,
+   "t_s": 78.43957686424255,
+   "t_unix": 1788338603.480784
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0031-f0ffb5fe",
-    "pid": 34909,
+    "job_id": "WU-DETACHED_TRIAL-ind-0031-d2f95452",
+    "pid": 69428,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0031"
    },
-   "seq": 93,
-   "t_s": 79.12460422515869,
-   "t_unix": 1788240335.2698371
+   "seq": 92,
+   "t_s": 78.48901510238647,
+   "t_unix": 1788338603.5302222
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0033.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0033.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0033-2cfb352a",
-    "pid": 34970,
-    "start_token": "1788240335.382001",
+    "job_id": "WU-DETACHED_TRIAL-ind-0033-0556823f",
+    "pid": 69464,
+    "start_token": "1788338603.601596",
     "unit_id": "WU.DETACHED_TRIAL.ind.0033"
    },
-   "seq": 94,
-   "t_s": 79.25911903381348,
-   "t_unix": 1788240335.404352
+   "seq": 93,
+   "t_s": 78.57498598098755,
+   "t_unix": 1788338603.616193
   },
   {
    "kind": "WORK_REFILLED",
@@ -3083,36 +3064,36 @@
      "WU.DETACHED_TRIAL.ind.0033"
     ]
    },
-   "seq": 95,
-   "t_s": 79.25913119316101,
-   "t_unix": 1788240335.404364
+   "seq": 94,
+   "t_s": 78.57500076293945,
+   "t_unix": 1788338603.6162078
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0032-97fa8154",
-    "pid": 34964,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0032-8eaa7e21",
+    "pid": 69461,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0032"
    },
-   "seq": 96,
-   "t_s": 84.12671208381653,
-   "t_unix": 1788240340.271945
+   "seq": 95,
+   "t_s": 83.53346586227417,
+   "t_unix": 1788338608.574673
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0034.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0034.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0034-aa0146da",
-    "pid": 35002,
-    "start_token": "1788240340.332973",
+    "job_id": "WU-DETACHED_TRIAL-ind-0034-f151b0b5",
+    "pid": 69501,
+    "start_token": "1788338608.639938",
     "unit_id": "WU.DETACHED_TRIAL.ind.0034"
    },
-   "seq": 97,
-   "t_s": 84.20000195503235,
-   "t_unix": 1788240340.345236
+   "seq": 96,
+   "t_s": 83.61998391151428,
+   "t_unix": 1788338608.661191
   },
   {
    "kind": "WORK_REFILLED",
@@ -3123,36 +3104,36 @@
      "WU.DETACHED_TRIAL.ind.0034"
     ]
    },
-   "seq": 98,
-   "t_s": 84.20001411437988,
-   "t_unix": 1788240340.345247
+   "seq": 97,
+   "t_s": 83.62001776695251,
+   "t_unix": 1788338608.6612248
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0033-2cfb352a",
-    "pid": 34970,
+    "job_id": "WU-DETACHED_TRIAL-ind-0033-0556823f",
+    "pid": 69464,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0033"
    },
-   "seq": 99,
-   "t_s": 84.33771014213562,
-   "t_unix": 1788240340.482943
+   "seq": 98,
+   "t_s": 83.65424990653992,
+   "t_unix": 1788338608.695457
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0035.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0035.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0035-65d33e82",
-    "pid": 35005,
-    "start_token": "1788240340.544182",
+    "job_id": "WU-DETACHED_TRIAL-ind-0035-5a00c91a",
+    "pid": 69510,
+    "start_token": "1788338608.762099",
     "unit_id": "WU.DETACHED_TRIAL.ind.0035"
    },
-   "seq": 100,
-   "t_s": 84.41803002357483,
-   "t_unix": 1788240340.563263
+   "seq": 99,
+   "t_s": 83.73811984062195,
+   "t_unix": 1788338608.779327
   },
   {
    "kind": "WORK_REFILLED",
@@ -3163,36 +3144,36 @@
      "WU.DETACHED_TRIAL.ind.0035"
     ]
    },
-   "seq": 101,
-   "t_s": 84.418044090271,
-   "t_unix": 1788240340.563277
+   "seq": 100,
+   "t_s": 83.73812985420227,
+   "t_unix": 1788338608.779337
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0034-aa0146da",
-    "pid": 35002,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0034-f151b0b5",
+    "pid": 69501,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0034"
    },
-   "seq": 102,
-   "t_s": 89.34629607200623,
-   "t_unix": 1788240345.49153
+   "seq": 101,
+   "t_s": 88.75459289550781,
+   "t_unix": 1788338613.7958
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0036.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0036.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0036-a7206c08",
-    "pid": 35041,
-    "start_token": "1788240345.553861",
+    "job_id": "WU-DETACHED_TRIAL-ind-0036-bb0ee39f",
+    "pid": 69584,
+    "start_token": "1788338613.865465",
     "unit_id": "WU.DETACHED_TRIAL.ind.0036"
    },
-   "seq": 103,
-   "t_s": 89.42560911178589,
-   "t_unix": 1788240345.570842
+   "seq": 102,
+   "t_s": 88.84090805053711,
+   "t_unix": 1788338613.8821151
   },
   {
    "kind": "WORK_REFILLED",
@@ -3203,36 +3184,36 @@
      "WU.DETACHED_TRIAL.ind.0036"
     ]
    },
-   "seq": 104,
-   "t_s": 89.42562103271484,
-   "t_unix": 1788240345.570854
+   "seq": 103,
+   "t_s": 88.84092497825623,
+   "t_unix": 1788338613.882132
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0035-65d33e82",
-    "pid": 35005,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0035-5a00c91a",
+    "pid": 69510,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0035"
    },
-   "seq": 105,
-   "t_s": 89.50342607498169,
-   "t_unix": 1788240345.648659
+   "seq": 104,
+   "t_s": 88.86296081542969,
+   "t_unix": 1788338613.904168
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0037.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0037.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0037-cd30e1ad",
-    "pid": 35044,
-    "start_token": "1788240345.707680",
+    "job_id": "WU-DETACHED_TRIAL-ind-0037-fc05cdd4",
+    "pid": 69586,
+    "start_token": "1788338613.972428",
     "unit_id": "WU.DETACHED_TRIAL.ind.0037"
    },
-   "seq": 106,
-   "t_s": 89.58288812637329,
-   "t_unix": 1788240345.728121
+   "seq": 105,
+   "t_s": 88.94983196258545,
+   "t_unix": 1788338613.991039
   },
   {
    "kind": "WORK_REFILLED",
@@ -3243,36 +3224,36 @@
      "WU.DETACHED_TRIAL.ind.0037"
     ]
    },
-   "seq": 107,
-   "t_s": 89.58289813995361,
-   "t_unix": 1788240345.728131
+   "seq": 106,
+   "t_s": 88.94984292984009,
+   "t_unix": 1788338613.99105
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0036-a7206c08",
-    "pid": 35041,
+    "job_id": "WU-DETACHED_TRIAL-ind-0036-bb0ee39f",
+    "pid": 69584,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0036"
    },
-   "seq": 108,
-   "t_s": 94.5111882686615,
-   "t_unix": 1788240350.6564212
+   "seq": 107,
+   "t_s": 94.00964188575745,
+   "t_unix": 1788338619.050849
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0038.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0038.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0038-0e5fa802",
-    "pid": 35084,
-    "start_token": "1788240350.720264",
+    "job_id": "WU-DETACHED_TRIAL-ind-0038-e399f421",
+    "pid": 69627,
+    "start_token": "1788338619.140465",
     "unit_id": "WU.DETACHED_TRIAL.ind.0038"
    },
-   "seq": 109,
-   "t_s": 94.59262895584106,
-   "t_unix": 1788240350.7378619
+   "seq": 108,
+   "t_s": 94.1228837966919,
+   "t_unix": 1788338619.1640909
   },
   {
    "kind": "WORK_REFILLED",
@@ -3283,36 +3264,36 @@
      "WU.DETACHED_TRIAL.ind.0038"
     ]
    },
-   "seq": 110,
-   "t_s": 94.59264302253723,
-   "t_unix": 1788240350.737877
+   "seq": 109,
+   "t_s": 94.1229031085968,
+   "t_unix": 1788338619.1641102
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0037-cd30e1ad",
-    "pid": 35044,
+    "job_id": "WU-DETACHED_TRIAL-ind-0037-fc05cdd4",
+    "pid": 69586,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0037"
    },
-   "seq": 111,
-   "t_s": 94.6688220500946,
-   "t_unix": 1788240350.814055
+   "seq": 110,
+   "t_s": 94.14625692367554,
+   "t_unix": 1788338619.187464
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0039.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0039.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0039-3e35f671",
-    "pid": 35088,
-    "start_token": "1788240350.878609",
+    "job_id": "WU-DETACHED_TRIAL-ind-0039-ed618e91",
+    "pid": 69629,
+    "start_token": "1788338619.270243",
     "unit_id": "WU.DETACHED_TRIAL.ind.0039"
    },
-   "seq": 112,
-   "t_s": 94.75015807151794,
-   "t_unix": 1788240350.895391
+   "seq": 111,
+   "t_s": 94.24441075325012,
+   "t_unix": 1788338619.2856178
   },
   {
    "kind": "WORK_REFILLED",
@@ -3323,36 +3304,36 @@
      "WU.DETACHED_TRIAL.ind.0039"
     ]
    },
-   "seq": 113,
-   "t_s": 94.75017428398132,
-   "t_unix": 1788240350.8954072
+   "seq": 112,
+   "t_s": 94.24442911148071,
+   "t_unix": 1788338619.2856362
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0038-0e5fa802",
-    "pid": 35084,
+    "job_id": "WU-DETACHED_TRIAL-ind-0038-e399f421",
+    "pid": 69627,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0038"
    },
-   "seq": 114,
-   "t_s": 99.68947720527649,
-   "t_unix": 1788240355.834711
+   "seq": 113,
+   "t_s": 99.22154593467712,
+   "t_unix": 1788338624.262753
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0040.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0040.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0040-ee2a3a58",
-    "pid": 35136,
-    "start_token": "1788240355.895981",
+    "job_id": "WU-DETACHED_TRIAL-ind-0040-892203c4",
+    "pid": 69678,
+    "start_token": "1788338624.332414",
     "unit_id": "WU.DETACHED_TRIAL.ind.0040"
    },
-   "seq": 115,
-   "t_s": 99.76787304878235,
-   "t_unix": 1788240355.913106
+   "seq": 114,
+   "t_s": 99.30476999282837,
+   "t_unix": 1788338624.345977
   },
   {
    "kind": "WORK_REFILLED",
@@ -3363,36 +3344,36 @@
      "WU.DETACHED_TRIAL.ind.0040"
     ]
    },
-   "seq": 116,
-   "t_s": 99.76788306236267,
-   "t_unix": 1788240355.913116
+   "seq": 115,
+   "t_s": 99.30478000640869,
+   "t_unix": 1788338624.345987
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0039-3e35f671",
-    "pid": 35088,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0039-ed618e91",
+    "pid": 69629,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0039"
    },
-   "seq": 117,
-   "t_s": 99.87045288085938,
-   "t_unix": 1788240356.0156858
+   "seq": 116,
+   "t_s": 99.36588788032532,
+   "t_unix": 1788338624.407095
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0041.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0041.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0041-ead88c0b",
-    "pid": 35139,
-    "start_token": "1788240356.080857",
+    "job_id": "WU-DETACHED_TRIAL-ind-0041-54a32221",
+    "pid": 69689,
+    "start_token": "1788338624.474882",
     "unit_id": "WU.DETACHED_TRIAL.ind.0041"
    },
-   "seq": 118,
-   "t_s": 99.9494252204895,
-   "t_unix": 1788240356.0946581
+   "seq": 117,
+   "t_s": 99.45215201377869,
+   "t_unix": 1788338624.493359
   },
   {
    "kind": "WORK_REFILLED",
@@ -3403,36 +3384,36 @@
      "WU.DETACHED_TRIAL.ind.0041"
     ]
    },
-   "seq": 119,
-   "t_s": 99.94943618774414,
-   "t_unix": 1788240356.094669
+   "seq": 118,
+   "t_s": 99.45216488838196,
+   "t_unix": 1788338624.493372
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0040-ee2a3a58",
-    "pid": 35136,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0040-892203c4",
+    "pid": 69678,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0040"
    },
-   "seq": 120,
-   "t_s": 104.84299302101135,
-   "t_unix": 1788240360.988226
+   "seq": 119,
+   "t_s": 104.40480089187622,
+   "t_unix": 1788338629.446008
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0042.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0042.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0042-8d8342ee",
-    "pid": 35215,
-    "start_token": "1788240361.049757",
+    "job_id": "WU-DETACHED_TRIAL-ind-0042-e2be0563",
+    "pid": 69729,
+    "start_token": "1788338629.518738",
     "unit_id": "WU.DETACHED_TRIAL.ind.0042"
    },
-   "seq": 121,
-   "t_s": 104.91379904747009,
-   "t_unix": 1788240361.059032
+   "seq": 120,
+   "t_s": 104.49120903015137,
+   "t_unix": 1788338629.532416
   },
   {
    "kind": "WORK_REFILLED",
@@ -3443,36 +3424,36 @@
      "WU.DETACHED_TRIAL.ind.0042"
     ]
    },
-   "seq": 122,
-   "t_s": 104.91381025314331,
-   "t_unix": 1788240361.0590432
+   "seq": 121,
+   "t_s": 104.49121880531311,
+   "t_unix": 1788338629.5324259
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0041-ead88c0b",
-    "pid": 35139,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0041-54a32221",
+    "pid": 69689,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0041"
    },
-   "seq": 123,
-   "t_s": 105.06065106391907,
-   "t_unix": 1788240361.205884
+   "seq": 122,
+   "t_s": 104.57412195205688,
+   "t_unix": 1788338629.615329
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0043.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0043.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0043-dd5d0aa7",
-    "pid": 35218,
-    "start_token": "1788240361.269288",
+    "job_id": "WU-DETACHED_TRIAL-ind-0043-6dcc97b3",
+    "pid": 69732,
+    "start_token": "1788338629.685283",
     "unit_id": "WU.DETACHED_TRIAL.ind.0043"
    },
-   "seq": 124,
-   "t_s": 105.13705110549927,
-   "t_unix": 1788240361.282284
+   "seq": 123,
+   "t_s": 104.65945196151733,
+   "t_unix": 1788338629.700659
   },
   {
    "kind": "WORK_REFILLED",
@@ -3483,36 +3464,36 @@
      "WU.DETACHED_TRIAL.ind.0043"
     ]
    },
-   "seq": 125,
-   "t_s": 105.1370632648468,
-   "t_unix": 1788240361.2822971
+   "seq": 124,
+   "t_s": 104.65946292877197,
+   "t_unix": 1788338629.70067
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0042-8d8342ee",
-    "pid": 35215,
+    "job_id": "WU-DETACHED_TRIAL-ind-0042-e2be0563",
+    "pid": 69729,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0042"
    },
-   "seq": 126,
-   "t_s": 110.07442498207092,
-   "t_unix": 1788240366.219658
+   "seq": 125,
+   "t_s": 109.5827488899231,
+   "t_unix": 1788338634.623956
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0044.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0044.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0044-52b76e5e",
-    "pid": 35307,
-    "start_token": "1788240366.281161",
+    "job_id": "WU-DETACHED_TRIAL-ind-0044-0544412c",
+    "pid": 69774,
+    "start_token": "1788338634.692509",
     "unit_id": "WU.DETACHED_TRIAL.ind.0044"
    },
-   "seq": 127,
-   "t_s": 110.14976811408997,
-   "t_unix": 1788240366.295001
+   "seq": 126,
+   "t_s": 109.6666579246521,
+   "t_unix": 1788338634.707865
   },
   {
    "kind": "WORK_REFILLED",
@@ -3523,36 +3504,36 @@
      "WU.DETACHED_TRIAL.ind.0044"
     ]
    },
-   "seq": 128,
-   "t_s": 110.1497802734375,
-   "t_unix": 1788240366.2950132
+   "seq": 127,
+   "t_s": 109.66667175292969,
+   "t_unix": 1788338634.7078788
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0043-dd5d0aa7",
-    "pid": 35218,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0043-6dcc97b3",
+    "pid": 69732,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0043"
    },
-   "seq": 129,
-   "t_s": 110.23434519767761,
-   "t_unix": 1788240366.379578
+   "seq": 128,
+   "t_s": 109.75514912605286,
+   "t_unix": 1788338634.7963562
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0045.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0045.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0045-4744ca88",
-    "pid": 35309,
-    "start_token": "1788240366.442133",
+    "job_id": "WU-DETACHED_TRIAL-ind-0045-1d8040c9",
+    "pid": 69777,
+    "start_token": "1788338634.867560",
     "unit_id": "WU.DETACHED_TRIAL.ind.0045"
    },
-   "seq": 130,
-   "t_s": 110.30819916725159,
-   "t_unix": 1788240366.453432
+   "seq": 129,
+   "t_s": 109.839772939682,
+   "t_unix": 1788338634.88098
   },
   {
    "kind": "WORK_REFILLED",
@@ -3563,36 +3544,36 @@
      "WU.DETACHED_TRIAL.ind.0045"
     ]
    },
-   "seq": 131,
-   "t_s": 110.30821013450623,
-   "t_unix": 1788240366.453443
+   "seq": 130,
+   "t_s": 109.83978176116943,
+   "t_unix": 1788338634.88099
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0044-52b76e5e",
-    "pid": 35307,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0044-0544412c",
+    "pid": 69774,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0044"
    },
-   "seq": 132,
-   "t_s": 115.24124312400818,
-   "t_unix": 1788240371.386476
+   "seq": 131,
+   "t_s": 114.78302097320557,
+   "t_unix": 1788338639.824228
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0046.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0046.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0046-3ff64220",
-    "pid": 35342,
-    "start_token": "1788240371.449125",
+    "job_id": "WU-DETACHED_TRIAL-ind-0046-cb8fbbb6",
+    "pid": 69808,
+    "start_token": "1788338639.897244",
     "unit_id": "WU.DETACHED_TRIAL.ind.0046"
    },
-   "seq": 133,
-   "t_s": 115.31842017173767,
-   "t_unix": 1788240371.463653
+   "seq": 132,
+   "t_s": 114.86728882789612,
+   "t_unix": 1788338639.908496
   },
   {
    "kind": "WORK_REFILLED",
@@ -3603,36 +3584,36 @@
      "WU.DETACHED_TRIAL.ind.0046"
     ]
    },
-   "seq": 134,
-   "t_s": 115.318430185318,
-   "t_unix": 1788240371.463663
+   "seq": 133,
+   "t_s": 114.8672981262207,
+   "t_unix": 1788338639.9085052
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0045-4744ca88",
-    "pid": 35309,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0045-1d8040c9",
+    "pid": 69777,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0045"
    },
-   "seq": 135,
-   "t_s": 115.4182231426239,
-   "t_unix": 1788240371.563456
+   "seq": 134,
+   "t_s": 114.95624494552612,
+   "t_unix": 1788338639.997452
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0047.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0047.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0047-cfac790c",
-    "pid": 35345,
-    "start_token": "1788240371.624241",
+    "job_id": "WU-DETACHED_TRIAL-ind-0047-898aeae5",
+    "pid": 69815,
+    "start_token": "1788338640.064226",
     "unit_id": "WU.DETACHED_TRIAL.ind.0047"
    },
-   "seq": 136,
-   "t_s": 115.49692797660828,
-   "t_unix": 1788240371.642161
+   "seq": 135,
+   "t_s": 115.04219603538513,
+   "t_unix": 1788338640.083403
   },
   {
    "kind": "WORK_REFILLED",
@@ -3643,36 +3624,36 @@
      "WU.DETACHED_TRIAL.ind.0047"
     ]
    },
-   "seq": 137,
-   "t_s": 115.49693894386292,
-   "t_unix": 1788240371.6421719
+   "seq": 136,
+   "t_s": 115.04220581054688,
+   "t_unix": 1788338640.083413
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0046-3ff64220",
-    "pid": 35342,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0046-cb8fbbb6",
+    "pid": 69808,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0046"
    },
-   "seq": 138,
-   "t_s": 120.4172899723053,
-   "t_unix": 1788240376.562523
+   "seq": 137,
+   "t_s": 119.95508885383606,
+   "t_unix": 1788338644.996296
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0048.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0048.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0048-b28156d4",
-    "pid": 35394,
-    "start_token": "1788240376.627152",
+    "job_id": "WU-DETACHED_TRIAL-ind-0048-37ac7ef8",
+    "pid": 69852,
+    "start_token": "1788338645.062006",
     "unit_id": "WU.DETACHED_TRIAL.ind.0048"
    },
-   "seq": 139,
-   "t_s": 120.49660205841064,
-   "t_unix": 1788240376.641835
+   "seq": 138,
+   "t_s": 120.03961086273193,
+   "t_unix": 1788338645.080818
   },
   {
    "kind": "WORK_REFILLED",
@@ -3683,36 +3664,36 @@
      "WU.DETACHED_TRIAL.ind.0048"
     ]
    },
-   "seq": 140,
-   "t_s": 120.49661302566528,
-   "t_unix": 1788240376.641846
+   "seq": 139,
+   "t_s": 120.03961992263794,
+   "t_unix": 1788338645.080827
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0047-cfac790c",
-    "pid": 35345,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0047-898aeae5",
+    "pid": 69815,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0047"
    },
-   "seq": 141,
-   "t_s": 120.58378005027771,
-   "t_unix": 1788240376.729014
+   "seq": 140,
+   "t_s": 120.16295194625854,
+   "t_unix": 1788338645.204159
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0049.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0049.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0049-6ad0bede",
-    "pid": 35397,
-    "start_token": "1788240376.790463",
+    "job_id": "WU-DETACHED_TRIAL-ind-0049-7eb7a2b1",
+    "pid": 69855,
+    "start_token": "1788338645.273640",
     "unit_id": "WU.DETACHED_TRIAL.ind.0049"
    },
-   "seq": 142,
-   "t_s": 120.65933609008789,
-   "t_unix": 1788240376.804569
+   "seq": 141,
+   "t_s": 120.24680280685425,
+   "t_unix": 1788338645.28801
   },
   {
    "kind": "WORK_REFILLED",
@@ -3723,36 +3704,36 @@
      "WU.DETACHED_TRIAL.ind.0049"
     ]
    },
-   "seq": 143,
-   "t_s": 120.65934419631958,
-   "t_unix": 1788240376.804577
+   "seq": 142,
+   "t_s": 120.24681282043457,
+   "t_unix": 1788338645.288021
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0048-b28156d4",
-    "pid": 35394,
-    "terminal": "completed-with-receipt",
+    "job_id": "WU-DETACHED_TRIAL-ind-0048-37ac7ef8",
+    "pid": 69852,
+    "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0048"
    },
-   "seq": 144,
-   "t_s": 125.58488011360168,
-   "t_unix": 1788240381.730113
+   "seq": 143,
+   "t_s": 125.13898587226868,
+   "t_unix": 1788338650.180193
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0050.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0050.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0050-0f25b608",
-    "pid": 35430,
-    "start_token": "1788240381.792487",
+    "job_id": "WU-DETACHED_TRIAL-ind-0050-0b5385a5",
+    "pid": 69869,
+    "start_token": "1788338650.252781",
     "unit_id": "WU.DETACHED_TRIAL.ind.0050"
    },
-   "seq": 145,
-   "t_s": 125.66117811203003,
-   "t_unix": 1788240381.806411
+   "seq": 144,
+   "t_s": 125.2339940071106,
+   "t_unix": 1788338650.275201
   },
   {
    "kind": "WORK_REFILLED",
@@ -3763,36 +3744,36 @@
      "WU.DETACHED_TRIAL.ind.0050"
     ]
    },
-   "seq": 146,
-   "t_s": 125.66118597984314,
-   "t_unix": 1788240381.806419
+   "seq": 145,
+   "t_s": 125.23400497436523,
+   "t_unix": 1788338650.275212
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": true,
-    "job_id": "WU-DETACHED_TRIAL-ind-0049-6ad0bede",
-    "pid": 35397,
+    "job_id": "WU-DETACHED_TRIAL-ind-0049-7eb7a2b1",
+    "pid": 69855,
     "terminal": "unknown",
     "unit_id": "WU.DETACHED_TRIAL.ind.0049"
    },
-   "seq": 147,
-   "t_s": 125.74404716491699,
-   "t_unix": 1788240381.88928
+   "seq": 146,
+   "t_s": 125.3744809627533,
+   "t_unix": 1788338650.415688
   },
   {
    "kind": "INDEPENDENT_STARTED",
    "payload": {
-    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/ind/WU.DETACHED_TRIAL.ind.0051.json",
+    "expected_receipt_path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/ind/WU.DETACHED_TRIAL.ind.0051.json",
     "identity_status": "match",
-    "job_id": "WU-DETACHED_TRIAL-ind-0051-574e23d7",
-    "pid": 35434,
-    "start_token": "1788240381.953031",
+    "job_id": "WU-DETACHED_TRIAL-ind-0051-35bec46b",
+    "pid": 69872,
+    "start_token": "1788338650.485917",
     "unit_id": "WU.DETACHED_TRIAL.ind.0051"
    },
-   "seq": 148,
-   "t_s": 125.82227516174316,
-   "t_unix": 1788240381.967508
+   "seq": 147,
+   "t_s": 125.45873689651489,
+   "t_unix": 1788338650.499944
   },
   {
    "kind": "WORK_REFILLED",
@@ -3803,22 +3784,9 @@
      "WU.DETACHED_TRIAL.ind.0051"
     ]
    },
-   "seq": 149,
-   "t_s": 125.8222861289978,
-   "t_unix": 1788240381.967519
-  },
-  {
-   "kind": "CHILD_TERMINAL",
-   "payload": {
-    "job_id": "WU-DETACHED_TRIAL-child-cd7406e2",
-    "pid": 33618,
-    "returncode": null,
-    "source": "inspect_not_wakeup",
-    "terminal": "unknown"
-   },
-   "seq": 150,
-   "t_s": 128.4112560749054,
-   "t_unix": 1788240384.556489
+   "seq": 148,
+   "t_s": 125.45874500274658,
+   "t_unix": 1788338650.499952
   },
   {
    "kind": "RECEIPT_WAKEUP",
@@ -3834,71 +3802,84 @@
       "COMPLETED"
      ]
     },
-    "dispatch_at": 1788240384.558012,
+    "dispatch_at": 1788338653.4064908,
     "event_states": [
      "COMPLETED"
     ],
-    "harvest_at": 1788240384.55671,
+    "harvest_at": 1788338653.404982,
     "kqueue_event": {
-     "armed_at": 1788240256.145453,
+     "armed_at": 1788338525.0414238,
      "fflags": 2,
      "filter": "EVFILT_VNODE",
      "kind": "kqueue_vnode",
      "n_kevents": 2,
-     "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/child/child.json",
-     "t_unix": 1788240384.5227861
+     "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/child/child.json",
+     "t_unix": 1788338653.380664
     },
-    "kqueue_latency_s": 0.0005240440368652344,
-    "kqueue_t_unix": 1788240384.5227861,
+    "kqueue_latency_s": 0.0006060600280761719,
+    "kqueue_t_unix": 1788338653.380664,
     "mechanism": "kqueue EVFILT_VNODE",
     "n_harvest_events": 1,
     "poll": false,
-    "receipt_mtime": 1788240384.5225434,
-    "receipt_written_at": 1788240384.522262,
-    "supervisor_reaction_latency_s": 0.03574991226196289,
+    "receipt_mtime": 1788338653.3804426,
+    "receipt_written_at": 1788338653.380058,
+    "supervisor_reaction_latency_s": 0.02643275260925293,
     "wait_terminal": false
    },
-   "seq": 151,
-   "t_s": 128.41278719902039,
-   "t_unix": 1788240384.55802
+   "seq": 149,
+   "t_s": 128.36529302597046,
+   "t_unix": 1788338653.4065
   },
   {
    "kind": "NEXT_DECISION",
    "payload": {
     "action": "ingest_detached_result_and_continue_independent_work",
-    "child_job_id": "WU-DETACHED_TRIAL-child-cd7406e2",
+    "child_job_id": "WU-DETACHED_TRIAL-child-35a3e2dc",
     "n_independent_live": 2,
     "wakeup_mechanism": "kqueue EVFILT_VNODE"
    },
-   "seq": 152,
-   "t_s": 128.41279888153076,
-   "t_unix": 1788240384.5580318
+   "seq": 150,
+   "t_s": 128.3653130531311,
+   "t_unix": 1788338653.4065201
+  },
+  {
+   "kind": "CHILD_TERMINAL",
+   "payload": {
+    "job_id": "WU-DETACHED_TRIAL-child-35a3e2dc",
+    "pid": 68737,
+    "returncode": 0,
+    "source": "inspect_not_wakeup",
+    "terminal": "completed-with-receipt"
+   },
+   "seq": 151,
+   "t_s": 128.39122986793518,
+   "t_unix": 1788338653.4324381
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": false,
-    "job_id": "WU-DETACHED_TRIAL-ind-0050-0f25b608",
-    "pid": 35430,
-    "terminal": "unknown",
+    "job_id": "WU-DETACHED_TRIAL-ind-0050-0b5385a5",
+    "pid": 69869,
+    "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0050"
    },
-   "seq": 153,
-   "t_s": 130.78773021697998,
-   "t_unix": 1788240386.9329631
+   "seq": 152,
+   "t_s": 130.34742283821106,
+   "t_unix": 1788338655.38863
   },
   {
    "kind": "INDEPENDENT_COMPLETED",
    "payload": {
     "child_still_running": false,
-    "job_id": "WU-DETACHED_TRIAL-ind-0051-574e23d7",
-    "pid": 35434,
+    "job_id": "WU-DETACHED_TRIAL-ind-0051-35bec46b",
+    "pid": 69872,
     "terminal": "completed-with-receipt",
     "unit_id": "WU.DETACHED_TRIAL.ind.0051"
    },
-   "seq": 154,
-   "t_s": 130.94408226013184,
-   "t_unix": 1788240387.0893152
+   "seq": 153,
+   "t_s": 130.65455389022827,
+   "t_unix": 1788338655.695761
   }
  ],
  "unmet": [],
@@ -3926,7 +3907,7 @@
     ],
     "consumers_missing": [],
     "duplicate": false,
-    "event_id": "400e926f9645c8c0d3fa9747153f433dd7e9b667ebed7fb564d3b47e88a929d6",
+    "event_id": "a84081d23ce262ff80509de5276b5fd92de4b9d825ab8ffe80c55e4323f10ace",
     "refused_unblocked": [],
     "state": "COMPLETED",
     "unblocked": [
@@ -3935,25 +3916,25 @@
     "unit_id": "WU.DETACHED_TRIAL.child"
    }
   ],
-  "dispatch_at": 1788240384.558012,
-  "harvest_at": 1788240384.55671,
+  "dispatch_at": 1788338653.4064908,
+  "harvest_at": 1788338653.404982,
   "kqueue_event": {
-   "armed_at": 1788240256.145453,
+   "armed_at": 1788338525.0414238,
    "fflags": 2,
    "filter": "EVFILT_VNODE",
    "kind": "kqueue_vnode",
    "n_kevents": 2,
-   "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-2g__8dlz/results/child/child.json",
-   "t_unix": 1788240384.5227861
+   "path": "/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/hawking-detached-trial-aioaf2gi/results/child/child.json",
+   "t_unix": 1788338653.380664
   },
-  "kqueue_latency_s": 0.0005240440368652344,
-  "kqueue_t_unix": 1788240384.5227861,
+  "kqueue_latency_s": 0.0006060600280761719,
+  "kqueue_t_unix": 1788338653.380664,
   "mechanism": "kqueue EVFILT_VNODE",
   "n_harvest_events": 1,
   "poll": false,
-  "receipt_mtime": 1788240384.5225434,
-  "receipt_written_at": 1788240384.522262,
-  "supervisor_reaction_latency_s": 0.03574991226196289,
+  "receipt_mtime": 1788338653.3804426,
+  "receipt_written_at": 1788338653.380058,
+  "supervisor_reaction_latency_s": 0.02643275260925293,
   "wait_terminal": false
  }
 }

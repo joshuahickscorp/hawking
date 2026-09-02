@@ -10,12 +10,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:26:33Z",
+  "recorded_at": "2026-09-02T09:15:00Z",
   "recorded_by": "tools/future/ebpw_categories.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/d1-doctor-depth-20260902-045450",
  "categories": {
   "compile_time_nr_bytes": {
    "interchangeable": false,
@@ -54,11 +54,13 @@
   "prospective_meta_bpw < 1 is never a promotion predicate, with or without a flag.",
   "Dense rematerialization: production refused, verification allowed, verification cannot promote.",
   "Active-bytes accounting is five separate fields; collapsing them raises.",
-  "Validator is GREEN on honest FLASH_META_REPRESENTATION_SUB1 and REFUSED on a synthetic promotion variant."
+  "Validator is GREEN on honest FLASH_META_REPRESENTATION_SUB1 and REFUSED on a synthetic promotion variant.",
+  "validate() calls tools.doctor.zeros.check_three_zeros; a low-BPW ledger that fails all three zeros is ordinary quantization (roadmap 9.2) and still does not promote."
  ],
- "head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
+ "head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
  "integration": {
   "can_promote": "can_promote(ledger: PromotionLedger | Mapping) -> tuple[bool, str]",
+  "doctor_zeros_for_doc": "doctor_zeros_for_doc(doc) -> dict; CALLS tools.doctor.zeros.check_three_zeros (import is not a call site)",
   "extract_ledger": "extract_ledger(doc: Mapping, source_path: str | None = None) -> PromotionLedger",
   "judge_dense_rematerialization": "judge_dense_rematerialization(ledger) -> RematVerdict",
   "validate": "validate(doc: Mapping, source_path: str | None = None) -> dict"
@@ -73,6 +75,11 @@
     "path_kind": "PRODUCTION",
     "reason": "production consumes the representation directly",
     "runs_ordinary_kernels": null
+   },
+   "doctor_three_zeros": {
+    "any_ordinary_quantization": false,
+    "any_zero_available": false,
+    "called": "tools.doctor.zeros.check_three_zeros"
    },
    "notes": [
     "serialized_artifact=NOT_BUILT",
@@ -123,6 +130,11 @@
     "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
     "runs_ordinary_kernels": null
    },
+   "doctor_three_zeros": {
+    "any_ordinary_quantization": false,
+    "any_zero_available": false,
+    "called": "tools.doctor.zeros.check_three_zeros"
+   },
    "notes": [
     "representation.complete_bits_per_weight=16.0 is an NR description, not complete_physical_ebpw"
    ],
@@ -170,6 +182,11 @@
     "path_kind": "PRODUCTION",
     "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
     "runs_ordinary_kernels": null
+   },
+   "doctor_three_zeros": {
+    "any_ordinary_quantization": false,
+    "any_zero_available": false,
+    "called": "tools.doctor.zeros.check_three_zeros"
    },
    "notes": [
     "qualification.complete_system_ebpw is null; NX is metadata only",
@@ -220,6 +237,11 @@
     "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
     "runs_ordinary_kernels": null
    },
+   "doctor_three_zeros": {
+    "any_ordinary_quantization": false,
+    "any_zero_available": false,
+    "called": "tools.doctor.zeros.check_three_zeros"
+   },
    "notes": [
     "complete_exact_control.complete_ebpw=16.0 is BF16 identity, not a protected packed-NX measurement"
    ],
@@ -267,6 +289,11 @@
     "path_kind": "PRODUCTION",
     "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
     "runs_ordinary_kernels": null
+   },
+   "doctor_three_zeros": {
+    "any_ordinary_quantization": true,
+    "any_zero_available": true,
+    "called": "tools.doctor.zeros.check_three_zeros"
    },
    "notes": [
     "measured.complete_system_ebpw is null"
@@ -316,6 +343,11 @@
     "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
     "runs_ordinary_kernels": null
    },
+   "doctor_three_zeros": {
+    "any_ordinary_quantization": false,
+    "any_zero_available": false,
+    "called": "tools.doctor.zeros.check_three_zeros"
+   },
    "notes": [
     "DESIGN_EXPECTED vs ARTIFACT_PHYSICAL vs RUNTIME_MEASURED naming; not the five-category type system"
    ],
@@ -363,6 +395,11 @@
     "path_kind": "PRODUCTION",
     "reason": "production path does not prove direct representation consumption (dense rematerialization unknown)",
     "runs_ordinary_kernels": null
+   },
+   "doctor_three_zeros": {
+    "any_ordinary_quantization": true,
+    "any_zero_available": true,
+    "called": "tools.doctor.zeros.check_three_zeros"
    },
    "notes": [
     "status=BUDGET_ENVELOPE_ONLY_NO_ARTIFACT_PACKED_YET"
@@ -475,12 +512,19 @@
   }
  ],
  "schema": "hawking.future.ebpw_categories.v1",
- "seal_sha256": "028137c31d879ad94449ad645e806f0b2b694fc01fed0ff21e0bde5bdf6ce6b1",
+ "seal_sha256": "d8d6827f43dbe89a0efd6e180eb8c43aa0c7e9bda4b13e652a7ff8ebe2304700",
  "selftest": {
   "cross_category_arithmetic_message": "refused prospective_meta_bpw + complete_physical_ebpw: EBPW categories are not interchangeable",
   "cross_category_arithmetic_raises": true,
   "dense_rematerializing_nx_reason": "production NX decompresses to a dense weight tensor and then runs ordinary kernels",
   "dense_rematerializing_nx_rejected": true,
+  "doctor_three_zeros_fail_on_broken": true,
+  "doctor_zero_execution_fail_on_broken": true,
+  "doctor_zero_execution_pass_on_routed": true,
+  "doctor_zero_info_fail_on_broken": true,
+  "doctor_zero_info_pass_on_tied": true,
+  "doctor_zero_storage_fail_on_broken": true,
+  "doctor_zero_storage_pass_on_tied": true,
   "honest_flash_meta": {
    "can_promote": false,
    "quantities_present": {

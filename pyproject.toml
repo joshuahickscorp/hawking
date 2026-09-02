@@ -11,12 +11,31 @@ requires-python = ">=3.10"
 [project.scripts]
 hcli = "hcli.cli:main"
 jhcli = "hcli.cli:main"
+# The long-lived daemon gets its own name so `ps` describes the process rather
+# than the interpreter that happens to host it. `hcli` is the client; hawkingd
+# is what keeps running after the client exits, and it is deliberately not
+# named for any one model -- a supervisor may hold several bodies, in parallel
+# or in succession.
+hawkingd = "hcli.hawkingd:main"
 
 [tool.setuptools.packages.find]
 include = ["hcli*"]
 exclude = ["hcli.tests*", "tools*", "lab*"]
 
 [tool.pytest.ini_options]
+# `slow` is real hardware evidence, not a slow unit test: compiling Swift ANE
+# probes and running the compiled fixture took 27.05s of a 77.82s suite. It is
+# deselected by default and pytest says so ("N deselected"). Run it with
+# `-m slow`, or the whole suite with `-m ""`.
+markers = ["slow: real hardware/compile evidence; deselected by default"]
+# NOT `-n auto`: addopts applies to every interpreter that runs this repo, and
+# the Framework python that runs tools/odyssey has no xdist -- it failed with
+# "unrecognized arguments: -n". Parallelism is opt-in per invocation instead:
+#     python3 -m pytest hcli/ -n auto      # 77.82s -> ~3.0s on this host
+#     python3 tools/run_tools_pytest.py tools/future
+# tools/future session artifacts (HEAD ls-tree + receipts/future blobs) live
+# in tools/future/conftest.py, not here: addopts cannot carry -n.
+addopts = "-m 'not slow'"
 testpaths = ["tools/haider"]
 pythonpath = [
     ".",

@@ -522,7 +522,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:06Z",
+  "recorded_at": "2026-09-02T09:38:58Z",
   "recorded_by": "tools/future/odyssey3_attack.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -770,7 +770,7 @@
   "roof_anchor": "703.5 no-activation, 497.4 two legs \u2014 cited, not re-measured"
  },
  "schema": "hawking.future.odyssey3_attack.v1",
- "seal_sha256": "e649e93c2467e0505e762f8f0da1884e50ef36ad3a10975bc839982824d072f2",
+ "seal_sha256": "6231c71627d90a043ae346e7c96824d979447878d2891facafb348354594bbe1",
  "section_66_adversary": {
   "architecture_family": "falcon_h1",
   "repo": "tiiuae/Falcon-H1-7B-Instruct",

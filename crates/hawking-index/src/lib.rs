@@ -19,11 +19,13 @@
 //! [`semantic::StubEmbeddingClient`] refuses so production never silently
 //! ranks on fixture vectors.
 
+pub mod artifact;
 pub mod daemon;
 pub mod graph;
 pub mod merkle;
 pub mod parse;
 pub mod query;
+pub mod reachability;
 pub mod semantic;
 pub mod store;
 
@@ -35,8 +37,15 @@ pub use query::{
 pub use graph::{CodeGraph, EdgeKind, Occurrence, RepoMap, RepoMapRequest, Symbol};
 pub use merkle::{Blake3MerkleScanner, ChangeSet, MerkleKind, MerkleNode, MerkleScanner};
 pub use parse::{parse_source, scip_symbol_id, LangId, ParseOutput, SymKind};
+pub use reachability::{
+    collect_reachability_facts, extract_python_facts, CollectOptions, FileFacts, ReachabilityDump,
+};
 pub use semantic::{
     cosine, fuse_legs, reciprocal_rank_fusion, BagOfCharsEmbeddingClient, EmbeddingClient,
     HttpEmbeddingClient, HybridRetrievalWeights, HybridRetriever, StubEmbeddingClient,
 };
 pub use store::SqliteStore;
+pub use artifact::{
+    capability_id as artifact_capability_id, content_hash_hex as artifact_content_hash_hex,
+    ArtifactIndex, ArtifactMeta, EntityRef, SCHEMA_VERSION as ARTIFACT_SCHEMA_VERSION,
+};

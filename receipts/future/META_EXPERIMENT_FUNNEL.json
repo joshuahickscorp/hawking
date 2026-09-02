@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:59:47Z",
+  "recorded_at": "2026-09-02T09:36:43Z",
   "recorded_by": "tools/future/meta_funnel.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -645,6 +645,6 @@
  },
  "scars": [],
  "schema": "hawking.future.meta_funnel.v1",
- "seal_sha256": "5e1722d82b36d3594a298dd1460310af538d2fb9868828aed5debde6f40c5c84",
+ "seal_sha256": "7c20ff42321d6e4046a32f6de51f7313ed20f5896d5c8a94b6bcb723e328babe",
  "version": 1
 }

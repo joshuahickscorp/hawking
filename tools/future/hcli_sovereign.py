@@ -34,6 +34,7 @@ import re
 import subprocess
 import sys
 import time
+from collections import Counter
 from pathlib import Path
 from typing import Any
 
@@ -252,7 +253,8 @@ def refresh_measured_state(k: dict[str, Any]) -> dict[str, Any]:
             "after": {kk: ms.get(kk) for kk in ("token_ms", "tps", "basis")}}
 
 
-def context_pack(k: dict[str, Any], *, terse: bool = False) -> str:
+def context_pack(k: dict[str, Any], *, terse: bool = False,
+                  emphasize_delta: bool = False, rejection_digest: str = "") -> str:
     """Bounded. Mission + evidence + the work vocabulary. No conclusions.
 
     SHORT ON PURPOSE. A 2667-character pack made this body restate the pack
@@ -261,6 +263,13 @@ def context_pack(k: dict[str, Any], *, terse: bool = False) -> str:
     and LAST; evidence is compressed to one line each; the scar list is a count
     plus the two that bear on the objective. Measured: the turn that worked was
     a 1380-character reply to a pack under 1500 characters.
+
+    emphasize_delta and rejection_digest are the escalation ladder's L1 and L4:
+    L1 puts LAST TURN / ALREADY RUN ahead of the goal restatement instead of
+    trusting the resident to read past it; L4 tells the resident WHY its own
+    recent proposals were turned down, computed from validate()'s own reasons
+    rather than guessed. Both are no-ops when unset, so every existing caller
+    is unaffected.
     """
     ms = k["measured_state"]
     dead = ", ".join(h["id"].split(".", 1)[-1] for h in k["hypotheses"]
@@ -321,15 +330,19 @@ def context_pack(k: dict[str, Any], *, terse: bool = False) -> str:
               "MLP tensor and measures the effect two layers later.\n"
             + (avoid + "\n" if avoid else "")
             + (mine + "\n" if mine else "")
+            + (rejection_digest + "\n" if rejection_digest else "")
             + f"\n{turn} Output the JSON now."
         )
+    focus = ("FOCUS: no work was accepted last turn. Read LAST TURN and "
+             "ALREADY RUN below before proposing anything new.\n"
+             if emphasize_delta else "")
     return f"""{schema}
 
 You are the scientific orchestrator. You choose what to investigate; nobody will tell you.
-
+{focus}
 GOAL: lowest capability-preserving complete EBPW. Milestone 2.0 or less.
 NOW: {ms.get('complete_bpw')} BPW. Any conventional encoding bottoms out at {ms.get('conventional_floor_bpw_if_every_untested_move_worked')} BPW, so the goal needs something other than a better code.
-
+{rejection_digest}
 DEAD (do not re-propose): {dead}
 EVIDENCE: {obs}
 SCARS: {len(k['scars'])} recorded; entropy coding and larger groups are spent.
@@ -478,6 +491,177 @@ def _log(rec: dict[str, Any]) -> None:
         f.write(json.dumps(rec) + "\n")
 
 
+# The escalation ladder over consecutive unproductive turns (S033 stall-guard
+# generalization). Each threshold below has ONE mechanism wired to it in run():
+#   L0 <1              normal pack.
+#   L1 >=EMPHASIZE      full pack, but LAST TURN / ALREADY RUN moved to the top.
+#   L2 >=TERSE          the short pack (proven live: 3 unproductive, then
+#                       terse, then accepted=1 on turn 4).
+#   L3 >=ROTATE_EVIDENCE  re-read the receipts measured_state is built from,
+#                       rather than reasoning over a number that may be stale.
+#   L4 >=DIAGNOSE       tell the resident WHY its recent proposals were
+#                       rejected, tallied from validate()'s own reasons.
+#   L6 >=STOP           stop and record a wake_condition (proven live).
+# L5 "escalate provider" has no safe mechanism in this file: the only lever
+# this loop holds over the provider is prov.stop()/rp.start(), and that is the
+# resident BODY subprocess the operator has forbidden this loop from killing
+# on its own. Not wired - see escalation_level().
+UNPRODUCTIVE_EMPHASIZE_DELTA_AFTER = 1
+UNPRODUCTIVE_TERSE_AFTER = 3
+UNPRODUCTIVE_ROTATE_EVIDENCE_AFTER = 4
+UNPRODUCTIVE_DIAGNOSE_REJECTIONS_AFTER = 5
+UNPRODUCTIVE_STOP_AFTER = 8
+
+
+def escalation_level(streak: int) -> int:
+    """Where an unproductive streak sits on the ladder above. Pure function of
+    the streak so the ladder's ordering is directly testable without a live
+    resident. L5 never appears - see the constants block."""
+    if streak >= UNPRODUCTIVE_STOP_AFTER:
+        return 6
+    if streak >= UNPRODUCTIVE_DIAGNOSE_REJECTIONS_AFTER:
+        return 4
+    if streak >= UNPRODUCTIVE_ROTATE_EVIDENCE_AFTER:
+        return 3
+    if streak >= UNPRODUCTIVE_TERSE_AFTER:
+        return 2
+    if streak >= UNPRODUCTIVE_EMPHASIZE_DELTA_AFTER:
+        return 1
+    return 0
+
+
+_TURN_RE = re.compile(r"TURN \d+\.")
+
+
+def _pack_fingerprint(pack: str) -> str:
+    """Hash the pack's SUBSTANCE, not the turn counter token that context_pack
+    inserts solely to break byte-identical repetition under greedy decoding
+    (see its IDENTICAL_REPLY_LOOP note). Two packs differing ONLY in that
+    counter are the same reasoning input to the resident."""
+    return _digest(_TURN_RE.sub("TURN N.", pack))
+
+
+# The kernel fields that represent what has actually been LEARNED. Excludes
+# iterations/stops (grow every turn by construction) and any *_unix timestamp
+# inside measured_state (a refresh always rewrites those even when the live
+# numbers it read are identical - the swap-highwater lesson: a field that
+# always changes cannot be used to detect whether anything real changed).
+_MISSION_STATE_KEYS = ("hypotheses", "observations", "scars",
+                       "live_hypotheses", "frontier", "tried_params")
+
+
+def _mission_state_fingerprint(k: dict[str, Any]) -> str:
+    ms = {kk: v for kk, v in (k.get("measured_state") or {}).items()
+          if not kk.endswith("_unix")}
+    payload = {kk: k.get(kk) for kk in _MISSION_STATE_KEYS}
+    payload["measured_state"] = ms
+    return _digest(json.dumps(payload, sort_keys=True, default=str))
+
+
+def _evidence_in_result(r: dict[str, Any]) -> bool:
+    """ran=True is not the same as evidence received: returncode 0 with
+    unparseable stdout produces {'stdout_tail': ...} - a subprocess that
+    exited clean but told the mission nothing."""
+    if not r.get("ran"):
+        return False
+    res = r.get("result") or {}
+    if r.get("type") == "PERTURB":
+        return res.get("damage") is not None
+    if r.get("type") == "READ_RECEIPT":
+        return bool(res.get("keys"))
+    return bool(res)
+
+
+def progress_signals(*, prev_it: dict[str, Any] | None, reply: str,
+                      results: list[dict[str, Any]], n_accepted: int,
+                      futs: dict, mission_state_changed: bool,
+                      frontier_changed: bool) -> dict[str, bool]:
+    """The seven signals tracked separately, plus the one combined verdict
+    the streak counter actually uses.
+
+    reply_changed and accepted_work are recorded but are NOT, alone, progress:
+    a body can emit different prose and accomplish nothing (GAP 2), and work
+    can be ACCEPTED and never EXECUTED - "PERTURB {...} -> DID NOT RUN",
+    re-accepted the very next turn - which the old guard scored as progress
+    because it only ever checked n_accepted (GAP 1). Only a signal that some
+    durable thing outside the reply text actually moved counts toward
+    'productive'.
+    """
+    prev_reply_hash = (prev_it or {}).get("output_hash")
+    signals = {
+        "reply_changed": prev_reply_hash is not None
+                          and prev_reply_hash != _digest(reply),
+        "accepted_work": int(n_accepted or 0) > 0,
+        "work_actually_ran": any(r.get("ran") for r in results),
+        "mission_state_changed": bool(mission_state_changed),
+        "frontier_changed": bool(frontier_changed),
+        "evidence_ingested": any(_evidence_in_result(r) for r in results),
+        "workunit_launched": bool(futs),
+    }
+    signals["productive"] = (
+        signals["work_actually_ran"]
+        or signals["mission_state_changed"]
+        or signals["frontier_changed"]
+        or signals["evidence_ingested"]
+    )
+    return signals
+
+
+def deterministic_stuck(prev_it: dict[str, Any] | None, pack_fp: str,
+                         reply_hash: str, n_accepted: int) -> bool:
+    """Same reasoning packet, same output, zero accepted work - TWICE - is a
+    stuck state provable without a streak threshold: a deterministic process
+    given an unchanged input cannot un-stick itself on a third try either.
+    This is the check that would have caught the 4.4-hour incident on turn 2,
+    rather than on turn 8 (or turn 330, before any guard existed at all).
+    """
+    if not prev_it or int(n_accepted or 0) > 0:
+        return False
+    prev_v = prev_it.get("validation") or {}
+    if int(prev_v.get("n_accepted") or 0) > 0:
+        return False
+    return (prev_it.get("pack_fingerprint") == pack_fp
+            and prev_it.get("output_hash") == reply_hash)
+
+
+def _rejection_digest(k: dict[str, Any], n: int = 6) -> str:
+    """L4: deterministic diagnosis of why proposals were rejected, tallied
+    over the last N turns. Every reason here already exists in validate()'s
+    own output - this surfaces and ranks it, it invents no new taxonomy."""
+    reasons = [
+        str(rej.get("why") or "unspecified")
+        for it in (k.get("iterations") or [])[-n:]
+        for rej in ((it.get("validation") or {}).get("rejected") or [])
+    ]
+    if not reasons:
+        return ""
+    top = Counter(reasons).most_common(3)
+    return ("YOUR RECENT PROPOSALS WERE REJECTED BECAUSE: "
+            + "; ".join(f"{why} (x{count})" for why, count in top))
+
+
+def _results_summary(results: list[dict[str, Any]],
+                      unlaunched: list[dict[str, Any]],
+                      rejected: list[dict[str, Any]]) -> list[str]:
+    """Zero-accept is a first-class signal, never a silent success: when
+    nothing ran, say WHY if the loop knows (validate()'s rejection reasons),
+    rather than the same flat line whether the resident proposed nothing at
+    all or proposed something that got turned down."""
+    lines = [
+        f"{r['type']} {r.get('params', {})} -> "
+        f"{'damage ' + str((r.get('result') or {}).get('damage')) if r.get('ran') else 'DID NOT RUN'}"
+        for r in results
+    ]
+    if unlaunched:
+        lines.append(f"{len(unlaunched)} accepted item(s) NOT LAUNCHED: "
+                      "the window closed first")
+    if lines:
+        return lines
+    if rejected:
+        return [f"REJECTED: {r.get('why')}" for r in rejected]
+    return ["no work was accepted from that turn: the resident selected none"]
+
+
 def run(minutes: float) -> dict[str, Any]:
     sys.path.insert(0, str(REPO))
     from tools.future import resident_provider as rp
@@ -490,10 +674,43 @@ def run(minutes: float) -> dict[str, Any]:
     deadline = t0 + minutes * 60
     n_iter = 0
     interventions = 0
+    # Consecutive iterations that produced NOTHING. The loop already computed
+    # `degenerated` every turn and did nothing with it: a real run spent 330
+    # iterations and 4.4 hours emitting a byte-identical 1667-char reply every
+    # 48 seconds, accepting zero work, with degenerated=True on every one.
+    #
+    # The spiral is self-reinforcing and that is why it never escapes on its
+    # own: no work accepted -> the kernel does not change -> context_pack()
+    # rebuilds byte-identically -> greedy decoding returns the same reply ->
+    # no work accepted. Nothing in that cycle can perturb itself.
+    unproductive = 0
     try:
         while time.time() < deadline:
             n_iter += 1
-            pack = context_pack(k)
+            # prev_it/before_fp/frontier_before are the "before" half of this
+            # turn's state-transition check - captured before anything this
+            # turn (including the L3 rotate below) can move them.
+            prev_it = (k.get("iterations") or [None])[-1] if k.get("iterations") else None
+            before_fp = _mission_state_fingerprint(k)
+            frontier_before = k.get("frontier")
+            # Break the identity BEFORE asking, not after. The terse pack is
+            # shorter, and this body is known to degenerate with length -- the
+            # pack that worked was under 1600 chars (see context_pack).
+            lvl = escalation_level(unproductive)
+            forced_terse = lvl >= 2
+            emphasize_delta = lvl == 1
+            evidence_rotated = None
+            if lvl >= 3:
+                # L3: rotate/retrieve different frontier evidence. The
+                # cheapest real version of "look somewhere else" this loop
+                # has: re-read the receipts measured_state is built from,
+                # rather than keep reasoning over a number that may be stale.
+                evidence_rotated = refresh_measured_state(k)
+            rejection_digest = _rejection_digest(k) if lvl >= 4 else ""
+            pack = context_pack(k, terse=forced_terse,
+                                 emphasize_delta=emphasize_delta,
+                                 rejection_digest=rejection_digest)
+            pack_fp = _pack_fingerprint(pack)
             ta = time.time()
             try:
                 raw = prov.ask(f"sov_{n_iter}_{_digest(pack)}", pack,
@@ -501,6 +718,7 @@ def run(minutes: float) -> dict[str, Any]:
                 reply = raw.get("text") or ""
             except Exception as exc:
                 reply = f"<<ASK FAILED {type(exc).__name__}: {exc}>>"
+            reply_hash = _digest(reply)
             clean = rp.degenerate_prefix(reply)
             # G127: admit() is the single shape boundary. It never raises and
             # always returns the same key set, so the three crashes this loop
@@ -604,13 +822,15 @@ def run(minutes: float) -> dict[str, Any]:
                 "unlaunched": unlaunched,
                 "n_unlaunched": len(unlaunched),
                 "results": results,
-                "results_summary": [
-                    f"{r['type']} {r.get('params',{})} -> "
-                    f"{'damage ' + str((r.get('result') or {}).get('damage')) if r.get('ran') else 'DID NOT RUN'}"
-                    for r in results
-                ] + ([f"{len(unlaunched)} accepted item(s) NOT LAUNCHED: "
-                      "the window closed first"] if unlaunched else [])
-                or ["no work was accepted from that turn"],
+                "results_summary": _results_summary(results, unlaunched, v["rejected"]),
+                # Durable fingerprints so NEXT turn's deterministic_stuck() and
+                # progress_signals() can compare against THIS turn without
+                # re-deriving anything - see their docstrings.
+                "pack_fingerprint": pack_fp,
+                "output_hash": reply_hash,
+                "escalation_level": lvl,
+                "rejection_digest_shown": rejection_digest or None,
+                "evidence_rotated": evidence_rotated,
             }
             # Persist the resident's OWN hypotheses onto the kernel so the next
             # pack can show them back. They were recorded on the iteration and
@@ -619,18 +839,95 @@ def run(minutes: float) -> dict[str, Any]:
             if isinstance(lh, list) and lh:
                 k["live_hypotheses"] = [h for h in lh if isinstance(h, dict)][-4:]
             for r in results:
+                # ONLY WHAT ACTUALLY RAN. This recorded every accepted param,
+                # including ones whose result was "DID NOT RUN", and that was
+                # wrong twice over. The context pack renders this list as
+                # "ALREADY RUN (pick different params)", so the resident was
+                # being told a perturbation had been tried when it never
+                # executed - and tried_params is in _MISSION_STATE_KEYS, so the
+                # append alone flipped mission_state_changed and reset the
+                # no-progress streak. That is GAP 1 reintroduced one level up:
+                # accepted is not executed, and neither is "tried".
+                if not r.get("ran"):
+                    continue
                 pp = r.get("params") or {}
                 if isinstance(pp, dict) and pp:
                     k.setdefault("tried_params", []).append(
                         f"{pp.get('tensor')}/L{pp.get('layer')}/"
                         f"{pp.get('side')}/{pp.get('fraction')}")
+            # GENERALIZED STALL DETECTOR. "Productive" used to mean n_accepted
+            # > 0, which two real turns exposed as gameable: work was ACCEPTED
+            # and never RAN ("PERTURB {...} -> DID NOT RUN"), re-accepted the
+            # next turn, and the old check scored that as progress (GAP 1).
+            # progress_signals() instead requires a real state transition -
+            # work that ran, evidence that arrived, or the mission/frontier
+            # actually changing - never accepted_work or reply_changed alone
+            # (GAP 2: different prose is not progress).
+            signals = progress_signals(
+                prev_it=prev_it, reply=reply, results=results,
+                n_accepted=v.get("n_accepted"), futs=futs,
+                mission_state_changed=before_fp != _mission_state_fingerprint(k),
+                frontier_changed=frontier_before != k.get("frontier"),
+            )
+            it["progress"] = signals
+            stuck_now = deterministic_stuck(prev_it, pack_fp, reply_hash,
+                                             v.get("n_accepted"))
+            it["deterministic_stuck"] = stuck_now
+            if signals["productive"]:
+                unproductive = 0
+            else:
+                unproductive += 1
+                if stuck_now:
+                    # DETERMINISTIC STUCK STATE. Same packet, same output,
+                    # zero accepted work, twice in a row - break NOW rather
+                    # than waiting for the streak to reach UNPRODUCTIVE_STOP_
+                    # AFTER. This is the check that would have caught the
+                    # 4.4-hour incident on turn 2.
+                    unproductive = max(unproductive, UNPRODUCTIVE_STOP_AFTER)
+            it["unproductive_streak"] = unproductive
+            it["forced_terse"] = forced_terse
+
             k["iterations"].append(it)
             save_kernel(k)
             _log(it)
             print(json.dumps({kk: it[kk] for kk in
                               ("n", "t_s", "parsed", "degenerated",
+                               "unproductive_streak", "forced_terse",
                                "belief_update", "results_summary")}, indent=1))
             sys.stdout.flush()
+
+            if unproductive >= UNPRODUCTIVE_STOP_AFTER:
+                # STOP (park this frontier). A loop that cannot produce work
+                # must say so, not spin. Burning a GPU for hours on a reply it
+                # already knows is degenerate is the low-information busy loop
+                # the productive-autonomy law forbids, and it is worse than
+                # idling because it looks like progress in every process
+                # listing.
+                stop = {
+                    "event": ("deterministic_stuck_stop" if stuck_now
+                               else "unproductive_stop"),
+                    "n": n_iter,
+                    "streak": unproductive,
+                    "terse_already_tried": forced_terse,
+                    "reply_chars": it.get("reply_chars"),
+                    "reason": (
+                        "identical reasoning packet and identical output with "
+                        "zero accepted work, twice in a row" if stuck_now else
+                        "no work accepted for "
+                        f"{unproductive} consecutive iterations; the shortened "
+                        "pack did not break the identity either"
+                    ),
+                    "wake_condition": (
+                        "a kernel change from outside this loop: a landed "
+                        "receipt, a new scar, or an operator-set frontier"
+                    ),
+                }
+                k.setdefault("stops", []).append(stop)
+                save_kernel(k)
+                _log(stop)
+                print(json.dumps(stop, indent=1))
+                sys.stdout.flush()
+                break
     finally:
         try:
             prov.stop()

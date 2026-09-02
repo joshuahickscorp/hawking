@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:06:46Z",
+  "recorded_at": "2026-09-02T08:28:17Z",
   "recorded_by": "tools/future/moe_physical_school.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1331,11 +1331,11 @@
    "megakernel",
    "router_distill"
   ],
-  "hit_count": 19,
+  "hit_count": 20,
   "implication": "Flash L44 gate_up mean cosine is ~0.0038 (doctor screen). Experts are not similar, so repeated work is structural (same x, same SwiGLU shape, independent W_e), not a license to merge experts or to reopen a trivial shared basis. Megakernel-as-TPS-lever is recorded-dead; fused routed-organ dispatch is a different object from a full-layer megakernel.",
   "index_reachable": true,
   "path": "receipts/future/NEGATIVE_SCIENCE_INDEX.json",
-  "refuse_eligible_count": 18,
+  "refuse_eligible_count": 19,
   "sample_scar_ids": [
    "hawking-experiments/superwave/g1/g1-arch-negative.md#shared_cross_expert_basis_shared_codebook",
    "receipts/QWEN80_CROSS_EXPERT_STRUCTURE_NEGATIVE.json#cross_expert_structure",
@@ -2258,7 +2258,7 @@
   ]
  },
  "schema": "hawking.future.moe_physical.v1",
- "seal_sha256": "89a04612a160252857096fdfd22230798f201978a9826953f8ab86bf5664b1f2",
+ "seal_sha256": "42804aaf92cbf9b13501d594ce7aec20c96d7bcc0306049e1eabd810f60a146a",
  "skeleton_cross_reference": {
   "expert_id_is_permitted": true,
   "flash_moe_component": "tools/future/static_skeleton.py::flash_moe_component_skeleton already models Flash router STATIC + expert bank SLOT_INDEXED on EXPERT_ID + shared expert STATIC. this school does not fork it.",

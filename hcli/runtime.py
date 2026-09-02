@@ -6,6 +6,7 @@ import os
 import shlex
 import signal
 import subprocess
+import sys
 import threading
 import time
 import urllib.request
@@ -117,7 +118,40 @@ def _install_hooks() -> None:
                 pass
 
 
+def _reap_orphans_once() -> None:
+    """Reclaim resident bodies no live process owns, before starting another.
+
+    atexit handles a clean exit and demonstrably works. It CANNOT run on
+    SIGKILL, and a daemon meets SIGKILL routinely - OOM kill, crash, kill -9,
+    power loss. Measured: SIGKILLing the CLI mid-run left TWO orphaned bodies
+    holding 22.22 GB, still present 75 seconds later and not self-exiting.
+    Over an unattended overnight run that is fatal on its own.
+
+    So self-heal on startup rather than trusting the exit path - the same shape
+    the ModelLake reconciliation pass uses, and for the same reason: the
+    cleanup fails precisely when the process that should have done it is gone.
+    Never touches a body a live resident state file claims.
+    """
+    try:
+        from .processes import reap_orphaned_bodies
+
+        result = reap_orphaned_bodies()
+        if result.get("reaped"):
+            gib = result.get("bytes_held", 0) / 1024 ** 3
+            print(
+                f"[hcli] reclaimed {len(result['reaped'])} orphaned resident "
+                f"body/bodies holding {gib:.2f}G",
+                file=sys.stderr,
+            )
+    except Exception:
+        # Best-effort by design: reclaiming memory must never be the reason a
+        # runtime fails to start. The reporting line is INSIDE the guard because
+        # a NameError in it escaped and killed the caller during testing.
+        return
+
+
 def _register_live(pool: "RuntimePool") -> None:
+    _reap_orphans_once()
     _LIVE_POOLS.append(weakref.ref(pool))
     _install_hooks()
 

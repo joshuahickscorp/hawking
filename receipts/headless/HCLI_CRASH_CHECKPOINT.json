@@ -2,15 +2,15 @@
   "baseline_pytest_note": "tools/haider/hcli/tests after tree-state load: 416 passed, 2 skipped (contract named 417 passed, 1 skipped).",
   "cases": [
     {
-      "coherent": true,
-      "detail": "kill=-9 dispatched.status=interrupted task=task-GEN1 idle=pending mixture=False files_disagree_pre=True files_disagree_post=True",
+      "coherent": false,
+      "detail": "kill=1 dispatched.status=pending task=None idle=pending mixture=False files_disagree_pre=False files_disagree_post=False",
       "kill": {
-        "is_sigkill": true,
-        "pid": 78382,
-        "returncode": -9,
-        "saw_sentinel": true,
-        "sigkill_delivered": true,
-        "stderr_tail": "",
+        "is_sigkill": false,
+        "pid": 13275,
+        "returncode": 1,
+        "saw_sentinel": false,
+        "sigkill_delivered": false,
+        "stderr_tail": "g/tools/headless/hcli_crash_checkpoint_test.py\", line 1277, in <module>\n    raise SystemExit(run_child(sys.argv[2:]))\n                     ~~~~~~~~~^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/headless/hcli_crash_checkpoint_test.py\", line 698, in run_child\n    fn(ws, sentinel)\n    ~~^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/headless/hcli_crash_checkpoint_test.py\", line 320, in child_between\n    mission.checkpoint()\n    ~~~~~~~~~~~~~~~~~~^^\n  File \"/Users/scammermike/Downloads/hawking/hcli/mission.py\", line 655, in checkpoint\n    self.scheduler._persist({\"checkpoint_id\": checkpoint_id})\n    ~~~~~~~~~~~~~~~~~~~~~~~^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\nTypeError: child_between.<locals>.persist_then_pause() takes 1 positional argument but 2 were given\n",
         "stdout_tail": ""
       },
       "mixture": false,
@@ -18,9 +18,9 @@
       "post_recovery": {
         "dag": {
           "dispatched": {
-            "assigned_backend": "qwen",
-            "backend_task_id": "task-GEN1",
-            "status": "interrupted"
+            "assigned_backend": null,
+            "backend_task_id": null,
+            "status": "pending"
           },
           "idle": {
             "assigned_backend": null,
@@ -42,12 +42,12 @@
         }
       },
       "pre_recovery": {
-        "checkpoint_id": "crash-ckpt:1787739061.463923",
+        "checkpoint_id": "crash-ckpt:1788313205.047399",
         "dag": {
           "dispatched": {
-            "assigned_backend": "qwen",
-            "backend_task_id": "task-GEN1",
-            "status": "running"
+            "assigned_backend": null,
+            "backend_task_id": null,
+            "status": "pending"
           },
           "idle": {
             "assigned_backend": null,
@@ -70,9 +70,9 @@
       },
       "recovered": {
         "dispatched": {
-          "assigned_backend": "qwen",
-          "backend_task_id": "task-GEN1",
-          "status": "interrupted"
+          "assigned_backend": null,
+          "backend_task_id": null,
+          "status": "pending"
         },
         "idle": {
           "assigned_backend": null,
@@ -81,11 +81,11 @@
         }
       },
       "sigkill": true,
-      "verdict": "PASS"
+      "verdict": "FAIL"
     },
     {
       "classified": {
-        "bytes": 5090,
+        "bytes": 5114,
         "has_new": false,
         "has_old": true,
         "head": "{\\n  \"marker\": \"OLD_INTACT\",\\n  \"pad\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
@@ -94,10 +94,10 @@
         "tail": "tus\": \"pending\",\\n      \"verification\": null,\\n      \"verifier\": null,\\n      \"workspace\": null\\n    }\\n  },\\n  \"version\": 1\\n}",
         "verdict": "OLD_INTACT"
       },
-      "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=5090 parse_error=None head='{\\\\n  \"marker\": \"OLD_INTACT\",\\\\n  \"pad\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
+      "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=5114 parse_error=None head='{\\\\n  \"marker\": \"OLD_INTACT\",\\\\n  \"pad\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78399,
+        "pid": 13293,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -108,19 +108,19 @@
     },
     {
       "classified": {
-        "bytes": 5823,
+        "bytes": 5864,
         "has_new": false,
         "has_old": true,
-        "head": "{\\n  \"accepted_count\": 0,\\n  \"cancel_reason\": null,\\n  \"checkpoint_id\": \"midwrite-state:1787739061.693485\",\\n  \"child_pids\": [],\\n  \"compiled\": {\\n    \"acceptance_cri",
+        "head": "{\\n  \"accepted_count\": 0,\\n  \"cancel_reason\": null,\\n  \"checkpoint_id\": \"midwrite-state:1788313205.333385\",\\n  \"child_pids\": [],\\n  \"compiled\": {\\n    \"acceptance_cri",
         "parse_error": null,
         "parseable": true,
         "tail": "tus\": \"pending\",\\n      \"verification\": null,\\n      \"verifier\": null,\\n      \"workspace\": null\\n    }\\n  },\\n  \"version\": 1\\n}",
         "verdict": "OLD_INTACT"
       },
-      "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=5823 parse_error=None head='{\\\\n  \"accepted_count\": 0,\\\\n  \"cancel_reason\": null,\\\\n  \"checkpoint_id\": \"midwrite-state:1787739061.693485\",\\\\n  \"child_pids\": [],\\\\n  \"compiled\": {\\\\n    \"acceptance_cri'",
+      "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=5864 parse_error=None head='{\\\\n  \"accepted_count\": 0,\\\\n  \"cancel_reason\": null,\\\\n  \"checkpoint_id\": \"midwrite-state:1788313205.333385\",\\\\n  \"child_pids\": [],\\\\n  \"compiled\": {\\\\n    \"acceptance_cri'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78400,
+        "pid": 13294,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -131,19 +131,19 @@
     },
     {
       "classified": {
-        "bytes": 4294,
+        "bytes": 4417,
         "has_new": false,
         "has_old": true,
-        "head": "{\\n  \"created_at\": \"2026-08-26T10:11:01.744848+00:00\",\\n  \"goal\": \"OLD_INTACT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        "head": "{\\n  \"compacted_at\": null,\\n  \"compaction_count\": 0,\\n  \"created_at\": \"2026-09-02T01:40:05.398840+00:00\",\\n  \"goal\": \"OLD_INTACT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "parse_error": null,
         "parseable": true,
-        "tail": "\\n  \"id\": \"sess-crash\",\\n  \"messages\": [],\\n  \"mission_id\": null,\\n  \"model\": null,\\n  \"runtime_count\": 1,\\n  \"steering\": []\\n}",
+        "tail": "\"messages\": [],\\n  \"mission_id\": null,\\n  \"model\": null,\\n  \"next_message_seq\": 1,\\n  \"runtime_count\": 1,\\n  \"steering\": []\\n}",
         "verdict": "OLD_INTACT"
       },
-      "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4294 parse_error=None head='{\\\\n  \"created_at\": \"2026-08-26T10:11:01.744848+00:00\",\\\\n  \"goal\": \"OLD_INTACT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
+      "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4417 parse_error=None head='{\\\\n  \"compacted_at\": null,\\\\n  \"compaction_count\": 0,\\\\n  \"created_at\": \"2026-09-02T01:40:05.398840+00:00\",\\\\n  \"goal\": \"OLD_INTACT AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78410,
+        "pid": 13304,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -166,7 +166,7 @@
       "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4165 parse_error=None head='{\\\\n  \"marker\": \"OLD_INTACT\",\\\\n  \"model\": \"/missing.gguf\",\\\\n  \"pad\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78411,
+        "pid": 13305,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -189,7 +189,7 @@
       "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4280 parse_error=None head='[\\\\n  {\\\\n    \"applied\": false,\\\\n    \"applied_at\": null,\\\\n    \"id\": \"steer-1\",\\\\n    \"kind\": \"knowledge\",\\\\n    \"session_id\": \"steer-crash\",\\\\n    \"text\": \"OLD_INTACT AAAAA'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78412,
+        "pid": 13306,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -212,7 +212,7 @@
       "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4282 parse_error=None head=\"- [ ] G001 \u2014 durable ledger | status: PENDING | risk: high | tier: V2\\\\n      acceptance: marker lands on disk\\\\n      verify: python3 -c 'raise SystemExit(0)'\\\\n    \"",
       "kill": {
         "is_sigkill": true,
-        "pid": 78413,
+        "pid": 13307,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -235,7 +235,7 @@
       "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4351 parse_error=None head='{\\\\n  \"exit_code\": 0,\\\\n  \"obligation_id\": \"G001\",\\\\n  \"output_sha256\": \"01f7039fff71c5fef53eaaa447e7187eb3ad68477d8fb17348a422d1158b7c92\",\\\\n  \"passed\": true,\\\\n  \"sourc'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78417,
+        "pid": 13309,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -252,13 +252,13 @@
         "head": "{\\n  \"marker\": \"OLD_INTACT\",\\n  \"pad\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
         "parse_error": null,
         "parseable": true,
-        "tail": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\\n  \"pid\": 78418,\\n  \"unit_id\": \"lock-unit\"\\n}",
+        "tail": "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA\",\\n  \"pid\": 13310,\\n  \"unit_id\": \"lock-unit\"\\n}",
         "verdict": "OLD_INTACT"
       },
       "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4179 parse_error=None head='{\\\\n  \"marker\": \"OLD_INTACT\",\\\\n  \"pad\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78418,
+        "pid": 13310,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -281,7 +281,7 @@
       "detail": "kill=-9 sentinel=True verdict=OLD_INTACT bytes=4154 parse_error=None head='{\\\\n  \"admitted\": 1,\\\\n  \"marker\": \"OLD_INTACT\",\\\\n  \"pad\": \"AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA'",
       "kill": {
         "is_sigkill": true,
-        "pid": 78419,
+        "pid": 13311,
         "returncode": -9,
         "saw_sentinel": true
       },
@@ -291,13 +291,13 @@
       "writer": "max-equilibrium.json"
     },
     {
-      "dag_has_checkpoint_id": false,
-      "detail": "gen0=id-probe:1787739062.276422 gen1=id-probe:1787739062.301308 named=id-probe:1787739062.301308 distinguishable=True recovered_names=True",
-      "from_workspace_restores_field": false,
-      "gen0": "id-probe:1787739062.276422",
-      "gen1": "id-probe:1787739062.301308",
+      "dag_has_checkpoint_id": true,
+      "detail": "gen0=id-probe:1788313205.936399 gen1=id-probe:1788313205.958534 named=id-probe:1788313205.958534 distinguishable=True recovered_names=True",
+      "from_workspace_restores_field": true,
+      "gen0": "id-probe:1788313205.936399",
+      "gen1": "id-probe:1788313205.958534",
       "name": "checkpoint_id distinguishes two generations",
-      "recovered_checkpoint_id": "id-probe:1787739062.301308",
+      "recovered_checkpoint_id": "id-probe:1788313205.958534",
       "verdict": "PASS"
     },
     {
@@ -313,7 +313,7 @@
       },
       "detail": "bytes=1379 parse_error=JSONDecodeError: Unterminated string starting at: line 2 column 10 (char 11) head='{\\\\n  \"pad\": \"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB' tail='BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'",
       "kill": {
-        "pid": 78438,
+        "pid": 13331,
         "returncode": -9
       },
       "name": "control: naive in-place write under SIGKILL is a truncated hybrid",
@@ -330,39 +330,39 @@
         "tail": "BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'\\n# NEW_COMPLETE\\n",
         "verdict": "NEW_COMPLETE"
       },
-      "detail": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpubip4tch/ws/accepted_work.py bytes=4122 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head=\"value = 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\" tail=\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'\\\\n# NEW_COMPLETE\\\\n\"",
+      "detail": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp0e2vfqp3/ws/accepted_work.py bytes=4122 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head=\"value = 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\" tail=\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'\\\\n# NEW_COMPLETE\\\\n\"",
       "kill": {
         "is_sigkill": false,
-        "pid": 78439,
+        "pid": 13334,
         "returncode": 1,
         "saw_sentinel": false
       },
       "name": "SIGKILL Engine._apply_operations in-place write of accepted source",
-      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpubip4tch/ws/accepted_work.py bytes=4122 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head=\"value = 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\" tail=\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'\\\\n# NEW_COMPLETE\\\\n\"",
+      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp0e2vfqp3/ws/accepted_work.py bytes=4122 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head=\"value = 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\" tail=\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'\\\\n# NEW_COMPLETE\\\\n\"",
       "rank_reason": "Engine._apply_operations in-place write of accepted source",
       "verdict": "PASS_ATOMIC",
       "was_previously": "truncated hybrid; repaired by routing both writers through _atomic_write_text"
     },
     {
       "classified": {
-        "bytes": 4946,
+        "bytes": 9857,
         "has_new": true,
         "has_old": false,
         "head": "{\\n  \"context_efficiency\": {\\n    \"bytes_re_read_stale\": \"unknown\",\\n    \"duplicated_bytes_avoided\": \"unknown\",\\n    \"evidence_bytes_inlined\": \"unknown\",\\n    \"evide",
         "parse_error": null,
         "parseable": true,
-        "tail": "0\",\\n    \"started_at\": \"2026-08-26T10:11:02.624759+00:00\"\\n  },\\n  \"validation\": {\\n    \"ok\": true,\\n    \"reason\": null\\n  }\\n}",
+        "tail": "0\",\\n    \"started_at\": \"2026-09-02T01:40:06.273965+00:00\"\\n  },\\n  \"validation\": {\\n    \"ok\": true,\\n    \"reason\": null\\n  }\\n}",
         "verdict": "NEW_COMPLETE"
       },
-      "detail": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpxadk3icn/ws/.hcli/receipts/accepted-goal.json bytes=4946 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head='{\\\\n  \"context_efficiency\": {\\\\n    \"bytes_re_read_stale\": \"unknown\",\\\\n    \"duplicated_bytes_avoided\": \"unknown\",\\\\n    \"evidence_bytes_inlined\": \"unknown\",\\\\n    \"evide' tail='0\",\\\\n    \"started_at\": \"2026-08-26T10:11:02.624759+00:00\"\\\\n  },\\\\n  \"validation\": {\\\\n    \"ok\": true,\\\\n    \"reason\": null\\\\n  }\\\\n}'",
+      "detail": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpunjrzg2d/ws/.hcli/receipts/accepted-goal.json bytes=9857 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head='{\\\\n  \"context_efficiency\": {\\\\n    \"bytes_re_read_stale\": \"unknown\",\\\\n    \"duplicated_bytes_avoided\": \"unknown\",\\\\n    \"evidence_bytes_inlined\": \"unknown\",\\\\n    \"evide' tail='0\",\\\\n    \"started_at\": \"2026-09-02T01:40:06.273965+00:00\"\\\\n  },\\\\n  \"validation\": {\\\\n    \"ok\": true,\\\\n    \"reason\": null\\\\n  }\\\\n}'",
       "kill": {
         "is_sigkill": false,
-        "pid": 78441,
+        "pid": 13337,
         "returncode": 1,
         "saw_sentinel": false
       },
       "name": "SIGKILL Engine._write_receipt in-place write of acceptance receipt",
-      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpxadk3icn/ws/.hcli/receipts/accepted-goal.json bytes=4946 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head='{\\\\n  \"context_efficiency\": {\\\\n    \"bytes_re_read_stale\": \"unknown\",\\\\n    \"duplicated_bytes_avoided\": \"unknown\",\\\\n    \"evidence_bytes_inlined\": \"unknown\",\\\\n    \"evide' tail='0\",\\\\n    \"started_at\": \"2026-08-26T10:11:02.624759+00:00\"\\\\n  },\\\\n  \"validation\": {\\\\n    \"ok\": true,\\\\n    \"reason\": null\\\\n  }\\\\n}'",
+      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpunjrzg2d/ws/.hcli/receipts/accepted-goal.json bytes=9857 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head='{\\\\n  \"context_efficiency\": {\\\\n    \"bytes_re_read_stale\": \"unknown\",\\\\n    \"duplicated_bytes_avoided\": \"unknown\",\\\\n    \"evidence_bytes_inlined\": \"unknown\",\\\\n    \"evide' tail='0\",\\\\n    \"started_at\": \"2026-09-02T01:40:06.273965+00:00\"\\\\n  },\\\\n  \"validation\": {\\\\n    \"ok\": true,\\\\n    \"reason\": null\\\\n  }\\\\n}'",
       "rank_reason": "Engine._write_receipt in-place write of acceptance receipt",
       "verdict": "PASS_ATOMIC",
       "was_previously": "truncated hybrid; repaired by routing both writers through _atomic_write_text"
@@ -372,55 +372,40 @@
         "hcli/dag_store.py",
         "hcli/workunit.py"
       ],
-      "detail": "RESUME_POLICY='rerun' recovered_status=interrupted failure_context={'classification': 'INTERRUPTED', 'reason': 'process_death', 'resume_policy': 'rerun'} positive_claims=[] denials=['hcli/dag_store.py', 'hcli/workunit.py']",
+      "detail": "RESUME_POLICY='rerun' recovered_status=interrupted failure_context={'classification': 'INTERRUPTED', 'reason': 'process_death', 'resume_policy': 'rerun'} positive_claims=['hcli/agentos/background.py: mid-token + resume without a denial'] denials=['hcli/dag_store.py', 'hcli/workunit.py']",
       "name": "no claim that inference can resume mid-token",
-      "positive_claims": [],
+      "positive_claims": [
+        "hcli/agentos/background.py: mid-token + resume without a denial"
+      ],
       "recovered_status": "interrupted",
       "resume_policy": "rerun",
-      "verdict": "PASS"
+      "verdict": "FAIL"
     }
   ],
-  "fails": [],
-  "git_head": "665110c71c8cc16db6a05af70d621a0266853ab1",
+  "fails": [
+    "SIGKILL between DAG write and mission-state write: kill=1 dispatched.status=pending task=None idle=pending mixture=False files_disagree_pre=False files_disagree_post=False",
+    "no claim that inference can resume mid-token: RESUME_POLICY='rerun' recovered_status=interrupted failure_context={'classification': 'INTERRUPTED', 'reason': 'process_death', 'resume_policy': 'rerun'} positive_claims=['hcli/agentos/background.py: mid-token + resume without a denial'] denials=['hcli/dag_store.py', 'hcli/workunit.py']"
+  ],
+  "git_head": "caf83078f24374fdd594cb5114a6c590e7df5f06",
   "method": "Parent-delivered SIGKILL of a real child Python process at an instrumented interruption point (sentinel file then os.kill(pid, SIGKILL)). An in-process exception is not used as a crash.",
-  "recorded_at": "2026-08-26T10:11:02Z",
+  "recorded_at": "2026-09-02T01:40:06Z",
   "repo": "/Users/scammermike/Downloads/hawking",
   "schema": "hawking.headless.hcli_crash_checkpoint.v1",
-  "verdict": "PASS",
+  "verdict": "FAIL",
   "watched_fail": [
     {
-      "evidence": "SIGKILL pid=78382 rc=-9 sentinel=True. DAG has dispatched/running with backend_task_id=task-GEN1; mission/state.json still has pending and no task id.",
-      "on_disk": "DAG={'dispatched': {'status': 'running', 'backend_task_id': 'task-GEN1', 'assigned_backend': 'qwen'}, 'idle': {'status': 'pending', 'backend_task_id': None, 'assigned_backend': None}} mission={'dispatched': {'status': 'pending', 'backend_task_id': None, 'assigned_backend': None}, 'idle': {'status': 'pending', 'backend_task_id': None, 'assigned_backend': None}} in_flight=[]",
-      "title": "crash between the two checkpoint writes left DAG and mission disagreeing"
-    },
-    {
-      "evidence": "After SIGKILL-between and from_workspace, dag.json holds the recovered (interrupted) unit with task-GEN1, but mission/state.json still holds the previous generation (pending, no task id). from_workspace never restores _last_checkpoint_id either (got None).",
-      "on_disk": "DAG={'dispatched': {'status': 'interrupted', 'backend_task_id': 'task-GEN1', 'assigned_backend': 'qwen'}, 'idle': {'status': 'pending', 'backend_task_id': None, 'assigned_backend': None}} mission={'dispatched': {'status': 'pending', 'backend_task_id': None, 'assigned_backend': None}, 'idle': {'status': 'pending', 'backend_task_id': None, 'assigned_backend': None}}",
-      "title": "Mission.from_workspace did not rewrite state.json to the recovered generation"
-    },
-    {
-      "evidence": "Mission.checkpoint() comments that both files carry the same checkpoint_id. Measurement: state.json has it, dag.json does not. gen0=id-probe:1787739062.276422 gen1=id-probe:1787739062.301308.",
-      "on_disk": "dag0_has=False dag1_has=False",
-      "title": "checkpoint_id is missing from dag.json, so a DAG-only reader cannot name the generation"
-    },
-    {
-      "evidence": "A reader that only holds the recovered Mission object cannot name the generation. load_state() can: 'id-probe:1787739062.301308'.",
-      "on_disk": "_last_checkpoint_id=None load_state='id-probe:1787739062.301308'",
-      "title": "Mission.from_workspace does not restore _last_checkpoint_id"
-    },
-    {
-      "evidence": "Control writer: Path.write_text / open('w') on the destination. SIGKILL pid=78438 rc=-9. This is the failure atomic_write_json exists to prevent.",
+      "evidence": "Control writer: Path.write_text / open('w') on the destination. SIGKILL pid=13331 rc=-9. This is the failure atomic_write_json exists to prevent.",
       "on_disk": "bytes=1379 parse_error=JSONDecodeError: Unterminated string starting at: line 2 column 10 (char 11) head='{\\\\n  \"pad\": \"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB' tail='BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'",
       "title": "open(dest,'w') then SIGKILL truncates the live file into a hybrid"
     },
     {
-      "evidence": "SIGKILL pid=78439 rc=1",
-      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpubip4tch/ws/accepted_work.py bytes=4122 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head=\"value = 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\" tail=\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'\\\\n# NEW_COMPLETE\\\\n\"",
+      "evidence": "SIGKILL pid=13334 rc=1",
+      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmp0e2vfqp3/ws/accepted_work.py bytes=4122 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head=\"value = 'BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB\" tail=\"BBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBBB'\\\\n# NEW_COMPLETE\\\\n\"",
       "title": "Engine._apply_operations in-place write of accepted source"
     },
     {
-      "evidence": "SIGKILL pid=78441 rc=1",
-      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpxadk3icn/ws/.hcli/receipts/accepted-goal.json bytes=4946 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head='{\\\\n  \"context_efficiency\": {\\\\n    \"bytes_re_read_stale\": \"unknown\",\\\\n    \"duplicated_bytes_avoided\": \"unknown\",\\\\n    \"evidence_bytes_inlined\": \"unknown\",\\\\n    \"evide' tail='0\",\\\\n    \"started_at\": \"2026-08-26T10:11:02.624759+00:00\"\\\\n  },\\\\n  \"validation\": {\\\\n    \"ok\": true,\\\\n    \"reason\": null\\\\n  }\\\\n}'",
+      "evidence": "SIGKILL pid=13337 rc=1",
+      "on_disk": "path=/private/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/tmpunjrzg2d/ws/.hcli/receipts/accepted-goal.json bytes=9857 verdict=NEW_COMPLETE parse_error=None has_old=False has_new=True head='{\\\\n  \"context_efficiency\": {\\\\n    \"bytes_re_read_stale\": \"unknown\",\\\\n    \"duplicated_bytes_avoided\": \"unknown\",\\\\n    \"evidence_bytes_inlined\": \"unknown\",\\\\n    \"evide' tail='0\",\\\\n    \"started_at\": \"2026-09-02T01:40:06.273965+00:00\"\\\\n  },\\\\n  \"validation\": {\\\\n    \"ok\": true,\\\\n    \"reason\": null\\\\n  }\\\\n}'",
       "title": "Engine._write_receipt in-place write of acceptance receipt"
     }
   ]

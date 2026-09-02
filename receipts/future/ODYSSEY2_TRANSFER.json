@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:06Z",
+  "recorded_at": "2026-09-02T09:42:47Z",
   "recorded_by": "tools/future/odyssey2_transfer.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -504,10 +504,10 @@
  },
  "identity_transfer_refused": {
   "law_id": "LAW-L1-MLP-ARITHMETIC-SENSITIVE",
-  "reason": "LAW-L1-MLP-ARITHMETIC-SENSITIVE: target qwen3.8-27b-abliterated-bf16@local is the origin; a transfer onto the law's origin is not a transfer",
+  "reason": "LAW-L1-MLP-ARITHMETIC-SENSITIVE: target None is the origin; a transfer onto the law's origin is not a transfer",
   "reason_code": "not_a_transfer",
   "refused": true,
-  "target_specimen": "qwen3.8-27b-abliterated-bf16@local"
+  "target_specimen": null
  },
  "law_authority": {
   "lattice": [
@@ -543,7 +543,7 @@
   "specimen_verify": "WHOLE_TREE_VERIFIED rows \u2014 consumed"
  },
  "schema": "hawking.future.odyssey2_transfer.v1",
- "seal_sha256": "f5be92f8cc59e7535c2f3f808d79781a0208a6fae7f258900529729eb169c00d",
+ "seal_sha256": "331ce25eb6e1cdfb1f000c4c9aeb8e9ab7389eaa2399d1318ed9b12073acd02b",
  "sealed_specimens": {
   "Falcon-H1-7B-Instruct": {
    "alias": "Falcon-H1-7B-Instruct",
@@ -562,58 +562,58 @@
   "Mistral-Small-3.1-24B": {
    "alias": "Mistral-Small-3.1-24B",
    "architecture_family": "dense_transformer",
-   "bytes_hashed": 96077777512,
-   "n_files": 25,
-   "ready": true,
+   "bytes_hashed": null,
+   "n_files": null,
+   "ready": false,
    "repo": "mistralai/Mistral-Small-3.1-24B-Instruct-2503",
    "revision": "68faf511d618ef198fef186659617cfd2eb8e33a",
    "role": "mid_size_dense_compiler",
    "source_of_campaign_laws": false,
-   "specimen_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
-   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
-   "whole_tree_verified": true
+   "specimen_id": null,
+   "specimen_path": null,
+   "whole_tree_verified": false
   },
   "Qwen3-0.6B": {
    "alias": "Qwen3-0.6B",
    "architecture_family": "dense_transformer",
-   "bytes_hashed": 1519209243,
-   "n_files": 10,
-   "ready": true,
+   "bytes_hashed": null,
+   "n_files": null,
+   "ready": false,
    "repo": "Qwen/Qwen3-0.6B",
    "revision": "c1899de289a04d12100db370d81485cdf75e47ca",
    "role": "very_small_dense_procedural_speed",
    "source_of_campaign_laws": false,
-   "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
-   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
-   "whole_tree_verified": true
+   "specimen_id": null,
+   "specimen_path": null,
+   "whole_tree_verified": false
   },
   "Qwen3.8-Flash-Next": {
    "alias": "Qwen3.8-Flash-Next",
    "architecture_family": "qwen4_exp",
-   "bytes_hashed": 360023286454,
-   "n_files": 144,
-   "ready": true,
+   "bytes_hashed": null,
+   "n_files": null,
+   "ready": false,
    "repo": "Qwen/Qwen3.8-Flash-Next",
    "revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
    "role": "flash_heterogeneous_frontier",
    "source_of_campaign_laws": false,
-   "specimen_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
-   "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
-   "whole_tree_verified": true
+   "specimen_id": null,
+   "specimen_path": null,
+   "whole_tree_verified": false
   },
   "qwen27": {
    "alias": "qwen27",
    "architecture_family": "dense_hybrid_transformer",
-   "bytes_hashed": 55586059240,
-   "n_files": 31,
-   "ready": true,
+   "bytes_hashed": null,
+   "n_files": null,
+   "ready": false,
    "repo": "Qwen3.8-27B",
-   "revision": "qwen3.8-27b-abliterated-bf16@local",
+   "revision": null,
    "role": "qwen27_mature_physical",
    "source_of_campaign_laws": true,
-   "specimen_id": "qwen3.8-27b-abliterated-bf16@local",
-   "specimen_path": "/Volumes/corpdrive/personalmodel/correspondent/qwen3.8-27b-abliterated-bf16",
-   "whole_tree_verified": true
+   "specimen_id": null,
+   "specimen_path": null,
+   "whole_tree_verified": false
   }
  },
  "selftest": {

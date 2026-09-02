@@ -1,0 +1,160 @@
+{
+  "command": "python3 tools/sovereign/g010_modellake_retained.py --window-s 660",
+  "download_exits_in_window": 7,
+  "evidence": {
+    "lifecycle_defect_counts": {
+      "complete_but_unpromoted": 1,
+      "duplicate_acquisition": 1,
+      "manifest_mismatch": 0,
+      "restart_data_loss": 0,
+      "stale_partial": 6
+    },
+    "live_downloaders": [
+      47640,
+      47641
+    ],
+    "manifests_scanned": 55
+  },
+  "gate": "G010",
+  "lifecycle_checks": {
+    "complete_but_unpromoted": {
+      "checked": true,
+      "count": 1,
+      "defects": [
+        {
+          "bytes": 3348992577,
+          "live_writer": false,
+          "tag": "tiiuae--Falcon3-1B-Instruct@28ba2251970a"
+        }
+      ],
+      "method": "every manifest file present at exact manifest size in partial/<tag> while specimens/<tag> does not exist",
+      "scanned": 55
+    },
+    "duplicate_acquisition": {
+      "checked": true,
+      "count": 1,
+      "defects": [
+        {
+          "kind": "partial_and_specimen",
+          "tag": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
+        }
+      ],
+      "method": "tag present in both partial/ and specimens/; two pinned revisions of one repo with directories on disk; more than one live `hf download` process for one repo",
+      "scanned": 55
+    },
+    "manifest_mismatch": {
+      "checked": true,
+      "count": 0,
+      "defects": [],
+      "method": "resolved_sha == pinned revision, recorded expected == summed sizes, and every present final-path file matches its manifest size exactly",
+      "scanned": 55
+    },
+    "restart_data_loss": {
+      "checked": true,
+      "count": 0,
+      "defects": [],
+      "jobs_restarted": 2,
+      "method": "per-job retained bytes compared across the measurement window against download_started events observed in the watcher JSONL over the same window",
+      "restarts_in_window": {
+        "facebook--blt-7b@b65201dce04b": 3,
+        "stabilityai--stable-audio-open-1.0@f21265c1e271": 3
+      }
+    },
+    "stale_partial": {
+      "checked": true,
+      "count": 6,
+      "defects": [
+        {
+          "bytes": 0,
+          "idle_s": 468288.6,
+          "kind": "stray_temp_file",
+          "tag": "tmp_8d8e6d72-5820-47a3-88d3-08d9f7efec54"
+        },
+        {
+          "bytes": 0,
+          "idle_s": 364437.8,
+          "kind": "stray_temp_file",
+          "tag": "tmp_8f304680-5be8-49a5-aee4-cb88e8e2f45c"
+        },
+        {
+          "has_manifest": true,
+          "idle_s": 12790.3,
+          "retained_bytes": 13614,
+          "tag": "facebook--blt-7b@b65201dce04b"
+        },
+        {
+          "has_manifest": true,
+          "idle_s": 253209.4,
+          "retained_bytes": 305305,
+          "tag": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
+        },
+        {
+          "has_manifest": true,
+          "idle_s": 268123.2,
+          "retained_bytes": 11080,
+          "tag": "nvidia--personaplex-7b-v1@fdaf4090a61c"
+        },
+        {
+          "has_manifest": true,
+          "idle_s": 12800.1,
+          "retained_bytes": 20194,
+          "tag": "stabilityai--stable-audio-open-1.0@f21265c1e271"
+        }
+      ],
+      "method": "directories: no process command line references the directory AND newest mtime anywhere under it is >= 900s old AND it is not manifest-complete. stray tmp_* files in partial/ older than 900s are reported as leftover downloader scratch.",
+      "scanned": 10
+    }
+  },
+  "measurement": {
+    "content_hash_note": "sizes are checked against the pinned upstream manifest; file contents are NOT re-hashed (multi-TB read on a volume with four live downloads). This is the same completeness predicate modellake_watch.complete() uses.",
+    "content_hash_verified": false,
+    "estimated": false,
+    "excludes": ".cache/huggingface/download/*.incomplete staging bytes, which a restart may discard and which no manifest entry verifies",
+    "lake_root": "/Volumes/corpdrive/hawking-modellake",
+    "note": "Both endpoints are direct stat() readings of files on the live lake, divided by the true monotonic elapsed time between the midpoints of the two identical scans. No extrapolation from a shorter window.",
+    "per_tag_t0": {
+      "Qwen--Qwen3-14B@40c069824f42": 25588862896,
+      "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b": 25094712258,
+      "facebook--blt-7b@b65201dce04b": 13614,
+      "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618": 96077777512,
+      "nvidia--personaplex-7b-v1@fdaf4090a61c": 11080,
+      "stabilityai--stable-audio-open-1.0@f21265c1e271": 20194,
+      "thinkingmachines--Inkling-Small@8cc5877b44d3": 474036024750,
+      "tiiuae--Falcon3-1B-Instruct@28ba2251970a": 3348992577
+    },
+    "per_tag_t1": {
+      "Qwen--Qwen3-14B@40c069824f42": 29552613776,
+      "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b": 61079826794,
+      "facebook--blt-7b@b65201dce04b": 13614,
+      "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618": 96077777512,
+      "nvidia--personaplex-7b-v1@fdaf4090a61c": 11080,
+      "stabilityai--stable-audio-open-1.0@f21265c1e271": 20194,
+      "thinkingmachines--Inkling-Small@8cc5877b44d3": 474036024750,
+      "tiiuae--Falcon3-1B-Instruct@28ba2251970a": 3348992577
+    },
+    "scope_tags": [
+      "Qwen--Qwen3-14B@40c069824f42",
+      "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
+      "facebook--blt-7b@b65201dce04b",
+      "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+      "nvidia--personaplex-7b-v1@fdaf4090a61c",
+      "stabilityai--stable-audio-open-1.0@f21265c1e271",
+      "thinkingmachines--Inkling-Small@8cc5877b44d3",
+      "tiiuae--Falcon3-1B-Instruct@28ba2251970a"
+    ],
+    "verification": "every counted byte belongs to a file sitting at its final manifest path at exactly its pinned manifest size, in partial/<tag> or specimens/<tag>",
+    "watcher_log": "/Users/scammermike/Downloads/hawking/workspace/campaign/odyssey/downloads/modellake-watch.jsonl"
+  },
+  "metric": "retained_verified_bytes_per_wall_second",
+  "produced_at": "2026-09-02T08:00:35.892042+00:00",
+  "produced_by": "tools/sovereign/g010_modellake_retained.py",
+  "restarts": 6,
+  "retained_bytes_per_s": 60527611.855435506,
+  "retained_bytes_t0": 624146414881,
+  "retained_bytes_t1": 664095280297,
+  "retained_delta_bytes": 39948865416,
+  "schema": "hawking.sovereign.g010.modellake_retained.v1",
+  "started_at": "2026-09-02T07:49:35.874056+00:00",
+  "status": "measured",
+  "window_s": 660.0105999789666
+}

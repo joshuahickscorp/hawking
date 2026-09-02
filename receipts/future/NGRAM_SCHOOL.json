@@ -18,12 +18,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:07:00Z",
+  "recorded_at": "2026-09-02T09:16:23Z",
   "recorded_by": "tools/future/ngram_school.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "candidates": [
   {
    "active_lookup_bytes_per_token": 17446666,
@@ -396,7 +396,7 @@
   "complete_system_ebpw_max": 1.0,
   "ebpw_unit": "effective bytes per parameter: target_ceiling_bytes equals source_parameter_count in FLASH_EBPW_BUDGET.json",
   "named_receipt": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
-  "named_receipt_present": true,
+  "named_receipt_present": false,
   "ngram_fair_share_bytes": 51233085580,
   "ngram_representation_actual_bytes": null,
   "ngram_representation_status": "WAITING_FOR_REPRESENTATION_AND_LOADER",
@@ -414,7 +414,7 @@
   "negative control that actually fires: half-bytes/triple-lookups does not dominate Q4",
   "active-byte observation: PLE aux dominates per-token DRAM, so table-storage ranking is a trap"
  ],
- "head": "ec0d4d1fb89bf7f9b4b38f4a797e3bf999c8f15e",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "integration": {
   "build": "build() -> Path",
   "candidates": "candidates() -> list[dict]",
@@ -493,10 +493,10 @@
    "hcli/flash_next.py architecture ngram_vocab_size/ngram_size/split_ngram_parts"
   ],
   "cross_check": {
-   "materialized": true,
-   "mismatches": [],
+   "materialized": false,
    "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
-   "used": "hardcoded_cited_constants_cross_checked"
+   "reason": "sparse checkout / file not on disk; constants taken from git show",
+   "used": "hardcoded_cited_constants"
   },
   "dtype": "BF16",
   "execution_regularity_cited": "irregular bounded lookup plus small projection path",
@@ -593,73 +593,73 @@
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/FLASH_ORGAN_CENSUS.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "named by the work unit; not in this commit"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/FLASH_META_REPRESENTATION_SUB1.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "named by the work unit; not in this commit"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/FLASH_COMPLETE_V2.nr.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "named by the work unit; not in this commit"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "hcli/agentos/flash_science.py",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "organ graph, ngram_engine tensor layouts, PLE-aux vs shard split, lookup_rows_nominal=ngram_size=3, gravity GENERATE/FACTORIZE/SHARE stages"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "hcli/flash_next.py",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "20M n-gram vocabulary, 3-gram, 128-way split identity; ngram_representation is a required complete-system byte field"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "hcli/agentos/flash_executable.py",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "chosen_representation.ngram = lookup/compositional, not generic dense quant; native kernel lookup_or_compositional_generator NOT_IMPLEMENTED"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "hcli/agentos/fpga_preboard.py",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "ngram_lookup_or_generator P1 mapping: HBM lookup/compositional generator rather than matrix GEMV; compact_ngram_lookup scenario uses source payload bytes"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/FLASH_EBPW_BUDGET.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "ngram_engine source_bytes=102466171160, active/tok=65680600, allocation 0.2846, representation CANDIDATE_NOT_BUILT; ngram_representation accounting WAITING_FOR_REPRESENTATION_AND_LOADER"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "architecture ngram_size=3, ngram_vocab_size_base=20e6, split_ngram_parts=128; organ_graph.ngram_engine tensor_layout 128 x [2500012,160] BF16 + 9 PLE tensors; lookup_row_bytes=320, auxiliary_projection_bytes=65679640"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/FLASH_TOKEN_NS_BUDGET.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "ngram_engine source_active/flops cited; all actual_* timing fields null"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "organ ngram_lookup_or_generator priority P1"
   },
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/REPRESENTATION_LIBRARY.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "seven families (q2_affine, q4_control, binary, ternary, shared_basis, binary_sparse_residual, low_rank_sparse); law 'fewer stored bits != fewer nanoseconds'; no n-gram family"
   },
   {
@@ -701,7 +701,7 @@
   {
    "adequate_as_ngram_school": false,
    "path": "receipts/headless/NOETIC_ORGAN_CENSUS.json",
-   "present_in_HEAD_worktree": true,
+   "present_in_HEAD_worktree": false,
    "role": "Qwen3.8-27B hybrid organs (embed/gqa/deltanet/mlp/output); no ngram_engine"
   },
   {
@@ -712,7 +712,7 @@
   }
  ],
  "schema": "hawking.future.ngram_school.v1",
- "seal_sha256": "0305cb2c882d48816293a299f4f7b5bf9f26b9c7563104b167a0e26af86566a7",
+ "seal_sha256": "a4b8bfec90370cd66bab4ee7e157e55a07788988487bc8e1c6d9e4541a879762",
  "storage_only_policy": "REFUSED",
  "version": 1
 }

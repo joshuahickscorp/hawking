@@ -1,0 +1,565 @@
+{
+ "admitted_domains": [
+  "reasoning",
+  "coding",
+  "tool_use",
+  "mission_autonomy",
+  "domain_capability"
+ ],
+ "admitted_subject_kinds": [
+  "resident",
+  "nx",
+  "representation",
+  "heterogeneous"
+ ],
+ "artifact_identity": {
+  "commit": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+  "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
+  "identity_key": "3e866331706e5f3ed73cbd75e61ce98bda2ad41ec1711b475e5dca6b4576f757",
+  "inputs": [],
+  "kind": "experiment_receipt",
+  "location": "receipts/future/CAPABILITY_EVAL.json",
+  "machine": "Darwin-arm64",
+  "producer": "tools/future/capability_eval.py",
+  "schema": "hawking.artifact.identity.v1",
+  "version": 1
+ },
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T09:12:34Z",
+  "recorded_by": "tools/future/capability_eval.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "grok/b1-beyond-dense-research-env-20260902-045433",
+ "call_sites": [
+  "CapabilityEvalRegistry.run -> ReasoningPredicateEvaluator.evaluate",
+  "CapabilityEvalRegistry.run -> CodingExecuteEvaluator.evaluate",
+  "CodingExecuteEvaluator._score -> exec of compiled AST"
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "evaluators_run": [
+  {
+   "coding.execute": {
+    "domain": "coding",
+    "evaluator_id": "coding.execute",
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "hardcoded_benchmark": null,
+    "outcomes": [
+     {
+      "detail": "all cases passed",
+      "domain": "coding",
+      "fn": "dedupe",
+      "id": "dedupe-stable",
+      "n_cases": 3,
+      "passed": true
+     },
+     {
+      "detail": "all cases passed",
+      "domain": "coding",
+      "fn": "clamp",
+      "id": "clamp-range",
+      "n_cases": 3,
+      "passed": true
+     }
+    ],
+    "passed": 2,
+    "scoring": "compile_and_execute_against_cases",
+    "subject_identity": "fixture-representation",
+    "subject_kind": "representation",
+    "total": 2
+   },
+   "reasoning.predicate": {
+    "domain": "reasoning",
+    "evaluator_id": "reasoning.predicate",
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "hardcoded_benchmark": null,
+    "outcomes": [
+     {
+      "completion_excerpt": "323",
+      "domain": "reasoning",
+      "expect": 323,
+      "got": 323,
+      "id": "arith-17-19",
+      "passed": true
+     },
+     {
+      "completion_excerpt": "21",
+      "domain": "reasoning",
+      "expect": 21,
+      "got": 21,
+      "id": "modules-after-edits",
+      "passed": true
+     }
+    ],
+    "passed": 2,
+    "scoring": "deterministic_integer_predicate",
+    "subject_identity": "fixture-representation",
+    "subject_kind": "representation",
+    "total": 2
+   }
+  },
+  {
+   "coding.execute": {
+    "domain": "coding",
+    "evaluator_id": "coding.execute",
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "hardcoded_benchmark": null,
+    "outcomes": [
+     {
+      "detail": "all cases passed",
+      "domain": "coding",
+      "fn": "dedupe",
+      "id": "dedupe-stable",
+      "n_cases": 3,
+      "passed": true
+     },
+     {
+      "detail": "all cases passed",
+      "domain": "coding",
+      "fn": "clamp",
+      "id": "clamp-range",
+      "n_cases": 3,
+      "passed": true
+     }
+    ],
+    "passed": 2,
+    "scoring": "compile_and_execute_against_cases",
+    "subject_identity": "fixture-nx",
+    "subject_kind": "nx",
+    "total": 2
+   },
+   "reasoning.predicate": {
+    "domain": "reasoning",
+    "evaluator_id": "reasoning.predicate",
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "hardcoded_benchmark": null,
+    "outcomes": [
+     {
+      "completion_excerpt": "323",
+      "domain": "reasoning",
+      "expect": 323,
+      "got": 323,
+      "id": "arith-17-19",
+      "passed": true
+     },
+     {
+      "completion_excerpt": "21",
+      "domain": "reasoning",
+      "expect": 21,
+      "got": 21,
+      "id": "modules-after-edits",
+      "passed": true
+     }
+    ],
+    "passed": 2,
+    "scoring": "deterministic_integer_predicate",
+    "subject_identity": "fixture-nx",
+    "subject_kind": "nx",
+    "total": 2
+   }
+  }
+ ],
+ "evidence_tier": "FUNCTIONAL_SIM",
+ "experiment_receipt": {
+  "artifacts": [
+   {
+    "commit": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+    "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
+    "identity_key": "3e866331706e5f3ed73cbd75e61ce98bda2ad41ec1711b475e5dca6b4576f757",
+    "inputs": [],
+    "kind": "experiment_receipt",
+    "location": "receipts/future/CAPABILITY_EVAL.json",
+    "machine": "Darwin-arm64",
+    "producer": "tools/future/capability_eval.py",
+    "schema": "hawking.artifact.identity.v1",
+    "version": 1
+   }
+  ],
+  "claim": "A generic capability-evaluation interface runs at least two distinct evaluators and refuses a live-resident source.",
+  "contamination": [],
+  "controls": [],
+  "evidence": [
+   {
+    "call_sites": [
+     "CapabilityEvalRegistry.run -> ReasoningPredicateEvaluator.evaluate",
+     "CapabilityEvalRegistry.run -> CodingExecuteEvaluator.evaluate",
+     "CodingExecuteEvaluator._score -> exec of compiled AST"
+    ]
+   }
+  ],
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "facts": [
+   {
+    "claim": "reasoning.predicate and coding.execute both ran"
+   },
+   {
+    "claim": "LiveResidentSource was refused"
+   }
+  ],
+  "failures": [],
+  "falsifier": "a live-resident source is accepted, only one evaluator is registered, or evaluate() is never called",
+  "hashes": [
+   {
+    "kind": "content_sha256",
+    "value": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312"
+   },
+   {
+    "kind": "identity_key",
+    "value": "3e866331706e5f3ed73cbd75e61ce98bda2ad41ec1711b475e5dca6b4576f757"
+   }
+  ],
+  "hypotheses": [],
+  "identity": {
+   "commit": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+   "content_sha256": "775f8dab960b15fd8c95027bd2ab6e5333ff0150a70be497736909f633c7d312",
+   "identity_key": "3e866331706e5f3ed73cbd75e61ce98bda2ad41ec1711b475e5dca6b4576f757",
+   "inputs": [],
+   "kind": "experiment_receipt",
+   "location": "receipts/future/CAPABILITY_EVAL.json",
+   "machine": "Darwin-arm64",
+   "producer": "tools/future/capability_eval.py",
+   "schema": "hawking.artifact.identity.v1",
+   "version": 1
+  },
+  "negative_controls": [
+   {
+    "id": "failing_source",
+    "observed": {
+     "coding.execute": {
+      "domain": "coding",
+      "evaluator_id": "coding.execute",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "hardcoded_benchmark": null,
+      "outcomes": [
+       {
+        "detail": "case 0: got [1, 1, 2, 3, 2] expect [1, 2, 3]",
+        "domain": "coding",
+        "fn": "dedupe",
+        "id": "dedupe-stable",
+        "n_cases": 3,
+        "passed": false
+       },
+       {
+        "detail": "case 1: got -2 expect 0",
+        "domain": "coding",
+        "fn": "clamp",
+        "id": "clamp-range",
+        "n_cases": 3,
+        "passed": false
+       }
+      ],
+      "passed": 0,
+      "scoring": "compile_and_execute_against_cases",
+      "subject_identity": "fixture-fail",
+      "subject_kind": "heterogeneous",
+      "total": 2
+     },
+     "reasoning.predicate": {
+      "domain": "reasoning",
+      "evaluator_id": "reasoning.predicate",
+      "evidence_tier": "FUNCTIONAL_SIM",
+      "hardcoded_benchmark": null,
+      "outcomes": [
+       {
+        "completion_excerpt": "0",
+        "domain": "reasoning",
+        "expect": 323,
+        "got": 0,
+        "id": "arith-17-19",
+        "passed": false
+       },
+       {
+        "completion_excerpt": "12",
+        "domain": "reasoning",
+        "expect": 21,
+        "got": 12,
+        "id": "modules-after-edits",
+        "passed": false
+       }
+      ],
+      "passed": 0,
+      "scoring": "deterministic_integer_predicate",
+      "subject_identity": "fixture-fail",
+      "subject_kind": "heterogeneous",
+      "total": 2
+     }
+    },
+    "what": "a failing CompletionSource is rejected by both evaluators"
+   },
+   {
+    "id": "live_resident_refused",
+    "what": "talks_to_live_daemon=True is a refusal, not a skip"
+   }
+  ],
+  "next_action": null,
+  "next_actions": [],
+  "qualification": "FUNCTIONAL_SIM over fixtures; not a live-resident score",
+  "receipt_paths": [
+   "receipts/future/CAPABILITY_EVAL.json"
+  ],
+  "receipts": [
+   "receipts/future/CAPABILITY_EVAL.json"
+  ],
+  "resource_usage": {
+   "gpu_authority": false
+  },
+  "resource_use": {
+   "gpu_authority": false
+  },
+  "schema": "hawking.experiment.receipt.v1",
+  "scope": "fixture subjects; live resident is out of scope",
+  "tests": {
+   "live_resident_refusal_fired": true
+  },
+  "uncertainty": [
+   "fixture items are not a substitute for a domain benchmark corpus"
+  ],
+  "verdict": "ACCEPT",
+  "verified_facts": [
+   {
+    "claim": "reasoning.predicate and coding.execute both ran"
+   },
+   {
+    "claim": "LiveResidentSource was refused"
+   }
+  ],
+  "version": 1
+ },
+ "hardcoded_benchmark": null,
+ "head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+ "live_resident_refusal_fired": true,
+ "live_resident_refused": true,
+ "negative_control_failing_source": {
+  "coding.execute": {
+   "domain": "coding",
+   "evaluator_id": "coding.execute",
+   "evidence_tier": "FUNCTIONAL_SIM",
+   "hardcoded_benchmark": null,
+   "outcomes": [
+    {
+     "detail": "case 0: got [1, 1, 2, 3, 2] expect [1, 2, 3]",
+     "domain": "coding",
+     "fn": "dedupe",
+     "id": "dedupe-stable",
+     "n_cases": 3,
+     "passed": false
+    },
+    {
+     "detail": "case 1: got -2 expect 0",
+     "domain": "coding",
+     "fn": "clamp",
+     "id": "clamp-range",
+     "n_cases": 3,
+     "passed": false
+    }
+   ],
+   "passed": 0,
+   "scoring": "compile_and_execute_against_cases",
+   "subject_identity": "fixture-fail",
+   "subject_kind": "heterogeneous",
+   "total": 2
+  },
+  "reasoning.predicate": {
+   "domain": "reasoning",
+   "evaluator_id": "reasoning.predicate",
+   "evidence_tier": "FUNCTIONAL_SIM",
+   "hardcoded_benchmark": null,
+   "outcomes": [
+    {
+     "completion_excerpt": "0",
+     "domain": "reasoning",
+     "expect": 323,
+     "got": 0,
+     "id": "arith-17-19",
+     "passed": false
+    },
+    {
+     "completion_excerpt": "12",
+     "domain": "reasoning",
+     "expect": 21,
+     "got": 12,
+     "id": "modules-after-edits",
+     "passed": false
+    }
+   ],
+   "passed": 0,
+   "scoring": "deterministic_integer_predicate",
+   "subject_identity": "fixture-fail",
+   "subject_kind": "heterogeneous",
+   "total": 2
+  }
+ },
+ "purpose": "Generic capability-evaluation interface. No single hardcoded benchmark. Live resident is refused.",
+ "recovered_implementation": [
+  {
+   "adequate_for_this_lane": false,
+   "path": "tools/headless/capability_suite.py",
+   "what": "Doctor/Tabula capability gate: one hardcoded Qwen suite with fixed items and axes (knowledge/reasoning/coding/...).",
+   "why_not_adequate": "A single suite is the defect. The generic interface must not hardcode one benchmark or one subject."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "path": "tools/headless/capability_contract.py",
+   "what": "Hardcoded incumbent llama.cpp Q5_K vs a fixed candidate list.",
+   "why_not_adequate": "Tied to one production body and four named runs."
+  },
+  {
+   "adequate_for_this_lane": false,
+   "path": "crates/hawking-eval/src/lib.rs",
+   "what": "Task/score/run_suite substring harness plus support-halo judge.",
+   "why_not_adequate": "One Task shape (prompt + expect substrings). Not a registry of domain evaluators, and the live serve path is out of scope."
+  }
+ ],
+ "registered_evaluators": [
+  {
+   "class": "ReasoningPredicateEvaluator",
+   "domain": "reasoning",
+   "id": "reasoning.predicate",
+   "n_items": 2,
+   "scoring": "deterministic_integer_predicate"
+  },
+  {
+   "class": "CodingExecuteEvaluator",
+   "domain": "coding",
+   "id": "coding.execute",
+   "n_items": 2,
+   "scoring": "compile_and_execute_against_cases"
+  }
+ ],
+ "runs": [
+  {
+   "results": {
+    "coding.execute": {
+     "domain": "coding",
+     "evaluator_id": "coding.execute",
+     "evidence_tier": "FUNCTIONAL_SIM",
+     "hardcoded_benchmark": null,
+     "outcomes": [
+      {
+       "detail": "all cases passed",
+       "domain": "coding",
+       "fn": "dedupe",
+       "id": "dedupe-stable",
+       "n_cases": 3,
+       "passed": true
+      },
+      {
+       "detail": "all cases passed",
+       "domain": "coding",
+       "fn": "clamp",
+       "id": "clamp-range",
+       "n_cases": 3,
+       "passed": true
+      }
+     ],
+     "passed": 2,
+     "scoring": "compile_and_execute_against_cases",
+     "subject_identity": "fixture-representation",
+     "subject_kind": "representation",
+     "total": 2
+    },
+    "reasoning.predicate": {
+     "domain": "reasoning",
+     "evaluator_id": "reasoning.predicate",
+     "evidence_tier": "FUNCTIONAL_SIM",
+     "hardcoded_benchmark": null,
+     "outcomes": [
+      {
+       "completion_excerpt": "323",
+       "domain": "reasoning",
+       "expect": 323,
+       "got": 323,
+       "id": "arith-17-19",
+       "passed": true
+      },
+      {
+       "completion_excerpt": "21",
+       "domain": "reasoning",
+       "expect": 21,
+       "got": 21,
+       "id": "modules-after-edits",
+       "passed": true
+      }
+     ],
+     "passed": 2,
+     "scoring": "deterministic_integer_predicate",
+     "subject_identity": "fixture-representation",
+     "subject_kind": "representation",
+     "total": 2
+    }
+   },
+   "subject_identity": "fixture-representation",
+   "subject_kind": "representation"
+  },
+  {
+   "results": {
+    "coding.execute": {
+     "domain": "coding",
+     "evaluator_id": "coding.execute",
+     "evidence_tier": "FUNCTIONAL_SIM",
+     "hardcoded_benchmark": null,
+     "outcomes": [
+      {
+       "detail": "all cases passed",
+       "domain": "coding",
+       "fn": "dedupe",
+       "id": "dedupe-stable",
+       "n_cases": 3,
+       "passed": true
+      },
+      {
+       "detail": "all cases passed",
+       "domain": "coding",
+       "fn": "clamp",
+       "id": "clamp-range",
+       "n_cases": 3,
+       "passed": true
+      }
+     ],
+     "passed": 2,
+     "scoring": "compile_and_execute_against_cases",
+     "subject_identity": "fixture-nx",
+     "subject_kind": "nx",
+     "total": 2
+    },
+    "reasoning.predicate": {
+     "domain": "reasoning",
+     "evaluator_id": "reasoning.predicate",
+     "evidence_tier": "FUNCTIONAL_SIM",
+     "hardcoded_benchmark": null,
+     "outcomes": [
+      {
+       "completion_excerpt": "323",
+       "domain": "reasoning",
+       "expect": 323,
+       "got": 323,
+       "id": "arith-17-19",
+       "passed": true
+      },
+      {
+       "completion_excerpt": "21",
+       "domain": "reasoning",
+       "expect": 21,
+       "got": 21,
+       "id": "modules-after-edits",
+       "passed": true
+      }
+     ],
+     "passed": 2,
+     "scoring": "deterministic_integer_predicate",
+     "subject_identity": "fixture-nx",
+     "subject_kind": "nx",
+     "total": 2
+    }
+   },
+   "subject_identity": "fixture-nx",
+   "subject_kind": "nx"
+  }
+ ],
+ "schema": "hawking.future.capability_eval.v1",
+ "seal_sha256": "27387c4aa15027bbad0f716a72b951badcfbe591fd6a9fd589e3deca4c2d3185",
+ "version": 1
+}

@@ -21,12 +21,24 @@ import re
 import signal
 import subprocess
 import sys
+import threading
 import time
+from collections import deque
 from datetime import datetime, timezone
 from pathlib import Path
 
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+# Absolute package import, not a bare sibling import: this file is imported
+# both as a standalone script (sys.path[0] == this directory) and as
+# tools.odyssey.modellake_watch (tests, PYTHONPATH=.). A bare `import
+# modellake_promote` would load a second, distinct module object under the
+# script-path sys.modules key -- a test that patches
+# tools.odyssey.modellake_promote.PARTIAL_ROOT would silently not affect the
+# copy this file actually calls. One canonical import identity either way.
+if str(REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(REPO_ROOT))
+from tools.odyssey import modellake_promote  # noqa: E402
 ODYSSEY = REPO_ROOT / "workspace" / "campaign" / "odyssey"
 DOWNLOAD_DIR = ODYSSEY / "downloads"
 # Keep watcher control metadata on the internal workspace. Writing it on the
@@ -52,12 +64,45 @@ SSD_FREE_GUARD_BYTES = 5_000_000_000
 
 FLOOR_BYTES = 100_000_000_000
 WARN_BYTES = 250_000_000_000
-MAX_DOWNLOAD_JOBS = 4
+# Overridable for the same reason MAX_WORKERS is: concurrent JOBS multiply the
+# per-child footprint, and on a host where the lake volume absorbs ~87 MB/s the
+# fourth job buys no throughput -- it only adds another ~30 GB of chunks queued
+# behind the same disk. Read at import; see the MAX_WORKERS note on kickstart.
+MAX_DOWNLOAD_JOBS = max(
+    1, int(os.environ.get("HAWKING_MODELLAKE_MAX_DOWNLOAD_JOBS", "4") or 4)
+)
 # The hub CLI defaults to eight file workers.  The two P0 repositories are
 # deliberately large, sharded artefacts and this host has a 10 GbE uplink, so
 # use a high but bounded fan-out per pinned transfer.  This is persisted in
 # the launch watcher, not dependent on an interactive terminal.
-MAX_WORKERS = 16
+#
+# MEASURED COST, 2026-09-01: one `hf download` child at MAX_WORKERS=16 was
+# observed holding 20.70 GB RSS (pid 17132, Qwen3-Coder-30B-A3B), against a
+# resident body of 1.18 GB.  With MAX_DOWNLOAD_JOBS=4 the worst case is 64
+# buffering file workers, and on this host that is what drove free RAM to
+# 8.5 GB and pushed the resident into WAITING_FOR_MEMORY against its 14.4 GB
+# reserve -- an acquisition starving the science it is acquiring for.
+#
+# MEASURED, 2026-09-02: throughput vs worker count, from 150,254 network_sample
+# rows in this watcher's own log covering 16 through 192 concurrent workers.
+# p90 receive rate is FLAT: 16 workers -> 208 MB/s, 32 -> 224, 64 -> 220,
+# 96 -> 220, 144 -> 242, 160 -> 270, 192 -> 222.  Twelve times the workers buys
+# about six percent; the uplink saturates near 210-270 MB/s (~1.8 Gbit/s) and
+# ONE job at 16 workers already reaches 93% of the best rate ever recorded.
+# The write path is the real wall: a 2 GB dd to the lake volume under two live
+# transfers ran at 19.8 MB/s spare against their ~67 MB/s, so corpdrive absorbs
+# roughly 87 MB/s total.  At ~13 MB/s per worker that made 2 jobs x 16 a 4.8:1
+# oversubscription, and the surplus is not speed -- it is the ~28 GB physical
+# footprint each child holds as chunks queue behind a disk that cannot drain
+# them, which is what starved the resident into WAITING_FOR_MEMORY.
+#
+# NOTE: this is read at IMPORT, so `launchctl setenv` alone does NOT reach a
+# running watcher -- os.environ is a snapshot.  Applying a new value needs
+# `launchctl kickstart -k gui/$UID/com.hawking.modellake.watch`.  That restart
+# is safe: children are spawned with start_new_session=True and are rediscovered
+# by argv match in matching_pids(), so a new watcher re-adopts live transfers
+# instead of duplicating them.
+MAX_WORKERS = max(1, int(os.environ.get("HAWKING_MODELLAKE_MAX_WORKERS", "16")))
 POLL_SECONDS = 0.10
 NETWORK_SAMPLE_EMIT_SECONDS = 1.0
 STATE_SAMPLE_EMIT_SECONDS = 10.0
@@ -69,6 +114,25 @@ AUTH_CHECK_SECONDS = 10 * 60
 # the download-health polling above so the consumer's disk reads never
 # compete with the two live transfers this watcher is admitting.
 MODELLAKE_EVENTS_INTERVAL_SECONDS = 5 * 60
+# When there is nothing admissible left -- every pinned job complete, running,
+# or blocked -- the loop used to keep spinning at the 0.1s poll and re-announce
+# every finished specimen on every tick. That is where 801,116 of the 1,144,619
+# rows in this watcher's log came from, and why the log reached 595 MB. Idle now
+# rests for this long and then RE-ARMS: rescan, re-admit, keep going until the
+# manifest is satisfied. It never delays live work -- the wait is only entered
+# when nothing could be started, and it is cut short by a pending retry.
+IDLE_REARM_SECONDS = 30 * 60
+# G168: complete(item, ...) returning True used to just mean "skip launching
+# a redundant download" -- nothing acted on it, and SPECIMEN_ROOT was never
+# written by this module. A model could sit finished in partial/ forever if
+# the exact poll tick that noticed completion was missed (process restart,
+# a manifest resolved late) because nothing ever looked again. This is that
+# second look: a low-frequency, tag-agnostic sweep of partial/, specimens/
+# and watch-manifests/ that promotes anything complete-but-unpromoted and
+# reports what it cannot safely fix itself. Coarser than the poll loop for
+# the same reason MODELLAKE_EVENTS_INTERVAL_SECONDS is: a directory walk
+# should not compete with the two live transfers' I/O.
+RECONCILE_INTERVAL_SECONDS = 30 * 60
 KNOWN_TEMP_BYTES = 20_000_000_000
 # A transient interface dip is not evidence that a pinned downloader is bad.
 # Transfer rate is telemetry, not sufficient evidence to terminate a live
@@ -77,14 +141,30 @@ KNOWN_TEMP_BYTES = 20_000_000_000
 # A rate dip arms recovery telemetry, but never terminates a session by itself.
 # Refresh still requires no durable byte growth, so a slow-but-healthy shard is
 # left alone.  The short arm window improves recovery from genuine stalls.
-RATE_BASED_REFRESH_ENABLED = True
+# MEASURED 2026-09-02: this path, NOT the stale path, is what fires on this
+# host. In a 15-minute window every one of 7 refreshes carried
+# "no partial-byte growth after sustained rate decline", and the GLM lane
+# lost 9.25 GB of ALREADY-VERIFIED final shards (confirmed not promotion:
+# no promotion event, no specimen on disk). LOW_RX_BYTES_PER_SEC is
+# 150 MB/s while the lake volume is a 2.5" USB HDD that absorbs ~87 MB/s
+# total -- the floor is above what the hardware can sustain, so the rate
+# path can never be satisfied and fires forever. Overridable so it can be
+# isolated without editing source. Read at import; needs a kickstart.
+RATE_BASED_REFRESH_ENABLED = (
+    os.environ.get("HAWKING_MODELLAKE_RATE_REFRESH", "1").strip().lower()
+    not in ("0", "false", "no", "off")
+)
 RATE_ARM_SECONDS = 3
 RATE_STALL_REFRESH_SECONDS = 10
 # A session with no growth in the actual Hub partial cache for the full
 # recovery interval is eligible for one same-destination refresh.  This is
 # deliberately separate from aggregate interface-rate telemetry.
 STALE_REFRESH_ENABLED = True
-RECOVERY_REFRESH_SECONDS = 60
+# Overridable so a refresh-cadence A/B can be run without editing source
+# between arms. Read at import; a change needs `launchctl kickstart -k`.
+RECOVERY_REFRESH_SECONDS = max(
+    1, int(os.environ.get("HAWKING_MODELLAKE_RECOVERY_REFRESH_SECONDS", "60") or 60)
+)
 RECOVERY_COOLDOWN_SECONDS = 3 * 60 + 30
 LOW_RX_BYTES_PER_SEC = 150_000_000
 
@@ -164,11 +244,57 @@ def redact(value: str) -> str:
     return value[-1000:]
 
 
+# The sweeps moved off the supervision loop write here too, and a
+# `watcher_sample` row carrying `states` is far larger than the kernel will
+# append atomically. One lock keeps two threads from interleaving a row and
+# corrupting the JSONL that every measurement in this file is read from.
+_EMIT_LOCK = threading.Lock()
+
+
+# This log had reached 612.6 MB and was still growing at roughly 10 Hz. It is
+# append-only and nothing ever reclaimed it, so on the long horizon this
+# watcher is built for it fills the volume it is supposed to be protecting.
+# Two generations is enough: _download_history only ever tails 20k lines, and
+# the rotated file is kept precisely so that tail still spans a rotation.
+LOG_MAX_BYTES = int(os.environ.get("HAWKING_MODELLAKE_LOG_MAX_BYTES", 64_000_000))
+LOG_GENERATIONS = 2
+
+
+def _rotate_log_if_needed() -> None:
+    """Roll the event log before it can grow without bound.
+
+    Callers hold _EMIT_LOCK. emit() reopens the file on every write, so a
+    rename is clean: the next write recreates LOG rather than continuing to
+    an unlinked inode, which is exactly what would happen if the handle were
+    held open across the rotation.
+    """
+    try:
+        if LOG.stat().st_size < LOG_MAX_BYTES:
+            return
+    except OSError:
+        return
+    for gen in range(LOG_GENERATIONS - 1, 0, -1):
+        older = LOG.with_suffix(LOG.suffix + f".{gen + 1}")
+        newer = LOG.with_suffix(LOG.suffix + f".{gen}")
+        if newer.is_file():
+            try:
+                newer.replace(older)
+            except OSError:
+                return
+    try:
+        LOG.replace(LOG.with_suffix(LOG.suffix + ".1"))
+    except OSError:
+        return
+
+
 def emit(event: str, **fields: object) -> None:
-    DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
     row = {"ts": now(), "event": event, **fields}
-    with LOG.open("a", encoding="utf-8") as handle:
-        handle.write(json.dumps(row, sort_keys=True) + "\n")
+    line = json.dumps(row, sort_keys=True) + "\n"
+    with _EMIT_LOCK:
+        DOWNLOAD_DIR.mkdir(parents=True, exist_ok=True)
+        _rotate_log_if_needed()
+        with LOG.open("a", encoding="utf-8") as handle:
+            handle.write(line)
 
 
 def notify(message: str, kind: str = "warning") -> None:
@@ -300,7 +426,6 @@ QUEUE = [
     job("microsoft/bitnet-b1.58-2B-4T-bf16", "276681394656abdadb8e80e5b2c3db5e5d7fcaff", "safe", "P1-S"),
     job("LiquidAI/LFM2.5-2.6B-Base", "c57bdaed1ef166fe3095dda07f4a5e789ad5321e", "safe", "P1-A"),
     job("ai21labs/AI21-Jamba2-3B", "525c6c8e1d9f5bddedfbdc1dbb0ade2df84230c9", "safe", "P1-A"),
-    job("stabilityai/stable-audio-open-1.0", "f21265c1e2710b3bd2386596943f0007f55f802e", "stable_audio", "P1-A"),
     job("arcinstitute/evo2_7b", "bda0089f92582d5baabf0f22d9fc85f3588f6b58", "all", "P1-S"),
     job("facebook/musicgen-large", "15ccdc92099879e47b6da12c350cdb71d4eab3ca", "musicgen", "P2-A"),
     job("lerobot/pi0_base", "25c379b52ba2ff8788cab921758a3cc3fe3f77f2", "safe", "P2-HIGH"),
@@ -312,10 +437,19 @@ QUEUE = [
     job("GSAI-ML/iLLaDA-8B-Base", "a1b5b5f8a31a3854a46205ee584178c04b45ec9a", "safe", "P1-S"),
     # Metadata is public, but file access still requires explicit upstream
     # approval; keep this fail-closed until a file probe succeeds.
-    {**job("nvidia/personaplex-7b-v1", "fdaf4090a61cb315c138a1faee287ffd6c716309", "all", "P2-GATED"),
-     "requires_manual_auth": True},
+    # REMOVED 2026-09-02: nvidia/personaplex-7b-v1, google/gemma-3-4b-it and
+    # meta-llama/Llama-4-Scout-17B-16E-Instruct each need a human to accept
+    # upstream terms on the model page before any token can fetch them. The
+    # watcher was correctly refusing them and emitting admission_blocked_auth
+    # on every pass, which is noise for work that can never start unattended.
+    # Re-add them (with requires_manual_auth) once the licences are accepted.
+    # REMOVED 2026-09-02: stabilityai/stable-audio-open-1.0 and facebook/blt-7b
+    # also answer "Access denied. This repository requires approval." Flagging
+    # them requires_manual_auth stopped the wasted relaunches but still left
+    # two permanently unstartable entries in a queue whose whole purpose is
+    # unattended work -- so ModelLake read as "2 remaining" forever. Removed
+    # for the same reason as the three above. Re-add once accepted upstream.
     job("nvidia/audio-flamingo-3", "ee26c58423988d7d7cda7b85dd3ce5d97ee8753d", "all", "P2-HIGH"),
-    job("facebook/blt-7b", "b65201dce04b0a824f0dedeb13bb16fc3a918048", "blt", "P1-S"),
     job("RWKV/RWKV7-13.3B-20260805", "64ffe5934178f40fb2c6de13f12cffaf9058f243", "safe", "P1-S"),
     job("microsoft/Phi-4-reasoning-plus", "69baf8528e1bcf05f475034d9e5dd32875ed125f", "safe", "P1-A"),
     job("LiquidAI/LFM2-24B-A2B", "a3bbacd91a678b97712f0e323e52f8c24ba29542", "safe", "P1-A"),
@@ -336,10 +470,6 @@ QUEUE = [
     job("microsoft/Phi-4-mini-instruct", "cfbefacb99257ffa30c83adab238a50856ac3083", "safe", "P1-SMALL"),
     job("Qwen/Qwen3-4B-Instruct-2507", "cdbee75f17c01a7cc42f958dc650907174af0554", "safe", "P1-SMALL"),
     job("Qwen/Qwen3-Coder-30B-A3B-Instruct", "b2cff646eb4bb1d68355c01b18ae02e7cf42d120", "safe", "P1-DIVERSITY"),
-    {**job("google/gemma-3-4b-it", "093f9f388b31de276ce2de164bdc2081324b9767", "safe", "P1-DIVERSITY"),
-     "requires_manual_auth": True},
-    {**job("meta-llama/Llama-4-Scout-17B-16E-Instruct", "92f3b1597a195b523d8d9e5700e57e4fbb8f20d3", "safe", "P1-DIVERSITY"),
-     "requires_manual_auth": True},
     job("Qwen/Qwen3-14B", "40c069824f4251a91eefaf281ebe4c544efd3e18", "safe", "P1-DIVERSITY"),
     # Dense multimodal 20-40B control: distinct from the existing LFM2
     # 24B-A2B MoE and pinned to the verified Apache-2.0 upstream revision.
@@ -479,6 +609,286 @@ def complete(item: dict[str, object], files: list[str], sizes: dict[str, int]) -
     return False
 
 
+def _notify_sealed_source(tag: str, action: object, *, source: str) -> None:
+    """Landing path for SLEEPING_SPECIMEN_WU: fire SEALED_SOURCE_READY.
+
+    Disk is authority (specimen directory). A notify/harvest failure must
+    not undo a promotion or take down the admission loop.
+    """
+    if action not in {"PROMOTED", "ALREADY_PROMOTED"}:
+        return
+    try:
+        from tools.future.sleeping_specimens import (
+            WAKE_SEALED_SOURCE_READY,
+            notify_sealed_source_ready,
+        )
+        from tools.future.wakeup import harvest_sealed_specimens
+
+        event = notify_sealed_source_ready(
+            tag, source=source, specimen_root=SPECIMEN_ROOT
+        )
+        if not event.get("ready"):
+            return
+        harvest_sealed_specimens(
+            [
+                {
+                    "id": f"odyssey-i.sleeping.{tag}",
+                    "wake_condition": WAKE_SEALED_SOURCE_READY,
+                    "modellake_identity": {"tag": tag},
+                    "status": "sleeping",
+                }
+            ],
+            specimen_root=SPECIMEN_ROOT,
+        )
+    except Exception:
+        return
+
+
+def promote_if_needed(tag: str, destination: str) -> dict[str, object] | None:
+    """Move a verified-complete partial payload into specimens/.
+
+    Returns modellake_promote.promote()'s outcome dict, or None when there is
+    no partial payload left to move -- the common, steady-state case once a
+    tag has already been promoted. The one is_dir() check keeps a 100ms poll
+    tick from re-stat-ing every file of an already-promoted specimen forever.
+    modellake_promote.promote() re-verifies completeness itself before moving
+    anything, is idempotent, and never overwrites an existing destination.
+    """
+    if not Path(destination).is_dir():
+        return None
+    return modellake_promote.promote(tag, go=True)
+
+
+_LAST_COMPLETE_NOTICE: dict[str, float] = {}
+
+
+def _promote_and_report(tag: str, destination: str, expected: int) -> None:
+    """Promote a tag complete() just found, and report the outcome.
+
+    Shared by the P0 recovery loop and the QUEUE admission loop -- both hit
+    this exact state (complete() is True), and a promotion refusal is
+    precisely the kind of thing this watcher exists to surface rather than
+    silently `continue` past, which is what both call sites did before.
+    """
+    outcome = promote_if_needed(tag, destination)
+    action = outcome["action"] if outcome is not None else "ALREADY_PROMOTED"
+    # A specimen that is already promoted is re-observed on every poll tick and
+    # says the same thing every time. Announce a repeat at most once per idle
+    # cycle; anything that actually CHANGED (a real promotion, or a refusal
+    # needing attention) is never throttled.
+    now_s = time.monotonic()
+    if action == "ALREADY_PROMOTED":
+        if now_s - _LAST_COMPLETE_NOTICE.get(tag, 0.0) < IDLE_REARM_SECONDS:
+            return
+        _LAST_COMPLETE_NOTICE[tag] = now_s
+    else:
+        _LAST_COMPLETE_NOTICE[tag] = now_s
+    emit("already_complete", job=tag, expected_bytes=expected, promotion=action)
+    _notify_sealed_source(
+        tag, action, source="tools.odyssey.modellake_watch._promote_and_report"
+    )
+    if action == "PROMOTED":
+        notify(f"Promoted completed specimen out of partial/: {tag}", "modellake")
+    elif action != "ALREADY_PROMOTED":
+        notify(f"ModelLake promotion needs attention ({action}): {tag}", "modellake")
+
+
+def _has_live_writer(destination: Path, rows: list[tuple[int, str]]) -> bool:
+    """True if any process command line references this destination path.
+
+    Broader than matching_pids(): reconciliation also walks legacy partial
+    directories with no P0/QUEUE entry any more (no repo/revision to match
+    against), and must never promote (move) a directory a live process is
+    still writing into.
+    """
+    needle = str(destination)
+    return any(needle in command for _pid, command in rows)
+
+
+def _tail_json_lines(path: Path, max_lines: int) -> list[dict[str, object]]:
+    """Return up to the last max_lines JSON objects from an append-only
+    JSONL log.
+
+    ponytail: reads every line to find the tail (O(n) in log length);
+    acceptable at RECONCILE_INTERVAL_SECONDS frequency. Upgrade to a
+    reverse/seek read if the log ever grows large enough to make that cost
+    matter at this call rate.
+    """
+    # Read the rotated generation first so the tail spans a rotation. Without
+    # this, the roll would erase every download_started this watcher remembers
+    # and reconcile() would read "started, and now nothing on disk" -- its
+    # vanished-payload signal -- for jobs that are simply older than the roll.
+    sources = [
+        path.with_suffix(path.suffix + f".{gen}")
+        for gen in range(LOG_GENERATIONS, 0, -1)
+    ] + [path]
+    tail: deque = deque(maxlen=max_lines)
+    found = False
+    for source in sources:
+        if not source.is_file():
+            continue
+        found = True
+        try:
+            with source.open("r", encoding="utf-8") as handle:
+                tail.extend(handle)
+        except OSError:
+            continue
+    if not found:
+        return []
+    out = []
+    for line in tail:
+        try:
+            out.append(json.loads(line))
+        except ValueError:
+            continue
+    return out
+
+
+def _download_history(max_lines: int = 20_000) -> tuple[dict[str, int], set[str]]:
+    """What this watcher's own JSONL log remembers about each job: the most
+    recent exit code per tag, and which tags a download was ever actually
+    started for.
+
+    The exit code is returned for one purpose only -- flagging disagreement
+    with the manifest-verified truth in reconcile(). It is diagnostic, never
+    authority: Qwen2.5-72B recorded exit_code=1, acquired=false,
+    bytes_on_disk=0 in a downloader's own bookkeeping while 47/47 files were
+    present and correct on disk. The started-tags set exists only so
+    reconcile() can tell "never admitted yet" (most of QUEUE, at any given
+    moment -- not an anomaly) from "started, and now there is no partial
+    directory and no specimen either" (a genuinely vanished payload).
+    """
+    last_exit: dict[str, int] = {}
+    started: set[str] = set()
+    for row in _tail_json_lines(LOG, max_lines):
+        job = row.get("job")
+        if job is None:
+            continue
+        event = row.get("event")
+        if event == "download_exit" and "returncode" in row:
+            last_exit[str(job)] = int(row["returncode"])
+        elif event == "download_started":
+            started.add(str(job))
+    return last_exit, started
+
+
+def reconcile() -> dict[str, object]:
+    """Self-healing sweep over partial/, specimens/ and watch-manifests/.
+
+    Real-time admission only notices completion at the instant it happens;
+    miss that tick (the watcher was down, a manifest resolved late) and
+    nothing ever looks again -- that is exactly how a model sat finished in
+    partial/ for seven days. This is the second look: it re-derives status
+    from the manifest and the two directories every time it runs, promotes
+    anything complete-but-unpromoted, and reports what it cannot safely fix
+    by itself instead of dropping it.
+    """
+    rows = modellake_promote.survey()
+    proc_rows = process_rows()
+    last_exit, started_tags = _download_history()
+
+    promoted: list[str] = []
+    refused: list[dict[str, object]] = []
+    anomalies: list[dict[str, object]] = []
+    seen_in_partial = {str(row["tag"]) for row in rows}
+
+    for row in rows:
+        tag = str(row["tag"])
+        if (SPECIMEN_ROOT / tag).is_dir():
+            # Two directories claiming one identity. promote() would already
+            # refuse this (never merge, never overwrite) -- name it as its
+            # own anomaly so it reads as a conflict needing a human, not an
+            # ordinary "still downloading" skip.
+            anomalies.append({"kind": "duplicate_source", "tag": tag})
+            continue
+        if not row["complete"]:
+            continue
+        destination = modellake_promote.PARTIAL_ROOT / tag
+        if _has_live_writer(destination, proc_rows):
+            continue
+        outcome = modellake_promote.promote(tag, go=True)
+        action = outcome["action"]
+        _notify_sealed_source(
+            tag, action, source="tools.odyssey.modellake_watch.reconcile"
+        )
+        if action == "PROMOTED":
+            promoted.append(tag)
+        else:
+            refused.append({"tag": tag, "action": action, "reason": outcome.get("reason")})
+        code = last_exit.get(tag)
+        if code not in (None, 0):
+            anomalies.append({"kind": "stale_downloader_state", "tag": tag,
+                               "recorded_exit_code": code})
+
+    known_tags = {str(item["tag"]) for item in P0 + QUEUE}
+    manifest_tags = ({p.stem for p in MANIFEST_DIR.glob("*.json")}
+                     if MANIFEST_DIR.is_dir() else set())
+    for tag in sorted(manifest_tags):
+        has_specimen = (SPECIMEN_ROOT / tag).is_dir()
+        if tag in started_tags and tag not in seen_in_partial and not has_specimen:
+            anomalies.append({"kind": "registered_but_missing", "tag": tag})
+        if tag not in known_tags:
+            anomalies.append({"kind": "orphaned_manifest", "tag": tag})
+
+    result: dict[str, object] = {"surveyed": len(rows), "promoted": promoted,
+                                 "refused": refused, "anomalies": anomalies}
+    emit("reconciliation_pass", **result)
+    if anomalies:
+        notify(f"ModelLake reconciliation found {len(anomalies)} anomaly(ies)", "modellake")
+    return result
+
+
+# MEASURED, 2026-09-02: `reconcile()` and `emit_modellake_events_once()` ran
+# INLINE in the supervision loop, and both walk the lake. Over one window the
+# loop went silent 108 times for a total of 240 MINUTES, the longest single
+# blackout 1607s -- attributed by taking the last event emitted before each
+# stall, which is `watcher_sample`, i.e. exactly these two calls. A blind
+# supervisor does not track growth, does not refresh, and above all does not
+# RELAUNCH: a transfer killed just before a sweep stayed dead for the whole
+# sweep. That is why refreshes did not faithfully come back up. The refresh
+# cadence itself is deliberate and is NOT changed here -- restarts are what
+# holds the transfer rate up. Only the blocking is removed: these sweeps now
+# run beside the loop, single-flight, so supervision never pauses for them.
+_BACKGROUND_SWEEPS: dict[str, threading.Thread] = {}
+
+
+def run_detached(name: str, fn) -> bool:
+    """Run one sweep off the supervision loop. Single-flight per name.
+
+    Returns True if a run was started (or one is still going), so the caller
+    can advance its interval clock exactly as it did when the call blocked.
+    A sweep still in flight is never started twice, which is what keeps a slow
+    lake walk from stacking threads on a 0.1s poll.
+    """
+    live = _BACKGROUND_SWEEPS.get(name)
+    if live is not None and live.is_alive():
+        return True
+
+    def body() -> None:
+        try:
+            fn()
+        except Exception as exc:
+            emit(f"{name}_error", error=redact(str(exc)))
+
+    thread = threading.Thread(target=body, name=f"modellake-{name}", daemon=True)
+    _BACKGROUND_SWEEPS[name] = thread
+    thread.start()
+    return True
+
+
+def maybe_reconcile(loop_started: float, last_reconcile: float) -> float:
+    """Gate reconcile() to RECONCILE_INTERVAL_SECONDS, firing immediately on
+    the very first call -- the watcher's own startup is exactly the "look
+    again" moment a killed-and-restarted process needs. Never raises: the two
+    live transfers this watcher is admitting must not go down because a
+    reconciliation sweep hit a bad manifest or a permissions error.
+    """
+    if last_reconcile and loop_started - last_reconcile < RECONCILE_INTERVAL_SECONDS:
+        return last_reconcile
+    run_detached("reconciliation", reconcile)
+    return loop_started
+
+
 def durable_bytes(item: dict[str, object], files: list[str], sizes: dict[str, int]) -> int:
     """Return logical bytes visible in one pinned destination.
 
@@ -526,6 +936,7 @@ def launch(item: dict[str, object], files: list[str], log_path: Path) -> subproc
     ssd_cache_mounted = ensure_ssd_xet_cache()
     ssd_cache_bytes, ssd_chunk_budget, ssd_within_limit, plan_mounted = ssd_xet_plan()
     ssd_cache_mounted = ssd_cache_mounted and plan_mounted
+    ssd_free = internal_ssd_free_bytes()
     command = [str(HF_BIN), "download", str(item["repo"]), *files,
                "--revision", str(item["revision"]), "--local-dir", str(destination),
                "--max-workers", str(MAX_WORKERS), "--format", "json"]
@@ -545,8 +956,8 @@ def launch(item: dict[str, object], files: list[str], log_path: Path) -> subproc
         # reconstruction is specifically intended for spinning disks and
         # avoids turning the HDD into a random-write bottleneck.
         "HF_XET_RECONSTRUCT_WRITE_SEQUENTIALLY": "1",
-        # The existing cache contains large open historical logs.  Do not add
-        # more unbounded log growth to the 50 GB cache budget on new workers.
+        # The legacy cache contains large open historical logs.  New workers
+        # use the dedicated bounded volume and add no Xet log growth there.
         "HF_XET_LOG_DEST": "none",
         "HF_XET_LOG_DIR_MAX_SIZE": "250mb",
     })
@@ -574,9 +985,12 @@ def launch(item: dict[str, object], files: list[str], log_path: Path) -> subproc
          revision=item["revision"], pid=process.pid, max_workers=MAX_WORKERS,
          expected=item.get("expected"), destination=item["destination"],
          ssd_xet_cache=str(SSD_XET_CACHE), ssd_xet_cache_bytes=ssd_cache_bytes,
-         ssd_xet_cache_limit_bytes=SSD_XET_CACHE_LIMIT_BYTES,
+         ssd_xet_image_capacity_bytes=SSD_XET_IMAGE_CAPACITY_BYTES,
+         ssd_free_bytes=ssd_free,
+         ssd_free_floor_bytes=SSD_FREE_FLOOR_BYTES,
+         ssd_free_guard_bytes=SSD_FREE_GUARD_BYTES,
          ssd_xet_chunk_cache_budget_bytes=ssd_chunk_budget,
-         ssd_xet_cache_within_limit=ssd_within_limit,
+         ssd_xet_cache_policy_ok=ssd_within_limit,
          ssd_xet_cache_mounted=ssd_cache_mounted,
          reconstruct_write_sequentially=True)
     return process
@@ -627,11 +1041,11 @@ def maybe_emit_modellake_events(loop_started: float, last_events_emit: float) ->
     """
     if last_events_emit and loop_started - last_events_emit < MODELLAKE_EVENTS_INTERVAL_SECONDS:
         return last_events_emit
-    try:
-        n_new = emit_modellake_events_once()
-        emit("modellake_events_run", n_new_seal_specimens=n_new)
-    except Exception as exc:
-        emit("modellake_events_error", error=redact(str(exc)))
+
+    def sweep() -> None:
+        emit("modellake_events_run", n_new_seal_specimens=emit_modellake_events_once())
+
+    run_detached("modellake_events", sweep)
     return loop_started
 
 
@@ -661,11 +1075,15 @@ def main() -> int:
         return 2
 
     emit("watcher_started", pid=os.getpid(), floor_bytes=FLOOR_BYTES,
+         recovery_refresh_seconds=RECOVERY_REFRESH_SECONDS,
+         rate_based_refresh=RATE_BASED_REFRESH_ENABLED,
          max_download_jobs=MAX_DOWNLOAD_JOBS, max_workers=MAX_WORKERS,
          ssd_xet_cache=str(SSD_XET_CACHE),
-         ssd_xet_cache_limit_bytes=SSD_XET_CACHE_LIMIT_BYTES,
-         ssd_xet_cache_headroom_bytes=SSD_XET_CACHE_HEADROOM_BYTES,
+         ssd_xet_image_capacity_bytes=SSD_XET_IMAGE_CAPACITY_BYTES,
+         ssd_free_floor_bytes=SSD_FREE_FLOOR_BYTES,
+         ssd_free_guard_bytes=SSD_FREE_GUARD_BYTES,
          ssd_xet_chunk_cache_target_bytes=SSD_XET_CHUNK_CACHE_TARGET_BYTES,
+         reconcile_interval_seconds=RECONCILE_INTERVAL_SECONDS,
          reconstruct_write_sequentially=True)
     children: dict[str, subprocess.Popen[str]] = {}
     manifest_cache: dict[str, tuple[list[str], int, dict[str, int]]] = {}
@@ -680,13 +1098,15 @@ def main() -> int:
     last_network_emit = 0.0
     last_state_emit = 0.0
     last_events_emit = 0.0
+    last_reconcile = 0.0
     last_ssd_cache_bytes = None
     last_ssd_cache_mounted = False
-    notified_ssd_cache_limit = False
+    notified_ssd_cache_policy = False
     last_refresh: dict[str, float] = {}
     low_rx_since: dict[str, float] = {}
     rate_rearmed: set[str] = set()
     refresh_requested: set[str] = set()
+    last_idle_notice: float = 0.0
     blocked_auth_notice: set[str] = set()
     notified_low_disk = False
     last_p0_done = False
@@ -820,9 +1240,17 @@ def main() -> int:
                 continue
             files, expected, sizes = manifest
             item["expected"] = expected
-            if complete(item, files, sizes) or loop_started < retry_after.get(tag, 0):
+            if complete(item, files, sizes):
+                _promote_and_report(tag, str(item["destination"]), expected)
+                continue
+            if loop_started < retry_after.get(tag, 0):
                 continue
             log_path = DOWNLOAD_DIR / f"watch-{tag}-{datetime.now().strftime('%Y%m%dT%H%M%S%z')}.log"
+            # A refresh that signalled an ADOPTED transfer never reaches the
+            # children-reap loop, so its tag would otherwise stay in
+            # refresh_requested forever and a later genuine crash would be
+            # graded as intentional. Relaunching is where the request is spent.
+            refresh_requested.discard(tag)
             children[tag] = launch(item, files, log_path)
             last_job_bytes[tag] = durable_bytes(item, files, sizes)
             last_progress[tag] = loop_started
@@ -831,7 +1259,12 @@ def main() -> int:
         # Admit queued specimens even while the remaining P0 giant runs. The
         # four-job cap and conservative storage reservation still apply, and
         # QUEUE order is deliberately smallest selected manifest first.
-        active_count = len(active_tags) + len(children)
+        # A job this watcher launched is in `children` AND is found again by
+        # the pid scan that fills `active_tags`. Summing them double-counted
+        # every live download, so with MAX_DOWNLOAD_JOBS=2 a single transfer
+        # saturated the cap and the queue below was never reached. Lines 1311
+        # and 1410 already union these two sets; this was the outlier.
+        active_count = len(active_tags | set(children))
         for item in QUEUE:
             if active_count >= MAX_DOWNLOAD_JOBS:
                 break
@@ -857,13 +1290,22 @@ def main() -> int:
                 # File-by-file exactness prevents partial bytes from being
                 # mistaken for a complete specimen.
                 if complete(item, files, sizes):
-                    emit("already_complete", job=tag, expected_bytes=expected)
+                    _promote_and_report(tag, str(item["destination"]), expected)
                     continue
                 # A queued job may have an old partial destination. Reserve
                 # the full selected manifest until an exact post-exit check
                 # proves otherwise; this is intentionally conservative.
-                present = None
-                remaining = expected
+                # Reserving the FULL manifest for a job that is nearly done
+                # is not conservatism, it is a deadlock: Inkling-Small sat at
+                # 515.9 of 531.9 GB needing 16 GB, and every admission pass
+                # emitted admission_blocked_storage because it reserved 531.9
+                # against a 519 GB drive. A model can then never finish on a
+                # disk smaller than its own total size, however little is left.
+                # durable_bytes() is the same exact-manifest accounting the
+                # stall detector already trusts, so use it here too and keep
+                # the scratch/uncertainty margins on the REMAINING bytes.
+                present = durable_bytes(item, files, sizes)
+                remaining = max(0, expected - present)
                 scratch = max(10_000_000_000, int(remaining * 0.05))
                 uncertainty = max(5_000_000_000, int(remaining * 0.02))
                 projected = free - active_remaining - remaining - scratch - uncertainty - KNOWN_TEMP_BYTES
@@ -874,6 +1316,7 @@ def main() -> int:
                          projected_free_bytes=projected, floor_bytes=FLOOR_BYTES)
                     continue
                 log_path = DOWNLOAD_DIR / f"watch-{tag}-{datetime.now().strftime('%Y%m%dT%H%M%S%z')}.log"
+                refresh_requested.discard(tag)
                 children[tag] = launch(item, files, log_path)
                 last_job_bytes[tag] = durable_bytes(item, files, sizes)
                 last_progress[tag] = loop_started
@@ -1015,36 +1458,65 @@ def main() -> int:
             last_ssd_cache_mounted = ssd_xet_mounted()
             last_ssd_cache_bytes = (
                 tree_bytes(SSD_XET_CACHE) if last_ssd_cache_mounted else None)
-            if (last_ssd_cache_bytes is not None
-                    and last_ssd_cache_bytes >= SSD_XET_CACHE_LIMIT_BYTES):
-                if not notified_ssd_cache_limit:
-                    notified_ssd_cache_limit = True
-                    emit("ssd_xet_cache_limit_reached",
+            last_ssd_free = internal_ssd_free_bytes()
+            cache_policy_ok = (
+                last_ssd_free is not None
+                and last_ssd_free > SSD_FREE_FLOOR_BYTES + SSD_FREE_GUARD_BYTES
+                and last_ssd_cache_bytes is not None
+                and last_ssd_cache_bytes < SSD_XET_CHUNK_CACHE_TARGET_BYTES)
+            if not cache_policy_ok:
+                if not notified_ssd_cache_policy:
+                    notified_ssd_cache_policy = True
+                    emit("ssd_xet_cache_policy_blocked",
                          cache_bytes=last_ssd_cache_bytes,
-                         limit_bytes=SSD_XET_CACHE_LIMIT_BYTES)
+                         internal_free_bytes=last_ssd_free,
+                         free_floor_bytes=SSD_FREE_FLOOR_BYTES,
+                         free_guard_bytes=SSD_FREE_GUARD_BYTES,
+                         chunk_cache_target_bytes=SSD_XET_CHUNK_CACHE_TARGET_BYTES)
             else:
-                notified_ssd_cache_limit = False
+                notified_ssd_cache_policy = False
             emit("watcher_sample", free_bytes=free, p0_done=p0_done,
                  active_jobs=sorted(active_tags | set(children)),
                  active_remaining_bytes=active_remaining, states=states,
                  ssd_xet_cache=str(SSD_XET_CACHE),
                  ssd_xet_cache_bytes=last_ssd_cache_bytes,
-                 ssd_xet_cache_limit_bytes=SSD_XET_CACHE_LIMIT_BYTES,
-                 ssd_xet_cache_headroom_bytes=(
-                     max(0, SSD_XET_CACHE_LIMIT_BYTES - last_ssd_cache_bytes)
-                     if last_ssd_cache_bytes is not None else None),
-                 ssd_xet_cache_within_limit=(
-                     last_ssd_cache_bytes < SSD_XET_CACHE_LIMIT_BYTES
-                     if last_ssd_cache_bytes is not None else False),
+                 ssd_xet_image_capacity_bytes=SSD_XET_IMAGE_CAPACITY_BYTES,
+                 ssd_xet_chunk_cache_target_bytes=SSD_XET_CHUNK_CACHE_TARGET_BYTES,
+                 ssd_free_bytes=last_ssd_free,
+                 ssd_free_floor_bytes=SSD_FREE_FLOOR_BYTES,
+                 ssd_free_guard_bytes=SSD_FREE_GUARD_BYTES,
+                 ssd_free_above_floor_bytes=(
+                     max(0, last_ssd_free - SSD_FREE_FLOOR_BYTES)
+                     if last_ssd_free is not None else None),
+                 ssd_xet_cache_policy_ok=cache_policy_ok,
                  ssd_xet_cache_mounted=last_ssd_cache_mounted,
                  reconstruct_write_sequentially=True)
             last_state_emit = loop_started
 
         last_events_emit = maybe_emit_modellake_events(loop_started, last_events_emit)
+        last_reconcile = maybe_reconcile(loop_started, last_reconcile)
 
         if args.once:
             return 0
+
+        # Rest only when nothing could be started: no transfer alive, nothing
+        # launched this pass. A pending retry_after cuts the wait short, so a
+        # backoff still fires on time. Waking is a full rescan and re-admit,
+        # which is the "re-arm" -- it repeats until the manifest is satisfied.
+        idle = not (active_tags or children or started_this_loop)
         sleep_for = max(0.05, args.poll_secs - (time.monotonic() - loop_started))
+        if idle:
+            pending = [t for t in retry_after.values() if t > loop_started]
+            wait = IDLE_REARM_SECONDS
+            if pending:
+                wait = min(wait, max(1.0, min(pending) - loop_started))
+            if wait > sleep_for:
+                if loop_started - last_idle_notice >= IDLE_REARM_SECONDS:
+                    last_idle_notice = loop_started
+                    emit("idle_rearm_wait", seconds=round(wait, 1),
+                         next_retry_in=(round(min(pending) - loop_started, 1)
+                                        if pending else None))
+                sleep_for = wait
         time.sleep(sleep_for)
 
 

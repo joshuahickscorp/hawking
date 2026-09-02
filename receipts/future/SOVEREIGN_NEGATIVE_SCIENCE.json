@@ -1,0 +1,75 @@
+{
+ "command": "python3 tools/sovereign/g014_negative_science.py",
+ "produced_at": "2026-09-02T08:13:29Z",
+ "produced_by": "tools/sovereign/g014_negative_science.py",
+ "purpose": "Scars landed into tools/future/negative_index.py so refuse_if_dead can key them. Named in negative_index.SEED_SOURCES because SKIP_PREFIXES excludes receipts/future/ from the discovery sweep.",
+ "scars": [
+  {
+   "evidence_tier": "measured_numerical",
+   "family": "whole_model_composition_of_locally_adequate_mlp_codec",
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "Local per-tensor adequacy does not compose. Ternary grouped-64 across every MLP tensor in all 64 layers changes the greedy next token while q3-g64 and q2f-g64 under the same harness do not. Error accumulation is measured, not assumed, and is NOT monotonic (14 recorded layer transitions move free-run rel_l2 DOWN), so a per-layer bound cannot be summed into a whole-model bound.",
+   "not": "qwen3.8-27b-abliterated-bf16 parent, MLP tensors only, ternary grouped-64, ONE 16-token prompt, ONE greedy token from a streamed 64-layer python loop on CPU. It condemns ternary-g64 ACROSS ALL MLP LAYERS OF THIS PARENT and nothing wider: not ternary on other organs, not other parents, not other group sizes, and not any single organ in isolation -- the same receipt has one organ (L0 down_proj, binary 1.015625 bpw) surviving the full loop.",
+   "object": "Does a per-tensor codec that is locally adequate on every MLP tensor compose into a whole model that still emits the teacher's next token?",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b-abliterated-bf16",
+   "physical_claim": false,
+   "reopen": "a ternary-class MLP codec whose whole-model complete_token_loop reproduces the teacher argmax under this harness; or evidence that one greedy token from a 16-token prompt is the wrong proxy (a multi-token generate disagreeing with it).",
+   "source_receipts": [
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_TERNARY.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q3_G64.json",
+    "receipts/headless/NOETIC_COMPOSITION_WHOLEMODEL_Q2F_G64.json"
+   ],
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "evidence_tier": "physical",
+   "family": "shared basis mlp below q2f",
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "Both coupled frontiers stay at q2f. No K in {2,4,8} heals held-out real activation on the 64-layer joint fit, and the one point that IS denser than q2f is 2.17x slower per complete token. Density without coherence is not an executable, and fewer bits did not buy fewer ns.",
+   "not": "the MLP organ of qwen3.8-27b sealed-3.14 on this Apple M3 Ultra, shared-binary-basis family, K in {2,4,8} on a 64-layer JOINT fit. NOT the whole model's floor and NOT other organs -- attention, deltanet and embed floors are separately unmeasured. NOT a claim that the shared-basis kernel is incompetent; the fused kernel is competent. NOT a claim against a hybrid operator, which was never run.",
+   "object": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+   "organ": "mlp",
+   "parent": "qwen3.8-27b sealed-3.14",
+   "physical_claim": true,
+   "reopen": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+   "source_receipts": [
+    "receipts/headless/SHARED_BASIS_COHERENT.json"
+   ],
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "evidence_tier": "measured_numerical",
+   "family": "weight space cosine as a proxy for real activation error",
+   "level": "FAMILY",
+   "mechanism": "The proxy's sign is organ-dependent, so a screen built on it silently inverts the ranking on attention. Every fidelity number screened this way on q_proj ordered the candidates backwards; the failure is not scale-invariance, because scale-aware weight rel_err anti-predicts identically at Spearman -1.000.",
+   "not": "attention q_proj under ws_rtn_q4_g64 at layer 0, measured across three independent architecture groups (Qwen3-30B-A3B, Kimi-VL-A3B, Falcon-H1-7B). EXPLICITLY NOT the expert gate, where the same proxy predicts correctly and stays usable, and NOT a claim that weight cosine is useless. It condemns carrying an expert-gate cosine to attention, not the metric.",
+   "object": "Does weight-space cosine predict real-activation error, so a representation can be screened without ever touching real activations?",
+   "organ": "attention",
+   "parent": "qwen3-30b-a3b",
+   "physical_claim": false,
+   "reopen": "the Spearman sign re-measured against real activations on an organ other than attention q_proj, on a representation other than q4_g64, or at a layer other than 0 -- any of those is a different measurement, not a retry of this one.",
+   "source_receipts": [
+    "receipts/headless/ACCELERATOR_ACTIVATION_VS_WEIGHT_SPACE.json"
+   ],
+   "status": "MEASURED_NEGATIVE"
+  },
+  {
+   "evidence_tier": "physical",
+   "family": "self speculative decoding acceptance rate",
+   "level": "MODEL_SPECIFIC",
+   "mechanism": "Acceptance rate was never the binding variable; the draft-to-verify COST RATIO is, and on this machine it is 0.75 where it needs to be about 0.5 or lower. The codec only moves the GEMV term (25.568 -> 17.811 ms) while the 5.869 ms non-GEMV floor does not shrink with the representation at all, so no acceptance rate rescues a scheme that already loses at 100% acceptance.",
+   "not": "Matryoshka-prefix self-speculation on this Apple M3 Ultra, priced against this campaign's own measured tier costs. NOT a claim about speculative decoding in general, NOT about a draft of a different SHAPE (fewer layers or a smaller hidden, which Matryoshka prefixes do not provide and which was not measured), and NOT about a machine with a different non-GEMV floor.",
+   "object": "Does a high draft acceptance rate imply a speedup for self-speculative decoding on this machine?",
+   "organ": "whole_model",
+   "parent": "qwen3-80b",
+   "physical_claim": true,
+   "reopen": "a draft tier costing under 15.063 ms/token at K=4 on this machine; or any draft whose NON-GEMV cost falls too, not just its GEMV; or verify-side amortization better than 2.57x; or a draft of a different shape.",
+   "source_receipts": [
+    "receipts/ascent-2026-08-16/G057_SELF_SPECULATIVE.json"
+   ],
+   "status": "MEASURED_NEGATIVE"
+  }
+ ],
+ "schema": "hawking.sovereign.negative_science.v1"
+}

@@ -385,7 +385,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:22:51Z",
+  "recorded_at": "2026-09-02T08:39:59Z",
   "recorded_by": "tools/future/debugger.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -671,7 +671,7 @@
    "source": "ON_DISK"
   },
   {
-   "in_git_head": false,
+   "in_git_head": true,
    "on_disk": true,
    "path": "CODEX_ACCELERATOR_HANDOFF.json",
    "role": "named Codex handoff (exact_physical_blockers: Metal compiler, no Metal GPU); not on disk and not in git HEAD of this sparse worktree",
@@ -1240,7 +1240,7 @@
   "memory_inspection": "read-only"
  },
  "schema": "hawking.future.debugger.v1",
- "seal_sha256": "e9d5907dbc743299065ce7a9ee151178fcd7df9de789b21d6a5cedcb9c9ec034",
+ "seal_sha256": "40aa00afce94060ff96a462bcadf76d7664d0264fcd3e2afa4a69e3006ff2139",
  "stub_provider_available": false,
  "version": 1,
  "workunits": [

@@ -1,0 +1,254 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-01T06:38:19Z",
+  "recorded_by": "SUB2 tooling-readiness lane",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "built_anything": false,
+ "capability_inventory": {
+  "capability_curve": {
+   "also_present": "lab/operators/q80_subbit_capability_curve.py (Q80-specific, not the generic search)",
+   "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_capability_curve.py -q --tb=line",
+   "command_result": "24 passed in 0.08s",
+   "note": "search machinery. Caller names component/layer/axis/type. --build runs synthetic self-proofs only.",
+   "path": "tools/future/capability_curve.py",
+   "status": "EXISTS AND WORKS",
+   "tests": "tools/future/test_capability_curve.py"
+  },
+  "component_perturbation": {
+   "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_perturbation_workunit.py -q --tb=line",
+   "command_result": "32 passed in 0.16s",
+   "contract_command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 tools/future/perturbation_workunit.py --contract",
+   "contract_work_type": "PERTURB",
+   "kinds": [
+    "zero",
+    "quantize",
+    "noise",
+    "low_rank"
+   ],
+   "live_log_ran": {
+    "PERTURB": 43
+   },
+   "path": "tools/future/perturbation_workunit.py",
+   "status": "EXISTS AND WORKS",
+   "tests": "tools/future/test_perturbation_workunit.py"
+  },
+  "ebpw_calculator": {
+   "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_complete_ebpw.py -q --tb=line",
+   "command_result": "19 passed in 0.08s",
+   "path": "tools/future/complete_ebpw.py",
+   "sovereign_binding": "COMPLETE_EBPW is not an executable work type; COMPUTE has no evaluator. The calculator itself exists as CLI.",
+   "status": "EXISTS AND WORKS",
+   "tests": "tools/future/test_complete_ebpw.py",
+   "why_it_exists": "the resident must never compute BPW itself; 17.113e9 x 2.25 / 8 was wrong"
+  },
+  "matched_information_control": {
+   "also": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_perturbation_workunit.py -q --tb=line -> 32 passed; test_every_kind_touches_the_same_elements_at_the_same_fraction",
+   "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_functional_role_probe.py -q --tb=line",
+   "command_result": "10 passed in 0.07s",
+   "contract_field": "matched_by_construction: fraction selects the same share of rows or columns in every kind; elements_destroyed is the cross-tensor control",
+   "other_matched_name": "tools/odyssey/matched_bits_probe.py is matched-BPW codec transfer, not this control",
+   "path": "tools/future/perturbation_workunit.py (matched_by_construction across kinds) and tools/future/functional_role_probe.py (arms_are_matched across tensors)",
+   "probe_field": "FUNCTIONAL_ROLE_PROBE.json arms_are_matched.worst_element_count_spread=0.00046",
+   "standalone_module": "ABSENT as a filename: git ls-tree -r --name-only HEAD found 0 paths containing matched_information / matched-information",
+   "status": "EXISTS AND WORKS"
+  },
+  "nx_lowering": {
+   "FLASH_NX_READY": false,
+   "GENERIC_NR_NX_PIPELINE_CALLABLE": true,
+   "commands": [
+    "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_nx_packer.py -q --tb=line -> 10 passed in 0.29s",
+    "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_nr_nx_path.py -q --tb=line -> 22 passed in 4.66s",
+    "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_nr_nx_generic.py -q --tb=line -k 'not _receipt and not test_build_emits and not test_generic_and_flash and not test_stages_are_complete and not test_pipeline_callable_is_false and not test_physical_graph_stage and not test_sleeping_unit and not test_check_nx_verifier and not test_architecture_recognizer_ran and not test_no_code_path_writes_a_physical and not test_doctor_uses_adapted and not test_callable_on_and_receipt_agree and not test_receipt_kernel_planner' -> 35 passed, 13 deselected in 1.95s"
+   ],
+   "first_nx_lower_failure": null,
+   "live_receipt": "receipts/future/NR_NX_GENERIC.json",
+   "note": "FLASH_NX_READY false is a Flash-specific fact on the same receipt, not a failure of the generic lowerer. Physical EBPW of a packed NX is unwritten by design.",
+   "path": "tools/future/nr_nx_generic.py, tools/future/nx_packer.py, tools/future/nr_nx_path.py",
+   "status": "EXISTS AND WORKS"
+  },
+  "scar_reopen_analysis": {
+   "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_scar_reevaluator.py -q --tb=line",
+   "command_result": "17 passed in 1.56s",
+   "note": "classifies scars; does not choose the next experiment or relaunch anything",
+   "path": "tools/future/scar_reevaluator.py",
+   "receipt": "receipts/future/SCAR_REEVALUATOR.json",
+   "status": "EXISTS AND WORKS",
+   "tests": "tools/future/test_scar_reevaluator.py"
+  }
+ },
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "commands": [
+  "ls -la /Users/scammermike/Downloads/hawking/.hcli/resident/",
+  "ls /Users/scammermike/Downloads/hawking/.hcli/sessions/",
+  "ls /Users/scammermike/Downloads/hawking/.hcli/receipts/",
+  "git ls-tree -r --name-only HEAD -- tools/future",
+  "git ls-tree -r --name-only HEAD -- tools lab | rg -i 'matched|capability_curve|perturbation_workunit|complete_ebpw|scar_reevalu|nx_packer|nr_nx'",
+  "git ls-tree -r --name-only HEAD",
+  "ls -la /Users/scammermike/noetic/NOETIC_PARENT_A/MIX_REPORT.json",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_capability_curve.py -q --tb=line",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_perturbation_workunit.py -q --tb=line",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_complete_ebpw.py -q --tb=line",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_scar_reevaluator.py -q --tb=line",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_functional_role_probe.py -q --tb=line",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 tools/future/perturbation_workunit.py --contract",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_nx_packer.py -q --tb=line",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_nr_nx_path.py -q --tb=line",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_nr_nx_generic.py -q --tb=line -k \"not _receipt and not test_build_emits and not test_generic_and_flash and not test_stages_are_complete and not test_pipeline_callable_is_false and not test_physical_graph_stage and not test_sleeping_unit and not test_check_nx_verifier and not test_architecture_recognizer_ran and not test_no_code_path_writes_a_physical and not test_doctor_uses_adapted and not test_callable_on_and_receipt_agree and not test_receipt_kernel_planner\"",
+  "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_sovereign_attacks.py::test_attack_generated_compute_not_run tools/future/test_sovereign_attacks.py::test_attack_silent_drop_unsupported_is_recorded -q --tb=line"
+ ],
+ "does_not_choose_science": true,
+ "evidence_class": "STATIC_ONLY",
+ "gpu_authority": false,
+ "justification": "Nothing qualifies as both ABSENT and demonstrably blocking. The six named capabilities all exist under tools/future/ (and, for matched-information control, as the matched-element control already inside perturbation_workunit.py / functional_role_probe.py). Each was exercised by a pytest that exited 0. The resident's own SUB2 loop (HCLI_MISSION_KERNEL.json, 95 iterations; _HCLI_SOVEREIGN_log.jsonl, 110 turns) requested only PERTURB, which ran 43 times; rejected_items=0 and n_unlaunched_sum=0. COMPUTE has no evaluator (SOVEREIGN_ATTACKS GENERATED_BUT_NEVER_LAUNCHED_COMPUTE verdict=DEFECT; execute() confirmed ran=False), but the live kernel never requested COMPUTE, and the EBPW arithmetic the resident once got wrong already has tools/future/complete_ebpw.py. Wiring COMPUTE, or registering future.* in hcli/, is harness exposure of existing machinery \u2014 and hcli/ is out of this lane's scope. Building a new scientific tool the resident did not ask for would be choosing SUB2 science, which this lane must not do.",
+ "recorded_at": "2026-09-01T06:36:32Z",
+ "recorded_by": "tools/future is the inventory; this receipt is the lane product",
+ "resident_unsupported_requests": {
+  "cannot_edit_hcli_to_register_future_star": {
+   "lane_scope": "DENY: do not modify hcli/",
+   "quote": "hcli/tool_registry.py default_tool_registry lists 32 tools and 0 future.* tools. AgentOS cannot discover the sidecar.",
+   "source": "receipts/future/RESIDENT_API_AUDIT.json"
+  },
+  "declared_but_unrun": [
+   {
+    "execute_why": "COMPUTE has no deterministic evaluator bound yet; the request is RECORDED rather than silently accepted",
+    "live_kernel_times_requested": 0,
+    "live_log_times_requested": 0,
+    "sovereign_attacks_id": "GENERATED_BUT_NEVER_LAUNCHED_COMPUTE",
+    "sovereign_attacks_verdict": "DEFECT",
+    "status": "accepted by validate(); execute() returns ran=False",
+    "work_type": "COMPUTE"
+   }
+  ],
+  "finding": "The live SUB2 sovereign record contains zero rejected work-type requests and zero unlaunched items. Every accepted request was PERTURB and it ran. Declared COMPUTE still has no runner; that is a harness defect, not a live unsupported ask. The six named scientific capabilities already exist under tools/future/.",
+  "g118_cheapest_tests": {
+   "all_are_perturbation_class": true,
+   "n_explanations": 3,
+   "note": "row-zeroing sensitivity measurements. PERTURB already runs those.",
+   "source": "receipts/future/_G118_SCIENCE_LOOP_raw.json parsed.explanations[].cheapest_test"
+  },
+  "hcli_receipts_errors": [
+   {
+    "error": "model hit the 32-token completion budget after an 733-token prompt and never closed the JSON object",
+    "error_type": "EngineError",
+    "file": "e8f37746-7751-4c67-be52-743bf9745e39.json",
+    "goal": "Return exactly: HAWKING_OK"
+   },
+   {
+    "error": "RuntimePool has no admitted runtimes",
+    "error_type": "EngineError",
+    "file": "8ddb963f-3828-4e1a-a2bd-f6c6a97c6639.json",
+    "goal": "Return exactly: HAWKING_OK"
+   },
+   {
+    "error": "RuntimePool has no admitted runtimes",
+    "error_type": "EngineError",
+    "file": "305e4976-482b-491a-8641-0043c0c4ee10.json",
+    "goal": "Return exactly: HAWKING_OK"
+   },
+   {
+    "error": "structured output rejected after 3 attempts: empty response",
+    "error_type": "StructuredOutputExhausted",
+    "file": "177bf306-c1cd-475e-b6e2-c074a4d46c89.json",
+    "goal_prefix": "Inspect the current Hawking Accelerator state and historical receipts."
+   }
+  ],
+  "hcli_sessions": {
+   "n_session_files": 49,
+   "tool_events": 0,
+   "total_messages": 0,
+   "unsupported_tool_requests_in_sessions": 0
+  },
+  "hcli_typed_surface_gaps_named_in_SUPERWAVE_STATE": [
+   "no tool that escalates to Claude / any cloud frontier model",
+   "no tool that generates or launches a Grok swarm",
+   "hcli/grok_bridge.py exists but is not a typed tool",
+   "git.checkout-safe / git.revert-safe are governed placeholders that refuse"
+  ],
+  "live_mission_kernel": {
+   "accepted_work_types": {
+    "PERTURB": 32
+   },
+   "authority_may_includes": [
+    "request perturbation experiments on any MLP tensor and layer",
+    "request deterministic computation",
+    "request a receipt be read"
+   ],
+   "executable_work_types": [
+    "COMPUTE",
+    "PERTURB",
+    "READ_RECEIPT"
+   ],
+   "iterations": 95,
+   "path": "receipts/future/HCLI_MISSION_KERNEL.json",
+   "rejected_items": 0,
+   "tried_params_n": 42,
+   "unlaunched_items": 0
+  },
+  "live_resident_daemon": {
+   "cycles": 0,
+   "goal": "launch smoke: prove admission passes and the supervisor reaches a real state",
+   "note": "SUPERWAVE_STATE already named this leftover smoke test. It is not the SUB2 scientific loop.",
+   "path": "/Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
+   "state": "STOPPED"
+  },
+  "live_sovereign_log": {
+   "accepted_work_types": {
+    "PERTURB": 32
+   },
+   "n_unlaunched_sum": 0,
+   "parsed": 43,
+   "path": "receipts/future/_HCLI_SOVEREIGN_log.jsonl",
+   "rejected_items": 0,
+   "results_that_ran": {
+    "PERTURB": 43
+   },
+   "turns": 110,
+   "unparsed": 67,
+   "unparsed_result_summary": "no work was accepted from that turn"
+  },
+  "not_built_because_they_are_science_not_generic_tools": [
+   "G115 cheapest_falsifier: Train a 4-expert MoE",
+   "G115 cheapest_falsifier: Train a 60% sparse matrix",
+   "G111 joint-coding / program-decomposition / MoE-identity hypotheses"
+  ],
+  "resident_arithmetic_already_answered": {
+   "machinery_built_in_response": "tools/future/complete_ebpw.py",
+   "record": "tools/future/complete_ebpw.py and receipts/future/COMPLETE_EBPW.json why_the_resident_must_not_do_this_itself",
+   "still_unbound_as_sovereign_COMPUTE": true,
+   "what_happened": "the resident computed 17.113e9 x 2.25 / 8 itself and got a non-complete BPW"
+  },
+  "sources_examined": [
+   "/Users/scammermike/Downloads/hawking/.hcli/resident/state.json",
+   "/Users/scammermike/Downloads/hawking/.hcli/resident/knowledge.json",
+   "/Users/scammermike/Downloads/hawking/.hcli/resident/body.json",
+   "/Users/scammermike/Downloads/hawking/.hcli/sessions/*.json",
+   "/Users/scammermike/Downloads/hawking/.hcli/receipts/*.json",
+   "receipts/future/HCLI_MISSION_KERNEL.json",
+   "receipts/future/_HCLI_SOVEREIGN_log.jsonl",
+   "receipts/future/_G135_SOVEREIGN_TRIAL_log.jsonl",
+   "receipts/future/_G111_RESIDENT_REPLIES_raw.json",
+   "receipts/future/_G118_SCIENCE_LOOP_raw.json",
+   "receipts/future/SOVEREIGN_ATTACKS.json",
+   "receipts/future/SOVEREIGN_TRIAL.json",
+   "receipts/future/FUNCTIONAL_ROLE_PROBE.json",
+   "receipts/future/COMPLETE_EBPW.json",
+   "receipts/future/RESIDENT_API_AUDIT.json"
+  ],
+  "synthetic_unsupported_not_in_live_log": [
+   {
+    "live_kernel_times_requested": 0,
+    "rejected_why": "'LAUNCH_WORKUNIT' is not an executable work type",
+    "source": "receipts/future/SOVEREIGN_ATTACKS.json SILENT_DROP_UNSUPPORTED",
+    "verdict": "HELD",
+    "work_type": "LAUNCH_WORKUNIT"
+   }
+  ]
+ },
+ "schema": "hawking.future.sub2_tooling_readiness.v1",
+ "seal_sha256": "b00c64283289d3800e0ad56e2af7be4a922172c6ce7070ffe4cfdaf8f739b264"
+}

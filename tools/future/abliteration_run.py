@@ -75,7 +75,7 @@ import numpy as np
 
 from tools.future import abliteration as ab
 from tools.future import tabula as tb
-from tools.future._common import REPO, git, seal
+from tools.future._common import REPO, git, gpu_lane_lock_path, seal
 from tools.future.external_specimen_seal import (
     is_whole_tree_row,
     load_verification_doc,
@@ -95,7 +95,7 @@ N_HARMLESS = 8
 KL_THRESHOLD = float(ab.ARDITI_DEFAULTS["kl_threshold"])
 INDUCE_THRESHOLD = float(ab.ARDITI_DEFAULTS["induce_refusal_threshold"])
 PROJECTION_DEFAULT = "norm_preserving_biprojected"
-GPU_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+GPU_LOCK = gpu_lane_lock_path()
 HCLI_LOCK_NAME = "protected-accelerator-bench.lock"
 SSD_STAGE = Path.home() / "noetic" / "stage" / SPECIMEN
 VISION_PY = Path.home() / ".grok-vision" / "bin" / "python"

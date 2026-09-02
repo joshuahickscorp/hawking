@@ -1,0 +1,155 @@
+{
+  "schema": "hcli.native_runtime_path.v1",
+  "generated_at": "2026-09-02T02:55:49Z",
+  "generated_from": "live call-site trace, not architecture docs",
+  "question": "what does 'llama-server request failed' mean on the native path",
+  "verdict": {
+    "llama_server_role": "STALE_LABEL",
+    "detail": "engine.py:2406 wraps EVERY exception from _invoke_completion in the hardcoded string 'llama-server request failed'. The inner exception on the observed failure came from hcli/hawking_native.py:1160 (HawkingNativeError: prompt is 12456 tokens and native max_seq_len is 8192). No llama-server process was involved, no HTTP was issued.",
+    "llama_server_binary_present_on_path": "/opt/homebrew/bin/llama-server",
+    "used_for_this_request": false,
+    "hawking_owns_token_execution": true,
+    "boundary": "Hawking owns tokenizer, prompt render, KV/state, RoPE, attention/DeltaNet, decode and resident lifecycle inside ascension_qwen38_resident. HCLI-py owns goal/mission/tools/context and speaks to it over a newline-delimited JSON pipe on stdin/stdout."
+  },
+  "stages": [
+    {
+      "stage": "TUI submission",
+      "owner": "HAWKING_NATIVE",
+      "module": "hcli/tui.py",
+      "process": "hcli (python)",
+      "protocol": "in-process callback",
+      "external": null
+    },
+    {
+      "stage": "Controller.execute",
+      "owner": "HAWKING_NATIVE",
+      "module": "hcli/controller.py:1115",
+      "process": "hcli",
+      "protocol": "in-process",
+      "external": null
+    },
+    {
+      "stage": "Goal compile",
+      "owner": "HAWKING_NATIVE",
+      "module": "hcli/goal.py GoalCompiler",
+      "process": "hcli",
+      "protocol": "in-process",
+      "external": null,
+      "note": "engine.py:1077 compiles, then _build_model_payload:2712 does `del compiled`"
+    },
+    {
+      "stage": "GoalIR / goal_graph / goal_tokenizer / goal_compile",
+      "owner": "LEGACY",
+      "module": "hcli/goal_ir.py, goal_graph.py, goal_tokenizer.py, goal_compile.py",
+      "process": null,
+      "protocol": null,
+      "external": null,
+      "note": "CLOSED ISLAND: imported only by their own two test files; zero production call sites"
+    },
+    {
+      "stage": "Context budget preflight",
+      "owner": "HAWKING_NATIVE",
+      "module": "hcli/context_budget.py resolve()/preflight()",
+      "process": "hcli",
+      "protocol": "in-process",
+      "external": null,
+      "note": "WAS llama.cpp-only (GGUF header + llama-server /props); native profile fell to fallback:DEFAULT_PER_SLOT_CTX=32768. FIXED: discovered:hawking_native_profile"
+    },
+    {
+      "stage": "Payload build",
+      "owner": "HAWKING_NATIVE",
+      "module": "hcli/engine.py:2702",
+      "process": "hcli",
+      "protocol": "OpenAI-shaped dict",
+      "external": null,
+      "note": "raw goal text is embedded verbatim as 'GOAL:\\n{prompt}'"
+    },
+    {
+      "stage": "RuntimePool.complete",
+      "owner": "COMPATIBILITY_LAYER",
+      "module": "hcli/runtime.py",
+      "process": "hcli",
+      "protocol": "OpenAI chat-completions shaped dict",
+      "external": null,
+      "note": "OpenAI request/response SHAPE is the internal contract; no OpenAI service is contacted"
+    },
+    {
+      "stage": "Native provider",
+      "owner": "HAWKING_NATIVE",
+      "module": "hcli/hawking_native.py",
+      "process": "hcli",
+      "protocol": "renders chat template, enforces max_seq_len",
+      "external": null
+    },
+    {
+      "stage": "Resident transport",
+      "owner": "HAWKING_NATIVE",
+      "module": "hcli/hawking_native.py:823-971",
+      "process": "ascension_qwen38_resident",
+      "protocol": "JSONL over stdin/stdout pipe",
+      "external": null,
+      "note": "subprocess.Popen, start_new_session, correlated by request id"
+    },
+    {
+      "stage": "Token execution",
+      "owner": "HAWKING_NATIVE",
+      "module": "workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
+      "process": "native rust",
+      "protocol": "Metal kernels",
+      "external": null,
+      "artifact": "/Users/scammermike/noetic/NOETIC_PARENT_A (9.9 GB, 755 tensors)"
+    }
+  ],
+  "remaining_llama_dependencies": [
+    {
+      "where": "hcli/backends.py llama_server_binary()/LlamaServerBackend",
+      "class": "FALLBACK_ONLY",
+      "justification": "a real llama.cpp backend for GGUF model selections; not reached by the native profile"
+    },
+    {
+      "where": "hcli/context_budget.py LLAMA_KV_PAD, per_seq_context, probe_server_context",
+      "class": "COMPATIBILITY_LAYER",
+      "justification": "llama.cpp slot arithmetic, correct for the llama backend; native now bypasses it via the profile ceiling"
+    },
+    {
+      "where": "engine.py:2406 / :2845 error string",
+      "class": "LEGACY",
+      "justification": "MISLABEL. Names llama-server for every backend's failure. Actively misled this investigation."
+    }
+  ],
+  "measured_budget_native_sealed_3_14": {
+    "total_ctx": 8192,
+    "generation_reserve": 2048,
+    "framing_reserve": 512,
+    "usable_input_tokens": 5632,
+    "system_prompt_tokens": 618,
+    "tool_catalog_compact_tokens": 405,
+    "tool_catalog_full_tokens": 1514,
+    "left_for_goal_evidence_memory_tokens": 4609,
+    "observed_failing_prompt_tokens": 12456,
+    "ratio_of_usable_input": 2.21,
+    "estimator": "engine CHARS_PER_TOKEN=3"
+  },
+  "answers": {
+    "LLAMA_SERVER_ROLE": "stale label on a generic exception handler",
+    "HAWKING_OWNS_TOKEN_EXECUTION": "yes",
+    "RAW_ULTRAGOAL_SENT_TO_MODEL": "yes",
+    "GOALIR_ON_LIVE_REQUEST_PATH": "no",
+    "CONTEXT_RECALL_ON_LIVE_REQUEST_PATH": "model-callable tool only, never automatic",
+    "NATIVE_CONTEXT_HEADROOM_TOKENS": 5632,
+    "SAME_ULTRAGOAL_GENERATES": "no",
+    "READY_FOR_SOVEREIGN_RUN": "no"
+  },
+  "fixed_this_pass": [
+    "context_budget.native_profile_limits() reads max_seq_len/max_new_tokens from a native profile",
+    "_discover_ceiling returns discovered:hawking_native_profile before GGUF/props",
+    "native reserves (generation=profile max_new_tokens, framing=512) instead of 4096+4096",
+    "preflight(12456) now ok=False shortfall=6824 BEFORE runtime invocation"
+  ],
+  "not_yet_fixed": [
+    "raw goal text still embedded verbatim; _build_model_payload:2712 does `del compiled`",
+    "no reduce-and-retry on ContextPreflightError (classified IMPOSSIBLE_CONTRACT in resources.py)",
+    "GoalIR stack still has zero production call sites",
+    "engine.py llama-server error label still misnames every backend failure"
+  ]
+}

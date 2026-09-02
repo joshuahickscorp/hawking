@@ -59,6 +59,10 @@ def mission_state(
         return AgentState.INCONCLUSIVE if has_failed else AgentState.VERIFIED
     if value == "no_progress":
         return AgentState.INCONCLUSIVE
+    if value == "evacuated":
+        # The supervisor took the body back for memory; the mission is intact
+        # and the next worker resumes it. Not a failure of any kind.
+        return AgentState.WAITING_RESOURCE
     if value == "cancelled":
         return AgentState.FAILED_RECOVERABLE
     if value == "failed":

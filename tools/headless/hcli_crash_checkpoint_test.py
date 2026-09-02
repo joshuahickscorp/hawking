@@ -311,8 +311,12 @@ def child_between(ws: Path, sentinel: Path) -> None:
     mission._inflight["dispatched"] = object()
     real = Scheduler._persist
 
-    def persist_then_pause(self):
-        real(self)
+    def persist_then_pause(self, extra=None):
+        # Mission.checkpoint() calls _persist({"checkpoint_id": ...}).
+        # A 1-arg stub raises TypeError before the DAG write, so the
+        # parent never sees the sentinel and SIGKILL never lands in
+        # the between-writes window (child rc=1, both files still gen0).
+        real(self, extra)
         sentinel.write_text(SENTINEL_BODY, encoding="utf-8")
         time.sleep(120)
 

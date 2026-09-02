@@ -256,6 +256,91 @@ def probe_memory_admission() -> Dict[str, Any]:
     return _run([PY, "-c", script], timeout=90)
 
 
+def probe_landing_authority() -> Dict[str, Any]:
+    """Can HCLI land a verified change, and does the governance hold?
+
+    Driven against a SCRATCH repo, never this one. The interesting answer is not
+    that a clean case lands - it is that each refusal fires by name.
+    """
+    script = (
+        "import json,subprocess,sys,tempfile;"
+        "from pathlib import Path;"
+        "from hcli.landing import IntegrationVerifier, LandingProposal, LandingService;"
+        "t=Path(tempfile.mkdtemp());"
+        "[subprocess.run(c,check=True,capture_output=True) for c in ("
+        "['git','init','-q','-b','main',str(t)],"
+        "['git','-C',str(t),'config','user.email','p@p'],"
+        "['git','-C',str(t),'config','user.name','p'])];"
+        "(t/'a.txt').write_text('one\\n');"
+        "(t/'t_x.py').write_text('def test_ok():\\n    assert 1==1\\n');"
+        "subprocess.run(['git','-C',str(t),'add','-A'],check=True,capture_output=True);"
+        "subprocess.run(['git','-C',str(t),'commit','-qm','i'],check=True,capture_output=True);"
+        "(t/'a.txt').write_text('two\\n');"
+        "mk=lambda **k: LandingProposal(repo_root=t,branch='main',"
+        "allowed_paths=k.get('paths',('a.txt',)),"
+        "test_command=k.get('cmd',(sys.executable,'-m','pytest','t_x.py','-q')),"
+        "message='m');"
+        "v=IntegrationVerifier();"
+        "out={'tautology_refused':v.check(mk(cmd=('true',))).reason,"
+        "'governance_refused':v.check(mk(paths=('hcli/landing.py',))).reason,"
+        "'clean_landed':None};"
+        "r=LandingService().land(mk());"
+        "out['clean_landed']=bool(r.landed);out['sha']=(r.commit_sha or '')[:8];"
+        "print(json.dumps(out))"
+    )
+    return _run([PY, "-c", script], timeout=180)
+
+
+def probe_processes() -> Dict[str, Any]:
+    """Role, RSS and stop-safety for every live Hawking process."""
+    return _run([PY, "-c",
+        "import json;from hcli.processes import summary;print(json.dumps(summary()))"
+    ], timeout=60)
+
+
+def probe_new_verbs() -> Dict[str, Any]:
+    """Odyssey and the ANE lab: REGISTERED, not merely importable.
+
+    The first version of this probe checked `__import__(mod)` and reported
+    "importable", which a verifier correctly called out: importability is a much
+    weaker property than callability, and conflating them let this receipt
+    assert "resident-callable" while its own 45-tool listing contained no
+    odyssey entry at all. A resident reaches a capability exactly one way -
+    WorkUnit.tool -> _run_tool -> ToolRegistry.invoke - so registration in the
+    registry is the property that decides, and it is what is checked here."""
+    return _run([PY, "-c",
+        "import json;"
+        "from hcli.tool_registry import default_tool_registry as d;"
+        "names=sorted(t['name'] for t in d(%r, repo_root=%r).discover());"
+        "want={'odyssey':'odyssey.','forbidden_fruit':'forbidden_fruit.',"
+        "'landing':'git.land.','escalation':'frontier.','swarm':'grok.swarm.'};"
+        "reg={k:[n for n in names if n.startswith(v)] for k,v in want.items()};"
+        "print(json.dumps({'registered':reg,"
+        "'unregistered':[k for k,v in reg.items() if not v],"
+        "'tool_count':len(names),'tools':names}))" % (str(REPO), str(REPO))
+    ], timeout=90)
+
+
+def probe_sovereign_mission() -> Dict[str, Any]:
+    """The live SUB2 loop: is it advancing, and is it parsing?"""
+    script = (
+        "import json;"
+        "d=json.load(open(%r));"
+        "it=d.get('iterations') or [];"
+        "recent=it[-12:];"
+        "print(json.dumps({'iterations':len(it),"
+        "'updated_unix':d.get('updated_unix'),"
+        "'live_hypotheses':len(d.get('live_hypotheses') or []),"
+        "'scars':len(d.get('scars') or []),"
+        "'harness_defects_self_found':len(d.get('harness_defects_found_and_fixed') or []),"
+        "'recent_parsed':sum(1 for x in recent if x.get('parsed')),"
+        "'recent_degenerated':sum(1 for x in recent if x.get('degenerated')),"
+        "'lifetime_parsed':sum(1 for x in it if x.get('parsed'))}))"
+        % str(REPO / "receipts" / "future" / "HCLI_MISSION_KERNEL.json")
+    )
+    return _run([PY, "-c", script], timeout=60)
+
+
 PROBES: Dict[str, Callable[[], Dict[str, Any]]] = {
     "cli_launch": probe_cli_launch,
     "neutral_cwd_discovery": probe_neutral_cwd_discovery,
@@ -267,6 +352,10 @@ PROBES: Dict[str, Callable[[], Dict[str, Any]]] = {
     "modellake": probe_modellake,
     "roadmap": probe_roadmap,
     "memory_admission": probe_memory_admission,
+    "landing_authority": probe_landing_authority,
+    "processes": probe_processes,
+    "new_verbs": probe_new_verbs,
+    "sovereign_mission": probe_sovereign_mission,
 }
 
 

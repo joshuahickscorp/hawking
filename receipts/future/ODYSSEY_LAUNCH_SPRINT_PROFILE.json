@@ -4,7 +4,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:57:46Z",
+  "recorded_at": "2026-09-02T09:39:01Z",
   "recorded_by": "tools/future/sprint_profile.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -265,7 +265,7 @@
    ],
    "verdict": "FAIL"
   },
-  "invalidated_from": "tools.future.autonomy_run.INVALIDATED_RUNS + disk:/Users/scammermike/Downloads/hawking/receipts/future/AUTONOMY_RUN.json",
+  "invalidated_from": "tools.future.autonomy_run.INVALIDATED_RUNS + disk:/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/AUTONOMY_RUN.json",
   "live_1h": {
    "commit": null,
    "elapsed_s": 3629,
@@ -290,7 +290,7 @@
   "workunit": "one CPU_ANALYSIS unit; recover 1h timeline history, invoke autonomy_trial.verify, subtract invalidated timestamps, cite scars"
  },
  "schema": "hawking.future.sprint_profile.v1",
- "seal_sha256": "0961cf2e115fc751219f1bced5c258135e9da8c047e85918c05657ccdda60518",
+ "seal_sha256": "460361332b508b072470e22d982c875bec7117c90fe50a6507de6a75933bd6a4",
  "sprint": {
   "elapsed_derivation": "unknown",
   "elapsed_s": null,

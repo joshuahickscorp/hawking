@@ -522,7 +522,10 @@ def _stamp_sidecar_receipts() -> None:
 # Stamp on import so coverage() in the sibling file sees regenerated receipts
 # when pytest is invoked with this module first, as the VERIFY command does.
 _install_hcli_stubs()
-stamp_hcli_receipts()
+try:
+    stamp_hcli_receipts()
+except Exception as _hcli_exc:  # noqa: BLE001 - sparse checkouts omit hcli/agentos
+    sys.stderr.write(f"hcli gate stamp skipped: {_hcli_exc}\n")
 try:
     _stamp_sidecar_receipts()
 except Exception as _sidecar_exc:  # noqa: BLE001 - import-time regeneration must not hide hcli tests

@@ -1,0 +1,570 @@
+{
+  "schema": "hawking.future.aider_namespace_audit.v1",
+  "recorded_at": "2026-09-01T07:53:40Z",
+  "head": "9f89e3e7781e635f16b1685128e72115380c17f1",
+  "python": "/Users/scammermike/.venvs/hawking-aider/bin/python3",
+  "python_version": "3.12.13",
+  "sparse_checkout": true,
+  "standing_claim": {
+    "text": "git grep 'import aider|from aider|aider-chat' over tools/ exits 1; nothing in this repo calls aider",
+    "live_imports": "CONFIRMED_ABSENT",
+    "product_binary_invocations": "CONFIRMED_ABSENT",
+    "tools_grep_exit_1_today": "REFUTED_FOR_CURRENT_TREE",
+    "why_grep_no_longer_exits_1": "tools/headless/{namespace_plan,dead_code_census,code_graph,subprocess_census}.py now quote the search string as evidence of absence. git grep -E 'import aider|from aider|aider-chat' HEAD -- tools exits 0 because of those census quotes, not because of live imports. Same pattern without -E matches namespace_plan.py:621 and :1370 (the regex literal). git grep -E of line-start import/from aider over the whole tree exits 1."
+  },
+  "aider_import_call_sites": {
+    "live_python_import_statements": 0,
+    "proof": {
+      "ast_walk_on_disk_py": {
+        "scanned": 1716,
+        "hits": 0
+      },
+      "git_grep_line_start_import_or_from_aider_exit": 1,
+      "git_grep_importlib_or_dunder_import_aider_exit": 1,
+      "git_grep_E_import_pattern_tools_excluding_headless_exit": 1,
+      "git_grep_E_import_pattern_whole_tree_hits": [
+        "tools/headless/code_graph.py:81 (TOOL_BINARIES dict key 'aider-chat')",
+        "tools/headless/code_graph.py:1517 (census detector: if binary == 'aider' or 'aider-chat' in argv)",
+        "tools/headless/dead_code_census.py:786 (quotes the standing fact)",
+        "tools/headless/namespace_plan.py:621 (runs the grep as a watched command)",
+        "tools/headless/namespace_plan.py:1370 (records the standing fact)",
+        "tools/headless/namespace_plan.py:1479 (prints the standing fact)",
+        "tools/headless/subprocess_census.py:810 (quotes 'zero import aider')",
+        "receipts/headless/{DEAD_CODE_CENSUS,NAMESPACE_PLAN,SUBPROCESS_CENSUS}.json (echo the same quotes)"
+      ],
+      "note": "Those hits are the search string inside census/plan tools. None is an import statement."
+    },
+    "host_venv_still_importable": {
+      "command": "/Users/scammermike/.venvs/hawking-aider/bin/python3 -c 'import aider; print(aider.__file__)'",
+      "result": "/Users/scammermike/.venvs/hawking-aider/lib/python3.12/site-packages/aider/__init__.py",
+      "package": "aider-chat 0.86.2",
+      "required_by_other_venv_dists": "NONE",
+      "note": "Host leftover. Repo live code does not import it. AST walk of 1716 on-disk .py files found 0 Import/ImportFrom of aider."
+    }
+  },
+  "aider_binary_invocations": {
+    "product_exec_of_aider_or_aider_chat": 0,
+    "shell_scripts_invoking_aider_grep_exit": 1,
+    "rust_Command_new_aider_grep_exit": 1,
+    "pyproject_or_cargo_dependency_on_aider": "none (pyproject.toml only hit is testpaths = [\"tools/haider\"])",
+    "census_presence_probe_not_an_exec": {
+      "path": "tools/headless/code_graph.py",
+      "line": 2158,
+      "argv": [
+        "bash",
+        "-lc",
+        "command -v aider || true"
+      ],
+      "kind": "PATH presence probe; || true; does not exec aider as a product",
+      "comment_at_2157": "aider must not be required; record whether the fossil binary exists"
+    },
+    "host_binary": {
+      "which": "/Users/scammermike/.local/bin/aider",
+      "symlink_target": "/Users/scammermike/.local/share/uv/tools/aider-chat/bin/aider",
+      "note": "Present on the operator machine. Nothing in this repo calls it."
+    }
+  },
+  "haider_namespace_files": {
+    "note": "haider is a different word from aider. Word-boundary grep -w aider does not match haider. This map is the haider namespace, which must not be deleted as if it were aider.",
+    "pyproject_toml": {
+      "path": "pyproject.toml",
+      "line": 20,
+      "text": "testpaths = [\"tools/haider\"]"
+    },
+    "live_package_already_at_repo_root": {
+      "path": "hcli/",
+      "git_file_count": 121,
+      "cite": "hcli/__init__.py:3 Canonical import name: hcli. tools.haider.hcli is gone."
+    },
+    "tools_haider": {
+      "git_file_count": 102,
+      "role": "live pytest tree (pyproject testpaths) + HCLI-v0 fossil + bootstrap snapshots + aider_patches fossil",
+      "package_modules_under_tools_haider_hcli": "NONE besides tests/ (git ls-tree tools/haider/hcli excluding tests is empty)",
+      "files": [
+        "tools/haider/HAIDER_SYSTEM_PROMPT.txt",
+        "tools/haider/P0_TOOL_BRIDGE.md",
+        "tools/haider/P1_HAIDER_PRODUCTIZATION_MAX.md",
+        "tools/haider/P1_LAUNCH.md",
+        "tools/haider/P1_PARALLEL_ASCENT.md",
+        "tools/haider/P1_PARALLEL_CATCHUP.md",
+        "tools/haider/P1_SELF_HOST_01_MISSION_STATE.md",
+        "tools/haider/P1_SELF_HOST_02_ENGINE.md",
+        "tools/haider/P1_SELF_HOST_PHASE1.md",
+        "tools/haider/SELF_HOST_GROUND_EDIT.md",
+        "tools/haider/aider_patches/base_prompts.patch",
+        "tools/haider/aider_patches/base_prompts.upstream.py",
+        "tools/haider/bootstrap_snapshots/haider.gate-zero.20260820T213413Z.py",
+        "tools/haider/bootstrap_snapshots/haider.pre-fast-p1.20260821T004145Z.py",
+        "tools/haider/bootstrap_snapshots/haider.pre-fast-selfhost.20260820T225537Z.py",
+        "tools/haider/bootstrap_snapshots/haider.pre-mutation-v2.20260820T230950Z.py",
+        "tools/haider/bootstrap_snapshots/haider.pre-structured-parallel.20260821T012424Z.py",
+        "tools/haider/bootstrap_snapshots/haider.pre-synthesis-economy.20260820T233123Z.py",
+        "tools/haider/bootstrap_snapshots/test_haider_edit.pre-fast-selfhost.20260820T225537Z.py",
+        "tools/haider/bootstrap_snapshots/test_work_unit.stale.20260821T022230Z.py",
+        "tools/haider/conftest.py",
+        "tools/haider/haider.py",
+        "tools/haider/haider.py.pre-model-timeout-fix",
+        "tools/haider/hcli/tests/conftest.py",
+        "tools/haider/hcli/tests/test_acceptance_integrity.py",
+        "tools/haider/hcli/tests/test_agentos_general.py",
+        "tools/haider/hcli/tests/test_backend_health.py",
+        "tools/haider/hcli/tests/test_callpath.py",
+        "tools/haider/hcli/tests/test_command_ingress.py",
+        "tools/haider/hcli/tests/test_commands_grok.py",
+        "tools/haider/hcli/tests/test_config_persist.py",
+        "tools/haider/hcli/tests/test_context_budget.py",
+        "tools/haider/hcli/tests/test_context_compiler.py",
+        "tools/haider/hcli/tests/test_control_plane_performance.py",
+        "tools/haider/hcli/tests/test_core_authorities.py",
+        "tools/haider/hcli/tests/test_dag_store.py",
+        "tools/haider/hcli/tests/test_durability_restart.py",
+        "tools/haider/hcli/tests/test_engine_schema_degrade.py",
+        "tools/haider/hcli/tests/test_evidence_freshness.py",
+        "tools/haider/hcli/tests/test_executors.py",
+        "tools/haider/hcli/tests/test_goal.py",
+        "tools/haider/hcli/tests/test_goal_workunit_dag.py",
+        "tools/haider/hcli/tests/test_grammar.py",
+        "tools/haider/hcli/tests/test_grok_async.py",
+        "tools/haider/hcli/tests/test_grok_bridge.py",
+        "tools/haider/hcli/tests/test_grok_cancel_orphan.py",
+        "tools/haider/hcli/tests/test_grok_identity.py",
+        "tools/haider/hcli/tests/test_hawking_native.py",
+        "tools/haider/hcli/tests/test_install_shims.py",
+        "tools/haider/hcli/tests/test_ledger.py",
+        "tools/haider/hcli/tests/test_max_policy.py",
+        "tools/haider/hcli/tests/test_mission.py",
+        "tools/haider/hcli/tests/test_mixed_backend.py",
+        "tools/haider/hcli/tests/test_mlx_backend.py",
+        "tools/haider/hcli/tests/test_models_sidecars.py",
+        "tools/haider/hcli/tests/test_module_identity.py",
+        "tools/haider/hcli/tests/test_mutation_hash.py",
+        "tools/haider/hcli/tests/test_mutation_lock_race.py",
+        "tools/haider/hcli/tests/test_p0_closeout.py",
+        "tools/haider/hcli/tests/test_parallel_engine.py",
+        "tools/haider/hcli/tests/test_receipt_diagnostics.py",
+        "tools/haider/hcli/tests/test_report_compiler.py",
+        "tools/haider/hcli/tests/test_runtime_authority.py",
+        "tools/haider/hcli/tests/test_runtime_interface.py",
+        "tools/haider/hcli/tests/test_runtime_pool.py",
+        "tools/haider/hcli/tests/test_scheduler_quality.py",
+        "tools/haider/hcli/tests/test_scheduler_resources.py",
+        "tools/haider/hcli/tests/test_status_completeness.py",
+        "tools/haider/hcli/tests/test_status_truth.py",
+        "tools/haider/hcli/tests/test_steer_constraint.py",
+        "tools/haider/hcli/tests/test_tui_events.py",
+        "tools/haider/hcli/tests/test_verifier_authority.py",
+        "tools/haider/hcli/tests/test_verifier_pipeline.py",
+        "tools/haider/hcli/tests/test_workunit_identity.py",
+        "tools/haider/hcli/tests/test_workunit_status.py",
+        "tools/haider/p0_tool_bridge.py",
+        "tools/haider/p0_tool_bridge.py.pre-p0-fix",
+        "tools/haider/p0_tool_bridge.py.pre-truncation-fix",
+        "tools/haider/test_haider_cli_grammar.py",
+        "tools/haider/test_haider_deterministic_evidence.py",
+        "tools/haider/test_haider_edit.py",
+        "tools/haider/test_haider_fast_engine.py",
+        "tools/haider/test_haider_mission_ingress.py",
+        "tools/haider/test_haider_mission_state.py",
+        "tools/haider/test_haider_mutation_v2.py",
+        "tools/haider/test_haider_retry_budget.py",
+        "tools/haider/test_hcli_cli.py",
+        "tools/haider/test_hcli_commands.py",
+        "tools/haider/test_hcli_evidence_budget.py",
+        "tools/haider/test_hcli_flash_science.py",
+        "tools/haider/test_hcli_goal.py",
+        "tools/haider/test_hcli_live_events.py",
+        "tools/haider/test_hcli_live_start.py",
+        "tools/haider/test_hcli_models.py",
+        "tools/haider/test_hcli_resident_daemon.py",
+        "tools/haider/test_hcli_science_boundaries.py",
+        "tools/haider/test_hcli_steering.py",
+        "tools/haider/test_hcli_workspace.py",
+        "tools/haider/test_p0_tool_bridge.py",
+        "tools/haider/test_workunit_scheduler.py",
+        "tools/haider/tests/test_hcli_engine_connector.py",
+        "tools/haider/workspace.py"
+      ]
+    },
+    "crates_hide_backend_haider": {
+      "git_file_count": 11,
+      "files": [
+        "crates/hide-backend/src/bin/haider.rs",
+        "crates/hide-backend/src/haider/cli.rs",
+        "crates/hide-backend/src/haider/context_governor.rs",
+        "crates/hide-backend/src/haider/dag.rs",
+        "crates/hide-backend/src/haider/harvest.rs",
+        "crates/hide-backend/src/haider/lanes.rs",
+        "crates/hide-backend/src/haider/memgate.rs",
+        "crates/hide-backend/src/haider/mod.rs",
+        "crates/hide-backend/src/haider/tool_bus.rs",
+        "crates/hide-backend/src/haider/ultragoal.rs",
+        "crates/hide-backend/tests/haider_parallel.rs"
+      ],
+      "lib_rs_declares_mod_haider": false,
+      "cargo_toml_declares_bin_haider": false,
+      "note": "crates/hide-backend/src/haider/ exists and src/bin/haider.rs calls hide_backend::haider::cli::run(), but lib.rs does not `pub mod haider` and Cargo.toml has no [[bin]] haider. namespace_plan.watched_fail already recorded this. authority_census classifies it as a fossil namespace that is not aider; keep, do not merge with HCLI-py DAG."
+    },
+    "HAIDER_MODEL_PATH": {
+      "live_sites": [
+        "hcli/controller.py:139 (fallback after HCLI_MODEL_PATH)",
+        "hcli/controller.py:736 (same fallback in ensure_runtime_pool)",
+        "tools/haider/haider.py:1462 and :3002 (v0 fossil CLI default)",
+        "tools/headless/noetic_ascension_loop.py:170 and :759 (env.pop to isolate)"
+      ],
+      "alias_of": "HCLI_MODEL_PATH"
+    },
+    "parse_haider_args": {
+      "definition": "hcli/cli.py:79",
+      "reexport": "hcli/__init__.py:12",
+      "namespace_plan_step": "S7 optional alias to parse_hcli_args; keep parse_haider_args one cycle"
+    },
+    "gitignore": {
+      ".aider*": ".gitignore:194",
+      ".haider/": ".gitignore:195"
+    },
+    "namespace_plan_proposes": {
+      "source": "tools/headless/namespace_plan.py and receipts/headless/NAMESPACE_PLAN.json (this lane did not invent a new plan)",
+      "canonical_package_name": "hcli",
+      "canonical_physical_path_as_planned": "tools/hcli/  (today in the plan text: tools/haider/hcli/)",
+      "measured_today": "live package is already repo-root hcli/; tools/haider/hcli/ holds tests only. S5 happened in a different shape than the plan wrote.",
+      "do_not_invent_python_hawking_tree": true,
+      "steps": [
+        {
+          "id": "S0",
+          "name": "Preflight \u2014 this census is the baseline",
+          "does": "No source moves."
+        },
+        {
+          "id": "S1",
+          "name": "Unify in-package test import to `hcli` (no directory rename)",
+          "does": "Switch from tools.haider.hcli imports to from hcli."
+        },
+        {
+          "id": "S2",
+          "name": "Replace parents[N] repo-root encoding with a walk-to-.git helper",
+          "does": "resources.py and machine.py hardcode parents[3]/[2]."
+        },
+        {
+          "id": "S3",
+          "name": "Stop hardcoding tools/haider in engine subprocess PYTHONPATH",
+          "does": "Point at the directory that contains the hcli package."
+        },
+        {
+          "id": "S4",
+          "name": "Single helper for harness package root \u2014 still named haider on disk",
+          "does": "Do not do this while science lanes rewrite tools/headless/."
+        },
+        {
+          "id": "S5",
+          "name": "Directory move tools/haider/hcli -> tools/hcli (package name stays hcli)",
+          "does": "Leave tools/haider/haider.py and p0_tool_bridge.py. Do not touch receipts/, .hcli/, .haider/ gitignore, lab/hcli, or crates/hide-backend."
+        },
+        {
+          "id": "S6",
+          "name": "Re-run install-shims on operator machines",
+          "does": "User-facing commands are already hcli/jhcli."
+        },
+        {
+          "id": "S7",
+          "name": "Optional alias parse_haider_args -> parse_hcli_args",
+          "does": "Keep parse_haider_args as an alias for one cycle."
+        },
+        {
+          "id": "S8",
+          "name": "Later campaign: retire HCLI-v0 haider.py / p0_tool_bridge",
+          "does": "Only after a census shows zero callers. Do not combine with S5."
+        }
+      ],
+      "preserve": [
+        "sealed schema ids",
+        "historical receipt filenames",
+        "historical log text",
+        "everything under receipts/",
+        "untracked / workspace campaign corpora",
+        ".haider/ gitignore"
+      ]
+    }
+  },
+  "suite_runs_without_aider": {
+    "independent_of_aider_binary": true,
+    "pytest_exit_0_on_this_sparse_worktree": false,
+    "wave_state_baseline_full_tree": "1033 passed, 3 skipped, 0 failed",
+    "with_failing_path_shim": {
+      "shim": "/tmp/aider-unresolvable-40399/aider",
+      "shim_kind": "executable, prints 'NEGATIVE CONTROL: aider must not be invoked', exit 127",
+      "command_v_during_run": "/tmp/aider-unresolvable-40399/aider (shadows ~/.local/bin/aider)",
+      "aider_run_exit": 127,
+      "command": "PATH=/tmp/aider-unresolvable-40399:$PATH PYTHONPATH=.:tools/haider /Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/haider/ hcli/ -q",
+      "started_at": "2026-09-01T07:44:30Z",
+      "ended_at": "2026-09-01T07:47:09Z",
+      "summary": "5 failed, 973 passed, 4 skipped in 159.51s",
+      "exit": 1,
+      "shim_removed_after": true,
+      "post_remove_which": "/Users/scammermike/.local/bin/aider",
+      "post_remove_shimdir": "absent"
+    },
+    "without_shim_control": {
+      "command": "PYTHONPATH=.:tools/haider /Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/haider/ hcli/ -q",
+      "started_at": "2026-09-01T07:47:38Z",
+      "ended_at": "2026-09-01T07:50:11Z",
+      "summary": "5 failed, 973 passed, 4 skipped in 153.14s",
+      "exit": 1
+    },
+    "failures_identical": true,
+    "failures": [
+      {
+        "nodeid": "tools/haider/hcli/tests/test_agentos_general.py::AgentOSGeneralTest::test_qwen38_fusion_source_audit_resolves_profile_graph_without_gpu",
+        "error": "AssertionError: 'FAILED' != 'PASSED'",
+        "aider": false
+      },
+      {
+        "nodeid": "tools/haider/hcli/tests/test_core_authorities.py::TestReceiptExists::test_core_authorities_receipt_covers_every_concept",
+        "error": "receipts/headless/CORE_AUTHORITIES.json missing on disk (in git; sparse cone does not include receipts/headless)",
+        "aider": false
+      },
+      {
+        "nodeid": "tools/haider/hcli/tests/test_runtime_interface.py::TestRuntimeGenomeRecordsControlSet::test_mlx_headline_from_receipt_not_remeasured",
+        "error": "receipts/headless/CONVENTIONAL_CONTROL_SET.json missing on disk (in git; sparse cone does not include receipts/headless)",
+        "aider": false
+      },
+      {
+        "nodeid": "hcli/test_architecture.py::test_metadata_recognizer_can_project_the_atlas_without_claiming_execution",
+        "error": "KeyError: 'architecture_repatriation'",
+        "aider": false
+      },
+      {
+        "nodeid": "hcli/test_delegate.py::test_j_abort_waits_for_a_signalled_writer_before_freeing_the_lock",
+        "error": "assert False is True (lock_free)",
+        "aider": false
+      }
+    ],
+    "verdict": "The suite does not need the aider binary. Shadowing ~/.local/bin/aider with a failing shim produced the same 5 failed / 973 passed / 4 skipped as the control with the real binary on PATH. None of the 5 failures mention aider. Two are sparse-checkout holes (receipts/headless not materialized). This worktree is not the WAVE_STATE full-tree baseline."
+  },
+  "safe_to_remove": [
+    {
+      "class": "SAFE_TO_REMOVE",
+      "where": "operator machine, not git",
+      "path": "/Users/scammermike/.local/bin/aider",
+      "also": "/Users/scammermike/.local/share/uv/tools/aider-chat/",
+      "why": "uv-tool install of aider-chat. Repo never execs it. Negative-control suite is identical when it is shadowed to exit 127."
+    },
+    {
+      "class": "SAFE_TO_REMOVE",
+      "where": "operator machine, not git",
+      "path": "/Users/scammermike/.venvs/hawking-aider/lib/python3.12/site-packages/aider/",
+      "package": "aider-chat==0.86.2",
+      "why": "importable in the project venv; Required-by NONE; 0 live import statements in the repo. Uninstalling it does not change the suite (the suite never imported it)."
+    },
+    {
+      "class": "SAFE_TO_REMOVE",
+      "where": "git",
+      "path": "tools/haider/aider_patches/base_prompts.patch",
+      "also": "tools/haider/aider_patches/base_prompts.upstream.py",
+      "bytes": {
+        "patch": 2009,
+        "upstream": 2384
+      },
+      "why": "The only in-repo files that are the aider product rather than the haider name or a census of absence. git grep for aider_patches / base_prompts.patch / base_prompts.upstream outside this directory and receipts/ exits 1. No applicator. Historical patch against the venv's aider/coders/base_prompts.py from 2026-08-19."
+    },
+    {
+      "class": "SAFE_TO_REMOVE",
+      "where": "git, optional and cheaper to leave",
+      "path": ".gitignore:194:.aider*",
+      "why": "Hygiene ignore for a tool the suite does not call. Deleting the line is safe; leaving it is also safe and prevents accidental check-in if someone runs aider locally."
+    }
+  ],
+  "must_keep_as_evidence": [
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/headless/namespace_plan.py",
+      "why": "Plans the haider migration and re-measures `import aider|from aider|aider-chat` to prove absence. Deleting the references destroys the proof."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/headless/dead_code_census.py",
+      "why": "Records zero import aider / from aider / aider-chat as a standing fact."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/headless/code_graph.py",
+      "why": "TOOL_BINARIES lists aider so the graph can detect a product call; command -v aider || true records presence without requiring it."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/headless/subprocess_census.py",
+      "why": "States haider.py is a fossil entrypoint (zero import aider) and that this census does not spawn aider."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/headless/authority_census.py",
+      "why": "Explicitly: Rust HAIDER 'is not aider'. Keep classification."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/headless/spring_clean_census.py",
+      "why": "Classifies .aider.tags.cache / .aider session history so a later clean does not treat them as mystery files."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/headless/startup_census.py",
+      "why": "Records the interpreter path ~/.venvs/hawking-aider/bin/python3. That is the venv name, not a product call."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "tools/future/attribution_audit.py",
+      "why": "Records that 4 Co-authored-by: aider trailers exist only on unmerged grok/* branches. Historical attribution fact."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "receipts/headless/",
+      "files_with_word_boundary_aider": [
+        "receipts/headless/AUTHORITY_CENSUS.json",
+        "receipts/headless/CODE_GRAPH.json",
+        "receipts/headless/CORE_AUTHORITIES.json",
+        "receipts/headless/DEAD_CODE_CENSUS.json",
+        "receipts/headless/DIRTY_TREE_PRESERVATION.json",
+        "receipts/headless/DISK_TRUTH.json",
+        "receipts/headless/NAMESPACE_PLAN.json",
+        "receipts/headless/SPRING_CLEAN_CENSUS.json",
+        "receipts/headless/STARTUP_CENSUS.json",
+        "receipts/headless/SUBPROCESS_CENSUS.json"
+      ],
+      "why": "Sealed receipts. namespace_plan preserve: everything under receipts/."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "receipts/future/",
+      "files_with_word_boundary_aider": [
+        "receipts/future/FORBIDDEN_FRUIT_LAB_READINESS.json",
+        "receipts/future/G015_HARVEST.json",
+        "receipts/future/HCLI_SELF_HOSTING_LAUNCH.json",
+        "receipts/future/SUB2_TOOLING_READINESS.json"
+      ],
+      "why": "Hits are the venv path ~/.venvs/hawking-aider/bin/python3 inside recorded commands, not the aider product. Historical receipts stay historical."
+    },
+    {
+      "class": "MUST_KEEP_AS_EVIDENCE",
+      "path": "evidence/resident-tps-recon/",
+      "files_with_word_boundary_aider": [
+        "evidence/resident-tps-recon/q4_geo.meta.json",
+        "evidence/resident-tps-recon/q4_vecgroup_r4.meta.json"
+      ],
+      "why": "Same venv path inside recorded measurement commands."
+    }
+  ],
+  "rename_only": [
+    {
+      "class": "RENAME_ONLY",
+      "path": "tools/haider/",
+      "why": "Live test tree + v0 fossil. Follow namespace_plan S0-S8. Do not mass-rename. Do not delete haider.py until S8 proves zero callers."
+    },
+    {
+      "class": "RENAME_ONLY",
+      "path": "HAIDER_MODEL_PATH",
+      "why": "Compatibility alias of HCLI_MODEL_PATH in hcli/controller.py. Keep until a dedicated alias-drop step."
+    },
+    {
+      "class": "RENAME_ONLY",
+      "path": "parse_haider_args",
+      "why": "namespace_plan S7: optional rename to parse_hcli_args; keep alias one cycle."
+    },
+    {
+      "class": "RENAME_ONLY",
+      "path": "crates/hide-backend/src/haider/",
+      "also": [
+        "crates/hide-backend/src/bin/haider.rs",
+        "crates/hide-backend/tests/haider_parallel.rs"
+      ],
+      "why": "Fossil namespace, not aider. authority_census: Keep. Do not merge with HCLI-py DAG. Unwired from lib.rs."
+    },
+    {
+      "class": "RENAME_ONLY",
+      "path": ".haider/",
+      "why": "On-disk state dir + gitignore. namespace_plan sealed_exclusion: .haider/ PRESERVE. hcli still walks .haider for bootstrap-director and workspace ignore."
+    },
+    {
+      "class": "RENAME_ONLY",
+      "path": "/Users/scammermike/.venvs/hawking-aider/",
+      "why": "Operator venv name. Census tools and receipts record this path. Renaming is operator work, not a repo delete."
+    }
+  ],
+  "word_boundary_aider_census": {
+    "whole_tree_hits": 124,
+    "excluding_receipts": 39,
+    "excluding_receipts_and_evidence": 31,
+    "tools_substring_aider_including_haider": 1300,
+    "tools_word_boundary_aider": 30,
+    "haider_whole_tree": 14964,
+    "haider_excluding_receipts": 1311,
+    "unique_files_with_word_boundary_aider": 26
+  },
+  "recommended_commands": [
+    "# 0. This is not a removal of live code. Prove again, then uninstall the HOST leftover only.",
+    "git grep -nE '^[[:space:]]*(import[[:space:]]+aider|from[[:space:]]+aider)([[:space:].]|$)' HEAD; echo exit:$?   # expect 1",
+    "git grep -nE 'import aider|from aider|aider-chat' HEAD -- tools ':!tools/headless'; echo exit:$?   # expect 1",
+    "# 1. HOST: uninstall aider-chat from the project venv (Required-by: none). Do this on the operator machine, not in a sandbox that cannot write ~/.local.",
+    "/Users/scammermike/.venvs/hawking-aider/bin/python3 -m pip uninstall -y aider-chat",
+    "# 2. HOST: remove the uv-tool binary (symlink ~/.local/bin/aider -> ~/.local/share/uv/tools/aider-chat/bin/aider).",
+    "uv tool uninstall aider-chat",
+    "rm -f /Users/scammermike/.local/bin/aider",
+    "command -v aider; echo exit:$?   # expect 1 after uninstall",
+    "# 3. REPO: the only git paths that are the aider product (not haider, not census). Two files, no applicator.",
+    "git rm tools/haider/aider_patches/base_prompts.patch tools/haider/aider_patches/base_prompts.upstream.py",
+    "git grep -n 'aider_patches\\|base_prompts.patch\\|base_prompts.upstream' HEAD -- ':!receipts/'; echo exit:$?   # expect 1 after rm",
+    "# 4. DO NOT delete census/plan tools or receipts. These commands would destroy the proof; they are listed so they are not run.",
+    "# FORBIDDEN: git rm tools/headless/namespace_plan.py tools/headless/dead_code_census.py tools/headless/code_graph.py tools/headless/subprocess_census.py tools/headless/authority_census.py tools/headless/spring_clean_census.py tools/headless/startup_census.py",
+    "# FORBIDDEN: git rm -r receipts/headless tools/haider crates/hide-backend/src/haider",
+    "# FORBIDDEN: git grep -l aider | xargs rm",
+    "# 5. DO NOT mass-rename haider. Execute tools/headless/namespace_plan.py steps S0-S8 in order. S5 is already done in a different shape (live package is repo-root hcli/, tools/haider/hcli/ is tests only). Re-read the plan before touching paths.",
+    "python3 tools/headless/namespace_plan.py   # re-emit receipts/headless/NAMESPACE_PLAN.json; changes no product source",
+    "# 6. After host uninstall, re-run the negative control (expect the same 5 sparse/product failures on this worktree, 0 aider-caused):",
+    "SHIM=$(mktemp -d /tmp/aider-unresolvable-XXXX); printf '%s\\n' '#!/bin/sh' 'echo NEGATIVE_CONTROL >&2' 'exit 127' > \"$SHIM/aider\"; chmod 755 \"$SHIM/aider\"; PATH=\"$SHIM:$PATH\" PYTHONPATH=.:tools/haider /Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/haider/ hcli/ -q; rm -rf \"$SHIM\"; command -v aider || true",
+    "# 7. Keep HAIDER_MODEL_PATH as an alias of HCLI_MODEL_PATH until a dedicated drop. Keep parse_haider_args (S7). Keep .gitignore .haider/ (PRESERVE)."
+  ],
+  "do_not": [
+    "mass rename haider -> anything",
+    "delete tools/haider/ (live testpaths)",
+    "delete census references to aider",
+    "delete receipts/",
+    "modify hcli/ or tools/ as part of this audit"
+  ],
+  "commands": [
+    "git rev-parse --short HEAD  -> 9f89e3e77",
+    "ls -la ~/.local/bin/aider  -> symlink to uv/tools/aider-chat/bin/aider",
+    "which -a aider  -> /Users/scammermike/.local/bin/aider",
+    "git grep -nE 'import aider|from aider|aider-chat' HEAD -- ':!receipts/'  (census quotes only)",
+    "git grep -nE 'import aider|from aider|aider-chat' HEAD -- tools  -> exit 0 (census self-hits); WAVE_STATE 'exit 1' is stale",
+    "git grep -nE 'import aider|from aider|aider-chat' HEAD -- tools ':!tools/headless'  -> exit 1",
+    "git grep -nE '^[[:space:]]*(import[[:space:]]+aider|from[[:space:]]+aider)([[:space:].]|$)' HEAD  -> exit 1",
+    "git grep -nE 'importlib.*(aider)|__import__\\(.[a]ider' HEAD -- '*.py' ':!receipts/'  -> exit 1",
+    "git grep -nE '(^|[[:space:];|&])aider([[:space:];|&]|$)' HEAD -- '*.sh' '*.bash' '*.zsh'  -> exit 1",
+    "git grep -nE 'Command::new\\(\"aider|command\\(\"aider|\"aider-chat\"' HEAD -- '*.rs'  -> exit 1",
+    "git grep -n -w aider HEAD -- ':!receipts/' ':!evidence/'  -> 31 lines, all census/gitignore/patches/attribution",
+    "git grep -n -w aider HEAD -- hcli/  -> exit 1",
+    "git grep -n -w aider HEAD -- crates/  -> exit 1",
+    "git grep -n -w aider HEAD -- docs/  -> exit 1",
+    "git grep -n -w aider HEAD -- civilization/  -> exit 1",
+    "AST walk of 1716 on-disk .py files: 0 Import/ImportFrom of aider",
+    "/Users/scammermike/.venvs/hawking-aider/bin/python3 -c 'import aider'  -> aider-chat 0.86.2 at site-packages/aider",
+    "pip show aider-chat  -> Required-by: (empty); importlib.metadata dependents NONE",
+    "git ls-tree -r --name-only HEAD tools/haider  -> 102 files",
+    "git ls-tree -r --name-only HEAD crates/hide-backend | grep haider  -> 11 files",
+    "rg -n 'pub mod haider|^mod haider' crates/hide-backend/src/lib.rs  -> no match",
+    "git grep -n HAIDER_MODEL_PATH HEAD -- ':!receipts/' ':!tools/haider/bootstrap_snapshots/'",
+    "git grep -n parse_haider_args HEAD -- ':!receipts/'",
+    "git show HEAD:receipts/headless/NAMESPACE_PLAN.json  (standing_facts + migration_steps S0-S8)",
+    "NEGATIVE CONTROL: PATH=/tmp/aider-unresolvable-40399:$PATH PYTHONPATH=.:tools/haider python3 -m pytest tools/haider/ hcli/ -q  -> 5 failed, 973 passed, 4 skipped, exit 1; aider --version under shim exit 127",
+    "rm -rf /tmp/aider-unresolvable-40399  -> SHIM_GONE; which -a aider -> ~/.local/bin/aider",
+    "CONTROL: PYTHONPATH=.:tools/haider python3 -m pytest tools/haider/ hcli/ -q  -> identical 5 failed, 973 passed, 4 skipped, exit 1",
+    "git grep 'aider' HEAD -- tools | wc -l  -> 1300 substring (mostly haider); git grep -w aider HEAD -- tools | wc -l -> 30",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_wave_receipts.py -q -> 8 passed in 0.07s, 0 skipped. CONTRACTED does not list AIDER_NAMESPACE_AUDIT.json (DENY tools/future/); the test neither skips nor validates this receipt. Local structural check: all contracted-style keys present and non-hollow."
+  ],
+  "wave_receipts_verify": {
+    "command": "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_wave_receipts.py -q",
+    "exit": 0,
+    "summary": "8 passed in 0.07s",
+    "skipped": 0,
+    "this_receipt_in_CONTRACTED": false,
+    "note": "DENY forbids modifying tools/future/test_wave_receipts.py. Adding AIDER_NAMESPACE_AUDIT.json to CONTRACTED is a follow-up for a lane that owns that file. This receipt is on disk and structurally complete."
+  }
+}

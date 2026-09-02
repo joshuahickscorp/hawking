@@ -1,0 +1,62 @@
+{
+  "artifacts": [
+    "receipts/acceptance/FLASH_SOURCE_VERIFIED.census.json"
+  ],
+  "blocker": null,
+  "claim_boundary": "Index/header-only census of the sealed Flash specimen. No payload execution, no 360 GB content-hash of shard bodies, no EBPW/TPS/promotion claim. Matches the documented metadata-only audit.",
+  "command": [
+    "tools/flash_organ_census.py",
+    "--root",
+    "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "--out",
+    "/Users/scammermike/.claude-grok/worktrees/acc5-flash-acceptance-20260902-045109/receipts/acceptance/FLASH_SOURCE_VERIFIED.census.json"
+  ],
+  "comparison": {
+    "measured_indexed_payload_bytes": 359999963128,
+    "measured_shards": 131,
+    "measured_tensors": 1658,
+    "required_indexed_payload_bytes": 359999963128,
+    "required_shards": 131,
+    "required_tensors": 1658,
+    "satisfied": true,
+    "weight_bodies_loaded": 0
+  },
+  "criterion": {
+    "acceptance_span": {
+      "end_line": 505,
+      "section": "I-C",
+      "start_line": 478
+    },
+    "ladder": "F0 verify pinned source; F2 exact organ/tensor census",
+    "quoted": "Flash-Next pre-runtime audit last reported: 131/131 safetensor shard headers, 1,658/1,658 tensor layouts, exact 359,999,963,128-byte indexed payload, no weight-body bytes loaded during metadata-only audit.",
+    "source": {
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "line": 360
+    }
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "finished_at": "2026-09-02T09:12:08Z",
+  "gate": "FLASH_SOURCE_VERIFIED",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "measured": {
+    "layer_count_observed": 48,
+    "pinned_source": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "shard_count": 131,
+    "source_parameter_bytes_indexed": 359999963128,
+    "status": "STRUCTURAL_METADATA_SCREEN",
+    "tensor_count": 1658
+  },
+  "returncode": 0,
+  "schema": "hawking.acceptance.gate.v1",
+  "started_at": "2026-09-02T09:12:07Z",
+  "stderr": "",
+  "stdout": "{\"status\": \"STRUCTURAL_METADATA_SCREEN\", \"shard_count\": 131, \"tensor_count\": 1658, \"bytes\": 359999963128, \"layers\": 48}",
+  "symbol": {
+    "file": "tools/acceptance/flash/run_gates.py",
+    "kind": "call",
+    "module": "tools.flash_organ_census",
+    "name": "main"
+  },
+  "verdict": "ACCEPTED"
+}

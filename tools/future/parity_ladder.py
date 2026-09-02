@@ -40,6 +40,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[2]))
 from tools.future._common import (  # noqa: E402
     REPO,
     git,
+    gpu_lane_lock_path,
     load_json,
     measurement_provenance,
     write_measured_receipt,
@@ -57,7 +58,7 @@ FOLD_AB_REL = "receipts/future/FOLD_ADDQX_AB.json"
 BUDGET_REL = "receipts/future/MLP_ERROR_BUDGET.json"
 CHEAPEN_REL = "receipts/future/MLP_DECODE_CHEAPEN.json"
 
-GPU_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+GPU_LOCK = gpu_lane_lock_path()
 GPU_LOCK_SH = REPO / "tools" / "gpu_lane_lock.sh"
 DEFAULT_ARTIFACT = Path("/Users/scammermike/noetic/NOETIC_PARENT_A")
 DEFAULT_TOKENIZER = DEFAULT_ARTIFACT / "tokenizer.json"

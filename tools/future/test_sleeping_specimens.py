@@ -281,3 +281,26 @@ def test_emit_unit_is_hcli_shaped():
     assert wus_ok
     assert unit["wake_condition"] == ss.WAKE_SEALED_SOURCE_READY
     assert unit["status"] == "sleeping"
+
+
+def test_sealed_source_ready_is_the_exit_transition(tmp_path):
+    """SLEEPING_SPECIMEN_WU leaves SLEEPING only when the specimen dir exists.
+
+    Empty directory is not ready. Missing tag is not ready. No synthetic COMPLETED.
+    """
+    tag = "acme--x@deadbeefcafe"
+    assert ss.sealed_source_ready(tag, specimen_root=tmp_path) is False
+    empty = tmp_path / tag
+    empty.mkdir()
+    assert ss.sealed_source_ready(tag, specimen_root=tmp_path) is False
+    (empty / "config.json").write_text("{}", encoding="utf-8")
+    assert ss.sealed_source_ready(tag, specimen_root=tmp_path) is True
+    event = ss.notify_sealed_source_ready(tag, source="test", specimen_root=tmp_path)
+    assert event["wake_condition"] == ss.WAKE_SEALED_SOURCE_READY
+    assert event["ready"] is True
+    assert event["tag"] == tag
+    missing = ss.notify_sealed_source_ready(
+        "no-such-tag", source="test", specimen_root=tmp_path
+    )
+    assert missing["ready"] is False
+    assert ss.sealed_source_ready("", specimen_root=tmp_path) is False

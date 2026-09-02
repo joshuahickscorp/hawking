@@ -1,8 +1,10 @@
 from __future__ import annotations
 
+import inspect
 import json
 import os
 import re
+import subprocess
 import time
 import urllib.error
 import urllib.request
@@ -12,12 +14,14 @@ from typing import Any, Dict, Optional
 from .config import Config
 from .engine import Engine
 from .events import EventBus
+from .goal_bank import GoalBank, GoalBankError
+from .knowledge import KnowledgeStore
 from .max_policy import grok_pool_snapshot
 from .mission import Mission
 from .models import ModelInfo, ModelRegistry
 from .resources import MutationLock, can_admit, normalize_resource_class, occupancy_of
 from .runtime import RuntimePool, load_observed_overlap
-from .session import Session, SessionStore
+from .session import CONTEXT_MEMORY_SCHEMA, Session, SessionStore
 from .steering import SteeringQueue
 from .workunit import is_ready
 from .workspace import Workspace
@@ -57,6 +61,11 @@ def _http_json(url: str, timeout: float = 0.4) -> Any:
         return json.loads(raw.decode("utf-8"))
     except (UnicodeError, json.JSONDecodeError, AttributeError):
         return None
+
+
+_AUTO_COMPACT_MESSAGES = 32
+_MEMORY_LIST_LIMIT = 12
+_MEMORY_TEXT_LIMIT = 600
 
 
 class Controller:
@@ -124,10 +133,32 @@ class Controller:
         self.session_store = SessionStore(
             self.workspace_root
         )
+        self.config = Config(
+            self.workspace_root
+        )
+        self.knowledge = KnowledgeStore(
+            self.workspace_root,
+            archive_root=self.config.value(
+                "context_archive_root",
+                "HCLI_CONTEXT_ARCHIVE_ROOT",
+                None,
+            ),
+        )
+        self._knowledge_error: Optional[str] = None
+        self.goal_bank = GoalBank(self.workspace_root)
+        self._goal_bank_error: Optional[str] = None
+        try:
+            self.goal_bank.recover_inflight()
+        except Exception as exc:
+            # A corrupt optional queue must not make /status or a read-only
+            # session unusable. Mutating queue commands report this same error
+            # instead of overwriting a document we could not trust.
+            self._goal_bank_error = f"{type(exc).__name__}: {exc}"
         self.mission: Optional[Mission] = None
         self._exit_requested = False
         self._command_handler = None
         self._ledger = None
+        self._bank_auto_promoting = False
 
         self._shutdown = False
 
@@ -141,10 +172,6 @@ class Controller:
             or os.environ.get(
                 "HCLI_HAWKING_NATIVE_CONFIG"
             )
-        )
-
-        self.config = Config(
-            self.workspace_root
         )
 
         project_model = self.config.layer_model(self.config.project_path)
@@ -188,6 +215,7 @@ class Controller:
             runtime_count=self.runtime_count,
             model_name=engine_model,
         )
+        self._seed_prior_knowledge()
 
     @property
     def model_name(
@@ -363,6 +391,8 @@ class Controller:
         snapshot["goal"] = self.session.goal
         snapshot["session_id"] = self.session.id
         snapshot["messages"] = len(self.session.messages)
+        snapshot["goal_bank"] = self.goal_bank_snapshot()
+        snapshot["prior_knowledge"] = self.prior_knowledge_snapshot(limit=4, max_chars=4000)
         snapshot.setdefault("grok", self._grok_pool_status())
         # NOT an unconditional reassignment: the block above already computed
         # mutation status AND its real waiter count. Overwriting it here reset
@@ -718,6 +748,281 @@ class Controller:
 
         return True
 
+    def prior_knowledge_snapshot(
+        self,
+        *,
+        limit: int = 8,
+        max_chars: int = 8000,
+        focus: str = "",
+    ) -> Dict[str, Any]:
+        """Return bounded workspace memory for a new or resumed session."""
+        if self._knowledge_error:
+            return {
+                "schema": "hcli.workspace_knowledge.v1",
+                "available": False,
+                "path": str(self.knowledge.path),
+                "reason": self._knowledge_error,
+                "generation": 0,
+                "records": [],
+            }
+        try:
+            return self.knowledge.snapshot(
+                limit=limit,
+                max_chars=max_chars,
+                focus=focus,
+            )
+        except Exception as exc:
+            self._knowledge_error = f"{type(exc).__name__}: {exc}"
+            return {
+                "schema": "hcli.workspace_knowledge.v1",
+                "available": False,
+                "path": str(self.knowledge.path),
+                "reason": self._knowledge_error,
+                "generation": 0,
+                "records": [],
+            }
+
+    def _seed_prior_knowledge(self) -> None:
+        """Make the last bounded workspace facts available before turn one."""
+        snapshot = self.prior_knowledge_snapshot(limit=6, max_chars=6000)
+        if not snapshot.get("available") or not snapshot.get("records"):
+            return
+        self.session.set_memory(
+            {
+                "schema": CONTEXT_MEMORY_SCHEMA,
+                "generation": 0,
+                "prior_knowledge": snapshot,
+                "retention": {
+                    "source": "workspace semantic index",
+                    "raw_history": "available in the gzip archive; not replayed into prompts",
+                    "rule": "prior claims are context, current disk state is authority",
+                },
+            }
+        )
+        self._persist_session()
+
+    def _record_knowledge_checkpoint(self, memory: Optional[Dict[str, Any]] = None) -> None:
+        """Best-effort durable memory; never turn an optional cache into a blocker."""
+        if self._knowledge_error:
+            return
+        try:
+            value = memory if isinstance(memory, dict) else self._build_context_memory()
+            self.knowledge.record_checkpoint(value)
+        except Exception as exc:
+            self._knowledge_error = f"{type(exc).__name__}: {exc}"
+
+    def _record_knowledge_result(self, goal: str, result: Any) -> None:
+        if self._knowledge_error:
+            return
+        try:
+            self.knowledge.record_result(goal, result)
+        except Exception as exc:
+            self._knowledge_error = f"{type(exc).__name__}: {exc}"
+
+    def _context_memory_for_turn(self, prompt: str = "") -> Dict[str, Any]:
+        """Refresh cheap current-state edges around the durable memory index."""
+        memory = dict(self.session.memory) if isinstance(self.session.memory, dict) else {}
+        focus = " ".join(
+            item
+            for item in (str(self.session.goal or ""), str(prompt or ""))
+            if item.strip()
+        )
+        prior = self.prior_knowledge_snapshot(
+            limit=8,
+            max_chars=7000,
+            focus=focus,
+        )
+        if prior.get("available") and prior.get("records"):
+            memory["prior_knowledge"] = prior
+        bank = self.goal_bank_snapshot(queued_limit=8, recent_limit=4, display_limit=480)
+        if bank.get("available") and (
+            bank.get("queued_count") or bank.get("running_count") or bank.get("recent")
+        ):
+            memory["goal_bank"] = bank
+        receipts = self._compact_receipts()
+        if receipts:
+            memory["receipts"] = receipts
+        return memory
+
+    def goal_bank_snapshot(
+        self,
+        *,
+        queued_limit: int = 16,
+        recent_limit: int = 6,
+        display_limit: int = 640,
+    ) -> Dict[str, Any]:
+        """Return bounded queue state for the TUI, /status, and memory."""
+        if self._goal_bank_error:
+            return {
+                "schema": "hcli.goal_bank.v1",
+                "available": False,
+                "path": str(self.goal_bank.path),
+                "reason": self._goal_bank_error,
+                "queued_count": 0,
+                "running_count": 0,
+                "queued": [],
+                "running": [],
+                "recent": [],
+                "next": None,
+            }
+        try:
+            return self.goal_bank.snapshot(
+                queued_limit=queued_limit,
+                recent_limit=recent_limit,
+                display_limit=display_limit,
+            )
+        except Exception as exc:
+            self._goal_bank_error = f"{type(exc).__name__}: {exc}"
+            return {
+                "schema": "hcli.goal_bank.v1",
+                "available": False,
+                "path": str(self.goal_bank.path),
+                "reason": self._goal_bank_error,
+                "queued_count": 0,
+                "running_count": 0,
+                "queued": [],
+                "running": [],
+                "recent": [],
+                "next": None,
+            }
+
+    def bank_goal(self, goal: str, *, mode: str = "auto") -> Dict[str, Any]:
+        """Persist a future goal without changing the active goal or steer."""
+        if self._goal_bank_error:
+            raise GoalBankError(self._goal_bank_error)
+        item = self.goal_bank.add(goal, mode=mode)
+        self._emit(
+            "bank_queued",
+            {
+                "id": item.get("id"),
+                "goal": item.get("goal"),
+                "mode": item.get("mode"),
+                "queued_count": self.goal_bank_snapshot().get("queued_count", 0),
+            },
+        )
+        self._persist_session()
+        return item
+
+    def drop_banked_goal(self, selector: str) -> Optional[Dict[str, Any]]:
+        if self._goal_bank_error:
+            raise GoalBankError(self._goal_bank_error)
+        item = self.goal_bank.drop(selector)
+        if item is not None:
+            self._emit(
+                "bank_dropped",
+                {"id": item.get("id"), "goal": item.get("goal")},
+            )
+            self._persist_session()
+        return item
+
+    def clear_banked_goals(self) -> int:
+        if self._goal_bank_error:
+            raise GoalBankError(self._goal_bank_error)
+        removed = self.goal_bank.clear()
+        if removed:
+            self._emit("bank_cleared", {"removed": removed})
+            self._persist_session()
+        return removed
+
+    def _finish_banked_goal(
+        self,
+        item_id: Optional[str],
+        result: Any,
+        *,
+        error: Optional[str] = None,
+    ) -> None:
+        if not item_id:
+            return
+        try:
+            item = self.goal_bank.finish(item_id, result, error=error)
+        except Exception as exc:
+            self._emit(
+                "warning",
+                {"message": f"bank completion could not be persisted: {type(exc).__name__}: {exc}"},
+            )
+            return
+        if item is not None:
+            self._emit(
+                "bank_finished",
+                {
+                    "id": item.get("id"),
+                    "goal": item.get("goal"),
+                    "status": item.get("status"),
+                    "error": item.get("last_error"),
+                },
+            )
+
+    def _auto_start_banked_goals(self, *, runner: str) -> List[Dict[str, Any]]:
+        """Drain completed-goal continuations without recursive call stacks."""
+        if self._bank_auto_promoting:
+            return []
+        self._bank_auto_promoting = True
+        promoted: List[Dict[str, Any]] = []
+        current_runner = "mission" if runner == "mission" else "execute"
+        try:
+            while True:
+                try:
+                    item = self.goal_bank.claim_next()
+                except Exception as exc:
+                    self._goal_bank_error = f"{type(exc).__name__}: {exc}"
+                    self._emit("warning", {"message": f"bank unavailable: {self._goal_bank_error}"})
+                    break
+                if item is None:
+                    break
+                item_runner = (
+                    "mission"
+                    if item.get("mode") == "mission" or current_runner == "mission"
+                    else "execute"
+                )
+                self._emit(
+                    "bank_started",
+                    {
+                        "id": item.get("id"),
+                        "goal": item.get("goal"),
+                        "mode": item_runner,
+                        "queued_count": self.goal_bank_snapshot().get("queued_count", 0),
+                    },
+                )
+                try:
+                    if item_runner == "mission":
+                        result = self.run_mission(
+                            str(item.get("goal") or ""),
+                            _bank_item_id=str(item.get("id") or ""),
+                            _auto_promote=False,
+                        )
+                    else:
+                        result = self.execute(
+                            str(item.get("goal") or ""),
+                            _bank_item_id=str(item.get("id") or ""),
+                            _auto_promote=False,
+                        )
+                except Exception as exc:
+                    self._finish_banked_goal(
+                        str(item.get("id") or ""),
+                        {"status": "failed"},
+                        error=f"{type(exc).__name__}: {exc}",
+                    )
+                    break
+                result_status = (
+                    str(result.get("status") or "")
+                    if isinstance(result, dict)
+                    else "failed"
+                ).lower()
+                promoted.append(
+                    {
+                        "id": item.get("id"),
+                        "goal": item.get("goal"),
+                        "mode": item_runner,
+                        "status": result_status,
+                    }
+                )
+                if result_status != "completed":
+                    break
+                current_runner = item_runner
+        finally:
+            self._bank_auto_promoting = False
+        return promoted
+
     def ensure_runtime_pool(
         self,
     ) -> RuntimePool:
@@ -810,6 +1115,9 @@ class Controller:
     def execute(
         self,
         prompt: str,
+        *,
+        _bank_item_id: Optional[str] = None,
+        _auto_promote: bool = True,
     ) -> dict:
         prompt = (
             prompt
@@ -825,9 +1133,57 @@ class Controller:
                 "status": "completed",
             }
 
-        return self.engine.execute(
-            prompt
+        self._emit(
+            "activity_started",
+            {"label": "working"},
         )
+        self.session.append_message("user", prompt, kind="goal")
+        try:
+            try:
+                parameters = inspect.signature(self.engine.execute).parameters
+                supports_memory = (
+                    "context_memory" in parameters
+                    or any(
+                        item.kind is inspect.Parameter.VAR_KEYWORD
+                        for item in parameters.values()
+                    )
+                )
+            except (TypeError, ValueError):
+                supports_memory = True
+            if supports_memory:
+                result = self.engine.execute(
+                    prompt,
+                    context_memory=self._context_memory_for_turn(prompt),
+                )
+            else:
+                result = self.engine.execute(prompt)
+        finally:
+            self._persist_session()
+
+        if isinstance(result, dict):
+            reply = result.get("content") or result.get("error") or result.get("status") or ""
+        else:
+            reply = result
+        self.session.append_message("assistant", reply, kind="result")
+        try:
+            if len(self.session.messages) > _AUTO_COMPACT_MESSAGES:
+                self.compact_context()
+            else:
+                self._persist_session()
+        finally:
+            # A claimed bank item must not remain ``running`` merely because
+            # the session crossed an automatic compaction boundary.
+            self._finish_banked_goal(_bank_item_id, result)
+        if (
+            _auto_promote
+            and isinstance(result, dict)
+            and str(result.get("status") or "").lower() == "completed"
+        ):
+            promoted = self._auto_start_banked_goals(runner="execute")
+            if promoted:
+                result["bank_started"] = promoted
+        self._record_knowledge_result(prompt, result)
+        return result
 
     def complete_text(
         self,
@@ -877,6 +1233,10 @@ class Controller:
             )
             event = queue.enqueue(body, kind=token)
         self.session.steering.append(body)
+        try:
+            self.knowledge.record_note(body, kind=token)
+        except Exception as exc:
+            self._knowledge_error = f"{type(exc).__name__}: {exc}"
         self._persist_session()
         return event
 
@@ -885,6 +1245,9 @@ class Controller:
         goal: Optional[str] = None,
         units: Any = None,
         engine: Any = None,
+        *,
+        _bank_item_id: Optional[str] = None,
+        _auto_promote: bool = True,
         **kwargs: Any,
     ) -> dict:
         text = (
@@ -900,25 +1263,369 @@ class Controller:
             runtime_count=self.runtime_count,
             runtime_pool=self.runtime_pool,
             session_id=self.session.id,
+            context_memory=kwargs.pop("context_memory", self._context_memory_for_turn()),
             **kwargs,
         )
         self.session.mission_id = self.mission.id
         self._persist_session()
-        return self.mission.run()
+        result = self.mission.run()
+        self._finish_banked_goal(_bank_item_id, result)
+        if (
+            _auto_promote
+            and isinstance(result, dict)
+            and str(result.get("status") or "").lower() == "completed"
+        ):
+            promoted = self._auto_start_banked_goals(runner="mission")
+            if promoted:
+                result["bank_started"] = promoted
+        self._record_knowledge_result(text or "mission", result)
+        return result
+
+    @staticmethod
+    def _memory_text(value: Any, limit: int = _MEMORY_TEXT_LIMIT) -> str:
+        text = str(value or "").strip()
+        if len(text) > limit:
+            return text[: limit - 1].rstrip() + "…"
+        return text
+
+    def _compact_git_state(self) -> Dict[str, Any]:
+        """Capture the index and worktree separately for compaction memory."""
+        root = Path(self.workspace_root)
+        try:
+            proc = subprocess.run(
+                [
+                    "git",
+                    "-C",
+                    str(root),
+                    "status",
+                    "--porcelain=v1",
+                    "--branch",
+                    "--untracked-files=normal",
+                ],
+                cwd=str(root),
+                capture_output=True,
+                text=True,
+                timeout=5.0,
+                check=False,
+            )
+        except (OSError, subprocess.SubprocessError) as exc:
+            return {
+                "available": False,
+                "reason": f"{type(exc).__name__}: {exc}",
+            }
+        if proc.returncode != 0:
+            return {
+                "available": False,
+                "reason": self._memory_text(proc.stderr or "git status failed", 240),
+            }
+
+        branch = ""
+        staged: list[str] = []
+        unstaged: list[str] = []
+        untracked: list[str] = []
+        for line in (proc.stdout or "").splitlines():
+            if line.startswith("## "):
+                branch = line[3:].strip()
+                continue
+            if len(line) < 3:
+                continue
+            code = line[:2]
+            path = line[3:].strip()
+            if code == "??":
+                untracked.append(path)
+                continue
+            if code[0] != " ":
+                staged.append(path)
+            if code[1] != " ":
+                unstaged.append(path)
+
+        def bounded(paths: list[str]) -> Dict[str, Any]:
+            return {
+                "count": len(paths),
+                "paths": paths[:_MEMORY_LIST_LIMIT],
+                "truncated": len(paths) > _MEMORY_LIST_LIMIT,
+            }
+
+        return {
+            "available": True,
+            "branch": branch,
+            "staged": bounded(staged),
+            "unstaged": bounded(unstaged),
+            "untracked": bounded(untracked),
+        }
+
+    def _compact_steering(self) -> Dict[str, Any]:
+        try:
+            events = SteeringQueue(self.workspace_root, self.session.id).all()
+        except Exception as exc:
+            return {"available": False, "reason": f"{type(exc).__name__}: {exc}"}
+        rank = {"constraint": 0, "correction": 1, "knowledge": 2}
+        ordered = sorted(
+            events,
+            key=lambda event: (
+                rank.get(str(getattr(event, "kind", "knowledge")), 3),
+                -float(getattr(event, "timestamp", 0.0) or 0.0),
+            ),
+        )
+        rows = [
+            {
+                "id": str(getattr(event, "id", "")),
+                "kind": str(getattr(event, "kind", "knowledge")),
+                "applied": bool(getattr(event, "applied", False)),
+                "text": self._memory_text(getattr(event, "text", "")),
+            }
+            for event in ordered[:_MEMORY_LIST_LIMIT]
+        ]
+        return {
+            "available": True,
+            "pending_count": sum(
+                1 for event in events if not bool(getattr(event, "applied", False))
+            ),
+            "events": rows,
+            "truncated": len(events) > _MEMORY_LIST_LIMIT,
+        }
+
+    def _compact_goal(self) -> Dict[str, Any]:
+        goal = self._memory_text(self.session.goal, 2000)
+        result: Dict[str, Any] = {"text": goal}
+        if not goal:
+            return result
+        try:
+            compiled = self.engine.goal_compiler.compile(self.session.goal)
+        except Exception:
+            try:
+                from .goal import GoalCompiler
+
+                compiled = GoalCompiler().compile(self.session.goal)
+            except Exception:
+                compiled = {}
+        if not isinstance(compiled, dict):
+            return result
+        result.update(
+            {
+                "summary": self._memory_text(compiled.get("goal_summary"), 600),
+                "invariants": [
+                    self._memory_text(item)
+                    for item in (compiled.get("invariants") or [])[:8]
+                ],
+                "acceptance": [
+                    self._memory_text(item)
+                    for item in (compiled.get("acceptance_criteria") or [])[:8]
+                ],
+                "files": [
+                    self._memory_text(item, 240)
+                    for item in (compiled.get("referenced_files") or [])[:12]
+                ],
+            }
+        )
+        return result
+
+    def _compact_mission(self) -> Dict[str, Any]:
+        mission = self.mission
+        if mission is None:
+            return {"id": self.session.mission_id, "phase": "none"}
+        try:
+            snapshot = mission.status()
+        except Exception as exc:
+            snapshot = {"error": f"{type(exc).__name__}: {exc}"}
+        rows = []
+        units = getattr(getattr(mission, "scheduler", None), "units", {}) or {}
+        priority = {"running": 0, "failed": 1, "ready": 2, "pending": 3, "completed": 4}
+        values = sorted(
+            units.values(),
+            key=lambda unit: priority.get(str(getattr(unit, "status", "")), 5),
+        )
+        for unit in values[:_MEMORY_LIST_LIMIT]:
+            failure = getattr(unit, "failure_context", None)
+            why = ""
+            if isinstance(failure, dict):
+                why = failure.get("error") or failure.get("reason") or ""
+            rows.append(
+                {
+                    "id": str(getattr(unit, "id", "")),
+                    "status": str(getattr(unit, "status", "")),
+                    "role": self._memory_text(getattr(unit, "role", ""), 120),
+                    "description": self._memory_text(getattr(unit, "description", ""), 320),
+                    "why": self._memory_text(why, 320),
+                }
+            )
+        state = {
+            key: snapshot.get(key)
+            for key in (
+                "phase",
+                "state",
+                "units_by_status",
+                "active_runtimes",
+                "active_decodes",
+                "accepted_units_per_hour",
+                "last_checkpoint",
+                "no_progress_warning",
+            )
+            if isinstance(snapshot, dict) and key in snapshot
+        }
+        return {
+            "id": getattr(mission, "id", self.session.mission_id),
+            "phase": snapshot.get("phase") if isinstance(snapshot, dict) else None,
+            "state": state,
+            "checkpoint_id": getattr(mission, "_last_checkpoint_id", None),
+            "units": rows,
+            "units_truncated": len(values) > _MEMORY_LIST_LIMIT,
+        }
+
+    def _compact_ledger(self) -> Dict[str, Any]:
+        ledger = self._status_ledger()
+        if ledger is None:
+            return {"available": False}
+        try:
+            obligations = list(ledger.obligations())
+        except Exception as exc:
+            return {"available": False, "reason": f"{type(exc).__name__}: {exc}"}
+        rows = []
+        for obligation in obligations[:_MEMORY_LIST_LIMIT]:
+            rows.append(
+                {
+                    "id": str(getattr(obligation, "id", "")),
+                    "status": str(getattr(obligation, "status", "")),
+                    "text": self._memory_text(getattr(obligation, "text", ""), 360),
+                }
+            )
+        return {
+            "available": True,
+            "terminal_blocker": self._memory_text(
+                getattr(ledger, "terminal_blocker", None), 600
+            ),
+            "obligations": rows,
+            "truncated": len(obligations) > _MEMORY_LIST_LIMIT,
+        }
+
+    def _compact_receipts(self) -> list[Dict[str, Any]]:
+        directory = Path(self.workspace_root) / ".hcli" / "receipts"
+        if not directory.is_dir():
+            return []
+        rows = []
+        try:
+            paths = sorted(
+                directory.glob("*.json"),
+                key=lambda path: path.stat().st_mtime_ns,
+                reverse=True,
+            )[:6]
+        except OSError:
+            return []
+        for path in paths:
+            try:
+                data = json.loads(path.read_text(encoding="utf-8"))
+            except (OSError, UnicodeError, json.JSONDecodeError):
+                continue
+            if not isinstance(data, dict):
+                continue
+            envelope = data.get("result_envelope")
+            envelope = envelope if isinstance(envelope, dict) else {}
+            rows.append(
+                {
+                    "file": path.name,
+                    "goal_id": data.get("goal_id") or path.stem,
+                    "status": data.get("status"),
+                    "kind": data.get("kind"),
+                    # These are the parts of an old run that can change the
+                    # next decision. Raw model calls and tracebacks stay in
+                    # the receipt on disk, not in every future prompt.
+                    "goal": self._memory_text(data.get("goal"), 480),
+                    "claim": self._memory_text(
+                        envelope.get("claim") or data.get("goal"), 360
+                    ),
+                    "verdict": self._memory_text(
+                        envelope.get("verdict") or data.get("verdict"), 120
+                    ),
+                    "blocker": self._memory_text(
+                        data.get("error") or envelope.get("blocker"), 360
+                    ),
+                    "next_action": self._memory_text(
+                        envelope.get("next_action"), 360
+                    ),
+                }
+            )
+        return rows
+
+    def _build_context_memory(self) -> Dict[str, Any]:
+        recent = []
+        for item in self.session.messages[-8:]:
+            if not isinstance(item, dict):
+                continue
+            recent.append(
+                {
+                    "role": str(item.get("role") or ""),
+                    "kind": str(item.get("kind") or "conversation"),
+                    "content": self._memory_text(item.get("content")),
+                }
+            )
+        return {
+            "schema": CONTEXT_MEMORY_SCHEMA,
+            "generation": int(self.session.compaction_count) + 1,
+            "compacted_at": time.time(),
+            "active_goal": self._compact_goal(),
+            "mission": self._compact_mission(),
+            "ledger": self._compact_ledger(),
+            "steering": self._compact_steering(),
+            "staging": self._compact_git_state(),
+            "prior_knowledge": self.prior_knowledge_snapshot(
+                limit=6,
+                max_chars=6000,
+            ),
+            "goal_bank": self.goal_bank_snapshot(
+                queued_limit=8,
+                recent_limit=4,
+                display_limit=480,
+            ),
+            "recent": recent,
+            "receipts": self._compact_receipts(),
+            "retention": {
+                "hot_messages_kept": 4,
+                "raw_history": "older messages are gzip archived on the workspace SSD; named receipts remain on disk",
+                "rule": "constraints and verifier state outrank conversational recency",
+            },
+        }
 
     def context_summary(
         self,
     ) -> str:
+        memory = self.session.memory if isinstance(self.session.memory, dict) else {}
+        generation = memory.get("generation")
+        prior = memory.get("prior_knowledge")
+        prior_generation = prior.get("generation") if isinstance(prior, dict) else None
+        if generation:
+            memory_text = f" memory=checkpoint#{generation}"
+        elif prior_generation:
+            memory_text = f" memory=prior#{prior_generation}"
+        else:
+            memory_text = " memory=none"
+        bank = self.goal_bank_snapshot()
+        bank_text = ""
+        if bank.get("available"):
+            bank_text = f" bank={int(bank.get('queued_count') or 0)}"
+        else:
+            bank_text = " bank=unavailable"
         return (
             f"session {self.session.id} "
-            f"messages={len(self.session.messages)}"
+            f"messages={len(self.session.messages)}{memory_text}{bank_text}"
         )
 
     def compact_context(
         self,
-    ) -> None:
+    ) -> Dict[str, Any]:
+        archive = self.session_store.archive_messages(self.session)
+        memory = self._build_context_memory()
+        self._record_knowledge_checkpoint(memory)
+        memory["prior_knowledge"] = self.prior_knowledge_snapshot(
+            limit=6,
+            max_chars=6000,
+        )
+        memory["history_archive"] = archive
+        self.session.set_memory(memory)
+        self.session.compaction_count += 1
+        self.session.compacted_at = str(memory.get("compacted_at"))
         self.session.messages = self.session.messages[-4:]
         self._persist_session()
+        return memory
 
     def clear_transcript(
         self,
@@ -1298,6 +2005,11 @@ class Controller:
     ) -> None:
         if self._shutdown:
             return
+
+        try:
+            self._record_knowledge_checkpoint()
+        except Exception:
+            pass
 
         try:
             self._persist_session()

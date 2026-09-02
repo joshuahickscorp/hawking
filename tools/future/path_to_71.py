@@ -21,7 +21,7 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from _common import REPO  # noqa: E402
+from _common import REPO, git  # noqa: E402
 
 RECEIPT = REPO / "receipts" / "future" / "PATH_TO_71.json"
 
@@ -53,18 +53,39 @@ PROMOTED_INTO_BASELINE = {
 FALLBACK_REL = "receipts/future/RESIDENT_TOKEN_BUDGET_POST_WIDEN_F4.json"
 
 
+def _load_json_rel(rel: str) -> dict[str, Any] | None:
+    path = REPO / rel
+    if path.is_file():
+        return json.loads(path.read_text())
+    blob = git("show", f"HEAD:{rel}")
+    if not blob:
+        return None
+    try:
+        doc = json.loads(blob)
+    except json.JSONDecodeError:
+        return None
+    return doc if isinstance(doc, dict) else None
+
+
 def _current_token_ms() -> float:
     p = REPO / ABSOLUTE_REL
     if p.is_file():
         return float(json.loads(p.read_text())["measured"]["gpu_ms_per_token"])
     path = REPO / FALLBACK_REL
-    if not path.is_file():
-        raise RuntimeError(
-            f"neither {ABSOLUTE_REL} nor {FALLBACK_REL} is on disk; the ladder "
-            "refuses to compute against a remembered baseline. Run "
-            "tools/future/sealed_default_absolute.py --build."
-        )
-    return float(json.loads(path.read_text())["decode_wall_ms_per_token"])
+    if path.is_file():
+        return float(json.loads(path.read_text())["decode_wall_ms_per_token"])
+    # Sparse checkouts leave receipts/ off disk; git HEAD still has the files.
+    abs_doc = _load_json_rel(ABSOLUTE_REL)
+    if abs_doc is not None:
+        return float(abs_doc["measured"]["gpu_ms_per_token"])
+    fb_doc = _load_json_rel(FALLBACK_REL)
+    if fb_doc is not None:
+        return float(fb_doc["decode_wall_ms_per_token"])
+    raise RuntimeError(
+        f"neither {ABSOLUTE_REL} nor {FALLBACK_REL} is on disk or in git HEAD; "
+        "the ladder refuses to compute against a remembered baseline. Run "
+        "tools/future/sealed_default_absolute.py --build."
+    )
 
 
 HISTORICAL_TOKEN_MS = 28.722   # pre-widen_f4, kept so the move is auditable

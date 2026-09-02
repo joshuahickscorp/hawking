@@ -38,6 +38,7 @@ from typing import Any
 from tools.future._common import REPO, write_receipt
 from tools.future import frontiers as fr
 from tools.future import modellake_scheduler_view as mv
+from tools.future import negative_index as ni
 from tools.future import specimen_load_cost as lc
 from tools.future import specimen_registry as sr
 
@@ -54,6 +55,10 @@ WATCH_LOG_REL = Path("workspace/campaign/odyssey/downloads/modellake-watch.jsonl
 
 # Species every arrival unit carries. Distinct from catalog work.
 SEAL_SPECIES = "modellake-seal"
+
+# How many negative-science hits ride along as evidence. The index's own
+# query() already ranks by specificity; this only bounds the payload.
+MAX_RELEVANT_SCARS = 5
 
 # One frontier per trigger. Prefetch is MEMORY because residency, not
 # compute, is the 143x lever specimen_load_cost measured.
@@ -192,11 +197,58 @@ def _economics(specimen_id: str, costs: dict[str, dict[str, Any]] | None = None)
     return row
 
 
+def _family_context(
+    specimen_id: str,
+    model_type: str,
+    families: dict[str, list[str]] | None = None,
+) -> dict[str, Any]:
+    """Structural siblings already on the lake -- S027 §48's basis for near
+    transfer and distant-adversarial choice. This clusters by model_type
+    only; it does not assign a role, that stays a consumer's decision.
+    """
+    fams = families if families is not None else sr.architecture_families()
+    siblings = sorted(sid for sid in fams.get(model_type, []) if sid != specimen_id)
+    return {
+        "model_type": model_type,
+        "sibling_ids": siblings,
+        "n_siblings": len(siblings),
+        "is_novel_architecture": len(siblings) == 0,
+    }
+
+
+def _relevant_scars(model_type: str) -> dict[str, Any]:
+    """What the negative-science index already knows about this architecture.
+
+    Informational, not a refusal: an S027 §22 trigger is the FIRST look at a
+    sealed specimen, not a hypothesis proposal scoped enough for
+    negative_index.refuse_if_dead to gate. A GENERAL_PHYSICAL law matches
+    every model query (that is by design, per negative_index._score); this
+    separates those from an actual model-specific hit so a consumer does not
+    read "the index returned 7 rows" as "7 scars are about this model".
+    """
+    if not model_type or model_type == "UNKNOWN":
+        return {"queried_model": model_type, "matches": [], "n_matches": 0, "n_model_specific": 0}
+    hits = ni.query(model=model_type)
+    fields = (
+        "scar_id", "model", "models", "organ", "hypothesis_family",
+        "verdict", "failure_mechanism", "reopen_condition", "source_path",
+        "level", "match_score",
+    )
+    return {
+        "queried_model": model_type,
+        "matches": [{k: h.get(k) for k in fields} for h in hits[:MAX_RELEVANT_SCARS]],
+        "n_matches": len(hits),
+        "n_model_specific": sum(1 for h in hits if h.get("level") != "GENERAL_PHYSICAL"),
+    }
+
+
 def _trigger_kwargs(
     specimen: dict[str, Any],
     trigger: str,
     *,
     cost: dict[str, Any] | None = None,
+    family: dict[str, Any] | None = None,
+    scars: dict[str, Any] | None = None,
 ) -> dict[str, Any]:
     if trigger not in SEAL_TRIGGERS:
         raise LakeEventRefused(
@@ -209,7 +261,16 @@ def _trigger_kwargs(
     man_path = str(sr.MANIFESTS / f"{sid}.json")
     arch = (specimen.get("architecture") or {}).get("model_type")
     model_type = arch or "UNKNOWN"
-    title, detail = _trigger_copy(specimen, trigger, cost=cost, model_type=model_type)
+    title, detail = _trigger_copy(
+        specimen, trigger, cost=cost, model_type=model_type, family=family, scars=scars,
+    )
+    evidence = [
+        man_path,
+        "receipts/future/SPECIMEN_REGISTRY.json",
+        "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+    ]
+    if trigger == "law and scar lookup":
+        evidence.append(fr.SCAR_INDEX_REL)
     return {
         "id": _unit_id(frontier, sid, trigger),
         "frontier": frontier,
@@ -220,11 +281,7 @@ def _trigger_kwargs(
         "gain": fr.INFO_HIGH,
         "species": SEAL_SPECIES,
         "verifier": "tools.future.modellake_events.consume",
-        "evidence": (
-            man_path,
-            "receipts/future/SPECIMEN_REGISTRY.json",
-            "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
-        ),
+        "evidence": tuple(evidence),
         "hypothesis_family": TRIGGER_FAMILY[trigger],
         "candidate_id": sid,
         "source_f": "S027-22",
@@ -237,6 +294,8 @@ def _trigger_copy(
     *,
     cost: dict[str, Any] | None,
     model_type: str,
+    family: dict[str, Any] | None = None,
+    scars: dict[str, Any] | None = None,
 ) -> tuple[str, str]:
     sid = specimen["id"]
     if trigger == "fingerprint":
@@ -247,18 +306,43 @@ def _trigger_copy(
             "not a tensor experiment.",
         )
     if trigger == "role evaluation":
+        fam = family if family is not None else _family_context(sid, model_type)
+        if fam["n_siblings"]:
+            kin = (
+                f"{fam['n_siblings']} sealed/complete specimen(s) already "
+                f"share model_type={model_type}: "
+                + ", ".join(fam["sibling_ids"][:3])
+                + ("..." if fam["n_siblings"] > 3 else "")
+            )
+        else:
+            kin = f"no other specimen on the lake shares model_type={model_type} - novel architecture"
         return (
             f"Evaluate the role of sealed specimen {sid}",
-            f"architecture {model_type} is the role signal. Distance from "
-            "the incumbent is computed from that field, not from a human "
-            "assignment.",
+            f"architecture {model_type} is the role signal. {kin}. Distance "
+            "from the incumbent is computed from that field, not from a "
+            "human assignment.",
         )
     if trigger == "law and scar lookup":
+        ctx = scars if scars is not None else _relevant_scars(model_type)
+        if ctx["n_model_specific"]:
+            top = ctx["matches"][0]
+            hit = (
+                f"{ctx['n_model_specific']} model-specific scar(s) already "
+                f"recorded for {model_type}, top hit {top['scar_id']} "
+                f"({top.get('verdict') or 'no verdict'})"
+            )
+        elif ctx["n_matches"]:
+            hit = (
+                f"no model-specific scar for {model_type} yet; "
+                f"{ctx['n_matches']} general-physical law(s) still apply"
+            )
+        else:
+            hit = f"the negative-science index has nothing recorded for {model_type}"
         return (
             f"Look up transferable laws and scars for {sid} before any load",
-            "S027 §20: the first question is whether to load at all. Query "
-            "the law store and the negative index against this architecture "
-            "before a byte is read.",
+            f"S027 §20: the first question is whether to load at all. {hit}. "
+            "Query the law store and the negative index against this "
+            "architecture before a byte is read.",
         )
     if trigger == "initial economics":
         if cost is None:
@@ -299,10 +383,12 @@ def emit_trigger(
     trigger: str,
     *,
     cost: dict[str, Any] | None = None,
+    family: dict[str, Any] | None = None,
+    scars: dict[str, Any] | None = None,
     **overrides: Any,
 ) -> dict[str, Any]:
     """One S027 trigger as a WorkUnit. Always constructed by frontiers._item."""
-    kwargs = _trigger_kwargs(specimen, trigger, cost=cost)
+    kwargs = _trigger_kwargs(specimen, trigger, cost=cost, family=family, scars=scars)
     kwargs.update(overrides)
     return fr._item(**kwargs)
 
@@ -312,6 +398,8 @@ def emit_for_seal(
     ledger: set[str],
     *,
     costs: dict[str, dict[str, Any]] | None = None,
+    families: dict[str, list[str]] | None = None,
+    scars: dict[str, Any] | None = None,
 ) -> list[dict[str, Any]]:
     """Emit the six triggers once per specimen id. A second sighting is a no-op."""
     sid = specimen.get("id")
@@ -325,28 +413,61 @@ def emit_for_seal(
     if sid in ledger:
         return []
     cost = _economics(sid, costs)
-    units = [emit_trigger(specimen, t, cost=cost) for t in SEAL_TRIGGERS]
+    model_type = (specimen.get("architecture") or {}).get("model_type") or "UNKNOWN"
+    family = _family_context(sid, model_type, families)
+    scar_ctx = scars if scars is not None else _relevant_scars(model_type)
+    units = [
+        emit_trigger(specimen, t, cost=cost, family=family, scars=scar_ctx)
+        for t in SEAL_TRIGGERS
+    ]
     ledger.add(sid)
     return units
 
 
 def consume(ledger: set[str] | None = None) -> list[dict[str, Any]]:
-    """Tail the watcher, detect seals from disk, emit new ones through _item."""
+    """Tail the watcher, detect seals from disk, emit new ones through _item.
+
+    Each emitted row carries what S027 §22 needs a consumer to act without
+    re-deriving it: the architecture fingerprint, structural siblings already
+    on the lake, matching negative-science scars, and the measured load-cost
+    floor. SEALED is not a residency decision -- that is said explicitly
+    rather than left for a reader to infer from the presence of a WorkGraph
+    trigger.
+    """
     events = _tail()
     claims = log_completion_claims(events)
     sealed = sealed_from_disk()
     costs = {r["id"]: r for r in lc.per_specimen()}
+    families = sr.architecture_families()
+    scar_cache: dict[str, dict[str, Any]] = {}
     seen = ledger if ledger is not None else set()
     out: list[dict[str, Any]] = []
     for row in sealed:
-        units = emit_for_seal(row, seen, costs=costs)
+        raw_model_type = (row.get("architecture") or {}).get("model_type")
+        model_type = raw_model_type or "UNKNOWN"
+        if model_type not in scar_cache:
+            scar_cache[model_type] = _relevant_scars(model_type)
+        units = emit_for_seal(
+            row, seen, costs=costs, families=families, scars=scar_cache[model_type],
+        )
         if not units:
             continue
         out.append({
             "specimen_id": row["id"],
             "lifecycle": row["lifecycle"],
-            "model_type": (row.get("architecture") or {}).get("model_type"),
+            "architecture": row.get("architecture"),
+            "model_type": raw_model_type,
             "source_bytes": row.get("source_bytes"),
+            "family": _family_context(row["id"], model_type, families),
+            "relevant_scars": scar_cache[model_type],
+            "economics": costs.get(row["id"]),
+            "residency_decision": (
+                "not implied by this event: sealed means the bytes are "
+                "verified on disk, not that this specimen should load. Full "
+                "residency, organ extraction, a partial/native artifact, or "
+                "deferral are all still open - that choice belongs to HCLI, "
+                "not to this consumer."
+            ),
             "detection": "lake_manifest",
             "claimed_complete_in_log_tail": row["id"] in claims,
             "n_units": len(units),

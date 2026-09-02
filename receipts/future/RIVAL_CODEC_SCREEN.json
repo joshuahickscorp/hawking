@@ -5,7 +5,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:56:35Z",
+  "recorded_at": "2026-09-01T06:25:49Z",
   "recorded_by": "tools/future/rival_codec_screen.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1375,7 +1375,7 @@
  },
  "rivals_published": true,
  "schema": "hawking.future.rival_codec_screen.v1",
- "seal_sha256": "b706565f855e3f12e973b3867d2019976ae69e2d9d34e496865fdd81ae79eef5",
+ "seal_sha256": "44fb2ab404bd76835b9900d817725fffd6809afa0528a101630ce00f97d95d58",
  "specimen": {
   "index_sha256": "99e815241ef03325536b0aaa4441deea45174c17fae31e10f0bb456410c590de",
   "n_experts": 314,

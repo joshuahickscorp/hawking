@@ -584,3 +584,27 @@ def test_emitted_workunits_round_trip_hcli():
     assert pending
     assert all(u["classification"] == "STATIC_ONLY" for u in pending)
     assert all(u.get("may_promote") in (None, False) for u in units)
+
+
+def test_harvest_sealed_specimens_is_the_exit_transition(tmp_path):
+    """SEALED_SOURCE_READY units stay SLEEPING until the specimen directory exists."""
+    from tools.future.sleeping_specimens import WAKE_SEALED_SOURCE_READY
+
+    tag = "acme--x@deadbeefcafe"
+    unit = {
+        "id": f"odyssey-i.sleeping.{tag}",
+        "wake_condition": WAKE_SEALED_SOURCE_READY,
+        "modellake_identity": {"tag": tag},
+        "status": "sleeping",
+    }
+    assert wu.harvest_sealed_specimens([unit], specimen_root=tmp_path) == []
+    dest = tmp_path / tag
+    dest.mkdir()
+    (dest / "weights.bin").write_bytes(b"x")
+    woken = wu.harvest_sealed_specimens([unit], specimen_root=tmp_path)
+    assert len(woken) == 1
+    assert woken[0]["state"] == wu.COMPLETED
+    assert woken[0]["tag"] == tag
+    assert woken[0]["wake_condition"] == WAKE_SEALED_SOURCE_READY
+    other = dict(unit, wake_condition="SOMETHING_ELSE")
+    assert wu.harvest_sealed_specimens([other], specimen_root=tmp_path) == []

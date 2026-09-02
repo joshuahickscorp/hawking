@@ -5,6 +5,9 @@
  "legacy_frozen_plan": "HAWKING_SUPER_ROADMAP_FREEZE_V1_2026-08-25.md",
  "frozen_plan": "H-ROADMAP.md (canonical execution decree)",
  "generated_from": "disk truth: GOAL.md + receipts + git + a real pytest run",
+ "capability_graph": "civilization/CAPABILITY_GRAPH.json",
+ "capability_graph_schema": "hawking.roadmap.capability_graph.v1",
+ "capability_graph_law": "BUILT requires wired AND accepted. wired is a non-test call of the implementing symbol. accepted is the gate's own acceptance criterion demonstrably met by a receipt or measurement that meets the stated bar, not merely a receipt on the topic. wired alone is WIRED, never BUILT.",
  "active_era": "I",
  "era_sovereignty": "ERA I is sovereign. Later-era work is permitted ONLY when it is already running, consumes an idle resource, produces infrastructure Era I needs, or resolves an uncertainty that changes Era-I design. It NEVER earns civilization completion.",
  "resident_daemon_policy": {

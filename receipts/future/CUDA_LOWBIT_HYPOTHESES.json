@@ -146,7 +146,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:22:42Z",
+  "recorded_at": "2026-09-02T09:39:05Z",
   "recorded_by": "tools/future/cuda_lowbit_hypotheses.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -168,11 +168,11 @@
   "ACCELERATOR_ARCHITECTURE_ATLAS.json": {
    "live_headless": {
     "path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-    "resolved_via": "disk"
+    "resolved_via": "git"
    },
    "pinned": {
     "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-    "resolved_via": "disk"
+    "resolved_via": "git"
    },
    "source": "pinned_snapshot",
    "used": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json"
@@ -180,11 +180,11 @@
   "ACCELERATOR_REPATRIATION_QUEUE.json": {
    "live_headless": {
     "path": "receipts/headless/ACCELERATOR_REPATRIATION_QUEUE.json",
-    "resolved_via": "disk"
+    "resolved_via": "git"
    },
    "pinned": {
     "path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
-    "resolved_via": "disk"
+    "resolved_via": "git"
    },
    "source": "pinned_snapshot",
    "used": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json"
@@ -1135,7 +1135,7 @@
   "Odyssey II scar live for family q5_0_simd_shuffle: n_refuse_eligible=1 sample=workspace/docs/guides/dead_levers.md#q5_0_simd_shuffle",
   "Odyssey II scar live for family raw_weight_pq_vq: n_refuse_eligible=3 sample=tools/foundry/NEGATIVE_TRANSFER_ATLAS.json#raw_weight_pq_vq_at_one_bit",
   "Odyssey II scar live for family residual_codebook: n_refuse_eligible=20 sample=workspace/campaign/records/ascension-sandbox/physical/qwen-family/dual-gravity/ASCENSION_NEGATIVE_SCIENCE.jsonl#negative:qwen30-1706ad3b92f294234bee4723169edf40",
-  "CUDA_CAPABILITY_CENSUS.json resolution=disk; cited by physical_primitives as Metal-via-MLX / transport ABSENT"
+  "CUDA_CAPABILITY_CENSUS.json resolution=git; cited by physical_primitives as Metal-via-MLX / transport ABSENT"
  ],
  "primitive_contracts_recovered": {
   "AsyncPrefetch": {
@@ -1256,12 +1256,12 @@
   },
   {
    "path": "receipts/future/evidence/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-   "resolved_via": "disk",
+   "resolved_via": "git",
    "what": "Architecture Atlas: CUDA and CUTLASS already represented; this module maps the holes"
   },
   {
    "path": "receipts/future/evidence/ACCELERATOR_REPATRIATION_QUEUE.json",
-   "resolved_via": "disk",
+   "resolved_via": "git",
    "what": "Repatriation queue vocabulary this module emits into (status HYPOTHESIS, not READY)"
   },
   {
@@ -2139,7 +2139,7 @@
   }
  ],
  "schema": "hawking.future.cuda_lowbit.v1",
- "seal_sha256": "c13434846afb348ebb299016fc244e174258104c80f311f64ea7c442451f9560",
+ "seal_sha256": "6916d8f2ff20001f08dd0a1102a65a8e9f9ea9a7b4d6b6048ef1b2975400f057",
  "version": 1,
  "vocabulary": {
   "cuda_is": "textbook now, physical oracle later; source school, not an execution backend on this Apple host",

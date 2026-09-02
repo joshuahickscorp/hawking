@@ -323,6 +323,19 @@ def attack_actual_skips() -> list[Finding]:
     # invokes itself forever. The nested call reports NOT_RUN rather than lying.
     if _os.environ.get("HAWKING_ATTACK_NESTED") == "1":
         return []
+    # Inside the suite under test: the session plugin already records every
+    # skip that fired. Re-invoking pytest here is the 20-minute
+    # rebuild-the-world: one test re-runs 4700 others. Same evidence, one run.
+    if _os.environ.get("PYTEST_CURRENT_TEST"):
+        try:
+            from tools.future import conftest as _cf
+            lines = list(getattr(_cf, "SESSION_SKIP_LINES", []) or [])
+        except Exception:
+            lines = []
+        return [
+            _finding("test_actually_skipped", "pytest session", line[:200], "P0")
+            for line in lines
+        ]
     env = dict(_os.environ, HAWKING_ATTACK_NESTED="1")
     r = subprocess.run(
         ["python3", "-m", "pytest", "tools/future/", "-q", "-rs", "--no-header",

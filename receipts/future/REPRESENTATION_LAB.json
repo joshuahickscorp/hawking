@@ -1,0 +1,192 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T09:12:34Z",
+  "recorded_by": "tools/future/representation_lab.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "branch": "grok/b1-beyond-dense-research-env-20260902-045433",
+ "call_sites": [
+  "representation_lab.score_family -> noetic_compiler.round_trip",
+  "representation_lab.score_family -> complete_ebpw.refuse_unbilled_components",
+  "representation_lab.score_family -> complete_ebpw.cost",
+  "representation_lab.score_family -> complete_ebpw.compare_to_incumbent",
+  "representation_lab.score_family -> capability_eval.score_representation_family",
+  "representation_lab.claim -> representation_lab.verify_family"
+ ],
+ "claim_boundary": "Static sidecar artifact. No hardware measurement.",
+ "corpus": {
+  "by_kind": {
+   "aux_lever": 4,
+   "census": 1,
+   "census_family": 14,
+   "decode_fusion": 1,
+   "deltanet": 15,
+   "floor": 1,
+   "floor_candidate": 15,
+   "incumbent": 1,
+   "ladder_rung": 7,
+   "mlp_aux": 12,
+   "mlp_code": 16,
+   "organ_accounting": 1,
+   "rival": 10,
+   "sparse_bulk": 4,
+   "sparse_residual": 1,
+   "stream_rate": 3,
+   "verdict": 1
+  },
+  "by_status": {
+   "ALREADY_FALSIFIED": 14,
+   "ALREADY_FUSED": 1,
+   "CATALOG": 3,
+   "EXISTING_LEVER": 1,
+   "FAILED_CONTRACT": 10,
+   "MEASURED": 6,
+   "MEASURED_NEGATIVE": 24,
+   "NO": 1,
+   "OPEN": 22,
+   "RECONCILED": 1,
+   "REFUTED": 6,
+   "REJECTED_DENSE_REMAT": 1,
+   "TARGET": 7,
+   "UNMEASURED": 2,
+   "UNTESTED": 8
+  },
+  "n_records": 107,
+  "named_receipts_loaded": [
+   "receipts/future/COMPLETE_EBPW.json",
+   "receipts/future/REPRESENTATION_FLOOR.json",
+   "receipts/future/RIVAL_CODEC_SCREEN.json",
+   "receipts/future/MLP_CODE_INFORMATION.json",
+   "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+   "receipts/future/MLP_SPARSE_RESIDUAL.json",
+   "receipts/future/DELTANET_REPRESENTATION.json",
+   "receipts/future/FLASH_BPW_LADDER.json",
+   "receipts/future/AUX_CAPABILITY_SCREEN.json",
+   "receipts/future/REPRESENTATION_DECODE_FUSION.json",
+   "receipts/future/MLP_BYTE_CENSUS.json",
+   "receipts/future/ECONOMICS_CALIBRATION.json"
+  ],
+  "skipped": []
+ },
+ "entropy_code_mlp_codes_priors": [
+  {
+   "axes": {
+    "bytes_saved": 277697891,
+    "counts_toward_measured_safe": true,
+    "ms_saved": 0.151979,
+    "stream_class": "weight_codes"
+   },
+   "record_id": "receipts/future/REPRESENTATION_FLOOR.json:entropy_code_mlp_codes",
+   "status": "MEASURED"
+  }
+ ],
+ "evidence_class": "STATIC_ONLY",
+ "first_toy": {
+  "family_id": "toy_xor_codes",
+  "passed": true,
+  "plugin": true,
+  "source_path": "tools/odyssey/families/toy_xor_codes.py"
+ },
+ "gpu_authority": false,
+ "head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+ "named_receipts_loaded": [
+  "receipts/future/COMPLETE_EBPW.json",
+  "receipts/future/REPRESENTATION_FLOOR.json",
+  "receipts/future/RIVAL_CODEC_SCREEN.json",
+  "receipts/future/MLP_CODE_INFORMATION.json",
+  "receipts/future/MLP_AUXILIARY_INFORMATION.json",
+  "receipts/future/MLP_SPARSE_RESIDUAL.json",
+  "receipts/future/DELTANET_REPRESENTATION.json",
+  "receipts/future/FLASH_BPW_LADDER.json",
+  "receipts/future/AUX_CAPABILITY_SCREEN.json",
+  "receipts/future/REPRESENTATION_DECODE_FUSION.json",
+  "receipts/future/MLP_BYTE_CENSUS.json",
+  "receipts/future/ECONOMICS_CALIBRATION.json"
+ ],
+ "not_a_hardware_measurement": true,
+ "not_a_sub2_search": true,
+ "obligation": "Beyond-Dense laboratory: corpus, capability-eval hook, complete bill, verifier. Do not start a representation search.",
+ "question": "Can a new representation family plug in, get billed, get scored on the same axes as an incumbent, and be forbidden from claiming until it passes, without editing core?",
+ "recorded_by": "tools/future/representation_lab.py",
+ "recovered_implementation": [
+  {
+   "path": "tools/odyssey/noetic_compiler.py",
+   "what": "family registry, round_trip, chain_status, plugin glob"
+  },
+  {
+   "path": "tools/future/complete_ebpw.py",
+   "what": "complete bill; refuse_unbilled_components; COMPARE_AXES"
+  },
+  {
+   "path": "tools/future/capability_eval.py",
+   "what": "score_representation_family hook; subject kind representation"
+  },
+  {
+   "path": "tools/odyssey/families/toy_xor_codes.py",
+   "what": "first plugin family; this lab adds a second"
+  }
+ ],
+ "schema": "hawking.future.representation_lab.v1",
+ "seal_sha256": "fc072b0ed610c6cd5bcbfbe0ee990ebdf27534d08bdae4c75d2ff61d7e2d568b",
+ "sealed_incumbent_priors": [
+  {
+   "axes": {
+    "billed_ms": 5.190818,
+    "complete_ebpw": 3.139300850311054,
+    "is_sub2_executable": false,
+    "parent_params": 26895998464,
+    "stored_bytes": 10554328856
+   },
+   "record_id": "receipts/future/COMPLETE_EBPW.json:incumbent",
+   "source_receipt": "receipts/future/COMPLETE_EBPW.json"
+  }
+ ],
+ "second_toy": {
+  "accounting": {
+   "billed_ms": 0.0,
+   "complete_ebpw": 24.0,
+   "is_sub2_executable": false,
+   "parts": [
+    {
+     "bytes": 8,
+     "category": "metadata",
+     "name": "toy_mean_means"
+    },
+    {
+     "bytes": 8,
+     "category": "metadata",
+     "name": "toy_mean_scales"
+    },
+    {
+     "bytes": 32,
+     "category": "representation",
+     "name": "toy_mean_residual_codes"
+    },
+    {
+     "bytes": 48,
+     "category": "model_specific_code",
+     "name": "mean_residual_decoder_stub"
+    }
+   ],
+   "reconciled": true,
+   "stored_bytes": 96
+  },
+  "call_sites": "score_representation_family -> EvalSubject(kind='representation')",
+  "claim_allowed": true,
+  "family_id": "toy_mean_residual",
+  "git_diff_name_only_core": "tools/future/complete_ebpw.py",
+  "hardware_claim_refused": true,
+  "named_in_core_source": false,
+  "plugin": true,
+  "same_axes_as_incumbent": true,
+  "score_evaluator": "representation.family_axes",
+  "source_path": "tools/odyssey/families/toy_mean_residual.py",
+  "sub2_claim_refused": true,
+  "verified": true
+ },
+ "version": 1
+}

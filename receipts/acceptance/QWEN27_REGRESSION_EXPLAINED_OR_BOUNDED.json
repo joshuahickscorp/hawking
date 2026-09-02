@@ -1,0 +1,75 @@
+{
+  "blocker": {
+    "unexecuted_confirmation": "run_qwen27_mlp_diagnostic_ab was not invoked: it starts a resident and the live HCLI daemon must not be signalled or contended with. Source+identity-freeze already explain the regression; the live A/B is confirmation of graph identity, not a missing explanation."
+  },
+  "catalog_symbol_not_invoked_reason": "run_qwen27_mlp_diagnostic_ab starts a Hawking native resident; the contract forbids signalling/restarting the live HCLI daemon and forbids a competing resident. Explanation uses the fresh run_runtime_archaeology identity freeze plus Qwen38MlpFusion::from_env.",
+  "checks": {
+    "different_verified_at_least_one": true,
+    "identity_freeze_accepted": true,
+    "live_ab_invoked": false,
+    "mlp_swiglu_and_1_same_arm_in_source": true,
+    "no_performance_claim": true
+  },
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.lake",
+    "--gate",
+    "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED"
+  ],
+  "criterion": {
+    "end_line": 530,
+    "ledger_line": 9492,
+    "operational": "\u00a711.4 / Q27-02 / QWEN-002: inspect MLP fusion parser (HAWKING_QWEN38_FUSE_MLP `swiglu` and `1` are the same strongest arm in source); diagnostic A/B only for graph identity; the gate passes if the current-vs-historical regression is explained or bounded. No performance promotion from a contaminated window.",
+    "quote": "## I-D. Hawking Accelerator\n\n**Mission:** Turn representations and machines into optimized physical programs.\n\n**Genes to express:**\n- AIR/ACORE\n- Metal-native kernels\n- MLX controls\n- CUDA-capability translation\n- Kernel Forge\n- persistent execution\n- dispatch elimination\n- residency\n- memory-layout search\n- PhysicalGraph\n- phase-aware backend selection\n- pre-board FPGA school\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
+    "source": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 506
+  },
+  "criterion_altered": false,
+  "elapsed_s": 0.0,
+  "evidence_tier": "STATIC",
+  "gate": "QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED",
+  "generated_at": "2026-09-02T09:14:20Z",
+  "hcli_unmodified": true,
+  "implementing_symbol": "hcli.agentos.qwen27_mlp_diagnostic.run_qwen27_mlp_diagnostic_ab",
+  "lake_readonly": true,
+  "measured": {
+    "diff_summary": {
+      "different_verified": 6,
+      "not_comparable": 2,
+      "same_verified": 3,
+      "unknown": 9
+    },
+    "different_verified_dimensions": [
+      "artifact_root",
+      "fusion_env",
+      "metal_source_sha256",
+      "qwen38_hybrid_decode_sha256",
+      "source_git_head",
+      "model_id"
+    ],
+    "historical_anchor_tps": 33.716875920652136,
+    "live_ab_invoked": false,
+    "live_ab_selector_verdict": null,
+    "live_ab_status": null,
+    "mlp_source": {
+      "comment_1_is_strongest": true,
+      "from_env_present": true,
+      "path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/crates/hawking-core/src/model/qwen38_hybrid_decode.rs",
+      "present": true,
+      "swiglu_and_1_same_arm": true,
+      "unrecognised_panics": true
+    }
+  },
+  "output": {
+    "explanation": "Current Qwen27 runtime identity differs from the historical ~33.717 TPS fusion arm on 6 DIFFERENT_VERIFIED dimensions (['artifact_root', 'fusion_env', 'metal_source_sha256', 'qwen38_hybrid_decode_sha256', 'source_git_head', 'model_id']). The TPS coordinate is therefore not comparable to the historical identity; the regression is an identity mismatch, not an unexplained drop on the same executable. Independently, crates/hawking-core Qwen38MlpFusion::from_env maps `swiglu` and `1` to the same GateUpSwiglu arm and panics on unknown values \u2014 the MLP selector spelling is bounded in source.",
+    "identity_receipt": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_RUNTIME_IDENTITY_FROZEN.json",
+    "mlp_from_env_snippet": "impl Qwen38MlpFusion {\n    /// Unset means Off. An UNRECOGNISED value PANICS rather than silently\n    /// meaning Off.\n    ///\n    /// Why this is not merely defensive: the three sibling levers\n    /// (`FUSE_GQA_QKV`, `FUSE_DN_INPROJ`, `FUSE_ADD_RMSNORM`) are all\n    /// `=1` flags, so `=1` is the natural thing to write here too -- and it\n    /// used to parse to `Off`. A measurement run that way records the\n    /// UNFUSED graph while its operator believes the lever is on, and the\n    /// dispatch count comes back unchanged, which reads as \"this lever is\n    /// inert\" rather than \"this lever never ran\". That misreading was\n    /// published once (receipts/headless/TOKEN_EXECUTION_ATLAS_COUNTS.json,\n    /// corrected by ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json). `1`/`true`/\n    /// `on`/`yes` therefore mean the STRONGEST fusion, matching what `=1`\n    /// means for every sibling lever.\n    pub fn from_env() -> Self {\n        Self::from_env_with_fast(qwen38_fast_profile_enabled())\n    }\n\n    fn from_env_with_fast(fast: bool) -> Self {\n        match std::env::var(\"HAWKING_QWEN38_FUSE_MLP\") {\n            Ok(v) => match v.trim().to_ascii_lowercase().as_str() {\n                \"\" | \"0\" | \"off\" | \"false\" | \"no\" => Self::Off,\n                \"pair\" | \"gate_up\" => Self::GateUpPair,\n                \"swiglu\" | \"gate_up_swiglu\" | \"1\" | \"true\" | \"on\" | \"yes\" => {\n                    Self::GateUpSwiglu\n                }\n                other => panic!(\n                    \"HAWKING_QWEN38_FUSE_MLP={other:?} is not a recognised value; \\\n                     use pair | swiglu | 1 | 0. Falling back to Off here would \\\n                     silently measure the unfused graph.\"\n                ),\n            },\n            Err(_) => {\n                if fast {\n                    Self::",
+    "summary": "explained=True different_verified=6 mlp_swiglu_eq_1=True live_ab=False"
+  },
+  "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/QWEN27_REGRESSION_EXPLAINED_OR_BOUNDED.json",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbol_invoked": false,
+  "verdict": "ACCEPTED",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058"
+}

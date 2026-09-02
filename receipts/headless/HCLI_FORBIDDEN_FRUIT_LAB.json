@@ -1,0 +1,150 @@
+{
+  "ane_placement_observed_this_run": false,
+  "claim_boundary": "Public Core ML only. Placement is MLComputePlan.deviceUsage observed in this run, never inferred and never assumed from a requested compute unit. No ANE placement has been demonstrated on this host; when the observed preferred device is CPU, this receipt says CPU.",
+  "compute_units_requested": "all",
+  "concurrent_pair": {
+    "api": "two MLModel instances, DispatchQueue concurrent prediction(from:)",
+    "concurrent_elapsed_ns": 165104.86602783203,
+    "errors": [],
+    "instances": 2,
+    "pair": 2
+  },
+  "device_profile": {
+    "claim_boundary": "Public MLComputePlan operation support and preferred placement only; no runtime latency, energy, or Flash residency claim.",
+    "compute_devices": [
+      {
+        "description": "<MLNeuralEngineComputeDevice: 0x100ee2d30>",
+        "kind": "NEURAL_ENGINE"
+      },
+      {
+        "description": "<MLGPUComputeDevice: 0x100ef34f0> Apple M3 Ultra",
+        "kind": "GPU"
+      },
+      {
+        "description": "<MLCPUComputeDevice: 0x100ef3500>",
+        "kind": "CPU"
+      }
+    ],
+    "coreml_deployment_target": "macOS 14.4+ for MLComputePlan",
+    "mlcomputeplan": {
+      "api": "MLComputePlan.load(contentsOf:configuration:)",
+      "compile_api": "not_needed",
+      "compiled_model": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc",
+      "model_structure": "MLProgram",
+      "operations": [
+        {
+          "estimated_cost_weight": 1,
+          "function": "main",
+          "index": 0,
+          "operator": "ios16.mul",
+          "placement_status": "PLANNED",
+          "preferred": "CPU",
+          "supported": [
+            "CPU",
+            "GPU",
+            "NEURAL_ENGINE"
+          ]
+        }
+      ],
+      "status": "PLANNED"
+    },
+    "neural_engine_present": true,
+    "os": "macOS 27.0.0",
+    "public_api_only": true,
+    "schema": "hawking.apple_ane_device_profile.v1",
+    "status": "PLAN_READY",
+    "supported_compute_devices": [
+      "NEURAL_ENGINE",
+      "GPU",
+      "CPU"
+    ]
+  },
+  "elapsed_s": 26.26,
+  "errors": [],
+  "finished_at": 1788316282.769496,
+  "fixture": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc",
+  "host": {
+    "machine": "arm64",
+    "macos": "27.0",
+    "system": "Darwin"
+  },
+  "neural_engine_present": true,
+  "placement": {
+    "ane_preferred_this_run": false,
+    "api": "MLComputePlan.load(contentsOf:configuration:)",
+    "evidence_class": "PUBLIC_API_OBSERVED",
+    "operations": [
+      {
+        "estimated_cost_weight": 1,
+        "function": "main",
+        "index": 0,
+        "operator": "ios16.mul",
+        "placement_status": "PLANNED",
+        "preferred": "CPU",
+        "supported": [
+          "CPU",
+          "GPU",
+          "NEURAL_ENGINE"
+        ]
+      }
+    ],
+    "preferred_devices_observed": [
+      "CPU"
+    ],
+    "status": "PLANNED"
+  },
+  "predict": {
+    "concurrent": {
+      "api": "two MLModel instances, DispatchQueue concurrent prediction(from:)",
+      "concurrent_elapsed_ns": 165104.86602783203,
+      "errors": [],
+      "instances": 2,
+      "pair": 2
+    },
+    "input_names": [
+      "x",
+      "y"
+    ],
+    "model": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc",
+    "output_names": [
+      "var_3"
+    ],
+    "predict_api": "MLModel.prediction(from:)",
+    "public_api_only": true,
+    "repeats": 8,
+    "requested_compute_units": "all",
+    "requested_compute_units_are_not_placement": true,
+    "schema": "hawking.apple_ane_predict_probe.v1",
+    "status": "MEASURED",
+    "warm_predict_ns": [
+      124931.33544921875,
+      69975.8529663086,
+      152945.51849365234,
+      74028.96881103516,
+      77962.87536621094,
+      129103.6605834961,
+      66041.94641113281,
+      76055.52673339844
+    ],
+    "warm_predict_ns_max": 152945.51849365234,
+    "warm_predict_ns_mean": 96380.71060180664,
+    "warm_predict_ns_min": 66041.94641113281
+  },
+  "public_api_only": true,
+  "receipt_path": "/Users/scammermike/Downloads/hawking/receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json",
+  "repeats": 8,
+  "requested_compute_units_are_not_placement": true,
+  "reuses": [
+    "tools/accelerator/ane_probe.swift",
+    "tools/accelerator/ane_predict_probe.swift"
+  ],
+  "schema": "hcli.forbidden_fruit_lab.v1",
+  "started_at": 1788316256.5094159,
+  "status": "PASSED",
+  "supported_compute_devices": [
+    "NEURAL_ENGINE",
+    "GPU",
+    "CPU"
+  ],
+  "timing_status": "MEASURED"
+}

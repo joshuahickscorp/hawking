@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:17:49Z",
+  "recorded_at": "2026-09-01T07:09:11Z",
   "recorded_by": "tools/future/model_bearing_torture.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -25,27 +25,7 @@
    "WU.STALE.hcli_compactor",
    "WU.STALE.mlp_decode_cheapen",
    "WU.STALE.mlp_issue_rate_ladder",
-   "WU.STALE.mlp_stream_count",
-   "WU.STALE.protected_bitcast_absolute",
-   "WU.STALE.resident_api_audit",
-   "WU.STALE.resident_token_budget_post_widen_f",
-   "WU.SUBAGENT.receipt_wait_probe",
-   "WU.HAWKING.health_probe.017",
-   "WU.HAWKING.health_probe.018",
-   "WU.HAWKING.health_probe.019",
-   "WU.HAWKING.health_probe.020",
-   "WU.HAWKING.health_probe.021",
-   "WU.HAWKING.health_probe.022",
-   "WU.HAWKING.health_probe.023",
-   "WU.HAWKING.health_probe.024",
-   "WU.HAWKING.health_probe.025",
-   "WU.HAWKING.health_probe.026",
-   "WU.HAWKING.health_probe.027",
-   "WU.HAWKING.health_probe.028",
-   "WU.HAWKING.health_probe.029",
-   "WU.HAWKING.health_probe.030",
-   "WU.HAWKING.health_probe.031",
-   "WU.HAWKING.health_probe.032"
+   "WU.STALE.mlp_stream_count"
   ],
   "model_sequence": [
    "WU.HAWKING.resident_identity_pin",
@@ -60,29 +40,9 @@
    "WU.STALE.hcli_compactor",
    "WU.STALE.mlp_decode_cheapen",
    "WU.STALE.mlp_issue_rate_ladder",
-   "WU.STALE.mlp_stream_count",
-   "WU.STALE.protected_bitcast_absolute",
-   "WU.STALE.resident_api_audit",
-   "WU.STALE.resident_token_budget_post_widen_f",
-   "WU.SUBAGENT.receipt_wait_probe",
-   "WU.HAWKING.health_probe.017",
-   "WU.HAWKING.health_probe.018",
-   "WU.HAWKING.health_probe.019",
-   "WU.HAWKING.health_probe.020",
-   "WU.HAWKING.health_probe.021",
-   "WU.HAWKING.health_probe.022",
-   "WU.HAWKING.health_probe.023",
-   "WU.HAWKING.health_probe.024",
-   "WU.HAWKING.health_probe.025",
-   "WU.HAWKING.health_probe.026",
-   "WU.HAWKING.health_probe.027",
-   "WU.HAWKING.health_probe.028",
-   "WU.HAWKING.health_probe.029",
-   "WU.HAWKING.health_probe.030",
-   "WU.HAWKING.health_probe.031",
-   "WU.HAWKING.health_probe.032"
+   "WU.STALE.mlp_stream_count"
   ],
-  "n_points": 33,
+  "n_points": 13,
   "policy_sequence": [
    "WU.HAWKING.resident_identity_pin",
    "WU.EXEC.fold_addqx_ab_status",
@@ -96,27 +56,7 @@
    "WU.STALE.hcli_compactor",
    "WU.STALE.mlp_decode_cheapen",
    "WU.STALE.mlp_issue_rate_ladder",
-   "WU.STALE.mlp_stream_count",
-   "WU.STALE.protected_bitcast_absolute",
-   "WU.STALE.resident_api_audit",
-   "WU.STALE.resident_token_budget_post_widen_f",
-   "WU.SUBAGENT.receipt_wait_probe",
-   "WU.HAWKING.health_probe.017",
-   "WU.HAWKING.health_probe.018",
-   "WU.HAWKING.health_probe.019",
-   "WU.HAWKING.health_probe.020",
-   "WU.HAWKING.health_probe.021",
-   "WU.HAWKING.health_probe.022",
-   "WU.HAWKING.health_probe.023",
-   "WU.HAWKING.health_probe.024",
-   "WU.HAWKING.health_probe.025",
-   "WU.HAWKING.health_probe.026",
-   "WU.HAWKING.health_probe.027",
-   "WU.HAWKING.health_probe.028",
-   "WU.HAWKING.health_probe.029",
-   "WU.HAWKING.health_probe.030",
-   "WU.HAWKING.health_probe.031",
-   "WU.HAWKING.health_probe.032"
+   "WU.STALE.mlp_stream_count"
   ],
   "sequences_identical": true,
   "would_have_launched_under_policy": [
@@ -132,27 +72,7 @@
    "WU.STALE.hcli_compactor",
    "WU.STALE.mlp_decode_cheapen",
    "WU.STALE.mlp_issue_rate_ladder",
-   "WU.STALE.mlp_stream_count",
-   "WU.STALE.protected_bitcast_absolute",
-   "WU.STALE.resident_api_audit",
-   "WU.STALE.resident_token_budget_post_widen_f",
-   "WU.SUBAGENT.receipt_wait_probe",
-   "WU.HAWKING.health_probe.017",
-   "WU.HAWKING.health_probe.018",
-   "WU.HAWKING.health_probe.019",
-   "WU.HAWKING.health_probe.020",
-   "WU.HAWKING.health_probe.021",
-   "WU.HAWKING.health_probe.022",
-   "WU.HAWKING.health_probe.023",
-   "WU.HAWKING.health_probe.024",
-   "WU.HAWKING.health_probe.025",
-   "WU.HAWKING.health_probe.026",
-   "WU.HAWKING.health_probe.027",
-   "WU.HAWKING.health_probe.028",
-   "WU.HAWKING.health_probe.029",
-   "WU.HAWKING.health_probe.030",
-   "WU.HAWKING.health_probe.031",
-   "WU.HAWKING.health_probe.032"
+   "WU.STALE.mlp_stream_count"
   ],
   "would_timeline_look_the_same_without_the_model": true
  },
@@ -174,9 +94,9 @@
     "degenerate": true,
     "fail_eligible": true,
     "largest_repeat_run": 2,
-    "reason": "33 consecutive identical refill set(s); largest_repeat_run=2",
-    "total": 84,
-    "unique": 34
+    "reason": "13 consecutive identical refill set(s); largest_repeat_run=2",
+    "total": 28,
+    "unique": 14
    },
    {
     "axis": "ingestion",
@@ -184,9 +104,9 @@
     "degenerate": false,
     "fail_eligible": true,
     "largest_repeat_run": 1,
-    "reason": "ingestion unique=33 total=33 max_item_count=1 <= 4",
-    "total": 33,
-    "unique": 33
+    "reason": "ingestion unique=13 total=13 max_item_count=1 <= 4",
+    "total": 13,
+    "unique": 13
    },
    {
     "axis": "launches",
@@ -194,9 +114,9 @@
     "degenerate": false,
     "fail_eligible": true,
     "largest_repeat_run": 1,
-    "reason": "launches labelled; argv0=0 unlabelled=0 unique_work_labels=33/33",
-    "total": 33,
-    "unique": 33
+    "reason": "launches labelled; argv0=0 unlabelled=0 unique_work_labels=13/13",
+    "total": 13,
+    "unique": 13
    },
    {
     "axis": "workunit_ids",
@@ -204,9 +124,9 @@
     "degenerate": false,
     "fail_eligible": true,
     "largest_repeat_run": 1,
-    "reason": "WorkUnit ids unique=33 total=33",
-    "total": 33,
-    "unique": 33
+    "reason": "WorkUnit ids unique=13 total=13",
+    "total": 13,
+    "unique": 13
    },
    {
     "axis": "decisions",
@@ -214,9 +134,9 @@
     "degenerate": false,
     "fail_eligible": true,
     "largest_repeat_run": 1,
-    "reason": "decisions unique=100 total=166 under thresholds",
-    "total": 166,
-    "unique": 100
+    "reason": "decisions unique=55 total=70 under thresholds",
+    "total": 70,
+    "unique": 55
    },
    {
     "axis": "scars",
@@ -265,8 +185,8 @@
     "fail_eligible": false,
     "largest_repeat_run": 1,
     "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
-    "total": 30,
-    "unique": 30
+    "total": 10,
+    "unique": 10
    },
    {
     "axis": "kind:model_reasoned_during_wait",
@@ -275,8 +195,8 @@
     "fail_eligible": false,
     "largest_repeat_run": 1,
     "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
-    "total": 33,
-    "unique": 33
+    "total": 13,
+    "unique": 13
    },
    {
     "axis": "kind:prune_verification",
@@ -365,8 +285,8 @@
     "fail_eligible": false,
     "largest_repeat_run": 1,
     "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
-    "total": 33,
-    "unique": 33
+    "total": 13,
+    "unique": 13
    },
    {
     "axis": "kind:sealed_pin",
@@ -395,30 +315,30 @@
     "fail_eligible": false,
     "largest_repeat_run": 1,
     "reason": "carried by the timeline; reported distinct-vs-repeated; not a named fail axis (mission-state writes and similar healthy repetition live here)",
-    "total": 33,
-    "unique": 33
+    "total": 13,
+    "unique": 13
    }
   ],
   "degenerate_axes": [
    "refills"
   ],
-  "elapsed_s": 1832.289,
+  "elapsed_s": 1809.471,
   "identical_model_outputs": {
    "axis": "identical_model_outputs",
    "degenerate": false,
    "largest_repeat_run": 1,
    "reason": "model outputs are not stuck on one hash under the decision thresholds",
-   "total": 134,
-   "unique": 131,
-   "unique_ratio": 0.977612
+   "total": 54,
+   "unique": 53,
+   "unique_ratio": 0.981481
   },
   "measure": "tools.future.autonomy_degeneracy.measure",
-  "n_events": 374,
+  "n_events": 158,
   "reason": "degenerate on refills",
   "verdict": "FAIL"
  },
  "duration_requested_s": 1800.0,
- "elapsed_s": 1832.289,
+ "elapsed_s": 1809.471,
  "eras": [
   "I Genesis of the Laboratory",
   "II Compounding Civilization",
@@ -435,24 +355,24 @@
    "/tmp/hawking-gpu-lane.lock",
    "/Users/scammermike/Downloads/hawking/.hcli/locks/protected-accelerator-bench.lock"
   ],
-  "pid": 96289,
+  "pid": 45533,
   "waited_for": [],
-  "waited_s": 0.006,
+  "waited_s": 0.024,
   "widens_hcli_authority": false
  },
  "hcli_invoked_not_edited": true,
  "model_behavior_summary": {
-  "generated_tokens": 22576,
+  "generated_tokens": 10054,
   "gpu_authority": false,
   "greedy_policy_following": "scripted policy after 6fc77f169 is WU.HAWKING.resident_identity_pin; refuse_if_dead keys the eight closed families. If the model still never launches live work, the previous excuse is gone.",
-  "n_launches": 33,
-  "n_model_calls": 134,
+  "n_launches": 13,
+  "n_model_calls": 54,
   "named_landed_scar_ids": true,
-  "prompt_tokens": 37036
+  "prompt_tokens": 25271
  },
- "n_cycles": 33,
- "n_events": 374,
- "n_model_calls": 134,
+ "n_cycles": 13,
+ "n_events": 158,
+ "n_model_calls": 54,
  "odysseys": [
   "I WHAT IS TRUE?",
   "II WHAT DID HAWKING ALREADY LEARN?",
@@ -461,7 +381,7 @@
  "participation": {
   "fraction_model_over_policy": 0.0,
   "fraction_model_over_policy_where_a_choice_existed": 0.0,
-  "generated_tokens": 22576,
+  "generated_tokens": 10054,
   "gpu_authority": false,
   "materially_participated": {
    "changed_what_ran_next_count": 0,
@@ -470,28 +390,28 @@
    "divergence_count": 0,
    "divergence_scope": {
     "divergence_denominator": "distinct QUESTION KINDS, not distinct prompts and not total asks",
-    "n_choose_asks": 33,
-    "n_distinct_choose_asks": 33,
-    "n_distinct_question_kinds": 18,
+    "n_choose_asks": 13,
+    "n_distinct_choose_asks": 13,
+    "n_distinct_question_kinds": 13,
     "n_repeated_choose_asks": 0,
     "why": "a deterministic body re-asked a byte-identical question answers it identically by construction, so total asks is the wrong denominator. So is distinct PROMPTS: a frontier that refills itself with indexed probes produces fifty distinct prompts and seven distinct questions. The scope of any divergence claim is the question-kind count"
    },
    "model_proposes_tools_decide": true,
-   "n_decisions": 101,
+   "n_decisions": 41,
    "no_reason_count": 1,
    "participated": false,
-   "publishable_finding": "model choices never diverged from the fixed policy across 18 DISTINCT QUESTION KINDS (33 distinct prompts, 33 asks, 0 byte-identical repeats). That is a finding about this resident on this frontier, not a decorated timeline - and the scope is the KIND count, because a deterministic body cannot disagree with itself on the same question and an indexed probe series is one question asked many times",
-   "reasoned_decision_count": 95,
+   "publishable_finding": "model choices never diverged from the fixed policy across 13 DISTINCT QUESTION KINDS (13 distinct prompts, 13 asks, 0 byte-identical repeats). That is a finding about this resident on this frontier, not a decorated timeline - and the scope is the KIND count, because a deterministic body cannot disagree with itself on the same question and an indexed probe series is one question asked many times",
+   "reasoned_decision_count": 36,
    "why": "no choose() diverged from the fixed policy; no model decision changed what ran next"
   },
-  "n_agreed_with_policy": 33,
-  "n_choose": 33,
-  "n_cycles_with_a_real_choice": 15,
-  "n_cycles_with_one_or_no_option": 18,
+  "n_agreed_with_policy": 13,
+  "n_choose": 13,
+  "n_cycles_with_a_real_choice": 13,
+  "n_cycles_with_one_or_no_option": 0,
   "n_diverged_from_policy": 0,
   "n_diverged_where_a_choice_existed": 0,
-  "n_model_calls": 134,
-  "prompt_tokens": 37036,
+  "n_model_calls": 54,
+  "prompt_tokens": 25271,
   "token_count_authority": "native-resident protocol fields; not a throughput claim",
   "why_two_fractions": "divergence is UNDEFINED on a menu of one. The clock outran the real catalog, so most cycles offered a single auto-generated probe and counting them as agreement scores a choice nobody was given. The second fraction is over cycles where two or more options existed; null means there were none, which is a statement about the FRONTIER, not about the resident.",
   "without_the_model_same_choose_sequence": true
@@ -566,18 +486,18 @@
    "temperature": 0.0
   },
   "max_ask_tokens": 384,
-  "n_choose": 33,
+  "n_choose": 13,
   "n_choose_no_reason": 0,
-  "n_choose_with_choice_id": 33,
-  "n_choose_with_reason": 33,
-  "n_model_calls": 134,
+  "n_choose_with_choice_id": 13,
+  "n_choose_with_reason": 13,
+  "n_model_calls": 54,
   "no_reason_count_all_kinds": 1,
   "rate": 1.0
  },
  "required_events": {
   "hawking_self_workunit": {
    "found": true,
-   "t_s": 48.45,
+   "t_s": 58.904,
    "unit_id": "WU.HAWKING.resident_identity_pin",
    "verbatim": "```json\n{\n\"choice_id\": \"WU.HAWKING.resident_identity_pin\",\n\"reason\": \"The candidate has the highest gain (5) and is on the HCLI_SELF frontier, matching the scripted policy's preference for high-value self-identity verification over lower-gain fusion or execution checks.\",\n\"mechanism\": \"pin\",\n\"surface\": \"resident identity\",\n\"hypothesis_family\": \"resident_identity_pin\"\n}\n```",
    "why": "WorkUnit targets Hawking (the machine), not a specimen organ"
@@ -587,7 +507,7 @@
    "from": "model_call",
    "scar_id": "MLP_FUNCTION_REPLACEMENT_CLOSED",
    "source": "receipts/future/MLP_STRUCTURED_OPERATOR.json",
-   "t_s": 48.45,
+   "t_s": 58.904,
    "verbatim": "```json\n{\n\"reading\": \"The primary task is to pin the sealed resident identity on the live body (WU.HAWKING.resident_identity_pin) and prove that the fusion environment is applied to the live resident process (WU.HAWKING.fusion_env_applied). These are the only two workunits with high gain (5 and 4 respectively) and are marked as 'hawking_self' true, indicating they are the immediate focus for the HCLI_SELF frontier. The 'no_wait_scheduler' workunit (gain 3) is also 'hawking_self' true, suggesting that the system should continue reasoning while the child (which is in flight for the first workunit) waits for a receipt. The 'WU.EXEC.fold_addqx_ab_status' workunit (gain 4) is 'hawking_self' false, meaning it is not the immediate focus for the HCLI_SELF frontier, but it is still a high-gain workunit that should be considered for the next step. The 'WU.PROBE.decode_arith_cost' workunit (gain 2) is 'hawking_self' false, and it is a low-gain workunit that should be considered for the next step. The 'WU.SUBAGENT.receipt_wait_probe' workunit (gain 1) is 'hawking_self' true, and it is a low-gain workunit that should be considered for the next step. The 'WU.STALE.*' workunits (gain 1) are 'hawking_self' true, and they are low-gain workunits that should be considered for the next step. The 'Landed scars' list includes 'MLP_FUNCTION_REPLACEMENT_CLOSED', 'MLP_FUNCTION_REPLACEMENT', 'MONARCH', 'BUTTERFLY', 'FACTORIZE_THE_FACTORS', 'PRODUCT"
   },
   "second_hypothesis": {
@@ -604,7 +524,7 @@
     "surface_b": "encode",
     "why": "surface 'decode' -> 'encode'; family 'decode_arithmetic_dominates_byte_save' -> 'encode_arithmetic_dominates_byte_save'"
    },
-   "explain_verbatim": "```json\n{\n\"why\": \"The unit failed because the decode arithmetic cost (0.073059) exceeded the byte-save cost (0.000000) on this CPU probe, mir the aux_u8 lesson.\",\n\"mechanism\": \"The performance metric 'decode arithmetic dominated the byte-save' indicates that the computational overhead of decoding the data was significantly higher than the memory savings achieved by the operation, resulting in a net performance loss or failure on the specific CPU architecture.\",\n\"status_claim\": \"failed\"\n}\n```",
+   "explain_verbatim": "```json\n{\n\"why\": \"The unit failed because the decode arithmetic operations took significantly longer than the byte-save operations on this CPU probe, as indicated by the metrics.\",\n\"mechanism\": \"The performance metrics show that arithmetic operations (arith_s=0.083733) were much slower than store operations (store_s=0.000000), suggesting that the CPU is spending more time on decoding arithmetic operations than on saving bytes, which is consistent with the 'aux_u8' lesson.\",\n\"status_claim\": null\n}\n```",
    "found": true,
    "hypothesis_a": {
     "hypothesis_family": "decode_arithmetic_dominates_byte_save",
@@ -622,8 +542,8 @@
     "text": "process telemetry via GPU; expected to pass the cheap-byte hypothesis"
    },
    "hypothesis_b_verbatim": "process telemetry via GPU; expected to pass the cheap-byte hypothesis",
-   "t_s_explain": 492.247,
-   "t_s_hypothesis_b": 492.247,
+   "t_s_explain": 981.017,
+   "t_s_hypothesis_b": 981.017,
    "why_not_restatement": "surface 'decode' -> 'encode'; family 'decode_arithmetic_dominates_byte_save' -> 'encode_arithmetic_dominates_byte_save'"
   },
   "wait_reason_receipt_replan": {
@@ -665,10 +585,10 @@
     "WU.STALE.resident_token_budget_post_widen_f"
    ],
    "reason_verbatim": "```json\n{\n\"reading\": \"The primary task is to pin the sealed resident identity on the live body (WU.HAWKING.resident_identity_pin) and prove that the fusion environment is applied to the live resident process (WU.HAWKING.fusion_env_applied). These are the only two workunits with high gain (5 and 4 respectively) and are marked as 'hawking_self' true, indicating they are the immediate focus for the HCLI_SELF frontier. The 'no_wait_scheduler' workunit (gain 3) is also 'hawking_self' true, suggesting that the system should continue reasoning while the child (which is in flight for the first workunit) waits for a receipt. The 'WU.EXEC.fold_addqx_ab_status' workunit (gain 4) is 'hawking_self' false, meaning it is not the immediate focus for the HCLI_SELF frontier, but it is still a high-gain workunit that should be considered for the next step. The 'WU.PROBE.decode_arith_cost' workunit (gain 2) is 'hawking_self' false, and it is a low-gain workunit that should be considered for the next step. The 'WU.SUBAGENT.receipt_wait_probe' workunit (gain 1) is 'hawking_self' true, and it is a low-gain workunit that should be considered for the next step. The 'WU.STALE.*' workunits (gain 1) are 'hawking_self' true, and they are low-gain workunits that should be considered for the next step. The 'Landed scars' list includes 'MLP_FUNCTION_REPLACEMENT_CLOSED', 'MLP_FUNCTION_REPLACEMENT', 'MONARCH', 'BUTTERFLY', 'FACTORIZE_THE_FACTORS', 'PRODUCT",
-   "t_s_reason": 101.666,
-   "t_s_receipt": 104.873,
-   "t_s_replan": 104.873,
-   "t_s_wait_start": 48.45,
+   "t_s_reason": 157.906,
+   "t_s_receipt": 162.396,
+   "t_s_replan": 162.396,
+   "t_s_wait_start": 58.904,
    "wait_unit": "WU.HAWKING.resident_identity_pin"
   }
  },
@@ -695,9 +615,9 @@
   ],
   "restore_path_n_steps": 12
  },
- "run_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-k3d96tr6",
+ "run_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-eho6ekwl",
  "schema": "hawking.future.model_bearing_torture.v1",
- "seal_sha256": "ff692ee1974d0e2ed513d350f6cc467cae6a512d686e3b38c6bd48b8e036867a",
+ "seal_sha256": "be9697eb4653fd8430012573d8d11e32b48622f238b3d7b3666c9026cc1eb2b1",
  "sealed": {
   "binary_hash": {
    "disk_sha256": "9f79d8a26540b86091296ddbc5829cf372bd75e789b9b0551a76d6ce2446fc37",
@@ -731,11 +651,11 @@
     "HAWKING_QWEN38_FUSE_MLP": true
    },
    "gpu_authority": false,
-   "how": "ps eww -p 96342",
+   "how": "ps eww -p 45557",
    "missing": [],
    "ok": true,
-   "pid": 96342,
-   "ps_text_chars": 3804,
+   "pid": 45557,
+   "ps_text_chars": 3821,
    "require_fusion_env": true,
    "running_executable": "/Users/scammermike/Downloads/hawking/workspace/ops/build/rust/release-fast/examples/ascension_qwen38_resident",
    "spawn_env": {
@@ -800,7 +720,7 @@
    "model_id": "qwen3.8-27b-sealed-3.14",
    "param_class": "?B",
    "physical_ebpw": 3.1393,
-   "pid": 96342,
+   "pid": 45557,
    "profile_schema": "hcli.provider.profile.v1",
    "prompt_contract": {
     "fallback_template": "qwen_closed_think",
@@ -823,7 +743,7 @@
    "require_fusion_env": true,
    "resident_health": {
     "model_open_count": 1,
-    "pid": 96342,
+    "pid": 45557,
     "protocol": "hawking.qwen38.resident.v1",
     "ready": true,
     "resident_identity": "sealed-3.14",
@@ -872,7 +792,7 @@
  "timeline_receipt": "MODEL_BEARING_TIMELINE.json",
  "verdict": "FAIL",
  "version": 1,
- "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-resident-ws-b97bpdg7",
+ "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-resident-ws-mszo_ism",
  "would_timeline_look_the_same_without_the_model": {
   "answer": true,
   "launched_under_model": [
@@ -888,27 +808,7 @@
    "WU.STALE.hcli_compactor",
    "WU.STALE.mlp_decode_cheapen",
    "WU.STALE.mlp_issue_rate_ladder",
-   "WU.STALE.mlp_stream_count",
-   "WU.STALE.protected_bitcast_absolute",
-   "WU.STALE.resident_api_audit",
-   "WU.STALE.resident_token_budget_post_widen_f",
-   "WU.SUBAGENT.receipt_wait_probe",
-   "WU.HAWKING.health_probe.017",
-   "WU.HAWKING.health_probe.018",
-   "WU.HAWKING.health_probe.019",
-   "WU.HAWKING.health_probe.020",
-   "WU.HAWKING.health_probe.021",
-   "WU.HAWKING.health_probe.022",
-   "WU.HAWKING.health_probe.023",
-   "WU.HAWKING.health_probe.024",
-   "WU.HAWKING.health_probe.025",
-   "WU.HAWKING.health_probe.026",
-   "WU.HAWKING.health_probe.027",
-   "WU.HAWKING.health_probe.028",
-   "WU.HAWKING.health_probe.029",
-   "WU.HAWKING.health_probe.030",
-   "WU.HAWKING.health_probe.031",
-   "WU.HAWKING.health_probe.032"
+   "WU.STALE.mlp_stream_count"
   ],
   "participated": false,
   "verdict_implication": "FAIL",
@@ -926,27 +826,7 @@
    "WU.STALE.hcli_compactor",
    "WU.STALE.mlp_decode_cheapen",
    "WU.STALE.mlp_issue_rate_ladder",
-   "WU.STALE.mlp_stream_count",
-   "WU.STALE.protected_bitcast_absolute",
-   "WU.STALE.resident_api_audit",
-   "WU.STALE.resident_token_budget_post_widen_f",
-   "WU.SUBAGENT.receipt_wait_probe",
-   "WU.HAWKING.health_probe.017",
-   "WU.HAWKING.health_probe.018",
-   "WU.HAWKING.health_probe.019",
-   "WU.HAWKING.health_probe.020",
-   "WU.HAWKING.health_probe.021",
-   "WU.HAWKING.health_probe.022",
-   "WU.HAWKING.health_probe.023",
-   "WU.HAWKING.health_probe.024",
-   "WU.HAWKING.health_probe.025",
-   "WU.HAWKING.health_probe.026",
-   "WU.HAWKING.health_probe.027",
-   "WU.HAWKING.health_probe.028",
-   "WU.HAWKING.health_probe.029",
-   "WU.HAWKING.health_probe.030",
-   "WU.HAWKING.health_probe.031",
-   "WU.HAWKING.health_probe.032"
+   "WU.STALE.mlp_stream_count"
   ]
  }
 }

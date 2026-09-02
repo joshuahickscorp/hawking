@@ -89,7 +89,7 @@ class BackgroundJob:
             "returncode": self.returncode,
             "timeout_s": self.timeout_s,
             "error": self.error,
-            "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+            "restart_policy": "explicit rerun from argv; nothing here resumes a process mid-token",
         }
 
     @classmethod

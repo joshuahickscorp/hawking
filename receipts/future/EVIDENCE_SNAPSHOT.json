@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:39:05Z",
+  "recorded_at": "2026-09-02T08:33:04Z",
   "recorded_by": "tools/future/evidence_snapshot.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -59,8 +59,8 @@
    "name": "ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
    "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
    "snapshot_path": "receipts/future/evidence/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json",
-   "source_mtime_epoch": 1788065139.404,
-   "source_mtime_utc": "2026-08-30T04:45:39Z",
+   "source_mtime_epoch": 1788331891.867,
+   "source_mtime_utc": "2026-09-02T06:51:31Z",
    "source_path": "receipts/headless/ACCELERATOR_DISPATCH_IS_NOT_THE_COST.json"
   },
   {
@@ -199,12 +199,12 @@
    "source_path": "receipts/headless/FLASH_STATEFUL_TPS_GATE_V14.json"
   },
   {
-   "bytes": 24716,
+   "bytes": 38430,
    "name": "FLASH_NEXT_FPGA_ORGAN_MAP.json",
-   "sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0",
+   "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011",
    "snapshot_path": "receipts/future/evidence/FLASH_NEXT_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1788227625.353,
-   "source_mtime_utc": "2026-09-01T01:53:45Z",
+   "source_mtime_epoch": 1788336711.57,
+   "source_mtime_utc": "2026-09-02T08:11:51Z",
    "source_path": "receipts/headless/FLASH_NEXT_FPGA_ORGAN_MAP.json"
   },
   {
@@ -226,12 +226,12 @@
    "source_path": "receipts/headless/QWEN27_TOKEN_NS_BUDGET.json"
   },
   {
-   "bytes": 18863,
+   "bytes": 31585,
    "name": "QWEN27_FPGA_ORGAN_MAP.json",
-   "sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655",
+   "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec",
    "snapshot_path": "receipts/future/evidence/QWEN27_FPGA_ORGAN_MAP.json",
-   "source_mtime_epoch": 1788227625.37,
-   "source_mtime_utc": "2026-09-01T01:53:45Z",
+   "source_mtime_epoch": 1788336711.57,
+   "source_mtime_utc": "2026-09-02T08:11:51Z",
    "source_path": "receipts/headless/QWEN27_FPGA_ORGAN_MAP.json"
   },
   {
@@ -343,12 +343,12 @@
    "source_path": "receipts/headless/HCLI_ACCELERATOR_REGRESSION.json"
   },
   {
-   "bytes": 164064,
+   "bytes": 189647,
    "name": "HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f",
+   "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
    "snapshot_path": "receipts/future/evidence/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_mtime_epoch": 1788239427.766,
-   "source_mtime_utc": "2026-09-01T05:10:27Z",
+   "source_mtime_epoch": 1788337979.966,
+   "source_mtime_utc": "2026-09-02T08:32:59Z",
    "source_path": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json"
   },
   {
@@ -439,6 +439,6 @@
  "purpose": "Pinned copy of the Codex receipts sidecar lanes read. Lanes run in sparse git worktrees where the live, uncommitted receipts are invisible; without this snapshot a lane would silently fall back to a fixture and its conclusions would be attached to nothing.",
  "read_only_guarantee": "Codex originals are opened read-only and never modified.",
  "schema": "hawking.future.evidence_snapshot.v1",
- "seal_sha256": "0a8aa311f3fb181f1e594be5141dd3e0447eda63c5b123db11c7634dcd6b94cd",
+ "seal_sha256": "65e7376cd50c90ae81096c1f4fb2131e3878135723cc90de10b47210380f6fff",
  "version": 1
 }

@@ -48625,72 +48625,36 @@
    "source_sha256": "46b9377ab2c6743372f37ee6e2f71d9ebc8d985809f8dbf7d9947ef3fbc1145a"
   },
   {
-   "architecture_atlas_behaviour_reference": {
-    "action": "cite as behaviour evidence; do not rewrite the atlas",
-    "atlas_path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
-    "behaviour": "UNKNOWN"
-   },
-   "classification": "LAW",
+   "classification": "SCAR",
+   "consumers_notified": [
+    "odyssey_ii_law_store",
+    "odyssey_iii",
+    "negative_index",
+    "learned_physical_compiler"
+   ],
    "driver": {
-    "confidence": 0.85,
+    "confidence": 0.95,
     "field": "verdict",
-    "label": "LAW",
-    "reason": "verdict PASS",
-    "token": "PASS"
+    "label": "SCAR",
+    "reason": "verdict FAIL",
+    "token": "FAIL"
    },
-   "hwir_projection": {
-    "action": "no spatial mapping suggested",
-    "backend": "UNKNOWN",
+   "invalidation": {
+    "action": "feed the negative index; a single model's scar never globally prunes a technique",
+    "kills": [
+     "verdict FAIL"
+    ],
+    "level": "MODEL_SPECIFIC",
+    "makes_redundant": [
+     "retrying the same hypothesis on the same model/organ/machine without a new reopen condition",
+     "promoting a DIAGNOSTIC_RELATIVE number derived from this artifact"
+    ],
     "organ": "UNKNOWN",
-    "reason": "no spatial organ/primitive hint; HWIR projection is a stub",
-    "spatially_meaningful": false
-   },
-   "learned_physical_compiler_row": {
-    "action": "append as a dataset-row skeleton; numbers remain UNKNOWN until a protected measurement",
-    "bench_state": "UNKNOWN",
-    "contamination": "UNKNOWN",
-    "evidence_class": "STATIC_ONLY",
-    "label": "LAW",
-    "machine": "UNKNOWN",
-    "measured": {
-     "bandwidth_gbps": null,
-     "gpu_ns": null,
-     "joules_per_token": null,
-     "token_ns": null,
-     "tps": null
-    },
-    "model": "UNKNOWN",
-    "organ": "UNKNOWN",
-    "representation": "UNKNOWN",
-    "source": "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
-    "source_sha256": "7a87695a4e35fe250ed31009b4f7f03130fca8b70179ec842ed1e02958c27b04",
-    "technique": "UNKNOWN"
-   },
-   "odyssey_ii_law_candidate": {
-    "action": "admit as a candidate; do not promote past MODEL_LOCAL without independent evidence",
-    "evidence_class": "STATIC_ONLY",
-    "knowledge_level": "UNKNOWN",
-    "model": "UNKNOWN",
-    "organ": "UNKNOWN",
-    "proposed_scope": "MODEL_LOCAL",
-    "scope_reason": "a single Codex receipt is MODEL_LOCAL; the sidecar has no promotion authority",
-    "sidecar_promotion_authority": false,
-    "statement_sketch": "verdict PASS"
-   },
-   "odyssey_iii_attack_target": {
-    "action": "register as an Odyssey III attack; do not treat the candidate as settled",
-    "attack": "refute, bound, or find the contamination in the claimed result",
-    "suggested_angle": "transfer to a second model",
-    "target": "receipts/headless/HCLI_CRASH_CHECKPOINT.json"
-   },
-   "physical_graph_candidate_semantic": {
-    "action": "consider as a candidate semantic; sidecar does not compile a graph",
-    "organ": "UNKNOWN",
-    "qualification": "PLAN_ONLY",
-    "semantic_type": "PhysicalGraphPlan"
+    "reopen_condition": "UNKNOWN",
+    "sidecar_must_not_promote": true
    },
    "source": "receipts/headless/HCLI_CRASH_CHECKPOINT.json",
-   "source_sha256": "7a87695a4e35fe250ed31009b4f7f03130fca8b70179ec842ed1e02958c27b04"
+   "source_sha256": "858fc1adf1533bbd45fe18e854645b3915e752b63b5c0ce4202445b5ed9c84be"
   },
   {
    "architecture_atlas_behaviour_reference": {
@@ -48827,6 +48791,74 @@
    },
    "source": "receipts/headless/HCLI_FLASH_NEXT_PRE_RUNTIME_SCIENCE.json",
    "source_sha256": "f4a6978c0b1b552a2814f8ceae9140212d488563fc997ffa0d5968fff9c15deb"
+  },
+  {
+   "architecture_atlas_behaviour_reference": {
+    "action": "cite as behaviour evidence; do not rewrite the atlas",
+    "atlas_path": "receipts/headless/ACCELERATOR_ARCHITECTURE_ATLAS.json",
+    "behaviour": "UNKNOWN"
+   },
+   "classification": "LAW",
+   "driver": {
+    "confidence": 0.9,
+    "field": "status",
+    "label": "LAW",
+    "reason": "status PASSED is an evidence-backed positive result",
+    "token": "PASSED"
+   },
+   "hwir_projection": {
+    "action": "no spatial mapping suggested",
+    "backend": "UNKNOWN",
+    "organ": "UNKNOWN",
+    "reason": "no spatial organ/primitive hint; HWIR projection is a stub",
+    "spatially_meaningful": false
+   },
+   "learned_physical_compiler_row": {
+    "action": "append as a dataset-row skeleton; numbers remain UNKNOWN until a protected measurement",
+    "bench_state": "UNKNOWN",
+    "contamination": "UNKNOWN",
+    "evidence_class": "STATIC_ONLY",
+    "label": "LAW",
+    "machine": "UNKNOWN",
+    "measured": {
+     "bandwidth_gbps": null,
+     "gpu_ns": null,
+     "joules_per_token": null,
+     "token_ns": null,
+     "tps": null
+    },
+    "model": "UNKNOWN",
+    "organ": "UNKNOWN",
+    "representation": "UNKNOWN",
+    "source": "receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json",
+    "source_sha256": "f2b6931df0ef131488d04bd7f484707eddb0fc1d7b006c67093a1f24c1d1cb28",
+    "technique": "UNKNOWN"
+   },
+   "odyssey_ii_law_candidate": {
+    "action": "admit as a candidate; do not promote past MODEL_LOCAL without independent evidence",
+    "evidence_class": "STATIC_ONLY",
+    "knowledge_level": "UNKNOWN",
+    "model": "UNKNOWN",
+    "organ": "UNKNOWN",
+    "proposed_scope": "MODEL_LOCAL",
+    "scope_reason": "a single Codex receipt is MODEL_LOCAL; the sidecar has no promotion authority",
+    "sidecar_promotion_authority": false,
+    "statement_sketch": "status PASSED is an evidence-backed positive result"
+   },
+   "odyssey_iii_attack_target": {
+    "action": "register as an Odyssey III attack; do not treat the candidate as settled",
+    "attack": "refute, bound, or find the contamination in the claimed result",
+    "suggested_angle": "transfer to a second model",
+    "target": "receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json"
+   },
+   "physical_graph_candidate_semantic": {
+    "action": "consider as a candidate semantic; sidecar does not compile a graph",
+    "organ": "UNKNOWN",
+    "qualification": "PLAN_ONLY",
+    "semantic_type": "PhysicalGraphPlan"
+   },
+   "source": "receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json",
+   "source_sha256": "f2b6931df0ef131488d04bd7f484707eddb0fc1d7b006c67093a1f24c1d1cb28"
   },
   {
    "architecture_atlas_behaviour_reference": {
@@ -49003,7 +49035,7 @@
     "organ": "UNKNOWN",
     "representation": "UNKNOWN",
     "source": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
-    "source_sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f",
+    "source_sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
     "technique": "UNKNOWN"
    },
    "odyssey_ii_law_candidate": {
@@ -49030,7 +49062,7 @@
     "semantic_type": "PhysicalGraphPlan"
    },
    "source": "receipts/headless/HCLI_MODELLAKE_FLASH_CENSUS.json",
-   "source_sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f"
+   "source_sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb"
   },
   {
    "architecture_atlas_behaviour_reference": {
@@ -50556,7 +50588,7 @@
     "sidecar_must_not_promote": true
    },
    "source": "receipts/headless/NOETIC_ASCENSION_HANDOFF.json",
-   "source_sha256": "4fe4d49f851fb5354682e91f0e3f47a13396a28d5d0f70272282c504d3d5b040"
+   "source_sha256": "be15ebb136a810b010492f05661e20e5eba1c4ae41ca011063ff4d6dd0aadfb9"
   },
   {
    "classification": "SCAR",
@@ -53507,7 +53539,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:22:07Z",
+  "recorded_at": "2026-09-02T08:39:17Z",
   "recorded_by": "tools/future/codex_ingest.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -53871,7 +53903,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788065139.4037445,
+   "mtime": 1788331891.8672369,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "f627ce102b1257d4f939827d22f069bcd5f31d6631899e84a16e511e51107339",
    "size": 39601
@@ -55743,7 +55775,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787736939.329411,
+   "mtime": 1788244233.521165,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "f6f264c03b08d51530c41550ae1b6d1a836e13a80a2c52a1be74fb15fe36a015",
    "size": 111298
@@ -55755,7 +55787,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787736939.3296552,
+   "mtime": 1788244233.521813,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "f6f264c03b08d51530c41550ae1b6d1a836e13a80a2c52a1be74fb15fe36a015",
    "size": 111298
@@ -61454,11 +61486,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788227625.35273,
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788336711.5695138,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "a31e3a548f5ce955131bc9e6c04a812ad212ea2dd31e669e93328b33f84c98d0",
-   "size": 24716
+   "sha256": "fb7ca577696f3dbbd783e6a3d7b5986a30e7f1cbec7a30ed522fc45b3cf88011",
+   "size": 38430
   },
   "receipts/headless/FLASH_NEXT_MACHINE.nx.json": {
    "classification": "SCAR",
@@ -69495,7 +69527,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.7624562,
+   "mtime": 1788337979.9588082,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "0b6209a16b3d0b546d16b47e23bf07fc23f2f50a100dbbe6d1a74bfceb76d484",
    "size": 132669
@@ -69531,7 +69563,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.7588239,
+   "mtime": 1788337979.9512618,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "45feb7b0f1bfd8e3873bbf14b3c54d24973d4106b8ab4ee72ec83b32436fc5ec",
    "size": 11084
@@ -69555,7 +69587,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.7676375,
+   "mtime": 1788337979.9698038,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "47617dd47099811fe178a5be6ddb29107072d097c73f9ea3679afda07317c223",
    "size": 4474
@@ -69567,7 +69599,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.7690406,
+   "mtime": 1788337979.973779,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "ec9589bd2ced5e72a157422d5b7db9935f37da44f8a029491aba41f07764a766",
    "size": 13150
@@ -69579,7 +69611,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.757833,
+   "mtime": 1788337979.949753,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "2350a4f2a12f8ffbdb32e99d68895b6d8273f199584cfa9b5f97ed88c2802439",
    "size": 12677
@@ -69615,7 +69647,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.7669199,
+   "mtime": 1788337979.9683034,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "46b9377ab2c6743372f37ee6e2f71d9ebc8d985809f8dbf7d9947ef3fbc1145a",
    "size": 8160
@@ -69729,16 +69761,16 @@
    "size": 5453
   },
   "receipts/headless/HCLI_CRASH_CHECKPOINT.json": {
-   "classification": "LAW",
-   "confidence": 0.85,
+   "classification": "SCAR",
+   "confidence": 0.95,
    "driver_field": "verdict",
-   "driver_token": "PASS",
+   "driver_token": "FAIL",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739062.6630278,
-   "reason": "verdict PASS",
-   "sha256": "7a87695a4e35fe250ed31009b4f7f03130fca8b70179ec842ed1e02958c27b04",
-   "size": 23329
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788336711.5697021,
+   "reason": "verdict FAIL",
+   "sha256": "858fc1adf1533bbd45fe18e854645b3915e752b63b5c0ce4202445b5ed9c84be",
+   "size": 22642
   },
   "receipts/headless/HCLI_DENSE_VS_NF_AB_SCAFFOLD.json": {
    "classification": "NEUTRAL",
@@ -69787,6 +69819,18 @@
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "f4a6978c0b1b552a2814f8ceae9140212d488563fc997ffa0d5968fff9c15deb",
    "size": 910585
+  },
+  "receipts/headless/HCLI_FORBIDDEN_FRUIT_LAB.json": {
+   "classification": "LAW",
+   "confidence": 0.9,
+   "driver_field": "status",
+   "driver_token": "PASSED",
+   "first_seen": "2026-09-02T04:02:42Z",
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788316282.7700193,
+   "reason": "status PASSED is an evidence-backed positive result",
+   "sha256": "f2b6931df0ef131488d04bd7f484707eddb0fc1d7b006c67093a1f24c1d1cb28",
+   "size": 4636
   },
   "receipts/headless/HCLI_FPGA_PREBOARD.json": {
    "classification": "LAW",
@@ -69854,11 +69898,11 @@
    "driver_field": "status",
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.765509,
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788337979.9661872,
    "reason": "status PASSED is an evidence-backed positive result",
-   "sha256": "3ce07ffe5e1d328de548477b8c831379f1b585654230a0276f13205f4a32cb8f",
-   "size": 164064
+   "sha256": "b96700c2360e75e75bc5789c0c9b4354a807771a45dce2418c78de2b1b9bb4cb",
+   "size": 189647
   },
   "receipts/headless/HCLI_NATIVE_MISSION_GATE.json": {
    "classification": "LAW",
@@ -69867,7 +69911,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788239427.760201,
+   "mtime": 1788337979.9540975,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "79c7d5d916bebb31d6900f154c70b83943064c2323b1d7231b3e7f9bf469dcc8",
    "size": 55141
@@ -70051,6 +70095,42 @@
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "78de28868e53fb1e0fee19d0bc94f944b56324a71f5a6ae278b58df6d11d964a",
    "size": 8201
+  },
+  "receipts/headless/HCLI_SOVEREIGN_LAUNCH_CYCLE_0001.json": {
+   "classification": "NEUTRAL",
+   "confidence": 0.6,
+   "driver_field": "<default>",
+   "driver_token": "no_verdict",
+   "first_seen": "2026-09-02T04:02:42Z",
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788307522.3680599,
+   "reason": "no LAW or SCAR driver in well-known fields",
+   "sha256": "d75e2389a42bfe4d3867e3a09fb8c091bb81fe6053a16a5c3012484fd7239bd7",
+   "size": 6773
+  },
+  "receipts/headless/HCLI_SOVEREIGN_LAUNCH_CYCLE_0002.json": {
+   "classification": "NEUTRAL",
+   "confidence": 0.6,
+   "driver_field": "<default>",
+   "driver_token": "no_verdict",
+   "first_seen": "2026-09-02T04:02:42Z",
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788309158.5283487,
+   "reason": "no LAW or SCAR driver in well-known fields",
+   "sha256": "9fa90d3097427564ab7e36a3f9a086f81b82a8f0582cf9718455a8af06710f93",
+   "size": 10774
+  },
+  "receipts/headless/HCLI_SOVEREIGN_LAUNCH_GOALIR.json": {
+   "classification": "NEUTRAL",
+   "confidence": 0.6,
+   "driver_field": "<default>",
+   "driver_token": "no_verdict",
+   "first_seen": "2026-09-02T04:02:42Z",
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788306952.8583727,
+   "reason": "no LAW or SCAR driver in well-known fields",
+   "sha256": "6dd2c6310be16fd19a528d1e0245141e7a19816f948a828948c56f2d98f823cf",
+   "size": 97574
   },
   "receipts/headless/HCLI_STATUS_OBSERVABILITY.json": {
    "classification": "NEUTRAL",
@@ -70610,11 +70690,11 @@
    "driver_field": "gate",
    "driver_token": "REJECTED",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787739372.3511057,
+   "last_classified": "2026-09-01T21:03:54Z",
+   "mtime": 1788241967.6366487,
    "reason": "gate is a failed/rejected gate",
-   "sha256": "4fe4d49f851fb5354682e91f0e3f47a13396a28d5d0f70272282c504d3d5b040",
-   "size": 102486
+   "sha256": "be15ebb136a810b010492f05661e20e5eba1c4ae41ca011063ff4d6dd0aadfb9",
+   "size": 103096
   },
   "receipts/headless/NOETIC_ASCENSION_LOOP.json": {
    "classification": "SCAR",
@@ -71510,11 +71590,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788227625.3696373,
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788336711.5703,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "790c7356c757cf0ad1186acb16dff1f0fb053b0d146d06582f0b1452bebcf655",
-   "size": 18863
+   "sha256": "66a606e5ce0319ef828bfed3ec4a49f2904289692bd447bbffcb1f1cbf841aec",
+   "size": 31585
   },
   "receipts/headless/QWEN27_HISTORICAL_RUNTIME_IDENTITY.json": {
    "classification": "LAW",
@@ -71523,7 +71603,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788227625.369831,
+   "mtime": 1788307666.1773007,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "b2bad7ea142b034e49ab0d5b065fc1b890df678ad83b9373f6e69baed184d0e1",
    "size": 24962
@@ -71571,7 +71651,7 @@
    "driver_token": "PASSED",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1788227625.3704247,
+   "mtime": 1788307666.184056,
    "reason": "status PASSED is an evidence-backed positive result",
    "sha256": "9ff58dcce52f6991bc76cec050bd4917b4f4d87a043fd121d4960774a8efaa94",
    "size": 8030
@@ -72002,11 +72082,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787474910.0,
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788336711.5704436,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "70eea44e458d617ba98bd0a799aea0cde4ed939698e71cc51afeac7f5460ac88",
-   "size": 2286
+   "sha256": "a74305d3e1f9c1f889961d0cbc4396f558998b7ec09aca761087965b5a4b91f2",
+   "size": 2985
   },
   "receipts/headless/REPRESENTATION_LIBRARY.json": {
    "classification": "NEUTRAL",
@@ -72387,7 +72467,7 @@
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
    "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787520222.8667438,
+   "mtime": 1788308289.1312237,
    "reason": "no LAW or SCAR driver in well-known fields",
    "sha256": "28e1fbd7a31173059cf220d8ae20f7f31d35f485f430a1c34418797a0dd4096c",
    "size": 2418
@@ -72422,11 +72502,11 @@
    "driver_field": "<default>",
    "driver_token": "no_verdict",
    "first_seen": "2026-08-31T12:50:05Z",
-   "last_classified": "2026-08-31T12:50:05Z",
-   "mtime": 1787736939.390887,
+   "last_classified": "2026-09-02T04:02:42Z",
+   "mtime": 1788336711.5706503,
    "reason": "no LAW or SCAR driver in well-known fields",
-   "sha256": "c73b10cc52fe5ec4f93541049f111be27e84f1edafc5dbda8f808fe8d85a4717",
-   "size": 31646
+   "sha256": "ef4c9f808bbbc6a1112061d6f0e28d27a966900417bd6c9b7586fc3cc78b4992",
+   "size": 31172
   },
   "receipts/headless/VMCP_LATTICE_DISPOSITION.json": {
    "classification": "NEUTRAL",
@@ -73578,7 +73658,7 @@
   "--once --assert-idempotent refusal that is capable of firing",
   "read-only open; writes only receipts/future/CODEX_INGEST_STATE.json"
  ],
- "head": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "idempotence": {
   "assert_idempotent": "exit non-zero iff n_new + n_changed > 0",
   "change_detector": "sha256 of file bytes; mtime is recorded and never consulted",
@@ -73662,13 +73742,13 @@
     "path": "tools/odyssey/physical_graph_compiler.py"
    },
    {
-    "in_git": false,
+    "in_git": true,
     "note": "named in the contract; absent from HEAD",
     "on_disk": true,
     "path": "receipts/headless/ACCELERATOR_SCOREBOARD.json"
    },
    {
-    "in_git": false,
+    "in_git": true,
     "note": "named in the contract; absent from HEAD",
     "on_disk": true,
     "path": "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
@@ -73729,8 +73809,8 @@
  "scan": {
   "by_class_cursor": {
    "LAW": 767,
-   "NEUTRAL": 863,
-   "SCAR": 41
+   "NEUTRAL": 866,
+   "SCAR": 42
   },
   "by_class_this_scan": {
    "LAW": 0,
@@ -73738,18 +73818,18 @@
    "SCAR": 0
   },
   "missing_from_disk": [],
-  "n_active_deltas": 808,
+  "n_active_deltas": 809,
   "n_changed": 0,
   "n_deltas": 0,
   "n_missing_from_disk": 0,
   "n_new": 0,
-  "n_on_disk": 1671,
-  "n_unchanged": 1671,
+  "n_on_disk": 1675,
+  "n_unchanged": 1675,
   "n_unreadable": 0,
   "unreadable": []
  },
  "schema": "hawking.future.codex_ingest.v1",
- "seal_sha256": "def4c76b215279ba8dde37f8dce553a8262c0d9c6f4a0ed2cc6ef3643d2e2756",
+ "seal_sha256": "ae96018ad24ee8ec5207ab54e5c0cb617aabc2000e45e6ec500405952a06086a",
  "version": 1,
  "vocabulary": {
   "bench_state": "UNKNOWN",

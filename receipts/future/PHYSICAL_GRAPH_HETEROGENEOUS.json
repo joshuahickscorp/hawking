@@ -1,0 +1,337 @@
+{
+ "schema": "hawking.odyssey.physical_graph_heterogeneous.v1",
+ "generated_by": "tools/odyssey/physical_graph_compiler.py:compile_heterogeneous_physical_graph",
+ "generated_at": "2026-09-02T09:12:39Z",
+ "head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+ "qualification": "PLAN_ONLY",
+ "claim_class": "COST_MODEL",
+ "evidence_tier": "COST_MODEL",
+ "claim_boundary": "IR + cost model + validation of a heterogeneous PhysicalGraph. No real transport, no FPGA board, no discrete GPU, no bitstream, no interconnect measurement. Every cost is labeled COST_MODEL. HARDWARE_MEASURED is refused at Cost construction. GPU_UMA and NPU domains are physical=True (devices present on this host); their interconnect numbers remain COST_MODEL knobs. FPGA_HBM is declared, physical=False. Backend capability tiers are reported separately and are not merged into the plan tier.",
+ "hardware_measurement": "none. No measured hardware claim is produced anywhere in this lane.",
+ "rule": "no hardware measurement claim without hardware",
+ "roadmap": {
+  "15.8": "Semantic transport: payload semantics, in-transit transforms, and now an explicit ordering ladder parallel to coherency",
+  "16.1": "PRESENT != VALID != TRUSTED; READBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY (unchanged)",
+  "16.2": "Coherency ladder 0-6 plus explicit NONE; never claim rung 6 across domains (unchanged, not regressed)",
+  "20": "Physical Graph Compiler gene card: the graph now expresses and validates computation, storage, state, scheduling, backend placement, semantic transport, synchronization, fusion, resource requirements",
+  "30": "M3 Ultimate heterogeneous computer: GPU_UMA + NPU + declared FPGA_HBM as one plan; CUDA remains named, not instantiated",
+  "83": "DEVICE-NEUTRAL FIRST: generic layer has no vendor-keyed control flow; backends bind products to DomainKind"
+ },
+ "pre_existing": {
+  "hcli/physical_graph.py": {
+   "provided": "Provider-neutral PhysicalGraph (computation/data/representation/memory/residency/state/precision/dependencies/device_placement/synchronization). compile_physical_graph emits PLAN_ONLY graphs. apply_architecture_atlas projects atlas primitives. score_physical_candidates ranks measured complete useful work. NOT a typed inter-domain transport edge, NOT a coherency/ordering validator, NOT a multi-domain schedule.",
+   "touched": "READ only. compile_heterogeneous_physical_graph calls compile_physical_graph and overlay_physical_graph copies the dict."
+  },
+  "tools/odyssey/physical_graph_compiler.py": {
+   "provided": "Source graph -> organ graph -> physical operator graph, with numerical collapse checks (gate_up_swiglu, router top-k). attach_heterogeneous_plan() was a pure dict rewrite that appended a DAG stage. main() still requires checkpoint weights.",
+   "added": "compile_heterogeneous_physical_graph(), validate_heterogeneous_plan(), refusal_cases(). These CALL three_domain_plan, validate, reject_unguaranteed_ordering, kind_admits, resources_fit, enumerate_backends, overlay_physical_graph, compile_physical_graph. main() and organ-collapse measurements are unchanged."
+  },
+  "tools/accelerator/semantic_transport.py": {
+   "provided": "ExecutionDomain, DomainKind GPU_UMA/CPU/NPU/FPGA_HBM, DomainVisibility, CoherencyAssumption including explicit NONE, SemanticTransportEdge (payload, ownership, sync, coherency_assumption vs link_coherency, COST_MODEL). Cost construction refuses any label other than COST_MODEL. assumes_stronger_than_link is the coherency overclaim property.",
+   "added": "OrderingGuarantee ladder (NONE/FENCE/ACQUIRE_RELEASE/PRODUCER_CONSUMER), ordering_from_sync, SemanticTransportEdge.ordering_assumption, provided_ordering, assumes_unguaranteed_ordering, ownership_handoff_unguaranteed. Construction still allows illegal plans; the validator refuses them."
+  },
+  "tools/accelerator/placement.py": {
+   "provided": "Node-to-domain Placement (COMPUTATION/STATE/STORAGE) with ResourceRequirements and ValidityCondition. kind_admits is uniformly True. Distinct from fusion_planner.Placement (object-home). No product branch.",
+   "touched": "READ. Compiler and fusion-bridge validator CALL kind_admits and resources_fit."
+  },
+  "tools/accelerator/fusion_bridge.py": {
+   "provided": "HeterogeneousPlan, validate/compose, two_domain_plan (host GPU_UMA + declared FPGA_HBM), overlay_physical_graph, plan_to_timeline, lower_fpga_domain_to_hwir. Validator rejected COHERENCY_OVERCLAIM, HARDWARE_UMA_ACROSS_DOMAINS, READBACK_IS_NOT_COMPUTE_VISIBILITY, COST_LABEL_REFUSED, RESOURCES_EXCEED_CAPACITY. Two domains only. No ordering gate, no ownership-handoff gate, no schedule, no fusion region.",
+   "added": "ScheduleConstraint, FusionRegion, plan_facets/missing_facets, host_npu_domain, declared_three_domain_topology, three_domain_plan (>=3 domains), reject_unguaranteed_ordering (MUTATION_POINT), _reject_ownership_overclaim, plan_assuming_unguaranteed_ordering, plan_assuming_unguaranteed_ownership. validate() still calls _reject_coherency_overclaim (not regressed) and now also the ordering and ownership gates. two_domain_plan is unchanged as the CLI happy path."
+  },
+  "tools/odyssey/fusion_bridge_adapter.py": {
+   "provided": "annotate_compiler_output, physical_graph_with_bridge, overlay, plan_is_valid (two-domain default).",
+   "added": "three_domain_plan import and three_domain_is_valid() call site."
+  },
+  "tools/accelerator/backend_contract.py": {
+   "provided": "CPU/METAL/ANE/FPGA-HWIR behind one Backend interface. CUDA named, not registered. FPGA cannot emit HARDWARE_MEASURED. enumerate_backends() is the call site.",
+   "touched": "READ. Compiler _backend_bindings() CALLS enumerate_backends, capabilities, execution_domain and binds by DomainKind, not product name."
+  },
+  "tools/accelerator/fusion_planner.py": {
+   "provided": "Topology/Link/Route, object-home Placement, place_objects. Costs stamped MEASURED/SIMULATED from hop.physical.",
+   "connected": "declared_three_domain_topology reuses Topology; lift_object_placements still wraps place_objects. All three-domain links are physical=False so planner provenance stays SIMULATED and fusion-bridge still labels COST_MODEL."
+  },
+  "tools/accelerator/fusion_isa.py": {
+   "provided": "Fourteen-command ISA and FusionTimeline. plan_to_timeline already emits ACQUIRE/COPY/FENCE/SUBMIT/RELEASE.",
+   "touched": "READ. Existing two-domain timeline test still passes; three-domain plan still lowers FPGA placements to HWIR."
+  }
+ },
+ "gaps_closed": [
+  "a heterogeneous plan across >= 3 domains (GPU_UMA, NPU, FPGA_HBM) constructs and validates",
+  "the graph expresses computation, storage, state, scheduling, backend placement, semantic transport, synchronization, fusion, resource requirements, and missing_facets() is empty on the happy path",
+  "a plan that assumes FENCE across a non-coherent link whose requested protocol is NONE is refused (ORDERING_OVERCLAIM)",
+  "a plan that assumes SOFTWARE_MANAGED coherency across a link declared NONE is still refused (COHERENCY_OVERCLAIM; not regressed)",
+  "exclusive TRANSFER with no happens-before on a NONE link is refused (OWNERSHIP_OVERCLAIM)",
+  "reject_unguaranteed_ordering is a call site in fusion_bridge.validate and in physical_graph_compiler.validate_heterogeneous_plan, not an import-only symbol",
+  "generic layer (semantic_transport, placement, fusion_bridge) has no vendor-keyed control flow",
+  "FPGA stays COST_MODEL; CUDA stays named, not instantiated"
+ ],
+ "demo_plan": {
+  "entry": "fusion_bridge.three_domain_plan / physical_graph_compiler.compile_heterogeneous_physical_graph",
+  "n_domains": 3,
+  "domains": {
+   "gpu_uma_0": {
+    "kind": "GPU_UMA",
+    "physical": true,
+    "internal_coherency": "HARDWARE_UMA",
+    "note": "host unified-memory GPU domain; present"
+   },
+   "npu_0": {
+    "kind": "NPU",
+    "physical": true,
+    "internal_coherency": "SOFTWARE_MANAGED",
+    "note": "host NPU domain; present. Inter-domain links are not HARDWARE_UMA"
+   },
+   "fpga_hbm_0": {
+    "kind": "FPGA_HBM",
+    "physical": false,
+    "internal_coherency": "SOFTWARE_MANAGED",
+    "note": "declared, not present; COST_MODEL"
+   }
+  },
+  "placements": [
+   {
+    "node_id": "weights",
+    "node_kind": "storage",
+    "domain": "fpga_hbm_0"
+   },
+   {
+    "node_id": "codebook",
+    "node_kind": "storage",
+    "domain": "npu_0"
+   },
+   {
+    "node_id": "kv_state",
+    "node_kind": "storage",
+    "domain": "gpu_uma_0"
+   },
+   {
+    "node_id": "attn_decode",
+    "node_kind": "computation",
+    "domain": "gpu_uma_0"
+   },
+   {
+    "node_id": "npu_project",
+    "node_kind": "computation",
+    "domain": "npu_0"
+   },
+   {
+    "node_id": "ffn_decode",
+    "node_kind": "computation",
+    "domain": "fpga_hbm_0"
+   },
+   {
+    "node_id": "kv_update",
+    "node_kind": "state",
+    "domain": "gpu_uma_0",
+    "owner_domain": "gpu_uma_0"
+   }
+  ],
+  "edges": [
+   {
+    "source": "gpu_uma_0",
+    "destination": "npu_0",
+    "payload": "activation",
+    "sync": "fence",
+    "link_coherency": "NONE",
+    "coherency_assumption": "NONE",
+    "provided_ordering": "FENCE",
+    "ownership": "keep"
+   },
+   {
+    "source": "npu_0",
+    "destination": "fpga_hbm_0",
+    "payload": "activation",
+    "sync": "fence",
+    "link_coherency": "NONE",
+    "coherency_assumption": "NONE",
+    "provided_ordering": "FENCE",
+    "ownership": "keep"
+   },
+   {
+    "source": "fpga_hbm_0",
+    "destination": "gpu_uma_0",
+    "payload": "partial_reduction",
+    "sync": "fence",
+    "link_coherency": "NONE",
+    "coherency_assumption": "NONE",
+    "provided_ordering": "FENCE",
+    "ownership": "keep"
+   }
+  ],
+  "schedule": [
+   {
+    "predecessor": "attn_decode",
+    "successor": "npu_project",
+    "assumed_ordering": "FENCE",
+    "via": [
+     "gpu_uma_0",
+     "npu_0"
+    ]
+   },
+   {
+    "predecessor": "npu_project",
+    "successor": "ffn_decode",
+    "assumed_ordering": "FENCE",
+    "via": [
+     "npu_0",
+     "fpga_hbm_0"
+    ]
+   },
+   {
+    "predecessor": "ffn_decode",
+    "successor": "kv_update",
+    "assumed_ordering": "FENCE",
+    "via": [
+     "fpga_hbm_0",
+     "gpu_uma_0"
+    ]
+   }
+  ],
+  "fusion": {
+   "region_id": "gate_up_swiglu",
+   "collapsed_ops": [
+    "gate_proj matvec",
+    "up_proj matvec",
+    "silu",
+    "elementwise multiply"
+   ],
+   "physical_op": "gate_up_swiglu",
+   "domain": "fpga_hbm_0",
+   "justification": "intermediates not observable outside the region; placement is COST_MODEL"
+  },
+  "link_coherency": "NONE",
+  "coherency_assumption": "NONE",
+  "sync": "fence",
+  "cost_label": "COST_MODEL",
+  "qualification": "PLAN_ONLY",
+  "facets_present": [
+   "backend_placement",
+   "computation",
+   "fusion",
+   "resource_requirements",
+   "scheduling",
+   "semantic_transport",
+   "state",
+   "storage",
+   "synchronization"
+  ],
+  "missing_facets": [],
+  "validation": {
+   "ok": true,
+   "errors": []
+  },
+  "backends_bound_by_domain_kind": {
+   "gpu_uma_0": {
+    "backend_id": "METAL",
+    "present": true,
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "note": "device present; this interpreter has no mlx dispatch, so the backend capability tier is FUNCTIONAL_SIM. Not merged into the plan COST_MODEL tier."
+   },
+   "npu_0": {
+    "backend_id": "ANE",
+    "present": true,
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "note": "NPU present; execute in this interpreter is FUNCTIONAL_SIM. Not merged into the plan COST_MODEL tier."
+   },
+   "fpga_hbm_0": {
+    "backend_id": "FPGA-HWIR",
+    "present": false,
+    "evidence_tier": "COST_MODEL",
+    "note": "no board; HARDWARE_MEASURED refused"
+   }
+  },
+  "cuda": "named in backend_contract; not registered; not in this plan"
+ },
+ "refusal_cases": [
+  {
+   "id": "unguaranteed_ordering",
+   "violates": "ORDERING_OVERCLAIM",
+   "gate": "reject_unguaranteed_ordering",
+   "assumption": "happens-before FENCE across a non-coherent link whose requested protocol is NONE (no barrier). The schedule and the edge both assume an ordering the transport does not guarantee.",
+   "codes": [
+    "ORDERING_OVERCLAIM",
+    "ORDERING_OVERCLAIM"
+   ],
+   "ok": false,
+   "refused": true
+  },
+  {
+   "id": "unguaranteed_coherency",
+   "violates": "COHERENCY_OVERCLAIM",
+   "gate": "_reject_coherency_overclaim",
+   "assumption": "SOFTWARE_MANAGED coherency across a link declared NONE. A non-coherent link must never be assumed coherent.",
+   "codes": [
+    "COHERENCY_OVERCLAIM",
+    "COHERENCY_OVERCLAIM",
+    "COHERENCY_OVERCLAIM"
+   ],
+   "ok": false,
+   "refused": true
+  },
+  {
+   "id": "unguaranteed_ownership",
+   "violates": "OWNERSHIP_OVERCLAIM",
+   "gate": "_reject_ownership_overclaim",
+   "assumption": "exclusive OwnershipTransfer.TRANSFER on a NONE-coherent link with SyncRequirement.NONE: the handoff has no happens-before, so both ends can believe they hold exclusive write.",
+   "codes": [
+    "OWNERSHIP_OVERCLAIM"
+   ],
+   "ok": false,
+   "refused": true
+  }
+ ],
+ "tests": {
+  "new": "45 passed in tools/accelerator/test_fusion_bridge.py + tools/odyssey/test_physical_graph_compiler_heterogeneous.py",
+  "related": "113 passed (fusion_bridge + compiler heterogeneous + physical_graph_scoring + fusion_isa + backend_contract)",
+  "commands": [
+   "python3 -m pytest tools/accelerator/test_fusion_bridge.py tools/odyssey/test_physical_graph_compiler_heterogeneous.py -o addopts=\"\" -q",
+   "python3 -m pytest tools/accelerator/test_fusion_bridge.py tools/odyssey/test_physical_graph_compiler_heterogeneous.py tools/accelerator/test_physical_graph_scoring.py tools/accelerator/test_fusion_isa.py tools/accelerator/test_backend_contract.py -o addopts=\"\" -q"
+  ]
+ },
+ "mutation_check": {
+  "target": "tools/accelerator/fusion_bridge.py validate() call `reject_unguaranteed_ordering(plan, errors)  # MUTATION_POINT: ordering check`",
+  "test": "tools/accelerator/test_fusion_bridge.py::test_unguaranteed_ordering_is_refused",
+  "before": {
+   "output": "tools/accelerator/test_fusion_bridge.py .                                [100%]\n============================== 1 passed in 0.09s ===============================",
+   "result": "PASS"
+  },
+  "after_removing_the_check": {
+   "how": "replaced the call with `# MUTATED: reject_unguaranteed_ordering(plan, errors)  # MUTATION_POINT: ordering check`",
+   "output": "tools/accelerator/test_fusion_bridge.py F                                [100%]\n=================================== FAILURES ===================================\n____________________ test_unguaranteed_ordering_is_refused _____________________\ntools/accelerator/test_fusion_bridge.py:510: in test_unguaranteed_ordering_is_refused\n    assert report.ok is False\nE   assert True is False\nE    +  where True = ValidationReport(ok=True, errors=[]).ok\nFAILED tools/accelerator/test_fusion_bridge.py::test_unguaranteed_ordering_is_refused - assert True is False\n +  where True = ValidationReport(ok=True, errors=[]).ok\n============================== 1 failed in 0.11s ===============================",
+   "result": "FAIL (overclaiming plan was accepted -- the ordering check is load-bearing)"
+  },
+  "after_restore": {
+   "output": "tools/accelerator/test_fusion_bridge.py .                                [100%]\n============================== 1 passed in 0.09s ===============================",
+   "result": "PASS",
+   "marker": "no MUTATED remnant; MUTATION_POINT line restored",
+   "grep": "rg -n MUTATED tools/accelerator/fusion_bridge.py -> (no MUTATED remnants)"
+  }
+ },
+ "vendor_neutrality": {
+  "command": "rg -n -i 'apple|xilinx|nvidia|cuda|metal' tools/accelerator/semantic_transport.py tools/accelerator/placement.py tools/accelerator/fusion_bridge.py",
+  "output": "(no matches)",
+  "ast_control_flow_scan": "test_generic_layer_has_no_vendor_keyed_control_flow and test_generic_layer_still_has_no_vendor_keyed_control_flow passed; zero hits in If/IfExp/While/Match/Assert predicates"
+ },
+ "cost_label": {
+  "emitted": "COST_MODEL",
+  "forbidden": "HARDWARE_MEASURED",
+  "enforcement": "Cost.__post_init__ raises CostLabelError on any label other than COST_MODEL. three_domain_plan links are physical=False so fusion_planner Route provenance is SIMULATED; fusion-bridge still labels COST_MODEL. FPGA-HWIR backend cannot emit HARDWARE_MEASURED."
+ },
+ "call_sites": {
+  "reject_unguaranteed_ordering": [
+   "tools/accelerator/fusion_bridge.py:validate",
+   "tools/odyssey/physical_graph_compiler.py:validate_heterogeneous_plan"
+  ],
+  "note": "AST tests pin that both files contain a Call whose name is reject_unguaranteed_ordering. An import of fusion_bridge is not accepted as a call site."
+ },
+ "not_implemented": [
+  "real transport / DMA / PCIe driver",
+  "FPGA bitstream, P&R, timing",
+  "GPU-NPU interconnect measurement (declared COST_MODEL knob)",
+  "CUDA backend (named in backend_contract, not registered)",
+  "persistent token command-buffer runtime (roadmap 15.9)",
+  "in-transit kernels (transform names are vocabulary)",
+  "capacity accounting beyond bytes-vs-capacity_bytes",
+  "online replanning"
+ ]
+}

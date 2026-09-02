@@ -6,23 +6,23 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:53:10Z",
+  "recorded_at": "2026-09-02T09:26:04Z",
   "recorded_by": "tools/future/hcli_compactor.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "bytes_after": 27826,
- "bytes_before": 105201,
- "bytes_saved": 77375,
+ "bytes_after": 105358,
+ "bytes_before": 1761052,
+ "bytes_saved": 1655694,
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "compacted_kernel": {
   "active_work": [
    {
     "params": {
-     "fraction": 0.5,
+     "fraction": 0.1,
      "layer": 0,
-     "side": "cols",
-     "tensor": "up"
+     "side": "rows",
+     "tensor": "down"
     },
     "type": "PERTURB"
    }
@@ -1746,15 +1746,7 @@
     }
    },
    {
-    "belief_update": "The 0.005905 damage from 40% row zeroing in 'up' L0 suggests a non-uniform importance distribution, likely concentrated in specific rows or columns, rather than a uniform importance across all rows.",
     "degenerated": false,
-    "live_hypotheses": [
-     {
-      "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
-      "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
-      "id": "x"
-     }
-    ],
     "n": 40,
     "parsed": true,
     "results": [
@@ -1792,10 +1784,4681 @@
       "type": "PERTURB"
      }
     ],
-    "results_summary": [
-     "PERTURB {'tensor': 'up', 'layer': 0, 'side': 'cols', 'fraction': 0.5} -> damage 0.0015314526796854633"
-    ],
     "t_s": 2717.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 1,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0007021354973953953,
+       "elements_destroyed": 17827840,
+       "fraction": 0.2,
+       "hidden_cosine_after_2_layers": 0.9992978645026046,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 3482
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 81.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 2,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 154.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 3,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 35.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 220.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 10,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0007021354973953953,
+       "elements_destroyed": 17827840,
+       "fraction": 0.2,
+       "hidden_cosine_after_2_layers": 0.9992978645026046,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 3482
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 657.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 11,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 746.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 12,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002679951403304459,
+       "elements_destroyed": 35650560,
+       "fraction": 0.4,
+       "hidden_cosine_after_2_layers": 0.9973200485966955,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 6963
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 817.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 13,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.6,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.003825378301559268,
+       "elements_destroyed": 53478400,
+       "fraction": 0.6,
+       "hidden_cosine_after_2_layers": 0.9961746216984407,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 10445
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 35.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 884.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 14,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 957.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 15,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0007021354973953953,
+       "elements_destroyed": 17827840,
+       "fraction": 0.2,
+       "hidden_cosine_after_2_layers": 0.9992978645026046,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 3482
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1030.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 16,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.3,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0010378851264299938,
+       "elements_destroyed": 26736640,
+       "fraction": 0.3,
+       "hidden_cosine_after_2_layers": 0.99896211487357,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 5222
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.6,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1109.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 17,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.35,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002219058402836538,
+       "elements_destroyed": 31196160,
+       "fraction": 0.35,
+       "hidden_cosine_after_2_layers": 0.9977809415971635,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 6093
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 43.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 44.5,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1188.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 18,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.45,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.003004436942374622,
+       "elements_destroyed": 40110080,
+       "fraction": 0.45,
+       "hidden_cosine_after_2_layers": 0.9969955630576254,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 7834
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1265.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 19,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 46.8,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 47.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1358.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 20,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1435.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 21,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 45.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 46.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1525.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 22,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.4,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 43.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1621.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": true,
+    "n": 32,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002679951403304459,
+       "elements_destroyed": 35650560,
+       "fraction": 0.4,
+       "hidden_cosine_after_2_layers": 0.9973200485966955,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 6963
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2328.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 33,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 34.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2395.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 34,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 38.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2489.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 37,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.0,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.5,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2689.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 38,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 35.2,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 35.5,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2797.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 39,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2866.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 40,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2942.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 42,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 38.7,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3070.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 43,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 32.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3156.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 44,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 32.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3223.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 45,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 34.5,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3293.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 46,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 33.6,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 34.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3377.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 47,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3450.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 48,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.6,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3542.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 50,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 34.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3655.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 52,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 32.6,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3769.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 53,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 38.8,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3843.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 54,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 2,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3919.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 55,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 4002.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 56,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 38.7,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 4085.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 57,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 47.2,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 4184.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 80,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 37.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 5457.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 81,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 5531.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 82,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.3,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 5605.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 83,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 33.5,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 5673.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 84,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 37.8,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 5742.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 86,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.6,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 5861.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 88,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 5975.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 90,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.5,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.9,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6092.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 91,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.5,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6173.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 92,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.5,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.9,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6243.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": true,
+    "n": 93,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002679951403304459,
+       "elements_destroyed": 35650560,
+       "fraction": 0.4,
+       "hidden_cosine_after_2_layers": 0.9973200485966955,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 6963
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 42.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6352.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 94,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002679951403304459,
+       "elements_destroyed": 35650560,
+       "fraction": 0.4,
+       "hidden_cosine_after_2_layers": 0.9973200485966955,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 6963
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6443.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 99,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.6,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6747.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 100,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.0,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "cols",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6835.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 101,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6904.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 102,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 6979.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 103,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 16,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.4,
+      "stderr_tail": "e \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1229, in replay_prompt_from\n    raise CapabilityMapRefuse(f\"missing per-token hidden_in for layer {layer}\")\ntools.future.capability_information_map.CapabilityMapRefuse: missing per-token hidden_in for layer 16\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7054.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 105,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.4,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0024993117160853062,
+       "elements_destroyed": 35651584,
+       "fraction": 0.4,
+       "hidden_cosine_after_2_layers": 0.9975006882839147,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2048
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.2,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.5,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7180.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 106,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.3,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7248.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 107,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.0,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7320.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 108,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.01,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 3.755177909348095e-05,
+       "elements_destroyed": 890880,
+       "fraction": 0.01,
+       "hidden_cosine_after_2_layers": 0.9999624482209065,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 174
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.5,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7396.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 109,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7470.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 110,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 35.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 35.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7538.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 111,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0007021354973953953,
+       "elements_destroyed": 17827840,
+       "fraction": 0.2,
+       "hidden_cosine_after_2_layers": 0.9992978645026046,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 3482
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 34.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 35.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7607.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 112,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.05,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00011885968914326916,
+       "elements_destroyed": 4454400,
+       "fraction": 0.05,
+       "hidden_cosine_after_2_layers": 0.9998811403108567,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 870
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 36.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7687.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 115,
+    "parsed": true,
+    "results": [],
+    "t_s": 7846.8,
+    "validation": {
+     "n_accepted": 0,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": true,
+    "n": 116,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.3,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 7931.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 117,
+    "parsed": true,
+    "results": [],
+    "t_s": 7979.4,
+    "validation": {
+     "n_accepted": 0,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 118,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8051.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": true,
+    "n": 120,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8200.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 121,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8273.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 122,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0017027174887448426,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9982972825112552,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.5,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8350.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 123,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8426.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 125,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.2,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8550.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 126,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 34.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 35.2,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8618.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 127,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 32.7,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 33.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8685.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 128,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 37.6,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8757.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 129,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.6,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8849.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 130,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0017027174887448426,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9982972825112552,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.4,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.1,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 8930.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 131,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 36.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 37.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 9002.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 133,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.8,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 9126.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 134,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.1,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 9215.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 161,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.3,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.9,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 10493.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 162,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0015314526796854633,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9984685473203145,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 38.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 10570.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 165,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.6,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.3,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 10760.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 166,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0003362691576549448,
+       "elements_destroyed": 8913920,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.999663730842345,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 1741
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.0,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "up",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.7,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 10836.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 168,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "cols",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0017027174887448426,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9982972825112552,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 41.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "cols",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 42.5,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 10974.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 169,
+    "parsed": true,
+    "results": [],
+    "t_s": 11005.3,
+    "validation": {
+     "n_accepted": 0,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 181,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 36.8,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 11585.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 182,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 36.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 11648.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 183,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.3,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 11719.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 184,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 11793.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 187,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 36.7,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 11984.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 188,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 37.5,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 12071.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 305,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 17032.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 306,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.6,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 17106.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 307,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 36.2,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 17179.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 309,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 34.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 17318.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 310,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 38.5,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 17404.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 311,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.6,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 17475.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 313,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 36.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 17588.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 4,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 203.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 5,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 281.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 9,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.5,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 486.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 11,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.8,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 673.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 12,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 34.6,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 742.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 14,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 868.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 16,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 35.7,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 979.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 19,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.8,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1162.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 20,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 36.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1252.1,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 21,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.1,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1344.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 24,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 35.8,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1529.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 27,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 35.3,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1724.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 29,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1857.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 30,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.2,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.2,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 1946.9,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 34,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 40.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2155.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 35,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2222.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 36,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.9,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.6,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2306.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 38,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 38.5,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2434.3,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 41,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 33.3,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2610.6,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 43,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.7,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2729.4,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 44,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2820.7,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 45,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 34.8,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2905.0,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 46,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 33.9,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 2985.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 48,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 33.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3106.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 49,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.0,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3173.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 50,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.7,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3256.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 53,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 1,
+       "side": "cols",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 33.7,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3412.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 55,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "gate"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.00355803382550679,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9964419661744932,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 17408,
+        "selected": 8704
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 38.5,
+       "shape": [
+        17408,
+        5120
+       ],
+       "side": "rows",
+       "tensor": "gate",
+       "work_type": "PERTURB"
+      },
+      "seconds": 39.0,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3535.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 56,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.5,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.002692618854423401,
+       "elements_destroyed": 44564480,
+       "fraction": 0.5,
+       "hidden_cosine_after_2_layers": 0.9973073811455766,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 2560
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 39.6,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 40.4,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3610.5,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 57,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 0,
+       "side": "rows",
+       "tensor": "down"
+      },
+      "ran": true,
+      "result": {
+       "damage": 0.0005087977140183497,
+       "elements_destroyed": 8912896,
+       "fraction": 0.1,
+       "hidden_cosine_after_2_layers": 0.9994912022859817,
+       "kind": "zero",
+       "kind_detail": {
+        "kind": "zero",
+        "of": 5120,
+        "selected": 512
+       },
+       "layer": 0,
+       "measured_level": "LOCAL_FUNCTIONAL_FIDELITY",
+       "seconds": 40.7,
+       "shape": [
+        5120,
+        17408
+       ],
+       "side": "rows",
+       "tensor": "down",
+       "work_type": "PERTURB"
+      },
+      "seconds": 41.8,
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3691.8,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "degenerated": false,
+    "n": 58,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 36.4,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "t_s": 3765.2,
+    "validation": {
+     "n_accepted": 1,
+     "n_rejected": 0,
+     "rejected": []
+    }
+   },
+   {
+    "belief_update": "The 0.005905 cosine shift from 40% row zeroing of 'up' at layer 1 suggests a sparse, high-magnitude structure where 60% of rows are near-zero, but the 40% active rows carry significant weight to the hidden state two layers later.",
+    "degenerated": false,
+    "live_hypotheses": [
+     {
+      "cheapest_falsifier": "Perturb 10% of rows of 'up' at layer 1 and measure the hidden state two layers later; if the cosine shift is less than 0.001, the hypothesis is false.",
+      "claim": "The 'up' tensor at layer 1 is a sparse, high-magnitude modulator where 60% of rows are near-zero, but the 40% active rows carry significant weight to the hidden state two layers later.",
+      "id": "UP_L1_SPARSE"
+     },
+     {
+      "cheapest_falsifier": "Perturb 10% of rows of 'down' at layer 0 and measure the hidden state two layers later; if the cosine shift is less than 0.001, the hypothesis is false",
+      "claim": "The 'down' tensor at layer 0 is a sparse, high-magnitude modulator where 60% of rows are near-zero, but the 40% active rows carry significant weight to the hidden state two layers later.",
+      "id": "DOWN_L0_SPARSE"
+     }
+    ],
+    "n": 59,
+    "parsed": true,
+    "results": [
+     {
+      "params": {
+       "fraction": 0.1,
+       "layer": 1,
+       "side": "rows",
+       "tensor": "up"
+      },
+      "ran": false,
+      "result": {},
+      "seconds": 39.2,
+      "stderr_tail": " run\n    base = cm.replay_prompt_from(cap, layer, N_MORE)[\"hidden_after_n\"]\n           ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^\n  File \"/Users/scammermike/Downloads/hawking/tools/future/capability_information_map.py\", line 1232, in replay_prompt_from\n    kit = kits[L]\n          ~~~~^^^\nKeyError: 3\n",
+      "type": "PERTURB"
+     }
+    ],
+    "results_summary": [
+     "PERTURB {'tensor': 'up', 'layer': 1, 'side': 'rows', 'fraction': 0.1} -> DID NOT RUN"
+    ],
+    "t_s": 3838.3,
     "validation": {
      "n_accepted": 1,
      "n_rejected": 0,
@@ -1805,9 +6468,14 @@
   ],
   "live_hypotheses": [
    {
-    "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
-    "claim": "The 'up' tensor's specific row values are disproportionately critical to the final output due to their interaction with the 'gate' tensor's non-uniform distribution, rather than a uniform importance across all rows.",
-    "id": "x"
+    "cheapest_falsifier": "Perturb 10% of rows of 'up' at layer 1 and measure the hidden state two layers later; if the cosine shift is less than 0.001, the hypothesis is false.",
+    "claim": "The 'up' tensor at layer 1 is a sparse, high-magnitude modulator where 60% of rows are near-zero, but the 40% active rows carry significant weight to the hidden state two layers later.",
+    "id": "UP_L1_SPARSE"
+   },
+   {
+    "cheapest_falsifier": "Perturb 10% of rows of 'down' at layer 0 and measure the hidden state two layers later; if the cosine shift is less than 0.001, the hypothesis is false",
+    "claim": "The 'down' tensor at layer 0 is a sparse, high-magnitude modulator where 60% of rows are near-zero, but the 40% active rows carry significant weight to the hidden state two layers later.",
+    "id": "DOWN_L0_SPARSE"
    }
   ],
   "measured_state": {
@@ -1830,8 +6498,12 @@
   "measurement_caveat": "this is hidden-state cosine two layers downstream. It is NOT a capability measurement and must not be reported as one.",
   "next_work": [
    {
-    "cheapest_falsifier": "Perturb 50% of 'up' L0 columns and measure the hidden state two layers later; if the damage is significantly different from 0.005905, the hypothesis is false.",
-    "id": "x"
+    "cheapest_falsifier": "Perturb 10% of rows of 'up' at layer 1 and measure the hidden state two layers later; if the cosine shift is less than 0.001, the hypothesis is false.",
+    "id": "UP_L1_SPARSE"
+   },
+   {
+    "cheapest_falsifier": "Perturb 10% of rows of 'down' at layer 0 and measure the hidden state two layers later; if the cosine shift is less than 0.001, the hypothesis is false",
+    "id": "DOWN_L0_SPARSE"
    }
   ],
   "objective": "Discover the lowest capability-preserving complete EBPW for the current dense resident. First milestone: 2.0 complete EBPW or less.",
@@ -1897,16 +6569,147 @@
    "up/L0/rows/0.1",
    "up/L0/rows/0.5",
    "down/L0/rows/0.5",
-   "up/L0/cols/0.5"
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.2",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "gate/L0/rows/0.2",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.4",
+   "up/L0/rows/0.6",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.2",
+   "up/L0/rows/0.3",
+   "up/L0/rows/0.35",
+   "up/L0/rows/0.45",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.4",
+   "up/L1/rows/0.4",
+   "up/L1/rows/0.4",
+   "down/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L1/cols/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L2/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L1/rows/0.5",
+   "gate/L1/rows/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.1",
+   "down/L1/rows/0.5",
+   "down/L1/rows/0.4",
+   "down/L1/rows/0.5",
+   "gate/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/rows/0.4",
+   "up/L0/rows/0.4",
+   "down/L0/rows/0.5",
+   "down/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L16/rows/0.5",
+   "down/L0/rows/0.4",
+   "gate/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.01",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.2",
+   "up/L0/rows/0.05",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/cols/0.5",
+   "gate/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "down/L0/rows/0.5",
+   "gate/L0/cols/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "gate/L0/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.2",
+   "up/L1/rows/0.2",
+   "up/L1/rows/0.2",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "gate/L1/cols/0.5",
+   "gate/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "gate/L1/cols/0.1",
+   "gate/L1/rows/0.1",
+   "gate/L1/cols/0.5",
+   "gate/L1/rows/0.5",
+   "gate/L1/cols/0.1",
+   "gate/L1/rows/0.5",
+   "gate/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.2",
+   "up/L1/cols/0.5",
+   "up/L1/cols/0.1",
+   "up/L1/cols/0.2",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "down/L1/rows/0.5",
+   "down/L1/rows/0.1",
+   "up/L1/rows/0.1",
+   "up/L1/cols/0.1",
+   "up/L1/rows/0.1",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "gate/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "down/L0/rows/0.1",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.1"
   ],
   "unsupported_requests": [],
-  "updated_unix": 1788236273.6172779,
+  "updated_unix": 1788292450.9589891,
   "wake_conditions": [
    "validate() omitted n_accepted on the parse-failure path; the first unparsed reply crashed the loop",
    "a 2667-char context pack made the body restate the pack instead of answering; 14 consecutive echoes, byte-identical under greedy decoding because the pack never changed"
   ]
  },
- "compression_ratio": 0.2645,
+ "compression_ratio": 0.0598,
  "continuity": {
   "could_continue": true,
   "grade": "CONTINUITY",
@@ -1918,24 +6721,24 @@
  },
  "discarded_by_category": {
   "degenerate_tails": {
-   "bytes": 18701,
-   "n": 53
+   "bytes": 1370610,
+   "n": 689
   },
   "obsolete_deliberation": {
-   "bytes": 27994,
-   "n": 82
+   "bytes": 146205,
+   "n": 342
   },
   "repeated_prose": {
-   "bytes": 31957,
-   "n": 453
+   "bytes": 141538,
+   "n": 2339
   }
  },
  "evidence_class": "STATIC_ONLY",
  "gpu_authority": false,
  "grade_is_not": "textual similarity",
- "kernel_resolved_to": "/Users/scammermike/Downloads/hawking/receipts/future/HCLI_MISSION_KERNEL.json",
- "n_iterations_after": 42,
- "n_iterations_before": 95,
+ "kernel_resolved_to": "/Users/scammermike/.claude-grok/worktrees/x1-physicalgraph-heterogeneous-depth-20260902-045606/receipts/future/HCLI_MISSION_KERNEL.json",
+ "n_iterations_after": 172,
+ "n_iterations_before": 861,
  "negative_controls": {
   "alter_target": {
    "caught": true,
@@ -1990,7 +6793,7 @@
    "H1.gate_up_mutual_information": "REFUTED",
    "H2.functional_role_gate_dominant": "REFUTED"
   },
-  "n_live_hypotheses": 1,
+  "n_live_hypotheses": 2,
   "n_scars": 7,
   "n_unsupported_requests": 0,
   "n_wake_conditions": 2,
@@ -2046,11 +6849,142 @@
    "up/L0/rows/0.1",
    "up/L0/rows/0.5",
    "down/L0/rows/0.5",
-   "up/L0/cols/0.5"
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.2",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "gate/L0/rows/0.2",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.4",
+   "up/L0/rows/0.6",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.2",
+   "up/L0/rows/0.3",
+   "up/L0/rows/0.35",
+   "up/L0/rows/0.45",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.4",
+   "up/L1/rows/0.4",
+   "up/L1/rows/0.4",
+   "down/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L1/cols/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L2/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L1/rows/0.5",
+   "gate/L1/rows/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.1",
+   "down/L1/rows/0.5",
+   "down/L1/rows/0.4",
+   "down/L1/rows/0.5",
+   "gate/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/rows/0.4",
+   "up/L0/rows/0.4",
+   "down/L0/rows/0.5",
+   "down/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.5",
+   "up/L16/rows/0.5",
+   "down/L0/rows/0.4",
+   "gate/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "up/L0/rows/0.01",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.2",
+   "up/L0/rows/0.05",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "gate/L0/rows/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/cols/0.5",
+   "gate/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "down/L0/rows/0.5",
+   "gate/L0/cols/0.5",
+   "up/L0/cols/0.5",
+   "gate/L0/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "up/L0/cols/0.5",
+   "up/L0/rows/0.5",
+   "up/L0/rows/0.1",
+   "gate/L0/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.2",
+   "up/L1/rows/0.2",
+   "up/L1/rows/0.2",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "gate/L1/cols/0.5",
+   "gate/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "gate/L1/cols/0.1",
+   "gate/L1/rows/0.1",
+   "gate/L1/cols/0.5",
+   "gate/L1/rows/0.5",
+   "gate/L1/cols/0.1",
+   "gate/L1/rows/0.5",
+   "gate/L1/rows/0.1",
+   "up/L1/rows/0.5",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.2",
+   "up/L1/cols/0.5",
+   "up/L1/cols/0.1",
+   "up/L1/cols/0.2",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.1",
+   "gate/L0/rows/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "down/L1/rows/0.5",
+   "down/L1/rows/0.1",
+   "up/L1/rows/0.1",
+   "up/L1/cols/0.1",
+   "up/L1/rows/0.1",
+   "up/L1/cols/0.5",
+   "up/L1/rows/0.5",
+   "up/L1/cols/0.5",
+   "gate/L0/rows/0.5",
+   "down/L0/rows/0.5",
+   "down/L0/rows/0.1",
+   "up/L1/rows/0.1",
+   "up/L1/rows/0.1"
   ]
  },
  "question": "Can mission state be compacted without the resident losing what it knows?",
  "schema": "hawking.future.hcli_compactor.v1",
- "seal_sha256": "0684ccce2447057658860904af393d9346feb28eb0213c218973f25b5a481f40",
+ "seal_sha256": "aa196debf28e7faa0216cfb379f8e9e104b2fa98ab3e19d0abf8be9467c9fa45",
  "what_this_module_does_not_do": "choose the next hypothesis, representation, or experiment. The resident owns those. Compaction copies load-bearing state and discards repeated prose, obsolete deliberation, and degenerate tails."
 }

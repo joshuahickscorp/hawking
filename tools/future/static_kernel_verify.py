@@ -9,6 +9,11 @@ detectable from source, not to replace those windows.
     python3 tools/future/static_kernel_verify.py --scan
     python3 tools/future/static_kernel_verify.py --build
     python3 -m pytest tools/future/test_static_kernel_verify.py -q
+    python3 tools/future/static_kernel_verify_parity.py --rust-bin PATH
+
+scan() prefers crates/hawking-core's hawking-static-kernel-verify binary when
+present and well-formed. HAWKING_SKV_FORCE_PYTHON=1 or a missing binary keeps
+the Python analyzer as the default; HCLI must not crash on an absent artifact.
 """
 from __future__ import annotations
 
@@ -25,6 +30,8 @@ from pathlib import Path
 from typing import Any, Iterable
 
 from tools.future._common import write_receipt, load_json, REPO, git
+
+import subprocess
 
 RECEIPT = "STATIC_KERNEL_PREFLIGHT.json"
 SCHEMA = "hawking.future.static_kernel_verify.v1"
@@ -1990,9 +1997,81 @@ def report_from_analyze(raw: dict[str, Any]) -> dict[str, Any]:
 
 
 def scan(repo: Path | None = None) -> dict[str, Any]:
+    root = Path(repo) if repo is not None else REPO
+    rust_doc = _scan_via_rust(root)
+    if rust_doc is not None:
+        return rust_doc
     metal, rust, membership = load_repo_sources(repo)
     raw = analyze(metal, rust, library_membership=membership)
     return report_from_analyze(raw)
+
+
+def _rust_binary() -> Path | None:
+    """Locate hawking-static-kernel-verify. Missing/unexecutable → None (Python path)."""
+    if _os.environ.get("HAWKING_SKV_FORCE_PYTHON", "").strip().lower() in {
+        "1",
+        "true",
+        "yes",
+        "on",
+    }:
+        return None
+    env = _os.environ.get("HAWKING_STATIC_KERNEL_VERIFY")
+    if env is not None:
+        env = env.strip()
+        if env.lower() in {"", "0", "off", "none", "false"}:
+            return None
+        p = Path(env)
+        return p if p.is_file() and _os.access(p, _os.X_OK) else None
+    roots: list[Path] = []
+    td = _os.environ.get("CARGO_TARGET_DIR")
+    if td:
+        roots.append(Path(td))
+    roots.extend(
+        [
+            REPO / "workspace" / "ops" / "build" / "rust",
+            REPO / "target",
+        ]
+    )
+    names = (
+        "release/hawking-static-kernel-verify",
+        "release-fast/hawking-static-kernel-verify",
+        "debug/hawking-static-kernel-verify",
+    )
+    for root in roots:
+        for name in names:
+            p = root / name
+            if p.is_file() and _os.access(p, _os.X_OK):
+                return p
+    return None
+
+
+def _scan_via_rust(root: Path) -> dict[str, Any] | None:
+    """Run the Rust preflight. Any failure returns None so Python remains the default."""
+    binary = _rust_binary()
+    if binary is None:
+        return None
+    try:
+        proc = subprocess.run(
+            [str(binary), "--repo", str(root), "--json"],
+            capture_output=True,
+            text=True,
+            timeout=600,
+            check=False,
+        )
+    except (OSError, subprocess.TimeoutExpired):
+        return None
+    if proc.returncode != 0:
+        return None
+    stdout = proc.stdout.strip()
+    if not stdout:
+        return None
+    try:
+        doc = json.loads(stdout)
+    except json.JSONDecodeError:
+        return None
+    if not isinstance(doc, dict) or doc.get("schema") != SCHEMA:
+        return None
+    return doc
 
 
 def build() -> Path:

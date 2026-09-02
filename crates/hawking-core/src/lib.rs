@@ -150,6 +150,9 @@ pub mod moe;
 /// Numeric Parity Contract V2.1 — condition-aware hybrid metrics + FP64 authority.
 /// See root `NUMERIC_PARITY_V2_1.md`.
 pub mod numeric_parity;
+/// STATIC_ONLY host/shader ABI preflight. Port of `tools/future/static_kernel_verify.py`.
+/// Not an Engine, Metal runtime, or speed claim.
+pub mod static_kernel_verify;
 pub mod profile;
 pub mod q4k_fast;
 pub mod quant;

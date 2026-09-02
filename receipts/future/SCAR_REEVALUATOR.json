@@ -4,12 +4,12 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:56:42Z",
+  "recorded_at": "2026-09-02T09:05:57Z",
   "recorded_by": "tools/future/scar_reevaluator.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
- "branch": "odyssey-i",
+ "branch": "grok/o1-odyssey-two-three-activation-20260902-045200",
  "census_share_source": "receipts/future/MLP_BYTE_CENSUS.json",
  "cited_campaign_fidelity_bars": {
   "organ_cosine": {
@@ -1142,6 +1142,46 @@
   },
   {
    "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Does a high draft acceptance rate imply a speedup for self-speculative decoding on this machine?",
+   "hypothesis_family": "spec_decode",
+   "method": "non_fidelity",
+   "organ": "whole_model",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#self speculative decoding acceptance rate",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Is there a coherent shared-basis MLP executable below q2f's 2.25 bpw that also beats q2f's complete-token time on the full 64-layer model?",
+   "hypothesis_family": "shared_basis",
+   "method": "non_fidelity",
+   "organ": "mlp",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Does weight-space cosine predict real-activation error, so a representation can be screened without ever touching real activations?",
+   "hypothesis_family": "weight_space_cosine_as_a_proxy_for_real_activation_error",
+   "method": "non_fidelity",
+   "organ": "attention",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#weight space cosine as a proxy for real activation error",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "Does a per-tensor codec that is locally adequate on every MLP tensor compose into a whole model that still emits the teacher's next token?",
+   "hypothesis_family": "whole_model_composition_of_locally_adequate_mlp_codec",
+   "method": "non_fidelity",
+   "organ": "mlp",
+   "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#whole_model_composition_of_locally_adequate_mlp_codec",
+   "source_path": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "The 24% did not follow the catalog indirection. Isolating host catalog lookup off the GPU addr-probe timestamp left the gap in place. What the 24% tracks instead is dispatch topology and mixed organ sizes: the marginal cost of a dispatch (~",
    "hypothesis_family": "catalog_addressing_not_primary_703_530_cause",
    "method": "non_fidelity",
@@ -1532,6 +1572,16 @@
   },
   {
    "class": "STRUCTURALLY_REFUTED",
+   "died_at_threshold": "UNRECORDED",
+   "hypothesis_family": "receipts_sovereign_g014_negative_science_json",
+   "method": "non_fidelity",
+   "organ": "unrecorded",
+   "scar_id": "receipts/sovereign/G014_negative_science.json#g014_negative_science",
+   "source_path": "receipts/sovereign/G014_negative_science.json",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "STRUCTURALLY_REFUTED",
    "died_at_threshold": "at 88 tokens the median routing split is only 63.6 percent stable and 26.1 percent of cells never route at all",
    "hypothesis_family": "calibration_88_tokens_routing_frequency_allocation_calibrated_on_88_tokens",
    "method": "non_fidelity",
@@ -1768,6 +1818,16 @@
    "organ": "unrecorded",
    "scar_id": "tools/headless/noetic_negative_science.py#UNPARSED",
    "source_path": "tools/headless/noetic_negative_science.py",
+   "tolerance_change_reopens": false
+  },
+  {
+   "class": "METHOD_UNRECORDED",
+   "died_at_threshold": "UNRECORDED",
+   "hypothesis_family": "unrecorded",
+   "method": "unparsed",
+   "organ": "unrecorded",
+   "scar_id": "tools/sovereign/g014_negative_science.py#UNPARSED",
+   "source_path": "tools/sovereign/g014_negative_science.py",
    "tolerance_change_reopens": false
   },
   {
@@ -6873,21 +6933,32 @@
  ],
  "counts": {
   "by_class": {
-   "METHOD_UNRECORDED": 14,
+   "METHOD_UNRECORDED": 15,
    "NOT_A_REFUTATION": 22,
    "POSSIBLY_REOPENABLE": 426,
-   "STRUCTURALLY_REFUTED": 223
+   "STRUCTURALLY_REFUTED": 228
   },
-  "n_method_unrecorded": 14,
+  "n_method_unrecorded": 15,
   "n_not_a_refutation": 22,
   "n_possibly_reopenable": 426,
-  "n_scars": 685,
-  "n_structurally_refuted": 223
+  "n_scars": 691,
+  "n_structurally_refuted": 228
  },
  "evidence_class": "STATIC_ONLY",
+ "follow_on": {
+  "evidence_receipt": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+  "law_attack_id": "future.LAW_ATTACK.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.measurement_trap",
+  "law_id": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+  "mutation_check_fails_when_binding_dropped": true,
+  "receipt": "ODYSSEY_II_III_ACTIVATION.json",
+  "scope_lattice": "MODEL_LOCAL",
+  "scope_preserved": true,
+  "source_receipt": "receipts/future/ODYSSEY2_LAW_STORE.json",
+  "transfer_test_id": "future.TRANSFER_TEST.LAW-COLD-CONTROL-BEAT-TRANSFER-SEED.Qwen3.8-Flash-Next"
+ },
  "gpu_authority": false,
- "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
- "n_scars_ingested": 685,
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+ "n_scars_ingested": 691,
  "nothing_relaunched": true,
  "nothing_relaunched_statement": "This module classified existing scars and ranked POSSIBLY_REOPENABLE ones by theoretical EBPW-cut rank, token_ns opportunity rank, and implementation cost rank. It did not relaunch, reschedule, admit, or run any candidate. The resident owning SUB2_EBPW decides.",
  "probe_tolerance": {
@@ -6904,7 +6975,1922 @@
  "ranking_rule": "Sort POSSIBLY_REOPENABLE by theoretical EBPW-reduction rank descending, then token_ns opportunity rank descending, then implementation cost rank ascending. Missing family/organ is UNTESTED and sorts last. Ranks are ordinal tables over named families and organs plus cited byte shares from receipts/future/MLP_BYTE_CENSUS.json; they are not hardware measurements and they are not a recommendation to relaunch.",
  "resident_decides": true,
  "schema": "hawking.future.scar_reevaluator.v1",
- "seal_sha256": "5b63334d7d034d39a5f3a563dad043f205f93419bedad41f49f5b4a7d2de29ad",
+ "scoped_consult": {
+  "blocked": false,
+  "blocked_by": [],
+  "classifications": [],
+  "consults": "tools.future.autonomy_scars.consult",
+  "entry_point": "tools.future.scar_reevaluator.consult_candidate",
+  "evidence_class": "STATIC",
+  "laws": [
+   {
+    "flag": null,
+    "found": true,
+    "identity": "LAW-AUTONOMY-STATIC_LANE_TAXONOMY_DIVERGED_FROM_FRONTIER",
+    "law": {
+     "claim": "a scheduler derives its lane vocabulary from the authority; it never restates it",
+     "confidence": {
+      "basis": "qualitative orchestrator law; not a numeric transfer",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "tools/future/test_autonomy_run.py::test_the_driver_speaks_the_lane_vocabulary_the_frontier_actually_uses"
+     ],
+     "experiment_identity": {},
+     "falsifier": "never; a second lane list is the defect itself",
+     "identity": "LAW-AUTONOMY-STATIC_LANE_TAXONOMY_DIVERGED_FROM_FRONTIER",
+     "machine_binding": "UNRECORDED",
+     "scar_ids": [
+      "STATIC_LANE_TAXONOMY_DIVERGED_FROM_FRONTIER"
+     ],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "orchestrator",
+      "excluded_models": [],
+      "lattice": "GENERAL_PHYSICAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [],
+      "organ_tier": "",
+      "organs": [],
+      "representation": ""
+     },
+     "source_path": "receipts/future/AUTONOMY_SCARS.json",
+     "transfer_tests": []
+    },
+    "refused": false,
+    "source_path": "receipts/future/AUTONOMY_SCARS.json",
+    "usable": true
+   },
+   {
+    "flag": null,
+    "found": true,
+    "identity": "LAW-AUTONOMY-SCAR_LOOKUP_ON_IMPLEMENTATION_NAMES",
+    "law": {
+     "claim": "negative science is keyed by hypothesis semantics, never by implementation identity",
+     "confidence": {
+      "basis": "qualitative orchestrator law; not a numeric transfer",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "tools/future/test_autonomy_run.py::test_proposal_space_is_the_fixed_taxonomy_not_the_set_of_dead_ideas"
+     ],
+     "experiment_identity": {},
+     "falsifier": "never",
+     "identity": "LAW-AUTONOMY-SCAR_LOOKUP_ON_IMPLEMENTATION_NAMES",
+     "machine_binding": "UNRECORDED",
+     "scar_ids": [
+      "SCAR_LOOKUP_ON_IMPLEMENTATION_NAMES"
+     ],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "orchestrator",
+      "excluded_models": [],
+      "lattice": "GENERAL_PHYSICAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [],
+      "organ_tier": "",
+      "organs": [],
+      "representation": ""
+     },
+     "source_path": "receipts/future/AUTONOMY_SCARS.json",
+     "transfer_tests": []
+    },
+    "refused": false,
+    "source_path": "receipts/future/AUTONOMY_SCARS.json",
+    "usable": true
+   },
+   {
+    "flag": null,
+    "found": true,
+    "identity": "LAW-AUTONOMY-DECLARED_CAPABILITY_READ_AS_EXECUTED_CAPABILITY",
+    "law": {
+     "claim": "DECLARED CAPABILITY != EXECUTED CAPABILITY. Require invocation, a resulting receipt, and the link between them.",
+     "confidence": {
+      "basis": "qualitative orchestrator law; not a numeric transfer",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "tools/future/test_odyssey_launch.py::test_negative_control_the_gate_cannot_certify_itself_as_the_driver"
+     ],
+     "experiment_identity": {},
+     "falsifier": "never",
+     "identity": "LAW-AUTONOMY-DECLARED_CAPABILITY_READ_AS_EXECUTED_CAPABILITY",
+     "machine_binding": "UNRECORDED",
+     "scar_ids": [
+      "DECLARED_CAPABILITY_READ_AS_EXECUTED_CAPABILITY"
+     ],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "orchestrator",
+      "excluded_models": [],
+      "lattice": "GENERAL_PHYSICAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [],
+      "organ_tier": "",
+      "organs": [],
+      "representation": ""
+     },
+     "source_path": "receipts/future/AUTONOMY_SCARS.json",
+     "transfer_tests": []
+    },
+    "refused": false,
+    "source_path": "receipts/future/AUTONOMY_SCARS.json",
+    "usable": true
+   },
+   {
+    "flag": null,
+    "found": true,
+    "identity": "LAW-AUTONOMY-STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+    "law": {
+     "claim": "STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED. A failure receipt records the exact underlying error and the probes that would separate the candidate causes.",
+     "confidence": {
+      "basis": "qualitative orchestrator law; not a numeric transfer",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "tools/future/test_metal_reachability.py::test_the_hardcoded_boundary_status_is_recorded_as_a_negative_finding"
+     ],
+     "experiment_identity": {},
+     "falsifier": "the specific process context of the original failure is still unidentified; that diagnosis is open work, not a closed scar",
+     "identity": "LAW-AUTONOMY-STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
+     "machine_binding": "UNRECORDED",
+     "scar_ids": [
+      "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM"
+     ],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "orchestrator",
+      "excluded_models": [],
+      "lattice": "GENERAL_PHYSICAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [],
+      "organ_tier": "",
+      "organs": [],
+      "representation": ""
+     },
+     "source_path": "receipts/future/AUTONOMY_SCARS.json",
+     "transfer_tests": []
+    },
+    "refused": false,
+    "source_path": "receipts/future/AUTONOMY_SCARS.json",
+    "usable": true
+   }
+  ],
+  "laws_out_of_scope": [
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+    "law": {
+     "claim": "On Qwen3-30B-A3B moe_expert layer 2, under the pre-registered loose landing target (held-out rel_fro <= 1.15x of uniform q4 g64), the COLD arm landed in 2 evaluations and the ODYSSEY_TRANSFER seed landed in 10; evaluations_avoided=-8. The transfer signal is in the matched-bits comparison (seeded affine wins 3/3 tiers), not in search-length. Values did not save experiments; the method still discriminated at matched bits.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here",
+     "identity": "LAW-COLD-CONTROL-BEAT-TRANSFER-SEED",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen3_moe",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "moe_expert"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "Qwen27: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "a pre-registered landing target on this organ where the transfer seed uses strictly fewer evaluations than cold AND lands at equal or better held-out rel_fro; until then the savings claim is refuted here"
+     ]
+    },
+    "reason": "law LAW-COLD-CONTROL-BEAT-TRANSFER-SEED was measured in scope {'models': ['qwen3-30b-a3b'], 'organs': ['moe_expert'], 'machine': '', 'representation': '', 'architecture_family': 'qwen3_moe', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-COMPETENT-KERNEL-FIRST",
+    "law": {
+     "claim": "A representation evaluated with an incompetent kernel is not evaluated. Fewer stored bits is not fewer nanoseconds.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/SHARED_BASIS_KERNEL.json",
+      "receipts/headless/KERNEL_LIBRARY.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "Only one model has had its kernels profiled on this device. The second specimen has no native kernel yet, so the law has one measurement.",
+     "identity": "LAW-COMPETENT-KERNEL-FIRST",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "Only one model has had its kernels profiled on this device. The second specimen has no native kernel yet, so the law has one measurement."
+     ]
+    },
+    "reason": "law LAW-COMPETENT-KERNEL-FIRST was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-DEVICE-ROOFS",
+    "law": {
+     "claim": "Device theoretical roof 819.0 GB/s and device measured sustained roof 778.8 GB/s on this machine.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MACHINE_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/BANDWIDTH_ROOF.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "Already at the top level for what it describes: these are properties of the box, not of any model. They are valid only on this machine.",
+     "identity": "LAW-DEVICE-ROOFS",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MACHINE_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=MACHINE_LOCAL n_models=1 n_architecture_families=1",
+      "Already at the top level for what it describes: these are properties of the box, not of any model. They are valid only on this machine."
+     ]
+    },
+    "reason": "law LAW-DEVICE-ROOFS was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MACHINE_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS",
+    "law": {
+     "claim": "Falcon-H1-7B has no expert tensors (0 of 751). It is the zero that makes the other kernel-reuse numbers meaningful and is not a MoE transfer target.",
+     "confidence": {
+      "basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.25
+     },
+     "evidence": [
+      "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a Falcon-H1 checkpoint that stores expert tensors",
+     "identity": "LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS",
+     "machine_binding": "APPLE_GPU_0",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "falcon_h1",
+      "backend": "Metal",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "apple_gpu_0",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [],
+      "organ_tier": "",
+      "organs": [
+       "moe_expert"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "Qwen27: evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "a Falcon-H1 checkpoint that stores expert tensors"
+     ]
+    },
+    "reason": "law LAW-FALCON-H1-HAS-NO-EXPERT-TENSORS was measured in scope {'models': [], 'organs': ['moe_expert'], 'machine': 'apple_gpu_0', 'representation': '', 'architecture_family': 'falcon_h1', 'backend': 'Metal', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-FITTED-AFFINE-BEATS-RTN",
+    "law": {
+     "claim": "At matched bits per weight, a least-squares-refit affine codec beats generic grouped-absmax round-to-nearest.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=3 n_architecture_families=3",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+      "receipts/headless/MATCHED_BITS_FALCON_H1.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "ARCHITECTURE_GENERAL is the ceiling for a claim about weights; MACHINE_GENERAL is reserved for properties of the box. Promoted here because the reopening condition this law carried has been MET: it was measured on a second architecture family. On Falcon-H1-7B -- hybrid mamba+attention, a different vendor and a different backbone -- the seeded family wins 3 of 3 matched-bit tiers, and the advantage is nearly the same size as on the Qwen MoE: 1.828x vs 1.899x at 2.25 bpw, 1.327x vs 1.333x at 3.25, 1.122x vs 1.138x at 4.25.",
+     "identity": "LAW-FITTED-AFFINE-BEATS-RTN",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "GENERIC_CANDIDATE",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=3 n_architecture_families=3",
+      "ARCHITECTURE_GENERAL is the ceiling for a claim about weights; MACHINE_GENERAL is reserved for properties of the box. Promoted here because the reopening condition this law carried has been MET: it was measured on a second architecture family. On Falcon-H1-7B -- hybrid mamba+attention, a different vendor and a different backbone -- the seeded family wins 3 of 3 matched-bit tiers, and the advantage is nearly the same size as on the Qwen MoE: 1.828x vs 1.899x at 2.25 bpw, 1.327x vs 1.333x at 3.25, 1.122x vs 1.138x at 4.25."
+     ]
+    },
+    "reason": "law LAW-FITTED-AFFINE-BEATS-RTN was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'GENERIC_CANDIDATE', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-HEAD-ORTHOGONALITY-BLOCKS-ELIMINATION",
+    "law": {
+     "claim": "Attention head sharing is refuted where heads are near-orthogonal.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/STRUCTURAL_ELIMINATION.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "One measurement, and the law is explicitly conditional on the measured geometry rather than on the technique. Any model with high head cosine reopens it.",
+     "identity": "LAW-HEAD-ORTHOGONALITY-BLOCKS-ELIMINATION",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "One measurement, and the law is explicitly conditional on the measured geometry rather than on the technique. Any model with high head cosine reopens it."
+     ]
+    },
+    "reason": "law LAW-HEAD-ORTHOGONALITY-BLOCKS-ELIMINATION was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-HELDOUT-REAL-ACTIVATIONS",
+    "law": {
+     "claim": "Rank COMPOSITION choices on held-out real activations. Weight-space error ranks a codec against a single tensor triple correctly, and ranks the whole-model consequence of a representation change BACKWARDS.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+      "receipts/headless/MATCHED_BITS_FALCON_H1.json",
+      "receipts/headless/COMPOSITION_ATTRIBUTION.json",
+      "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "A Falcon-H1 measurement was taken specifically to promote this and it REFUSED to: on that dense MLP, weight-space and held-out-activation rankings are IDENTICAL across all 13 candidates with zero matched-tier winner flips. So the law is not that weight-space always misranks -- it does not. It is narrower and sharper than it was written: weight-space error is adequate for ranking codecs on one tensor triple, and it inverted the answer on the question that actually mattered, which was WHICH REPRESENTATION CHANGE BREAKS THE COMPOSED MODEL. There weight-space said the non-MLP drop was 6.2x larger and therefore dominant; the physical measurement priced the MLP change at 19 capability points against the non-MLP change's 8. Promotion needs a second family measured on the COMPOSITION question, not on the codec question.",
+     "identity": "LAW-HELDOUT-REAL-ACTIVATIONS",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "ARCHITECTURE_FAMILY",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+      "A Falcon-H1 measurement was taken specifically to promote this and it REFUSED to: on that dense MLP, weight-space and held-out-activation rankings are IDENTICAL across all 13 candidates with zero matched-tier winner flips. So the law is not that weight-space always misranks -- it does not. It is narrower and sharper than it was written: weight-space error is adequate for ranking codecs on one tensor triple, and it inverted the answer on the question that actually mattered, which was WHICH REPRESENTATION CHANGE BREAKS THE COMPOSED MODEL. There weight-space said the non-MLP drop was 6.2x larger and therefore dominant; the physical measurement priced the MLP change at 19 capability points against the non-MLP change's 8. Promotion needs a second family measured on the COMPOSITION question, not on the codec question."
+     ]
+    },
+    "reason": "law LAW-HELDOUT-REAL-ACTIVATIONS was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'ARCHITECTURE_FAMILY', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT",
+    "law": {
+     "claim": "Kernel reuse is a claim about storage layout, not only about GEMV shape or architecture-config similarity. Qwen3-30B-A3B and Qwen3-VL-30B-A3B share byte-identical MSL only AFTER a de-interleave and a transpose: the VL variant stores fused 3-D gate_up_proj, so the tensor as stored emits a different kernel. Kimi-VL uses the same per-expert 2-D convention but a different row size and shares no kernel. Falcon-H1 has no expert tensors at all.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=4 n_architecture_families=4",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "two specimens with divergent on-disk expert layout whose stored tensors emit the same MSL without a pack-time transpose/de-interleave",
+     "identity": "LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT",
+     "machine_binding": "APPLE_GPU_0",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen3_moe",
+      "backend": "Metal",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "GENERIC_CANDIDATE",
+      "machine": "apple_gpu_0",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "moe_expert_kernel"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=4 n_architecture_families=4",
+      "Qwen27: evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=4 n_architecture_families=4",
+      "two specimens with divergent on-disk expert layout whose stored tensors emit the same MSL without a pack-time transpose/de-interleave"
+     ]
+    },
+    "reason": "law LAW-KERNEL-REUSE-FOLLOWS-STORAGE-LAYOUT was measured in scope {'models': ['qwen3-30b-a3b'], 'organs': ['moe_expert_kernel'], 'machine': 'apple_gpu_0', 'representation': '', 'architecture_family': 'qwen3_moe', 'backend': 'Metal', 'condition': '', 'lattice': 'GENERIC_CANDIDATE', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-MLP-FLOOR-2.25",
+    "law": {
+     "claim": "The coherent MLP information floor is 2.25 bpw.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/ORGAN_FRONTIER_MATRIX.json",
+      "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "already refuted on ['Qwen/Qwen3-30B-A3B']; any further transfer of the VALUE must re-measure. It does not survive the very first jump inside its own family. On Qwen3-30B-A3B moe_expert the best candidate at 2.25 bpw reaches held-out rel_fro 0.498769, nowhere near usable, and even 3.5 bpw only reaches 0.238596. The value is a property of that organ in that model, not of Qwen and not of dense MLPs.",
+     "identity": "LAW-MLP-FLOOR-2.25",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "already refuted on ['Qwen/Qwen3-30B-A3B']; any further transfer of the VALUE must re-measure. It does not survive the very first jump inside its own family. On Qwen3-30B-A3B moe_expert the best candidate at 2.25 bpw reaches held-out rel_fro 0.498769, nowhere near usable, and even 3.5 bpw only reaches 0.238596. The value is a property of that organ in that model, not of Qwen and not of dense MLPs."
+     ]
+    },
+    "reason": "law LAW-MLP-FLOOR-2.25 was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-MODEL-REACHABLE-ROOF",
+    "law": {
+     "claim": "The model-reachable bandwidth roof is 690.8 GB/s.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/WHOLE_MODEL_NATIVE.json",
+      "receipts/headless/QWEN_TRANSFER_REHEARSAL.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "It is a property of one executable in one regime. The directive forbids copying it into another model, and the transfer rehearsal asserts it appears nowhere in a new specimen's seeded genome.",
+     "identity": "LAW-MODEL-REACHABLE-ROOF",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "It is a property of one executable in one regime. The directive forbids copying it into another model, and the transfer rehearsal asserts it appears nowhere in a new specimen's seeded genome."
+     ]
+    },
+    "reason": "law LAW-MODEL-REACHABLE-ROOF was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-MOE-EXPERTS-ARE-ORTHOGONAL",
+    "law": {
+     "claim": "MoE experts within a layer are mutually near-orthogonal, so there is no cheap shared substrate to factor out of an expert family.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/EXPERT_FAMILY_GENOME.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "Measured on exactly one MoE with a receipt in this repository. A similar observation on DeepSeek V4-Flash exists in operator memory but has no receipt here, and a model claim is not evidence, so it does not count toward promotion. A non-Qwen MoE (GLM-4.5-Air and Kimi-VL-A3B are both in the queue) is the condition.",
+     "identity": "LAW-MOE-EXPERTS-ARE-ORTHOGONAL",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen3_moe",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "Qwen27: evidence_strength=DIAGNOSTIC_RELATIVE scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "Measured on exactly one MoE with a receipt in this repository. A similar observation on DeepSeek V4-Flash exists in operator memory but has no receipt here, and a model claim is not evidence, so it does not count toward promotion. A non-Qwen MoE (GLM-4.5-Air and Kimi-VL-A3B are both in the queue) is the condition."
+     ]
+    },
+    "reason": "law LAW-MOE-EXPERTS-ARE-ORTHOGONAL was measured in scope {'models': ['qwen3-30b-a3b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'qwen3_moe', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-PER-ORGAN-FLOOR",
+    "law": {
+     "claim": "Measure the information floor per ORGAN, never per model. Organs in one model do not share a floor.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=2 n_architecture_families=2",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/ORGAN_DENSITY_FLOORS.json",
+      "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
+      "receipts/headless/CROSS_MODEL_LAWS.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "Two Qwen models. On the first, attention/DeltaNet/embedding survive q3_g128 and fail at q2f_g64 while the MLP survives it; on the second, the MoE expert floor is far above the dense MLP's. Same conclusion twice, same family both times.",
+     "identity": "LAW-PER-ORGAN-FLOOR",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "GENERIC_CANDIDATE",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "cross_model"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=GENERIC_CANDIDATE n_models=2 n_architecture_families=2",
+      "Two Qwen models. On the first, attention/DeltaNet/embedding survive q3_g128 and fail at q2f_g64 while the MLP survives it; on the second, the MoE expert floor is far above the dense MLP's. Same conclusion twice, same family both times."
+     ]
+    },
+    "reason": "law LAW-PER-ORGAN-FLOOR was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['cross_model'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'GENERIC_CANDIDATE', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-QWEN-FAILURE-NEVER-PRUNES",
+    "law": {
+     "claim": "a Qwen failure alone never prunes a technique; UNLIKELY is a ranking, not a deletion, and every skipped technique stays in the library with its reopening condition",
+     "confidence": {
+      "basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.25
+     },
+     "evidence": [
+      "receipts/headless/DOCTOR_TRANSFER.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a technique deleted from the library solely because it failed on a Qwen organ, with no reopening condition attached",
+     "identity": "LAW-QWEN-FAILURE-NEVER-PRUNES",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen3_moe",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "method"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "Qwen27: evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "a technique deleted from the library solely because it failed on a Qwen organ, with no reopening condition attached"
+     ]
+    },
+    "reason": "law LAW-QWEN-FAILURE-NEVER-PRUNES was measured in scope {'models': ['qwen3-30b-a3b'], 'organs': ['method'], 'machine': '', 'representation': '', 'architecture_family': 'qwen3_moe', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-REHEARSAL-NO-SMUGGLING",
+    "law": {
+     "claim": "the rehearsal may read only the canonical libraries, the transfer report and the specimen's own architecture metadata. Everything else is smuggling.",
+     "confidence": {
+      "basis": "evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "value": 0.25
+     },
+     "evidence": [
+      "receipts/headless/QWEN_TRANSFER_REHEARSAL.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a rehearsal whose input_audit.clean is false or whose n_forbidden_reads > 0; that rehearsal is not a transfer",
+     "identity": "LAW-REHEARSAL-NO-SMUGGLING",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen3_moe",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "method"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "Qwen27: evidence_strength=STATIC scope=MODEL_LOCAL n_models=1 n_architecture_families=1",
+      "a rehearsal whose input_audit.clean is false or whose n_forbidden_reads > 0; that rehearsal is not a transfer"
+     ]
+    },
+    "reason": "law LAW-REHEARSAL-NO-SMUGGLING was measured in scope {'models': ['qwen3-30b-a3b'], 'organs': ['method'], 'machine': '', 'representation': '', 'architecture_family': 'qwen3_moe', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-REPRESENTATION-COSINE-ROBUST-TO-LAYOUT",
+    "law": {
+     "claim": "Representation fidelity under ws_rtn_q4_g64 transfers across the Qwen3 MoE / VL storage-layout split: weight cosine is 0.993952 on model #2 gate_proj and 0.993965 on the VL variant's canonical gate, and 0.993816 even in the on-disk orientation. Adequacy per tensor is robust to layout; only the kernel is layout-sensitive.",
+     "confidence": {
+      "basis": "evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=1",
+      "value": 0.45
+     },
+     "evidence": [
+      "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a layout transform of the same tensor under ws_rtn_q4_g64 whose weight cosine against the representation drops below the pair observed here",
+     "identity": "LAW-REPRESENTATION-COSINE-ROBUST-TO-LAYOUT",
+     "machine_binding": "APPLE_GPU_0",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen3_moe",
+      "backend": "Metal",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "ARCHITECTURE_FAMILY",
+      "machine": "apple_gpu_0",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "moe_expert"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=1",
+      "Qwen27: evidence_strength=DIAGNOSTIC_RELATIVE scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=1",
+      "a layout transform of the same tensor under ws_rtn_q4_g64 whose weight cosine against the representation drops below the pair observed here"
+     ]
+    },
+    "reason": "law LAW-REPRESENTATION-COSINE-ROBUST-TO-LAYOUT was measured in scope {'models': ['qwen3-30b-a3b'], 'organs': ['moe_expert'], 'machine': 'apple_gpu_0', 'representation': '', 'architecture_family': 'qwen3_moe', 'backend': 'Metal', 'condition': '', 'lattice': 'ARCHITECTURE_FAMILY', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO",
+    "law": {
+     "claim": "values do not transfer, methods do. Every number in this report is a Qwen measurement; every recommendation is a method with an applicability condition.",
+     "confidence": {
+      "basis": "evidence_strength=STATIC scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+      "value": 0.25
+     },
+     "evidence": [
+      "receipts/headless/QWEN_TRANSFER_REPORT.json",
+      "receipts/headless/QWEN_TRANSFER_REHEARSAL.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a numeric floor, roof, or bpw copied onto a new model that then beats a re-measurement of that value on the new model's own organ",
+     "identity": "LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "ARCHITECTURE_FAMILY",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "method"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: evidence_strength=STATIC scope=ARCHITECTURE_FAMILY n_models=2 n_architecture_families=2",
+      "a numeric floor, roof, or bpw copied onto a new model that then beats a re-measurement of that value on the new model's own organ"
+     ]
+    },
+    "reason": "law LAW-VALUES-DO-NOT-TRANSFER-METHODS-DO was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['method'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'ARCHITECTURE_FAMILY', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-FLASH-COMMAND_BUFFER_SCHEDULING_TELEMETRY",
+    "law": {
+     "claim": "Primitive 'command-buffer scheduling/telemetry' is labelled DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source) as well as on Qwen27. dispatch, sync, complete wall, and fallback accounting are provider/runtime-neutral Flash weights were not present on disk (metadata_only); this is a sealed hypothesis, not a Flash measurement.",
+     "confidence": {
+      "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "value": 0.7
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a Qwen27 execution of 'command-buffer scheduling/telemetry' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist",
+     "identity": "LAW-XFER-FLASH-COMMAND_BUFFER_SCHEDULING_TELEMETRY",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen4_exp",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "command_buffer_scheduling_telemetry"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Qwen27: DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "a Qwen27 execution of 'command-buffer scheduling/telemetry' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist"
+     ]
+    },
+    "reason": "law LAW-XFER-FLASH-COMMAND_BUFFER_SCHEDULING_TELEMETRY was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['command_buffer_scheduling_telemetry'], 'machine': '', 'representation': '', 'architecture_family': 'qwen4_exp', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-FLASH-DENSE_VS_NF_A_B_PROTOCOL",
+    "law": {
+     "claim": "Primitive 'dense-vs-NF A/B protocol' is labelled DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source) as well as on Qwen27. same source/input/device/bench/capability controls apply to both Flash weights were not present on disk (metadata_only); this is a sealed hypothesis, not a Flash measurement.",
+     "confidence": {
+      "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "value": 0.7
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a Qwen27 execution of 'dense-vs-NF A/B protocol' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist",
+     "identity": "LAW-XFER-FLASH-DENSE_VS_NF_A_B_PROTOCOL",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "qwen4_exp",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "gate",
+       "attention"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Qwen27: DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "a Qwen27 execution of 'dense-vs-NF A/B protocol' that disagrees with the Flash-labelled DIRECT_TRANSFER once Flash weights exist"
+     ]
+    },
+    "reason": "law LAW-XFER-FLASH-DENSE_VS_NF_A_B_PROTOCOL was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['gate', 'attention'], 'machine': '', 'representation': '', 'architecture_family': 'qwen4_exp', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-QWEN27-COMMAND_BUFFER_SCHEDULING_TELEMETRY",
+    "law": {
+     "claim": "Primitive 'command-buffer scheduling/telemetry': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). dispatch, sync, complete wall, and fallback accounting are provider/runtime-neutral Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+     "confidence": {
+      "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "value": 0.7
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a same-source Flash run of 'command-buffer scheduling/telemetry' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "identity": "LAW-XFER-QWEN27-COMMAND_BUFFER_SCHEDULING_TELEMETRY",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "command_buffer_scheduling_telemetry"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "a same-source Flash run of 'command-buffer scheduling/telemetry' that fails parity, capability, or complete-token acceptance against the Qwen27 body"
+     ]
+    },
+    "reason": "law LAW-XFER-QWEN27-COMMAND_BUFFER_SCHEDULING_TELEMETRY was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['command_buffer_scheduling_telemetry'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-QWEN27-DENSE_VS_NF_A_B_PROTOCOL",
+    "law": {
+     "claim": "Primitive 'dense-vs-NF A/B protocol': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and DIRECT_TRANSFER on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). same source/input/device/bench/capability controls apply to both Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+     "confidence": {
+      "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "value": 0.7
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a same-source Flash run of 'dense-vs-NF A/B protocol' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "identity": "LAW-XFER-QWEN27-DENSE_VS_NF_A_B_PROTOCOL",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "gate",
+       "attention"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "a same-source Flash run of 'dense-vs-NF A/B protocol' that fails parity, capability, or complete-token acceptance against the Qwen27 body"
+     ]
+    },
+    "reason": "law LAW-XFER-QWEN27-DENSE_VS_NF_A_B_PROTOCOL was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['gate', 'attention'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-QWEN27-NORMS_AND_FUSED_EPILOGUES",
+    "law": {
+     "claim": "Primitive 'norms and fused epilogues': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). command-boundary and complete-token effects can transfer, tensor shapes cannot be assumed Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+     "confidence": {
+      "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "value": 0.7
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a same-source Flash run of 'norms and fused epilogues' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "identity": "LAW-XFER-QWEN27-NORMS_AND_FUSED_EPILOGUES",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "norms_and_fused_epilogues"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "a same-source Flash run of 'norms and fused epilogues' that fails parity, capability, or complete-token acceptance against the Qwen27 body"
+     ]
+    },
+    "reason": "law LAW-XFER-QWEN27-NORMS_AND_FUSED_EPILOGUES was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['norms_and_fused_epilogues'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-QWEN27-PACKED_LOW_BIT_GEMV",
+    "law": {
+     "claim": "Primitive 'packed low-bit GEMV': labelled DIRECT_TRANSFER on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). representation-native arithmetic and layout need same-source parity on each architecture Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+     "confidence": {
+      "basis": "DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "value": 0.7
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a same-source Flash run of 'packed low-bit GEMV' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "identity": "LAW-XFER-QWEN27-PACKED_LOW_BIT_GEMV",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "packed_low_bit_gemv"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: DIRECT_TRANSFER in QWEN38_ACCELERATOR_TRANSFER_MAP; claim_boundary requires re-earn of parity",
+      "a same-source Flash run of 'packed low-bit GEMV' that fails parity, capability, or complete-token acceptance against the Qwen27 body"
+     ]
+    },
+    "reason": "law LAW-XFER-QWEN27-PACKED_LOW_BIT_GEMV was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['packed_low_bit_gemv'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-QWEN27-RESIDENT_STATE_UPDATE",
+    "law": {
+     "claim": "Primitive 'resident state/update': labelled ARCHITECTURE_SPECIFIC on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). DeltaNet/state-machine work is a Flash target and must be revalidated against Qwen27 Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+     "confidence": {
+      "basis": "ARCHITECTURE_SPECIFIC in QWEN38_ACCELERATOR_TRANSFER_MAP; not a free transfer",
+      "value": 0.2
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a same-source Flash run of 'resident state/update' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "identity": "LAW-XFER-QWEN27-RESIDENT_STATE_UPDATE",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "kv",
+       "up"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: ARCHITECTURE_SPECIFIC in QWEN38_ACCELERATOR_TRANSFER_MAP; not a free transfer",
+      "a same-source Flash run of 'resident state/update' that fails parity, capability, or complete-token acceptance against the Qwen27 body"
+     ]
+    },
+    "reason": "law LAW-XFER-QWEN27-RESIDENT_STATE_UPDATE was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['kv', 'up'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-XFER-QWEN27-ROUTER_TOP_K_AND_SELECTED_EXPERT_GATHER",
+    "law": {
+     "claim": "Primitive 'router/top-k and selected-expert gather': labelled TEST_ON_FLASH on Qwen27 (Qwen3.8-27B sealed resident / NOETIC_PARENT_A) and TEST_ON_FLASH on Flash (Qwen/Qwen3.8-Flash-Next pinned ModelLake source). sparse routing is not present in the sealed dense-ish parent contract; transfer is a hypothesis Transfer labels are hypotheses; every physical primitive must re-earn same-model parity, capability, and complete-token acceptance.",
+     "confidence": {
+      "basis": "TEST_ON_FLASH hypothesis in QWEN38_ACCELERATOR_TRANSFER_MAP",
+      "value": 0.4
+     },
+     "evidence": [
+      "receipts/headless/QWEN38_ACCELERATOR_TRANSFER_MAP.json"
+     ],
+     "experiment_identity": {},
+     "falsifier": "a same-source Flash run of 'router/top-k and selected-expert gather' that fails parity, capability, or complete-token acceptance against the Qwen27 body",
+     "identity": "LAW-XFER-QWEN27-ROUTER_TOP_K_AND_SELECTED_EXPERT_GATHER",
+     "machine_binding": "UNKNOWN",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "dense_hybrid_transformer",
+      "backend": "",
+      "condition": "",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "",
+      "machine_tier": "",
+      "model_tier": "",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "",
+      "organs": [
+       "router"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+     "transfer_tests": [
+      "Flash: TEST_ON_FLASH hypothesis in QWEN38_ACCELERATOR_TRANSFER_MAP",
+      "a same-source Flash run of 'router/top-k and selected-expert gather' that fails parity, capability, or complete-token acceptance against the Qwen27 body"
+     ]
+    },
+    "reason": "law LAW-XFER-QWEN27-ROUTER_TOP_K_AND_SELECTED_EXPERT_GATHER was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['router'], 'machine': '', 'representation': '', 'architecture_family': 'dense_hybrid_transformer', 'backend': '', 'condition': '', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/ODYSSEY2_LAW_STORE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-MLP-ARITHMETIC-SENSITIVITY",
+    "law": {
+     "claim": "On qwen3.8-27b sealed-3.14, this machine, one representative MLP layer of affine2 geo_tpr64: ARM A (same bytes, arithmetic stripped) is cited at 497.4 effective GB/s against production 329.6 (receipt receipts/future/MLP_ALU_ROOFLINE.json#mlp.arm_a_stripped.effective_gb_s). Combined verdict MIXED \u2014 ARM B tracked bytes, so the pre-registered rule did not promote ALU_BOUND. Arithmetic-sensitivity of THIS organ on THIS parent on THIS machine. Not 'MLP is ALU-bound'.",
+     "confidence": {
+      "basis": "claim_scope.scope_kind='ORIGINAL'; cited, not remeasured",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "receipts/future/MLP_ALU_ROOFLINE.json"
+     ],
+     "experiment_identity": {
+      "code_and_build_identity": {
+       "binary_sha256_pin": "d34044cffae8f320",
+       "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+       "git_head_short": "36691aa32",
+       "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+      },
+      "laws_scars_version": {
+       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "missing": [],
+       "pins": {
+        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+       },
+       "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+      },
+      "machine_genome": {
+       "arch": "arm64",
+       "cpu_cores": 28,
+       "gpu_cores": 60,
+       "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+       "readable": true,
+       "receipt": "receipts/headless/MACHINE_GENOME.json",
+       "remeasured": false,
+       "schema": "hawking.accelerator.machine_genome.v1",
+       "soc": "Apple M3 Ultra"
+      },
+      "model_revision": {
+       "model_id": "qwen3.8-27b-sealed-3.14",
+       "resident_identity": "sealed-3.14",
+       "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+       "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+      },
+      "resident_identity": {
+       "bound": true,
+       "nx_id": {
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "protocol": "hawking.qwen38.resident.v1",
+        "resident_identity": "sealed-3.14"
+       },
+       "resident_identity": "sealed-3.14",
+       "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+       "source": "receipts/future/RESIDENT_IDENTITY.json"
+      },
+      "specimen_seal": {
+       "kind": "authorized_external_specimen",
+       "n_files": 31,
+       "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+       "specimen": "qwen3.8-27b-abliterated-bf16@local",
+       "status": "SEALED",
+       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+      }
+     },
+     "falsifier": "The ALU-roofline receipt's own verdict is MIXED, not ALU_BOUND. Quoting ARM A's 1.51x jump as a generic MLP-is-ALU-bound law silently widens ORGAN, MODEL, and MACHINE. Narrowed to the measured organ/parent/machine. Citation, not a new measurement.",
+     "identity": "LAW-MLP-ARITHMETIC-SENSITIVITY",
+     "machine_binding": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "ORIGINAL",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "m3_ultra",
+      "machine_tier": "MACHINE_LOCAL",
+      "model_tier": "MODEL_LOCAL",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "ORGAN_LOCAL",
+      "organs": [
+       "mlp"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/CLAIM_SCOPE.json",
+     "transfer_tests": [
+      "The ALU-roofline receipt's own verdict is MIXED, not ALU_BOUND. Quoting ARM A's 1.51x jump as a generic MLP-is-ALU-bound law silently widens ORGAN, MODEL, and MACHINE. Narrowed to the measured organ/parent/machine. Citation, not a new measurement."
+     ]
+    },
+    "reason": "law LAW-MLP-ARITHMETIC-SENSITIVITY was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['mlp'], 'machine': 'm3_ultra', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': 'ORIGINAL', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': 'MODEL_LOCAL', 'organ_tier': 'ORGAN_LOCAL', 'machine_tier': 'MACHINE_LOCAL'}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/CLAIM_SCOPE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-BROADCAST-AUX-NON-CRITICALITY",
+    "law": {
+     "claim": "On qwen3.8-27b sealed-3.14 MLP layer 3, this machine: a 50% drop of broadcast aux was within_noise (cited paired_dt_ns_at_50pct=-126, noise floor 2666 ns, receipts/future/ECONOMICS_CALIBRATION.json#stream_classes.broadcast_aux). catalog_billing measured_or_zero for THAT stream on THAT layer. Not a law that aux is free on other organs, parents, or machines.",
+     "confidence": {
+      "basis": "claim_scope.scope_kind='ORIGINAL'; cited, not remeasured",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "receipts/future/ECONOMICS_CALIBRATION.json",
+      "receipts/future/EXECUTABLE_ECONOMICS.json"
+     ],
+     "experiment_identity": {
+      "code_and_build_identity": {
+       "binary_sha256_pin": "d34044cffae8f320",
+       "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+       "git_head_short": "36691aa32",
+       "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+      },
+      "laws_scars_version": {
+       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "missing": [],
+       "pins": {
+        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+       },
+       "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+      },
+      "machine_genome": {
+       "arch": "arm64",
+       "cpu_cores": 28,
+       "gpu_cores": 60,
+       "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+       "readable": true,
+       "receipt": "receipts/headless/MACHINE_GENOME.json",
+       "remeasured": false,
+       "schema": "hawking.accelerator.machine_genome.v1",
+       "soc": "Apple M3 Ultra"
+      },
+      "model_revision": {
+       "model_id": "qwen3.8-27b-sealed-3.14",
+       "resident_identity": "sealed-3.14",
+       "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+       "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+      },
+      "resident_identity": {
+       "bound": true,
+       "nx_id": {
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "protocol": "hawking.qwen38.resident.v1",
+        "resident_identity": "sealed-3.14"
+       },
+       "resident_identity": "sealed-3.14",
+       "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+       "source": "receipts/future/RESIDENT_IDENTITY.json"
+      },
+      "specimen_seal": {
+       "kind": "authorized_external_specimen",
+       "n_files": 31,
+       "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+       "specimen": "qwen3.8-27b-abliterated-bf16@local",
+       "status": "SEALED",
+       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+      }
+     },
+     "falsifier": "EXECUTABLE_ECONOMICS applies this calibration as a stream-class rate. The measurement is one layer of one parent on one machine. Billing-by-stream-class is the method; the zero-rate is MODEL_LOCAL / ORGAN_LOCAL / MACHINE_LOCAL until a named specimen replicates it.",
+     "identity": "LAW-BROADCAST-AUX-NON-CRITICALITY",
+     "machine_binding": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "ORIGINAL",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "m3_ultra",
+      "machine_tier": "MACHINE_LOCAL",
+      "model_tier": "MODEL_LOCAL",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "ORGAN_LOCAL",
+      "organs": [
+       "mlp"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/CLAIM_SCOPE.json",
+     "transfer_tests": [
+      "EXECUTABLE_ECONOMICS applies this calibration as a stream-class rate. The measurement is one layer of one parent on one machine. Billing-by-stream-class is the method; the zero-rate is MODEL_LOCAL / ORGAN_LOCAL / MACHINE_LOCAL until a named specimen replicates it."
+     ]
+    },
+    "reason": "law LAW-BROADCAST-AUX-NON-CRITICALITY was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['mlp'], 'machine': 'm3_ultra', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': 'ORIGINAL', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': 'MODEL_LOCAL', 'organ_tier': 'ORGAN_LOCAL', 'machine_tier': 'MACHINE_LOCAL'}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/CLAIM_SCOPE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-MLP-FUNCTION-REPLACEMENT-CLOSED",
+    "law": {
+     "claim": "Function replacement of F(x)=down(silu(gate(x))*up(x)) is CLOSED for qwen3.8-27b sealed-3.14 MLP on layers [3, 31, 38, 63] with a teacher corpus of 45076 prompt-split rows (scar MLP_FUNCTION_REPLACEMENT_CLOSED in receipts/future/MLP_STRUCTURED_OPERATOR.json). The receipt already labels the scar MODEL_SPECIFIC. A different parent reopens. Not 'MLP function replacement is closed' for Hawking.",
+     "confidence": {
+      "basis": "claim_scope.scope_kind='ORIGINAL'; cited, not remeasured",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "receipts/future/MLP_STRUCTURED_OPERATOR.json",
+      "receipts/future/MLP_TEACHER_CORPUS.json"
+     ],
+     "experiment_identity": {
+      "code_and_build_identity": {
+       "binary_sha256_pin": "d34044cffae8f320",
+       "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+       "git_head_short": "36691aa32",
+       "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+      },
+      "laws_scars_version": {
+       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "missing": [],
+       "pins": {
+        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+       },
+       "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+      },
+      "machine_genome": {
+       "arch": "arm64",
+       "cpu_cores": 28,
+       "gpu_cores": 60,
+       "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+       "readable": true,
+       "receipt": "receipts/headless/MACHINE_GENOME.json",
+       "remeasured": false,
+       "schema": "hawking.accelerator.machine_genome.v1",
+       "soc": "Apple M3 Ultra"
+      },
+      "model_revision": {
+       "model_id": "qwen3.8-27b-sealed-3.14",
+       "resident_identity": "sealed-3.14",
+       "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+       "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+      },
+      "resident_identity": {
+       "bound": true,
+       "nx_id": {
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "protocol": "hawking.qwen38.resident.v1",
+        "resident_identity": "sealed-3.14"
+       },
+       "resident_identity": "sealed-3.14",
+       "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+       "source": "receipts/future/RESIDENT_IDENTITY.json"
+      },
+      "specimen_seal": {
+       "kind": "authorized_external_specimen",
+       "n_files": 31,
+       "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+       "specimen": "qwen3.8-27b-abliterated-bf16@local",
+       "status": "SEALED",
+       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+      }
+     },
+     "falsifier": "The short form 'is_function_replacement_closed: YES' drops the parent, the organ, the four layers, and the 45,076-row corpus. That is the over-broad statement. Narrowed back to the evidence. The scar remains; the universe is named.",
+     "identity": "LAW-MLP-FUNCTION-REPLACEMENT-CLOSED",
+     "machine_binding": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+     "scar_ids": [
+      "MLP_FUNCTION_REPLACEMENT_CLOSED"
+     ],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "ORIGINAL",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "m3_ultra",
+      "machine_tier": "MACHINE_LOCAL",
+      "model_tier": "MODEL_LOCAL",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "ORGAN_LOCAL",
+      "organs": [
+       "mlp"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/CLAIM_SCOPE.json",
+     "transfer_tests": [
+      "The short form 'is_function_replacement_closed: YES' drops the parent, the organ, the four layers, and the 45,076-row corpus. That is the over-broad statement. Narrowed back to the evidence. The scar remains; the universe is named."
+     ]
+    },
+    "reason": "law LAW-MLP-FUNCTION-REPLACEMENT-CLOSED was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['mlp'], 'machine': 'm3_ultra', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': 'ORIGINAL', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': 'MODEL_LOCAL', 'organ_tier': 'ORGAN_LOCAL', 'machine_tier': 'MACHINE_LOCAL'}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/CLAIM_SCOPE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-PROBE-UNDERSELLS-TOKEN",
+    "law": {
+     "claim": "On qwen3.8-27b sealed-3.14, this machine, fold_addqx: the one-layer probe projected 1.745 ms and the complete-token A/B saved 3.9833 ms and was NOT bit-identical (receipts/future/FOLD_ADDQX_AB.json#finding). Probe \u2260 token for THIS lever on THIS parent on THIS machine. The class is a campaign scar in the making; the quantity is not a generic probe law.",
+     "confidence": {
+      "basis": "claim_scope.scope_kind='ORIGINAL'; cited, not remeasured",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "receipts/future/FOLD_ADDQX_AB.json"
+     ],
+     "experiment_identity": {
+      "code_and_build_identity": {
+       "binary_sha256_pin": "d34044cffae8f320",
+       "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+       "git_head_short": "36691aa32",
+       "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+      },
+      "laws_scars_version": {
+       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "missing": [],
+       "pins": {
+        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+       },
+       "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+      },
+      "machine_genome": {
+       "arch": "arm64",
+       "cpu_cores": 28,
+       "gpu_cores": 60,
+       "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+       "readable": true,
+       "receipt": "receipts/headless/MACHINE_GENOME.json",
+       "remeasured": false,
+       "schema": "hawking.accelerator.machine_genome.v1",
+       "soc": "Apple M3 Ultra"
+      },
+      "model_revision": {
+       "model_id": "qwen3.8-27b-sealed-3.14",
+       "resident_identity": "sealed-3.14",
+       "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+       "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+      },
+      "resident_identity": {
+       "bound": true,
+       "nx_id": {
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "protocol": "hawking.qwen38.resident.v1",
+        "resident_identity": "sealed-3.14"
+       },
+       "resident_identity": "sealed-3.14",
+       "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+       "source": "receipts/future/RESIDENT_IDENTITY.json"
+      },
+      "specimen_seal": {
+       "kind": "authorized_external_specimen",
+       "n_files": 31,
+       "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+       "specimen": "qwen3.8-27b-abliterated-bf16@local",
+       "status": "SEALED",
+       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+      }
+     },
+     "falsifier": "Generalising one lever's probe/token disagreement into 'probes undersell tokens' would let a later specimen inherit a magnitude it never earned. Narrowed to fold_addqx / sealed-3.14 / this machine.",
+     "identity": "LAW-PROBE-UNDERSELLS-TOKEN",
+     "machine_binding": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "ORIGINAL",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "m3_ultra",
+      "machine_tier": "MACHINE_LOCAL",
+      "model_tier": "MODEL_LOCAL",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "ORGAN_LOCAL",
+      "organs": [
+       "mlp"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/CLAIM_SCOPE.json",
+     "transfer_tests": [
+      "Generalising one lever's probe/token disagreement into 'probes undersell tokens' would let a later specimen inherit a magnitude it never earned. Narrowed to fold_addqx / sealed-3.14 / this machine."
+     ]
+    },
+    "reason": "law LAW-PROBE-UNDERSELLS-TOKEN was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['mlp'], 'machine': 'm3_ultra', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': 'ORIGINAL', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': 'MODEL_LOCAL', 'organ_tier': 'ORGAN_LOCAL', 'machine_tier': 'MACHINE_LOCAL'}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/CLAIM_SCOPE.json",
+    "usable": false
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "found": true,
+    "identity": "LAW-497P4-ANCHOR",
+    "law": {
+     "claim": "497.4 GB/s is the ARM-A-stripped MLP affine2 rate on qwen3.8-27b sealed-3.14, one representative layer, this machine (receipts/future/MLP_ALU_ROOFLINE.json#mlp.arm_a_stripped.effective_gb_s). The production LM head on the same parent/machine is cited at the same figure (receipts/future/ROOF_ANCHOR.json#lm_head_production_497p4). It is not a DRAM roof, not a published-peak substitute, and not a law about other models or other organs. Causal-budget rungs that put 'every organ at 497.4' are hypothetical ladders, not replications.",
+     "confidence": {
+      "basis": "claim_scope.scope_kind='ORIGINAL'; cited, not remeasured",
+      "value": "UNRECORDED"
+     },
+     "evidence": [
+      "receipts/future/MLP_ALU_ROOFLINE.json",
+      "receipts/future/ROOF_ANCHOR.json"
+     ],
+     "experiment_identity": {
+      "code_and_build_identity": {
+       "binary_sha256_pin": "d34044cffae8f320",
+       "dirty_source_label": "DIRTY_SOURCE_DIAGNOSTIC",
+       "git_head": "36691aa32412e3cc38b3f9f7d2575e1d59e9cff4",
+       "git_head_short": "36691aa32",
+       "source": "git rev-parse HEAD + RESIDENT_IDENTITY executable_hash pin"
+      },
+      "laws_scars_version": {
+       "digest": "d3e3d756e7cee4905507b6484b8d464620a69bd3b48457c77fa1691ac464fa8e",
+       "missing": [],
+       "pins": {
+        "receipts/future/CAMPAIGN_SCARS.json": "c2ee58385c35fe62c020f0efca1e143b54ad18285c44c5df046ae4640d61a08d",
+        "receipts/future/MLP_STRUCTURED_OPERATOR.json": "67024233707e71aec2694e1e57a9bfd4be2362ac3f95573e1e1d9f876f759393",
+        "receipts/future/NEGATIVE_SCIENCE_INDEX.json": "d10002f5ac1884dced76c4ae2db38a9921752d355fb61e713e5c83b1aeb03b65",
+        "receipts/future/ODYSSEY2_LAW_STORE.json": "3803c2c280c874f2d62c97359ad9bfe0768d96b3310a062a181ee9821dc972da"
+       },
+       "rule": "an experiment is judged against a named laws/scars version; a later scar does not silently rewrite an earlier verdict"
+      },
+      "machine_genome": {
+       "arch": "arm64",
+       "cpu_cores": 28,
+       "gpu_cores": 60,
+       "note": "Identity pin of the machine the campaign ran on. Bandwidth figures in that receipt are NOT copied here and are NOT a roof.",
+       "readable": true,
+       "receipt": "receipts/headless/MACHINE_GENOME.json",
+       "remeasured": false,
+       "schema": "hawking.accelerator.machine_genome.v1",
+       "soc": "Apple M3 Ultra"
+      },
+      "model_revision": {
+       "model_id": "qwen3.8-27b-sealed-3.14",
+       "resident_identity": "sealed-3.14",
+       "source": "hcli/hawking-native.sealed-3.14.json (cited; packed parent of the campaign)",
+       "weight_specimen": "qwen3.8-27b-abliterated-bf16@local"
+      },
+      "resident_identity": {
+       "bound": true,
+       "nx_id": {
+        "model_id": "qwen3.8-27b-sealed-3.14",
+        "protocol": "hawking.qwen38.resident.v1",
+        "resident_identity": "sealed-3.14"
+       },
+       "resident_identity": "sealed-3.14",
+       "sealed_model_id": "qwen3.8-27b-sealed-3.14",
+       "source": "receipts/future/RESIDENT_IDENTITY.json"
+      },
+      "specimen_seal": {
+       "kind": "authorized_external_specimen",
+       "n_files": 31,
+       "source": "receipts/future/EXTERNAL_SPECIMEN_SEAL.json",
+       "specimen": "qwen3.8-27b-abliterated-bf16@local",
+       "status": "SEALED",
+       "tree_digest": "c7c81652283f9324994e0e1a60e52b0a8bf92f9a0d2167d2af2ab341d3073750"
+      }
+     },
+     "falsifier": "roof_anchor correctly named 497.4 and refused 595.9/703.5 as the production roof. 'Every organ at 497.4' still over-reaches ORGAN. Treating 497.4 as the machine's DRAM property over-reaches the f32-triad genome and this parent's MLP/LM-head measurements. Narrowed to MODEL_LOCAL / ORGAN_LOCAL (mlp, with lm_head as a same-parent coincidence not a replication) / MACHINE_LOCAL.",
+     "identity": "LAW-497P4-ANCHOR",
+     "machine_binding": "Apple M3 Ultra (MACHINE_GENOME.json; not remeasured)",
+     "scar_ids": [],
+     "scope": {
+      "architecture_family": "",
+      "backend": "",
+      "condition": "ORIGINAL",
+      "excluded_models": [],
+      "lattice": "MODEL_LOCAL",
+      "machine": "m3_ultra",
+      "machine_tier": "MACHINE_LOCAL",
+      "model_tier": "MODEL_LOCAL",
+      "models": [
+       "qwen3.8-27b"
+      ],
+      "organ_tier": "ORGAN_LOCAL",
+      "organs": [
+       "mlp"
+      ],
+      "representation": ""
+     },
+     "source_path": "receipts/future/CLAIM_SCOPE.json",
+     "transfer_tests": [
+      "roof_anchor correctly named 497.4 and refused 595.9/703.5 as the production roof. 'Every organ at 497.4' still over-reaches ORGAN. Treating 497.4 as the machine's DRAM property over-reaches the f32-triad genome and this parent's MLP/LM-head measurements. Narrowed to MODEL_LOCAL / ORGAN_LOCAL (mlp, with lm_head as a same-parent coincidence not a replication) / MACHINE_LOCAL."
+     ]
+    },
+    "reason": "law LAW-497P4-ANCHOR was measured in scope {'models': ['qwen3.8-27b'], 'organs': ['mlp'], 'machine': 'm3_ultra', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': 'ORIGINAL', 'lattice': 'MODEL_LOCAL', 'excluded_models': [], 'model_tier': 'MODEL_LOCAL', 'organ_tier': 'ORGAN_LOCAL', 'machine_tier': 'MACHINE_LOCAL'}; query {'models': ['deepseek-v4-flash'], 'organs': ['gate'], 'machine': '', 'representation': '', 'architecture_family': '', 'backend': '', 'condition': '', 'lattice': '', 'excluded_models': [], 'model_tier': '', 'organ_tier': '', 'machine_tier': ''} is outside that scope and must not be silently generalized",
+    "refused": true,
+    "source_path": "receipts/future/CLAIM_SCOPE.json",
+    "usable": false
+   }
+  ],
+  "out_of_scope_not_blocked": [
+   {
+    "flag": "OUT_OF_SCOPE",
+    "reason": "scar matches family but not measured scope; retry is not banned",
+    "scar_id": "NNS-004",
+    "scope": {
+     "architecture_family": "",
+     "backend": "",
+     "condition": "weight-space and row-normalized pairwise cosine; shared template energy",
+     "excluded_models": [
+      "deepseek-v4-flash"
+     ],
+     "lattice": "MODEL_SPECIFIC",
+     "machine": "",
+     "machine_tier": "",
+     "model_tier": "",
+     "models": [
+      "qwen3-235b-a22b",
+      "qwen3-80b",
+      "gpt-oss-120b"
+     ],
+     "organ_tier": "",
+     "organs": [
+      "gate",
+      "up"
+     ],
+     "representation": ""
+    },
+    "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json"
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "reason": "scar matches family but not measured scope; retry is not banned",
+    "scar_id": "cross_expert_and_cross_layer_tying",
+    "scope": {
+     "architecture_family": "",
+     "backend": "",
+     "condition": "",
+     "excluded_models": [],
+     "lattice": "MODEL_SPECIFIC",
+     "machine": "",
+     "machine_tier": "",
+     "model_tier": "",
+     "models": [
+      "qwen3-235b-a22b"
+     ],
+     "organ_tier": "",
+     "organs": [],
+     "representation": ""
+    },
+    "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json"
+   },
+   {
+    "flag": "OUT_OF_SCOPE",
+    "reason": "scar matches family but not measured scope; retry is not banned",
+    "scar_id": "inter_expert_redundancy",
+    "scope": {
+     "architecture_family": "",
+     "backend": "",
+     "condition": "",
+     "excluded_models": [],
+     "lattice": "MODEL_SPECIFIC",
+     "machine": "",
+     "machine_tier": "",
+     "model_tier": "",
+     "models": [
+      "gpt-oss-120b"
+     ],
+     "organ_tier": "",
+     "organs": [],
+     "representation": ""
+    },
+    "source_path": "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json"
+   }
+  ]
+ },
+ "seal_sha256": "9a9fb71b04991c631077a1aadff9788330ee7bf371d744b790437513c5e1f97a",
  "top_reopenable_families": [
   {
    "died_at": {

@@ -14,7 +14,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:06Z",
+  "recorded_at": "2026-09-02T09:38:58Z",
   "recorded_by": "tools/future/odyssey3_adversary.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1686,13 +1686,13 @@
  "n_laws": 4,
  "negative_findings": [
   "receipts/future/ODYSSEY2_LAW_STORE.json present; sibling module was not imported",
-  "sparse checkout: recovered adversary/negative-science paths not on disk: (all recovered paths materialized)",
+  "sparse checkout: recovered adversary/negative-science paths not on disk: receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json, receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json, receipts/headless/NOETIC_NEGATIVE_SCIENCE.json, receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json, receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
   "no GPU lease: physical arms of every spec are not_run / UNKNOWN",
   "did not execute tools/headless/adversarial_sweep.py (it writes Codex receipts)",
   "did not execute tools/headless/frontier_adversary.py or gate_adversary.py",
   "evidence_refs on fixture laws are citations; this checkout may not materialize them",
   "independence limitation: the same operator wrote the fixture laws and the attacks",
-  "on_disk recovered paths: receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json, receipts/future/CLAUDE_GLOBAL_FRONTIER.json, receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json, receipts/headless/NOETIC_NEGATIVE_SCIENCE.json, receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json, receipts/headless/ODYSSEY_TRANSFER_PROVEN.json, tools/headless/adversarial_sweep.py, tools/headless/frontier_adversary.py, tools/headless/gate_adversary.py, tools/headless/negative_science.py, tools/headless/noetic_negative_science.py, tools/odyssey/contamination.py, tools/odyssey/known_failures.py"
+  "on_disk recovered paths: receipts/future/CLAUDE_GLOBAL_FRONTIER.json, tools/headless/adversarial_sweep.py, tools/headless/frontier_adversary.py, tools/headless/gate_adversary.py, tools/headless/negative_science.py, tools/headless/noetic_negative_science.py, tools/odyssey/contamination.py, tools/odyssey/known_failures.py"
  ],
  "odysseys": [
   "I WHAT IS TRUE?",
@@ -1740,19 +1740,19 @@
   },
   {
    "gap": "evidence of a different adversary; not a law store",
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/ODYSSEY_ADVERSARIAL_SWEEP.json",
    "role": "G031 sweep receipt (27 gates, 1 weakened on stale_cache)"
   },
   {
    "gap": "consumed as scar memory for attack families; not extended in place",
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
    "role": "watched-fail memory: cosine scale-invariance, Gaussian proxy, skip-as-gate"
   },
   {
    "gap": "ascent-campaign register, not an Odyssey III loop",
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/ascent-2026-08-16/NEGATIVE_SCIENCE_REGISTER.json",
    "role": "38 entries REFUTED/DEAUTHORISED/CATEGORY_ERROR with retry_when"
   },
@@ -1770,13 +1770,13 @@
   },
   {
    "gap": "seed for LAW-Q4-REPRESENTATION-FIDELITY-TRANSFER",
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/ACCELERATOR_TRANSFER_VERIFIED.json",
    "role": "kernel vs representation transfer; layout trap on Qwen3-VL"
   },
   {
    "gap": "seed for LAW-AFFINE-SEEDED-MATCHED-BITS",
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/headless/ODYSSEY_TRANSFER_PROVEN.json",
    "role": "cold vs transfer; matched-bits 3/3; honest_note that COLD won landing"
   },
@@ -1797,7 +1797,7 @@
   "MACHINE_LOCAL",
   "REFUTED"
  ],
- "seal_sha256": "716644f219ccccb588f67ac2b849da92c1bd473f2d2f27ead26e3052f1b00259",
+ "seal_sha256": "a8afd072ca7437ace2fa2da62b449cd4ed65158595f267cfb50c29ae1a710a8b",
  "selection_rule": "selection_score = cost_units / p_refutation; emit lowest score first (cheapest expected cost per refutation). Every law gets at least one attack or the emitter refuses.",
  "version": 1
 }

@@ -169,6 +169,17 @@ class WorkUnitDAG:
         return dag
 
 
+# Names an obligation marks as code: `backticked` or written as a call.
+_SYMBOL_RE = re.compile(
+    r"`([A-Za-z_][A-Za-z0-9_.]*)`"
+    r"|\b([A-Za-z_][A-Za-z0-9_.]*)\s*\("
+)
+_EXTENSIONS = frozenset(
+    "py pyi js jsx ts tsx md json yaml yml toml rs go txt".split()
+)
+_CODE_EXTENSIONS = frozenset("py pyi rs go ts tsx js jsx".split())
+
+
 class GoalCompiler:
     """Compile a durable natural-language goal into focused deterministic IR.
 
@@ -344,9 +355,73 @@ class GoalCompiler:
         ]
         if test_files:
             return f"python3 -m pytest {test_files[0]}"
-        # Honest: no verifier yet. Ledger.run_verify refuses empty
-        # commands (passed=False), so the obligation cannot reach VERIFIED.
-        return ""
+        return self._synthesised_verify_command(f"{title}\n{body}", named)
+
+    # A code-shaped name: has an underscore, mixes case, or is an all-caps
+    # constant. Prose words ("works", "pass") fail all three, so `works (see
+    # below)` never becomes a symbol to grep for.
+    @staticmethod
+    def _is_code_shaped(token: str) -> bool:
+        if not token or token.lower() in _EXTENSIONS:
+            return False
+        if "_" in token:
+            return True
+        if token.isupper() and len(token) >= 3:
+            return True
+        return token != token.lower() and token != token.upper()
+
+    def _claim_symbols(self, blob: str) -> List[str]:
+        """Names the obligation asserts into existence, in first-seen order."""
+        out: List[str] = []
+        for backticked, called in _SYMBOL_RE.findall(blob):
+            token = (backticked or called).strip(".")
+            if not self._is_code_shaped(token.replace(".", "_")):
+                continue
+            for part in token.split("."):
+                if self._is_code_shaped(part) and part not in out:
+                    out.append(part)
+            if len(out) >= 3:
+                break
+        return out[:3]
+
+    def _synthesised_verify_command(self, blob: str, named: List[str]) -> str:
+        """Derive a check from the claim when no test file is named.
+
+        Binds to a DEFINITION of each claimed name, never to a mention: the
+        obligation's own prose gets committed too, so `git grep NAME` alone
+        would go green on the goal text that asked for NAME.
+
+        Returns "" when the claim yields nothing checkable -- no code-shaped
+        name, or no source file to scope the search to. That is deliberate:
+        `Ledger.run_verify` refuses an empty command, so the obligation stays
+        unVERIFIED. Two false greens are refused here rather than emitted:
+        a check that only asserts a named file EXISTS goes green on an empty
+        file, and an unscoped repo-wide search goes green because some
+        unrelated file among 15k already defines a same-named symbol -- which
+        `goal_compile.check_disk_satisfaction` would read as "already done"
+        and skip the work entirely.
+        """
+        symbols = self._claim_symbols(blob)
+        # Only paths this obligation itself names. `named` falls back to the
+        # WHOLE goal's file list, which is how 20 units ended up gating on
+        # whichever filename appeared first anywhere in the text.
+        scope = [
+            p
+            for p in named
+            if p in blob and p.rsplit(".", 1)[-1].lower() in _CODE_EXTENSIONS
+        ]
+        if not symbols or not scope:
+            return ""
+        pathspec = " ".join(f"'{p}'" for p in scope[:4])
+        # ponytail: git grep sees tracked files only, so an untracked new file
+        # reads as absent. Fine here (HCLI lands its work as commits); switch to
+        # a walk if untracked worktrees ever need to verify.
+        return " && ".join(
+            "git grep -qE -- "
+            f"'(def|class)[[:space:]]+{sym}[^A-Za-z0-9_]"
+            f"|^[[:space:]]*{sym}[[:space:]]*=[^=]' -- {pathspec}"
+            for sym in symbols
+        )
 
     def _obligation_from_section(
         self,
@@ -479,6 +554,10 @@ class GoalCompiler:
                 f"{cover} {description}",
                 [],
                 role="implementation",
+                # Cognition opens the 11 GB resident. LIGHT_CONTROL admits 128
+                # of them; GPU_DECODE admits one, which is what "one resident"
+                # means. Same defect as the obligation path, same fix.
+                resource_class="GPU_DECODE",
             )
             verifies = [
                 str(ob.get("verify") or "").strip()
@@ -518,7 +597,15 @@ class GoalCompiler:
                 deps,
                 role=str(ob.get("role") or "implementation"),
                 verifier=ob_verify or None,
-                resource_class="TEST" if ob_verify else None,
+                # A unit with no verify command is a COGNITION unit: it will
+                # open the resident. `WorkUnit.resource_class` defaults to
+                # LIGHT_CONTROL, whose limit is 128, so a goal with eight
+                # obligations dispatched eight cognition units at once and each
+                # opened its own 11 GB model body -- 88 GB on a 96 GB host.
+                # Reproduced twice: free RAM fell to 0.2 GB and the supervisor
+                # correctly refused with WAITING_FOR_MEMORY. GPU_DECODE has a
+                # limit of 1, which is what "one resident" actually means.
+                resource_class="TEST" if ob_verify else "GPU_DECODE",
                 # A unit whose acceptance IS a command belongs on the backend
                 # that runs commands. Left to default cognition it was routed to
                 # the model, which then tried to CREATE the very test file the
@@ -526,6 +613,31 @@ class GoalCompiler:
                 # reason unrelated to the claim.
                 preferred_backend="cpu" if ob_verify else None,
             )
+            if ob_verify:
+                # An obligation that carries a verify command needs TWO units,
+                # not one. Emitting only the TEST unit produced a mission that
+                # could RUN its gates and never implement anything -- the exact
+                # mirror of the cognition-only failure, and just as useless:
+                # every unit ran pytest on a red gate, failed in seconds, and
+                # repaired. `_default_dag` already has the right shape
+                # (implement -> validate); the obligation path lacked it.
+                #
+                # The unit added above is the GATE (TEST, cpu backend). This is
+                # the work that makes the gate green: cognition, GPU_DECODE so
+                # the scheduler admits exactly one resident at a time, and the
+                # gate depends on it.
+                work_id = f"{oid}.work"
+                dag.add_unit(
+                    work_id,
+                    f"obligation={oid} {ob['text']}",
+                    deps,
+                    role=str(ob.get("role") or "implementation"),
+                    resource_class="GPU_DECODE",
+                )
+                unit = dag.units.get(oid)
+                if unit is not None:
+                    existing = [d for d in (unit.dependencies or []) if d != work_id]
+                    unit.dependencies = existing + [work_id]
             if ob.get("kind") == "phase":
                 last_phase = oid
         return dag

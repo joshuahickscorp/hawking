@@ -1131,6 +1131,31 @@ def test_device_compiler_module_is_the_authority():
     assert nng.dcomp.lower_plan is not None
 
 
+def test_ephemeral_scratch_dir_names_are_scrubbed_before_receipt_write():
+    """assemble() compiles through two mkdtemp scratch dirs neither call site
+    pins a name for (nr_nx_generic's own "hawking-nx-cap-*" and
+    device_compiler's "hawking-dc-archives-*"), both rmtree'd before build()
+    returns. The random suffix is not evidence - a rerun that compiled
+    byte-identical archives still gets a different suffix - so two runs that
+    only differ by mkdtemp's random name must scrub to the same receipt.
+    """
+    doc = {
+        "capture_dir": "/tmp/hawking-nx-cap-ab12cd34",
+        "nested": {
+            "path": "/tmp/hawking-nx-cap-ab12cd34/embed.mtlarchive",
+            "archive_path": "/tmp/hawking-dc-archives-99zz11xx/rmsnorm.mtlarchive",
+        },
+        "unrelated": "/tmp/some-other-dir/file.txt",
+    }
+    scrubbed_a = nng._scrub_ephemeral_scratch_paths(doc)
+    doc2 = json.loads(json.dumps(doc).replace("ab12cd34", "different99").replace("99zz11xx", "alsodiff01"))
+    scrubbed_b = nng._scrub_ephemeral_scratch_paths(doc2)
+    assert scrubbed_a == scrubbed_b, "two different mkdtemp suffixes must scrub to the same receipt content"
+    assert scrubbed_a["capture_dir"] == "/tmp/hawking-nx-cap-EPHEMERAL"
+    assert scrubbed_a["nested"]["archive_path"] == "/tmp/hawking-dc-archives-EPHEMERAL/rmsnorm.mtlarchive"
+    assert scrubbed_a["unrelated"] == "/tmp/some-other-dir/file.txt", "unrelated paths must not be touched"
+
+
 def test_no_pytest_skip_in_this_file():
     src = Path(__file__).read_text()
     tree = ast.parse(src)

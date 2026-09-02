@@ -33,7 +33,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:39:55Z",
+  "recorded_at": "2026-09-02T09:04:16Z",
   "recorded_by": "tools.future.p6_projection.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -79,6 +79,8 @@
   "front_g_p6": {
    "consulted": [
     "receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
+    "/Users/scammermike/.claude-grok/worktrees/d1-doctor-depth-20260902-045450/receipts/headless/ACCELERATOR_FRONT_G_P6.json",
     "receipts/future/evidence/ACCELERATOR_FRONT_G_P6.json"
    ],
    "evidence_source": "live_headless",
@@ -88,6 +90,8 @@
   "qualification_queue": {
    "consulted": [
     "receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "/private/tmp/claude-503/-Users-scammermike-Downloads-hawking/3ecaaf4a-e397-42f6-bda8-00a804414541/scratchpad/basecheck/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
+    "/Users/scammermike/.claude-grok/worktrees/d1-doctor-depth-20260902-045450/receipts/headless/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json",
     "receipts/future/evidence/ACCELERATOR_PHYSICAL_QUALIFICATION_QUEUE.json"
    ],
    "evidence_source": "live_headless",
@@ -115,7 +119,7 @@
   "FPGA form cites fpga_engines functional references; no HDL, no backend."
  ],
  "gpu_authority": false,
- "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
+ "head": "6d82b7bb8256254f7cc78630362f859f4c105159",
  "negative_findings": [
   "No protected GPU lease: every hardware quantity remains UNKNOWN.",
   "No FPGA board, bitstream, or cycle-accurate model; FPGA forms are hypotheses.",
@@ -250,12 +254,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "f5ee2b7aefc1996cec48daeb169cecf49dbf53513bd83e9b780abd41a3c117a2",
+     "fingerprint": "a19ca46aad2160d93cf262c3b836a0a6f6ea30ee478fa6869ecc41ed916525d9",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "layout",
        "inputs": {
         "packed": "compact_representation_fragment"
@@ -263,6 +270,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "tiled": "compact_representation_fragment"
@@ -291,7 +299,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "quant",
        "inputs": {
         "tiled": "compact_representation_fragment",
@@ -300,6 +310,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "BF16 activation to packed E4M3FN at the consumer; RNE table",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "q": "compact_representation_fragment"
@@ -326,12 +337,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -358,12 +372,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -601,12 +618,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "c272f7ec0a3416ef7cdc46dea3c17860508dc3bfdbb7138ca03a1bcbdf3764ca",
+     "fingerprint": "f9758461c9f7655561e526dc1f7fe9b3ead4e7b7607556e4edc348e70c2a28bf",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "pipe",
        "inputs": {
         "q": "compact_representation_fragment"
@@ -614,6 +634,7 @@
        "kind": "persistent-pipeline",
        "lifetime": null,
        "mapping": "one engine, seven banks; GraphReplay of the dispatch topology",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "compact_representation_fragment"
@@ -640,7 +661,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "qat",
        "inputs": {
         "x": "activation"
@@ -648,6 +671,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "fixed-seven indirect QAT; same arithmetic, packed pointer binding",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "q": "compact_representation_fragment"
@@ -676,7 +700,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "replay",
        "inputs": {
         "y": "compact_representation_fragment"
@@ -684,6 +710,7 @@
        "kind": "persistent-pipeline",
        "lifetime": "resident",
        "mapping": "compile_once_reuse of the fixed-seven indirect record",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "out": "compact_representation_fragment"
@@ -710,12 +737,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -958,12 +988,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "f0baff7a71731c6a70b39e896b53dfc94e05c2734c77a11d2e54cd4571553f6e",
+     "fingerprint": "8a1be6c0444141f4592b9432a4c51f190ad412e457a31e8856681295861c8a77",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "accum",
        "inputs": {
         "y": "activation"
@@ -971,6 +1004,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "route_then_native_expert; selected_payload_only",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "out": "partial_reduction"
@@ -997,7 +1031,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "decode",
        "inputs": {
         "packed": "compact_representation_fragment",
@@ -1006,6 +1042,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "projection_plus_decode native_decode; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "activation"
@@ -1032,12 +1069,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -1064,12 +1104,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -1311,12 +1354,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "9a9cd31b96968e3ecc236d24ee644f60d7668545acf0f789ac05bc027b2a3b0d",
+     "fingerprint": "5ec7bef840707e7ff7a0de26c996dab8d9fe1faf29105e1709a228a02af39e5a",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "pipe",
        "inputs": {
         "x": "activation"
@@ -1324,6 +1370,7 @@
        "kind": "persistent-pipeline",
        "lifetime": null,
        "mapping": "composed fused epilogues; explicit dependency waves",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "activation"
@@ -1350,7 +1397,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "replay",
        "inputs": {
         "y": "activation"
@@ -1358,6 +1407,7 @@
        "kind": "persistent-pipeline",
        "lifetime": null,
        "mapping": "compile_once_reuse of the composed P6 graph; measure interaction",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "z": "activation"
@@ -1384,12 +1434,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -1769,17 +1822,21 @@
        "src_port": "packed"
       }
      ],
-     "fingerprint": "60205e19c0c6f674c6903c6c96cd0abbba973f10d3dcc6fd245375cb1556cb05",
+     "fingerprint": "bad215cdf921216e92bc07876f406aa4bb9ba41093ece233acf59df5fdfca957",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "bank",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed FP4/FP8 expert source bundles; no decoded dense weights",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -1806,7 +1863,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "region",
        "inputs": {
         "packed": "compact_representation_fragment"
@@ -1814,6 +1873,7 @@
        "kind": "persistent-pipeline",
        "lifetime": "sequence",
        "mapping": "long_lived_executor; bindings remain valid across overlapping routes",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "held": "compact_representation_fragment"
@@ -2222,12 +2282,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "79d464e0a97ad66cdccaaa81caafe8510a1cfc77e162b55de5796052ddc408c6",
+     "fingerprint": "7e49557241f793fac0f23a5ad7a098644fac789087f668f418750333447f0b69",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "gate",
        "inputs": {
         "x": "activation"
@@ -2235,6 +2298,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "Gate reduction; reads shared input, disjoint output vs QAT",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "logits": "activation"
@@ -2261,7 +2325,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "pipe",
        "inputs": {
         "logits": "activation",
@@ -2270,6 +2336,7 @@
        "kind": "persistent-pipeline",
        "lifetime": null,
        "mapping": "spatial_regions; local_intermediates; producer-consumer overlap",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "activation"
@@ -2296,7 +2363,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "qat",
        "inputs": {
         "x": "activation"
@@ -2304,6 +2373,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "activation quantization; reads shared input, disjoint output vs Gate",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "q": "compact_representation_fragment"
@@ -2330,12 +2400,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -2574,12 +2647,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "f3389b29c82a6d18fcf22ae141af514a5f18dec83fcc30f0caa3bc2750d1ce04",
+     "fingerprint": "abd1ee86840f9ff6e8452d0764c89da2cae0d963fe033cab98e97d27f898c062",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "accum",
        "inputs": {
         "y": "activation"
@@ -2587,6 +2663,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "route_then_native_expert; selected_payload_only",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "out": "partial_reduction"
@@ -2613,7 +2690,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "decode",
        "inputs": {
         "packed": "compact_representation_fragment",
@@ -2622,6 +2701,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "projection_plus_decode native_decode; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "activation"
@@ -2648,12 +2728,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -2680,12 +2763,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -2939,12 +3025,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "2bf68a5ef79a61b037b143a22e6564733fa5ca853b0abee2d93cbdbfaa94864c",
+     "fingerprint": "55c850afbdf24a599fd28c83326ce0782e95b304ee6e9de4940819b346fe1219",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "accum",
        "inputs": {
         "y": "activation"
@@ -2952,6 +3041,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "route_then_native_expert",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "out": "partial_reduction"
@@ -2978,7 +3068,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "decode",
        "inputs": {
         "tiled": "compact_representation_fragment",
@@ -2987,6 +3079,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "projection_plus_decode native_decode",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "activation"
@@ -3013,7 +3106,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "layout",
        "inputs": {
         "packed": "compact_representation_fragment"
@@ -3021,6 +3116,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "tiled": "compact_representation_fragment"
@@ -3049,12 +3145,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -3081,12 +3180,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -3333,12 +3435,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "c660852db037658932efb2c51a908fc5bdbabf384f504f4e877e413925c426c9",
+     "fingerprint": "b87033912a0530706382e4485e923ae4ca7a8c4ab42987b2cf41129b061784ab",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "accum",
        "inputs": {
         "y": "activation"
@@ -3346,6 +3451,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "route_then_native_expert; selected_payload_only",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "out": "partial_reduction"
@@ -3372,7 +3478,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "decode",
        "inputs": {
         "packed": "compact_representation_fragment",
@@ -3381,6 +3489,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "projection_plus_decode native_decode; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "activation"
@@ -3407,12 +3516,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -3439,12 +3551,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -3698,12 +3813,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "b8fa95d902f084973e064f00e7d171bc9c12d166b3313ede69c3ceffe09fb973",
+     "fingerprint": "16b6fc77891a2129847f5d118e439e454162c2962df07a148a3e560e0e650d6c",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "accum",
        "inputs": {
         "y": "activation"
@@ -3711,6 +3829,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "route_then_native_expert",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "out": "partial_reduction"
@@ -3737,7 +3856,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "decode",
        "inputs": {
         "tiled": "compact_representation_fragment",
@@ -3746,6 +3867,7 @@
        "kind": "representation-decoder",
        "lifetime": null,
        "mapping": "projection_plus_decode native_decode",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "activation"
@@ -3772,7 +3894,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "layout",
        "inputs": {
         "packed": "compact_representation_fragment"
@@ -3780,6 +3904,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "tiled": "compact_representation_fragment"
@@ -3808,12 +3933,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -3840,12 +3968,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -4090,12 +4221,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "ee86903a3f282f3610d3647480fa4437edbacb92b337086eea9545b8d3648f37",
+     "fingerprint": "a0260860cca1a2de1dcbf598e650540e247da3f33745dd51c271ac68fd8b616a",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "layout",
        "inputs": {
         "packed": "compact_representation_fragment"
@@ -4103,6 +4237,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "tiled": "compact_representation_fragment"
@@ -4131,7 +4266,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "proj",
        "inputs": {
         "tiled": "compact_representation_fragment",
@@ -4140,6 +4277,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "tiled projection of packed low-bit codes; no dense weight body",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "partial_reduction"
@@ -4166,12 +4304,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -4198,12 +4339,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -4443,12 +4587,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "1639087ef8e6128417a5a820528d69dbc8003b3647c1e39d81656599b5e25404",
+     "fingerprint": "77c8b6a6689323272ea72e76c5e1f083221ceb0cdec865d273728f45941697d5",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "layout",
        "inputs": {
         "packed": "compact_representation_fragment"
@@ -4456,6 +4603,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "tile_and_lane_mapping; simdgroup block ownership",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "tiled": "compact_representation_fragment"
@@ -4484,7 +4632,9 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "proj",
        "inputs": {
         "tiled": "compact_representation_fragment",
@@ -4493,6 +4643,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "tiled projection of packed low-bit codes; no dense weight body",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "y": "partial_reduction"
@@ -4519,12 +4670,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "w",
        "inputs": {},
        "kind": "memory",
        "lifetime": "resident",
        "mapping": "packed_native stationarity_contract; no dense rematerialization",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "packed": "compact_representation_fragment"
@@ -4551,12 +4705,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "x",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -4776,12 +4933,15 @@
        "src_port": "x"
       }
      ],
-     "fingerprint": "a2bd055c0f404633ecd255a7e07a5c60bfe71cab57f6613a08950f38b547e268",
+     "fingerprint": "bc1d634a954793aba5b1818a9347d8e5aa98f42dc4590e2fc398efc2ee0a4db4",
+     "kernel": null,
      "model": "Flash",
      "nodes": [
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "layout",
        "inputs": {
         "x": "activation"
@@ -4789,6 +4949,7 @@
        "kind": "compute",
        "lifetime": null,
        "mapping": "24-SIMDgroup occupancy of mHC-pre rows; RMS partials staged",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "partial": "partial_reduction"
@@ -4817,12 +4978,15 @@
       },
       {
        "assumes_source_tensor_identity": false,
+       "backed_identity": null,
        "dense_weight_materialization": false,
+       "evidence_tier": "STATIC",
        "id": "residual",
        "inputs": {},
        "kind": "memory",
        "lifetime": "token",
        "mapping": "token activation at occupying tier",
+       "memory_tier": null,
        "organ": "",
        "outputs": {
         "x": "activation"
@@ -4958,7 +5122,7 @@
   "p6_projection_module_existed": false
  },
  "schema": "hawking.future.p6_projection.v1",
- "seal_sha256": "4b6250551cc04e2280c24e889b39519d01f90d6ea85f8edc1cf1cb3a31478799",
+ "seal_sha256": "232eda638b8841fed43bf73b6de1111db3cfced50c43dd584f520113c7a1c249",
  "spatially_not_meaningful_ids": [
   "flash-p6-hash-single-command-buffer",
   "flash-p6-learned-reader-reuse"

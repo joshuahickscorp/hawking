@@ -1,0 +1,223 @@
+{
+  "schema": "hawking.future.g015_harvest.v1",
+  "recorded_at": "2026-09-01T06:35:16Z",
+  "recorded_by": "G015 harvest lane; facts from commands in this receipt only",
+  "artifacts_found": {
+    "harness": {
+      "path": "tools/future/model_bearing_torture.py",
+      "bytes": 127993,
+      "window_state": "shown_unchosen dict at line 1904; sort key (shown_unchosen, -gain, id) at 2005; increment of first PROMPT_ENTRY_CAP rows at 2009-2011; pop on launch at 2186",
+      "filler_refill": "WU.HAWKING.health_probe.{cycle:03d} appended when remaining and in_flight are both empty (line 2422)",
+      "duration_s_default": 1800,
+      "duration_flag": "--duration-s"
+    },
+    "window_tests": {
+      "path": "tools/future/test_model_bearing_torture.py",
+      "bytes": 29869,
+      "pytest_window_rotate": "PASSED test_the_prompt_window_rotates_so_the_question_can_change",
+      "pytest_sink_order": "PASSED test_the_rotation_sinks_shown_units_and_keeps_gain_within_a_tier",
+      "pytest_catalog_deeper_than_six": "PASSED test_the_catalog_is_deeper_than_the_run_that_exhausted_it",
+      "pytest_no_filler_on_run_receipt": "FAILED test_the_last_run_needed_no_synthetic_filler: AssertionError: 16 of 33 launches were filler"
+    },
+    "prompt_cap": {
+      "path": "tools/future/model_bearing.py",
+      "bytes": 76920,
+      "PROMPT_ENTRY_CAP": 8,
+      "interpret_fit": "_fit_entries default cap=PROMPT_ENTRY_CAP (8)",
+      "choose_fit": "_fit_entries cap=max(PROMPT_ENTRY_CAP, len(_live)) then shrinks until the ask fits MAX_PROMPT_CHARS; this run's choose menus were 8 wide"
+    },
+    "post_window_receipt": {
+      "path": "receipts/future/MODEL_BEARING_TORTURE_30M.json",
+      "bytes": 37010,
+      "sha1": "e9ff2be5282ee8e25617378bdeb6bd791eac9fcd",
+      "landed_in": "b087a0606",
+      "bench_recorded_at": "2026-09-01T05:17:49Z",
+      "run_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-k3d96tr6",
+      "workspace": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-resident-ws-b97bpdg7",
+      "n_cycles": 33,
+      "elapsed_s": 1832.289,
+      "verdict": "FAIL",
+      "n_cycles_with_a_real_choice": 15,
+      "n_cycles_with_one_or_no_option": 18,
+      "n_choose_asks": 33,
+      "n_distinct_choose_asks": 33,
+      "n_repeated_choose_asks": 0,
+      "n_distinct_question_kinds": 18,
+      "n_diverged_from_policy": 0,
+      "n_launched": 33,
+      "n_health_probe_launched": 16,
+      "n_stale_launched": 10,
+      "sequences_identical": true,
+      "required_events_found": {
+        "hawking_self_workunit": true,
+        "scar_avoidance": true,
+        "second_hypothesis": true,
+        "wait_reason_receipt_replan": true
+      }
+    },
+    "post_window_timeline": {
+      "path": "receipts/future/MODEL_BEARING_TIMELINE.json",
+      "bytes": 643476,
+      "bench_recorded_at": "2026-09-01T05:17:49Z",
+      "n_events": 374,
+      "n_decision_points": 33,
+      "n_model_calls": 134,
+      "unique_prompt_sha256": 134,
+      "interpret_calls": 33,
+      "interpret_unique_windows": 33,
+      "choose_calls": 33,
+      "choose_unique_menus": 33,
+      "choose_menus_with_n_ge_2": 16,
+      "choose_menus_with_n_eq_1": 17,
+      "resident_cli_status_at_t_s_7_802": "WAITING_FOR_MEMORY",
+      "resident_body_ready_pid": 96342
+    },
+    "pre_window_receipt_in_git": {
+      "commit": "5d07ed78a",
+      "path": "receipts/future/MODEL_BEARING_TORTURE_30M.json",
+      "bench_recorded_at": "2026-09-01T04:43:12Z",
+      "run_dir": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-6yb5a7_7",
+      "n_cycles": 29,
+      "elapsed_s": 1807.653,
+      "verdict": "FAIL",
+      "n_cycles_with_a_real_choice": 29,
+      "n_cycles_with_one_or_no_option": 0,
+      "n_choose_asks": 29,
+      "n_distinct_choose_asks": 6,
+      "n_repeated_choose_asks": 23,
+      "n_distinct_question_kinds": 6,
+      "n_launched": 5,
+      "n_health_probe_launched": 0,
+      "n_stale_launched": 0
+    },
+    "run_dirs_still_on_disk": [
+      {
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-k3d96tr6",
+        "mtime": "Sep  1 01:17:39 2026",
+        "role": "post-window 33-cycle run; 16 health_probe child/receipt pairs plus 17 real units"
+      },
+      {
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-6yb5a7_7",
+        "mtime": "Sep  1 00:21:59 2026",
+        "role": "5d07ed78a run_dir; only 5 unit files remain on disk (the 5 launches)"
+      },
+      {
+        "path": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-resident-ws-b97bpdg7",
+        "mtime": "Sep  1 00:47:25 2026",
+        "role": "workspace for the post-window run"
+      }
+    ],
+    "newest_mbt_run_dir": "mbt-run-k3d96tr6 (01:17). No later mbt-run-* dir was present.",
+    "catalog_now": {
+      "live_catalog_total": 24,
+      "live": 16,
+      "dead": 8,
+      "stale": 10,
+      "PROMPT_ENTRY_CAP": 8,
+      "staleness_needing_review": 10,
+      "staleness_source": "receipts/future/BASELINE_STALENESS.json",
+      "staleness_recorded_at": "2026-09-01T04:22:04Z"
+    },
+    "roadmap": {
+      "path": "civilization/ROADMAP_STATE.json",
+      "I-A_obligations": [
+        "G083",
+        "G076",
+        "G013",
+        "G014",
+        "G015",
+        "G030",
+        "G031",
+        "G063",
+        "G064",
+        "G065"
+      ],
+      "I-A_open": [
+        "G083",
+        "G064"
+      ],
+      "I-A_verified": 8,
+      "G015_in_open": false,
+      "note": "civilization map does not list G015 as open; the torture receipt verdict is still FAIL. These are different ledgers."
+    },
+    "repo_resident_now": {
+      "path": ".hcli/resident/state.json",
+      "cycles": 0,
+      "state": "STOPPED",
+      "last_event": "supervisor_stopped",
+      "goal": "launch smoke: prove admission passes and the supervisor reaches a real state"
+    },
+    "commits_read": {
+      "5d07ed78a": "science(G015): 29/29 real choice, 0 probes, 23/29 byte-identical asks; trial FAIL",
+      "a1f415c10": "fix(G015): shown_unchosen sink; 27 lines in model_bearing_torture.py",
+      "81eb1cd1b": "feat(G015): catalog deepened from staleness review list",
+      "741571a4d": "science(G015): 51 cycles, 44 probes, 86% no choice",
+      "7f3f1ffc5": "fix(G145): swap high-water latch, 2026-09-01 01:20:38 -0400",
+      "b087a0606": "chore(G148): overwrote MODEL_BEARING_TORTURE_30M.json with the 33-cycle post-window receipt"
+    }
+  },
+  "window_change_effect": {
+    "code": "Before interpret/choose, remaining rows matching queued are sorted by (times shown and not chosen, -gain, id). The first 8 ids increment shown_unchosen. A launched id is popped so a chosen unit is not punished. Dead units are still retired on the first policy pass. Policy then re-ranks the same live_rows by (-gain, id) and overwrites policy_id; choose() is called on the rotated list.",
+    "pre_window_5d07ed78a": {
+      "n_repeated_choose_asks": 23,
+      "n_distinct_choose_asks": 6,
+      "n_stale_launched": 0,
+      "n_health_probe_launched": 0,
+      "n_launched": 5
+    },
+    "post_window_HEAD_receipt": {
+      "n_repeated_choose_asks": 0,
+      "n_distinct_choose_asks": 33,
+      "n_stale_launched": 10,
+      "n_health_probe_launched": 16,
+      "n_launched": 33
+    },
+    "post_window_timeline_prompts": {
+      "interpret_windows": "33 interpret calls, 33 distinct 8-row (then shrinking) id lists, 0 consecutive identical windows. I03 already surfaces six WU.STALE.* ids plus SUBAGENT with fusion_env_applied sunk to slot 8.",
+      "choose_menus": "33 choose calls, 33 distinct menus, 0 consecutive identical lists. C01-C16 have n>=2; C17 is the last real unit (SUBAGENT) n=1; C18-C33 are one health_probe each.",
+      "model_call_prompt_sha256": "134 unique of 134"
+    },
+    "what_changed": "The sink made the 8-row question move. STALE units that never launched in 5d07ed78a entered the window and were launched. Byte-identical choose asks went from 23/29 to 0/33. After the 16 live catalog units plus HYPB.005.encode were consumed, the harness refilled unique health_probe ids, so the clock kept asking a one-option question.",
+    "not_the_same_as_commit_message_on_policy": "a1f415c10 says the policy reads the same rotated list. After the sort, lines 2016-2026 re-rank live_rows by gain and overwrite policy_id. In this run every policy_id still appeared in that cycle's 8-wide choose menu, and sequences_identical is true."
+  },
+  "invariant_holds": false,
+  "invariant_parts": {
+    "real_choice_every_cycle": false,
+    "real_choice_receipt_n_cycles_with_a_real_choice": 15,
+    "real_choice_receipt_n_cycles_with_one_or_no_option": 18,
+    "real_choice_choose_menus_n_ge_2": 16,
+    "real_choice_choose_menus_n_eq_1": 17,
+    "prompt_movement": true,
+    "prompt_movement_n_repeated_choose_asks": 0,
+    "prompt_movement_interpret_consecutive_identical": 0,
+    "zero_filler": false,
+    "zero_filler_health_probe_launches": 16,
+    "zero_filler_of_launches": 33,
+    "divergence_opportunity_on_shared_menu": true,
+    "divergence_opportunity_note": "C01-C16 choose menus had >=2 live ids. Cycle 3 listed 7 other live ids before WU.HAWKING.fusion_env_applied; the model still picked the policy id. n_diverged_from_policy=0 on those menus. choose() also prints 'The scripted policy would pick <id>' in the prompt head; that is existing choose() design, not the window patch.",
+    "overall": false
+  },
+  "recommendation": "NOT_CLOSE",
+  "remaining_defect": "Synthetic filler returned on the post-window 30-minute run. After a1f415c10 the 8-row window moved (0 byte-identical choose asks; STALE units launched), but live_catalog() is 16 live rows (10 from BASELINE_STALENESS needing_review) and the 1800s clock produced 33 launches. 16 of 33 were WU.HAWKING.health_probe.017 through .032. Receipt participation: 15 cycles with a real choice, 18 with one or no option. Choose-prompt menus: 16 with n>=2, 17 with n=1 (C18-C33 the probes plus C17 the last real unit). Reproducing input: receipts/future/MODEL_BEARING_TORTURE_30M.json field control.launched_under_model (the 16 health_probe ids) and the still-on-disk run dir /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-k3d96tr6. The window-commit's own test tools/future/test_model_bearing_torture.py::test_the_last_run_needed_no_synthetic_filler fails on that receipt with '16 of 33 launches were filler'. Trial verdict remains FAIL (0 divergences, sequences_identical true, degeneracy degenerate on refills). A later cycles=0 WAITING_FOR_MEMORY torture was not found as an mbt-run dir; the 33-cycle timeline's own resident_cli_status is WAITING_FOR_MEMORY at t_s=7.802 while the native body (pid 96342) ran the trial to completion.",
+  "cheapest_settling_run": "No additional live resident run is required: the HEAD 30-minute receipt already falsifies zero-filler and real-choice-every-cycle. The cheapest reproducing command is: cd /Users/scammermike/Downloads/hawking && PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest tools/future/test_model_bearing_torture.py::test_the_last_run_needed_no_synthetic_filler -q --tb=short  (exits 1: 16 of 33 launches were filler). Do not rerun the 30-minute torture to settle this harvest.",
+  "commands": [
+    "date -u +%Y-%m-%dT%H:%M:%SZ",
+    "git log --oneline -30",
+    "git show --stat a1f415c10 5d07ed78a 81eb1cd1b 741571a4d",
+    "git show a1f415c10 -- tools/future/model_bearing_torture.py",
+    "git show -s --format='%ci %s' 7f3f1ffc5 a1f415c10 5d07ed78a b087a0606",
+    "git show 5d07ed78a:receipts/future/MODEL_BEARING_TORTURE_30M.json",
+    "git log --oneline -15 -- receipts/future/MODEL_BEARING_TORTURE_30M.json",
+    "python3 json load receipts/future/MODEL_BEARING_TORTURE_30M.json (participation, control.launched_under_model, required_events, verdict)",
+    "python3 json load receipts/future/MODEL_BEARING_TIMELINE.json (decision_points, model_calls prompt windows, events WAITING_FOR_MEMORY)",
+    "PYTHONPATH=. python3 -c live_catalog(); print live/dead/stale counts and PROMPT_ENTRY_CAP",
+    "python3 json load receipts/future/BASELINE_STALENESS.json report.needing_review",
+    "python3 json load civilization/ROADMAP_STATE.json civilization_status I-A_AGENTOS_HCLI",
+    "ls -la /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-k3d96tr6",
+    "ls -la /var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/mbt-run-6yb5a7_7",
+    "ls -lt /var/folders/.../T/ | rg mbt-",
+    "rg shown_unchosen|PROMPT_ENTRY_CAP|health_probe tools/future/model_bearing_torture.py tools/future/model_bearing.py",
+    "cat .hcli/resident/state.json",
+    "PYTHONPATH=. python3 -m pytest tools/future/test_model_bearing_torture.py::test_the_last_run_needed_no_synthetic_filler tools/future/test_model_bearing_torture.py::test_the_prompt_window_rotates_so_the_question_can_change tools/future/test_model_bearing_torture.py::test_the_rotation_sinks_shown_units_and_keeps_gain_within_a_tier tools/future/test_model_bearing_torture.py::test_the_catalog_is_deeper_than_the_run_that_exhausted_it -q --tb=short"
+  ]
+}

@@ -34,12 +34,18 @@ import sys
 import tempfile
 import threading
 import time
+from contextlib import contextmanager
 from pathlib import Path
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, Iterator, List, Optional
 
 REPO_ROOT = Path(__file__).resolve().parents[2]
+# The script's directory is sys.path[0]. Without the repo root first, an
+# editable install of another checkout's hcli wins and this harness never
+# sees the tree under test.
+sys.path.insert(0, str(REPO_ROOT))
 
 import hcli.scheduler as scheduler_mod  # noqa: E402
+import hcli.workunit as workunit_mod  # noqa: E402
 from hcli.mission import Mission  # noqa: E402
 from hcli.workunit import WorkUnit, is_ready  # noqa: E402
 
@@ -70,6 +76,28 @@ class AlwaysFails:
 
 def _unit(uid: str) -> WorkUnit:
     return WorkUnit(id=uid, role="implement", description=f"unit {uid}")
+
+
+@contextmanager
+def _unique_failure_signatures() -> Iterator[Dict[str, int]]:
+    """Patch the function emit_repair actually calls.
+
+    Cycle detection keys on ``workunit.failure_signature``, a module-level
+    function. Scheduler has never owned ``_failure_signature``. Patching a
+    missing method raises AttributeError and the check never runs.
+    """
+    original = workunit_mod.failure_signature
+    counter = {"n": 0}
+
+    def unique_signature(wu, context=None):  # noqa: ANN001
+        counter["n"] += 1
+        return f"unique-{counter['n']}"
+
+    workunit_mod.failure_signature = unique_signature
+    try:
+        yield counter
+    finally:
+        workunit_mod.failure_signature = original
 
 
 def _run(engine: Any, units: Dict[str, WorkUnit], seconds: float = 25.0) -> Dict[str, WorkUnit]:
@@ -187,57 +215,58 @@ def check_negative_control() -> None:
     past where it previously stopped. A bound nobody has seen NOT hold is not a
     demonstrated bound.
     """
-    original_depth = scheduler_mod.MAX_REPAIR_DEPTH
-    original_count = scheduler_mod.MAX_REPAIRS_PER_ROOT
-    original_sig = scheduler_mod.Scheduler._failure_signature
+    # emit_repair reads these names from workunit, not from scheduler's
+    # re-export. Rebinding scheduler_mod.MAX_REPAIR_* does not lift the bound.
+    original_depth = workunit_mod.MAX_REPAIR_DEPTH
+    original_count = workunit_mod.MAX_REPAIRS_PER_ROOT
     # BOTH bounds have to be lifted. Lifting only the depth proves nothing once
     # the per-root count cap exists, because the count is then what stops the
     # tree -- which is exactly what the first version of this control missed.
-    scheduler_mod.MAX_REPAIR_DEPTH = 12
-    scheduler_mod.MAX_REPAIRS_PER_ROOT = 500
-    counter = {"n": 0}
-
-    def unique_signature(self, wu, context):  # noqa: ANN001
-        counter["n"] += 1
-        return f"unique-{counter['n']}"
-
-    scheduler_mod.Scheduler._failure_signature = unique_signature
+    workunit_mod.MAX_REPAIR_DEPTH = 12
+    workunit_mod.MAX_REPAIRS_PER_ROOT = 500
     try:
-        units = _run(AlwaysFails(vary=True), {"dead": _unit("dead")}, seconds=30.0)
+        with _unique_failure_signatures() as counter:
+            units = _run(AlwaysFails(vary=True), {"dead": _unit("dead")}, seconds=30.0)
         deepest = max((int(getattr(u, "repair_depth", 0) or 0) for u in units.values()), default=0)
     finally:
-        scheduler_mod.MAX_REPAIR_DEPTH = original_depth
-        scheduler_mod.MAX_REPAIRS_PER_ROOT = original_count
-        scheduler_mod.Scheduler._failure_signature = original_sig
+        workunit_mod.MAX_REPAIR_DEPTH = original_depth
+        workunit_mod.MAX_REPAIRS_PER_ROOT = original_count
     check(
         "NEGATIVE CONTROL: raising the bound really does let the lineage grow",
-        deepest > original_depth,
+        counter["n"] > 0 and deepest > original_depth,
         f"deepest={deepest} with both bounds lifted "
-        f"(defaults: depth {original_depth}, per-root {original_count})",
+        f"(defaults: depth {original_depth}, per-root {original_count}); "
+        f"unique signatures issued={counter['n']}",
     )
 
 
 def check_per_root_count_cap() -> None:
     """Depth alone allows an exponential tree; the count cap makes it linear."""
-    original_sig = scheduler_mod.Scheduler._failure_signature
-    counter = {"n": 0}
-
-    def unique_signature(self, wu, context):  # noqa: ANN001
-        counter["n"] += 1
-        return f"unique-{counter['n']}"
-
-    scheduler_mod.Scheduler._failure_signature = unique_signature
-    try:
+    count_cap = workunit_mod.MAX_REPAIRS_PER_ROOT
+    depth_bound = workunit_mod.MAX_REPAIR_DEPTH
+    with _unique_failure_signatures() as counter:
         units = _run(AlwaysFails(vary=True), {"dead": _unit("dead")}, seconds=30.0)
-    finally:
-        scheduler_mod.Scheduler._failure_signature = original_sig
     lineage = [u for u in units if u.startswith("dead.repair")]
+    exhausted = [u for u in units.values() if getattr(u, "repair_exhausted", False)]
+    # The count cap is the binding stop, not merely an unused constant:
+    # the tree grew past a single depth-bounded chain, stayed at or under
+    # the cap, and at least one unit is exhausted because that many repairs
+    # were already emitted. `len(lineage) <= cap` alone is vacuous: raising
+    # the cap would keep the inequality true.
+    stopped_by_count = any(
+        "repairs already emitted" in (getattr(u, "repair_reason", None) or "")
+        for u in exhausted
+    )
     check(
         "with cycle detection defeated, the per-root COUNT cap bounds the tree",
-        len(lineage) <= scheduler_mod.MAX_REPAIRS_PER_ROOT,
-        f"{len(lineage)} repairs for one root, cap is "
-        f"{scheduler_mod.MAX_REPAIRS_PER_ROOT} (depth bound alone allowed "
-        f"3+9+27=39 before this cap existed)",
+        counter["n"] > 0
+        and len(lineage) <= count_cap
+        and len(lineage) > depth_bound
+        and stopped_by_count,
+        f"{len(lineage)} repairs for one root, cap is {count_cap}; "
+        f"unique signatures issued={counter['n']}; "
+        f"exhausted={[(u.id, u.repair_reason) for u in exhausted]} "
+        f"(depth bound alone allowed 3+9+27=39 before this cap existed)",
     )
 
 
@@ -253,6 +282,11 @@ CHECKS = (
 
 
 def main() -> int:
+    print(
+        f"loaded workunit={workunit_mod.__file__} "
+        f"MAX_REPAIRS_PER_ROOT={workunit_mod.MAX_REPAIRS_PER_ROOT} "
+        f"MAX_REPAIR_DEPTH={workunit_mod.MAX_REPAIR_DEPTH}"
+    )
     for fn in CHECKS:
         try:
             fn()

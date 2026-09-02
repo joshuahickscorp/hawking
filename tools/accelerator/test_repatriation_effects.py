@@ -37,6 +37,28 @@ def test_effects_bind_every_atlas_behavior_and_physical_candidate_scope():
     assert document["transfer_policy"]["current_physical_law_count"] == 0
 
 
+def test_bind_cost_feature_does_not_promote_a_physical_law():
+    binding = effects.bind_cost_feature(
+        law_id="AKB-MACHINE-BANDWIDTH",
+        features={"uma_dram_bandwidth_gb_s": 589.73},
+        source_receipt="receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
+        source_backend="METAL",
+        consumer_backend="FPGA-HWIR",
+    )
+    assert binding["promotes_physical_law"] is False
+    assert binding["genericity"] == "CANDIDATE_UNVERIFIED"
+    assert binding["level"] == "ACCELERATOR_PRIMITIVE"
+    assert binding["features"]["uma_dram_bandwidth_gb_s"] == 589.73
+    with pytest.raises(ValueError, match="at least one feature"):
+        effects.bind_cost_feature(
+            law_id="AKB-MACHINE-BANDWIDTH",
+            features={},
+            source_receipt="receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
+            source_backend="METAL",
+            consumer_backend="FPGA-HWIR",
+        )
+
+
 def test_effects_reject_generic_law_or_fingerprint_tampering():
     repo = Path(__file__).resolve().parents[2]
     document = effects.build_effects(repo_root=repo)

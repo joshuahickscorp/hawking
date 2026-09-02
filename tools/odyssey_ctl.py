@@ -5725,6 +5725,64 @@ def hf_cache_snapshot(repo: str) -> Path | None:
     return None
 
 
+# Where the watcher's --local-dir actually points. Kept beside the resolver so
+# the two cannot drift apart silently.
+MODELLAKE_PARTIAL_ROOT = Path("/Volumes/corpdrive/hawking-modellake/partial")
+
+
+def modellake_destination() -> Path:
+    """Directory `hf download` actually writes into.
+
+    Mirrors huggingface_hub's own HF_HUB_CACHE / HUGGINGFACE_HUB_CACHE / HF_HOME
+    precedence (start_hf_download inherits os.environ unchanged, so whatever
+    those vars resolve to for `hf` is exactly what resolves here) instead of
+    assuming the download lands on REPO's or home's filesystem. A destination
+    on a different mounted volume — e.g. an external drive — is the normal
+    case this exists to handle correctly.
+    """
+    # --local-dir WINS. The ModelLake watcher launches every acquisition with
+    # `--local-dir /Volumes/corpdrive/hawking-modellake/partial/<tag>`, and that
+    # flag overrides HF_HUB_CACHE entirely -- the bytes land on the external
+    # volume no matter what the hub cache resolves to. Reading HF_HUB_CACHE here
+    # was the same defect as reading REPO's filesystem, one step less wrong:
+    # it reported 406 GB free on the internal SSD for a download that actually
+    # consumes the 1.2 TiB external drive. Check where the bytes GO.
+    partial = MODELLAKE_PARTIAL_ROOT
+    if partial.parent.is_dir():
+        return partial
+    try:
+        from huggingface_hub.constants import HF_HUB_CACHE
+        return Path(HF_HUB_CACHE)
+    except Exception:
+        return HF_HUB
+
+
+def destination_disk_stat(dest: Path | None = None) -> dict:
+    """Free-space reading bound to the ACTUAL ModelLake destination mount.
+
+    Walks up to the nearest existing ancestor (the destination dir may not
+    exist before the first download) and statvfs's THAT — never a hardcoded
+    root-disk or home-dir path standing in for wherever downloads really go.
+    Reports the resolved mount explicitly so a wrong-volume read is visible
+    in the record, not just a number that happens to be wrong.
+    """
+    root = dest if dest is not None else modellake_destination()
+    probe = root
+    while not probe.exists() and probe != probe.parent:
+        probe = probe.parent
+    st = os.statvfs(probe)
+    free_bytes = st.f_bavail * st.f_frsize
+    df = subprocess.run(["df", str(probe)], capture_output=True, text=True)
+    lines = (df.stdout or "").splitlines()
+    mount = lines[-1].split()[-1] if df.returncode == 0 and len(lines) > 1 else str(probe)
+    return {
+        "destination": str(root),
+        "mount": mount,
+        "free_bytes": free_bytes,
+        "free_gib": round(free_bytes / 1024**3, 2),
+    }
+
+
 def patient_est_gib(oxx: str, meta: dict | None = None,
                     info: dict | None = None) -> float:
     if info and info.get("used_storage"):
@@ -6026,16 +6084,25 @@ def start_hf_download(repo: str, log_path: Path) -> tuple[int | None, str]:
 def acquire_next(*, go: bool = False, dry_run: bool | None = None,
                  state: dict | None = None, persist: bool = True,
                  snapshot_fn=None, hf_info_fn=None, download_fn=None,
-                 reclaim_fn=None, log_path: Path | None = None) -> dict:
+                 reclaim_fn=None, log_path: Path | None = None,
+                 storage_fn=None) -> dict:
     """Pick + (optionally) start the next ladder patient download.
 
     Never blocks the caller on a long download. Marks ACQUIRING and returns.
+
+    Disk capacity is read from `storage_fn` (default: destination_disk_stat,
+    bound to the ACTUAL ModelLake download destination) — never from
+    machine_snapshot/snapshot_fn's box-wide disk_free_gib, which is REPO's or
+    home's filesystem and can be a completely different mount than where `hf
+    download` actually writes (see destination_disk_stat). snapshot_fn is
+    still accepted for the other resource-governor callers share this
+    signature with, but this function no longer reads disk_free_gib from it.
     """
     st = state if state is not None else ensure_state()
     planning = (not go) if dry_run is None else bool(dry_run)
     finalize_acquisitions(st, dry_run=planning, persist=persist and not planning)
-    snap = (snapshot_fn or machine_snapshot)()
-    disk = float(snap.get("disk_free_gib") or 0.0)
+    storage = (storage_fn or destination_disk_stat)()
+    disk = float(storage.get("free_gib") or 0.0)
     cand, meta = pick_acquire_candidate(
         st, hf_info_fn=hf_info_fn, mutate=not planning,
     )
@@ -6048,6 +6115,8 @@ def acquire_next(*, go: bool = False, dry_run: bool | None = None,
             "reason": "no eligible patient (all on-disk, RETIRED, ACQUIRING, or blocked)",
             "skipped": meta.get("skipped"),
             "disk_free_gib": disk,
+            "disk_mount": storage.get("mount"),
+            "disk_destination": storage.get("destination"),
             "_evidence": "DERIVED (acquire-next)",
         }
         append_run_log({**rec, "command": "acquire-next"}, path=log_path)
@@ -6078,8 +6147,8 @@ def acquire_next(*, go: bool = False, dry_run: bool | None = None,
             rec_r = fn(p.get("oxx"), dry_run=planning, persist=persist and not planning)
             reclaimed.append(rec_r)
             if not planning and rec_r.get("verdict") == "VERIFIED":
-                snap = (snapshot_fn or machine_snapshot)()
-                disk = float(snap.get("disk_free_gib") or 0.0)
+                storage = (storage_fn or destination_disk_stat)()
+                disk = float(storage.get("free_gib") or 0.0)
                 if disk >= need:
                     break
     # Disk-hold REFUSE always applies when disk is short (independent of the
@@ -6097,6 +6166,9 @@ def acquire_next(*, go: bool = False, dry_run: bool | None = None,
             "est_gib": round(est, 2),
             "need_gib": round(need, 2),
             "disk_free_gib": disk,
+            "disk_mount": storage.get("mount"),
+            "disk_destination": storage.get("destination"),
+            "disk_headroom_gib": DISK_RUN_GIB,
             "reclaimed": reclaimed,
             **man_fields,
             "_evidence": "MEASURED (disk) + DERIVED (disk-hold)",
@@ -6110,6 +6182,9 @@ def acquire_next(*, go: bool = False, dry_run: bool | None = None,
         "est_gib": round(est, 2),
         "need_gib": round(need, 2),
         "disk_free_gib": disk,
+        "disk_mount": storage.get("mount"),
+        "disk_destination": storage.get("destination"),
+        "disk_headroom_gib": DISK_RUN_GIB,
         "reclaimed": reclaimed,
         **man_fields,
         "_evidence": "HYPOTHESIS (acquire plan) + MEASURED (disk)",
@@ -6171,7 +6246,7 @@ def cmd_acquire_next(*, go: bool = False) -> int:
         print(
             f"  oxx={rec.get('oxx')} repo={rec.get('repo')}  "
             f"est={rec.get('est_gib')}GiB need={rec.get('need_gib')}GiB  "
-            f"disk={rec.get('disk_free_gib')}GiB"
+            f"disk={rec.get('disk_free_gib')}GiB mount={rec.get('disk_mount')}"
         )
         if rec.get("canonical_source"):
             print(
@@ -6251,6 +6326,7 @@ def cycle_tick(*, go: bool, max_lanes: int, grok_lanes: int = 0,
             download_fn=hooks.get("download_fn"),
             reclaim_fn=hooks.get("reclaim_fn"),
             log_path=hooks.get("log_path"),
+            storage_fn=hooks.get("storage_fn"),
         )
         ranked = select_ready_obligations(st, completions=completions)
 
@@ -7513,13 +7589,46 @@ def _self_check() -> int:
 
     acq_hold = acquire_next(
         go=False, persist=False, state=dict(st2),
-        snapshot_fn=lambda: {
-            "disk_free_gib": 1.0, "clean_box_ok": True, "clean_box_reason": "ok",
+        storage_fn=lambda: {
+            "destination": "/fixture/hf-hub", "mount": "/fixture", "free_gib": 1.0,
         },
         hf_info_fn=lambda _repo: (True, {"used_storage": 3 * 1024**3}, "ok"),
     )
     assert acq_hold.get("verdict") == "REFUSE", acq_hold
     assert "disk-hold" in (acq_hold.get("reason") or ""), acq_hold
+    assert acq_hold.get("disk_mount") == "/fixture", acq_hold
+
+    # § acquire-next disk-hold defect: the box-wide machine_snapshot() figure
+    # (REPO's/home's own filesystem) must NEVER stand in for the ModelLake
+    # destination's free space. Prove it by making them disagree: a huge fake
+    # box reading (999 GiB, via snapshot_fn) alongside a starved destination
+    # reading (1 GiB, via storage_fn) must still REFUSE on disk-hold — if
+    # acquire_next ever regresses to reading disk_free_gib off snap/snapshot_fn
+    # again, this flips to a false DRY-RUN and fails.
+    acq_wrong_mount = acquire_next(
+        go=False, persist=False, state=dict(st2),
+        snapshot_fn=lambda: {
+            "disk_free_gib": 999.0, "clean_box_ok": True, "clean_box_reason": "ok",
+        },
+        storage_fn=lambda: {
+            "destination": "/fixture/hf-hub", "mount": "/fixture", "free_gib": 1.0,
+        },
+        hf_info_fn=lambda _repo: (True, {"used_storage": 3 * 1024**3}, "ok"),
+    )
+    assert acq_wrong_mount.get("verdict") == "REFUSE", acq_wrong_mount
+    assert "disk-hold" in (acq_wrong_mount.get("reason") or ""), acq_wrong_mount
+    assert acq_wrong_mount.get("disk_free_gib") == 1.0, acq_wrong_mount
+
+    # destination_disk_stat must bind to whatever destination it is given
+    # (or resolves via modellake_destination()), never a hardcoded path —
+    # and modellake_destination() must never resolve to REPO itself.
+    assert str(modellake_destination()) != str(REPO)
+    with tempfile.TemporaryDirectory() as td_dest:
+        probe_dest = Path(td_dest) / "not" / "created" / "yet"
+        stat = destination_disk_stat(probe_dest)
+        assert stat["destination"] == str(probe_dest), stat
+        assert stat["free_gib"] > 0, stat  # real statvfs reading, walked up to td_dest
+        assert stat["mount"], stat
 
     frozen = {
         "schema": SCHEMA,

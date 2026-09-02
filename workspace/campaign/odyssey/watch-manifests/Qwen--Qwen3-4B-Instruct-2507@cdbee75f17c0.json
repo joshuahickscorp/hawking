@@ -1,0 +1,37 @@
+{
+  "expected": 8060917568,
+  "files": [
+    ".gitattributes",
+    "LICENSE",
+    "README.md",
+    "config.json",
+    "generation_config.json",
+    "merges.txt",
+    "model-00001-of-00003.safetensors",
+    "model-00002-of-00003.safetensors",
+    "model-00003-of-00003.safetensors",
+    "model.safetensors.index.json",
+    "tokenizer.json",
+    "tokenizer_config.json",
+    "vocab.json"
+  ],
+  "mode": "safe",
+  "repo": "Qwen/Qwen3-4B-Instruct-2507",
+  "resolved_sha": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "revision": "cdbee75f17c01a7cc42f958dc650907174af0554",
+  "sizes": {
+    ".gitattributes": 1570,
+    "LICENSE": 11343,
+    "README.md": 8168,
+    "config.json": 727,
+    "generation_config.json": 238,
+    "merges.txt": 1671839,
+    "model-00001-of-00003.safetensors": 3957900840,
+    "model-00002-of-00003.safetensors": 3987450520,
+    "model-00003-of-00003.safetensors": 99630640,
+    "model.safetensors.index.json": 32819,
+    "tokenizer.json": 11422654,
+    "tokenizer_config.json": 9377,
+    "vocab.json": 2776833
+  }
+}

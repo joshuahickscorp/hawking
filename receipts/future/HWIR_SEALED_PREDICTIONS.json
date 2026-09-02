@@ -1,0 +1,771 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T18:47:20Z",
+  "recorded_by": "tools/future/hwir.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "claim_boundary": "PREHARDWARE sealed predictions. Not a board result, not a synthesis report, not HARDWARE_MEASURED. Scoring of real observations is keyed to wake_condition U50_PRESENT.",
+ "gates_keyed_to_wake": [
+  "U50_PURCHASE_ACCEPTANCE",
+  "U50_SAFE_COOLING",
+  "U50_DEVICE_PROFILE",
+  "U50_DMA_HBM",
+  "U50_FIRST_NATIVE_ENGINE",
+  "U50_MIXED_APPLE_FPGA_GRAPH",
+  "U50_34_TO_40",
+  "U50_40_TO_50",
+  "U50_50_TO_60",
+  "U50_60_TO_70",
+  "U50_70_TO_80",
+  "U50_80_TO_90"
+ ],
+ "kind": "SEALED_PREDICTION_SET",
+ "plan": "inbound-u50-qgemv",
+ "prediction_ids": [
+  "u50.coeff.hbm_bytes_per_modelled_cycle",
+  "u50.coeff.fabric_bytes_per_modelled_cycle",
+  "u50.coeff.host_device_bytes_per_modelled_cycle",
+  "u50.coeff.host_device_queue_cycles",
+  "qgemv.canonical.hbm_per_token_bytes",
+  "qgemv.canonical.hbm_modelled_cycles",
+  "qgemv.canonical.host_device_modelled_cycles_total",
+  "qgemv.canonical.critical_path_modelled_cycles",
+  "qgemv.canonical.dsp_estimate",
+  "qgemv.canonical.lut_estimate",
+  "qgemv.planning.hbm_per_token_bytes",
+  "qgemv.planning.hbm_modelled_cycles"
+ ],
+ "prediction_set_sha256": "e7e77cc29b33a0ff2f47db34867368ab51070cae1da87494777882994ec6e15e",
+ "predictions": [
+  {
+   "content_sha256": "6db450f2f2fdbec7e7852868b2ad145ad3b9f0644d4a41ff1ef388c00c8baadb",
+   "depends_on": [
+    "hbm_bytes_per_modelled_cycle"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of HBM bytes per modelled cycle on the inbound U50 that differs from 1024 by more than 50% relative. That observation falsifies the declared planning coefficient hbm_bytes_per_modelled_cycle.",
+   "hardware_measured": false,
+   "id": "u50.coeff.hbm_bytes_per_modelled_cycle",
+   "implicated_coefficient": "hbm_bytes_per_modelled_cycle",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "hbm_bytes_per_modelled_cycle": {
+     "document_class": "COST_MODEL declared planning coefficient. Not vendor datasheet HBM2 GB/s, not a board census, not HARDWARE_MEASURED.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared HBM beat used by model_hbm_traffic. Not a measured HBM2 rate.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 1024
+    }
+   },
+   "notes": [
+    "Declared planning coefficient on the synthetic U50-class profile.",
+    "Not a measured HBM2 rate and not a vendor-datasheet GB/s figure."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 1024,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "hbm_bytes_per_modelled_cycle",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "bytes/modelled_cycle",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "d86406de8ed195f18eb0fe3dcd9b0095975f1e938b77db4f8454a98244031ebf",
+   "depends_on": [
+    "fabric_bytes_per_modelled_cycle"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of on-chip fabric bytes per modelled cycle on the inbound U50 that differs from 64 by more than 50% relative. That observation falsifies the declared planning coefficient fabric_bytes_per_modelled_cycle.",
+   "hardware_measured": false,
+   "id": "u50.coeff.fabric_bytes_per_modelled_cycle",
+   "implicated_coefficient": "fabric_bytes_per_modelled_cycle",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "fabric_bytes_per_modelled_cycle": {
+     "document_class": "COST_MODEL declared planning coefficient matching tools/future/fpga_fidelity.py MODEL_BYTES_PER_CYCLE. Not a measurement. Honest gap: CYCLE_APPROX does not yet fold this beat into critical-path modelled cycles.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared on-chip fabric beat. Not a measured interconnect rate.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 64
+    }
+   },
+   "notes": [
+    "Declared on-chip fabric beat. COST_MODEL prior.",
+    "Honest gap: approximate_cycles does not fold this beat into the critical path."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 64,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "fabric_bytes_per_modelled_cycle",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "bytes/modelled_cycle",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "6c9ea0a71b7a9d2244de774656fe913a0732881b00f34714f784432c5eaf4ec0",
+   "depends_on": [
+    "host_device_bytes_per_modelled_cycle"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of host<->device bytes per modelled cycle on the inbound U50 that differs from 16 by more than 50% relative. That observation falsifies the declared planning coefficient host_device_bytes_per_modelled_cycle.",
+   "hardware_measured": false,
+   "id": "u50.coeff.host_device_bytes_per_modelled_cycle",
+   "implicated_coefficient": "host_device_bytes_per_modelled_cycle",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "host_device_bytes_per_modelled_cycle": {
+     "document_class": "H-ROADMAP.md \u00a715.1 USB4/Thunderbolt ~40 Gb/s CLASS prior, expressed as a declared bytes/cycle beat. COST_MODEL. Not a cable measurement.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared host<->device beat used by model_host_device_transfer.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 16
+    }
+   },
+   "notes": [
+    "USB4/Thunderbolt ~40 Gb/s CLASS prior from H-ROADMAP.md \u00a715.1.",
+    "Not a measurement of any cable."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 16,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "host_device_bytes_per_modelled_cycle",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "bytes/modelled_cycle",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "31037ec7e6f531d7f841246958046373bcee0a26b46ec183e80a9d7b70773da5",
+   "depends_on": [
+    "host_device_queue_cycles"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of host<->device queue/setup overhead in modelled cycles that differs from 32 by more than 50% relative. That observation falsifies the declared planning coefficient host_device_queue_cycles.",
+   "hardware_measured": false,
+   "id": "u50.coeff.host_device_queue_cycles",
+   "implicated_coefficient": "host_device_queue_cycles",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "host_device_queue_cycles": {
+     "document_class": "COST_MODEL declared queue/setup overhead in modelled cycles. Not a measured doorbell or descriptor latency.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared HOST_DEVICE_QUEUE_CYCLES prior.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "modelled_cycles",
+     "value": 32
+    }
+   },
+   "notes": [
+    "Declared queue/setup overhead. Not a measured doorbell latency."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 32,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "host_device_queue_cycles",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "modelled_cycles",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "e863d5ff229de66fb3727e6f00d56c82d44e04540cf4621919f2e50d61cc0594",
+   "depends_on": [
+    "resident_per_token_byte_identity"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of per-token HBM bytes for the canonical qGEMV (weights resident) that is not exactly 24 bytes. That observation falsifies the model's per-token traffic identity (resident weights do not move; only activations do).",
+   "hardware_measured": false,
+   "id": "qgemv.canonical.hbm_per_token_bytes",
+   "implicated_coefficient": "resident_per_token_byte_identity",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "resident_per_token_byte_identity": {
+     "document_class": "COST_MODEL identity. weights_resident=True => per_token_bytes = activation_in_bytes + activation_out_bytes. Doctrine \u00a715.4: resident weights do not move per token. Not a beat coefficient.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Per-token HBM traffic identity used by model_hbm_traffic.",
+     "origin": "COST_MODEL_IDENTITY",
+     "units": "bytes",
+     "value": "activation_in_bytes + activation_out_bytes"
+    }
+   },
+   "notes": [
+    "Canonical qGEMV L1 golden (M=2, K=4), weights resident: x_bytes + y_bytes.",
+    "Geometry identity. A mismatch falsifies resident_per_token_byte_identity."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 24,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "hbm_per_token_bytes",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "absolute",
+    "value": 0.0
+   },
+   "units": "bytes",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "35cf5fb07b4f8c2d5d83d55d0f7121489a27062fcd98156f8ed00063a2f505e9",
+   "depends_on": [
+    "hbm_bytes_per_modelled_cycle"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of HBM modelled cycles for the canonical qGEMV per-token traffic that differs from 1 by more than 50% relative. That observation falsifies hbm_bytes_per_modelled_cycle (or unmodeled HBM latency).",
+   "hardware_measured": false,
+   "id": "qgemv.canonical.hbm_modelled_cycles",
+   "implicated_coefficient": "hbm_bytes_per_modelled_cycle",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "hbm_bytes_per_modelled_cycle": {
+     "document_class": "COST_MODEL declared planning coefficient. Not vendor datasheet HBM2 GB/s, not a board census, not HARDWARE_MEASURED.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared HBM beat used by model_hbm_traffic. Not a measured HBM2 rate.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 1024
+    }
+   },
+   "notes": [
+    "Canonical L1 kernel moves 24 bytes; ceil(24/beat) is 1 for every beat >= 24. This quantity cannot falsify the HBM beat at this size."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 1,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "hbm_modelled_cycles",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "modelled_cycles",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "b391f6b0575a3b3b2b3e33cb6b84d32b9081106455b33900df85dd57b2d3b910",
+   "depends_on": [
+    "host_device_bytes_per_modelled_cycle",
+    "host_device_queue_cycles"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of host<->device modelled cycles (H2C+C2H including queue) for the canonical qGEMV that differs from 66 by more than 50% relative. That observation falsifies host_device_bytes_per_modelled_cycle (and/or host_device_queue_cycles).",
+   "hardware_measured": false,
+   "id": "qgemv.canonical.host_device_modelled_cycles_total",
+   "implicated_coefficient": "host_device_bytes_per_modelled_cycle",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "host_device_bytes_per_modelled_cycle": {
+     "document_class": "H-ROADMAP.md \u00a715.1 USB4/Thunderbolt ~40 Gb/s CLASS prior, expressed as a declared bytes/cycle beat. COST_MODEL. Not a cable measurement.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared host<->device beat used by model_host_device_transfer.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 16
+    },
+    "host_device_queue_cycles": {
+     "document_class": "COST_MODEL declared queue/setup overhead in modelled cycles. Not a measured doorbell or descriptor latency.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared HOST_DEVICE_QUEUE_CYCLES prior.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "modelled_cycles",
+     "value": 32
+    }
+   },
+   "notes": [
+    "Canonical L1 host<->device modelled cycles. Queue (32) dominates the 16+8 byte payload, so a wrong host beat barely moves this number."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 66,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "host_device_modelled_cycles_total",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "modelled_cycles",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "ddf64bc68aca4f8333fdd296f827c18120e913e4b26e2b295914d2252338fb5f",
+   "depends_on": [
+    "host_device_bytes_per_modelled_cycle",
+    "host_device_queue_cycles",
+    "hbm_bytes_per_modelled_cycle",
+    "pipeline_depth",
+    "initiation_interval"
+   ],
+   "evidence_tier": "CYCLE_APPROX",
+   "falsification_condition": "An observation of critical-path modelled cycles for the canonical qGEMV that differs from 75 by more than 50% relative. That observation falsifies the host-device beat/queue and/or the declared pipeline depth / initiation interval.",
+   "hardware_measured": false,
+   "id": "qgemv.canonical.critical_path_modelled_cycles",
+   "implicated_coefficient": "host_device_bytes_per_modelled_cycle",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "hbm_bytes_per_modelled_cycle": {
+     "document_class": "COST_MODEL declared planning coefficient. Not vendor datasheet HBM2 GB/s, not a board census, not HARDWARE_MEASURED.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared HBM beat used by model_hbm_traffic. Not a measured HBM2 rate.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 1024
+    },
+    "host_device_bytes_per_modelled_cycle": {
+     "document_class": "H-ROADMAP.md \u00a715.1 USB4/Thunderbolt ~40 Gb/s CLASS prior, expressed as a declared bytes/cycle beat. COST_MODEL. Not a cable measurement.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared host<->device beat used by model_host_device_transfer.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 16
+    },
+    "host_device_queue_cycles": {
+     "document_class": "COST_MODEL declared queue/setup overhead in modelled cycles. Not a measured doorbell or descriptor latency.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared HOST_DEVICE_QUEUE_CYCLES prior.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "modelled_cycles",
+     "value": 32
+    },
+    "initiation_interval": {
+     "document_class": "STATIC declared initiation interval on the synthetic device profile.",
+     "evidence_tier": "STATIC",
+     "note": "Declared DeviceProfile.initiation_interval. Not a measured II.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "modelled_cycles",
+     "value": 1
+    },
+    "pipeline_depth": {
+     "document_class": "STATIC declared pipeline depth on the synthetic device profile.",
+     "evidence_tier": "STATIC",
+     "note": "Declared DeviceProfile.pipeline_depth. Not a measured II/depth.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "modelled_cycles",
+     "value": 8
+    }
+   },
+   "notes": [
+    "CYCLE_APPROX critical path: H2C + max(compute, HBM) + C2H.",
+    "Canonical L1 is host-transfer dominated. Not seconds. clock_hz UNKNOWN."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 75,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "critical_path_modelled_cycles",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "modelled_cycles",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "3f3d4987684ec5cee5c734abfec6c76a314d764af68c89946f481895a1e0e428",
+   "depends_on": [
+    "dsp_equals_mac_lanes_times_tile"
+   ],
+   "evidence_tier": "STATIC",
+   "falsification_condition": "An observation (synthesis report or board census of the qGEMV engine, not the whole device) of DSP count not exactly 4 for the canonical kernel. That observation falsifies the declared DSP = mac_lanes * tile_m mapping used by the STATIC estimator.",
+   "hardware_measured": false,
+   "id": "qgemv.canonical.dsp_estimate",
+   "implicated_coefficient": "dsp_equals_mac_lanes_times_tile",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "dsp_equals_mac_lanes_times_tile": {
+     "document_class": "STATIC identity: DSP = mac_lanes * tile_m in estimate_qgemv_resources. Not a synthesis result.",
+     "evidence_tier": "STATIC",
+     "note": "DSP MAC mapping used by the STATIC resource estimator.",
+     "origin": "ASSUMED_COEFFICIENT_TABLE",
+     "units": "DSP",
+     "value": "mac_lanes * tile_m"
+    }
+   },
+   "notes": [
+    "STATIC identity: DSP = mac_lanes * tile_m. Not a synthesis result."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 4,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "dsp_estimate",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "absolute",
+    "value": 0.0
+   },
+   "units": "DSP",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "df1cbd30f70c8fdde00617ae372e8cb6b2d5c11b56443c94562df1117fb3d79a",
+   "depends_on": [
+    "lut_per_mac_lane"
+   ],
+   "evidence_tier": "STATIC",
+   "falsification_condition": "An observation of LUT count for the canonical qGEMV engine that differs from 1424 by more than 100% relative (outside a factor of two). That observation falsifies lut_per_mac_lane and/or the assumed decode/DMA/reduce LUT bases.",
+   "hardware_measured": false,
+   "id": "qgemv.canonical.lut_estimate",
+   "implicated_coefficient": "lut_per_mac_lane",
+   "kernel": {
+    "K": 4,
+    "M": 2,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 4,
+    "hardware_measured": false,
+    "mac_lanes": 2,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 2,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "lut_per_mac_lane": {
+     "document_class": "STATIC assumed coefficient table v1-assumed-not-synthesized. Not a synthesis report, not place-and-route.",
+     "evidence_tier": "STATIC",
+     "note": "LUT_PER_MAC_LANE assumed coefficient.",
+     "origin": "ASSUMED_COEFFICIENT_TABLE",
+     "units": "LUT",
+     "value": 64
+    }
+   },
+   "notes": [
+    "STATIC ESTIMATE from the assumed coefficient table. Factor-of-two tolerance.",
+    "Not a synthesis report and not a board utilisation figure."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 1424,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "lut_estimate",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 1.0
+   },
+   "units": "LUT",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "17af8cb7ce6bfb15329fab23ecee455c9c10904ff0f989833a6a06bf87eee8d7",
+   "depends_on": [
+    "resident_per_token_byte_identity"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of per-token HBM bytes for the planning-scale qGEMV (weights resident) that is not exactly 20480 bytes. That observation falsifies the model's per-token traffic identity.",
+   "hardware_measured": false,
+   "id": "qgemv.planning.hbm_per_token_bytes",
+   "implicated_coefficient": "resident_per_token_byte_identity",
+   "kernel": {
+    "K": 4096,
+    "M": 1024,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 64,
+    "hardware_measured": false,
+    "mac_lanes": 8,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 4,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "resident_per_token_byte_identity": {
+     "document_class": "COST_MODEL identity. weights_resident=True => per_token_bytes = activation_in_bytes + activation_out_bytes. Doctrine \u00a715.4: resident weights do not move per token. Not a beat coefficient.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Per-token HBM traffic identity used by model_hbm_traffic.",
+     "origin": "COST_MODEL_IDENTITY",
+     "units": "bytes",
+     "value": "activation_in_bytes + activation_out_bytes"
+    }
+   },
+   "notes": [
+    "Planning-scale qGEMV (M=1024, K=4096), weights resident: x_bytes + y_bytes.",
+    "Declared dimensions so HBM bytes exceed one beat. Not a measured workload."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 20480,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "hbm_per_token_bytes",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "absolute",
+    "value": 0.0
+   },
+   "units": "bytes",
+   "wake_condition": "U50_PRESENT"
+  },
+  {
+   "content_sha256": "110af628830c8758eabcbb6c41a53af95345ec1a94aebc6f27f4f51290f1a834",
+   "depends_on": [
+    "hbm_bytes_per_modelled_cycle"
+   ],
+   "evidence_tier": "COST_MODEL",
+   "falsification_condition": "An observation of HBM modelled cycles for the planning-scale qGEMV per-token traffic that differs from 20 by more than 50% relative. That observation falsifies hbm_bytes_per_modelled_cycle.",
+   "hardware_measured": false,
+   "id": "qgemv.planning.hbm_modelled_cycles",
+   "implicated_coefficient": "hbm_bytes_per_modelled_cycle",
+   "kernel": {
+    "K": 4096,
+    "M": 1024,
+    "arithmetic": "DSP_MAC",
+    "engine_ladder_level": "L1",
+    "engine_ladder_meaning": "APPENDIX K.2 L1 = correct low-bit. Not L5 HBM-channel-specialized, not a board engine.",
+    "evidence_tier": "STATIC",
+    "group_size": 64,
+    "hardware_measured": false,
+    "mac_lanes": 8,
+    "model": "qgemv-class",
+    "organ": "qgemv",
+    "prehardware": true,
+    "qualification": "PREHARDWARE",
+    "tile_m": 4,
+    "weight_bits": 4
+   },
+   "model_coefficients": {
+    "hbm_bytes_per_modelled_cycle": {
+     "document_class": "COST_MODEL declared planning coefficient. Not vendor datasheet HBM2 GB/s, not a board census, not HARDWARE_MEASURED.",
+     "evidence_tier": "COST_MODEL",
+     "note": "Declared HBM beat used by model_hbm_traffic. Not a measured HBM2 rate.",
+     "origin": "DECLARED_PLANNING_COEFFICIENT",
+     "units": "bytes/modelled_cycle",
+     "value": 1024
+    }
+   },
+   "notes": [
+    "Planning-scale qGEMV HBM modelled cycles. Sensitive to the HBM beat (unlike the canonical L1 24-byte kernel)."
+   ],
+   "plan": "inbound-u50-qgemv",
+   "predicted_value": 20,
+   "prehardware": true,
+   "qualification": "PREHARDWARE",
+   "quantity": "hbm_modelled_cycles",
+   "schema": "hawking.future.hwir.sealed_prediction.v1",
+   "tolerance": {
+    "kind": "relative",
+    "value": 0.5
+   },
+   "units": "modelled_cycles",
+   "wake_condition": "U50_PRESENT"
+  }
+ ],
+ "purpose": "Pre-registered predictions about the inbound U50, sealed before arrival so they cannot be rationalised after the fact. Every number is PREHARDWARE (COST_MODEL / CYCLE_APPROX / STATIC). None is HARDWARE_MEASURED. There is no FPGA on this host.",
+ "schema": "hawking.future.hwir.sealed_prediction_set.v1",
+ "seal_sha256": "c19e2b734b0b10273cf995e29611f36d79f65f241969a4ced9472b7ddfc8c3fc",
+ "u50": {
+  "capability_graph": "civilization/CAPABILITY_GRAPH.json",
+  "capability_graph_sha256": "d1d284822c0f02273dd5e9ab98e487c5f5036fafb5d825520453c457e20dcc43",
+  "evidence_tier": "STATIC",
+  "gates_carrying_wake": [
+   "U50_PURCHASE_ACCEPTANCE",
+   "U50_SAFE_COOLING",
+   "U50_DEVICE_PROFILE",
+   "U50_DMA_HBM",
+   "U50_FIRST_NATIVE_ENGINE",
+   "U50_MIXED_APPLE_FPGA_GRAPH",
+   "U50_34_TO_40",
+   "U50_40_TO_50",
+   "U50_50_TO_60",
+   "U50_60_TO_70",
+   "U50_70_TO_80",
+   "U50_80_TO_90"
+  ],
+  "hardware_measured": false,
+  "kind": "WAKE_CONDITION",
+  "note": "U50_PRESENT is the wake condition for the inbound Alveo U50. present=false unless the capability graph says otherwise. This host has no FPGA; do not treat this block as a census.",
+  "prehardware": true,
+  "present": false,
+  "probe": {
+   "description": "AMD/Xilinx Alveo U50DD/XCU50-class FPGA enumerated on this host (PCIe/Thunderbolt identity contains xilinx/alveo/u50/xcu50).",
+   "evidence": "no Xilinx/Alveo/U50/XCU50 identity in PCIe/Thunderbolt/ioreg inventory",
+   "evidence_tier": "STATIC",
+   "id": "U50_PRESENT",
+   "present": false
+  },
+  "qualification": "PREHARDWARE",
+  "source": "civilization/CAPABILITY_GRAPH.json",
+  "wake_condition": "U50_PRESENT"
+ },
+ "wake_condition": "U50_PRESENT"
+}

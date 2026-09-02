@@ -38,7 +38,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:02:09Z",
+  "recorded_at": "2026-09-02T08:54:40Z",
   "recorded_by": "tools/future/mlp_nonlinear_program.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -3365,7 +3365,7 @@
   "negative_index queried; proposal families not refused; W-space scars cited as cousins",
   "CAPABILITY_INFORMATION_MAP cited for residual budget; none allocated because nothing survived"
  ],
- "git_head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
+ "git_head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
  "go_wider": false,
  "gpu_authority": false,
  "index": {
@@ -3465,9 +3465,17 @@
    {
     "hypothesis_family": "shared_basis",
     "model": "qwen3.8-27b",
-    "n_hits": 0,
+    "n_hits": 1,
     "organ": "mlp",
-    "top": []
+    "top": [
+     {
+      "hypothesis_family": "shared_basis",
+      "level": "MODEL_SPECIFIC",
+      "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+      "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f",
+      "verdict": "MEASURED_NEGATIVE"
+     }
+    ]
    },
    {
     "hypothesis_family": "latent_accumulation",
@@ -3506,6 +3514,13 @@
     "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
     "reopen_condition": "the new architecture invalidates the old premise (bible \u00a719)",
     "scar_id": "workspace/campaign/odyssey/NEGATIVE_SCIENCE.json#NS-global-dense-lowrank-qwen38"
+   },
+   {
+    "hypothesis_family": "shared_basis",
+    "level": "MODEL_SPECIFIC",
+    "reason": "known-dead hypothesis; rediscovery is not free. Reopen only under the cited reopen_condition.",
+    "reopen_condition": "a K, a protected-island subset, or a hybrid (binary bulk + shared-basis or sparse correction fused as ONE operator) that heals held_out_activation strictly below 2.25 bpw AND lands complete_token_ns below 27547874 on this machine; or a different organ, whose floor this scar does not speak for.",
+    "scar_id": "receipts/future/SOVEREIGN_NEGATIVE_SCIENCE.json#shared basis mlp below q2f"
    },
    {
     "hypothesis_family": "synthetic_activation",
@@ -3675,7 +3690,7 @@
   }
  ],
  "schema": "hawking.future.mlp_nonlinear_program.v1",
- "seal_sha256": "2d53fef1d1e3cb78f51a7da39b64cbad1b623c622ec4822b9194f446b062495f",
+ "seal_sha256": "af895c6734f9566465b4d33ae53aba80730b305e882f0b94f773b26c4c1f7d14",
  "selftest": {
   "held_out_leak_codes": [
    "TrainReportedAsHeldOut"

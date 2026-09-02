@@ -25,6 +25,7 @@ from dataclasses import dataclass
 from typing import Any, Literal, Mapping, Sequence
 
 from tools.future._common import git, write_receipt
+from tools.future.experiment_receipt import attach, input_ref
 from tools.future.lpc_dataset import (
     CONTAMINATION_CLASSES,
     NUMERIC_FIELDS,
@@ -532,6 +533,49 @@ def build() -> Any:
             "declared model parameters in cost units, not measured nanoseconds."
         ),
     }
+    doc = attach(
+        doc,
+        producer="tools/future/lpc_baselines.py",
+        location="receipts/future/LPC_BASELINES.json",
+        inputs=[input_ref("rule_weights", RULE_WEIGHTS)],
+        claim=(
+            "Nearest-neighbour and rule-cost LPC baselines abstain outside "
+            "support; a protected measurement always outranks a model."
+        ),
+        verdict="ACCEPT",
+        evidence_tier="STATIC",
+        scope="synthetic fixture rows; no hardware measurement",
+        facts=[
+            {"claim": "selftest passed", "source": "lpc_baselines.selftest"},
+            {"claim": "null numeric inputs abstain rather than become zero"},
+        ],
+        hypotheses=[],
+        negative_controls=[
+            {
+                "id": "null_active_bytes_is_not_zero",
+                "what": "rule_cost abstains when active_bytes is null",
+            },
+            {
+                "id": "protected_absolute_outranks_model",
+                "what": "a confident disagreeing model loses to PROTECTED_ABSOLUTE",
+            },
+        ],
+        failures=[],
+        resource_usage={"gpu_authority": False},
+        qualification="STATIC_ONLY; rule weights are declared cost units, not ns",
+        contamination=[],
+        uncertainty=[
+            "nearest: max(floor, |value| * (distance + 0.05)); never 0 for k=1",
+            "rule: 100% relative; coefficients are uncalibrated",
+        ],
+        falsifier=(
+            "a null input treated as zero, a query outside support that does "
+            "not abstain, or a model prediction outranking PROTECTED_ABSOLUTE"
+        ),
+        next_actions=[],
+        receipts=["receipts/future/LPC_BASELINES.json"],
+        tests={"selftest": "passed"},
+    )
     return write_receipt(RECEIPT, doc, "tools/future/lpc_baselines.py")
 
 

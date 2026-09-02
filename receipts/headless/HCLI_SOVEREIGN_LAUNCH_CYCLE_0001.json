@@ -1,0 +1,165 @@
+{
+  "admission": {
+    "model_server_health": "ok at 127.0.0.1:9999",
+    "modellake_watcher": "already running; no duplicate watcher launched",
+    "reason": "swap_used_bytes=4490.56MiB exceeds conservative 2GiB resident ceiling",
+    "resident_heavy_body": "BLOCKED"
+  },
+  "child_harvest": {
+    "compiler_context": {
+      "elapsed_s": 1.1,
+      "receipt_log": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-ff519d24-f3f9-449a-9c0d-550540304fbc.log",
+      "status": "PASSED",
+      "tests": 42
+    },
+    "full_hcli": {
+      "command": "python3 -m pytest -q hcli",
+      "elapsed_s": 51.11,
+      "skipped": 1,
+      "status": "PASSED",
+      "tests": 443
+    },
+    "modellake": {
+      "blocker": "The first child reached du -sk on the live external ModelLake mount and was cancelled after the process entered uninterruptible I/O; no watcher or downloader was touched.",
+      "child_status": "CANCELLED",
+      "foreground_command": "python3 -m pytest -q tools/odyssey/test_modellake.py tools/odyssey/test_modellake_promote.py tools/odyssey/test_modellake_watch.py",
+      "foreground_status": "PASSED",
+      "foreground_tests": 43,
+      "repair": "modellake.admit now rejects requests larger than the tier budget before measuring a mounted filesystem; the new regression and all 43 ModelLake tests pass."
+    },
+    "resident_recovery": {
+      "elapsed_s": 10.21,
+      "receipt_log": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-5b34e678-2279-4765-bb44-8731d23e60ad.log",
+      "status": "PASSED",
+      "tests": 34
+    },
+    "semantic_entry_probe": {
+      "behavior": "Fresh directory + hcli starts an idle TUI/headless loop; /status is model-free, /bank and literal \\bank enqueue FIFO goals, and /exit terminates cleanly.",
+      "model_loaded": false,
+      "status": "PASSED"
+    }
+  },
+  "directive_goalir": "receipts/headless/HCLI_SOVEREIGN_LAUNCH_GOALIR.json",
+  "directive_source_id": "paste_20260901_195336_0a791711",
+  "frontiers": [
+    "HCLI_SELF/goal-compiler-negation-regression",
+    "CONTEXT_MEMORY/compaction-and-recovery",
+    "RESIDENT_SPEED/daemon-recovery-contract",
+    "MODELLAKE/file-truth-and-promotion-tests"
+  ],
+  "git_head": "caf83078f24374fdd594cb5114a6c590e7df5f06",
+  "launched_children": [
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q",
+        "hcli/test_goal_compiler_acceptance.py",
+        "hcli/test_goal_compile.py",
+        "hcli/test_context_memory.py",
+        "hcli/test_goal_bank.py"
+      ],
+      "created_at": 1788307091.926661,
+      "cwd": "/Users/scammermike/Downloads/hawking",
+      "error": null,
+      "finished_at": 1788307093.280997,
+      "job_id": "job-ff519d24-f3f9-449a-9c0d-550540304fbc",
+      "label": "sovereign-compiler-context-gate",
+      "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-ff519d24-f3f9-449a-9c0d-550540304fbc.log",
+      "parent_job_id": "resident-74d3a4d8-2326-4b44-b467-f73ad1717a77",
+      "pid": 23086,
+      "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+      "resumable": true,
+      "returncode": 0,
+      "schema": "hcli.agentos.background_job.v1",
+      "started_at": 1788307091.926661,
+      "state": "COMPLETED",
+      "timeout_s": 900.0
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q",
+        "hcli/agentos/test_resident_mission_corruption.py",
+        "hcli/agentos/test_resident_orphan.py",
+        "hcli/test_command_registry.py",
+        "hcli/test_engine_tool_loop.py"
+      ],
+      "created_at": 1788307091.931052,
+      "cwd": "/Users/scammermike/Downloads/hawking",
+      "error": null,
+      "finished_at": 1788307102.3876648,
+      "job_id": "job-5b34e678-2279-4765-bb44-8731d23e60ad",
+      "label": "sovereign-resident-recovery-gate",
+      "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-5b34e678-2279-4765-bb44-8731d23e60ad.log",
+      "parent_job_id": "resident-74d3a4d8-2326-4b44-b467-f73ad1717a77",
+      "pid": 23087,
+      "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+      "resumable": true,
+      "returncode": 0,
+      "schema": "hcli.agentos.background_job.v1",
+      "started_at": 1788307091.931052,
+      "state": "COMPLETED",
+      "timeout_s": 900.0
+    },
+    {
+      "argv": [
+        "python3",
+        "-m",
+        "pytest",
+        "-q",
+        "tools/odyssey/test_modellake.py",
+        "tools/odyssey/test_modellake_promote.py",
+        "tools/odyssey/test_modellake_watch.py"
+      ],
+      "created_at": 1788307091.934346,
+      "cwd": "/Users/scammermike/Downloads/hawking",
+      "error": null,
+      "finished_at": 1788307268.091916,
+      "job_id": "job-237cf104-a765-4e68-9100-59ada8b67b82",
+      "label": "sovereign-modellake-gate",
+      "log_path": "/Users/scammermike/Downloads/hawking/.hcli/background/logs/job-237cf104-a765-4e68-9100-59ada8b67b82.log",
+      "parent_job_id": "resident-74d3a4d8-2326-4b44-b467-f73ad1717a77",
+      "pid": 23088,
+      "restart_policy": "explicit rerun from argv; never resume a process mid-token",
+      "resumable": true,
+      "returncode": null,
+      "schema": "hcli.agentos.background_job.v1",
+      "started_at": 1788307091.934346,
+      "state": "CANCELLED",
+      "timeout_s": 900.0
+    }
+  ],
+  "next_action": "Keep the live ModelLake watcher as the sole acquisition owner; run the next frontier CPU-only and model-free, harvest its receipt, and only reconsider heavy resident admission after fresh swap/resource evidence.",
+  "outcome": {
+    "blocked_or_deferred": [
+      "heavy resident admission: blocked by swap above the conservative 2 GiB ceiling",
+      "ModelLake background child: cancelled only after the live-mount du wait; live watcher/downloads remain untouched",
+      "root mission: stale and not promoted into the sovereign directive"
+    ],
+    "green": [
+      "goal compiler quoted-example regression",
+      "context memory and goal bank tests",
+      "resident mission/orphan recovery tests",
+      "full hcli suite: 443 passed, 1 skipped",
+      "ModelLake foreground gate: 43 passed",
+      "installed-shim semantic folder-entry probe"
+    ]
+  },
+  "root_mission": {
+    "accepted_count": 0,
+    "disk_truth": "stale: no dispatch or acceptance since the last checkpoint",
+    "goal": "launch smoke: prove admission passes and the supervisor reaches a real state",
+    "in_flight": [],
+    "last_checkpoint": 1788243973.089677,
+    "path": ".hcli/mission/state.json",
+    "phase": "running"
+  },
+  "schema": "hcli.sovereign_launch.cycle.v1",
+  "status": "PARTIAL_BLOCKED",
+  "termination": "each child has a 900s timeout and durable receipt; no shell parsing",
+  "updated_at": 1788307522.3678641
+}

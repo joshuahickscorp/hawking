@@ -22,7 +22,11 @@ from pathlib import Path
 from typing import Any
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
+_ROOT = Path(__file__).resolve().parents[2]
+if str(_ROOT) not in sys.path:
+    sys.path.insert(0, str(_ROOT))
 from _common import REPO  # noqa: E402, require_known_flags
+from tools.future.experiment_receipt import attach, input_ref  # noqa: E402
 
 RECEIPT = REPO / "receipts" / "future" / "BA_DELTA_AB.json"
 
@@ -90,7 +94,7 @@ def derived() -> dict[str, Any]:
 
 def build() -> dict[str, Any]:
     d = derived()
-    return {
+    doc = {
         "schema": "hawking.future.ba_delta_ab.v1",
         "version": 1,
         "recorded_by": "tools/future/ba_delta_ab.py",
@@ -170,6 +174,76 @@ def build() -> dict[str, Any]:
             "this class's per-dispatch cost to any other class."
         ),
     }
+    return attach(
+        doc,
+        producer="tools/future/ba_delta_ab.py",
+        location="receipts/future/BA_DELTA_AB.json",
+        inputs=[input_ref("sealed_env", SEALED_ENV), input_ref("exact", EXACT)],
+        claim=(
+            "HAWKING_QWEN38_FUSE_BA_DELTA removes 48 DeltaNet dispatches "
+            "(628→580) with token-id identity across eight runs."
+        ),
+        verdict="ACCEPT",
+        evidence_tier="FUNCTIONAL_SIM",
+        scope=(
+            "one env flag on one build, N=128, four repetitions per arm "
+            "after warmup; TPS is DIAGNOSTIC_RELATIVE"
+        ),
+        facts=[
+            {
+                "claim": "dispatches_removed=48 (628→580), matching the static walk",
+                "source": "exact",
+            },
+            {
+                "claim": "token_ids_identical across all eight runs, fallbacks=0",
+                "source": "exact",
+            },
+        ],
+        hypotheses=[
+            {
+                "claim": "enable BA_DELTA in the sealed fusion env",
+                "source": "recommendation",
+            }
+        ],
+        negative_controls=[
+            {
+                "id": "run1_outlier_not_claimed",
+                "what": (
+                    "run 1 sealed-arm outlier would have reported +1.045 TPS; "
+                    "kept on disk and not used"
+                ),
+            }
+        ],
+        failures=[],
+        resource_usage={
+            "gpu_authority": False,
+            "took_gpu_lease": False,
+            "evidence_class": "DIAGNOSTIC_RELATIVE",
+        },
+        qualification=(
+            "dispatch delta and token identity are exact; TPS delta is "
+            "DIAGNOSTIC_RELATIVE and is not a protected absolute"
+        ),
+        contamination=[
+            "Grok lanes were running; absolute TPS is DIAGNOSTIC_RELATIVE"
+        ],
+        uncertainty=[
+            "TPS delta sits inside what a single unpaired measurement could "
+            "not have established; no logit-equivalence proof"
+        ],
+        falsifier=(
+            "token ids diverge across arms, or the live dispatch delta is not "
+            "48, or a paired rerun flips the TPS sign outside the recorded spread"
+        ),
+        next_actions=[
+            "enable HAWKING_QWEN38_FUSE_BA_DELTA in the sealed fusion env"
+        ],
+        receipts=["receipts/future/BA_DELTA_AB.json"],
+        evidence=[
+            {"id": "STATIC_WALK_PREDICTED_48_AND_THE_PROBE_REMOVED_48"},
+            {"id": "TOKEN_IDENTICAL_ACROSS_ALL_EIGHT_RUNS"},
+        ],
+    )
 
 
 def record() -> Path:

@@ -1,0 +1,16 @@
+{
+  "body_mutated": false,
+  "error": {
+    "message": "metal: no Metal-capable GPU",
+    "type": "ProbeError"
+  },
+  "model_loaded": false,
+  "nomenclature_version": "HAWKING_NOMENCLATURE_V1",
+  "pinned_revision": "34567a4712bc9766c4449e2e98e4468bfa24d915",
+  "promotion_allowed": false,
+  "repo": "Qwen/Qwen3.8-Flash-Next",
+  "schema": "hawking.flash_noetic_q4_kernel_parity.v1",
+  "status": "FAILED",
+  "whole_model_capability": "NOT_TESTED",
+  "whole_model_runtime": "NOT_TESTED"
+}

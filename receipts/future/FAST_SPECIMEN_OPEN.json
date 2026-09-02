@@ -1,0 +1,449 @@
+{
+ "bottleneck": {
+  "evidence_tier": "HARDWARE_MEASURED",
+  "first_usable_smallest_cold_s": [
+   0.177933,
+   0.02361
+  ],
+  "full_cold_s": [
+   11.8345,
+   103.097767
+  ],
+  "full_over_metadata_min": 22671.5,
+  "metadata_cache_hit_s": [
+   0.00029,
+   0.001105
+  ],
+  "metadata_cold_s": [
+   0.000522,
+   0.001313
+  ],
+  "named": "full sequential read of weight bytes on USB. Metadata is a different cost class (headers are tens of KB). A header cache makes shape+dtype not touch the bus at all. First usable tensor is a ranged read of one tensor, not a second full pass.",
+  "not_a_guess": true
+ },
+ "commands": [
+  "python3 tools/odyssey/specimen_open.py measure --slug Qwen--Qwen3-0.6B@c1899de289a0",
+  "python3 tools/odyssey/specimen_open.py measure --slug tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+  "python3 tools/odyssey/specimen_open.py measure --slug Qwen--Qwen3-0.6B@c1899de289a0 --slug tiiuae--Falcon-H1-7B-Instruct@41e72f27effb --emit receipts/future/FAST_SPECIMEN_OPEN.json"
+ ],
+ "generated_at": "2026-09-02T09:10:56Z",
+ "generated_by": "tools/odyssey/specimen_open.py",
+ "host": {
+  "loadavg": [
+   8.5087890625,
+   8.47802734375,
+   9.3056640625
+  ],
+  "memsize_bytes": 103079215104,
+  "ncpu": 28,
+  "platform": "darwin"
+ },
+ "label_note": "Warm first-tensor rows were timed on this host (UBC allowed). They are HARDWARE_MEASURED, not a simulation. Cold rows used F_NOCACHE.",
+ "metadata_gate": {
+  "production_call_site": "tools.odyssey.device_profiles.metadata_open",
+  "rule": "bytes_read <= header_bytes; WeightBytesRefused otherwise",
+  "symbol": "tools.odyssey.specimen_open.read_header"
+ },
+ "per_specimen": [
+  {
+   "before_after": {
+    "first_tensor_vs_full": {
+     "after_first_in_file_cold_s": 2.836937,
+     "after_smallest_cold_s": 0.177933,
+     "after_what": "ranged pread of the requested tensor only",
+     "before_s": 11.8345,
+     "before_what": "full shard sequential read to have any tensor in hand",
+     "evidence_tier": "HARDWARE_MEASURED"
+    },
+    "metadata_common_path": {
+     "after_bytes_cache_hit": 0,
+     "after_bytes_cold": 35560,
+     "after_cache_hit_s": 0.00029,
+     "after_cold_header_s": 0.000522,
+     "after_what": "read_header cap=8+hl, then SSD header-cache hit",
+     "before_bytes": 1503300328,
+     "before_s": 11.8345,
+     "before_what": "answer shape+dtype by sequentially reading every shard (the G102 floor: a full disk read)",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "speedup_cache_vs_full": 40808.6,
+     "speedup_cold_vs_full": 22671.5
+    }
+   },
+   "file_bytes": 1503300328,
+   "first_usable_tensor": {
+    "evidence_tier": "HARDWARE_MEASURED",
+    "first_in_file_cold": {
+     "bytes": 311164928,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 35560,
+     "header_seconds": 0.000428,
+     "name": "lm_head.weight",
+     "prefer": "first_in_file",
+     "seconds": 2.836937,
+     "shape": [
+      151936,
+      1024
+     ],
+     "tensor_seconds": 2.834077,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    },
+    "first_in_file_warm": {
+     "bytes": 311164928,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 35560,
+     "header_seconds": 0.000533,
+     "name": "lm_head.weight",
+     "prefer": "first_in_file",
+     "seconds": 0.037503,
+     "shape": [
+      151936,
+      1024
+     ],
+     "tensor_seconds": 0.035053,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    },
+    "smallest_cold": {
+     "bytes": 256,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 641243880,
+     "header_seconds": 0.000434,
+     "name": "model.layers.0.self_attn.k_norm.weight",
+     "prefer": "smallest",
+     "seconds": 0.177933,
+     "shape": [
+      128
+     ],
+     "tensor_seconds": 0.177441,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    },
+    "smallest_mmap_warm": {
+     "bytes": 256,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 641243880,
+     "header_seconds": 0.00037,
+     "name": "model.layers.0.self_attn.k_norm.weight",
+     "prefer": "smallest",
+     "seconds": 0.001221,
+     "shape": [
+      128
+     ],
+     "tensor_seconds": 0.000811,
+     "touched_only_requested_tensor": true,
+     "use_mmap": true
+    },
+    "smallest_warm": {
+     "bytes": 256,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 641243880,
+     "header_seconds": 0.000471,
+     "name": "model.layers.0.self_attn.k_norm.weight",
+     "prefer": "smallest",
+     "seconds": 0.000552,
+     "shape": [
+      128
+     ],
+     "tensor_seconds": 3.9e-05,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    }
+   },
+   "full_shards": {
+    "bytes": 1503300328,
+    "cold_gb_s": 0.127,
+    "cold_s": 11.8345,
+    "evidence_tier": "HARDWARE_MEASURED",
+    "n_shards": 1,
+    "retained_weight_bytes": 0,
+    "warm_gb_s": 8.4677,
+    "warm_s": 0.177534
+   },
+   "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+   "loadavg": [
+    8.39990234375,
+    8.73876953125,
+    9.591796875
+   ],
+   "metadata_only": {
+    "bytes_read_cache_hit": 0,
+    "bytes_read_cold": 35560,
+    "cache_hit_s": 0.00029,
+    "cold_s": 0.000522,
+    "detail_cold": {
+     "bytes_read": 35560,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_bytes": 1503300328,
+     "from_cache": false,
+     "header_bytes": 35560,
+     "n_shards": 1,
+     "n_tensors": 311,
+     "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0",
+     "schema": "hawking.odyssey.specimen_metadata.v1",
+     "seconds": 0.0004985419800505042,
+     "shards": [
+      {
+       "bytes_read": 35560,
+       "file_bytes": 1503300328,
+       "from_cache": false,
+       "header_bytes": 35560,
+       "n_tensors": 311,
+       "path": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0/model.safetensors"
+      }
+     ],
+     "touched_weight_bytes": false
+    },
+    "evidence_tier": "HARDWARE_MEASURED",
+    "file_bytes": 1503300328,
+    "from_cache_on_hit": true,
+    "header_bytes": 35560,
+    "n_tensors": 311,
+    "touched_weight_bytes": false,
+    "warm_s": 0.000367
+   },
+   "n_shards": 1,
+   "nocache": "fcntl.F_NOCACHE per-fd; not a global purge",
+   "root": "/Volumes/corpdrive/hawking-modellake/specimens/Qwen--Qwen3-0.6B@c1899de289a0"
+  },
+  {
+   "before_after": {
+    "first_tensor_vs_full": {
+     "after_first_in_file_cold_s": 5.996414,
+     "after_smallest_cold_s": 0.02361,
+     "after_what": "ranged pread of the requested tensor only",
+     "before_s": 103.097767,
+     "before_what": "full shard sequential read to have any tensor in hand",
+     "evidence_tier": "HARDWARE_MEASURED"
+    },
+    "metadata_common_path": {
+     "after_bytes_cache_hit": 0,
+     "after_bytes_cold": 84544,
+     "after_cache_hit_s": 0.001105,
+     "after_cold_header_s": 0.001313,
+     "after_what": "read_header cap=8+hl, then SSD header-cache hit",
+     "before_bytes": 15171394304,
+     "before_s": 103.097767,
+     "before_what": "answer shape+dtype by sequentially reading every shard (the G102 floor: a full disk read)",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "speedup_cache_vs_full": 93301.1,
+     "speedup_cold_vs_full": 78520.8
+    }
+   },
+   "file_bytes": 15171394304,
+   "first_usable_tensor": {
+    "evidence_tier": "HARDWARE_MEASURED",
+    "first_in_file_cold": {
+     "bytes": 799021056,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 25184,
+     "header_seconds": 0.001223,
+     "name": "model.embed_tokens.weight",
+     "prefer": "first_in_file",
+     "seconds": 5.996414,
+     "shape": [
+      130049,
+      3072
+     ],
+     "tensor_seconds": 5.989353,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    },
+    "first_in_file_warm": {
+     "bytes": 799021056,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 25184,
+     "header_seconds": 0.001525,
+     "name": "model.embed_tokens.weight",
+     "prefer": "first_in_file",
+     "seconds": 0.095973,
+     "shape": [
+      130049,
+      3072
+     ],
+     "tensor_seconds": 0.089608,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    },
+    "smallest_cold": {
+     "bytes": 48,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 1025544800,
+     "header_seconds": 0.00125,
+     "name": "model.layers.0.mamba.A_log",
+     "prefer": "smallest",
+     "seconds": 0.02361,
+     "shape": [
+      24
+     ],
+     "tensor_seconds": 0.022319,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    },
+    "smallest_mmap_warm": {
+     "bytes": 48,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 1025544800,
+     "header_seconds": 0.001162,
+     "name": "model.layers.0.mamba.A_log",
+     "prefer": "smallest",
+     "seconds": 0.001259,
+     "shape": [
+      24
+     ],
+     "tensor_seconds": 6.9e-05,
+     "touched_only_requested_tensor": true,
+     "use_mmap": true
+    },
+    "smallest_warm": {
+     "bytes": 48,
+     "dtype": "BF16",
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_offset": 1025544800,
+     "header_seconds": 0.001197,
+     "name": "model.layers.0.mamba.A_log",
+     "prefer": "smallest",
+     "seconds": 0.001253,
+     "shape": [
+      24
+     ],
+     "tensor_seconds": 2.8e-05,
+     "touched_only_requested_tensor": true,
+     "use_mmap": false
+    }
+   },
+   "full_shards": {
+    "bytes": 15171394304,
+    "cold_gb_s": 0.1472,
+    "cold_s": 103.097767,
+    "evidence_tier": "HARDWARE_MEASURED",
+    "n_shards": 4,
+    "retained_weight_bytes": 0,
+    "warm_gb_s": 8.2855,
+    "warm_s": 1.83107
+   },
+   "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+   "loadavg": [
+    8.5087890625,
+    8.47802734375,
+    9.3056640625
+   ],
+   "metadata_only": {
+    "bytes_read_cache_hit": 0,
+    "bytes_read_cold": 84544,
+    "cache_hit_s": 0.001105,
+    "cold_s": 0.001313,
+    "detail_cold": {
+     "bytes_read": 84544,
+     "evidence_tier": "HARDWARE_MEASURED",
+     "file_bytes": 15171394304,
+     "from_cache": false,
+     "header_bytes": 84544,
+     "n_shards": 4,
+     "n_tensors": 751,
+     "root": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+     "schema": "hawking.odyssey.specimen_metadata.v1",
+     "seconds": 0.0010699580889195204,
+     "shards": [
+      {
+       "bytes_read": 25184,
+       "file_bytes": 4960322992,
+       "from_cache": false,
+       "header_bytes": 25184,
+       "n_tensors": 224,
+       "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb/model-00001-of-00004.safetensors"
+      },
+      {
+       "bytes_read": 30656,
+       "file_bytes": 4935762112,
+       "from_cache": false,
+       "header_bytes": 30656,
+       "n_tensors": 272,
+       "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb/model-00002-of-00004.safetensors"
+      },
+      {
+       "bytes_read": 28576,
+       "file_bytes": 4476288016,
+       "from_cache": false,
+       "header_bytes": 28576,
+       "n_tensors": 254,
+       "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb/model-00003-of-00004.safetensors"
+      },
+      {
+       "bytes_read": 128,
+       "file_bytes": 799021184,
+       "from_cache": false,
+       "header_bytes": 128,
+       "n_tensors": 1,
+       "path": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb/model-00004-of-00004.safetensors"
+      }
+     ],
+     "touched_weight_bytes": false
+    },
+    "evidence_tier": "HARDWARE_MEASURED",
+    "file_bytes": 15171394304,
+    "from_cache_on_hit": true,
+    "header_bytes": 84544,
+    "n_tensors": 751,
+    "touched_weight_bytes": false,
+    "warm_s": 0.001206
+   },
+   "n_shards": 4,
+   "nocache": "fcntl.F_NOCACHE per-fd; not a global purge",
+   "root": "/Volumes/corpdrive/hawking-modellake/specimens/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+  }
+ ],
+ "schema": "hawking.odyssey.fast_specimen_open.v1",
+ "seal_sha256": "56b11e373807e1cd5aeb7df5e80e485ac2c11723a72db20f2635a0b9f1399b54",
+ "sequential_rate": {
+  "cold_gb_s_per_specimen": [
+   {
+    "cold_gb_s": 0.127,
+    "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "warm_gb_s": 8.4677
+   },
+   {
+    "cold_gb_s": 0.1472,
+    "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+    "warm_gb_s": 8.2855
+   }
+  ],
+  "evidence_tier": "HARDWARE_MEASURED",
+  "median_cold_gb_s": 0.1472,
+  "n_samples": 2,
+  "note": "This is the sequential rate observed on this host while reading real sealed shards with F_NOCACHE, not a USB spec number.",
+  "protocol": "USB",
+  "volume": "/Volumes/corpdrive (APFS over USB)"
+ },
+ "tier1_already_staged": {
+  "cold_speedup_vs_usb": 34.88,
+  "copied_the_lake": false,
+  "evidence_tier": "HARDWARE_MEASURED",
+  "file_bytes": 1503300328,
+  "full_cold_gb_s": 4.4304,
+  "full_cold_s": 0.339313,
+  "full_warm_gb_s": 8.8351,
+  "full_warm_s": 0.170151,
+  "metadata_cold_s": 0.000762,
+  "note": "Qwen3-0.6B was already on ~/noetic/stage before this lane. This is a read of that existing hot-bench copy, not a copy of the lake.",
+  "root": "/Users/scammermike/noetic/stage/Qwen--Qwen3-0.6B@c1899de289a0",
+  "usb_full_cold_gb_s": 0.127,
+  "usb_full_cold_s": 11.8345
+ },
+ "warm_set_note": "Tier 1 (~/noetic/stage, TIER1_BUDGET = 140 GiB, two specimens' worth) is a hot bench, not a second archive. This receipt does not copy the lake.",
+ "what_exists_already": {
+  "deepseek_v4_architecture_admission.read_header_only": "rejects a full shard; wants a header-only capture file",
+  "model_specimen_seal.safetensor_check": "header + 16-byte representative reads; WRITES a seal into the specimen tree \u2014 never called here",
+  "modellake_lineage.tensor_names_from_safetensors": "names only, HEADER_CAP 32 MiB, not shapes, not a cache, not timed; DO_NOT_TOUCH this lane",
+  "specimen_load_cost.py": "G102 COST_MODEL from a 3 GB sequential sample; not an open"
+ }
+}

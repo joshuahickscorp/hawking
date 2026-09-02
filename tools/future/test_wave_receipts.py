@@ -40,6 +40,27 @@ CONTRACTED = {
         "resident_unsupported_requests", "capability_inventory",
         "built_anything", "justification",
     ],
+    # Distillation wave: four subtraction audits. Each recommends rather than
+    # deletes, so the receipt IS the deliverable and has to be checkable.
+    "AIDER_NAMESPACE_AUDIT.json": [
+        "aider_import_call_sites", "aider_binary_invocations",
+        "haider_namespace_files", "suite_runs_without_aider",
+        "safe_to_remove", "must_keep_as_evidence", "recommended_commands",
+    ],
+    "DEAD_CALLSITE_SWEEP.json": [
+        "capabilities_examined", "zero_caller_modules", "test_only_callers",
+        "superseded_paths", "recommended_deletions", "must_not_delete",
+    ],
+    "CONFIG_ENV_AUDIT.json": [
+        "hcli_env_vars", "unused_vars", "conflicting_defaults",
+        "body_specific_names", "stale_config_files",
+        "recommended_normalization",
+    ],
+    "NOMENCLATURE_AUDIT.json": [
+        "model_specific_names_in_generic_roles", "genuinely_generic_already",
+        "safe_renames", "unsafe_renames", "compatibility_aliases_needed",
+        "recommended_sequence",
+    ],
 }
 
 PLACEHOLDERS = {"", "TODO", "TBD", "N/A", "null", "None", "...", "-"}

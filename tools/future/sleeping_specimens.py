@@ -469,6 +469,56 @@ def emit_sleeping_specimen_wu(
     return row
 
 
+def default_specimen_root() -> Path:
+    """Canonical sealed-specimen directory. Attribute lookup so tests can patch."""
+    from tools.odyssey import modellake_promote as mp
+
+    return Path(mp.SPECIMEN_ROOT)
+
+
+def sealed_source_ready(
+    tag: str,
+    *,
+    specimen_root: Path | None = None,
+) -> bool:
+    """True iff `tag` has landed as a non-empty specimen directory.
+
+    Disk is the SEALED_SOURCE_READY wake event. A missing or empty directory
+    is not ready. This never mints a synthetic COMPLETED.
+    """
+    if not tag or not str(tag).strip():
+        return False
+    root = Path(specimen_root) if specimen_root is not None else default_specimen_root()
+    path = root / str(tag)
+    try:
+        if not path.is_dir():
+            return False
+        return any(path.iterdir())
+    except OSError:
+        return False
+
+
+def notify_sealed_source_ready(
+    tag: str,
+    *,
+    source: str,
+    specimen_root: Path | None = None,
+) -> dict[str, Any]:
+    """Fire the SEALED_SOURCE_READY token if disk confirms the specimen.
+
+    Called from the promotion landing path (modellake_watch after promote()).
+    ready=False means the token was named but the exit was not taken.
+    """
+    ready = sealed_source_ready(tag, specimen_root=specimen_root)
+    return {
+        "wake_condition": WAKE_SEALED_SOURCE_READY,
+        "tag": str(tag),
+        "source": str(source),
+        "ready": bool(ready),
+        "evidence_tier": "STATIC",
+    }
+
+
 def pending_from_watcher_sample(
     sample: Mapping[str, Any],
     *,

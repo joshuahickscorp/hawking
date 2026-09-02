@@ -2304,7 +2304,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:24:00Z",
+  "recorded_at": "2026-09-02T09:23:02Z",
   "recorded_by": "tools/future/deltanet_representation.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -3026,7 +3026,7 @@
   "z_binding": "gated RMSNorm only; not gated-delta"
  },
  "schema": "hawking.future.deltanet_representation.v1",
- "seal_sha256": "9e726c21f6a7d03c00d9196e283f2013c7597eb2c60288f56bedd741364a55dc",
+ "seal_sha256": "92f77b73964ab98a83923b2051b35618d74970318b21298098b21c6bd3a2f007",
  "version": 1,
  "what_this_does_not_prove": [
   "capability of Q3 on any qkvz range (no generate gate)",

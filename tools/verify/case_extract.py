@@ -81,27 +81,93 @@ def git(*args: str) -> str:
     ).stdout
 
 
+_TRACKED_CACHE: dict[tuple[str, str], list[str]] = {}
+_BLOB_CACHE: dict[tuple[str, str, str], str] = {}
+
+
 def resolve_rev(rev: str | None = None) -> str:
     return git("rev-parse", rev or "HEAD").strip()
 
 
 def tracked(rev: str, *suffixes: str) -> list[str]:
-    files = [
-        p
-        for p in git("ls-tree", "-r", "--name-only", rev).splitlines()
-        if p and not p.startswith(("vendor/", "workspace/vendor/"))
-    ]
+    tkey = (str(get_root()), rev)
+    files = _TRACKED_CACHE.get(tkey)
+    if files is None:
+        files = [
+            p
+            for p in git("ls-tree", "-r", "--name-only", rev).splitlines()
+            if p and not p.startswith(("vendor/", "workspace/vendor/"))
+        ]
+        _TRACKED_CACHE[tkey] = files
     if not suffixes:
-        return files
+        return list(files)
     return [p for p in files if any(p.endswith(s) for s in suffixes)]
+
+
+def _parse_cat_file_batch(data: bytes, rels: list[str]) -> dict[str, str]:
+    out: dict[str, str] = {}
+    idx = 0
+    for rel in rels:
+        if idx >= len(data):
+            out[rel] = ""
+            continue
+        nl = data.find(b"\n", idx)
+        if nl < 0:
+            out[rel] = ""
+            break
+        header = data[idx:nl].decode("utf-8", errors="replace")
+        idx = nl + 1
+        if " missing" in header:
+            out[rel] = ""
+            continue
+        parts = header.split()
+        if len(parts) < 3 or parts[1] != "blob":
+            out[rel] = ""
+            continue
+        try:
+            size = int(parts[2])
+        except ValueError:
+            out[rel] = ""
+            continue
+        blob = data[idx : idx + size]
+        idx = idx + size
+        if idx < len(data) and data[idx : idx + 1] == b"\n":
+            idx += 1
+        out[rel] = blob.decode("utf-8", errors="replace")
+    return out
+
+
+def prefetch_blobs(rev: str, rels: list[str]) -> None:
+    """One `git cat-file --batch` for many blobs. Replaces N `git show`."""
+    root = str(get_root())
+    pending = [r for r in rels if r and (root, rev, r) not in _BLOB_CACHE]
+    if not pending:
+        return
+    specs = "\n".join(f"{rev}:{rel}" for rel in pending) + "\n"
+    try:
+        proc = subprocess.run(
+            ["git", "--no-optional-locks", "-C", str(get_root()), "cat-file", "--batch"],
+            input=specs.encode("utf-8"),
+            capture_output=True,
+            check=False,
+        )
+    except OSError:
+        for rel in pending:
+            _BLOB_CACHE[(root, rev, rel)] = ""
+        return
+    fetched = _parse_cat_file_batch(proc.stdout or b"", pending)
+    for rel, text in fetched.items():
+        _BLOB_CACHE[(root, rev, rel)] = text
 
 
 def read_text(rev: str, rel: str) -> str:
     """Read a blob at rev:rel. Does not touch the worktree."""
-    try:
-        return git("show", f"{rev}:{rel}")
-    except subprocess.CalledProcessError:
-        return ""
+    key = (str(get_root()), rev, rel)
+    cached = _BLOB_CACHE.get(key)
+    if cached is not None:
+        return cached
+    prefetch_blobs(rev, [rel])
+    return _BLOB_CACHE.get(key, "")
 
 
 def read_artifact(rev: str, name: str) -> str:
@@ -842,6 +908,7 @@ def extract_perf(rev: str, warnings: list[str]) -> list[dict[str, Any]]:
 
 def build_ledger(rev: str | None = None) -> dict[str, Any]:
     commit = resolve_rev(rev)
+    prefetch_blobs(commit, tracked(commit, ".rs", ".py", ".ts", ".tsx"))
     warnings: list[str] = []
     entries: list[dict[str, Any]] = []
     entries.extend(extract_rust(commit, warnings))

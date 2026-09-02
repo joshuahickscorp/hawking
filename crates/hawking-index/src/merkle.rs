@@ -98,6 +98,14 @@ impl Blake3MerkleScanner {
     pub fn root(&self) -> &Path {
         &self.root
     }
+
+    /// Build a merkle tree from an explicit leaf map (path → already-hashed file
+    /// node). The reachability indexer uses this to merkle-diff *only* the
+    /// git-tracked `*.py` set — including sparse-missing blobs hashed from
+    /// `git cat-file` — instead of walking the whole workspace.
+    pub fn tree_from_leaves(&self, leaves: BTreeMap<PathBuf, MerkleNode>) -> MerkleNode {
+        build_tree(&self.root, &leaves)
+    }
 }
 
 /// Built-in ignore set: directories that pollute a code index with machine noise.

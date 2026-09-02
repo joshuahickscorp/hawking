@@ -43,6 +43,7 @@ rand_pcg = { workspace = true }
 sha2 = { workspace = true, features = ["asm"] }
 parking_lot = { workspace = true }
 once_cell = { workspace = true }
+regex = { workspace = true }
 
 [target.'cfg(target_os = "macos")'.dependencies]
 metal = { workspace = true }

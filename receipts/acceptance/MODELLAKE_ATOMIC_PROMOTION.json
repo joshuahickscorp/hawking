@@ -1,0 +1,583 @@
+{
+  "blocker": null,
+  "checks": {
+    "live_partial_empty": true,
+    "live_replay_no_unexpected_action": true,
+    "live_sealed_count_55": true,
+    "no_live_rename": true,
+    "promote_invoked": true,
+    "scratch_atomic_properties": true
+  },
+  "command": [
+    "python3",
+    "-m",
+    "tools.acceptance.lake",
+    "--gate",
+    "MODELLAKE_ATOMIC_PROMOTION"
+  ],
+  "criterion": {
+    "end_line": 553,
+    "ledger_line": 9489,
+    "operational": "MODE-004 atomic promotion. os.rename of a verified-complete tree from partial/ into specimens/. Partial files never masquerade as final artifacts. Dry-run is default; an existing destination is never overwritten.",
+    "quote": "## I-E. Odyssey I \u2014 Discovery\n\n**Mission:** Build the first real school of model/device facts.\n\n**Genes to express:**\n- architecture-diverse specimens\n- controlled experiments\n- negative science\n- ModelLake\n- genomes\n- laws with scope\n- transfer annotations\n- scientific receipts\n- model #2 completion\n- first cross-model surprises\n\n**Operating rule:** act only on genes whose prerequisites are physically or artifact-verifiably available. Missing prerequisites become explicit blockers or prerequisite WorkUnits; they do not justify fake completion.\n\n**Promotion gate:** this civilization advances only when a fresh process or unseen specimen/device can demonstrate the promised behavior through independent receipts, not because the implementation surface exists.\n\n**Self-refill triggers:** regression, new specimen, new device, new counterexample, new profiler bottleneck, failed transfer, stale assumption, or a newly available deterministic verifier.\n\n",
+    "source": "/Users/scammermike/Downloads/H-ROADMAP.md",
+    "start_line": 531
+  },
+  "criterion_altered": false,
+  "elapsed_s": 0.064,
+  "evidence_tier": "STATIC",
+  "gate": "MODELLAKE_ATOMIC_PROMOTION",
+  "generated_at": "2026-09-02T09:14:17Z",
+  "hcli_unmodified": true,
+  "implementing_symbol": "tools.odyssey.modellake_promote.promote",
+  "lake": "/Volumes/corpdrive/hawking-modellake",
+  "lake_readonly": true,
+  "measured": {
+    "already_promoted": 49,
+    "live_partial_dirs": [],
+    "no_manifest": 6,
+    "scratch_properties": {
+      "clash_existing_untouched": true,
+      "clash_refused": true,
+      "dry_run_moved_nothing": true,
+      "go_partial_gone": true,
+      "go_promoted": true,
+      "go_verified_at_destination": true,
+      "go_weights_intact": true,
+      "incomplete_absent_from_specimens": true,
+      "incomplete_refused": true,
+      "incomplete_stayed_in_partial": true
+    },
+    "sealed_specimens": 55,
+    "unexpected": []
+  },
+  "output": {
+    "live_replay": [
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Dream-org--Dream-v0-Instruct-7B@05334cb9faaf"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "LiquidAI--LFM2-24B-A2B@a3bbacd91a67"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen2.5-72B-Instruct@495f39366efe"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-0.6B@c1899de289a0"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-14B@40c069824f42"
+      },
+      {
+        "action": "REFUSED",
+        "complete": false,
+        "destination_is_live_specimen": true,
+        "reason": "DESTINATION_INCOMPLETE:NO_MANIFEST",
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-30B-A3B@ad44e777bcd1"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d"
+      },
+      {
+        "action": "REFUSED",
+        "complete": false,
+        "destination_is_live_specimen": true,
+        "reason": "DESTINATION_INCOMPLETE:NO_MANIFEST",
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8"
+      },
+      {
+        "action": "REFUSED",
+        "complete": false,
+        "destination_is_live_specimen": true,
+        "reason": "DESTINATION_INCOMPLETE:NO_MANIFEST",
+        "source_is_live_partial": true,
+        "tag": "Qwen--Qwen3.8-Flash-Next@34567a4712bc"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "RWKV--RWKV7-13.3B-20260805@64ffe5934178"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "Wan-AI--Wan2.2-T2V-A14B@c8c270b13ee0"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "ai21labs--AI21-Jamba2-3B@525c6c8e1d9f"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "allenai--Olmo-3-1025-7B@a81bae42db39"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "answerdotai--ModernBERT-large@45bb4654a4d5"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "arcinstitute--evo2_40b@d529aa57c307"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "arcinstitute--evo2_7b@bda0089f9258"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "bigcode--starcoder2-7b@bb9afde76d79"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "boltz-community--boltz-2@6fdef46d763f"
+      },
+      {
+        "action": "REFUSED",
+        "complete": false,
+        "destination_is_live_specimen": true,
+        "reason": "DESTINATION_INCOMPLETE:NO_MANIFEST",
+        "source_is_live_partial": true,
+        "tag": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "depth-anything--Depth-Anything-V2-Large-hf@7581137eff8d"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "facebook--musicgen-large@15ccdc920998"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "facebook--sam2.1-hiera-large@665f8e2ad61c"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "facebook--vjepa2-vitg-fpc64-256@875c192b7b70"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "google--flan-t5-large@0613663d0d48"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "google--timesfm-2.0-500m-pytorch@dc2443792ce5"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "ibm-granite--granite-4.0-h-micro@d5f01a3ea75f"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "kyutai--moshika-pytorch-bf16@a49141e28b3d"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "lerobot--pi0_base@25c379b52ba2"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "microsoft--Phi-4-mini-instruct@cfbefacb9925"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "microsoft--Phi-4-multimodal-instruct@93f923e1a772"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "microsoft--Phi-4-reasoning-plus@69baf8528e1b"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "moonshotai--Kimi-K3@9f62e4e9fffb"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "moonshotai--Kimi-Linear-48B-A3B-Instruct@e1df551a4471"
+      },
+      {
+        "action": "REFUSED",
+        "complete": false,
+        "destination_is_live_specimen": true,
+        "reason": "DESTINATION_INCOMPLETE:NO_MANIFEST",
+        "source_is_live_partial": true,
+        "tag": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "nvidia--audio-flamingo-3@ee26c5842398"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "openai--whisper-large-v3-turbo@41f01f3fe87f"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "state-spaces--mamba3-siso-1.5b@5cfc721542ec"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "tencent--HunyuanVideo@6204ad6aea1a"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "thinkingmachines--Inkling-Small@8cc5877b44d3"
+      },
+      {
+        "action": "REFUSED",
+        "complete": false,
+        "destination_is_live_specimen": true,
+        "reason": "DESTINATION_INCOMPLETE:NO_MANIFEST",
+        "source_is_live_partial": true,
+        "tag": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "tiiuae--Falcon3-1B-Instruct@28ba2251970a"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "zai-org--GLM-4.5-Air@a24ceef6ce4f"
+      },
+      {
+        "action": "ALREADY_PROMOTED",
+        "complete": true,
+        "destination_is_live_specimen": true,
+        "reason": null,
+        "source_is_live_partial": true,
+        "tag": "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
+      }
+    ],
+    "scratch": {
+      "clash": {
+        "action": "REFUSED",
+        "complete": true,
+        "destination": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/specimens/acme--promo@deadbeefcafe-clash",
+        "detail": {
+          "bytes": 4098,
+          "files": 2,
+          "first_missing": [],
+          "first_wrong": [],
+          "missing": 0,
+          "wrong_size": 0
+        },
+        "reason": "DESTINATION_EXISTS",
+        "source": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/partial/acme--promo@deadbeefcafe-clash",
+        "tag": "acme--promo@deadbeefcafe-clash"
+      },
+      "dry_run": {
+        "action": "WOULD_PROMOTE",
+        "complete": true,
+        "destination": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/specimens/acme--promo@deadbeefcafe-dry",
+        "detail": {
+          "bytes": 4098,
+          "files": 2,
+          "first_missing": [],
+          "first_wrong": [],
+          "missing": 0,
+          "wrong_size": 0
+        },
+        "source": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/partial/acme--promo@deadbeefcafe-dry",
+        "tag": "acme--promo@deadbeefcafe-dry"
+      },
+      "incomplete": {
+        "action": "REFUSED",
+        "complete": false,
+        "destination": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/specimens/acme--promo@deadbeefcafe-incomplete",
+        "detail": {
+          "bytes": 2,
+          "files": 2,
+          "first_missing": [
+            "weights.bin"
+          ],
+          "first_wrong": [],
+          "missing": 1,
+          "wrong_size": 0
+        },
+        "reason": "INCOMPLETE",
+        "source": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/partial/acme--promo@deadbeefcafe-incomplete",
+        "tag": "acme--promo@deadbeefcafe-incomplete"
+      },
+      "promoted": {
+        "action": "PROMOTED",
+        "complete": true,
+        "destination": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/specimens/acme--promo@deadbeefcafe-go",
+        "detail": {
+          "bytes": 4098,
+          "files": 2,
+          "first_missing": [],
+          "first_wrong": [],
+          "missing": 0,
+          "wrong_size": 0
+        },
+        "source": "/var/folders/yc/1c930rns2rz1_trh4xcd9_m00000gq/T/acc4-promo-vaheccgp/model_root/partial/acme--promo@deadbeefcafe-go",
+        "tag": "acme--promo@deadbeefcafe-go",
+        "verified_at_destination": true
+      },
+      "properties": {
+        "clash_existing_untouched": true,
+        "clash_refused": true,
+        "dry_run_moved_nothing": true,
+        "go_partial_gone": true,
+        "go_promoted": true,
+        "go_verified_at_destination": true,
+        "go_weights_intact": true,
+        "incomplete_absent_from_specimens": true,
+        "incomplete_refused": true,
+        "incomplete_stayed_in_partial": true
+      }
+    },
+    "summary": "scratch atomic_ok=True; live sealed=55 partial_dirs=[] already_promoted=49 no_manifest=6"
+  },
+  "receipt_path": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058/receipts/acceptance/MODELLAKE_ATOMIC_PROMOTION.json",
+  "schema": "hawking.acceptance.gate.v1",
+  "symbol_invoked": true,
+  "verdict": "ACCEPTED",
+  "worktree": "/Users/scammermike/.claude-grok/worktrees/acc4-modellake-qwen27-acceptance-20260902-045058"
+}

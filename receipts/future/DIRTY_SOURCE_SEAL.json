@@ -1,13 +1,13 @@
 {
  "base_head": {
-  "sha": "7f3f1ffc5bce328d4fa3e2cdf84cb369d8033e39",
-  "subject": "fix(G145): the resident refused to run at 42.6 GB free, because it was reading a boot high-water mark"
+  "sha": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "subject": "refactor(hcli): the daemon gets its own name, hawkingd"
  },
  "bench": {
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:26:32Z",
+  "recorded_at": "2026-09-02T08:44:19Z",
   "recorded_by": "tools/future/dirty_source_seal.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -217,51 +217,11 @@
    "split_hunks_of": []
   }
  ],
- "crate_source_is_dirty": true,
+ "crate_source_is_dirty": false,
  "dirty_crate_files": {
-  "modified": [
-   "crates/hawking-core/examples/ascension_qwen30_complete_native_runtime.rs",
-   "crates/hawking-core/examples/ascension_qwen30_uniform_q4_tps_gates.rs",
-   "crates/hawking-core/examples/ascension_qwen38_resident.rs",
-   "crates/hawking-core/examples/gravity_deepseek_v4_fullseq_capture.rs",
-   "crates/hawking-core/shaders/attn.metal",
-   "crates/hawking-core/shaders/deepseek_v4_p7.metal",
-   "crates/hawking-core/shaders/dsv4f_native_token_graph.metal",
-   "crates/hawking-core/shaders/gk_family.metal",
-   "crates/hawking-core/shaders/matmul.metal",
-   "crates/hawking-core/shaders/mha.metal",
-   "crates/hawking-core/shaders/moe.metal",
-   "crates/hawking-core/shaders/qwen_next.metal",
-   "crates/hawking-core/src/decode_family.rs",
-   "crates/hawking-core/src/gravity_deepseek_v4_fullseq_attention_device.rs",
-   "crates/hawking-core/src/gravity_deepseek_v4_layer0_continuation.rs",
-   "crates/hawking-core/src/gravity_deepseek_v4_native_token_graph.rs",
-   "crates/hawking-core/src/gravity_deepseek_v4_p4b_device.rs",
-   "crates/hawking-core/src/gravity_deepseek_v4_p6_device.rs",
-   "crates/hawking-core/src/gravity_deepseek_v4_p7_device.rs",
-   "crates/hawking-core/src/gravity_deepseek_v4_streamed_native.rs",
-   "crates/hawking-core/src/kernels/mod.rs",
-   "crates/hawking-core/src/metal/mod.rs",
-   "crates/hawking-core/src/model/qwen30_complete_runtime.rs",
-   "crates/hawking-core/src/model/qwen80_source_bf16_layer_major.rs",
-   "crates/hawking-core/src/model/qwen_complete_binary/uniform_q4.rs"
-  ],
-  "total": 38,
-  "untracked": [
-   "crates/hawking-core/examples/flash_fast_chain.rs",
-   "crates/hawking-core/examples/flash_full_attention_layer3.rs",
-   "crates/hawking-core/examples/flash_meta_teacher_trace.rs",
-   "crates/hawking-core/examples/flash_noetic_complete_layer0.rs",
-   "crates/hawking-core/examples/flash_source_bf16_chain.rs",
-   "crates/hawking-core/examples/flash_source_bf16_terminal.rs",
-   "crates/hawking-core/examples/flash_stateful_attention_probe.rs",
-   "crates/hawking-core/examples/flash_stateful_complete_token_session.rs",
-   "crates/hawking-core/examples/flash_stateful_cross_species_seam.rs",
-   "crates/hawking-core/examples/flash_stateful_layer3_layer4_bridge.rs",
-   "crates/hawking-core/examples/flash_stateful_linear_prefix_session.rs",
-   "crates/hawking-core/examples/flash_stateful_linear_probe.rs",
-   "crates/hawking-core/examples/flash_tokenizer_acceptance_contract.rs"
-  ]
+  "modified": [],
+  "total": 0,
+  "untracked": []
  },
  "dirty_crate_root": "/Users/scammermike/Downloads/hawking",
  "evidence_class": "STATIC_ONLY",
@@ -288,20 +248,9 @@
   "P-Q80"
  ],
  "measurement_files": {
-  "files": [
-   {
-    "added": 26,
-    "path": "crates/hawking-core/examples/ascension_qwen38_resident.rs",
-    "removed": 0
-   },
-   {
-    "added": 1042,
-    "path": "crates/hawking-core/src/metal/mod.rs",
-    "removed": 110
-   }
-  ],
-  "uncommitted_lines_added": 1068,
-  "uncommitted_lines_removed": 110
+  "files": [],
+  "uncommitted_lines_added": 0,
+  "uncommitted_lines_removed": 0
  },
  "measurement_label": "DIRTY_SOURCE_DIAGNOSTIC",
  "measurements": {
@@ -537,12 +486,12 @@
   }
  ],
  "patch": {
-  "bytes": 1079622,
-  "n_files": 38,
-  "n_modified": 25,
-  "n_untracked": 13,
+  "bytes": 0,
+  "n_files": 0,
+  "n_modified": 0,
+  "n_untracked": 0,
   "path": "receipts/future/patches/dirty-crate-work.patch",
-  "sha256": "7630329f840b24d77a5ffc47408b6e483cb157cac6f1f59ee8f8212c2977ed19"
+  "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
  },
  "promoted": false,
  "recorded_by": "tools/future/dirty_source_seal.py",
@@ -565,7 +514,7 @@
   "land": "P-Q30, P-Q80, P-CACHE, P-INSTRUMENT, P-WORKLIST, P-FAST. P-CACHE changes production default (opt-out). Landing it does not promote the TPS numbers."
  },
  "schema": "hawking.future.dirty_source_seal.v1",
- "seal_sha256": "ded08e94fee031d61479f15737a9cd8214c31b341c2b38495748238e4d7bf3cf",
+ "seal_sha256": "f5abb7f0c6171408fd76ac7476b06122607af33b0342cadbf592eaafb2a6c4aa",
  "sealed_fusion_env": {
   "HAWKING_QWEN38_FUSE_ADD_RMSNORM": "1",
   "HAWKING_QWEN38_FUSE_DN_INPROJ": "1",
@@ -607,9 +556,9 @@
  "version": 1,
  "why_artifact_identity_does_not_catch_it": "artifact_identity.py refuses a binary OLDER than the commit that introduced a field it reads. Here there is no such commit. The check passes because the source was never committed, which is the worse case, not the safe one.",
  "witness": {
-  "conclusion": "the measurements depend on a symbol that exists only in the working tree",
+  "conclusion": "symbol is committed",
   "file": "crates/hawking-core/src/metal/mod.rs",
-  "occurrences_in_HEAD": 0,
+  "occurrences_in_HEAD": 16,
   "occurrences_in_working_tree": 16,
   "symbol": "TokenPipelineCache"
  },

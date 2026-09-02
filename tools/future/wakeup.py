@@ -783,6 +783,45 @@ def __getattr__(name: str) -> Any:
     raise AttributeError(f"module {__name__!r} has no attribute {name!r}")
 
 
+def harvest_sealed_specimens(
+    units: Sequence[Mapping[str, Any]],
+    *,
+    specimen_root: Path | None = None,
+) -> list[dict[str, Any]]:
+    """Exit transition for SLEEPING_SPECIMEN_WU (wake_condition SEALED_SOURCE_READY).
+
+    A unit whose wake_condition is SEALED_SOURCE_READY leaves SLEEPING only
+    when tools.future.sleeping_specimens.sealed_source_ready(tag) is true.
+    Disk is authority; this never mints a synthetic COMPLETED.
+    """
+    from tools.future.sleeping_specimens import (
+        WAKE_SEALED_SOURCE_READY,
+        sealed_source_ready,
+    )
+
+    woken: list[dict[str, Any]] = []
+    for unit in units:
+        if unit.get("wake_condition") != WAKE_SEALED_SOURCE_READY:
+            continue
+        ident = unit.get("modellake_identity") or {}
+        tag = ident.get("tag") if isinstance(ident, Mapping) else None
+        if not tag:
+            continue
+        if not sealed_source_ready(str(tag), specimen_root=specimen_root):
+            continue
+        woken.append(
+            {
+                "id": unit.get("id"),
+                "tag": tag,
+                "prior_state": unit.get("status") or unit.get("wakeup_state") or SLEEPING,
+                "state": COMPLETED,
+                "wake_condition": WAKE_SEALED_SOURCE_READY,
+                "reason": "specimen directory present on disk (SEALED_SOURCE_READY)",
+            }
+        )
+    return woken
+
+
 # ---------------------------------------------------------------------------
 # WorkUnit emission — HCLI field set, SLEEPING is blocked not a fake result.
 # ---------------------------------------------------------------------------

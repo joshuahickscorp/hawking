@@ -23,6 +23,8 @@ ignore = { workspace = true }
 notify = { workspace = true }
 reqwest = { workspace = true }
 tokio = { workspace = true }
+clap = { workspace = true }
+regex = { workspace = true }
 
 # Crate-specific: tree-sitter parse layer. ABI-compatible set, verified to build
 # together (tree-sitter 0.25 / grammars exposing LANGUAGE + TAGS_QUERY).
@@ -30,6 +32,14 @@ tree-sitter = "0.25"
 tree-sitter-rust = "0.24"
 tree-sitter-python = "0.23"
 tree-sitter-typescript = "0.23"
+
+[[bin]]
+name = "hawking-index"
+path = "src/bin/hawking-index.rs"
+
+[[bin]]
+name = "hawking-artifact"
+path = "src/bin/hawking-artifact.rs"
 
 [dev-dependencies]
 tempfile = "3"

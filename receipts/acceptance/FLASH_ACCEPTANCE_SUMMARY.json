@@ -1,0 +1,44 @@
+{
+  "accepted": [
+    "FLASH_SOURCE_VERIFIED",
+    "FLASH_FIRST_GRAVITY_ORGAN",
+    "FLASH_DENSE_VS_NF_AB"
+  ],
+  "assigned_gates": [
+    "FLASH_SOURCE_VERIFIED",
+    "FLASH_FIRST_GRAVITY_ORGAN",
+    "FLASH_NATIVE_NF_KERNEL",
+    "FLASH_DENSE_VS_NF_AB",
+    "FLASH_FULL_NOETIC_EXECUTABLE",
+    "FLASH_COMPLETE_EBPW_LE_1",
+    "FLASH_ACCEPTED_TPS_GE_50"
+  ],
+  "blocked": [
+    "FLASH_NATIVE_NF_KERNEL",
+    "FLASH_FULL_NOETIC_EXECUTABLE",
+    "FLASH_COMPLETE_EBPW_LE_1",
+    "FLASH_ACCEPTED_TPS_GE_50"
+  ],
+  "blockers": {
+    "FLASH_ACCEPTED_TPS_GE_50": "accepted_tps=None which is not >= 50. status=BLOCKED_FIRST_PHYSICAL_BOUNDARY; accepted_tokens=1; first_physical_failure_boundary=token_acceptance_loop ONE_TOKEN_ACCEPTED. One accepted generated token is not a protected multi-token TPS. No TPS figure was fabricated.",
+    "FLASH_COMPLETE_EBPW_LE_1": "incumbent.complete_ebpw=3.139300850311054 which is not <= 1. receipts/future/COMPLETE_EBPW.json reports 3.139300850311054. Gate is not acceptable today.",
+    "FLASH_FULL_NOETIC_EXECUTABLE": "FLASH_COMPLETE_V0.nx status=SEALED_METADATA_ONLY_NOT_FOR_PROMOTION; native_loader=NOT_IMPLEMENTED; native_kernels=PLAN_ONLY; NR can_promote=False reason='prospective_meta_bpw is RESEARCH_TARGET and is never a promotion predicate; qualified_complete_physical_ebpw is UNKNOWN on this host; no self-contained executable byte ledger; no capability-preserving runtime; production path does not prove direct representation consumption (dense rematerialization unknown)'; complete_system_ebpw=None; accepted_capability_preserving_tps=None. noetic_compiler.round_trip runs toy/generic families, not a Flash full noetic executable. routed_group_execution is FamilyChainBlocked.",
+    "FLASH_NATIVE_NF_KERNEL": "flash_noetic_q4_kernel_parity status=FAILED error='metal: no Metal-capable GPU'. This process cannot dispatch Metal (`metal: no Metal-capable GPU`) even though system_profiler reports Chipset Model Apple M3 Ultra / Metal Supported. run_flash_graph_component compiled a bounded graph from prior receipts; that is not a kernel dispatch. Historical receipts/headless/FLASH_NOETIC_Q4_KERNEL_PARITY.json is not this run."
+  },
+  "criterion_altered": false,
+  "generated_at": "2026-09-02T09:12:16Z",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "n_accepted": 3,
+  "n_assigned": 7,
+  "n_blocked": 4,
+  "schema": "hawking.acceptance.flash.summary.v1",
+  "verdicts": {
+    "FLASH_ACCEPTED_TPS_GE_50": "BLOCKED",
+    "FLASH_COMPLETE_EBPW_LE_1": "BLOCKED",
+    "FLASH_DENSE_VS_NF_AB": "ACCEPTED",
+    "FLASH_FIRST_GRAVITY_ORGAN": "ACCEPTED",
+    "FLASH_FULL_NOETIC_EXECUTABLE": "BLOCKED",
+    "FLASH_NATIVE_NF_KERNEL": "BLOCKED",
+    "FLASH_SOURCE_VERIFIED": "ACCEPTED"
+  }
+}

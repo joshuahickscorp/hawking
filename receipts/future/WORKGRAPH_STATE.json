@@ -3,13 +3,13 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:22Z",
+  "recorded_at": "2026-09-02T09:39:29Z",
   "recorded_by": "tools/future/workgraph.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
  },
  "bench_state": "UNKNOWN",
- "branch": "odyssey-i",
+ "branch": "grok/s4-tools-future-under-10s-20260902-045214",
  "claim_boundary": "Static sidecar artifact. WorkGraph emits a schedule. It does not execute, does not take a GPU lease, does not promote, and does not raise evidence class above STATIC_ONLY. SLEEPING hardware work is not a result.",
  "concurrent_tick_proof": {
   "fired": true,
@@ -677,7 +677,7 @@
   ]
  },
  "hardware_qualification": {
-  "contamination_class": "LIGHT",
+  "contamination_class": "HEAVY",
   "gpu_authority": false,
   "lease_present": false,
   "pipeline_receipt": "receipts/future/QUALIFICATION_PIPELINE.json",
@@ -690,12 +690,12 @@
    "qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
    "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
    "teacher capture is 0/256",
-   "QUALIFICATION_PIPELINE.json pipeline.contamination_class='LIGHT'",
+   "QUALIFICATION_PIPELINE.json pipeline.contamination_class='HEAVY'",
    "lease_present=False from receipts/future/QUALIFICATION_PIPELINE.json"
   ],
   "rule": "blocked physical work becomes a SLEEPING WorkUnit; it never becomes a synthetic result. UNKNOWN is the correct hardware answer."
  },
- "head": "17b5765ffb5ae187179a0796a149a4867cc658e0",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "integration_points": [
   "hcli.scheduler.Scheduler.submit \u2014 consume emit_hcli_workunit() rows (hcli frozen)",
   "tools.future.wakeup \u2014 wake_sleeping(hardware_qualified=True) when Codex qualifies (sibling, not imported)",
@@ -1056,7 +1056,7 @@
   "cost_units"
  ],
  "resident_callable": {
-  "durable_graph": "/Users/scammermike/Downloads/hawking/receipts/future/workgraph_workspace/workgraph.json",
+  "durable_graph": "/Users/scammermike/.claude-grok/worktrees/s4-tools-future-under-10s-20260902-045214/receipts/future/workgraph_workspace/workgraph.json",
   "entry_point": "python3 tools/future/workgraph.py --tick   # or: from tools.future.workgraph import open_resident_graph; open_resident_graph().tick()",
   "fail_closed": [
    "admit() REJECTS a unit missing any required field (does not insert)",
@@ -1099,7 +1099,7 @@
   }
  },
  "schema": "hawking.future.workgraph.v1",
- "seal_sha256": "1cd46d033ff6386a9397bb1f132afaffc8b11ede71829c8319f260fa8d815f17",
+ "seal_sha256": "6c715224d6a262b7a28f8cc952e8fdb02e135de51d7811ef65cc4b3d14df2f2d",
  "selection_rule": {
   "info_domain": [
    1,

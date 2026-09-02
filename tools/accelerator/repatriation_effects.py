@@ -318,6 +318,44 @@ def validate_effects(document: Mapping[str, Any]) -> dict[str, Any]:
     }
 
 
+def bind_cost_feature(
+    *,
+    law_id: str,
+    features: Mapping[str, float],
+    source_receipt: str,
+    source_backend: str,
+    consumer_backend: str,
+) -> dict[str, Any]:
+    """Bind a measured observation as a backend-neutral cost feature.
+
+    This is not a physical-law promotion. The planning ledger's
+    ``current_physical_law_count`` stays 0; genericity stays CANDIDATE_UNVERIFIED.
+    A second backend may consume ``features`` as COST_MODEL inputs.
+    """
+    if not law_id:
+        raise ValueError("cost feature binding requires a law_id")
+    if not features:
+        raise ValueError("cost feature binding requires at least one feature")
+    if not source_receipt:
+        raise ValueError("cost feature binding requires a source receipt")
+    return {
+        "schema": "hawking.accelerator.repatriation_cost_feature.v1",
+        "law_id": str(law_id),
+        "source_receipt": str(source_receipt),
+        "source_backend": str(source_backend),
+        "consumer_backend": str(consumer_backend),
+        "features": {str(k): float(v) for k, v in features.items()},
+        "level": "ACCELERATOR_PRIMITIVE",
+        "genericity": "CANDIDATE_UNVERIFIED",
+        "promotes_physical_law": False,
+        "claim_boundary": (
+            "A cost feature imported from a scoped measurement is a COST_MODEL "
+            "input for the consumer. It does not become HARDWARE_MEASURED on the "
+            "consumer and does not increment current_physical_law_count."
+        ),
+    }
+
+
 def emit_effects(*, repo_root: str | Path | None = None, output: str | Path | None = None) -> Path:
     root = Path(repo_root).expanduser().resolve() if repo_root else REPO
     destination = Path(output).expanduser() if output else root / DEFAULT_OUT
@@ -348,7 +386,10 @@ def main(argv: Sequence[str] | None = None) -> int:
 __all__ = [
     "CANDIDATE_OUTCOMES",
     "DEFAULT_OUT",
+    "GENERICITY",
+    "LEVELS",
     "SCHEMA",
+    "bind_cost_feature",
     "build_effects",
     "emit_effects",
     "main",

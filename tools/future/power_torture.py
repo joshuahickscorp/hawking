@@ -40,6 +40,7 @@ from tools.future._common import (
     HARDWARE_FIELDS,
     RECEIPTS,
     REPO,
+    gpu_lane_lock_path,
     sha256_file,
     write_receipt,
     _assert_no_hardware_claims,
@@ -75,7 +76,7 @@ FAILED = "FAILED"
 SUBSTRATE_CLEAN = "CLEAN"
 SUBSTRATE_MOVED = "INVALIDATED_BY_SUBSTRATE_MUTATION"
 
-GPU_LANE_LOCK = Path("/tmp/hawking-gpu-lane.lock")
+GPU_LANE_LOCK = gpu_lane_lock_path()
 DEGENERACY_CANDIDATES: tuple[Path, ...] = (
     REPO / "tools" / "future" / "autonomy_degeneracy.py",
     Path("/Users/scammermike/Downloads/hawking/tools/future/autonomy_degeneracy.py"),

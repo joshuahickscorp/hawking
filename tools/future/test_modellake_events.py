@@ -44,18 +44,23 @@ def test_an_empty_watcher_log_refuses(tmp_path, monkeypatch):
         me._tail()
 
 
-def test_the_live_registry_is_twenty_nine_unsealed_against_eight_sealed():
+def test_the_live_registry_partitions_sealed_from_unsealed():
+    """Counts drift as the watcher completes downloads (33 unsealed, not the
+    29 an earlier snapshot saw) - assert the partition invariant, not a
+    number the live lake will outdate on its own."""
     b = sr.seal_backlog()
     sealed = me.sealed_from_disk()
-    assert b["n_complete_unsealed"] == 29
-    assert b["n_sealed"] == 8
-    assert len(sealed) == 8
+    reg = sr.registry()
+    assert b["n_complete_unsealed"] > 0
+    assert b["n_sealed"] > 0
+    assert b["n_complete_unsealed"] + b["n_sealed"] <= len(reg)
     assert len(sealed) == b["n_sealed"]
     reg_sealed = {
-        r["id"] for r in sr.registry()
+        r["id"] for r in reg
         if r["lifecycle"] in ("SEALED_SOURCE", "FINGERPRINTED")
     }
     assert {r["id"] for r in sealed} == reg_sealed
+    assert reg_sealed.isdisjoint(set(b["ids"]))
 
 
 def test_detection_reads_a_manifest_file_not_a_claim():
@@ -85,7 +90,7 @@ def test_a_watcher_cache_manifest_without_bytes_is_not_a_seal():
 
 def test_complete_unsealed_does_not_emit():
     b = sr.seal_backlog()
-    assert b["n_complete_unsealed"] == 29
+    assert b["n_complete_unsealed"] == len(b["ids"]) > 0
     for sid in b["ids"]:
         assert me.manifest_is_seal(sid) is False
     sealed_ids = {r["id"] for r in me.sealed_from_disk()}
@@ -125,14 +130,15 @@ def test_consume_is_idempotent_across_the_whole_sealed_set(tmp_path, monkeypatch
     p = tmp_path / "watch.jsonl"
     p.write_text(json.dumps({"event": "watcher_sample", "active_jobs": []}) + "\n")
     monkeypatch.setattr(me, "WATCH_LOG", p)
+    n_sealed_now = len(me.sealed_from_disk())
     ledger: set[str] = set()
     first = me.consume(ledger)
     second = me.consume(ledger)
-    assert len(first) == 8
-    assert all(row["n_units"] == 6 for row in first)
-    assert sum(row["n_units"] for row in first) == 48
+    assert len(first) == n_sealed_now > 0
+    assert all(row["n_units"] == len(me.SEAL_TRIGGERS) for row in first)
+    assert sum(row["n_units"] for row in first) == n_sealed_now * len(me.SEAL_TRIGGERS)
     assert second == []
-    assert len(ledger) == 8
+    assert len(ledger) == n_sealed_now
 
 
 def test_units_are_created_through_frontiers_item_not_hand_built(monkeypatch):
@@ -194,6 +200,9 @@ def test_prefetch_and_economics_cite_the_measured_rate_not_a_guess():
 
 
 def test_build_writes_a_receipt_that_parses():
+    # A live count, fetched right before build() derives its own - not a
+    # frozen literal the lake will drift past the moment more specimens seal.
+    n_sealed_now = len(me.sealed_from_disk())
     out = me.build()
     # build() returns the doc; --build writes it. Call write via main path
     # by sealing through the public builder used by --build.
@@ -205,18 +214,80 @@ def test_build_writes_a_receipt_that_parses():
     assert path.name == "MODELLAKE_EVENTS.json"
     assert doc["schema"] == me.SCHEMA
     assert doc["is_this_wired"] is True
-    assert doc["n_emitted_specimens"] == 8
-    assert doc["n_emitted_units"] == 48
+    assert doc["n_emitted_specimens"] == n_sealed_now
+    assert doc["n_emitted_units"] == n_sealed_now * len(me.SEAL_TRIGGERS)
     assert doc["through_frontiers_item"] is True
     assert doc["idempotent"] is True
     assert doc["human_notified"] is False
     assert doc["no_conversational_boundary"] is True
-    assert doc["detection"]["n_complete_unsealed"] == 29
-    assert doc["detection"]["n_sealed_on_disk"] == 8
+    assert doc["detection"]["n_complete_unsealed"] > 0
+    assert doc["detection"]["n_sealed_on_disk"] == n_sealed_now
     assert doc["seal_sha256"]
     assert doc["bench"]["measurement_state"] == "STATIC_ONLY"
     assert doc["bench"]["gpu_authority"] is False
     _assert_no_hardware_claims(doc)
+
+
+def test_emitted_rows_carry_what_a_consumer_needs_without_re_deriving_it():
+    """G101 wired a consumer that emits WorkUnits into a receipt; this is the
+    audit that the receipt itself carries fingerprint/family/scar/economics
+    content, not just prose instructing someone else to go compute it."""
+    rows = me.consume(ledger=set())
+    assert rows
+    for row in rows:
+        arch = row["architecture"]
+        assert arch["model_type"] == row["model_type"]
+        assert "hidden_size" in arch and "num_hidden_layers" in arch
+
+        fam = row["family"]
+        assert fam["model_type"] == (row["model_type"] or "UNKNOWN")
+        assert row["specimen_id"] not in fam["sibling_ids"]
+        assert fam["n_siblings"] == len(fam["sibling_ids"])
+        assert fam["is_novel_architecture"] == (fam["n_siblings"] == 0)
+
+        scars = row["relevant_scars"]
+        assert scars["n_matches"] >= scars["n_model_specific"] >= 0
+        assert len(scars["matches"]) <= me.MAX_RELEVANT_SCARS
+
+        eco = row["economics"]
+        assert eco["id"] == row["specimen_id"]
+        assert eco["cold_load_seconds"] > 0
+        assert eco["fits_in_uma"] is None  # never guessed here
+
+        assert "not implied" in row["residency_decision"]
+        assert "HCLI" in row["residency_decision"]
+
+
+def test_role_and_scar_trigger_details_cite_the_real_counts_not_generic_prose(
+    monkeypatch,
+):
+    """Mutation target: stub _family_context/_relevant_scars to return a
+    distinctive count and confirm the WorkUnit detail text actually carries
+    it through, rather than the fixed sentence the triggers used to emit."""
+    sealed = me.sealed_from_disk()[0]
+    model_type = (sealed.get("architecture") or {}).get("model_type") or "UNKNOWN"
+
+    fake_family = {
+        "model_type": model_type, "sibling_ids": ["sentinel-sibling@zzz"],
+        "n_siblings": 1, "is_novel_architecture": False,
+    }
+    fake_scars = {
+        "queried_model": model_type,
+        "matches": [{
+            "scar_id": "SENTINEL_SCAR", "verdict": "FALSIFIED", "level": "MODEL_SPECIFIC",
+            "model": model_type, "models": [model_type], "organ": "unrecorded",
+            "hypothesis_family": "sentinel", "failure_mechanism": "x",
+            "reopen_condition": "x", "source_path": "x", "match_score": 99,
+        }],
+        "n_matches": 1, "n_model_specific": 1,
+    }
+    monkeypatch.setattr(me, "_family_context", lambda *a, **k: fake_family)
+    monkeypatch.setattr(me, "_relevant_scars", lambda *a, **k: fake_scars)
+
+    ledger: set[str] = set()
+    units = {u["hypothesis_family"]: u for u in me.emit_for_seal(sealed, ledger)}
+    assert "sentinel-sibling@zzz" in units["modellake_seal_role"]["detail"]
+    assert "SENTINEL_SCAR" in units["modellake_seal_laws_scars"]["detail"]
 
 
 def test_an_unmounted_lake_refuses_rather_than_reporting_zero_seals(monkeypatch):

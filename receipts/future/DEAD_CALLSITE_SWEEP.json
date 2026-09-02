@@ -1,0 +1,4871 @@
+{
+ "schema": "hawking.future.dead_callsite_sweep.v1",
+ "recorded_at": "2026-09-01T07:52:36Z",
+ "recorded_by": "dead-callsite-sweep lane",
+ "git_head": "9f89e3e77",
+ "claim_boundary": "Static caller-graph. No hardware measurement. Sparse checkout: lab/hcli/*.py and some crates paths were read via git show HEAD:<path> / git grep, not by materializing.",
+ "method": {
+  "import_graph": "AST of 1702 on-disk .py files (from/import). Reverse map onto 100 hcli + 251 tools/future + 6 lab/hcli + 9 extra modules.",
+  "filename_citations": "git grep of the path string for zero/test-only modules",
+  "entry_points": "git grep of each hcli.mutation public name without POSIX-ERE \\\\b (which is not a word boundary and produced a false all-zero first pass)",
+  "typed_tools": "ToolSpec names inside default_tool_registry only (44 names). String-literal sites excluding hcli/tool_registry.py.",
+  "bare_imports": "separate git grep for `import haider` / `import p0_tool_bridge` / `import claude_interventions` because those sys.path hacks are invisible to a dotted-name AST graph",
+  "caveat": "A file missing from this sparse worktree is not evidence it does not exist. git ls-tree / git show / git grep were used. Do not treat on-disk absence as zero callers.",
+  "not_a_caller": "string mentions in receipts/, docs/, bootstrap_snapshots/, and the defining file itself"
+ },
+ "counts_measured": {
+  "on_disk_py_files_walked": 1702,
+  "hcli_non_test_modules": 100,
+  "tools_future_non_test_modules": 251,
+  "lab_hcli_modules": 6,
+  "extra_suspects": 9,
+  "typed_tools_in_default_registry": 44,
+  "typed_tools_with_named_production_string_site": 23,
+  "typed_tools_test_only_named_site": 3,
+  "typed_tools_zero_named_site_outside_registry": 18,
+  "future_ast_production_importers": 117,
+  "future_ast_test_only": 106,
+  "future_ast_zero_importers": 28,
+  "future_zero_with_main": 28,
+  "future_test_only_with_main": 106,
+  "future_star_tools_in_registry": 0,
+  "hcli_modules_test_only_ast": 2,
+  "hcli_modules_zero_ast_importers": 3
+ },
+ "capabilities_examined": [
+  {
+   "module": "hcli/mutation.py",
+   "exported_entry_points": [
+    "class MutationError (line 14)",
+    "def apply_mutation_operations (line 70)",
+    "def mutation_content_hash (line 138)",
+    "def content_fingerprint (line 156)",
+    "def rollback_mutation (line 173)",
+    "def compile_python_file (line 178)",
+    "def validate_python_syntax (line 213)",
+    "def discover_tests (line 217)"
+   ],
+   "ast_importers_production": [
+    "hcli/agentos/__init__.py",
+    "hcli/delegate.py",
+    "hcli/engine.py",
+    "tools/future/resident_code_tools.py",
+    "tools/headless/hcli_persistence_audit.py",
+    "tools/headless/repair_disposition_table.py"
+   ],
+   "ast_importers_tests": [
+    "tools/haider/hcli/tests/test_mutation_hash.py",
+    "tools/haider/hcli/tests/test_acceptance_integrity.py",
+    "tools/haider/hcli/tests/test_backend_health.py",
+    "tools/haider/hcli/tests/test_control_plane_performance.py",
+    "tools/haider/hcli/tests/test_core_authorities.py"
+   ],
+   "entry_point_calls": {
+    "apply_mutation_operations": {
+     "hcli_product_callers": [],
+     "actual_execute_callers": [
+      {
+       "file_line": "tools/future/resident_code_tools.py:50",
+       "class": "production_import",
+       "text": "from hcli.mutation import (apply_mutation_operations, ...)"
+      },
+      {
+       "file_line": "tools/future/resident_code_tools.py:552",
+       "class": "production_call",
+       "text": "result = apply_mutation_operations(guard, ops)"
+      },
+      {
+       "file_line": "tools/headless/hcli_persistence_audit.py:47",
+       "class": "debug_import",
+       "text": "from hcli.mutation import apply_mutation_operations, rollback_mutation"
+      },
+      {
+       "file_line": "tools/headless/hcli_persistence_audit.py:1203",
+       "class": "debug_call",
+       "text": "result = apply_mutation_operations(Guard(), ops)"
+      }
+     ],
+     "own_hcli_mutation_tests": [
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:13",
+       "class": "test",
+       "text": "    apply_mutation_operations,"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:28",
+       "class": "test",
+       "text": "            apply_mutation_operations(_Guard(), [])"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:35",
+       "class": "test",
+       "text": "            result = apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:62",
+       "class": "test",
+       "text": "                apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:79",
+       "class": "test",
+       "text": "            result = apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:96",
+       "class": "test",
+       "text": "            result = apply_mutation_operations("
+      }
+     ],
+     "fossil_haider_own_copy_tests": [
+      {
+       "file_line": "tools/haider/test_haider_mutation_v2.py:30",
+       "class": "test",
+       "text": "        result = haider.apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/test_haider_mutation_v2.py:49",
+       "class": "test",
+       "text": "        result = haider.apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/test_haider_mutation_v2.py:71",
+       "class": "test",
+       "text": "        result = haider.apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/test_haider_mutation_v2.py:91",
+       "class": "test",
+       "text": "        result = haider.apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/test_haider_mutation_v2.py:113",
+       "class": "test",
+       "text": "        result = haider.apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/test_haider_mutation_v2.py:127",
+       "class": "test",
+       "text": "        result = haider.apply_mutation_operations("
+      },
+      {
+       "file_line": "tools/haider/test_haider_mutation_v2.py:146",
+       "class": "test",
+       "text": "        result = haider.apply_mutation_operations("
+      }
+     ],
+     "only_own_tests_in_hcli": true,
+     "note": "git grep apply_mutation_operations over hcli/ returns only the definition at hcli/mutation.py:70. WAVE_STATE suspicion confirmed for this entry point."
+    },
+    "rollback_mutation": {
+     "hcli_product_callers": [],
+     "actual_execute_callers": [
+      {
+       "file_line": "tools/future/resident_code_tools.py:874",
+       "class": "production_call"
+      },
+      {
+       "file_line": "tools/headless/hcli_persistence_audit.py:1207",
+       "class": "debug_call"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:101",
+       "class": "own_test"
+      }
+     ]
+    },
+    "compile_python_file": {
+     "hcli_product_callers": [
+      {
+       "file_line": "hcli/engine.py:43",
+       "class": "production_import"
+      },
+      {
+       "file_line": "hcli/engine.py:3418",
+       "class": "production_call"
+      }
+     ]
+    },
+    "content_fingerprint": {
+     "hcli_product_callers": [
+      {
+       "file_line": "hcli/delegate.py:423",
+       "class": "production_import"
+      },
+      {
+       "file_line": "hcli/delegate.py:426",
+       "class": "production_call"
+      }
+     ]
+    },
+    "mutation_content_hash": {
+     "hcli_product_callers": [],
+     "tests": [
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:15",
+       "class": "test",
+       "text": "    mutation_content_hash,"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:47",
+       "class": "test",
+       "text": "            self.assertEqual(result[\"content_hash\"], mutation_content_hash(result))"
+      }
+     ],
+     "only_own_tests": true,
+     "note": "called only from apply_mutation_operations internally and tools/haider/hcli/tests/test_mutation_hash.py"
+    },
+    "discover_tests": {
+     "hcli_product_callers": [],
+     "tests": [
+      {
+       "file_line": "tools/haider/hcli/tests/test_core_authorities.py:203",
+       "class": "test",
+       "text": "        self.assertTrue(hasattr(mutation_mod, \"discover_tests\"))"
+      }
+     ],
+     "only_own_tests": true
+    },
+    "validate_python_syntax": {
+     "hcli_product_callers": [],
+     "production_mentions_not_calls": [
+      {
+       "file_line": "tools/headless/subprocess_census.py:789",
+       "class": "production",
+       "text": "    if func.endswith(\"validate_python_syntax\"):"
+      },
+      {
+       "file_line": "tools/headless/subprocess_census.py:2444",
+       "class": "production",
+       "text": "                \"Replace Engine._validate / mutation.validate_python_syntax py_compile subprocess with in-process compile().\","
+      }
+     ],
+     "tests": [
+      {
+       "file_line": "tools/haider/hcli/tests/test_control_plane_performance.py:20",
+       "class": "test",
+       "text": "from hcli.mutation import compile_python_file, validate_python_syntax"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_control_plane_performance.py:63",
+       "class": "test",
+       "text": "    def test_validate_python_syntax_bool(self):"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_control_plane_performance.py:68",
+       "class": "test",
+       "text": "        self.assertTrue(validate_python_syntax(str(good)))"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_control_plane_performance.py:69",
+       "class": "test",
+       "text": "        self.assertFalse(validate_python_syntax(str(bad)))"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_control_plane_performance.py:79",
+       "class": "test",
+       "text": "            self.assertTrue(validate_python_syntax(str(path)))"
+      },
+      {
+       "file_line": "tools/haider/hcli/tests/test_core_authorities.py:204",
+       "class": "test",
+       "text": "        self.assertTrue(hasattr(mutation_mod, \"validate_python_syntax\"))"
+      }
+     ],
+     "note": "production hits are comments in tools/headless/subprocess_census.py, not calls. Live path is compile_python_file via hcli/engine.py."
+    },
+    "MutationError": {
+     "hcli_product_callers": [
+      {
+       "file_line": "hcli/agentos/__init__.py:15",
+       "class": "reexport"
+      }
+     ]
+    }
+   },
+   "only_own_tests": false,
+   "classification": "LIVE_MODULE_WITH_UNWIRED_ENTRY_POINTS",
+   "detail": "The module is imported by hcli/engine.py and hcli/delegate.py. apply_mutation_operations and rollback_mutation have zero callers inside hcli/. Their only execute callers are tools/future/resident_code_tools.py (itself test-only+CLI) and tools/headless/hcli_persistence_audit.py (DEBUG_ONLY)."
+  },
+  {
+   "module": "hcli/tool_registry.py::default_tool_registry",
+   "exported_entry_points": [
+    "fs.read",
+    "filesystem.read",
+    "fs.search",
+    "filesystem.search",
+    "filesystem.write",
+    "shell.readonly",
+    "shell.exec",
+    "git.status",
+    "git.log",
+    "git.diff",
+    "web.fetch",
+    "github.fetch",
+    "web.search",
+    "github.search",
+    "huggingface.resolve",
+    "huggingface.manifest",
+    "huggingface.fetch_file",
+    "huggingface.history",
+    "huggingface.download",
+    "receipt.read",
+    "receipt.inspect",
+    "tests.list",
+    "tests.run",
+    "vmcp.inspect",
+    "vmcp.query",
+    "architecture.inspect",
+    "doctor.query",
+    "gravity.experiment",
+    "accelerator.benchmark",
+    "benchmark.run",
+    "roadmap.inspect",
+    "benchmark.inspect",
+    "frontier.escalate",
+    "grok.swarm.propose",
+    "grok.swarm.launch",
+    "git.checkout-safe",
+    "git.revert-safe",
+    "git.checkout/revert-safe",
+    "roadmap.read",
+    "vmcp.capabilities",
+    "doctor.inspect",
+    "gravity.inspect",
+    "accelerator.inspect",
+    "modellake.status"
+   ],
+   "n_typed_tools": 44,
+   "named_production_string_sites": {
+    "fs.read": 7,
+    "filesystem.read": 2,
+    "fs.search": 2,
+    "filesystem.search": 1,
+    "filesystem.write": 5,
+    "git.status": 6,
+    "git.log": 4,
+    "git.diff": 5,
+    "web.fetch": 2,
+    "github.fetch": 2,
+    "web.search": 4,
+    "github.search": 3,
+    "huggingface.resolve": 2,
+    "huggingface.fetch_file": 2,
+    "huggingface.download": 1,
+    "receipt.read": 9,
+    "tests.run": 1,
+    "vmcp.inspect": 2,
+    "vmcp.query": 2,
+    "architecture.inspect": 1,
+    "gravity.experiment": 2,
+    "benchmark.run": 1,
+    "modellake.status": 3
+   },
+   "test_only_named_sites": {
+    "frontier.escalate": [
+     "hcli/test_escalation.py:213",
+     "hcli/test_escalation.py:217",
+     "hcli/test_escalation.py:223"
+    ],
+    "grok.swarm.propose": [
+     "hcli/test_escalation.py:214",
+     "hcli/test_escalation.py:233"
+    ],
+    "grok.swarm.launch": [
+     "hcli/test_escalation.py:215",
+     "hcli/test_escalation.py:246",
+     "hcli/test_escalation.py:253"
+    ]
+   },
+   "zero_named_sites_outside_registry": [
+    "shell.readonly",
+    "shell.exec",
+    "huggingface.manifest",
+    "huggingface.history",
+    "receipt.inspect",
+    "tests.list",
+    "doctor.query",
+    "accelerator.benchmark",
+    "roadmap.inspect",
+    "benchmark.inspect",
+    "git.checkout-safe",
+    "git.revert-safe",
+    "git.checkout/revert-safe",
+    "roadmap.read",
+    "vmcp.capabilities",
+    "doctor.inspect",
+    "gravity.inspect",
+    "accelerator.inspect"
+   ],
+   "generic_dispatchers": [
+    {
+     "file_line": "hcli/executors.py:364",
+     "text": "result = registry.invoke(name, dict(args))"
+    },
+    {
+     "file_line": "hcli/agentos/runtime.py:297",
+     "text": "def invoke_tool(self, name, arguments=None)"
+    },
+    {
+     "file_line": "hcli/agentos/resident.py:593",
+     "text": "WorkUnit(..., tool=tool, tool_arguments=...)"
+    },
+    {
+     "file_line": "hcli/commands.py:1027",
+     "text": "def _cmd_tools — lists registry, does not invoke"
+    }
+   ],
+   "future_star_tools_in_registry": 0,
+   "sidecar_quote": {
+    "file_line": "tools/future/resident_api.py:1041",
+    "text": "hcli/tool_registry.py default_tool_registry lists 32 tools and 0 future.* tools. AgentOS cannot discover the sidecar.",
+    "reconfirmed": "git grep future. over hcli/tool_registry.py returned no future.* tool names. Count of registered tools at HEAD is 44, not 32 (G157 added frontier.escalate / grok.swarm.propose / grok.swarm.launch)."
+   },
+   "only_own_tests": false,
+   "classification": "UNWIRED_MAJORITY",
+   "detail": "G154 wired WorkUnit.tool -> executors._run_tool -> ToolRegistry.invoke. 23/44 tools have a named production string site. 3/44 (frontier.escalate, grok.swarm.propose, grok.swarm.launch) appear only in hcli/test_escalation.py. 18/44 have zero named sites outside the registry definition. Generic dispatch can still reach them if a WorkUnit names them."
+  },
+  {
+   "module": "tools/future/ (sidecar package)",
+   "n_non_test_modules": 251,
+   "ast_production_importers_gt_0": 117,
+   "ast_test_only": 106,
+   "ast_zero_importers": 28,
+   "all_zero_have_main": true,
+   "all_test_only_have_main": true,
+   "zero_importer_modules": [
+    "tools/future/attribution_audit.py",
+    "tools/future/ba_delta_ab.py",
+    "tools/future/baseline_staleness.py",
+    "tools/future/claude_interventions.py",
+    "tools/future/exam_a_option_tree.py",
+    "tools/future/handoff.py",
+    "tools/future/harness_reconciliation.py",
+    "tools/future/hcli_self_hosting_launch.py",
+    "tools/future/hcli_sovereign.py",
+    "tools/future/index_provenance.py",
+    "tools/future/legacy_driver_retirement.py",
+    "tools/future/lever_promotion_gate.py",
+    "tools/future/measurement_provenance.py",
+    "tools/future/organ_bandwidth.py",
+    "tools/future/organ_decomposition_sealed.py",
+    "tools/future/path_to_71.py",
+    "tools/future/per_generated_token_inflation.py",
+    "tools/future/perturbation_workunit.py",
+    "tools/future/resident_binary_drift.py",
+    "tools/future/resident_token_budget.py",
+    "tools/future/sealed_default_absolute.py",
+    "tools/future/sealed_default_verified.py",
+    "tools/future/source_safety.py",
+    "tools/future/sovereign_trial.py",
+    "tools/future/token_ns_objective.py",
+    "tools/future/tps_falsifications.py",
+    "tools/future/trial_negative_controls.py",
+    "tools/future/wall_gpu_reconciliation.py"
+   ],
+   "classification": "UNWIRED_FROM_AGENTOS_DEBUG_ONLY_AS_CLI",
+   "detail": "AgentOS tool registry registers 0 future.* tools. Every tools/future module with zero AST importers still has if __name__ == '__main__' (human python3 tools/future/X.py --build). None of those are deletion candidates. The live sovereign loop is tools/future/hcli_sovereign.py (zero AST importers, has_main True, WAVE_STATE process 2183)."
+  },
+  {
+   "module": "tools/haider/haider.py",
+   "exported_entry_points": [
+    "def allocate_port",
+    "class WorkUnit",
+    "def parse_haider_args",
+    "def start_llama_server",
+    "def wait_for_ready",
+    "def stop_llama_server",
+    "def create_mission_state",
+    "def write_mission_state",
+    "def load_mission_state",
+    "def build_fast_mission_evidence",
+    "def validate_scoped_edit",
+    "def validate_mutation_operation",
+    "def apply_mutation_operations",
+    "def apply_scoped_edit",
+    "def run_validation",
+    "def write_receipt",
+    "def main",
+    "class FastRuntimePool",
+    "def main_fast"
+   ],
+   "ast_importers_production": [],
+   "bare_import_call_sites": [
+    {
+     "file_line": "tools/haider/test_haider_cli_grammar.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_deterministic_evidence.py:10",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_edit.py:13",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_fast_engine.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mission_state.py:10",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mutation_v2.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_retry_budget.py:11",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_workunit_scheduler.py:9",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "SUPERSEDED",
+   "superseded_by": "hcli/ (pyproject.toml console script hcli = hcli.cli:main). docs/CURRENT_ARCHITECTURE.md line 10: Fossil HCLI-v0 is disconnected, not the control plane."
+  },
+  {
+   "module": "tools/haider/p0_tool_bridge.py",
+   "exported_entry_points": [
+    "class ProtocolError",
+    "class ToolError",
+    "class ModelError",
+    "def utc_now_iso",
+    "def estimate_tokens",
+    "def truncate_text",
+    "class RepositoryGuard",
+    "def admit_command",
+    "def make_observation",
+    "class ToolExecutor",
+    "class ModelClient",
+    "def parse_json_protocol",
+    "def normalize_worker_output",
+    "class WorkerHandle",
+    "class Emitter",
+    "class Session",
+    "def validate_lanes",
+    "def run_forced_parallel",
+    "def run_normal",
+    "def build_arg_parser",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/haider.py:35",
+     "class": "fossil_production",
+     "text": "import p0_tool_bridge as p0"
+    },
+    {
+     "file_line": "tools/haider/test_haider_edit.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mission_state.py:11",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mutation_v2.py:13",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_p0_tool_bridge.py:8",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "SUPERSEDED",
+   "superseded_by": "hcli/tool_registry.py. p0 ALL_TOOLS contains repo.search, fs.list, fs.stat, shell.run_safe, build.check, test.run which are not in default_tool_registry."
+  },
+  {
+   "module": "hcli/delegate.py",
+   "exported_entry_points": [
+    "class DelegationError",
+    "class MissionNotFound",
+    "class DelegationBusy",
+    "def delegations_root",
+    "def spec_path",
+    "def envelope_path",
+    "def cancel_path",
+    "def resolve_workspace",
+    "class Artifact",
+    "def artifact_defect",
+    "def classify_claim",
+    "def verifier_outcome",
+    "def decide_verdict",
+    "def pick_authority",
+    "def build_spec",
+    "def run",
+    "def status",
+    "def steer",
+    "def abort",
+    "def result",
+    "def build_envelope",
+    "class ModelRunaway",
+    "def default_caller",
+    "def shell_runner",
+    "def execute_mission",
+    "def build_parser",
+    "def cli_main",
+    "def exec_main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "hcli/cli.py:303",
+     "class": "production",
+     "text": "from .delegate import cli_main"
+    },
+    {
+     "file_line": "hcli/cli.py:307",
+     "class": "production",
+     "text": "from .delegate import exec_main"
+    },
+    {
+     "file_line": "hcli/test_delegate.py:22",
+     "class": "own_test"
+    },
+    {
+     "file_line": "hcli/test_near_miss_key.py:168",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE",
+   "detail": "Claude -> HCLI adapter. Dispatched from hcli.cli:main on DELEGATE_VERBS. Not a retired wrapper."
+  },
+  {
+   "module": "hcli/grok_bridge.py",
+   "exported_entry_points": [
+    "class GrokBridge",
+    "def parse_grok_status",
+    "def find_grok_run",
+    "def validate_contract_text"
+   ],
+   "call_sites_production": [
+    "hcli/commands.py",
+    "hcli/escalation.py",
+    "hcli/executors.py",
+    "hcli/mission.py",
+    "hcli/scheduler.py",
+    "tools/headless/control_plane_latency.py",
+    "tools/headless/hcli_bootstrap_live_proof.py",
+    "tools/headless/hcli_command_ingress_test.py",
+    "tools/headless/hcli_grok_dispatch_test.py",
+    "tools/headless/hcli_grokbridge_test.py",
+    "tools/headless/hcli_p0_gates.py",
+    "tools/headless/hcli_persistence_audit.py",
+    "tools/headless/repair_disposition_table.py"
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE",
+   "detail": "Imported by hcli/commands.py, executors.py, mission.py, scheduler.py, escalation.py. Not an unused launch shim."
+  },
+  {
+   "module": "hcli/escalation.py",
+   "exported_entry_points": [
+    "class EscalationCredentialsError",
+    "class EscalationError",
+    "class SwarmBoundsError",
+    "def curate_packet",
+    "def escalate_to_frontier",
+    "def render_lane_contract",
+    "def propose_swarm",
+    "def launch_swarm"
+   ],
+   "call_sites": [
+    {
+     "file_line": "hcli/tool_registry.py (frontier.escalate / grok.swarm.* handlers)",
+     "class": "production"
+    },
+    {
+     "file_line": "hcli/test_escalation.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE_MODULE_TEST_ONLY_TOOL_NAMES",
+   "detail": "Module is wired into the registry. The tool names frontier.escalate / grok.swarm.propose / grok.swarm.launch have no production named invoke, only hcli/test_escalation.py."
+  },
+  {
+   "module": "hcli/context.py",
+   "exported_entry_points": [
+    "WorkerPacket (re-export)",
+    "compile_worker_context (re-export)"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/hcli/tests/test_core_authorities.py:135",
+     "class": "other_test",
+     "text": "from hcli.context import WorkerPacket as FromContext"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "SUPERSEDED",
+   "superseded_by": "hcli/goal.py. The module docstring states production code imports WorkerPacket from hcli.goal / hcli.agentos. Compatibility re-export; WAVE_STATE says keep compatibility aliases."
+  },
+  {
+   "module": "hcli/__main__.py",
+   "exported_entry_points": [
+    "python -m hcli entry"
+   ],
+   "call_sites": [
+    {
+     "file_line": "pyproject.toml / python -m hcli",
+     "class": "entrypoint"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE_ENTRYPOINT",
+   "detail": "Zero AST importers is expected for __main__.py."
+  },
+  {
+   "module": "hcli/gravity/__init__.py",
+   "exported_entry_points": [
+    "OWNED_PREFIXES"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/odyssey_launch.py:1550",
+     "class": "production_citation"
+    },
+    {
+     "file_line": "tools/future/odyssey_tool_driver.py:56",
+     "class": "production_citation"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE_OWNERSHIP_MARKER",
+   "detail": "Package marker, not an entry point. odyssey_tool_driver.py:983 records it is a package marker, not an entry point."
+  },
+  {
+   "module": "hcli/vmcp/__init__.py",
+   "exported_entry_points": [
+    "OWNED_PREFIXES"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "LIVE_OWNERSHIP_MARKER"
+  },
+  {
+   "module": "hcli/doctor/__init__.py",
+   "exported_entry_points": [
+    "OWNED_PATHS"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/odyssey_launch.py:1533",
+     "class": "production",
+     "text": "import hcli.doctor as hd"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE_OWNERSHIP_MARKER"
+  },
+  {
+   "module": "hcli/ane_provider.py",
+   "exported_entry_points": [
+    "class ANEProvider"
+   ],
+   "call_sites": [
+    {
+     "file_line": "hcli/agentos/__init__.py:58",
+     "class": "production"
+    },
+    {
+     "file_line": "hcli/test_ane_provider.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE",
+   "detail": "WAVE_STATE: no ANE placement has ever been demonstrated. The provider is imported and tested; it is plan-only, not dead."
+  },
+  {
+   "module": "hcli/vmcp_adapter.py",
+   "exported_entry_points": [
+    "inspect_vmcp",
+    "call_vmcp"
+   ],
+   "call_sites": [
+    {
+     "file_line": "hcli/connectivity.py:131",
+     "class": "production"
+    },
+    {
+     "file_line": "hcli/tool_registry.py:1265",
+     "class": "production"
+    },
+    {
+     "file_line": "hcli/tool_registry.py:1271",
+     "class": "production"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE"
+  },
+  {
+   "module": "tools/future/resident_code_tools.py",
+   "exported_entry_points": [
+    "class CodeToolsRefused",
+    "class WorktreeGuard",
+    "def search_code",
+    "def read_code",
+    "def create_worktree",
+    "def patch",
+    "def build_op",
+    "def test_op",
+    "def run_op",
+    "def diff_op",
+    "def land_through_gate",
+    "def rollback",
+    "def invoke",
+    "def recovered_implementation",
+    "def build",
+    "def selftest",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_resident_code_tools.py:16",
+     "class": "own_test",
+     "text": "from tools.future import resident_code_tools as rct"
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": true,
+   "classification": "UNWIRED",
+   "needed_caller": "AgentOS / default_tool_registry should grow future.code.* (or equivalent) tools that call resident_code_tools.invoke. Today AgentOS cannot discover it. This is the modellake_events pattern: it looks used because it imports hcli.mutation, but nothing except its own test and `python3 tools/future/resident_code_tools.py --build` calls it."
+  },
+  {
+   "module": "tools/future/modellake_events.py",
+   "exported_entry_points": [
+    "class LakeEventRefused",
+    "def log_completion_claims",
+    "def manifest_is_seal",
+    "def sealed_from_disk",
+    "def emit_trigger",
+    "def emit_for_seal",
+    "def consume",
+    "def claims_without_seal",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/odyssey/modellake_watch.py:612",
+     "class": "production",
+     "text": "from tools.future import modellake_events as me"
+    },
+    {
+     "file_line": "tools/odyssey/modellake_watch.py:1043",
+     "class": "production",
+     "text": "maybe_emit_modellake_events(...)"
+    },
+    {
+     "file_line": "tools/future/test_modellake_events.py",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/odyssey/test_modellake_watch.py",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE",
+   "detail": "The prior defect (test-only while looking used) was closed: modellake_watch.py:612 imports and runs consume()."
+  },
+  {
+   "module": "tools/future/hcli_sovereign.py",
+   "exported_entry_points": [
+    "class SovereignRefused",
+    "def kernel_path",
+    "def load_kernel",
+    "def save_kernel",
+    "def init_kernel",
+    "def refresh_measured_state",
+    "def context_pack",
+    "def validate",
+    "def execute",
+    "def run",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "has_main": true,
+   "only_own_tests": false,
+   "classification": "DEBUG_ONLY",
+   "detail": "Zero AST importers. Invoked as `python3 tools/future/hcli_sovereign.py --run`. WAVE_STATE records pid 2183 as the live sovereign SUB2 loop. Not a deletion candidate."
+  },
+  {
+   "module": "tools/future/claude_abi_adjudication.py",
+   "exported_entry_points": [
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_claude_abi_adjudication.py:15",
+     "class": "own_test"
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": true,
+   "classification": "DEBUG_ONLY",
+   "detail": "Codex-written sidecar CLI. Not an old Claude-loop adapter. Human --build plus own tests."
+  },
+  {
+   "module": "tools/future/claude_interventions.py",
+   "exported_entry_points": [
+    "class MetricRefused",
+    "def register",
+    "def frontier_moves",
+    "def resident_decisions",
+    "def metric",
+    "def is_it_falling",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_claude_interventions.py:11",
+     "class": "own_test",
+     "text": "import claude_interventions as ci  (bare sys.path import; AST dotted-name graph missed this)"
+    },
+    {
+     "file_line": "tools/future/hcli_sovereign.py:640",
+     "class": "production_citation",
+     "text": "dict key claude_interventions, not an import"
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": true,
+   "classification": "DEBUG_ONLY",
+   "detail": "Metric helper for the sovereign loop, not a Claude-loop adapter."
+  },
+  {
+   "module": "tools/future/codex_ingest.py",
+   "exported_entry_points": [
+    "class Classification",
+    "def classify_obj",
+    "def classify_bytes",
+    "def classify_path",
+    "def proposed_scope",
+    "def emit_delta",
+    "def list_artifacts",
+    "def load_state",
+    "def recovered_implementation",
+    "def gaps_closed",
+    "def negative_findings",
+    "def ingest",
+    "def build",
+    "def selftest",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_codex_ingest.py",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/future/propagate.py:93",
+     "class": "production_citation"
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": true,
+   "classification": "DEBUG_ONLY",
+   "detail": "CLI `python3 tools/future/codex_ingest.py --once`. propagate.py consumes its deltas by reading receipts, not by importing the module (AST test-only)."
+  },
+  {
+   "module": "tools/future/codex_behaviors.py",
+   "exported_entry_points": [
+    "class UngroundedSpeciesError",
+    "class CitationError",
+    "class CodexSpeciesError",
+    "def load_handoff",
+    "def inject_handoff",
+    "def resolve_field_path",
+    "def prove_citation",
+    "def blockers_from_handoff"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/accelerator_workunits.py:40",
+     "class": "production",
+     "text": "from tools.future import codex_behaviors as cb"
+    },
+    {
+     "file_line": "tools/future/test_codex_behaviors.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE"
+  },
+  {
+   "module": "tools/future/legacy_driver_retirement.py",
+   "exported_entry_points": [
+    "def checkpoint",
+    "def stop",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "has_main": true,
+   "only_own_tests": false,
+   "classification": "DEBUG_ONLY",
+   "detail": "Producer of receipts/future/LEGACY_ODYSSEY_DRIVER_RETIREMENT.json. Human --build. Keep the receipt as EVIDENCE even if the producer is later archived."
+  },
+  {
+   "module": "tools/odyssey_ctl.py",
+   "exported_entry_points": [
+    "def main plus 186 public names"
+   ],
+   "n_exported_entry_points": 186,
+   "call_sites": [
+    {
+     "file_line": "tools/odyssey_patient_runner.py:81",
+     "class": "production",
+     "text": "from tools.odyssey_ctl import"
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": false,
+   "classification": "LIVE",
+   "detail": "WAVE_STATE: tools/odyssey_ctl.py works; HCLI has no odyssey verb. That is UNWIRED-from-HCLI, not dead. The CLI and patient_runner call it."
+  },
+  {
+   "module": "tools/grok_worktree_reaper.py",
+   "exported_entry_points": [
+    "def free_gib",
+    "def realpath",
+    "def resolve_owner_repo",
+    "def is_worktree_clean",
+    "def remove_worktree",
+    "def classify_worktree",
+    "def scan_worktrees",
+    "def build_report",
+    "def summary_line",
+    "def parse_args",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_grok_worktree_reaper.py:22",
+     "class": "own_test",
+     "text": "REAPER = REPO_ROOT / 'tools' / 'grok_worktree_reaper.py' (subprocess, not import)"
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": true,
+   "classification": "DEBUG_ONLY",
+   "detail": "Hygiene CLI. Not an unused Grok launch shim. Grok launch is hcli/grok_bridge.py."
+  },
+  {
+   "module": "lab/hcli/option_c.py",
+   "exported_entry_points": [
+    "class Role",
+    "class CandidatePhase",
+    "class OptionCRefusal",
+    "class CandidateReport",
+    "class ReviewReport",
+    "class ControllerDecision",
+    "class CandidateSession",
+    "class OptionCSandbox",
+    "class OptionCController"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_option_c.py:6",
+     "class": "own_test",
+     "text": "from lab.hcli.option_c import"
+    }
+   ],
+   "has_main": false,
+   "only_own_tests": true,
+   "on_disk_in_this_worktree": false,
+   "read_via": "git show HEAD:lab/hcli/option_c.py",
+   "classification": "UNWIRED",
+   "needed_caller": "lab engine / an HCLI option-c verb. Bible §24 standing subsystem, stub-complete, never dispatched from HCLI."
+  },
+  {
+   "module": "lab/hcli/residency.py",
+   "exported_entry_points": [
+    "class ResidencyMode",
+    "class Slot",
+    "class PhaseC",
+    "class ResidencyRefusal",
+    "class FitReport",
+    "class ReviewQueueItem",
+    "class PipelinePair",
+    "class ResidencyState",
+    "class ResidencyStateMachine"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_residency_modes.py:6",
+     "class": "own_test"
+    }
+   ],
+   "has_main": false,
+   "only_own_tests": true,
+   "on_disk_in_this_worktree": false,
+   "read_via": "git show HEAD:lab/hcli/residency.py",
+   "classification": "UNWIRED",
+   "needed_caller": "resident supervisor binding Slot load/unload. File itself says Future work will bind Slot load/unload to real Qwen/Gravity runtime handles."
+  },
+  {
+   "module": "lab/hcli/self_evolution.py",
+   "exported_entry_points": [
+    "class ProposalKind",
+    "class AdmissionStage",
+    "class EvolutionRefusal",
+    "class GraveyardRefused",
+    "class Proposal",
+    "class LedgerRow",
+    "class EvolutionLedger",
+    "class StageResult",
+    "class AdmissionPipeline",
+    "class SelfEvolutionEngine"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_self_evolution.py:6",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/future/resident_optimizer.py:968",
+     "class": "production_citation"
+    }
+   ],
+   "has_main": false,
+   "only_own_tests": true,
+   "on_disk_in_this_worktree": false,
+   "read_via": "git show HEAD:lab/hcli/self_evolution.py",
+   "classification": "UNWIRED",
+   "needed_caller": "Mission mutation admission. Bible §23 stub: the proposer is never the admitter. Cited by resident_optimizer, never imported by HCLI."
+  },
+  {
+   "module": "lab/hcli/claude_offload_bench.py",
+   "exported_entry_points": [
+    "class OffloadTask",
+    "def run_bench",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_special_unit.py (multiple imports)",
+     "class": "other_test"
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": true,
+   "classification": "DEBUG_ONLY",
+   "detail": "Lab bench, human-run. Not an old Claude-loop adapter for the product."
+  },
+  {
+   "module": "lab/hcli/special_unit.py",
+   "exported_entry_points": [
+    "class ResourceClass",
+    "class SessionStatus",
+    "class StepStatus",
+    "class SpecialUnitError",
+    "def project_context",
+    "class ResourceGate",
+    "class Turn",
+    "class Session",
+    "class SessionStore",
+    "class ToolResult",
+    "def looks_gpu_command",
+    "def looks_lifecycle_authority_command"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/genesis_agentos.py:29",
+     "class": "production"
+    },
+    {
+     "file_line": "lab/tests/test_special_unit.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE"
+  },
+  {
+   "module": "crates/hide-backend/src/bin/haider.rs",
+   "exported_entry_points": [
+    "fn main -> hide_backend::haider::cli::run()"
+   ],
+   "call_sites": [
+    {
+     "file_line": "crates/hide-backend/src/bin/haider.rs:2",
+     "class": "self",
+     "text": "hide_backend::haider::cli::run()"
+    }
+   ],
+   "lib_rs_mod_haider": "NONE — git grep haider -- crates/hide-backend/src/lib.rs printed nothing",
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "pub mod haider in crates/hide-backend/src/lib.rs. Until that line exists, cargo run -p hide-backend --bin haider cannot link. Not a Python Grok shim; a Rust namesake."
+  },
+  {
+   "module": "crates/hide-backend/src/compat_claude_md.rs",
+   "exported_entry_points": [
+    "included via #[path]"
+   ],
+   "call_sites": [
+    {
+     "file_line": "crates/hide-backend/src/compat.rs:77",
+     "class": "production",
+     "text": "#[path = \"compat_claude_md.rs\"]"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "LIVE",
+   "detail": "HIDE Claude Code config parser (CLAUDE.md tree). Not an old Claude-loop adapter and not unreachable."
+  },
+  {
+   "module": "tools/headless/hcli_grokbridge_test.py",
+   "exported_entry_points": [
+    "def check",
+    "def check_antivacuity",
+    "def check_dryrun_argv",
+    "def check_missing_contract",
+    "def check_status_parsing",
+    "def check_receipts",
+    "def check_no_mutation_lock_warning",
+    "def check_grok_absent",
+    "def check_real_audit_skipped",
+    "def main",
+    "def test_hcli_grokbridge"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/hcli/tests/test_grok_bridge.py:541",
+     "class": "docs_in_test",
+     "text": "See tools/headless/hcli_grokbridge_test.py."
+    }
+   ],
+   "has_main": true,
+   "only_own_tests": false,
+   "classification": "DEBUG_ONLY",
+   "detail": "Runnable headless check of GrokBridge. Overlaps tools/haider/hcli/tests/test_grok_bridge.py but is itself a test, not a launch shim."
+  },
+  {
+   "module": "tools/headless/hcli_grok_dispatch_test.py",
+   "exported_entry_points": [
+    "def check",
+    "class FakeSession",
+    "class FakeSteer",
+    "class FakeController",
+    "def record_bridge",
+    "def bomb_subprocess",
+    "def check_delegate_reaches_bridge",
+    "def check_audit_and_consult_reach_bridge"
+   ],
+   "call_sites": [],
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "detail": "Runnable check that /grok delegate reaches GrokBridge. Not a second launcher."
+  },
+  {
+   "module": "tools/condense/tests/_retired_shell.py",
+   "exported_entry_points": [
+    "def run"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/condense/tests/test_retired_engine.py",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "EVIDENCE",
+   "detail": "Test helper under tests/. Historical retired-engine fixture. Do not delete."
+  },
+  {
+   "module": "hcli/genomes/__init__.py",
+   "exported_entry_points": [
+    "RuntimeGenome (re-export)",
+    "load_runtime_genome (re-export)"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/hcli/tests/test_runtime_interface.py:13",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "LIVE_PACKAGE_FACADE",
+   "detail": "hcli/genomes/runtime_genome.py is imported by tools/headless/experiment_engine.py:793 and :884. The __init__ facade is test-only; the implementation is live."
+  }
+ ],
+ "zero_caller_modules": [
+  {
+   "module": "hcli/mutation.py",
+   "entry_point": "apply_mutation_operations",
+   "exported_entry_points": [
+    "def apply_mutation_operations"
+   ],
+   "call_sites_in_hcli": [],
+   "call_sites": [
+    {
+     "file_line": "tools/future/resident_code_tools.py:50",
+     "class": "production_import",
+     "text": "from hcli.mutation import (apply_mutation_operations, ...)"
+    },
+    {
+     "file_line": "tools/future/resident_code_tools.py:552",
+     "class": "production_call",
+     "text": "result = apply_mutation_operations(guard, ops)"
+    },
+    {
+     "file_line": "tools/headless/hcli_persistence_audit.py:47",
+     "class": "debug_import",
+     "text": "from hcli.mutation import apply_mutation_operations, rollback_mutation"
+    },
+    {
+     "file_line": "tools/headless/hcli_persistence_audit.py:1203",
+     "class": "debug_call",
+     "text": "result = apply_mutation_operations(Guard(), ops)"
+    },
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:13",
+     "class": "test",
+     "text": "    apply_mutation_operations,"
+    },
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:28",
+     "class": "test",
+     "text": "            apply_mutation_operations(_Guard(), [])"
+    },
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:35",
+     "class": "test",
+     "text": "            result = apply_mutation_operations("
+    },
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:62",
+     "class": "test",
+     "text": "                apply_mutation_operations("
+    },
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:79",
+     "class": "test",
+     "text": "            result = apply_mutation_operations("
+    },
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:96",
+     "class": "test",
+     "text": "            result = apply_mutation_operations("
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "detail": "Zero callers in hcli/. Execute callers: resident_code_tools.py (UNWIRED sidecar) and hcli_persistence_audit.py (DEBUG_ONLY)."
+  },
+  {
+   "module": "hcli/mutation.py",
+   "entry_point": "rollback_mutation",
+   "exported_entry_points": [
+    "def rollback_mutation"
+   ],
+   "call_sites_in_hcli": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED"
+  },
+  {
+   "module": "hcli/mutation.py",
+   "entry_point": "mutation_content_hash",
+   "exported_entry_points": [
+    "def mutation_content_hash"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:15",
+     "class": "test",
+     "text": "    mutation_content_hash,"
+    },
+    {
+     "file_line": "tools/haider/hcli/tests/test_mutation_hash.py:47",
+     "class": "test",
+     "text": "            self.assertEqual(result[\"content_hash\"], mutation_content_hash(result))"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED",
+   "detail": "No production caller outside apply_mutation_operations itself."
+  },
+  {
+   "module": "hcli/mutation.py",
+   "entry_point": "discover_tests",
+   "exported_entry_points": [
+    "def discover_tests"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/hcli/tests/test_core_authorities.py:203",
+     "class": "test",
+     "text": "        self.assertTrue(hasattr(mutation_mod, \"discover_tests\"))"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED"
+  },
+  {
+   "module": "shell.readonly",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "shell.readonly"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=shell.readonly or AgentOS.invoke_tool('shell.readonly', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "shell.exec",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "shell.exec"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=shell.exec or AgentOS.invoke_tool('shell.exec', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "huggingface.manifest",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "huggingface.manifest"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=huggingface.manifest or AgentOS.invoke_tool('huggingface.manifest', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "huggingface.history",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "huggingface.history"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=huggingface.history or AgentOS.invoke_tool('huggingface.history', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "receipt.inspect",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "receipt.inspect"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=receipt.inspect or AgentOS.invoke_tool('receipt.inspect', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "tests.list",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "tests.list"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=tests.list or AgentOS.invoke_tool('tests.list', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "doctor.query",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "doctor.query"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=doctor.query or AgentOS.invoke_tool('doctor.query', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "accelerator.benchmark",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "accelerator.benchmark"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=accelerator.benchmark or AgentOS.invoke_tool('accelerator.benchmark', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "roadmap.inspect",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "roadmap.inspect"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=roadmap.inspect or AgentOS.invoke_tool('roadmap.inspect', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "benchmark.inspect",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "benchmark.inspect"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=benchmark.inspect or AgentOS.invoke_tool('benchmark.inspect', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "git.checkout-safe",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "git.checkout-safe"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=git.checkout-safe or AgentOS.invoke_tool('git.checkout-safe', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "git.revert-safe",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "git.revert-safe"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=git.revert-safe or AgentOS.invoke_tool('git.revert-safe', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "git.checkout/revert-safe",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "git.checkout/revert-safe"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=git.checkout/revert-safe or AgentOS.invoke_tool('git.checkout/revert-safe', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "roadmap.read",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "roadmap.read"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=roadmap.read or AgentOS.invoke_tool('roadmap.read', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "vmcp.capabilities",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "vmcp.capabilities"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=vmcp.capabilities or AgentOS.invoke_tool('vmcp.capabilities', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "doctor.inspect",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "doctor.inspect"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=doctor.inspect or AgentOS.invoke_tool('doctor.inspect', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "gravity.inspect",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "gravity.inspect"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=gravity.inspect or AgentOS.invoke_tool('gravity.inspect', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "accelerator.inspect",
+   "defined_in": "hcli/tool_registry.py default_tool_registry",
+   "exported_entry_points": [
+    "accelerator.inspect"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "needed_caller": "a WorkUnit with tool=accelerator.inspect or AgentOS.invoke_tool('accelerator.inspect', ...). Generic dispatch exists (executors.py:364, resident.py:593); nothing names this tool."
+  },
+  {
+   "module": "tools/future/attribution_audit.py",
+   "exported_entry_points": [
+    "class AuditRefused",
+    "def canonical",
+    "def no_claude_attribution_anywhere",
+    "def remaining",
+    "def what_this_does_not_do",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/ba_delta_ab.py",
+   "exported_entry_points": [
+    "def derived",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/baseline_staleness.py",
+   "exported_entry_points": [
+    "class StalenessRefused",
+    "def current",
+    "def scan",
+    "def report",
+    "def what_this_does_not_do",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/claude_interventions.py",
+   "exported_entry_points": [
+    "class MetricRefused",
+    "def register",
+    "def frontier_moves",
+    "def resident_decisions",
+    "def metric",
+    "def is_it_falling",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/exam_a_option_tree.py",
+   "exported_entry_points": [
+    "class ExamRefused",
+    "def pack",
+    "def pack_contains_no_answer",
+    "def ask",
+    "def reply",
+    "def routes",
+    "def grade",
+    "def build"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/handoff.py",
+   "exported_entry_points": [
+    "def system_state",
+    "def pytest_state",
+    "def active_processes",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/harness_reconciliation.py",
+   "exported_entry_points": [
+    "class ReconciliationRefused",
+    "def harnesses",
+    "def decomposition",
+    "def what_is_promotable",
+    "def rule",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/hcli_self_hosting_launch.py",
+   "exported_entry_points": [
+    "def probe_cli_launch",
+    "def probe_neutral_cwd_discovery",
+    "def probe_resident",
+    "def probe_typed_tools",
+    "def probe_test_suite",
+    "def probe_paste_cache",
+    "def probe_git_identity",
+    "def probe_modellake"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/hcli_sovereign.py",
+   "exported_entry_points": [
+    "class SovereignRefused",
+    "def kernel_path",
+    "def load_kernel",
+    "def save_kernel",
+    "def init_kernel",
+    "def refresh_measured_state",
+    "def context_pack",
+    "def validate"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/index_provenance.py",
+   "exported_entry_points": [
+    "def staged_now",
+    "def check",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/legacy_driver_retirement.py",
+   "exported_entry_points": [
+    "def checkpoint",
+    "def stop",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/lever_promotion_gate.py",
+   "exported_entry_points": [
+    "class PromotionRefused",
+    "def preconditions",
+    "def decision",
+    "def the_double_count_this_refuses",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/measurement_provenance.py",
+   "exported_entry_points": [
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/organ_bandwidth.py",
+   "exported_entry_points": [
+    "class UnreconciledOrgans",
+    "def table",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/organ_decomposition_sealed.py",
+   "exported_entry_points": [
+    "class DecompositionRefused",
+    "def table",
+    "def reconciliation",
+    "def where_the_saving_landed",
+    "def what_remains",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/path_to_71.py",
+   "exported_entry_points": [
+    "class UnknownEvidenceTier",
+    "def compose",
+    "def paths",
+    "def gap_to_71",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/per_generated_token_inflation.py",
+   "exported_entry_points": [
+    "def factor",
+    "def correct",
+    "def checks",
+    "def corrected_anchors",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/perturbation_workunit.py",
+   "exported_entry_points": [
+    "class PerturbRefused",
+    "def perturb",
+    "def run",
+    "def contract",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/resident_binary_drift.py",
+   "exported_entry_points": [
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/resident_token_budget.py",
+   "exported_entry_points": [
+    "def marginal_dispatch_us",
+    "def derived",
+    "def findings",
+    "def budget",
+    "def unexplained_residual",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/sealed_default_absolute.py",
+   "exported_entry_points": [
+    "class AbsoluteRefused",
+    "def raw",
+    "def measured",
+    "def corroboration",
+    "def host_gap_is_not_the_resident",
+    "def lease",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/sealed_default_verified.py",
+   "exported_entry_points": [
+    "class VerificationRefused",
+    "def raw",
+    "def dispatch_identity",
+    "def token_identity",
+    "def checks",
+    "def verdict",
+    "def what_this_run_does_not_claim",
+    "def build"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/source_safety.py",
+   "exported_entry_points": [
+    "class DeletionRefused",
+    "def inspect_target",
+    "def preservation_for",
+    "def gate",
+    "def require_safe_to_delete",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/sovereign_trial.py",
+   "exported_entry_points": [
+    "class TrialRefused",
+    "def arms",
+    "def improvement",
+    "def what_changed",
+    "def what_this_does_not_claim",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/token_ns_objective.py",
+   "exported_entry_points": [
+    "def ms_per_token",
+    "def roof_tps",
+    "def required_byte_fraction",
+    "def required_mlp_fraction",
+    "def mlp_alone_ceiling_tps",
+    "def ladder",
+    "def reconciliation",
+    "def build"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/tps_falsifications.py",
+   "exported_entry_points": [
+    "def scar_rows",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/trial_negative_controls.py",
+   "exported_entry_points": [
+    "def run",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "tools/future/wall_gpu_reconciliation.py",
+   "exported_entry_points": [
+    "def derived",
+    "def build",
+    "def record"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY",
+   "note": "zero AST importers; has_main True so the legitimate caller is python3 <this file>"
+  },
+  {
+   "module": "crates/hide-backend/src/bin/haider.rs",
+   "exported_entry_points": [
+    "fn main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "crates/hide-backend/src/bin/haider.rs:2",
+     "class": "self"
+    }
+   ],
+   "only_own_tests": false,
+   "classification": "UNWIRED",
+   "detail": "lib.rs does not declare mod haider. Measured: git grep haider -- crates/hide-backend/src/lib.rs -> empty."
+  },
+  {
+   "module": "hcli/gravity/__init__.py",
+   "exported_entry_points": [
+    "OWNED_PREFIXES"
+   ],
+   "call_sites": [],
+   "ast_importers": [],
+   "only_own_tests": false,
+   "classification": "LIVE_OWNERSHIP_MARKER",
+   "detail": "Not executable. Filename citations exist in odyssey_tool_driver.py. Not a deletion candidate."
+  },
+  {
+   "module": "hcli/vmcp/__init__.py",
+   "exported_entry_points": [
+    "OWNED_PREFIXES"
+   ],
+   "call_sites": [],
+   "only_own_tests": false,
+   "classification": "LIVE_OWNERSHIP_MARKER"
+  }
+ ],
+ "test_only_callers": [
+  {
+   "module": "tools/haider/haider.py",
+   "exported_entry_points": [
+    "def allocate_port",
+    "class WorkUnit",
+    "def parse_haider_args",
+    "def start_llama_server",
+    "def wait_for_ready",
+    "def stop_llama_server",
+    "def create_mission_state",
+    "def write_mission_state",
+    "def load_mission_state",
+    "def build_fast_mission_evidence",
+    "def validate_scoped_edit",
+    "def validate_mutation_operation",
+    "def apply_mutation_operations",
+    "def apply_scoped_edit",
+    "def run_validation",
+    "def write_receipt",
+    "def main",
+    "class FastRuntimePool",
+    "def main_fast"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/test_haider_cli_grammar.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_deterministic_evidence.py:10",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_edit.py:13",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_fast_engine.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mission_state.py:10",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mutation_v2.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_retry_budget.py:11",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_workunit_scheduler.py:9",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "SUPERSEDED"
+  },
+  {
+   "module": "tools/haider/p0_tool_bridge.py",
+   "exported_entry_points": [
+    "class ProtocolError",
+    "class ToolError",
+    "class ModelError",
+    "def utc_now_iso",
+    "def estimate_tokens",
+    "def truncate_text",
+    "class RepositoryGuard",
+    "def admit_command",
+    "def make_observation",
+    "class ToolExecutor",
+    "class ModelClient",
+    "def parse_json_protocol",
+    "def normalize_worker_output",
+    "class WorkerHandle",
+    "class Emitter",
+    "class Session",
+    "def validate_lanes",
+    "def run_forced_parallel",
+    "def run_normal",
+    "def build_arg_parser",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/haider.py:35",
+     "class": "fossil"
+    },
+    {
+     "file_line": "tools/haider/test_p0_tool_bridge.py:8",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_edit.py:12",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mission_state.py:11",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/haider/test_haider_mutation_v2.py:13",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "SUPERSEDED"
+  },
+  {
+   "module": "hcli/context.py",
+   "exported_entry_points": [
+    "WorkerPacket",
+    "compile_worker_context"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/haider/hcli/tests/test_core_authorities.py:135",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "SUPERSEDED"
+  },
+  {
+   "module": "tools/future/resident_code_tools.py",
+   "exported_entry_points": [
+    "class CodeToolsRefused",
+    "class WorktreeGuard",
+    "def search_code",
+    "def read_code",
+    "def create_worktree",
+    "def patch",
+    "def build_op",
+    "def test_op",
+    "def run_op",
+    "def diff_op",
+    "def land_through_gate",
+    "def rollback",
+    "def invoke",
+    "def recovered_implementation",
+    "def build",
+    "def selftest",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_resident_code_tools.py:16",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED"
+  },
+  {
+   "module": "lab/hcli/option_c.py",
+   "exported_entry_points": [
+    "class Role",
+    "class CandidatePhase",
+    "class OptionCRefusal",
+    "class CandidateReport",
+    "class ReviewReport",
+    "class ControllerDecision",
+    "class CandidateSession",
+    "class OptionCSandbox",
+    "class OptionCController"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_option_c.py:6",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED"
+  },
+  {
+   "module": "lab/hcli/residency.py",
+   "exported_entry_points": [
+    "class ResidencyMode",
+    "class Slot",
+    "class PhaseC",
+    "class ResidencyRefusal",
+    "class FitReport",
+    "class ReviewQueueItem",
+    "class PipelinePair",
+    "class ResidencyState",
+    "class ResidencyStateMachine"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_residency_modes.py:6",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED"
+  },
+  {
+   "module": "lab/hcli/self_evolution.py",
+   "exported_entry_points": [
+    "class ProposalKind",
+    "class AdmissionStage",
+    "class EvolutionRefusal",
+    "class GraveyardRefused",
+    "class Proposal",
+    "class LedgerRow",
+    "class EvolutionLedger",
+    "class StageResult",
+    "class AdmissionPipeline",
+    "class SelfEvolutionEngine"
+   ],
+   "call_sites": [
+    {
+     "file_line": "lab/tests/test_self_evolution.py:6",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED"
+  },
+  {
+   "module": "typed tool frontier.escalate",
+   "exported_entry_points": [
+    "frontier.escalate"
+   ],
+   "call_sites": [
+    "hcli/test_escalation.py:213",
+    "hcli/test_escalation.py:217",
+    "hcli/test_escalation.py:223"
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED",
+   "needed_caller": "resident WorkUnit.tool='frontier.escalate' after confirm=true"
+  },
+  {
+   "module": "typed tool grok.swarm.propose",
+   "exported_entry_points": [
+    "grok.swarm.propose"
+   ],
+   "call_sites": [
+    "hcli/test_escalation.py:214",
+    "hcli/test_escalation.py:233"
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED",
+   "needed_caller": "resident WorkUnit.tool='grok.swarm.propose'"
+  },
+  {
+   "module": "typed tool grok.swarm.launch",
+   "exported_entry_points": [
+    "grok.swarm.launch"
+   ],
+   "call_sites": [
+    "hcli/test_escalation.py:215",
+    "hcli/test_escalation.py:246",
+    "hcli/test_escalation.py:253"
+   ],
+   "only_own_tests": true,
+   "classification": "UNWIRED",
+   "needed_caller": "resident WorkUnit.tool='grok.swarm.launch' after confirm=true"
+  },
+  {
+   "module": "tools/future/abi_verdicts.py",
+   "exported_entry_points": [
+    "class VerdictRefused",
+    "def finding_id",
+    "def host_construct",
+    "def evidence_refs",
+    "class ExemptionRule",
+    "class KernelAlias",
+    "class GeneratorSeam",
+    "class RegressionFixture"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_abi_verdicts.py",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/future/test_claude_abi_adjudication.py",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/abliteration_run.py",
+   "exported_entry_points": [
+    "class RunBlocked",
+    "class ContrastEmpty",
+    "class MetalMissing",
+    "def timed",
+    "def metal_probe",
+    "def require_metal",
+    "def load_specimen_verification",
+    "def lake_manifest"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_abliteration_run.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/accelerator_workunits.py",
+   "exported_entry_points": [
+    "class InputRefused",
+    "class AcceleratorWorkunitError",
+    "class ProcedureRefused",
+    "class UnstatedRoofRefused",
+    "class ActivationNotLoadedRefused",
+    "class StreamMergePromotionRefused",
+    "class SweepWithoutDiscriminatorsRefused",
+    "class CeremonyContinueRefused"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_accelerator_workunits.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/addressing_attribution.py",
+   "exported_entry_points": [
+    "class AttributionRefuse",
+    "class UnsourcedRung",
+    "class QualifiedTpsRefused",
+    "def nested",
+    "def require_file",
+    "def rung",
+    "def mechanism",
+    "def assemble"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_addressing_attribution.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/addressing_gap.py",
+   "exported_entry_points": [
+    "class AddressingGapError",
+    "class UnsourcedNumber",
+    "class UnstatedRoof",
+    "class TpsClaimRefused",
+    "def load_receipt",
+    "def nested",
+    "def cite",
+    "def cite_path"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_addressing_gap.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/ane_probe_lab.py",
+   "exported_entry_points": [
+    "class ProbeLabRefused",
+    "class CoremltoolsUnavailableError",
+    "class GraphSpecRefused",
+    "class ModeRefused",
+    "class ModeNotRunnableError",
+    "class EvidencePromotionError",
+    "def coremltools_status",
+    "def require_coremltools"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_ane_probe_lab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/aux_u8_lut.py",
+   "exported_entry_points": [
+    "class LutRefuse",
+    "class LutSpeedupWithoutByteMatchRefuse",
+    "class LutOutputMovedRefuse",
+    "def fma_per_byte_by_class",
+    "def extra_flops_per_output_element_exp",
+    "def extra_flops_per_output_element_lut",
+    "def build_luts",
+    "def decode_u8_scale_column_lut"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_aux_u8_lut.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/bitcast_dequant_ab.py",
+   "exported_entry_points": [
+    "class AbRefused",
+    "def matched_pair",
+    "def timing",
+    "def independent_runs",
+    "def projection_vs_graph",
+    "def complete_token",
+    "def claim_boundary",
+    "def fp_boundary"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_bitcast_dequant_ab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/bootstrap_golden.py",
+   "exported_entry_points": [
+    "class GoldenSealError",
+    "def git_blob_bytes",
+    "def git_object_bytes",
+    "def sha256_bytes",
+    "def canonical_seal",
+    "def seal_verifies",
+    "def load_json_at",
+    "def pin_path"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_bootstrap_golden.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/campaign_scars.py",
+   "exported_entry_points": [
+    "def scars",
+    "def scar_ids",
+    "def missing_fields",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_campaign_scars.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/capability_byte_elimination.py",
+   "exported_entry_points": [
+    "class ByteEliminationRefuse",
+    "class PointNotRun",
+    "def mb",
+    "def load_census",
+    "def load_organ_ms",
+    "def load_cosine_license",
+    "def load_parent_payload_bytes",
+    "def require_region"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_capability_byte_elimination.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/capacity_inference_rule.py",
+   "exported_entry_points": [
+    "class RuleRefused",
+    "def fires_on",
+    "def questions",
+    "def experiment_policy_lesson",
+    "def fire",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_capacity_inference_rule.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/causal_pattern_library.py",
+   "exported_entry_points": [
+    "class RuleRefused",
+    "def evaluate",
+    "def emitted_workunits",
+    "def meta_policy",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_causal_pattern_library.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/choice_json_probe.py",
+   "exported_entry_points": [
+    "class ProbeRefused",
+    "def sha256_text",
+    "def clip_ask",
+    "def compact_candidates",
+    "def choose_prompt_unclipped",
+    "def control_prompt",
+    "def json_only_prompt",
+    "def one_shot_prompt"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_choice_json_probe.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/claim_scope.py",
+   "exported_entry_points": [
+    "class ClaimScopeError",
+    "class ScopeViolation",
+    "class HindsightContamination",
+    "class ExperimentIdentityError",
+    "class OverbroadConclusion",
+    "def parse_iso",
+    "def iso_z",
+    "def unix_to_iso"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_claim_scope.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/claude_abi_adjudication.py",
+   "exported_entry_points": [
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_claude_abi_adjudication.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/codex_ingest.py",
+   "exported_entry_points": [
+    "class Classification",
+    "def classify_obj",
+    "def classify_bytes",
+    "def classify_path",
+    "def proposed_scope",
+    "def emit_delta",
+    "def list_artifacts",
+    "def load_state"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_codex_ingest.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/concurrency_measure.py",
+   "exported_entry_points": [
+    "class ConcurrencyRefused",
+    "def run_level",
+    "def classify",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_concurrency_measure.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/consolidated_run.py",
+   "exported_entry_points": [
+    "class DescriptorInvalid",
+    "def tagged",
+    "def is_tagged",
+    "def evaluate_gate",
+    "def assemble_resident_identity",
+    "def assemble_fallback_identity",
+    "def assemble_machine_genome",
+    "def assemble_source_specimens"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_consolidated_run.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/cuda_lowbit_hypotheses.py",
+   "exported_entry_points": [
+    "class HypothesisError",
+    "class MissingFieldError",
+    "class UnknownPrimitiveError",
+    "class NumericClaimError",
+    "class ScarRefusal",
+    "class OverlapRefusal",
+    "def repo_text",
+    "def load_evidence"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_cuda_lowbit_hypotheses.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/debugger.py",
+   "exported_entry_points": [
+    "class DebuggerUnavailableError",
+    "class LabUnavailableError",
+    "class AttachRefused",
+    "class MemoryWriteForbidden",
+    "class FabricationForbidden",
+    "class SessionRequiredError",
+    "def path_state",
+    "def reset_probe_cache"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_debugger.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/decode_civilization.py",
+   "exported_entry_points": [
+    "class VerificationCorrectnessError",
+    "def load_repo_json",
+    "def path_in_head",
+    "def path_exists_or_in_head",
+    "def cost_class",
+    "def expected_accepted_per_pass",
+    "def k1_pays",
+    "class DecodePlan"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_decode_civilization.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/decode_tax_target.py",
+   "exported_entry_points": [
+    "class TargetRefused",
+    "def requirement",
+    "def worth",
+    "def against_everything_else",
+    "def every_decode_tried_so_far",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_decode_tax_target.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/deltanet_generated_transition.py",
+   "exported_entry_points": [
+    "class TransitionRefuse",
+    "class VerdictRefuse",
+    "class HeldOutRefuse",
+    "class DenseRematRefuse",
+    "def load_candidate",
+    "def qkvz_coding_is_at_floor",
+    "def billed_bytes",
+    "def consume_path_tag"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_deltanet_generated_transition.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/deltanet_organ_decompose.py",
+   "exported_entry_points": [
+    "class UnreconciledDecomposition",
+    "class MissingArm",
+    "class ByteMismatch",
+    "class EmptyGpuSample",
+    "def effective_gb_s",
+    "def ns_to_ms",
+    "def loads_survived",
+    "def judge_alu"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_deltanet_organ_decompose.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/deltanet_program_oracles.py",
+   "exported_entry_points": [
+    "class OracleRefuse",
+    "class CorpusUnavailable",
+    "class HeldOutRefuse",
+    "class FamilyAbsentRefuse",
+    "class FamilyInputMissing",
+    "def relative_l2",
+    "def stream_rates",
+    "def cited_ms"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_deltanet_program_oracles.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/deltanet_widen_ab.py",
+   "exported_entry_points": [
+    "class WidenAbRefuse",
+    "class ArgmaxIsNotParity",
+    "class MissingArm",
+    "class ProductionDidNotLaunch",
+    "class EmptyGpuSample",
+    "def ns_to_ms",
+    "def first_divergence",
+    "def report_token_parity"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_deltanet_widen_ab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/dequant_hoist_ab.py",
+   "exported_entry_points": [
+    "class AbRefused",
+    "def measured",
+    "def bit_identity",
+    "def scar",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_dequant_hoist_ab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/dequant_hoist_candidate.py",
+   "exported_entry_points": [
+    "class CandidateRefused",
+    "def accounting",
+    "def ladder_bracket",
+    "def identity",
+    "def risks",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_dequant_hoist_candidate.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/detached_trial.py",
+   "exported_entry_points": [
+    "class TrialError",
+    "class ConcurrencyBoundError",
+    "def corpus_files",
+    "def one_pass",
+    "def child_work",
+    "def kqueue_watch",
+    "def make_child_unit",
+    "def make_independent_unit"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_detached_trial.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/device_ascension_pipeline.py",
+   "exported_entry_points": [
+    "class VerifiedImportRefused",
+    "class ArrivalInvariantError",
+    "def machine_id",
+    "def machine_id_digest",
+    "def discover_hardware",
+    "def build_machine_genome",
+    "def derive_capabilities",
+    "def clamp_scope"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_device_ascension_pipeline.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/devplatform.py",
+   "exported_entry_points": [
+    "class IrError",
+    "class ProfileError",
+    "class CompatError",
+    "def canonical_bytes",
+    "def strip_volatile",
+    "def migrate_ir",
+    "def make_ir",
+    "def encode_ir"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_devplatform.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/dirty_source_seal.py",
+   "exported_entry_points": [
+    "class PromotionRefused",
+    "class PatchApplyError",
+    "class SealError",
+    "def git_at",
+    "def git_at_bytes",
+    "def primary_checkout",
+    "def dirty_crate_files",
+    "def crate_source_is_dirty"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_dirty_source_seal.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/dispatch_size_sweep.py",
+   "exported_entry_points": [
+    "class TooFewPoints",
+    "class PackNotIdentical",
+    "class InconclusiveBandwidth",
+    "def effective_gb_s",
+    "def nearest_point",
+    "def knee_mb",
+    "def judge",
+    "def measurement_from_raw"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_dispatch_size_sweep.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/evidence_snapshot.py",
+   "exported_entry_points": [
+    "def build",
+    "def verify",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_evidence_snapshot.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/fast_thought.py",
+   "exported_entry_points": [
+    "class FastThoughtRefused",
+    "def frontier_to_experiment_latency",
+    "def claude_escalations_per_frontier_move",
+    "def scientific_tps",
+    "def decision_compression",
+    "def event_driven_contract",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_fast_thought.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/fidelity_hierarchy.py",
+   "exported_entry_points": [
+    "class HierarchyRefused",
+    "def rank",
+    "def may_refuse",
+    "def labelled_refutations",
+    "def reopenable",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_fidelity_hierarchy.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/flash_bpw_ladder.py",
+   "exported_entry_points": [
+    "class UnknownRungError",
+    "class LadderRefuse",
+    "class Rung",
+    "def rungs",
+    "def resolve_rung",
+    "def resolve_named",
+    "def load_screen",
+    "def screen_trap_plan"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_flash_bpw_ladder.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/flash_organ_workgraphs.py",
+   "exported_entry_points": [
+    "class OrganWorkGraphError",
+    "class CompleteWithoutReceipt",
+    "class NodeAsleep",
+    "class NodeUnreachable",
+    "class EmptyCensusFamily",
+    "class FunnelStage",
+    "def node_id",
+    "def school_of"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_flash_organ_workgraphs.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/fold_addqx_ab.py",
+   "exported_entry_points": [
+    "class FoldAbRefuse",
+    "class ArgmaxIsNotParity",
+    "class NoByteComparison",
+    "class MissingArm",
+    "class ProductionDidNotLaunch",
+    "class EmptyGpuSample",
+    "class QualifiedTpsRefused",
+    "def ns_to_ms"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_fold_addqx_ab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/fpga_fidelity.py",
+   "exported_entry_points": [
+    "class FidelityLevel",
+    "class AdaptationClock",
+    "class ProviderUnavailable",
+    "class UnmeasuredConversionError",
+    "class GraphError",
+    "class Node",
+    "class Edge",
+    "class ResourceEnvelope"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_fpga_fidelity.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/freshness.py",
+   "exported_entry_points": [
+    "class RegistryEntry",
+    "def looks_like_queue",
+    "def queue_identity_rows",
+    "def semantic_fingerprint",
+    "def candidate_diff",
+    "def classify_artifact",
+    "def classify_documents",
+    "def exit_code_for"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_freshness.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/fusion_sim.py",
+   "exported_entry_points": [
+    "class FusionSimError",
+    "class HonestyError",
+    "class Cost",
+    "def unknown",
+    "def measured",
+    "class Node",
+    "class Link",
+    "class Route"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_fusion_sim.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/geometry_table.py",
+   "exported_entry_points": [
+    "def shape_key",
+    "def key_dict",
+    "def key_str",
+    "class UnmeasuredShape",
+    "class SilentDefaultRefused",
+    "class RefutedDiscriminatorRerun",
+    "class NotAHotDimension",
+    "class MissingSweep"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_geometry_table.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/git_lock_doctor.py",
+   "exported_entry_points": [
+    "def resolve_git_layout",
+    "def lock_path_for",
+    "def list_stale_locks",
+    "def catalog_stale",
+    "def stale_arrival_distribution",
+    "class LockObservation",
+    "def evaluate_observation",
+    "def process_targets_repo"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_git_lock_doctor.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/global_frontier.py",
+   "exported_entry_points": [
+    "def run_probe",
+    "def build",
+    "def verify",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_global_frontier.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/green_machine.py",
+   "exported_entry_points": [
+    "class UntrustworthyMeasurement",
+    "def unknown_metrics",
+    "def energy_number",
+    "def estimate_from_tdp_watts",
+    "def estimate_from_flops",
+    "def measurement_is_trustworthy",
+    "class EnergyScheduleDecision",
+    "class EnergyAwareScheduler"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_green_machine.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/hbm_doctor.py",
+   "exported_entry_points": [
+    "class FpgaLatencyMustBeClass",
+    "def load_repo_json",
+    "class ResidentCandidate",
+    "class SolveResult",
+    "def make_candidate",
+    "def score_candidate",
+    "def size_ranked_select",
+    "def solve"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_hbm_doctor.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/hcli_compactor.py",
+   "exported_entry_points": [
+    "class CompactorRefused",
+    "def kernel_path",
+    "def load_kernel",
+    "def require_kernel",
+    "def hypothesis_verdicts",
+    "def latest_refutation",
+    "def live_hypotheses",
+    "def current_target"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_hcli_compactor.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/hcli_self_profile.py",
+   "exported_entry_points": [
+    "class RankRefused",
+    "class ActionableRefused",
+    "class CompileWaitForbidden",
+    "class LiveGitStatusForbidden",
+    "class SourceUnavailable",
+    "def assert_timing_field_legal",
+    "def refuse_bare_git_status",
+    "def refuse_hcli_git_status_invoke"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_hcli_self_profile.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/hmf_objects.py",
+   "exported_entry_points": [
+    "class ObjectState",
+    "class Coherence",
+    "class Trust",
+    "class MemoryTier",
+    "class Decision",
+    "class KernelAccess",
+    "class ManagedObjectError",
+    "class CoherenceRequiredError"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_hmf_objects.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/improvement_metabolism.py",
+   "exported_entry_points": [
+    "class NotAHypothesis",
+    "class VerbExperiment",
+    "class ParkWithoutWake",
+    "class ScarIncomplete",
+    "class MissingReceipt",
+    "class UnknownRole",
+    "class UnknownTerminal",
+    "class UnknownPolarity"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_improvement_metabolism.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/integration_attack.py",
+   "exported_entry_points": [
+    "class Finding",
+    "def attack_hardware_claims",
+    "def attack_seals",
+    "def attack_forbidden_status",
+    "def attack_placeholders",
+    "def attack_missing_tests",
+    "def attack_missing_negative_controls",
+    "def attack_skipped_tests"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_integration_attack.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/intra_token_concurrency_ab.py",
+   "exported_entry_points": [
+    "class ProbeRefused",
+    "def compare",
+    "def reading",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_intra_token_concurrency_ab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/memory_traffic_probe.py",
+   "exported_entry_points": [
+    "class ProbeUnavailable",
+    "class UnmeasuredMemoryTraffic",
+    "def name_looks_like_traffic",
+    "def env_flag_enabled",
+    "def probe",
+    "def classify",
+    "def emit_actual_read_bytes",
+    "def measured_read_bytes_per_token"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_memory_traffic_probe.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/meta_ready.py",
+   "exported_entry_points": [
+    "def resolve_evidence",
+    "def sidecar_receipt",
+    "def lookup_capture_boundary",
+    "def contract_min_rows",
+    "def load_family_budgets",
+    "def load_coherence_screen",
+    "def stage_dossiers",
+    "def pipeline_wiring"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_meta_ready.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mission_class.py",
+   "exported_entry_points": [
+    "class ClassifyRefused",
+    "def classify_one",
+    "def classified",
+    "def launch_gate",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mission_class.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_alu_roofline.py",
+   "exported_entry_points": [
+    "class MissingArm",
+    "class ByteMismatch",
+    "class EmptyGpuSample",
+    "def effective_gb_s",
+    "def loads_survived",
+    "def cheaper_decode",
+    "def judge_organ",
+    "def judge"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_alu_roofline.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_aux_merge_ab.py",
+   "exported_entry_points": [
+    "class AbRefused",
+    "class ByteMismatch",
+    "class SpreadRefused",
+    "class EmptyGpuSample",
+    "class MissingArm",
+    "class Blocked",
+    "def effective_gb_s",
+    "def rep_spread"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_aux_merge_ab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_decode_cheapen.py",
+   "exported_entry_points": [
+    "class MissingVariant",
+    "class EmptyGpuSample",
+    "class NoByteComparison",
+    "class BitIdentityClaimWithoutCompare",
+    "def effective_gb_s",
+    "def f32",
+    "def tax_view",
+    "def production_unpack8"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_decode_cheapen.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_error_budget.py",
+   "exported_entry_points": [
+    "class ErrorBudgetRefuse",
+    "class TargetReportedAsAchieved",
+    "class ArgmaxPresentedAsParity",
+    "class CalibrationDrift",
+    "class SpecimenUnavailable",
+    "def rmsnorm",
+    "def swiglu",
+    "def token_relative_l2"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_error_budget.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_functional_rank.py",
+   "exported_entry_points": [
+    "class RankRefuse",
+    "class TrainReportedAsHeldOut",
+    "class CorpusMissing",
+    "def eigh_desc",
+    "def participation_ratio",
+    "def effective_dimension",
+    "def numerical_rank",
+    "def relative_output_error"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_functional_rank.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_issue_rate_ladder.py",
+   "exported_entry_points": [
+    "class MissingRung",
+    "class EmptyGpuSample",
+    "class NoByteComparison",
+    "class BitIdentityClaimWithoutCompare",
+    "class LadderNotMonotone",
+    "def effective_gb_s",
+    "def pearson_r",
+    "def require_byte_compare"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_issue_rate_ladder.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_nonlinear_program.py",
+   "exported_entry_points": [
+    "class NonlinearProgramRefuse",
+    "class UnbilledProgramByte",
+    "class LinearSharedSubspaceDead",
+    "class TrainReportedAsHeldOut",
+    "class RematConsumer",
+    "class CorpusUnavailable",
+    "class WeightsUnavailable",
+    "class HoldYUsedAsIndex"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_nonlinear_program.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_region_falsifier.py",
+   "exported_entry_points": [
+    "class ArmsNotIdentical",
+    "class InconclusiveBandwidth",
+    "def effective_gb_s",
+    "def judge",
+    "def measurement_from_raw",
+    "def build",
+    "def record",
+    "def example_binaries"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_region_falsifier.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_sparse_residual.py",
+   "exported_entry_points": [
+    "class SparseResidualRefuse",
+    "class UnbilledResidualIndex",
+    "class UnbilledDispatch",
+    "class CorpusUnavailable",
+    "class CapabilityMapUnavailable",
+    "def per_coord_bytes",
+    "def k_from_mlp_frac",
+    "def mlp_frac_of_k"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_sparse_residual.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_stream_count.py",
+   "exported_entry_points": [
+    "class MissingRung",
+    "class ByteMismatch",
+    "class EmptyGpuSample",
+    "def effective_gb_s",
+    "def same_gb_s",
+    "def monotone_increasing",
+    "def assert_bytes_held",
+    "def loads_survived"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_stream_count.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mlp_structured_operator.py",
+   "exported_entry_points": [
+    "class StructuredOperatorRefuse",
+    "class UnbilledProgramByte",
+    "class TrainReportedAsHeldOut",
+    "class RematConsumer",
+    "class CorpusUnavailable",
+    "class RankBottleneckDead",
+    "class BottleneckInDisguise",
+    "class BaselineOmitted"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mlp_structured_operator.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/moe_physical_school.py",
+   "exported_entry_points": [
+    "class ClaimRefused",
+    "class FormSchemaError",
+    "def load_named",
+    "def load_all_evidence",
+    "def organ_census_grounding",
+    "def family_budget_grounding",
+    "def is_routed_path_row",
+    "def work_class_for_row"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_moe_physical_school.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/multi_model_trial.py",
+   "exported_entry_points": [
+    "class TrialRefused",
+    "def run",
+    "def judge",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_multi_model_trial.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/multistream_capacity_tree.py",
+   "exported_entry_points": [
+    "class TreeRefused",
+    "def classes",
+    "def summary",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_multistream_capacity_tree.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/mutation_trial.py",
+   "exported_entry_points": [
+    "class TrialRefused",
+    "class MetalUnavailable",
+    "class LeaseRefused",
+    "class GpuLease",
+    "def require_metal",
+    "def current_loadavg",
+    "def compile_probe",
+    "def run_probe"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_mutation_trial.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/odyssey3_attack.py",
+   "exported_entry_points": [
+    "class AttackError",
+    "def to_o3_law",
+    "def campaign_o3_laws",
+    "def campaign_o3_law",
+    "def odyssey_i_barrier",
+    "def widen_scope",
+    "def attack_l5_fidelity_703p5",
+    "def attack_l5_two_legs"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_odyssey3_attack.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/odyssey_mission_controller.py",
+   "exported_entry_points": [
+    "class MissionRefused",
+    "def horizon",
+    "def admits",
+    "def phase_entry",
+    "def depth_policy",
+    "def seal_contract",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_odyssey_mission_controller.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/odyssey_tool_driver.py",
+   "exported_entry_points": [
+    "class DriverError",
+    "class InvokeRefused",
+    "class NoReceipt",
+    "def output_policy",
+    "def tools",
+    "def tool_by_id",
+    "def can_run",
+    "def emit_workunit"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_odyssey_tool_driver.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/op_class_ablation.py",
+   "exported_entry_points": [
+    "class AblationRefused",
+    "def arms",
+    "def decomposition",
+    "def bitcast_candidate",
+    "def token_projection",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_op_class_ablation.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/p6_projection.py",
+   "exported_entry_points": [
+    "class ProjectionClaimError",
+    "class QueueUnavailableError",
+    "def resolve_input",
+    "def load_qualification_queue",
+    "def load_front_g_p6",
+    "def load_atlas",
+    "def is_p6_p7",
+    "def p6_p7_rows"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_p6_projection.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/parity_ladder.py",
+   "exported_entry_points": [
+    "class ParityLadderRefuse",
+    "class TokenIdAloneIsNotParity",
+    "class ArgmaxIsNotParity",
+    "class CountOnlyDiffRefuse",
+    "class UnjustifiedTolerance",
+    "class IncompleteLadder",
+    "class CapabilitySpotCheckMissing",
+    "def f32"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_parity_ladder.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/productive_search.py",
+   "exported_entry_points": [
+    "class SearchRefused",
+    "def causal_question_id",
+    "def question_family",
+    "def classify_window",
+    "def health_probe_budget",
+    "def units_from_timeline",
+    "def run_four",
+    "def build"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_productive_search.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/propagate.py",
+   "exported_entry_points": [
+    "def resolve_evidence",
+    "def load_ingest_state",
+    "def load_ingest_deltas",
+    "def load_previous_apply",
+    "def apply_odyssey2",
+    "def apply_odyssey3",
+    "def apply_lpc",
+    "def apply_hwir"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_propagate.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/protected_bench_lease.py",
+   "exported_entry_points": [
+    "class LeaseRefused",
+    "class ResumeFailed",
+    "def contaminators",
+    "def loadavg",
+    "def what_a_contaminated_window_may_still_do",
+    "def acquire",
+    "def release",
+    "def measure"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_protected_bench_lease.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/protected_bitcast_absolute.py",
+   "exported_entry_points": [
+    "class LeaseRefused",
+    "def measured",
+    "def lease",
+    "def load_invariance",
+    "def against_the_canonical_baseline",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_protected_bitcast_absolute.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/q4_bitcast_ab.py",
+   "exported_entry_points": [
+    "class Q4Refused",
+    "def arms",
+    "def measured",
+    "def token_projection",
+    "def resident_measured",
+    "def projection_vs_graph",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_q4_bitcast_ab.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/recurring_operations.py",
+   "exported_entry_points": [
+    "class RegisterRefused",
+    "def entries",
+    "def counts",
+    "def failure_mode",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_recurring_operations.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/representation_decode_fusion.py",
+   "exported_entry_points": [
+    "class DecodeFusionRefuse",
+    "class UnreconciledRepresentationDecode",
+    "def f16_bytes",
+    "def f32_bytes",
+    "def mlp_params",
+    "def lm_head_params",
+    "def attention_gemv_params",
+    "def dense_f16_w_bytes"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_representation_decode_fusion.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/representation_floor.py",
+   "exported_entry_points": [
+    "class FloorRefused",
+    "def mix_report",
+    "def stream_rates",
+    "def q4_layout",
+    "def split_q4_storage",
+    "def byte_classes",
+    "def coherent_floor_bpw",
+    "def candidates"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_representation_floor.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/resident_api.py",
+   "exported_entry_points": [
+    "class ResidentApiError",
+    "class UnknownCapabilityError",
+    "class CapabilityImportError",
+    "class InvocationError",
+    "def discover_python_files",
+    "def classify_filename",
+    "def ast_inspect",
+    "def load_frontier"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_resident_api.py",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/future/test_orchestration.py",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/resident_code_tools.py",
+   "exported_entry_points": [
+    "class CodeToolsRefused",
+    "class WorktreeGuard",
+    "def search_code",
+    "def read_code",
+    "def create_worktree",
+    "def patch",
+    "def build_op",
+    "def test_op"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_resident_code_tools.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/resident_output_contract.py",
+   "exported_entry_points": [
+    "class ContractRefused",
+    "def compile_schema",
+    "def extract",
+    "def admit",
+    "def named_shapes",
+    "def mutate_payload",
+    "def property_probe",
+    "def battery"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_resident_output_contract.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/resident_reprofile.py",
+   "exported_entry_points": [
+    "class ReprofileRefused",
+    "def arms",
+    "def organs",
+    "def build",
+    "def record",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_resident_reprofile.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/resident_supervisor.py",
+   "exported_entry_points": [
+    "class SupervisorError",
+    "def argv_is_vcs_mutation",
+    "def cpu_unit",
+    "def make_sleeping_unit",
+    "def sleeping_fields_missing",
+    "class ResidentSupervisor",
+    "def run_loop",
+    "def scenario_empty_refill_does_not_halt"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_resident_supervisor.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/roof_anchor.py",
+   "exported_entry_points": [
+    "class RoofAnchorError",
+    "class UnstatedRoof",
+    "class UnknownRoof",
+    "class QuoteDrift",
+    "def source_ref",
+    "def nested",
+    "def load_receipt",
+    "def verify_registry_against_sources"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_roof_anchor.py",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/future/test_roof_anchor_quotes.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/scar_reevaluator.py",
+   "exported_entry_points": [
+    "class ReevaluatorRefused",
+    "def probe_tolerance",
+    "def classify",
+    "def load_source_evidence",
+    "def classify_corpus",
+    "def rank_reopenable",
+    "def counts",
+    "def build"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_scar_reevaluator.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/single_token_dag.py",
+   "exported_entry_points": [
+    "class DagRefused",
+    "def token_edges",
+    "def node_times",
+    "def slack",
+    "def reading",
+    "def reordering_scar",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_single_token_dag.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/sovereign_attack_report.py",
+   "exported_entry_points": [
+    "class SovereignAttackRefused",
+    "def live_sovereign_path",
+    "def load_sovereign",
+    "def synthetic_kernel",
+    "def attack_fake_sovereign",
+    "def attack_malformed_missing_key",
+    "def attack_malformed_dict_as_list",
+    "def attack_malformed_parse_none"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_sovereign_attacks.py",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/specimen_scheduler.py",
+   "exported_entry_points": [
+    "class ScheduleRefused",
+    "def distance",
+    "def scar_verdict",
+    "def rank",
+    "def not_fifo_proof",
+    "def scar_suppression_proof",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_specimen_scheduler.py",
+     "class": "own_test"
+    },
+    {
+     "file_line": "tools/future/test_multi_model_trial.py",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": false,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/sprint_profile.py",
+   "exported_entry_points": [
+    "def make_bucket",
+    "def unknown_bucket",
+    "def is_attributed",
+    "def attributed_sum",
+    "def remainder_of",
+    "def tallest",
+    "def invalidated_seconds",
+    "def timeline_snapshots"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_sprint_profile.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/sub2_unified_plan.py",
+   "exported_entry_points": [
+    "class PlanRefused",
+    "def planners_present",
+    "def disagreements",
+    "def routes",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_sub2_unified_plan.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/succession_trial.py",
+   "exported_entry_points": [
+    "class TrialRefused",
+    "def flash_nx_ready",
+    "def inspect_rejected_candidates",
+    "def load_manifest",
+    "def inspect_specimen",
+    "def census_mentions",
+    "def choose_candidate",
+    "def load_real_workunits"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_succession_trial.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/teacher_corpus_expansion.py",
+   "exported_entry_points": [
+    "class ExpansionRefused",
+    "class RedundantCapture",
+    "class UnknownSurface",
+    "class EvidenceAbsent",
+    "def load_rel",
+    "def load_real_corpus",
+    "def load_screen",
+    "def try_load_rel"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_teacher_corpus_expansion.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/terminal_speed_artifact.py",
+   "exported_entry_points": [
+    "class TerminalArtifactRefused",
+    "class PrerequisiteUnwritable",
+    "def check_prerequisites_are_writable",
+    "def prerequisite_status",
+    "def reached_71",
+    "def which_receipt",
+    "def dominant_remaining_costs",
+    "def irreducible_current_information"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_terminal_speed_artifact.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/token_roof_decomposition.py",
+   "exported_entry_points": [
+    "class TokenRoofError",
+    "class UnreconciledDecomposition",
+    "class ForbiddenLossBucket",
+    "class UnsourcedTransition",
+    "class EmptyGpuSample",
+    "class UnqualifiedCleanRoof",
+    "def nested",
+    "def require_file"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_token_roof_decomposition.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/tps_gap.py",
+   "exported_entry_points": [
+    "class GapRefuse",
+    "class WouldImproveRefuse",
+    "def assert_timing_key_legal",
+    "def refuse_fold_into_named_bucket",
+    "def refuse_would_improve",
+    "def extract_clocks",
+    "def decompose_reply",
+    "def first_token_accounting"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_tps_gap.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/tps_metrics.py",
+   "exported_entry_points": [
+    "class MetricConfusion",
+    "def which_metric_is_71",
+    "def assert_not_confused",
+    "def current",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_tps_metrics.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/turnaround.py",
+   "exported_entry_points": [
+    "class GpuDependentPhaseError",
+    "class HardwareLaunderingError",
+    "def record_cpu_side",
+    "def record_scoreboard_ns",
+    "def null_scoreboard_development_phases",
+    "def scan_sources",
+    "def read_cargo_evidence",
+    "def identify_dominant"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_turnaround.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/future/uma_resource_ledger.py",
+   "exported_entry_points": [
+    "class ResourceRefused",
+    "def memory",
+    "def disk",
+    "def predict_peak",
+    "def admission_table",
+    "def residency_score",
+    "def build",
+    "def main"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/future/test_uma_resource_ledger.py",
+     "class": "own_test"
+    }
+   ],
+   "only_own_tests": true,
+   "has_main": true,
+   "classification": "DEBUG_ONLY"
+  },
+  {
+   "module": "tools/condense/tests/_retired_shell.py",
+   "exported_entry_points": [
+    "def run"
+   ],
+   "call_sites": [
+    {
+     "file_line": "tools/condense/tests/test_retired_engine.py",
+     "class": "other_test"
+    }
+   ],
+   "only_own_tests": true,
+   "classification": "EVIDENCE"
+  }
+ ],
+ "superseded_paths": [
+  {
+   "path": "tools/haider/haider.py",
+   "superseded_by": "hcli/ (hcli.cli:main, pyproject.toml scripts hcli/jhcli)",
+   "evidence": "docs/CURRENT_ARCHITECTURE.md:10 Fossil HCLI-v0 is disconnected. tools/headless/code_entropy.py:1525 asserts ARCHIVE.",
+   "classification": "SUPERSEDED"
+  },
+  {
+   "path": "tools/haider/p0_tool_bridge.py",
+   "superseded_by": "hcli/tool_registry.py default_tool_registry",
+   "evidence": "p0 ALL_TOOLS names repo.search/fs.list/fs.stat/shell.run_safe/build.check/test.run do not exist in the live 44-tool registry.",
+   "classification": "SUPERSEDED"
+  },
+  {
+   "path": "hcli/context.py",
+   "superseded_by": "hcli/goal.py WorkerPacket / compile_worker_context",
+   "evidence": "hcli/context.py:8-10 docstring: Production code imports WorkerPacket from hcli.goal. Sole importer tools/haider/hcli/tests/test_core_authorities.py:135.",
+   "classification": "SUPERSEDED",
+   "keep_reason": "compatibility alias; WAVE_STATE: keep compatibility aliases"
+  },
+  {
+   "path": "tools/haider/bootstrap_snapshots/*.py",
+   "superseded_by": "hcli/",
+   "classification": "EVIDENCE",
+   "keep_reason": "historical snapshots of the fossil. Do not delete."
+  },
+  {
+   "path": "typed-tool aliases filesystem.read, receipt.inspect, huggingface.manifest, roadmap.inspect, git.checkout/revert-safe",
+   "superseded_by": "filesystem.read is an alias of fs.read (same handler). receipt.inspect aliases receipt.read. huggingface.manifest aliases huggingface.resolve. roadmap.inspect aliases roadmap.read. git.checkout/revert-safe is a third name for the refusal handler.",
+   "classification": "UNWIRED",
+   "keep_reason": "aliases, not a second implementation. Zero named call sites does not make the alias a deletion candidate."
+  }
+ ],
+ "recommended_deletions": [
+  {
+   "path": "tools/haider/haider.py",
+   "justification": "SUPERSEDED fossil HCLI-v0; sole remaining callers are tools/haider/test_haider_*.py (bare import haider). Product entry is hcli.cli:main."
+  },
+  {
+   "path": "tools/haider/p0_tool_bridge.py",
+   "justification": "SUPERSEDED tool bridge; only imported by the fossil haider.py and its tests. Live tools live in hcli/tool_registry.py."
+  },
+  {
+   "path": "tools/haider/test_haider_*.py and tools/haider/test_p0_tool_bridge.py and tools/haider/test_workunit_scheduler.py (only if the two fossils go)",
+   "justification": "Those tests exist solely to execute the fossils. Deleting the fossils without the tests would fail pyproject.toml testpaths=['tools/haider']."
+  }
+ ],
+ "must_not_delete": [
+  {
+   "path": "receipts/",
+   "why": "Historical receipts, sealed science and audit trails. Contract: DO NOT DELETE HISTORICAL EVIDENCE."
+  },
+  {
+   "path": "receipts/future/",
+   "why": "Sidecar science receipts including MODELLAKE_EVENTS, LEGACY_ODYSSEY_DRIVER_RETIREMENT, RESIDENT_API_AUDIT. Evidence, never execute."
+  },
+  {
+   "path": "tools/haider/bootstrap_snapshots/",
+   "why": "EVIDENCE snapshots of HCLI-v0. Keep even if haider.py is deleted."
+  },
+  {
+   "path": "hcli/mutation.py",
+   "why": "compile_python_file is called from hcli/engine.py:3418; content_fingerprint from hcli/delegate.py:426. apply_mutation_operations is UNWIRED, not dead."
+  },
+  {
+   "path": "hcli/tool_registry.py and the 44 typed tools",
+   "why": "UNWIRED majority, not superseded. Generic dispatcher exists (executors.py:364). Deleting un-named tools would remove the self-hosting surface G154 just wired."
+  },
+  {
+   "path": "git.checkout-safe / git.revert-safe / git.checkout/revert-safe",
+   "why": "Governance placeholders that unconditionally REFUSE. WAVE_STATE: that refusal is the remaining self-hosting gap, not a bug. Zero named callers is expected."
+  },
+  {
+   "path": "tools/future/",
+   "why": "Science sidecar. 0 future.* tools in AgentOS is UNWIRED, not a license to delete. Every zero-importer module here has __main__. hcli_sovereign.py is the live SUB2 loop."
+  },
+  {
+   "path": "tools/future/hcli_sovereign.py",
+   "why": "DEBUG_ONLY / live operator loop. WAVE_STATE pid 2183. Zero AST importers because it is launched, not imported."
+  },
+  {
+   "path": "tools/future/modellake_events.py",
+   "why": "LIVE: tools/odyssey/modellake_watch.py:612 imports and runs consume()."
+  },
+  {
+   "path": "tools/future/resident_code_tools.py",
+   "why": "UNWIRED, needed caller is AgentOS. It is the only production execute path onto apply_mutation_operations."
+  },
+  {
+   "path": "hcli/delegate.py",
+   "why": "LIVE Claude->HCLI adapter, dispatched from hcli/cli.py:303-307."
+  },
+  {
+   "path": "hcli/grok_bridge.py",
+   "why": "LIVE Grok launch path. Imported by commands.py, executors.py, mission.py, scheduler.py, escalation.py."
+  },
+  {
+   "path": "hcli/escalation.py",
+   "why": "LIVE registry handlers for frontier.escalate / grok.swarm.*. Tool names are test-only today; the module is not."
+  },
+  {
+   "path": "tools/odyssey_ctl.py",
+   "why": "LIVE CLI; imported by tools/odyssey_patient_runner.py:81. HCLI having no odyssey verb is UNWIRED-from-HCLI, not dead."
+  },
+  {
+   "path": "lab/hcli/option_c.py",
+   "why": "UNWIRED Bible §24 law. Sole callers are its tests. Needs a lab/HCLI caller, not deletion."
+  },
+  {
+   "path": "lab/hcli/residency.py",
+   "why": "UNWIRED Bible §25 state machine. Test-only by design until Slot load/unload is bound."
+  },
+  {
+   "path": "lab/hcli/self_evolution.py",
+   "why": "UNWIRED Bible §23 admission stub. Test-only. Proposer-is-never-admitter law must stay."
+  },
+  {
+   "path": "hcli/context.py",
+   "why": "SUPERSEDED compatibility re-export of hcli.goal. WAVE_STATE: keep compatibility aliases."
+  },
+  {
+   "path": "hcli/doctor/__init__.py, hcli/gravity/__init__.py, hcli/vmcp/__init__.py",
+   "why": "Ownership markers so those products are not imported under a second dotted identity. Not executable dead surface."
+  },
+  {
+   "path": "hcli/ane_provider.py",
+   "why": "LIVE import from hcli/agentos/__init__.py:58. Plan-only is not dead."
+  },
+  {
+   "path": "hcli/vmcp_adapter.py",
+   "why": "LIVE: connectivity.py:131 and tool_registry.py:1265,1271."
+  },
+  {
+   "path": "crates/hide-backend/src/compat_claude_md.rs",
+   "why": "LIVE: included from crates/hide-backend/src/compat.rs:77."
+  },
+  {
+   "path": "crates/hide-backend/src/haider/",
+   "why": "UNWIRED Rust library (lib.rs missing `mod haider`). Intended HIDE haider, not a Python fossil. Wire it; do not delete."
+  },
+  {
+   "path": "tools/grok_worktree_reaper.py",
+   "why": "DEBUG_ONLY hygiene CLI with its own tests. Not a Grok launch shim."
+  },
+  {
+   "path": "tools/headless/hcli_grokbridge_test.py and hcli_grok_dispatch_test.py",
+   "why": "DEBUG_ONLY tests of the live GrokBridge. Overlap with test_grok_bridge.py is not a reason to delete checks."
+  },
+  {
+   "path": "tools/condense/tests/_retired_shell.py",
+   "why": "EVIDENCE test helper for retired-engine tests."
+  },
+  {
+   "path": "tools/haider/hcli/tests/",
+   "why": "Live HCLI test tree (pyproject.toml testpaths). Not the fossil."
+  },
+  {
+   "path": "civilization/",
+   "why": "Roadmap state and checkpoints. Not executable dead surface."
+  },
+  {
+   "path": "hawking-experiments/superwave/g1/claude-evidence/",
+   "why": "EVIDENCE from a prior Claude campaign. Historical, never execute as product."
+  }
+ ],
+ "commands": [
+  "git log --oneline -30",
+  "git show 6c31fe679 --stat",
+  "git ls-tree -r --name-only HEAD -- hcli",
+  "git ls-tree -r --name-only HEAD -- lab/hcli",
+  "git grep -n -E 'from hcli\\.mutation|apply_mutation_operations|rollback_mutation|compile_python_file|content_fingerprint' -- '*.py'",
+  "git grep -n -E 'from hcli.mutation import' -- '*.py'",
+  "git grep -n 'from .mutation import' -- '*.py'",
+  "git grep -n apply_mutation_operations -- hcli/",
+  "git grep -n -E 'AgentOS cannot discover' -- '*.py' '*.json'",
+  "git grep -n modellake_events -- '*.py'",
+  "git grep -n -E '^(import haider|from haider import|import p0_tool_bridge|from p0_tool_bridge)' -- '*.py'",
+  "git grep -n claude_interventions -- '*.py'",
+  "git grep -n 'import hcli.doctor|from hcli.doctor' -- '*.py'",
+  "git grep -n haider -- crates/hide-backend/src/lib.rs",
+  "git grep -n compat_claude_md -- '*.rs'",
+  "git grep -n invoke_tool -- hcli/*.py hcli/agentos/*.py",
+  "git grep -n odyssey_ctl -- tools/odyssey_patient_runner.py",
+  "git show HEAD:lab/hcli/option_c.py | head -40",
+  "git show HEAD:lab/hcli/residency.py | head -40",
+  "git show HEAD:lab/hcli/self_evolution.py | head -50",
+  "python3 /tmp/dead_callsite_imports.py",
+  "python3 -c '<mutation entry-point git grep without \\\\b; wrote /tmp/mutation_entry_points.json>'",
+  "python3 -c '<typed-tool string-literal sites; 44 names from default_tool_registry>'",
+  "date -u +%Y-%m-%dT%H:%M:%SZ",
+  "git rev-parse --short=9 HEAD",
+  "PYTHONPATH=. python3 -m pytest tools/future/test_wave_receipts.py -q"
+ ],
+ "verdict": {
+  "defect_class_confirmed": "WHO CALLS IT, not definition count. The 41 (now 44) typed tools were the last-wave instance; G154 added the dispatcher. 18 tools still have zero named call sites; 3 G157 tools are test-only. apply_mutation_operations still has zero callers inside hcli/.",
+  "deletion_candidates": 2,
+  "do_not_mass_delete_tools_future": true,
+  "do_not_delete_unwired_lab_hcli": true
+ }
+}

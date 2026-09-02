@@ -17,6 +17,7 @@ from __future__ import annotations
 
 import json
 import os
+import time
 import uuid
 from pathlib import Path
 from typing import Any, Callable, Dict, List, Optional, Union
@@ -252,6 +253,32 @@ class DagStore:
             if _persistable_identity(old, wu):
                 continue
             raise IdentityConflict(uid, old, wu)
+
+    def retire(self, *, reason: str = "superseded") -> Optional[Path]:
+        """Move the live DAG document aside. Renames, never deletes.
+
+        ``GoalCompiler`` names every mission's units ``implement``/``validate``
+        and this store is ONE workspace-global file, so a graph left by a
+        FINISHED mission collides by id with the next mission's graph and
+        ``save`` refuses it as an ``IdentityConflict``. A new mission's graph
+        supersedes the previous one exactly as ``mission/state.json`` already
+        does; the retired document is kept under ``.hcli/dag-retired/`` so an
+        interrupted graph is still recoverable by hand.
+
+        Returns the archive path, or ``None`` when there was nothing to retire.
+        """
+        if not self.path.is_file():
+            return None
+        archive_dir = self.dir / "dag-retired"
+        archive_dir.mkdir(parents=True, exist_ok=True)
+        stamp = time.strftime("%Y%m%d-%H%M%S", time.gmtime())
+        dest = archive_dir / f"dag-{stamp}-{reason}.json"
+        suffix = 0
+        while dest.exists():
+            suffix += 1
+            dest = archive_dir / f"dag-{stamp}-{reason}.{suffix}.json"
+        os.replace(self.path, dest)
+        return dest
 
     def save(
         self,

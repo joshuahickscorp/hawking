@@ -1,0 +1,175 @@
+{
+ "bench": {
+  "gpu_authority": false,
+  "machine": "Apple host CPU; receipt/header metadata only",
+  "measurement_state": "STATIC_ONLY",
+  "recorded_at": "2026-09-02T09:09:49Z",
+  "recorded_by": "tools/product/cli.py",
+  "rule": "no hardware measurement claim without hardware",
+  "state": "UNKNOWN"
+ },
+ "built": {
+  "does_not_assume_developer_checkout": "/Users/scammermike/Downloads/hawking",
+  "does_not_guess_artifact_roots": true,
+  "does_not_write_live_modellake": "/Volumes/corpdrive",
+  "entry": "python3 -m tools.product / python3 tools/product/cli.py",
+  "fail_closed": true,
+  "never_restart_healthy_worker": true,
+  "package": "tools/product",
+  "subgenes": {
+   "V-A": {
+    "handled": [
+     "installability",
+     "local execution",
+     "hardware discovery",
+     "safe defaults (named, not applied on missing/corrupt config)",
+     "offline paths",
+     "diagnostics",
+     "upgrade/rollback"
+    ],
+    "named_not_built": [
+     "reproducible builds",
+     "model/provider choice"
+    ]
+   },
+   "V-B": {
+    "handled": [
+     "CLI entry that is cwd-independent and config-driven"
+    ],
+    "named_not_built": [
+     "SDK",
+     "plugin surfaces",
+     "full HCLI surface (pre-existing, not duplicated)"
+    ]
+   },
+   "V-C": {
+    "handled": [
+     "qualify() refuses promotion when a required metric is unmeasured"
+    ],
+    "named_not_built": [
+     "rollout channels",
+     "telemetry service"
+    ]
+   },
+   "V-D": {
+    "handled": [
+     "dominance metric cells",
+     "UNMEASURED value is null not 0",
+     "require_measured raises UnmeasuredError"
+    ]
+   },
+   "V-E": {
+    "handled": [
+     "handoff record so the next host does not need this checkout"
+    ],
+    "named_not_built": [
+     "curriculum generation",
+     "law compaction",
+     "model training"
+    ]
+   }
+  }
+ },
+ "call_sites_of_existing_symbols": [
+  "tools/product/config.py: discover_config, load_config, discover_machine",
+  "tools/product/cli.py: resolve_artifact, install_plan, update_plan, recover_plan, require_measured",
+  "tools/product/install.py: resolve_artifact",
+  "tools/product/scoreboard.py: require_measured (from qualify)"
+ ],
+ "claim_boundary": "Static product-entry proof. No hardware measurement. discover_machine is STATIC sysctl/platform identity. Scoreboard cells in this receipt are not measurements; they record that require_measured refused an UNMEASURED metric.",
+ "coverage_of_what_already_existed": {
+  "hcli.cli.install_shims_and_warn_if_stale": {
+   "gaps": [
+    "not config-driven; source is Path(__file__)",
+    "staleness is a warning, not a closed gate",
+    "does not resolve ModelLake/product artifacts"
+   ],
+   "handles": [
+    "copies hcli to ~/.local/share/hcli/build-*",
+    "writes install.json {source, digest, installed}",
+    "KEEP_BUILDS=3",
+    "warn_if_stale compares package_digest(source) to the stamp; silent with no stamp"
+   ],
+   "not_modified": true
+  },
+  "tools.odyssey.product_boundary": {
+   "gaps_this_package_closes": [
+    "modellake.main falls back to safe_defaults() when no config file exists (fail-open). This entry path does not.",
+    "install_plan does not write and has no digest stamp. tools.product.install writes under a configured product home, stamps a digest, and treats staleness as a gate.",
+    "no dominance scoreboard that refuses an unmeasured value"
+   ],
+   "handles": [
+    "safe_defaults that do not point at the git checkout",
+    "load_config (relative roots vs config dir, not cwd)",
+    "discover_config (explicit / HAWKING_CONFIG / HAWKING_HOME; missing is None)",
+    "resolve_artifact from config.artifact_roots",
+    "discover_machine STATIC host inventory",
+    "install_plan / update_plan / recover_plan describe only, wrote=False"
+   ],
+   "not_modified": true
+  }
+ },
+ "evidence_tier": "STATIC",
+ "gpu_authority": false,
+ "head": "e868078d8a23c1339b41e03afd83b247bd401fc0",
+ "non_goals_honored": [
+  "no packaging pipeline",
+  "no installer",
+  "no signing",
+  "did not edit hcli/",
+  "did not edit tools/odyssey/",
+  "did not edit tools/acceptance/",
+  "did not edit tools/roadmap/",
+  "did not write specimens/ or /Volumes/corpdrive"
+ ],
+ "proofs": {
+  "corrupt_config_fail_closed": {
+   "command": "python3 tools/product/cli.py entry --config /tmp/hawking-product-era-v-proof/corrupt.json --artifact demo--toy@abcabcabcabc",
+   "cwd": "/private/tmp/hawking-product-era-v-proof/foreign",
+   "did_not_guess": true,
+   "error_type": "ConfigClosed",
+   "exit": 2,
+   "fail_closed": true
+  },
+  "foreign_cwd_entry": {
+   "checkout_independent": true,
+   "command": "python3 tools/product/cli.py entry --config /tmp/hawking-product-era-v-proof/hawking.json --artifact demo--toy@abcabcabcabc",
+   "cwd": "/private/tmp/hawking-product-era-v-proof/foreign",
+   "cwd_independent": true,
+   "evidence_tier": "STATIC",
+   "exit": 0,
+   "resolved_from": "config.artifact_roots.specimens",
+   "resolved_path": "/tmp/hawking-product-era-v-proof/arts/specimens/demo--toy@abcabcabcabc"
+  },
+  "install_from_foreign_cwd": {
+   "command": "python3 tools/product/cli.py install --config /tmp/hawking-product-era-v-proof/hawking.json --artifact demo--toy@abcabcabcabc",
+   "cwd": "/private/tmp/hawking-product-era-v-proof/foreign",
+   "destination": "/tmp/hawking-product-era-v-proof/arts/install/demo--toy@abcabcabcabc",
+   "exit": 0,
+   "stale_after": false,
+   "wrote_live_volume": false
+  },
+  "missing_config_fail_closed": {
+   "command": "python3 tools/product/cli.py resolve --artifact demo--toy@abcabcabcabc",
+   "cwd": "/private/tmp/hawking-product-era-v-proof/foreign",
+   "error": "no product config found; refusing to guess artifact roots",
+   "error_type": "ConfigClosed",
+   "exit": 2
+  },
+  "scoreboard_refuses_unmeasured": {
+   "command": "python3 tools/product/cli.py scoreboard --receipts /tmp/hawking-product-era-v-proof/row.json --require energy",
+   "cwd": "/private/tmp/hawking-product-era-v-proof/foreign",
+   "error": "energy is UNMEASURED; refusing to report a value",
+   "error_type": "UnmeasuredError",
+   "exit": 2,
+   "test": "tools/product/test_product.py::test_scoreboard_refuses_unmeasured_value"
+  },
+  "tests": {
+   "command": "python3 -m pytest tools/product/test_product.py -o addopts=\"\" -q",
+   "mutation_check": "require_measured gutted to return a stand-in MEASURED zero; test_scoreboard_refuses_unmeasured_value, test_cli_scoreboard_require_unmeasured_fails_closed, and test_qualify_refuses_unmeasured_required_metric failed; mutation restored; grep found no MUTATION_CONTROL marker; 25 passed again.",
+   "result": "25 passed"
+  }
+ },
+ "schema": "hawking.product.era_v.v1",
+ "seal_sha256": "75c526d86ff9ba039375062c66fca44d8144f894ad531faf443e1ab8b7bad607"
+}

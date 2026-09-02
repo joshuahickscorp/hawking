@@ -9,14 +9,50 @@ evidence. Assert the module copes with either state and records the path taken.
 """
 from __future__ import annotations
 
+import ast
 import json
+from pathlib import Path
 
 import numpy as np
 import pytest
 
 from hcli.workunit import WorkUnit, is_ready
+from tools.audit import reachability_triage as rt
 from tools.future import tabula as tb
-from tools.future._common import RECEIPTS, _assert_no_hardware_claims
+from tools.future._common import RECEIPTS, REPO, _assert_no_hardware_claims
+
+ADAPTER = Path(rt.__file__)
+TABULA_CALL = "result = evaluate(vec)"
+TABULA_MUTATION = 'result = {"outcome": "UNREACHABLE_MUTATION"}'
+
+
+def _call_sites(path: Path, module: str, symbol: str) -> list[int]:
+    text = path.read_text(encoding="utf-8")
+    tree = ast.parse(text)
+    binds: dict[str, tuple[str, str | None]] = {}
+    for node in ast.walk(tree):
+        if isinstance(node, ast.ImportFrom) and node.module:
+            for alias in node.names:
+                binds[alias.asname or alias.name] = (node.module, alias.name)
+        elif isinstance(node, ast.Import):
+            for alias in node.names:
+                binds[alias.asname or alias.name.split(".")[0]] = (alias.name, None)
+    lines: list[int] = []
+    for node in ast.walk(tree):
+        if not isinstance(node, ast.Call):
+            continue
+        func = node.func
+        target = None
+        if isinstance(func, ast.Name) and func.id in binds:
+            mod, name = binds[func.id]
+            target = f"{mod}.{name or func.id}"
+        elif isinstance(func, ast.Attribute) and isinstance(func.value, ast.Name):
+            if func.value.id in binds:
+                mod, name = binds[func.value.id]
+                target = f"{mod}.{func.attr}" if name is None else f"{mod}.{name}.{func.attr}"
+        if target == f"{module}.{symbol}":
+            lines.append(node.lineno)
+    return lines
 
 
 def test_build_and_selftest_emit_sealed_receipt():
@@ -187,6 +223,44 @@ def test_evaluate_refuses_refusal_rate_as_the_only_score():
         tb.ScoreVector.from_mapping({"behavioral": 1.0})
     with pytest.raises(tb.IncompleteScoreVector, match="missing axes"):
         tb.evaluate({"behavioral": 1.0, "capability": 0.0})
+
+
+def test_scores_from_behavior_lab_refuses_empty_and_maps_axes():
+    with pytest.raises(tb.IncompleteScoreVector, match="no fixtures"):
+        tb.scores_from_behavior_lab([])
+    rows = [
+        {
+            "id": "BHV-09",
+            "ran": True,
+            "blocked": False,
+            "ok": True,
+            "goal_met": True,
+            "empty_success": False,
+            "tool_receipt_ok": True,
+            "reasoning_ok": True,
+            "instruction_ok": True,
+        },
+        {
+            "id": "BHV-21",
+            "ran": True,
+            "blocked": False,
+            "ok": True,
+            "goal_met": True,
+            "empty_success": False,
+            "tool_receipt_ok": True,
+            "reasoning_ok": True,
+            "instruction_ok": True,
+        },
+    ]
+    vec = tb.scores_from_behavior_lab(rows)
+    assert vec.to_dict()["behavioral"] == 1.0
+    assert vec.to_dict()["capability"] == 1.0
+    empty_success_row = dict(rows[0])
+    empty_success_row["empty_success"] = True
+    empty_success_row["ok"] = True
+    empty_success_row["goal_met"] = True
+    dragged = tb.scores_from_behavior_lab([empty_success_row, rows[1]])
+    assert dragged.capability < 1.0
 
 
 def test_rank_refuses_behavioral_axis_alone():
@@ -473,3 +547,143 @@ def test_synthetic_project_roundtrip_matches_recipe():
     W_irr, recipe_irr, _ = tb.project(W, v, norm_preserve=False, store_component=False)
     assert recipe_irr is None
     assert float(np.linalg.norm(v @ W_irr)) < 1e-8
+
+
+def test_tabula_disposition_floor_connected_fit_parked():
+    doc = tb.disposition()
+    assert doc["schema"] == tb.DISPOSITION_SCHEMA
+    assert doc["subsystem"] == "tabula"
+    assert "tabular" in doc["not_this"].lower()
+    items = {row["id"]: row for row in doc["items"]}
+    floor = items["tabula.floor"]
+    assert floor["disposition"] == "CONNECTED"
+    assert floor["symbol"] == "tools.future.tabula.evaluate"
+    assert floor["wake"] is None
+    assert floor["call_sites"]
+    assert all(s["kind"] == "call" for s in floor["call_sites"])
+
+    # Real production Call nodes, not imports.
+    project_lines = _call_sites(
+        REPO / "tools/future/abliteration.py", "tools.future.tabula", "project"
+    )
+    assert project_lines, "abliteration.py must Call tabula.project"
+    eval_lines = _call_sites(
+        REPO / "tools/future/power_torture.py", "tools.future.tabula", "evaluate"
+    )
+    assert eval_lines, "power_torture.py must Call tabula.evaluate"
+    wired_lines = _call_sites(ADAPTER, "tools.future.tabula", "evaluate")
+    assert wired_lines, "reachability_triage.py must Call tabula.evaluate"
+    bhv_eval = _call_sites(
+        REPO / "tools/vmcp/behavior_lab.py", "tools.future.tabula", "evaluate"
+    )
+    assert bhv_eval, "behavior_lab.py must Call tabula.evaluate (import is not a call)"
+    bhv_scores = _call_sites(
+        REPO / "tools/vmcp/behavior_lab.py", "tools.future.tabula", "scores_from_behavior_lab"
+    )
+    assert bhv_scores, "behavior_lab.py must Call tabula.scores_from_behavior_lab"
+
+    for parked_id in ("tabula.fit-weights", "tabula.drift-instrument", "tabula.behaviour-probe"):
+        row = items[parked_id]
+        assert row["disposition"] == "PARKED", parked_id
+        wake = row["wake"]
+        assert wake["required_kind"] == "call", parked_id
+        assert wake["predicate"], parked_id
+        assert wake["missing_dependency"], parked_id
+        assert wake["schema"] == tb.WAKE_SCHEMA
+    fit = items["tabula.fit-weights"]
+    assert fit["status"] == "sleeping"
+    assert "Metal-capable GPU" in fit["wake"]["predicate"]
+    assert fit["wake"]["condition"]["teacher_capture"]["receipt"] == tb.TEACHER_CORPUS_REL
+    _assert_no_hardware_claims(doc)
+
+
+def test_tabula_invoke_via_capability_manifest():
+    called = rt.adapter_called_symbols()
+    assert ("tools.future.tabula", "evaluate") in called
+    assert rt.wired_status("future.tabula") == "CALLABLE"
+
+    pass_out = rt.handle(
+        "capability.invoke",
+        {
+            "id": "future.tabula",
+            "arguments": {
+                "scores": {
+                    "behavioral": 0.70,
+                    "capability": 0.05,
+                    "tool_use": 0.02,
+                    "reasoning": 0.01,
+                    "instruction_following": 0.00,
+                }
+            },
+        },
+    )
+    assert pass_out["ok"] is True, pass_out
+    assert pass_out["value"]["symbol"] == "evaluate"
+    assert pass_out["value"]["result"]["outcome"] == "PASS"
+    assert pass_out["evidence_tier"] == "FUNCTIONAL_SIM"
+
+    fail_out = rt.handle(
+        "capability.invoke",
+        {
+            "id": "future.tabula",
+            "arguments": {
+                "scores": {
+                    "behavioral": 0.95,
+                    "capability": 0.10,
+                    "tool_use": -0.80,
+                    "reasoning": 0.05,
+                    "instruction_following": 0.04,
+                }
+            },
+        },
+    )
+    assert fail_out["ok"] is True, fail_out
+    result = fail_out["value"]["result"]
+    assert result["outcome"] == "FAILURE"
+    assert "tool_use" in result["regressions"]
+
+    refused = rt.handle(
+        "capability.invoke",
+        {"id": "future.tabula", "arguments": {"scores": {"behavioral": 1.0}}},
+    )
+    assert refused["ok"] is False
+    assert refused["failure_class"] == "invoke_error"
+
+    disp = rt.handle(
+        "capability.invoke",
+        {"id": "future.tabula", "arguments": {"disposition": True}},
+    )
+    assert disp["ok"] is True, disp
+    assert disp["value"]["result"]["subsystem"] == "tabula"
+
+
+def test_tabula_wired_call_mutation_reports_unreachable():
+    original = ADAPTER.read_text(encoding="utf-8")
+    assert TABULA_CALL in original
+    assert TABULA_MUTATION not in original
+    before = rt.wired_status("future.tabula", source=original)
+    assert before == "CALLABLE"
+    mutated = original.replace(TABULA_CALL, TABULA_MUTATION, 1)
+    assert TABULA_CALL not in mutated
+    try:
+        ADAPTER.write_text(mutated, encoding="utf-8")
+        after = rt.wired_status("future.tabula", source=mutated)
+        live = rt.wired_status("future.tabula")
+        assert after == "UNREACHABLE"
+        assert live == "UNREACHABLE"
+        assert "from tools.future.tabula import ScoreVector, evaluate" in mutated
+    finally:
+        ADAPTER.write_text(original, encoding="utf-8")
+    restored = ADAPTER.read_text(encoding="utf-8")
+    assert TABULA_CALL in restored
+    assert TABULA_MUTATION not in restored
+    assert rt.wired_status("future.tabula") == "CALLABLE"
+
+
+def test_tabula_receipt_records_disposition():
+    doc = json.loads(tb.build().read_text())
+    disp = doc["disposition"]
+    items = {row["id"]: row for row in disp["items"]}
+    assert items["tabula.floor"]["disposition"] == "CONNECTED"
+    assert items["tabula.fit-weights"]["disposition"] == "PARKED"
+    assert items["tabula.fit-weights"]["wake"]["predicate"]

@@ -1,0 +1,425 @@
+{
+  "schema": "hawking.future.forbidden_fruit_lab_readiness.v1",
+  "recorded_at": "2026-09-01T06:40:02Z",
+  "git_head": "d777f6dccc3ded44142823f5e1cfb3a8ad031528",
+  "host": {
+    "os": "macOS 27.0 (Build 26A5416b)",
+    "arch": "arm64",
+    "swiftc": "Apple Swift version 6.4 (swiftlang-6.4.0.20.104 clang-2100.3.20.102)",
+    "xcode_select": "/Library/Developer/CommandLineTools",
+    "xcode_app": false,
+    "hcli_python": "/Users/scammermike/.venvs/hawking-aider/bin/python3 3.12.13",
+    "path_python3": "python3.14 3.14.6"
+  },
+  "lab_capabilities": {
+    "claim_boundary": "Public Core ML only. Placement is MLComputePlan.deviceUsage; requested MLComputeUnits are not placement. Predict timings are CFAbsoluteTime around MLModel.prediction(from:) on a 1x10 fp16 mul fixture, not Flash/Qwen complete-token work and not ANE energy.",
+    "generate_graph": {
+      "can": true,
+      "how": "tools/accelerator/ane_micrograph_author.py emits 15 Flash-shaped MLProgram manifests; tools/future/ane_probe_lab._author_program can build a MIL program in memory when coremltools imports.",
+      "this_run": {
+        "atlas_status": "ATLAS_SCAFFOLD_COMPILE_BOUNDARY",
+        "n_graphs": 15,
+        "compile_status": "NOT_RUN",
+        "placement_status": "NOT_MEASURED",
+        "coremltools_authoring_imported_on_hcli_python": false,
+        "coremltools_import_on_python3_14_with_vendored_path": true,
+        "coremltools_version_when_imported": "9.0",
+        "mlprogram_convert": "FAILED RuntimeError: BlobWriter not loaded (libmilstoragepython absent)"
+      }
+    },
+    "compile_graph": {
+      "can": false,
+      "this_run": "ct.convert(mlprogram) failed with RuntimeError: BlobWriter not loaded. xcrun coremlcompiler/coremlc: not a developer tool. Existing compiled fixture add_model.mlmodelc was reused, not produced this run.",
+      "compiled_fixture_used": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc",
+      "fixture_in_this_sparse_worktree": false
+    },
+    "run_graph": {
+      "can": true,
+      "api": "MLModel.prediction(from:)",
+      "fixture_op": "ios16.mul",
+      "fixture_shape": [
+        1,
+        10
+      ],
+      "fixture_dtype": "Float16",
+      "status": "MEASURED"
+    },
+    "report_placement": {
+      "can": true,
+      "api": "MLComputePlan.load(contentsOf:configuration:) + deviceUsage(for:)",
+      "neural_engine_present": true,
+      "supported_compute_devices": [
+        "NEURAL_ENGINE",
+        "GPU",
+        "CPU"
+      ],
+      "default_config": {
+        "status": "PLANNED",
+        "operator": "ios16.mul",
+        "preferred": "CPU",
+        "supported": [
+          "CPU",
+          "GPU",
+          "NEURAL_ENGINE"
+        ],
+        "estimated_cost_weight": 1
+      },
+      "by_requested_compute_units": {
+        "cpuOnly": {
+          "preferred": "CPU",
+          "supported": [
+            "CPU"
+          ]
+        },
+        "cpuAndGPU": {
+          "preferred": "CPU",
+          "supported": [
+            "CPU",
+            "GPU"
+          ]
+        },
+        "cpuAndNeuralEngine": {
+          "preferred": "CPU",
+          "supported": [
+            "CPU",
+            "NEURAL_ENGINE"
+          ]
+        },
+        "all": {
+          "preferred": "CPU",
+          "supported": [
+            "CPU",
+            "GPU",
+            "NEURAL_ENGINE"
+          ]
+        }
+      },
+      "ane_preferred_on_fixture": false,
+      "note": "ANE is listed as supported under cpuAndNeuralEngine and all, but preferred stayed CPU. This run did not observe NEURAL_ENGINE as the preferred device."
+    },
+    "time_it": {
+      "can": true,
+      "api": "CFAbsoluteTimeGetCurrent around MLModel.prediction(from:) after one warmup, 8 repeats, tools/accelerator/ane_predict_probe.swift",
+      "warm_predict_ns_by_requested_units": {
+        "cpuOnly": {
+          "mean_ns": 64745.54538726807,
+          "min_ns": 31948.089599609375,
+          "max_ns": 189900.39825439453
+        },
+        "cpuAndGPU": {
+          "mean_ns": 109136.10458374023,
+          "min_ns": 41961.669921875,
+          "max_ns": 241041.1834716797
+        },
+        "cpuAndNeuralEngine": {
+          "mean_ns": 106394.29092407227,
+          "min_ns": 59008.59832763672,
+          "max_ns": 190973.28186035156
+        },
+        "all": {
+          "mean_ns": 73388.2188796997,
+          "min_ns": 46968.46008300781,
+          "max_ns": 136971.47369384766
+        }
+      }
+    },
+    "compare_domains": {
+      "can": true,
+      "compared": "requested MLComputeUnits cpuOnly / cpuAndGPU / cpuAndNeuralEngine / all on the same compiled mul",
+      "placement_preferred_every_setting": "CPU",
+      "cannot_claim": "These timings are not an ANE-vs-GPU-vs-CPU compute comparison. Preferred placement was CPU in every setting. Requested units are not placement."
+    },
+    "concurrency_pair": {
+      "can": true,
+      "api": "two MLModel instances, DispatchQueue concurrent prediction(from:)",
+      "errors_by_units": {
+        "cpuOnly": [],
+        "cpuAndGPU": [],
+        "cpuAndNeuralEngine": [],
+        "all": []
+      },
+      "concurrent_elapsed_ns_by_units": {
+        "cpuOnly": 198960.3042602539,
+        "cpuAndGPU": 243902.20642089844,
+        "cpuAndNeuralEngine": 306010.24627685547,
+        "all": 257015.22827148438
+      },
+      "cannot_claim": "Concurrent pair ran without errors; this is not Metal+ANE overlap evidence. Preferred device remained CPU."
+    },
+    "ane_provider_promotion": {
+      "available": true,
+      "plan_ready": true,
+      "atlas_ready": false,
+      "eligible_for_promotion_ios16_mul": false,
+      "reason": "atlas status is ATLAS_SCAFFOLD_COMPILE_BOUNDARY not MEASURED; complete_token_ns was None"
+    },
+    "physical_qualification_ane_candidates": 0,
+    "architecture_queue_ane_spec": {
+      "experiment_id": "ane-regular-island-probe",
+      "status": "BLOCKED",
+      "started_on_execute": false,
+      "blocked_reason": "public ANE compile/runtime measurement is not available in this process; plan-only until the public path is executable",
+      "command": [
+        "python3",
+        "-m",
+        "hcli",
+        "agentos",
+        "fpga-preboard",
+        "--repo-root",
+        ".",
+        "--emit",
+        "receipts/headless/ACCELERATOR_REPATRIATION/ane-regular-island-probe.json"
+      ],
+      "command_is_ane_lane": false
+    },
+    "energy": "UNKNOWN: no public energy API was invoked",
+    "flash_shaped_mlprogram_compile": "UNKNOWN: atlas graphs remain compile.status=NOT_RUN; BlobWriter blocked ct.convert"
+  },
+  "reachable_by_hcli": {
+    "typed_tools_can_drive_lab": false,
+    "human_shell_can_drive_lab": true,
+    "agentos_cli_n_tools": 41,
+    "accelerator_typed_tools": [
+      "accelerator.inspect",
+      "accelerator.benchmark"
+    ],
+    "accelerator.inspect": {
+      "mutation": "read_only",
+      "default_path": "receipts/headless/ACCELERATOR_MACHINE_GENOME.json",
+      "default_invoke_ok": false,
+      "default_error": "FileNotFoundError: receipts/headless/ACCELERATOR_MACHINE_GENOME.json (not materialized in this sparse worktree)",
+      "explicit_ane_profile_ok": true,
+      "explicit_path": "receipts/future/evidence/APPLE_ANE_DEVICE_PROFILE.json",
+      "does": "reads a JSON receipt; does not compile, place, or time"
+    },
+    "accelerator.benchmark": {
+      "mutation": "costly",
+      "default_permissions_invoke": "PERMISSION_DENIED (costly not in default registry permissions)",
+      "with_costly_and_confirm_true": {
+        "ok": true,
+        "schema": "hcli.accelerator.benchmark.v1",
+        "status": "RECEIPT_ONLY",
+        "physical_execution": false,
+        "blocker_without_receipt": "provide a named benchmark receipt or a separately governed runner"
+      },
+      "does": "optionally re-reads a named receipt; never launches ane_probe.swift, predict, or Core ML"
+    },
+    "shell.exec": {
+      "mutation": "reversible_runtime",
+      "swiftc": "PermissionError: command is not in the reversible allowlist: swiftc",
+      "zsh_run_ane_lane": "PermissionError: command is not in the reversible allowlist: zsh",
+      "ane_probe_binary": "PermissionError: command is not in the reversible allowlist: hawking_ane_probe",
+      "python3_ane_micrograph_author": {
+        "ok": true,
+        "returncode": 0,
+        "effect": "writes atlas manifests only; compile NOT_RUN; this invoke also created receipts/headless/APPLE_ANE_ATLAS.json which was deleted to stay in lane write-scope"
+      },
+      "allowlist": "python/pytest (bounded), cargo check/test/metadata, git read-only; not swiftc, not arbitrary binaries"
+    },
+    "tests.run": {
+      "ok": true,
+      "paths": [
+        "hcli/test_ane_provider.py"
+      ],
+      "returncode": 0,
+      "verified": true,
+      "stdout_tail": "4 passed in 0.01s",
+      "does": "unit tests with in-memory fake providers; no Core ML, no ANE"
+    },
+    "filesystem.write": {
+      "can_write_graph_spec_under_repo": true,
+      "observed": "invoke with path tools/accelerator/_hcli_write_probe.json ok=True (file deleted after); /tmp path PermissionError outside write roots"
+    },
+    "ane_provider_module": {
+      "is_typed_tool": false,
+      "pytest_hcli_test_ane_provider": "4 passed in 0.02s",
+      "live_profile_available": true,
+      "live_plan_ready": true,
+      "live_atlas_ready": false
+    }
+  },
+  "probe_output": {
+    "device_discovery": {
+      "status": "DISCOVERED",
+      "neural_engine_present": true,
+      "supported_compute_devices": [
+        "NEURAL_ENGINE",
+        "GPU",
+        "CPU"
+      ],
+      "mlcomputeplan_status": "NOT_RUN_NO_COMPILED_MLPROGRAM",
+      "os": "macOS 27.0.0"
+    },
+    "mlcomputeplan_on_add_model_mlmodelc": {
+      "status": "PLAN_READY",
+      "plan_status": "PLANNED",
+      "operator": "ios16.mul",
+      "preferred": "CPU",
+      "supported": [
+        "CPU",
+        "GPU",
+        "NEURAL_ENGINE"
+      ],
+      "estimated_cost_weight": 1,
+      "compiled_model": "/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc"
+    },
+    "placement_by_compute_units": {
+      "cpuOnly": {
+        "preferred": "CPU",
+        "supported": [
+          "CPU"
+        ]
+      },
+      "cpuAndGPU": {
+        "preferred": "CPU",
+        "supported": [
+          "CPU",
+          "GPU"
+        ]
+      },
+      "cpuAndNeuralEngine": {
+        "preferred": "CPU",
+        "supported": [
+          "CPU",
+          "NEURAL_ENGINE"
+        ]
+      },
+      "all": {
+        "preferred": "CPU",
+        "supported": [
+          "CPU",
+          "GPU",
+          "NEURAL_ENGINE"
+        ]
+      }
+    },
+    "predict": {
+      "cpuOnly": {
+        "status": "MEASURED",
+        "mean_ns": 64745.54538726807,
+        "min_ns": 31948.089599609375,
+        "max_ns": 189900.39825439453,
+        "samples_ns": [
+          189900.39825439453,
+          55074.69177246094,
+          35047.53112792969,
+          82969.66552734375,
+          42080.87921142578,
+          31948.089599609375,
+          38981.43768310547,
+          41961.669921875
+        ],
+        "concurrent_elapsed_ns": 198960.3042602539,
+        "concurrent_errors": []
+      },
+      "cpuAndGPU": {
+        "status": "MEASURED",
+        "mean_ns": 109136.10458374023,
+        "min_ns": 41961.669921875,
+        "max_ns": 241041.1834716797,
+        "samples_ns": [
+          110983.84857177734,
+          113010.40649414062,
+          123023.98681640625,
+          41961.669921875,
+          43988.22784423828,
+          76055.52673339844,
+          123023.98681640625,
+          241041.1834716797
+        ],
+        "concurrent_elapsed_ns": 243902.20642089844,
+        "concurrent_errors": []
+      },
+      "cpuAndNeuralEngine": {
+        "status": "MEASURED",
+        "mean_ns": 106394.29092407227,
+        "min_ns": 59008.59832763672,
+        "max_ns": 190973.28186035156,
+        "samples_ns": [
+          109076.49993896484,
+          190973.28186035156,
+          59008.59832763672,
+          79989.43328857422,
+          128030.77697753906,
+          128030.77697753906,
+          59008.59832763672,
+          97036.36169433594
+        ],
+        "concurrent_elapsed_ns": 306010.24627685547,
+        "concurrent_errors": []
+      },
+      "all": {
+        "status": "MEASURED",
+        "mean_ns": 73388.2188796997,
+        "min_ns": 46968.46008300781,
+        "max_ns": 136971.47369384766,
+        "samples_ns": [
+          136971.47369384766,
+          61035.15625,
+          59962.27264404297,
+          54001.808166503906,
+          102043.15185546875,
+          53048.133850097656,
+          46968.46008300781,
+          73075.2944946289
+        ],
+        "concurrent_elapsed_ns": 257015.22827148438,
+        "concurrent_errors": []
+      }
+    },
+    "coremltools_authoring": {
+      "python3_14_PYTHONPATH_vendored": "coremltools 9.0 imports; numpy 2.5.2",
+      "native_libs": "libcoremlpython and libmilstoragepython missing from vendored tree",
+      "convert_mlprogram_fp16_add_1x8": "RuntimeError: BlobWriter not loaded",
+      "python_MLModel_load_fixture": "Exception: Unable to load libmodelpackage. Cannot make save spec.",
+      "hcli_python_3_12_vendored_import": "fails (numpy CPython 3.14 extension)"
+    },
+    "atlas_author": {
+      "status": "ATLAS_SCAFFOLD_COMPILE_BOUNDARY",
+      "n_graphs": 15,
+      "compile": "NOT_RUN",
+      "placement": "NOT_MEASURED"
+    }
+  },
+  "smallest_missing_piece": "A complete coremltools native runtime (libmilstoragepython BlobWriter + libcoremlpython) on a Python HCLI can invoke, plus one typed argv-only tool (or a shell.exec-reachable CLI on tools/future/ane_probe_lab.py) that calls the already-written materialize_graph/run_graph and/or the public Swift MLComputePlan+predict probes and writes a receipt. Today a human shell can plan and time a precompiled public .mlmodelc; HCLI typed tools cannot exec swiftc/the probe, accelerator.benchmark is RECEIPT_ONLY with physical_execution=false, and Python cannot emit a new MLProgram because BlobWriter is missing. That native+typed-entry pair is the smallest piece that lets HCLI author and execute its own ANE experiment on public APIs.",
+  "verdict": "HUMAN_SHELL_YES_HCLI_TYPED_TOOLS_NO. The recovered lab can discover CPU/GPU/ANE, load a public compiled MLProgram, report MLComputePlan placement, time prediction(), and run a two-instance concurrent pair. It cannot author a new MLProgram on this host (BlobWriter missing) and did not place the fixture on ANE (preferred=CPU in every computeUnits setting). HCLI can read receipts and emit uncompiled atlas JSON; it cannot drive the physical probes through accelerator.inspect/benchmark or shell.exec.",
+  "commands": [
+    "git rev-parse HEAD",
+    "ls /Library/Developer/CommandLineTools/SDKs/",
+    "swiftc --version",
+    "xcode-select -p",
+    "ls /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc",
+    "PYTHONPATH=/Users/scammermike/Downloads/hawking/workspace/ops/ane/python python3.14 -c \"import coremltools as ct, numpy, sys; print(ct.__version__); print(numpy.__version__)\"",
+    "swiftc -module-cache-path /tmp/hawking-forbidden-fruit-lab/module-cache -parse-as-library -sdk /Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk -framework CoreML tools/accelerator/ane_probe.swift -o /tmp/hawking-forbidden-fruit-lab/hawking_ane_probe",
+    "/tmp/hawking-forbidden-fruit-lab/hawking_ane_probe /tmp/hawking-forbidden-fruit-lab/APPLE_ANE_DEVICE_PROFILE_DISCOVERY.json",
+    "/tmp/hawking-forbidden-fruit-lab/hawking_ane_probe /tmp/hawking-forbidden-fruit-lab/APPLE_ANE_DEVICE_PROFILE_PLANNED.json /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc",
+    "PYTHONPATH=/Users/scammermike/Downloads/hawking/workspace/ops/ane/python python3.14 (stdin script: ct.convert MIL add 1x8 fp16 mlprogram)",
+    "swiftc -module-cache-path /tmp/hawking-forbidden-fruit-lab/module-cache -parse-as-library -sdk /Library/Developer/CommandLineTools/SDKs/MacOSX26.5.sdk -framework CoreML tools/accelerator/ane_predict_probe.swift -o /tmp/hawking-forbidden-fruit-lab/hawking_ane_predict_probe",
+    "/tmp/hawking-forbidden-fruit-lab/hawking_ane_predict_probe /tmp/hawking-forbidden-fruit-lab/predict_cpuOnly.json /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc cpuOnly 8",
+    "/tmp/hawking-forbidden-fruit-lab/hawking_ane_predict_probe /tmp/hawking-forbidden-fruit-lab/predict_cpuAndGPU.json /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc cpuAndGPU 8",
+    "/tmp/hawking-forbidden-fruit-lab/hawking_ane_predict_probe /tmp/hawking-forbidden-fruit-lab/predict_cpuAndNeuralEngine.json /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc cpuAndNeuralEngine 8",
+    "/tmp/hawking-forbidden-fruit-lab/hawking_ane_predict_probe /tmp/hawking-forbidden-fruit-lab/predict_all.json /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc all 8",
+    "/tmp/hawking-forbidden-fruit-lab/plan_units /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc cpuOnly",
+    "/tmp/hawking-forbidden-fruit-lab/plan_units /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc cpuAndGPU",
+    "/tmp/hawking-forbidden-fruit-lab/plan_units /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc cpuAndNeuralEngine",
+    "/tmp/hawking-forbidden-fruit-lab/plan_units /Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc all",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 -m pytest hcli/test_ane_provider.py -q",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 (stdin: ane_micrograph_author.OUT=/tmp/...; author.build())",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 (stdin: ANEProvider(live profile)+compile_physical_graph)",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 (stdin: default_tool_registry.invoke accelerator.inspect/benchmark/shell.exec/tests.run/filesystem.write)",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 (stdin: build_compiled_queue; AcceleratorRunner.start ane-regular-island-probe execute=True)",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 (stdin: physical_qualification.build_queue)",
+    "PYTHONPATH=. /Users/scammermike/.venvs/hawking-aider/bin/python3 -m hcli agentos tools",
+    "xcrun --find coremlcompiler",
+    "xcrun --find coremlc",
+    "PYTHONPATH=/Users/scammermike/Downloads/hawking/workspace/ops/ane/python python3.14 -c \"import coremltools as ct; ct.models.MLModel('/Users/scammermike/Downloads/hawking/workspace/ops/ane/python/coremltools/modelrunner/ModelRunner/add_model.mlmodelc')\""
+  ],
+  "artifacts": {
+    "predict_probe": "tools/accelerator/ane_predict_probe.swift",
+    "tmp": "/tmp/hawking-forbidden-fruit-lab",
+    "did_not_modify": [
+      "hcli/",
+      "docs/"
+    ]
+  }
+}

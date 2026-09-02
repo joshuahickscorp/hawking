@@ -53,10 +53,8 @@ _SELFOPT = None
 
 
 def _atomic_write(path: Path, obj: Any) -> None:
-    path.parent.mkdir(parents=True, exist_ok=True)
-    tmp = path.with_suffix(path.suffix + ".tmp")
-    tmp.write_text(json.dumps(obj, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
-    os.replace(tmp, path)
+    """Delegate to hcli_self_optimize_2._atomic_write; do not fork the primitive."""
+    selfopt()._atomic_write(path, obj)
 
 
 def selfopt():

@@ -62,7 +62,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:58:26Z",
+  "recorded_at": "2026-09-02T09:18:23Z",
   "recorded_by": "tools/future/tabula.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -77,9 +77,174 @@
   "norm_preserving",
   "reversible_transform"
  ],
+ "disposition": {
+  "claim_boundary": "Static sidecar artifact. No hardware measurement. No weight write. Tabula cannot widen authority, cannot promote, and cannot take a GPU lease. Independent evaluation is a vector; zero refusal is never the only score.",
+  "doctrine": "Gravity finds the cheapest faithful physical realization. Tabula finds the least behaviorally constrained faithful realization. Doctor verifies both. Lower refusal rate is not Tabula success. Targets are preserved capability, increased useful behavioral freedom, minimized suppression, minimized calibration drift, and minimized personality and style drift. Behavioral freedom and external authority are different systems.",
+  "evidence_class": "STATIC_ONLY",
+  "gpu_authority": false,
+  "items": [
+   {
+    "also_called": [
+     "tools.future.tabula.project",
+     "tools.future.tabula.rank",
+     "tools.future.tabula.catalog"
+    ],
+    "call_sites": [
+     {
+      "file": "tools/future/abliteration.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.project"
+     },
+     {
+      "file": "tools/future/abliteration_run.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.project"
+     },
+     {
+      "file": "tools/future/power_torture.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.evaluate"
+     },
+     {
+      "file": "tools/audit/reachability_triage.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.evaluate",
+      "via": "WIRED future.tabula"
+     },
+     {
+      "file": "tools/vmcp/behavior_lab.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.evaluate"
+     },
+     {
+      "file": "tools/vmcp/behavior_lab.py",
+      "kind": "call",
+      "symbol": "tools.future.tabula.scores_from_behavior_lab"
+     }
+    ],
+    "disposition": "CONNECTED",
+    "evidence_tier": "FUNCTIONAL_SIM",
+    "id": "tabula.floor",
+    "implementation": "tools/future/tabula.py",
+    "invoke": "python3 tools/audit/reachability_triage.py --invoke future.tabula --args '{\"scores\":{...}}'",
+    "symbol": "tools.future.tabula.evaluate",
+    "test": "tools/future/test_tabula.py",
+    "wake": null
+   },
+   {
+    "disposition": "PARKED",
+    "evidence_tier": "STATIC",
+    "id": "tabula.fit-weights",
+    "implementation": "tools/future/tabula.py",
+    "status": "sleeping",
+    "symbol": "tools.future.tabula.apply_to_weights",
+    "wake": {
+     "blocker": "MetalContext reports NO Metal-capable GPU on this host; xcrun cannot locate the Metal compiler under CommandLineTools; protected bench lock files exist; holder pids unproven, and flock would be a seizure; the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers; Flash source-independent NX is SCAFFOLD_ONLY, not qualified; teacher capture executed_units=0 of units=12 target_row_counts=[256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256, 256] (path_taken=worktree)",
+     "condition": {
+      "flash_nx": "Flash source-independent NX is QUALIFIED, not SCAFFOLD_ONLY",
+      "machine_class": "qualification pipeline does not classify the machine HEAVY, or standing workers are legitimately absent \u2014 never SIGSTOP",
+      "metal_capable_gpu": "MetalContext reports a Metal-capable GPU",
+      "metal_compiler": "xcrun locates the Metal compiler (not missing under CommandLineTools)",
+      "physical_blockers_today": [
+       "MetalContext reports NO Metal-capable GPU on this host",
+       "xcrun cannot locate the Metal compiler under CommandLineTools",
+       "protected bench lock files exist; holder pids unproven, and flock would be a seizure",
+       "the qualification pipeline classifies the machine HEAVY and will not quiesce standing workers",
+       "Flash source-independent NX is SCAFFOLD_ONLY, not qualified",
+       "teacher capture is incomplete (derived from TEACHER_CORPUS_CONTRACT.json, not invented)"
+      ],
+      "protected_lease": "HCLI protected-accelerator-bench lock is held by this process; flock of an unproven holder is a seizure and is refused",
+      "rule": "Blocked physical work stays SLEEPING. It never becomes a synthetic result.",
+      "specimens": "weight specimens present on disk; this sidecar never loads them",
+      "teacher_capture": {
+       "complete": false,
+       "executed_units": 0,
+       "path_taken": "worktree",
+       "receipt": "receipts/future/TEACHER_CORPUS_CONTRACT.json",
+       "rule": "wake only when executed_units == units and units > 0",
+       "target_row_counts": [
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256,
+        256
+       ],
+       "units": 12
+      }
+     },
+     "evidence_tier": "STATIC",
+     "kind": "SLEEPING_FIT",
+     "missing_dependency": "Metal-capable GPU + Metal compiler + HCLI-held protected accelerator lease + completed teacher capture + specimen tensors on disk. apply_to_weights currently raises WeightsFrozen.",
+     "predicate": "production AST Call of tools.future.tabula.apply_to_weights from an HCLI entry AFTER every fitting_wake_condition clause holds (Metal-capable GPU, Metal compiler, protected lease held by this process, machine not HEAVY, Flash NX QUALIFIED, teacher capture executed_units == units > 0, specimens on disk). Until then the WorkUnit stays status=sleeping and is_ready is false.",
+     "required_caller_prefix": "hcli/",
+     "required_kind": "call",
+     "required_symbol": "tools.future.tabula.apply_to_weights",
+     "schema": "hawking.audit.wake_condition.v1"
+    },
+    "workunit_id": "future.tabula.fit-weights"
+   },
+   {
+    "also": [
+     "tools/gravity_tabula_probe.py",
+     "tools/doctor_seal.py (requires a tabula_drift cell; does not call the instrument)",
+     "tools/cost_vector_t.py (quotes the G123 ladder; does not remeasure)"
+    ],
+    "disposition": "PARKED",
+    "evidence_tier": "STATIC",
+    "id": "tabula.drift-instrument",
+    "implementation": "tools/tabula_drift.py",
+    "wake": {
+     "blocker": "G123 instrument exists as tools/tabula_drift.py and tools/gravity_tabula_probe.py but needs the qwen38-27b bf16 specimen; this sidecar never loads those weights. Doctor seal records instrument_validated=false (ladder does not reproduce the recorded range).",
+     "evidence_tier": "STATIC",
+     "kind": "SPECIMEN_DRIFT_INSTRUMENT",
+     "missing_dependency": "abliterated qwen38-27b bf16 tensors + abliteration-manifest.json at workspace/campaign/records/runs/qwen38-27b/bf16",
+     "predicate": "production AST Call of tools.tabula_drift.recover_direction (or tools.gravity_tabula_probe.smallest_left_dir) from an HCLI entry after language_model.model.layers.*.mlp.down_proj.weight tensors for the abliterated patient are loadable from workspace/campaign/records/runs/qwen38-27b/bf16",
+     "required_caller_prefix": "hcli/",
+     "required_kind": "call",
+     "required_symbol": "tools.tabula_drift.recover_direction",
+     "schema": "hawking.audit.wake_condition.v1"
+    }
+   },
+   {
+    "disposition": "PARKED",
+    "evidence_tier": "STATIC",
+    "id": "tabula.behaviour-probe",
+    "implementation": "tools/gravity_tabula_behaviour.py",
+    "note": "explicitly the WEAKER half; cannot certify absence of drift",
+    "wake": {
+     "blocker": "tools/gravity_tabula_behaviour.py is a CLI that shells out to workspace/ops/build/rust/release/examples/ascension_qwen38_hybrid_greedy; marker-based refusal counts are not an independent-evaluation vector",
+     "evidence_tier": "STATIC",
+     "kind": "BEHAVIOURAL_REFUSAL_PROBE",
+     "missing_dependency": "ascension_qwen38_hybrid_greedy binary + tokenizer.json + artifact roots under workspace/campaign/records/runs/qwen38-27b",
+     "predicate": "production AST Call of tools.gravity_tabula_behaviour.run from an HCLI entry after the hybrid greedy binary and tokenizer exist. The probe is the WEAKER half and cannot certify absence of drift.",
+     "required_caller_prefix": "hcli/",
+     "required_kind": "call",
+     "required_symbol": "tools.gravity_tabula_behaviour.run",
+     "schema": "hawking.audit.wake_condition.v1"
+    }
+   }
+  ],
+  "not_this": "H-ROADMAP.md 'tabular / catalog data' (Art. 70.2) is unrelated. Tabula is not a refusal-rate contest and not Gravity.",
+  "roadmap": {
+   "I-B_Doctor": "experiment ranking / negative-science / capability contracts; Tabula is the behavioral-surgery gene Doctor verifies beside Gravity",
+   "named_section": null,
+   "note": "H-ROADMAP.md does not name Tabula as a subsystem; the live name is this Doctor axis plus G123/G1 instruments"
+  },
+  "schema": "hawking.audit.subsystem_disposition.v1",
+  "subsystem": "tabula",
+  "weights_modified": false,
+  "what_it_is": "Doctor axis: behavioral surgery. Recover the abliterated refusal direction as a left-null vector of residual-writing tensors, project it out (W'=(I-vv^T)W), score the child on an independent vector (behavioral, capability, tool_use, reasoning, instruction_following). Zero refusal is never the only score. Permission is not personality."
+ },
  "doctrine": {
   "doctrine": "Gravity finds the cheapest faithful physical realization. Tabula finds the least behaviorally constrained faithful realization. Doctor verifies both. Lower refusal rate is not Tabula success. Targets are preserved capability, increased useful behavioral freedom, minimized suppression, minimized calibration drift, and minimized personality and style drift. Behavioral freedom and external authority are different systems.",
-  "path_taken": "worktree",
+  "path_taken": "git:HEAD",
   "quoted_phrase_present": true,
   "source": "hawking-experiments/superwave/g1/g1-tabula-baseline.md"
  },
@@ -749,7 +914,7 @@
   }
  ],
  "gpu_authority": false,
- "head": "b087a0606c9a5f45b0468f91c017aed36a53931c",
+ "head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
  "independent_evaluation": {
   "behavioral_target": 0.5,
   "demo_failure": {
@@ -975,37 +1140,37 @@
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hawking-experiments/superwave/g1/g1-tabula-baseline.md",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "G1 doctrine: lower refusal rate is not Tabula success; behavioral freedom and external authority are different systems"
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hawking-experiments/superwave/g1/g1-tabula-genome.md",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "G1 genome: Tabula/Gravity must be separate sealed content-hashed documents"
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/ascent-2026-08-16/G123_TABULA_DRIFT.json",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "sealed G123 ladder; does not reproduce the recorded range (constant ~2.5x)"
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "receipts/ascent-2026-08-18/TABULA_PATIENT.json",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "patient Tabula cell: 0/8 refusals treated as behavioural authority \u2014 the collapse this floor refuses"
   },
   {
    "in_head": true,
-   "on_disk": true,
+   "on_disk": false,
    "path": "hcli/agentos/autonomy_gate.py",
-   "path_taken": "worktree",
+   "path_taken": "git:HEAD",
    "what": "live authority: Mission is DAG/receipt, AgentOS is typed-tool/checkpoint, provider is cognition; the model cannot nominate the verifier"
   },
   {
@@ -1014,6 +1179,13 @@
    "path": "tools/future/resident_optimizer.py",
    "path_taken": "worktree",
    "what": "child-generation economy; Tabula is one method of CHILD generation and must carry lineage"
+  },
+  {
+   "in_head": false,
+   "on_disk": true,
+   "path": "tools/vmcp/behavior_lab.py",
+   "path_taken": "worktree",
+   "what": "VMCP E.11 fixture matrix scores through evaluate(); zero-refusal is still refused"
   }
  ],
  "refusals_proven": [
@@ -1087,7 +1259,8 @@
   "callable": "build",
   "cli": [
    "--build",
-   "--selftest"
+   "--selftest",
+   "--disposition"
   ],
   "discovery": "HCLI discovers the pending floor unit (future.tabula.floor) from this receipt, invokes the entry point, schedules the independent-eval unit, and leaves future.tabula.fit-weights SLEEPING. A later wakeup.py (this-wave; not imported) is the swap point that flips sleeping -> pending when wake_condition holds. Disk state is authority.",
   "entry_point": "python3 tools/future/tabula.py --build",
@@ -1156,6 +1329,7 @@
    "title": "Tabula independent-evaluation floor is executable as STATIC_ONLY"
   },
   "how_it_fails_closed": "rank() raises RankRefusal on a behavioral-only order; evaluate() returns FAILURE when the behavioral target is hit while tool use (or any independent axis) regresses; AuthorityLattice.grant/widen and TabulaFloor.widen_authority raise; apply_to_weights raises WeightsFrozen; irreversible children raise IrreversibleAuthorityError; the fit WorkUnit is status=sleeping so hcli.workunit.is_ready is false until hardware qualifies; write_receipt raises HardwareClaimError on a numeric hardware field; promote() does not exist.",
+  "invoke": "python3 tools/audit/reachability_triage.py --invoke future.tabula --args '{\"scores\":{\"behavioral\":0.7,\"capability\":0.05,\"tool_use\":0.02,\"reasoning\":0.01,\"instruction_following\":0.0}}'",
   "module": "tools.future.tabula",
   "receipt": "receipts/future/TABULA_FLOOR.json",
   "work_units": [
@@ -1198,7 +1372,7 @@
   "reasoning",
   "instruction_following"
  ],
- "seal_sha256": "b969bd4e887ecad48c99c4126e82b15738fe216ed89bde6998a368f68df7b4b4",
+ "seal_sha256": "a65b8308bf0303fea5504796ab7fe2c772dfe6639b34541cebe80037ed405082",
  "sleeping_fit": {
   "ready": false,
   "status": "sleeping",

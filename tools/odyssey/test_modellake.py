@@ -16,6 +16,19 @@ def test_budget_is_enforced_not_advisory():
     assert not ok and "budget" in why
 
 
+def test_obvious_budget_refusal_does_not_measure_a_busy_mount(monkeypatch):
+    def should_not_run(*args, **kwargs):
+        raise AssertionError("storage measurement should be skipped")
+
+    monkeypatch.setattr(ml, "tier2_used", should_not_run)
+    monkeypatch.setattr(ml, "free", should_not_run)
+
+    ok, why = ml.admit(ml.TIER2_BUDGET + 1, 2)
+
+    assert ok is False
+    assert "exceeds" in why
+
+
 def test_writes_outside_the_lake_are_refused():
     for bad in ("/Volumes/corpdrive/substrate", "/Volumes/corpdrive/legal-scans-2026-08-23.tar.zst",
                 "/Users/scammermike/models/qwen3.8-27b-abliterated-bf16"):

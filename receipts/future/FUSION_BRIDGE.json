@@ -1,0 +1,120 @@
+{
+ "schema": "hawking.accelerator.fusion_bridge.v1",
+ "generated_by": "tools/accelerator/fusion_bridge.py",
+ "head": "caf83078f24374fdd594cb5114a6c590e7df5f06",
+ "qualification": "PLAN_ONLY",
+ "claim_class": "STATIC_ONLY",
+ "claim_boundary": "IR + cost model + validation. No real transport, no FPGA board, no discrete GPU, no bitstream, no interconnect measurement. Every cost is labeled COST_MODEL. HARDWARE_MEASURED is refused at Cost construction.",
+ "hardware_measurement": "none. No measured hardware claim is produced anywhere in this lane.",
+ "rule": "no hardware measurement claim without hardware",
+ "roadmap": {
+  "15.8": "Semantic transport / HawkFrame payload semantics and in-transit transform vocabulary",
+  "15.9": "Persistent token pipeline named as NOT IMPLEMENTED (token_id is metadata only)",
+  "15.10": "HawkingHWIR: FPGA_HBM placements lower onto existing dma-transport nodes",
+  "16.1": "PRESENT != VALID != TRUSTED; READBACK CORRECTNESS DOES NOT PROVE DEVICE-COMPUTE VISIBILITY",
+  "16.2": "Coherency ladder 0-6 plus explicit NONE; never claim rung 6 across domains",
+  "17.1": "Fusion law: indifferent to which qualified domain owns an object, with explicit cost/version/trust",
+  "IV-E": "Fusion Bridge / Topology Ascension gene card; this lane instantiates the IR, not DMA hardware"
+ },
+ "pre_existing": {
+  "hcli/physical_graph.py": {
+   "provided": "Provider-neutral PhysicalGraph (computation/data/representation/memory/residency/state/precision/dependencies/device_placement/synchronization). compile_physical_graph emits PLAN_ONLY graphs. apply_architecture_atlas projects atlas primitives including SemanticTransportEdge by name. score_physical_candidates ranks measured complete useful work. NOT a typed inter-domain transport edge and NOT a coherency validator.",
+   "touched": "READ only. overlay_physical_graph copies a compiled dict and fills device_placement/synchronization/dependencies."
+  },
+  "tools/odyssey/physical_graph_compiler.py": {
+   "provided": "Source graph -> organ graph -> physical operator graph, with numerical collapse checks (gate_up_swiglu, router top-k). Transformation DAG records cost_delta per stage.",
+   "added": "attach_heterogeneous_plan() appends a heterogeneous_fusion_bridge DAG stage whose cost_delta.label is COST_MODEL. main() and organ-collapse measurements are unchanged."
+  },
+  "tools/accelerator/fusion_planner.py": {
+   "provided": "Topology/Link/Route (store-and-forward Dijkstra), object-home Placement (identity, home, replicas, reason), place_objects (mutable vs immutable, organ vs tensor), plan_dependency (MOVE_DATA/MOVE_COMPUTE/RECOMPUTE/REPACK/REPLICATE/WAIT/PREFETCH), collectives. Costs stamped MEASURED/SIMULATED from hop.physical.",
+   "connected": "lift_object_placements wraps place_objects into node Placement (STORAGE). cost_from_route wraps Route and relabels COST_MODEL; planner MEASURED becomes all_hops_physical, never HARDWARE_MEASURED. Topology is reused for the declared host-GPU_UMA <-> FPGA_HBM interconnect. fusion_planner.Placement is object-home placement; it is not replaced."
+  },
+  "tools/accelerator/fusion_isa.py": {
+   "provided": "Fourteen-command ISA (ACQUIRE_READ/WRITE, RELEASE, PREFETCH, COPY, MATERIALIZE, INVALIDATE, REDUCE, SCATTER, GATHER, SUBMIT, FENCE, DIGEST, EVICT) and FusionTimeline bookkeeping. No vendor launch API.",
+   "connected": "plan_to_timeline emits ACQUIRE + COPY + FENCE + RELEASE per transport edge and SUBMIT per COMPUTATION placement. No new opcodes."
+  },
+  "tools/accelerator/fusion_wire.py": {
+   "provided": "42-byte command header, no payload, no real transport.",
+   "connected": "Not reimplemented. ISA commands already round-trip through it."
+  },
+  "tools/accelerator/humf.py / hmf.py": {
+   "provided": "State/Ownership/MemoryClass, Domain, move-vs-recompute, trust, HAWKGPU-0 AcceleratorDomain. Coherence engine for copies inside a fabric.",
+   "connected": "MemoryClass drives lifted object-home placements (via fusion_planner.place_objects). Trust/state stay in HUMF; this lane does not reimplement the coherence engine. DomainVisibility is a separate readback vs device-compute axis."
+  },
+  "tools/accelerator/machine_genome.py": {
+   "provided": "Physical identity of this machine: sysctl facts, optional measured bandwidth inside a protected window, ABSENT-with-reason for missing fields.",
+   "connected": "domain_from_machine_genome reads memory_bytes already recorded. Does not call measure_bandwidth()."
+  },
+  "tools/odyssey/device_profiles.py": {
+   "provided": "INTERACTIVE (one-stream TPOT) and MAXX (four-stream aggregate tps) workload profiles. Not device domains.",
+   "connected": "Placement.profile_hint admits exactly those two names. They are not treated as execution domains."
+  },
+  "tools/future/hwir.py": {
+   "provided": "FPGA IR: node kinds including dma-transport, HwirEdge with in-transit transforms, DeviceBudget declared_not_measured, PRIMITIVE_TO_NODE_KIND['SemanticTransportEdge']='dma-transport', validator that rejects source-tensor identity.",
+   "connected": "lower_fpga_domain_to_hwir emits dma-transport nodes whose primitive is the existing atlas name SemanticTransportEdge. This is the same primitive, not a second one. DeviceBudget.declared_not_measured remains True."
+  },
+  "tools/accelerator/architecture_atlas.py": {
+   "provided": "PRIMITIVES includes SemanticTransportEdge as a backend-neutral name.",
+   "connected": "semantic_transport.ATLAS_PRIMITIVE is that same string; a test pins equality with atlas.PRIMITIVES and hwir.PRIMITIVE_TO_NODE_KIND."
+  }
+ },
+ "added": {
+  "tools/accelerator/semantic_transport.py": "ExecutionDomain (DomainKind GPU_UMA/CPU/NPU/FPGA_HBM), DomainVisibility (readback vs device_compute with evidence), CoherencyAssumption ladder including explicit NONE, SemanticTransportEdge (source, destination, payload semantics, ownership transfer, sync requirement, coherency_assumption, link_coherency, COST_MODEL cost, in-transit transforms). Cost construction refuses any label other than COST_MODEL.",
+  "tools/accelerator/placement.py": "Node-to-domain Placement (COMPUTATION/STATE/STORAGE) with ResourceRequirements and ValidityCondition. Distinct from fusion_planner.Placement (object-home). No product branch; kind_admits is uniformly True.",
+  "tools/accelerator/fusion_bridge.py": "HeterogeneousPlan, validate/compose, two_domain_plan (host GPU_UMA + declared FPGA_HBM, non-coherent link), overlay_physical_graph, plan_to_timeline, lower_fpga_domain_to_hwir, domain_from_machine_genome, lift_object_placements. Validator rejects COHERENCY_OVERCLAIM, HARDWARE_UMA_ACROSS_DOMAINS, READBACK_IS_NOT_COMPUTE_VISIBILITY, COST_LABEL_REFUSED, RESOURCES_EXCEED_CAPACITY.",
+  "tools/odyssey/fusion_bridge_adapter.py": "annotate_compiler_output, physical_graph_with_bridge, overlay. Does not import physical_graph_compiler (avoids numpy/checkpoint path).",
+  "tools/accelerator/test_fusion_bridge.py": "26 pins including the mandatory negative coherency test, COST_MODEL labeling, vendor-control-flow AST scan, HWIR/PhysicalGraph/fusion_planner/fusion_isa/machine_genome/device_profiles connections."
+ },
+ "demo_plan": {
+  "domains": ["gpu_uma_0", "fpga_hbm_0"],
+  "kinds": {"gpu_uma_0": "GPU_UMA (Apple GPU/UMA host domain)", "fpga_hbm_0": "FPGA_HBM (declared, physical=False)"},
+  "link_coherency": "NONE",
+  "coherency_assumption": "NONE",
+  "payload": "activation",
+  "sync": "fence",
+  "cost_label": "COST_MODEL",
+  "qualification": "PLAN_ONLY",
+  "cli": "python3 tools/accelerator/fusion_bridge.py -> exit 0, cost_label=COST_MODEL"
+ },
+ "tests": {
+  "new": "26 passed in tools/accelerator/test_fusion_bridge.py",
+  "related": "267 passed (fusion_bridge + fusion_planner + fusion_isa + fusion_wire + hmf + humf + physical_graph_scoring)",
+  "accelerator_minus_sparse_holes": "723 passed, 55 skipped. Ignored files need receipts/headless or live mlx/ps that this sparse worktree does not materialize (test_akb, test_bench, test_ccl, test_flash_meta_*, test_odyssey_pass, test_qwen27_token_budget, test_receipt_bench_corpus, test_repatriation_*). Those failures pre-exist this lane and were not recreated.",
+  "full_pytest_tools_accelerator": "49 failed, 771 passed, 67 skipped. Every failure is a missing receipts/headless path, mlx, or sandbox-blocked ps -- not a fusion-bridge regression."
+ },
+ "mutation_check": {
+  "target": "tools/accelerator/fusion_bridge.py validate() call `_reject_coherency_overclaim(plan, errors)  # MUTATION_POINT: coherency check`",
+  "test": "tools/accelerator/test_fusion_bridge.py::test_noncoherent_link_rejects_coherency_assumption",
+  "before": {
+   "output": ".                                                                        [100%]\n1 passed in 0.03s",
+   "result": "PASS"
+  },
+  "after_removing_the_check": {
+   "output": "F                                                                        [100%]\n=================================== FAILURES ===================================\n______________ test_noncoherent_link_rejects_coherency_assumption ______________\ntools/accelerator/test_fusion_bridge.py:107: in test_noncoherent_link_rejects_coherency_assumption\n    assert report.ok is False\nE   assert True is False\nE    +  where True = ValidationReport(ok=True, errors=[]).ok\n=========================== short test summary info ============================\nFAILED tools/accelerator/test_fusion_bridge.py::test_noncoherent_link_rejects_coherency_assumption - assert True is False\n +  where True = ValidationReport(ok=True, errors=[]).ok\n1 failed in 0.04s",
+   "result": "FAIL (overclaiming plan was accepted -- the check is load-bearing)"
+  },
+  "after_restore": {
+   "output": ".                                                                        [100%]\n1 passed in 0.03s",
+   "result": "PASS",
+   "marker": "no MUTATED remnant; MUTATION_POINT line restored"
+  }
+ },
+ "vendor_neutrality": {
+  "command": "rg -n -i 'apple|xilinx|nvidia|cuda|metal' tools/accelerator/semantic_transport.py tools/accelerator/placement.py tools/accelerator/fusion_bridge.py",
+  "output": "(no matches)",
+  "ast_control_flow_scan": "test_generic_layer_has_no_vendor_keyed_control_flow passed; zero hits in If/IfExp/While/Match/Assert predicates"
+ },
+ "cost_label": {
+  "emitted": "COST_MODEL",
+  "forbidden": "HARDWARE_MEASURED",
+  "enforcement": "Cost.__post_init__ raises CostLabelError on any label other than COST_MODEL. fusion_planner Route.cost_provenance MEASURED is preserved only as Cost.all_hops_physical and does not promote the label."
+ },
+ "not_implemented": [
+  "real transport / DMA / PCIe driver",
+  "FPGA bitstream, P&R, timing",
+  "persistent token command-buffer runtime (roadmap 15.9)",
+  "in-transit kernels (transform names are vocabulary)",
+  "capacity accounting beyond bytes-vs-capacity_bytes",
+  "online replanning"
+ ]
+}

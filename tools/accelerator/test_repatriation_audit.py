@@ -15,7 +15,7 @@ def test_canonical_repatriation_audit_passes_all_structural_checks():
 
     assert document["schema"] == audit.SCHEMA
     assert document["passed"] is True
-    assert len(document["checks"]) == 13
+    assert len(document["checks"]) == 14
     assert all(row["passed"] is True for row in document["checks"])
     assert "physical performance" in document["claim_boundary"]
 

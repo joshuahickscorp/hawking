@@ -98,6 +98,7 @@ _SAFE_SHELL_COMMANDS = frozenset(
 _SAFE_GIT_COMMANDS = frozenset({"status", "diff", "log", "show", "rev-parse"})
 _MAX_READ_BYTES = 2 * 1024 * 1024
 _MAX_SEARCH_FILES = 20_000
+_MAX_LIST_DIRECTORIES = 20_000
 
 
 def _redact(value: Any, *, limit: int = 4000) -> Any:
@@ -364,6 +365,51 @@ class ToolRegistry:
             result.append(spec.to_dict())
         return result
 
+    def describe(self, focus: str = "", *, max_results: int = 12) -> Dict[str, Any]:
+        """Return the smallest useful slice of the registry for one question.
+
+        The full catalog is still available through :meth:`discover`, but
+        putting every domain in every model prompt makes aliases and unrelated
+        capabilities compete with the current task. This deterministic index
+        lets a model ask for the exact signatures it needs after seeing only a
+        compact first-round catalog.
+        """
+        query = str(focus or "").strip()
+        terms = tuple(dict.fromkeys(re.findall(r"[a-z0-9][a-z0-9_.-]*", query.lower())))
+        try:
+            limit = max(1, min(32, int(max_results)))
+        except (TypeError, ValueError):
+            limit = 12
+
+        scored: List[Tuple[int, str, ToolSpec]] = []
+        for spec in self._tools.values():
+            name = spec.name.lower()
+            haystack = " ".join(
+                (spec.name, spec.description, *spec.roles, *spec.resources)
+            ).lower()
+            score = 0
+            for term in terms:
+                if term == name:
+                    score += 100
+                elif term in name:
+                    score += 40
+                elif term in haystack:
+                    score += 10
+            if score or not terms:
+                scored.append((score, spec.name, spec))
+        if terms:
+            scored.sort(key=lambda item: (-item[0], item[1]))
+        else:
+            scored.sort(key=lambda item: item[1])
+        matches = [spec.to_dict() for _score, _name, spec in scored[:limit]]
+        return {
+            "focus": query,
+            "matches": matches,
+            "match_count": len(scored),
+            "truncated": len(scored) > limit,
+            "provenance": "hcli.tool_registry.ToolRegistry.describe",
+        }
+
     def invoke(self, name: str, arguments: Optional[Mapping[str, Any]] = None) -> ToolResult:
         invocation_id = f"tool-{uuid.uuid4()}"
         spec = self.get(name)
@@ -507,6 +553,69 @@ def _search_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
                     if len(matches) >= limit:
                         return {"root": str(root), "pattern": needle, "matches": matches, "truncated": True, "files_seen": files_seen}
     return {"root": str(root), "pattern": needle, "matches": matches, "truncated": False, "files_seen": files_seen}
+
+
+def _list_files(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """List files and visible directories under a read root.
+
+    `fs.search` requires a content `pattern`, so a caller that wanted to SEE
+    what is in a directory could not express it and forced search into a
+    listing role instead -- the model spent an entire tool budget calling
+    fs.search without `pattern`, reading the failure, and guessing again. The
+    listing result keeps the historical ``files`` field and adds
+    ``directories`` so a directory question does not silently omit folders.
+    """
+    root = context.resolve_read_path(args.get("path") or ".")
+    if not root.is_dir():
+        raise NotADirectoryError(root)
+    glob = str(args.get("glob") or "*")
+    limit = max(1, min(2000, int(args.get("max_results") or 500)))
+    recursive = bool(args.get("recursive", True))
+    entries: List[Dict[str, Any]] = []
+    directories: List[Dict[str, Any]] = []
+    truncated = False
+    directories_seen = 0
+    for dirpath, dirnames, filenames in os.walk(root):
+        directories_seen += 1
+        if directories_seen > _MAX_LIST_DIRECTORIES:
+            truncated = True
+            break
+        dirnames[:] = sorted(
+            name for name in dirnames
+            if name not in {".git", ".venv", "__pycache__", "node_modules"}
+        )
+        for dirname in dirnames:
+            if not Path(dirname).match(glob):
+                continue
+            if len(directories) >= limit:
+                truncated = True
+                continue
+            path = Path(dirpath) / dirname
+            directories.append({
+                "path": str(path.relative_to(root)),
+                "kind": "directory",
+            })
+        for filename in sorted(filenames):
+            if not Path(filename).match(glob):
+                continue
+            path = Path(dirpath) / filename
+            try:
+                size = path.stat().st_size
+            except OSError:
+                continue
+            if len(entries) >= limit:
+                truncated = True
+                continue
+            entries.append({"path": str(path.relative_to(root)), "bytes": size})
+        if not recursive:
+            break
+    return {
+        "root": str(root),
+        "glob": glob,
+        "files": entries,
+        "directories": directories,
+        "truncated": truncated,
+    }
 
 
 def _git_dir(context: ToolContext, raw: Any = None) -> Path:
@@ -1103,6 +1212,24 @@ def _receipt_read(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     return {"path": str(path), "sha256": _sha256_bytes(raw), "bytes": len(raw), "document": value}
 
 
+def _context_recall(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Recall bounded older semantic facts without replaying the transcript."""
+    from .config import Config
+    from .knowledge import KnowledgeStore
+
+    archive_root = Config(str(context.workspace)).value(
+        "context_archive_root",
+        "HCLI_CONTEXT_ARCHIVE_ROOT",
+        None,
+    )
+    store = KnowledgeStore(context.workspace, archive_root=archive_root)
+    return store.recall(
+        str(args.get("focus") or ""),
+        limit=args.get("max_results", 8),
+        max_chars=args.get("max_chars", 8000),
+    )
+
+
 _RECEIPT_TARGETS = {
     "roadmap.read": "civilization/ROADMAP_STATE.json",
     "vmcp.capabilities": "receipts/headless/VMCP_CAPABILITY_SURFACE.json",
@@ -1396,6 +1523,114 @@ def _frontier_escalate(context: ToolContext, args: Dict[str, Any]) -> Dict[str, 
     )
 
 
+def _git_land_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """The resident's only path to a commit. Builds nothing itself -- it just
+    forwards the typed proposal into ``landing.propose_landing``, which is
+    governed by a deterministic verifier the resident cannot see or skip."""
+    from .landing import propose_landing
+
+    return propose_landing(
+        context.repo_root,
+        branch=args.get("branch"),
+        allowed_paths=args.get("allowed_paths") or [],
+        test_command=args.get("test_command") or [],
+        message=args.get("message"),
+        timeout_s=args.get("timeout_s"),
+    )
+
+
+def _odyssey_read(name: str):
+    """Read-only Odyssey state. The driver is already running a live mission -
+    O003 sealed, O010-O013 queued - so these observe it, never restart it."""
+
+    def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+        from . import odyssey
+
+        return getattr(odyssey, name)()
+
+    return handler
+
+
+def _odyssey_cycle(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """One Odyssey cycle. Mutating and expensive, so it is gated the way every
+    other costly verb here is: an explicit confirm, refused by default."""
+    from . import odyssey
+
+    if args.get("confirm") is not True:
+        raise PermissionError("odyssey.cycle mutates Odyssey state and requires confirm=True")
+    return odyssey.cycle(confirm=True, max_lanes=args.get("max_lanes"))
+
+
+def _forbidden_fruit_lab(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Run the ANE probe lab and report OBSERVED placement.
+
+    No ANE placement has ever been demonstrated on this host; the fixture has
+    landed on CPU in every compute plan. This reports MLComputePlan.deviceUsage
+    as observed, never the requested compute units, so a CPU result reads as CPU.
+    """
+    from . import forbidden_fruit
+
+    return forbidden_fruit.run_forbidden_fruit_lab(sdk=args.get("sdk"))
+
+
+def _frontier_decide(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Which frontier should run next, and why not the others.
+
+    This is the other half of the sovereign stall guard. The loop can park
+    itself; without a caller here, nothing picks up the next frontier and a
+    parked frontier means an idle machine.
+    """
+    from . import frontier_scheduler
+
+    return frontier_scheduler.decide().to_dict()
+
+
+def _specimens_registry(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Every sealed specimen, enumerated from disk. SEALED != LOAD NOW."""
+    from . import specimens
+
+    name = str(args.get("name") or "").strip()
+    if name:
+        found = specimens.get(name)
+        return {"name": name, "specimen": found, "found": found is not None}
+    return specimens.registry()
+
+
+def _acquisition_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Rank what to acquire next. Proposes and explains; never starts a
+    download - that stays behind explicit confirmation elsewhere."""
+    from . import acquisition
+
+    return acquisition.propose()
+
+
+def _odyssey_read_verb(name: str):
+    def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+        from . import odyssey
+
+        return getattr(odyssey, name)()
+
+    return handler
+
+
+def _odyssey_mutating(name: str, required: Sequence[str]):
+    """Odyssey verbs that change campaign state. Gated exactly like
+    odyssey.cycle: refused without an explicit confirm."""
+
+    def handler(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+        from . import odyssey
+
+        if args.get("confirm") is not True:
+            raise PermissionError(f"odyssey.{name} changes Odyssey state and requires confirm=True")
+        kwargs = {k: args[k] for k in required if k in args}
+        for extra in ("note", "reason", "evidence", "source_oxx", "attack", "description"):
+            if extra in args:
+                kwargs[extra] = args[extra]
+        return getattr(odyssey, name)(confirm=True, **kwargs)
+
+    return handler
+
+
 def _grok_swarm_propose(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
     del context
     from .escalation import propose_swarm
@@ -1415,6 +1650,43 @@ def _grok_swarm_launch(context: ToolContext, args: Dict[str, Any]) -> Dict[str, 
         mode=str(args.get("mode") or "audit"),
         dry_run=args.get("dry_run"),
     )
+
+
+def _processes_list(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Every live Hawking process, classified by argv. Read-only: this wraps
+    hcli.processes.live_processes() and nothing else. Killing a process is
+    deliberately NOT reachable here -- that stays on the owned-signal path in
+    hcli/agentos/resident.py (_owned_signal), which checks a
+    process_start_token before it will ever send a signal.
+    """
+    del context, args
+    from . import processes
+
+    return {"processes": [p.to_dict() for p in processes.live_processes()]}
+
+
+def _processes_summary(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Roll-up counts and total footprint for every live Hawking process --
+    the same hcli.processes.summary() entry point the process audit receipt
+    uses. Read-only."""
+    del context, args
+    from . import processes
+
+    return processes.summary()
+
+
+def _processes_orphaned(context: ToolContext, args: Dict[str, Any]) -> Dict[str, Any]:
+    """Resident model bodies with no live owner (reparented to pid 1, unclaimed
+    by any resident state file). Enumeration only: this calls
+    hcli.processes.orphaned_resident_bodies(), never reap_orphaned_bodies(),
+    which sends SIGTERM. Reaping stays a startup-only self-heal in
+    hcli/runtime.py._reap_orphans_once, not something the model can trigger
+    through the tool surface.
+    """
+    del context, args
+    from . import processes
+
+    return {"orphaned": [p.to_dict() for p in processes.orphaned_resident_bodies()]}
 
 
 def default_tool_registry(
@@ -1438,6 +1710,39 @@ def default_tool_registry(
         ),
     )
     registry = ToolRegistry(context)
+    registry.register(ToolSpec(
+        "tools.catalog",
+        "Find exact typed tool signatures for a focused question; read-only and bounded.",
+        {
+            "type": "object",
+            "required": ["focus"],
+            "additionalProperties": False,
+            "properties": {
+                "focus": {"type": "string"},
+                "max_results": {"type": "integer"},
+            },
+        },
+        resources=("filesystem",),
+        handler=lambda _context, args: registry.describe(
+            args.get("focus"), max_results=args.get("max_results", 12)
+        ),
+    ))
+    registry.register(ToolSpec(
+        "context.recall",
+        "Recall bounded prior-knowledge facts from the hot index and cold gzip archive; never replays the transcript.",
+        {
+            "type": "object",
+            "required": ["focus"],
+            "additionalProperties": False,
+            "properties": {
+                "focus": {"type": "string"},
+                "max_results": {"type": "integer"},
+                "max_chars": {"type": "integer"},
+            },
+        },
+        resources=("filesystem", "ssd"),
+        handler=_context_recall,
+    ))
     path_schema = {
         "type": "object",
         "required": ["path"],
@@ -1462,6 +1767,21 @@ def default_tool_registry(
          "properties": {"pattern": {"type": "string"}, "root": {"type": "string"}, "glob": {"type": "string"}, "max_results": {"type": "integer"}}},
         handler=_search_files,
     ))
+    list_schema = {
+        "type": "object", "required": ["path"], "additionalProperties": False,
+        "properties": {
+            "path": {"type": "string"}, "glob": {"type": "string"},
+            "recursive": {"type": "boolean"}, "max_results": {"type": "integer"},
+        },
+    }
+    registry.register(ToolSpec(
+        "fs.list", "List files and directory entries under a read root, optionally filtered by glob.",
+        list_schema, handler=_list_files,
+    ))
+    registry.register(ToolSpec(
+        "filesystem.list", "List files and directory entries under a read root, optionally filtered by glob.",
+        list_schema, handler=_list_files,
+    ))
     registry.register(ToolSpec(
         "filesystem.write", "Atomically write a workspace/repository file under reversible permission.",
         {"type": "object", "required": ["path", "content"], "additionalProperties": False,
@@ -1484,6 +1804,46 @@ def default_tool_registry(
         resources=("cpu",),
         verifier_expectations=("returncode must be checked by the caller",),
         handler=_shell_exec,
+    ))
+    # G009 (receipts/sovereign/G009_reachability.json) found process truth
+    # REACHABLE FROM PRODUCTION CODE (hcli/runtime.py's startup reaper,
+    # hcli/commands.py's /processes command) but UNREACHABLE FROM THE MODEL:
+    # no registered tool named a process, and shell.readonly above refuses
+    # `ps` outright. The live goal's first law names processes as authority
+    # and gave the resident no way to look at one. These three close that gap
+    # by wrapping hcli/processes.py's existing read paths only -- nothing new
+    # is taught to reap or signal anything. Killing a process is not reachable
+    # through this registry at all; see the handler docstrings.
+    # G009 (receipts/sovereign/G009_reachability.json) found process truth
+    # REACHABLE FROM PRODUCTION CODE (hcli/runtime.py's startup reaper,
+    # hcli/commands.py's /processes command) but UNREACHABLE FROM THE MODEL:
+    # no registered tool named a process, and shell.readonly above refuses
+    # `ps` outright. The live goal's first law names processes as authority
+    # and gave the resident no way to look at one. These three close that gap
+    # by wrapping hcli/processes.py's existing read paths only -- nothing new
+    # is taught to reap or signal anything. Killing a process is not reachable
+    # through this registry at all; see the handler docstrings.
+    registry.register(ToolSpec(
+        "processes.list",
+        "Every live Hawking process, classified by argv: role, PID, memory, "
+        "elapsed time and whether it is safe to stop. Read-only.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_processes_list,
+    ))
+    registry.register(ToolSpec(
+        "processes.summary",
+        "Roll-up of live Hawking processes: count, total footprint, counts by "
+        "class. The same entry point the process audit receipt uses.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_processes_summary,
+    ))
+    registry.register(ToolSpec(
+        "processes.orphaned",
+        "Resident model bodies with no live owner (reparented to pid 1, "
+        "unclaimed by any resident state file). Enumeration only -- does not "
+        "reap; reaping is a startup-only self-heal in hcli/runtime.py.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_processes_orphaned,
     ))
     registry.register(ToolSpec(
         "git.status", "Inspect repository status without mutating Git.",
@@ -1508,6 +1868,32 @@ def default_tool_registry(
             deterministic=True,
             handler=_git_safe_revert_refusal,
         ))
+    registry.register(ToolSpec(
+        "git.land.propose",
+        "Propose one landing candidate: a declared branch, an allowlist of "
+        "changed paths, a test command, and a message. Admissibility is "
+        "decided by a deterministic verifier that re-runs the test command "
+        "itself and re-checks the tree; a commit happens only if every named "
+        "condition holds. This is the only path from the resident to a git "
+        "commit -- it never pushes.",
+        {"type": "object", "required": ["branch", "allowed_paths", "test_command", "message"],
+         "additionalProperties": False,
+         "properties": {
+             "branch": {"type": "string"},
+             "allowed_paths": {"type": "array", "items": {"type": "string"}},
+             "test_command": {"type": "array", "items": {"type": "string"}},
+             "message": {"type": "string"},
+             "timeout_s": {"type": "number"},
+         }},
+        mutation=REVERSIBLE_REPO,
+        deterministic=False,
+        resources=("filesystem", "git"),
+        verifier_expectations=(
+            "landed is true only when the verifier re-ran test_command itself, on this "
+            "tree state, and it exited zero; a proposal cannot assert its own tests passed",
+        ),
+        handler=_git_land_propose,
+    ))
     research_schema = {"type": "object", "required": ["url"], "additionalProperties": False, "properties": {"url": {"type": "string"}, "max_bytes": {"type": "integer"}, "timeout_s": {"type": "number"}}}
     registry.register(ToolSpec("web.fetch", "Fetch bounded public HTTPS evidence with no credentials.", research_schema, mutation=RESEARCH, deterministic=False, handler=lambda c, a: _fetch(c, a)))
     registry.register(ToolSpec("github.fetch", "Fetch bounded public GitHub HTTPS evidence with no credentials.", research_schema, mutation=RESEARCH, deterministic=False, handler=lambda c, a: _fetch(c, a, allowed_hosts=("github.com", "api.github.com", "raw.githubusercontent.com"))))
@@ -1566,6 +1952,96 @@ def default_tool_registry(
             name, description,
             {"type": "object", "additionalProperties": False, "properties": {"path": {"type": "string"}}},
             handler=_target_receipt(name),
+        ))
+    # Odyssey and the ANE lab were built as modules and never registered, so
+    # nothing a resident drives could reach them: WorkUnit.tool -> _run_tool ->
+    # ToolRegistry.invoke is the only path, and a module absent from this
+    # registry is absent from that path. A capability nothing calls does not
+    # exist, which is the law this whole wave enforces.
+    for name, description in (
+        ("odyssey.status", "Read live Odyssey state: queue, patient, compiler rules, research."),
+        ("odyssey.queue", "Read the Odyssey specimen queue."),
+        ("odyssey.value", "Read the Odyssey value/economics ranking."),
+        ("odyssey.economics", "Read Odyssey acquisition economics."),
+    ):
+        registry.register(ToolSpec(
+            name, description,
+            {"type": "object", "additionalProperties": False, "properties": {}},
+            handler=_odyssey_read(name.split(".", 1)[1]),
+        ))
+    registry.register(ToolSpec(
+        "odyssey.cycle",
+        "Advance the LIVE Odyssey by one cycle. Mutating; requires confirm=True.",
+        {"type": "object", "additionalProperties": False,
+         "required": ["confirm"],
+         "properties": {"confirm": {"type": "boolean"}, "max_lanes": {"type": "integer"}}},
+        mutation=COSTLY, deterministic=False, resources=("cpu",),
+        handler=_odyssey_cycle,
+    ))
+    registry.register(ToolSpec(
+        "forbidden_fruit.lab",
+        "Probe CPU/GPU/ANE, run the compiled fixture, report OBSERVED placement and timing.",
+        # `timeout_s` was advertised here and forwarded to a handler that has no
+        # such parameter, so EVERY call raised TypeError before the lab ran. The
+        # lab bounds itself per step (compile 180s, run 60s, pair 120s); there is
+        # no single timeout for one knob to mean.
+        {"type": "object", "additionalProperties": False,
+         "properties": {"sdk": {"type": "string"}}},
+        mutation=REVERSIBLE_RUNTIME, deterministic=False, resources=("cpu",),
+        verifier_expectations=(
+            "placement is MLComputePlan.deviceUsage as observed, never the requested compute units",
+        ),
+        handler=_forbidden_fruit_lab,
+    ))
+    # WIRED HERE ON PURPOSE. Four modules were built in separate lanes, each
+    # scoped to its own file, which structurally prevented any of them from
+    # registering. Four verifiers then correctly refused them all on the same
+    # ground: a capability nothing can call does not exist. Registration is
+    # cross-cutting, so it belongs in one place rather than fragmented.
+    registry.register(ToolSpec(
+        "frontier.decide",
+        "Which frontier should run next and why the others are waiting or parked.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_frontier_decide,
+    ))
+    registry.register(ToolSpec(
+        "specimens.registry",
+        "Every sealed specimen enumerated from disk. Sealed does not mean loadable.",
+        {"type": "object", "additionalProperties": False,
+         "properties": {"name": {"type": "string"}}},
+        handler=_specimens_registry,
+    ))
+    registry.register(ToolSpec(
+        "acquisition.propose",
+        "Rank what to acquire next, with destination-filesystem headroom. Never starts a download.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_acquisition_propose,
+    ))
+    registry.register(ToolSpec(
+        "odyssey.ingest",
+        "Read the live mid-flight Odyssey state so HCLI can take it over without restarting it.",
+        {"type": "object", "additionalProperties": False, "properties": {}},
+        handler=_odyssey_read_verb("ingest"),
+    ))
+    for verb, required in (
+        ("add_to_eligibility", ("oxx",)),
+        ("park_specimen", ("oxx",)),
+        ("record_law", ("text",)),
+        ("record_scar", ("law_id",)),
+        ("create_transfer_probe", ("law_id", "target_oxx")),
+        ("create_adversarial_probe", ("law_id",)),
+    ):
+        props = {"confirm": {"type": "boolean"}}
+        for field in ("oxx", "text", "law_id", "target_oxx", "note", "reason",
+                      "evidence", "source_oxx", "attack", "description"):
+            props[field] = {"type": "string"}
+        registry.register(ToolSpec(
+            "odyssey." + verb,
+            "Odyssey campaign mutation: " + verb.replace("_", " ") + ". Requires confirm=True.",
+            {"type": "object", "additionalProperties": False,
+             "required": ["confirm"] + list(required), "properties": props},
+            mutation=COSTLY, deterministic=False,
+            handler=_odyssey_mutating(verb, required),
         ))
     registry.register(ToolSpec(
         "tests.list", "Discover deterministic test files without executing them.",

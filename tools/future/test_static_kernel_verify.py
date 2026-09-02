@@ -493,3 +493,16 @@ def test_build_emits_sealed_receipt_with_required_fields():
     # Honesty: UNVERIFIABLE is first-class, never silently PASS
     assert "UNVERIFIABLE" in doc["coverage"]["honesty"]
     assert doc["counts"]["ERROR"] >= 0
+
+
+def test_rust_binary_missing_path_is_none(monkeypatch, tmp_path):
+    """A missing artifact must not crash HCLI: scan() falls back to Python."""
+    monkeypatch.delenv("HAWKING_SKV_FORCE_PYTHON", raising=False)
+    monkeypatch.setenv("HAWKING_STATIC_KERNEL_VERIFY", str(tmp_path / "no-such-bin"))
+    assert skv._rust_binary() is None
+    assert skv._scan_via_rust(skv.REPO) is None
+
+
+def test_force_python_disables_rust(monkeypatch):
+    monkeypatch.setenv("HAWKING_SKV_FORCE_PYTHON", "1")
+    assert skv._rust_binary() is None

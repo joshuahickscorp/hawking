@@ -1,0 +1,141 @@
+{
+  "criterion": {
+    "span": [
+      7674,
+      7676
+    ],
+    "quoted": "### HCLI_SELF_SUPPLEMENT\n**Meaning:** Mission can create dependency-ready next WorkUnits from verified state.\n**Proof obligation:** Full chain receipt.",
+    "meaning": "Mission can create dependency-ready next WorkUnits from verified state.",
+    "proof_obligation": "Full chain receipt."
+  },
+  "symbol": {
+    "qualname": "admit_evidence_children",
+    "module": "hcli.agentos.resident",
+    "file": "/Users/scammermike/Downloads/hawking/hcli/agentos/resident.py",
+    "line": 736
+  },
+  "invocations": [
+    {
+      "symbol": "hcli.agentos.resident.admit_evidence_children"
+    },
+    {
+      "symbol": "hcli.agentos.AgentOS.start_mission"
+    },
+    {
+      "symbol": "hcli.agentos.AgentOS.run"
+    },
+    {
+      "symbol": "hcli.agentos.AgentOS.continue_mission"
+    }
+  ],
+  "command": "python3 -m tools.acceptance.context --gate HCLI_SELF_SUPPLEMENT",
+  "evidence_tier": "FUNCTIONAL_SIM",
+  "hops": {
+    "first": {
+      "status": "completed",
+      "evidence": [
+        {
+          "unit_id": "parent",
+          "accepted": true,
+          "validation": {
+            "ok": true,
+            "verifier": "acceptance-recording-engine"
+          },
+          "child_workunits": [
+            {
+              "id": "child",
+              "description": "inspect the verified parent receipt",
+              "role": "research",
+              "resource_class": "CPU_SHARED"
+            }
+          ],
+          "at": 1788374687.694252
+        }
+      ]
+    },
+    "admitted": [
+      {
+        "parent_id": "parent",
+        "id": "child",
+        "status": "ADMITTED",
+        "reason": "verified parent evidence"
+      }
+    ],
+    "child_dependencies": [
+      "parent"
+    ],
+    "child_status_before": "pending",
+    "second": {
+      "status": "completed",
+      "engine_calls": [
+        "parent",
+        "child"
+      ]
+    },
+    "child_status_after": "completed",
+    "unverified_denied": [],
+    "ghost_absent": true
+  },
+  "checks": {
+    "admit_evidence_children_invoked": true,
+    "parent_verified": true,
+    "child_admitted": true,
+    "child_depends_on_parent": true,
+    "child_ran": true,
+    "child_completed": true,
+    "unverified_denied": true
+  },
+  "verdict": "ACCEPTED",
+  "blocker": null,
+  "output": {
+    "first": {
+      "status": "completed",
+      "evidence": [
+        {
+          "unit_id": "parent",
+          "accepted": true,
+          "validation": {
+            "ok": true,
+            "verifier": "acceptance-recording-engine"
+          },
+          "child_workunits": [
+            {
+              "id": "child",
+              "description": "inspect the verified parent receipt",
+              "role": "research",
+              "resource_class": "CPU_SHARED"
+            }
+          ],
+          "at": 1788374687.694252
+        }
+      ]
+    },
+    "admitted": [
+      {
+        "parent_id": "parent",
+        "id": "child",
+        "status": "ADMITTED",
+        "reason": "verified parent evidence"
+      }
+    ],
+    "child_dependencies": [
+      "parent"
+    ],
+    "child_status_before": "pending",
+    "second": {
+      "status": "completed",
+      "engine_calls": [
+        "parent",
+        "child"
+      ]
+    },
+    "child_status_after": "completed",
+    "unverified_denied": [],
+    "ghost_absent": true
+  },
+  "schema": "hawking.acceptance.gate.v1",
+  "gate": "HCLI_SELF_SUPPLEMENT",
+  "generated_at": "2026-09-02T18:44:47Z",
+  "git_head": "14ed3eb1f8fc616a29dbc724f3937cffedf15a43",
+  "criterion_altered": false
+}

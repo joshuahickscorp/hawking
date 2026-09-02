@@ -1,0 +1,2956 @@
+{
+  "capabilities": [
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "accelerator benchmark",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/odyssey.py:23"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "accelerator.benchmark",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364",
+        "hcli/odyssey.py:23"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "accelerator inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "hardware measurements",
+      "evidence": {
+        "elapsed_s": 0.0004,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-97228474-18be-4fe1-b33d-2e21fce7b7e5",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"path\": \"/Users/scammermike/Downloads/hawking/receipts/headless/ACCELERATOR_MACHINE_GENOME.json\", \"sha256\": \"37cd1d329614ccbfe5831b260c76377f1e29545a122b2ee9430b7aded6758b4d\", \"bytes\": 3197, \"document\": {\"schema\": \"hawking.accelerator.receipt.v1\", \"generated_at\": \"2026-08-25T12:02:06Z\", \"experiment_class\": \"ACCEL-DEVI",
+          "json_bytes": 3138,
+          "keys": [
+            "bytes",
+            "document",
+            "path",
+            "sha256"
+          ],
+          "sha256": "9c3bb95881303a1cfa5d3244fefb2cc7b0c02b736d83bdc60e25a7067f801d6f",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "accelerator.inspect",
+      "probe_arguments": {},
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "acquisition propose",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/acquisition.py:73",
+          "hcli/acquisition.py:83"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "acquisition.propose",
+      "production_call_sites": [
+        "hcli/acquisition.py:73",
+        "hcli/acquisition.py:83",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "architecture inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [
+          "hcli/agentos/autonomy_gate.py:319"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "architecture.inspect",
+      "production_call_sites": [
+        "hcli/agentos/autonomy_gate.py:319",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "benchmark inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:358"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "benchmark.inspect",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:358",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "benchmark run",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/__init__.py:349",
+          "hcli/agentos/recovery.py:376",
+          "hcli/agentos/recovery.py:504",
+          "hcli/odyssey.py:23"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "benchmark.run",
+      "production_call_sites": [
+        "hcli/agentos/__init__.py:349",
+        "hcli/agentos/recovery.py:376",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364",
+        "hcli/odyssey.py:23"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "context recall",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "context.recall",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "doctor inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "doctor.inspect",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "doctor query",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "doctor.query",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "filesystem list",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:356"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "filesystem.list",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:356",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "filesystem read",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/vmcp_gate.py:193",
+          "hcli/agentos/vmcp_gate.py:233",
+          "hcli/agentos/vmcp_gate.py:283",
+          "hcli/engine.py:354",
+          "hcli/executors.py:30"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "filesystem.read",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:193",
+        "hcli/agentos/vmcp_gate.py:233",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/agentos/vmcp_gate.py:283",
+        "hcli/engine.py:354",
+        "hcli/engine.py:919",
+        "hcli/executors.py:30",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "filesystem search",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/resident.py:680",
+          "hcli/engine.py:355"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "filesystem.search",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/resident.py:680",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:355",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "filesystem write",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/autonomy_gate.py:428",
+          "hcli/agentos/autonomy_gate.py:435",
+          "hcli/agentos/autonomy_gate.py:844",
+          "hcli/agentos/autonomy_gate.py:905",
+          "hcli/agentos/native_mission_gate.py:191",
+          "hcli/agentos/native_mission_gate.py:256"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "reversible_repo",
+      "name": "filesystem.write",
+      "production_call_sites": [
+        "hcli/agentos/autonomy_gate.py:428",
+        "hcli/agentos/autonomy_gate.py:435",
+        "hcli/agentos/autonomy_gate.py:844",
+        "hcli/agentos/autonomy_gate.py:905",
+        "hcli/agentos/native_mission_gate.py:191",
+        "hcli/agentos/native_mission_gate.py:256",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "forbidden fruit lab",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "reversible_runtime",
+      "name": "forbidden_fruit.lab",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "frontier decide",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "frontier.decide",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "frontier escalate",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "frontier.escalate",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "fs list",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:356",
+          "hcli/engine.py:747",
+          "hcli/engine.py:774",
+          "hcli/engine.py:801",
+          "hcli/engine.py:819",
+          "hcli/engine.py:840",
+          "hcli/engine.py:847",
+          "hcli/engine.py:869"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "current source",
+      "evidence": {
+        "elapsed_s": 0.0023,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-22b4f6ec-e289-40d9-b539-22e891bbfca2",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"root\": \"/Users/scammermike/Downloads/hawking/hcli\", \"glob\": \"*\", \"files\": [{\"path\": \"__init__.py\", \"bytes\": 1226}, {\"path\": \"__main__.py\", \"bytes\": 86}, {\"path\": \"_sovereign_gate_doc.md\", \"bytes\": 548}, {\"path\": \"acquisition.py\", \"bytes\": 13328}, {\"path\": \"agentos_cli.py\", \"bytes\": 61614}, {\"path\": \"ane_provider.py\",",
+          "json_bytes": 1372,
+          "keys": [
+            "directories",
+            "files",
+            "glob",
+            "root",
+            "truncated"
+          ],
+          "sha256": "429f5610e58363a0e999b4716ab1d86ba7271ff4d20dc5c36df656acef535d4b",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "fs.list",
+      "probe_arguments": {
+        "max_results": 25,
+        "path": "hcli"
+      },
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:356",
+        "hcli/engine.py:747",
+        "hcli/engine.py:774",
+        "hcli/engine.py:801",
+        "hcli/engine.py:819",
+        "hcli/engine.py:840",
+        "hcli/engine.py:847",
+        "hcli/engine.py:869",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "fs read",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/native_mission_gate.py:191",
+          "hcli/agentos/native_mission_gate.py:259",
+          "hcli/agentos/native_mission_gate.py:271",
+          "hcli/engine.py:179",
+          "hcli/engine.py:354",
+          "hcli/engine.py:2898",
+          "hcli/engine.py:2953",
+          "hcli/engine.py:2967"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "current source",
+      "evidence": {
+        "elapsed_s": 0.0005,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-e61c6395-412d-4945-afae-eace5c0ce00e",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"path\": \"/Users/scammermike/Downloads/hawking/hcli/tool_registry.py\", \"bytes\": 96193, \"truncated\": true, \"sha256\": \"b73e1e108eb5a2453b0a9888cbb607b032f5552c8419ba8d868c38570a7c198d\", \"content\": \"\\\"\\\"\\\"Typed, permissioned tools for AgentOS.\\n\\nThe model is allowed to *request* a tool; it is never allowed to smuggle a\\n",
+          "json_bytes": 4641,
+          "keys": [
+            "artifact",
+            "bytes",
+            "content",
+            "path",
+            "sha256",
+            "truncated"
+          ],
+          "sha256": "3876717cdd74bade79829ae503cf43621523df4f5a01de121bf224e1c0026bb3",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "fs.read",
+      "probe_arguments": {
+        "max_bytes": 4096,
+        "path": "hcli/tool_registry.py"
+      },
+      "production_call_sites": [
+        "hcli/agentos/native_mission_gate.py:191",
+        "hcli/agentos/native_mission_gate.py:259",
+        "hcli/agentos/native_mission_gate.py:271",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:179",
+        "hcli/engine.py:2898",
+        "hcli/engine.py:2953",
+        "hcli/engine.py:2967",
+        "hcli/engine.py:354",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "fs search",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:355",
+          "hcli/engine.py:965"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "call sites are authority",
+      "evidence": {
+        "elapsed_s": 0.0149,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-c36cc9d3-1645-4ef2-8755-3f502b8e5abc",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"root\": \"/Users/scammermike/Downloads/hawking/hcli\", \"pattern\": \"registry.invoke(\", \"matches\": [{\"path\": \"/Users/scammermike/Downloads/hawking/hcli/engine.py\", \"line\": 919, \"text\": \"                result = registry.invoke(name, args)\"}, {\"path\": \"/Users/scammermike/Downloads/hawking/hcli/executors.py\", \"line\": 364, \"",
+          "json_bytes": 3602,
+          "keys": [
+            "files_seen",
+            "matches",
+            "pattern",
+            "root",
+            "truncated"
+          ],
+          "sha256": "74ce202813d6917fcd54a870513a82c316162c09fa256d596b75014c11bd7c21",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "fs.search",
+      "probe_arguments": {
+        "max_results": 25,
+        "pattern": "registry.invoke(",
+        "root": "hcli"
+      },
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:355",
+        "hcli/engine.py:919",
+        "hcli/engine.py:965",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "git checkout-safe",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:357",
+          "hcli/landing.py:2",
+          "hcli/landing.py:52"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "destructive",
+      "name": "git.checkout-safe",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:357",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364",
+        "hcli/landing.py:2",
+        "hcli/landing.py:52"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "git checkout/revert-safe",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:357"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "destructive",
+      "name": "git.checkout/revert-safe",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:357",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "git diff",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "git.diff",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "git land propose",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/landing.py:8",
+          "hcli/landing.py:52",
+          "hcli/landing.py:410"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "reversible_repo",
+      "name": "git.land.propose",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364",
+        "hcli/landing.py:410",
+        "hcli/landing.py:52",
+        "hcli/landing.py:8"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "git log",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "git.log",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "git revert-safe",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:357",
+          "hcli/landing.py:3",
+          "hcli/landing.py:52"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "destructive",
+      "name": "git.revert-safe",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:357",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364",
+        "hcli/landing.py:3",
+        "hcli/landing.py:52"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "git status",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "git.status",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "github fetch",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [
+          "hcli/agentos/research.py:243",
+          "hcli/agentos/research.py:300",
+          "hcli/agentos/research.py:368"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "github.fetch",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:243",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/research.py:300",
+        "hcli/agentos/research.py:368",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "github search",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [
+          "hcli/agentos/research.py:299",
+          "hcli/agentos/research.py:365",
+          "hcli/agentos/research.py:428",
+          "hcli/agentos/research.py:429"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "github.search",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/research.py:299",
+        "hcli/agentos/research.py:365",
+        "hcli/agentos/research.py:428",
+        "hcli/agentos/research.py:429",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "gravity experiment",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "reversible_runtime",
+      "name": "gravity.experiment",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "gravity inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "gravity.inspect",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "grok swarm launch",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "grok.swarm.launch",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "grok swarm propose",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "grok.swarm.propose",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "huggingface download",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/research.py:301",
+          "hcli/agentos/research.py:387"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "huggingface.download",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/research.py:301",
+        "hcli/agentos/research.py:387",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "huggingface fetch file",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/research.py:254",
+          "hcli/agentos/research.py:300",
+          "hcli/agentos/research.py:379"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "huggingface.fetch_file",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:254",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/research.py:300",
+        "hcli/agentos/research.py:379",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "huggingface history",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "huggingface.history",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "huggingface manifest",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:359"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "huggingface.manifest",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:359",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "huggingface resolve",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/research.py:300",
+          "hcli/agentos/research.py:369",
+          "hcli/agentos/research.py:430",
+          "hcli/engine.py:359"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "huggingface.resolve",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/research.py:300",
+        "hcli/agentos/research.py:369",
+        "hcli/agentos/research.py:430",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:359",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "modellake status",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/autonomy_gate.py:313",
+          "hcli/agentos/autonomy_gate.py:360",
+          "hcli/agentos/autonomy_gate.py:1052"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "ModelLake state",
+      "evidence": {
+        "elapsed_s": 0.0006,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-38703764-ce9f-4f9e-82ee-c1dfa677e7bb",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"path\": \"/Users/scammermike/Downloads/hawking/receipts/headless/MODEL_LAKE_ROLLING_PIPELINE.json\", \"sha256\": \"8b6ca77196d2ea13c6e71df136d138bd4aadae3328add6aaa32b0c06627ef5ee\", \"bytes\": 4560, \"document\": {\"schema\": \"hawking.headless.model_lake.v1\", \"generated_at\": \"2026-08-25T04:14:40Z\", \"generated_by\": \"tools/odyssey",
+          "json_bytes": 4309,
+          "keys": [
+            "bytes",
+            "document",
+            "path",
+            "sha256"
+          ],
+          "sha256": "6cffb0d529d732d003245d5885664927eb6bf22229b01e41e0a6e0bf4902b4ea",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "modellake.status",
+      "probe_arguments": {},
+      "production_call_sites": [
+        "hcli/agentos/autonomy_gate.py:1052",
+        "hcli/agentos/autonomy_gate.py:313",
+        "hcli/agentos/autonomy_gate.py:360",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey add to eligibility",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "odyssey.add_to_eligibility",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey create adversarial probe",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "odyssey.create_adversarial_probe",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey create transfer probe",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "odyssey.create_transfer_probe",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey cycle",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "odyssey.cycle",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey economics",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "odyssey.economics",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey ingest",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/odyssey.py:285",
+          "tools/odyssey/cli.py:26"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "odyssey.ingest",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364",
+        "hcli/odyssey.py:285",
+        "tools/odyssey/cli.py:26"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey park specimen",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "odyssey.park_specimen",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey queue",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "Run Odyssey streams I, II and III",
+      "evidence": {
+        "elapsed_s": 0.1013,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-a30b6d4a-dbe2-4123-b088-e21240010f3c",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"schema\": \"hcli.odyssey.ctl.v1\", \"argv\": [\"queue\"], \"exit_code\": 0, \"ok\": true, \"stdout\": \"Oxx   state       phase     ledger                      model\\nO000  ACQUIRING   \u2014         acquiring                   gemma-3-1b-it\\nO001  ACQUIRING   SEALED    acquiring                   Falcon-H1-7B-Instruct\\nO002  ACQUIRING",
+          "json_bytes": 1196,
+          "keys": [
+            "argv",
+            "exit_code",
+            "ok",
+            "schema",
+            "stderr",
+            "stdout"
+          ],
+          "sha256": "18b87a5e935da29488c56ec10697f97a710e5de62b3cf1589964c0594e95b329",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "odyssey.queue",
+      "probe_arguments": {},
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey record law",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "odyssey.record_law",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey record scar",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "costly",
+      "name": "odyssey.record_scar",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey status",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "Run Odyssey streams I, II and III",
+      "evidence": {
+        "elapsed_s": 0.1088,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-b3f5522e-6572-4d52-b09a-95fc41f95576",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"schema\": \"hcli.odyssey.ctl.v1\", \"argv\": [\"status\"], \"exit_code\": 0, \"ok\": true, \"stdout\": \"HAWKING ODYSSEY-I\\n\\nQUEUE:\\n    on-disk: O003,O006\\n    BLOCKED-auth: \u2014\\n    queued: O010,O011,O012,O013\\n\\nPATIENT:\\n    O003\\n    phase: SEALED\\n    source: moonshotai/Kimi-VL-A3B-Instruct\\n    Doctor: receipts/odyssey-i/O00",
+          "json_bytes": 1148,
+          "keys": [
+            "argv",
+            "exit_code",
+            "ok",
+            "schema",
+            "stderr",
+            "stdout"
+          ],
+          "sha256": "a192ae00bcc07d58471530ee33dec63f259a96d15bc4cad8078994a774793fa2",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "odyssey.status",
+      "probe_arguments": {},
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "odyssey value",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "odyssey.value",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "receipt inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:358"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "receipt.inspect",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:358",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "receipt read",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/autonomy_gate.py:259",
+          "hcli/agentos/autonomy_gate.py:265",
+          "hcli/agentos/autonomy_gate.py:271",
+          "hcli/agentos/autonomy_gate.py:277",
+          "hcli/agentos/autonomy_gate.py:283",
+          "hcli/agentos/autonomy_gate.py:289",
+          "hcli/agentos/autonomy_gate.py:295",
+          "hcli/agentos/autonomy_gate.py:301",
+          "hcli/agentos/autonomy_gate.py:307",
+          "hcli/engine.py:358"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "receipts",
+      "evidence": {
+        "elapsed_s": 0.0003,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-cf1ce25d-91e4-4eeb-a96b-b2b4b7da1e16",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"path\": \"/Users/scammermike/Downloads/hawking/receipts/sovereign/VERIFIER_MANIFEST.json\", \"sha256\": \"8f5e6df7f79ec73ea03adea8cb6a21e88704e94761e72e46a9570e5034cebe93\", \"bytes\": 2523, \"document\": {\"schema\": \"hcli.sovereign.verifier_manifest.v1\", \"produced_at\": \"2026-09-02T06:52:31Z\", \"produced_by\": \"claude-phase0-cutov",
+          "json_bytes": 2621,
+          "keys": [
+            "bytes",
+            "document",
+            "path",
+            "sha256"
+          ],
+          "sha256": "66f2c95f0da178d57a97f4a6267ac5dc5133add171547c0eed3d34023f4fbeaf",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "receipt.read",
+      "probe_arguments": {
+        "max_bytes": 8192,
+        "path": "receipts/sovereign/VERIFIER_MANIFEST.json"
+      },
+      "production_call_sites": [
+        "hcli/agentos/autonomy_gate.py:259",
+        "hcli/agentos/autonomy_gate.py:265",
+        "hcli/agentos/autonomy_gate.py:271",
+        "hcli/agentos/autonomy_gate.py:277",
+        "hcli/agentos/autonomy_gate.py:283",
+        "hcli/agentos/autonomy_gate.py:289",
+        "hcli/agentos/autonomy_gate.py:295",
+        "hcli/agentos/autonomy_gate.py:301",
+        "hcli/agentos/autonomy_gate.py:307",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:358",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "roadmap inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:360"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "roadmap.inspect",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:360",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "roadmap read",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:360"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "roadmap.read",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:360",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "shell exec",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "reversible_runtime",
+      "name": "shell.exec",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "shell readonly",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "shell.readonly",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "specimens registry",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/specimens.py:31"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "an incomplete specimen never blocks independent science",
+      "evidence": {
+        "elapsed_s": 0.0177,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-6b8a324b-266f-4dfd-9dbf-20f8f9726b75",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"schema\": \"hcli.specimens.registry.v1\", \"lake\": \"/Volumes/corpdrive/hawking-modellake\", \"specimens_dir\": \"/Volumes/corpdrive/hawking-modellake/specimens\", \"mounted\": true, \"n_specimens\": 53, \"specimens\": [{\"id\": \"Dream-org--Dream-v0-Instruct-7B@05334cb9faaf\", \"repo\": \"Dream-org/Dream-v0-Instruct-7B\", \"revision\": \"0533",
+          "json_bytes": 35979,
+          "keys": [
+            "lake",
+            "mounted",
+            "n_specimens",
+            "schema",
+            "sealed_does_not_mean_resident",
+            "specimens",
+            "specimens_dir"
+          ],
+          "sha256": "99e79b2e8fecc2aecc9dd0f2ec067c2ce8f4da0d9fdfc7fdfb6cbc55cd4bfbfc",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "specimens.registry",
+      "probe_arguments": {},
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364",
+        "hcli/specimens.py:31"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "tests list",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "tests",
+      "evidence": {
+        "elapsed_s": 0.0019,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-5fc83005-f68d-4ec0-94a8-d918edde75af",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"root\": \"/Users/scammermike/Downloads/hawking/hcli\", \"count\": 66, \"paths\": [\"/Users/scammermike/Downloads/hawking/hcli/agentos/test_flash_telemetry.py\", \"/Users/scammermike/Downloads/hawking/hcli/agentos/test_fpga_preboard.py\", \"/Users/scammermike/Downloads/hawking/hcli/agentos/test_protected_accelerator_benchmark.py\"",
+          "json_bytes": 4910,
+          "keys": [
+            "count",
+            "paths",
+            "root",
+            "truncated"
+          ],
+          "sha256": "52e8436caa4f1dcd1db08de8ec42d2299212b59332871b6b05df1a8ab103c5b5",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "tests.list",
+      "probe_arguments": {
+        "root": "hcli"
+      },
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "tests run",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/executors.py:30"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "tests",
+      "evidence": {
+        "elapsed_s": 0.19,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-42482049-9e61-432a-adca-e8c5498bbced",
+        "mutation": "reversible_runtime",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"argv\": [\"/opt/homebrew/opt/python@3.14/bin/python3.14\", \"-m\", \"pytest\", \"-q\", \"hcli/test_command_registry.py\"], \"cwd\": \"/Users/scammermike/Downloads/hawking\", \"returncode\": 0, \"stdout\": \".......                                                                  [100%]\\n7 passed in 0.03s\\n\", \"stderr\": \"\", \"runner\": \"pyt",
+          "json_bytes": 458,
+          "keys": [
+            "argv",
+            "cwd",
+            "finished_at",
+            "returncode",
+            "root",
+            "runner",
+            "started_at",
+            "stderr",
+            "stdout",
+            "verified"
+          ],
+          "sha256": "49d95699ec35402e948881f32c29bc9fc141c6f4bbd78b6919c9c74d88f274b7",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "reversible_runtime",
+      "name": "tests.run",
+      "probe_arguments": {
+        "paths": [
+          "hcli/test_command_registry.py"
+        ],
+        "timeout_s": 240
+      },
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:30",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "tools catalog",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/engine.py:998",
+          "hcli/engine.py:1087"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "derived_from_goal_quote": "Audit capability reachability by production call site",
+      "evidence": {
+        "elapsed_s": 0.0004,
+        "error": null,
+        "failure_class": null,
+        "invocation_id": "tool-b04500cc-deb4-472e-bcbe-9305655b55a7",
+        "mutation": "read_only",
+        "ok": true,
+        "returned": {
+          "excerpt": "{\"focus\": \"capability reachability production call site\", \"matches\": [{\"schema\": \"hcli.agentos.tool.v1\", \"name\": \"context.recall\", \"description\": \"Recall bounded prior-knowledge facts from the hot index and cold gzip archive; never replays the transcript.\", \"input_schema\": {\"type\": \"object\", \"required\": [\"focus\"], \"add",
+          "json_bytes": 7121,
+          "keys": [
+            "focus",
+            "match_count",
+            "matches",
+            "provenance",
+            "truncated"
+          ],
+          "sha256": "7c113c56a0868d6a99cdfdbefc2bbef812572334da1407cf4f15b028546cba17",
+          "type": "dict"
+        }
+      },
+      "invoked": true,
+      "invoked_via": "hcli.tool_registry.ToolRegistry.invoke",
+      "mutation": "read_only",
+      "name": "tools.catalog",
+      "probe_arguments": {
+        "focus": "capability reachability production call site"
+      },
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:1087",
+        "hcli/engine.py:919",
+        "hcli/engine.py:998",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": true
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "vmcp capabilities",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "vmcp.capabilities",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "vmcp inspect",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [
+          "hcli/agentos/vmcp_gate.py:163",
+          "hcli/agentos/vmcp_gate.py:232",
+          "hcli/agentos/vmcp_gate.py:280"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "vmcp.inspect",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:163",
+        "hcli/agentos/vmcp_gate.py:232",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/agentos/vmcp_gate.py:280",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "vmcp query",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": false,
+        "named_literally_in_production": [
+          "hcli/agentos/vmcp_gate.py:172",
+          "hcli/agentos/vmcp_gate.py:233",
+          "hcli/agentos/vmcp_gate.py:281"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "read_only",
+      "name": "vmcp.query",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:172",
+        "hcli/agentos/vmcp_gate.py:233",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/agentos/vmcp_gate.py:281",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "web fetch",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/recovery.py:376",
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/research.py:299",
+          "hcli/agentos/research.py:363"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "web.fetch",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:376",
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/research.py:299",
+        "hcli/agentos/research.py:363",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "call_site_kinds": {
+        "found_by_tools_catalog_probe": {
+          "focus": "web search",
+          "found": true,
+          "ok": true
+        },
+        "model_facing_catalog_emits_name": true,
+        "named_literally_in_production": [
+          "hcli/agentos/research.py:234",
+          "hcli/agentos/research.py:299",
+          "hcli/agentos/research.py:362",
+          "hcli/agentos/vmcp_gate.py:184",
+          "hcli/agentos/vmcp_gate.py:232",
+          "hcli/agentos/vmcp_gate.py:279"
+        ],
+        "registry_name_dispatch": [
+          "hcli/agentos/recovery.py:502",
+          "hcli/agentos/recovery.py:504",
+          "hcli/agentos/research.py:265",
+          "hcli/agentos/runtime.py:488",
+          "hcli/agentos/vmcp_gate.py:275",
+          "hcli/engine.py:919",
+          "hcli/executors.py:364"
+        ]
+      },
+      "invoked": false,
+      "mutation": "research",
+      "name": "web.search",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:502",
+        "hcli/agentos/recovery.py:504",
+        "hcli/agentos/research.py:234",
+        "hcli/agentos/research.py:265",
+        "hcli/agentos/research.py:299",
+        "hcli/agentos/research.py:362",
+        "hcli/agentos/runtime.py:488",
+        "hcli/agentos/vmcp_gate.py:184",
+        "hcli/agentos/vmcp_gate.py:232",
+        "hcli/agentos/vmcp_gate.py:275",
+        "hcli/agentos/vmcp_gate.py:279",
+        "hcli/engine.py:919",
+        "hcli/executors.py:364"
+      ],
+      "registered": true,
+      "required_by_active_frontier": false
+    },
+    {
+      "derived_from_goal_quote": "processes",
+      "evidence": {
+        "call_path": "hcli/runtime.py RuntimePool.__init__ -> _register_live -> _reap_orphans_once -> hcli.processes.reap_orphaned_bodies; and hcli/commands.py -> hcli.processes.render for the /processes command",
+        "elapsed_s": 0.2385,
+        "returned": {
+          "excerpt": "{\"count\": 4, \"total_rss_bytes\": 18996002816, \"by_class\": {\"ESSENTIAL_PERSISTENT\": 3, \"ESSENTIAL_EPHEMERAL\": 1}, \"roles\": [\"modellake-download\", \"modellake-watcher\", \"resident-body\", \"resident-supervisor\"], \"processes\": [{\"pid\": 6090, \"ppid\": 5953, \"rss_bytes\": 11811160064, \"rss_gib\": 11.0, \"memory_source\": \"phys_footpr",
+          "json_bytes": 1559,
+          "keys": [
+            "by_class",
+            "count",
+            "processes",
+            "roles",
+            "total_rss_bytes"
+          ],
+          "sha256": "88a491492bb3d6a7a89bf2cf1e41019fa267ceb401f00f760a370ab6d4719e0c",
+          "type": "dict"
+        }
+      },
+      "finding": "REACHABLE FROM PRODUCTION CODE, UNREACHABLE FROM THE MODEL. The live goal's first law names processes as authority, but no registered tool exposes them and both shell tools refuse `ps`, so the resident cannot observe process truth through the typed path it is given.",
+      "invoked": true,
+      "invoked_via": "hcli.processes.summary() -- its REAL production entry point. NOT the tool registry: the registry carries no process capability, which is the finding this row records.",
+      "name": "processes",
+      "production_call_sites": [
+        "hcli/agentos/recovery.py:167",
+        "hcli/commands.py:1475",
+        "hcli/runtime.py:136",
+        "hcli/runtime.py:138"
+      ],
+      "registered": false,
+      "registry_probes": {
+        "hcli.processes": {
+          "failure_class": "UNKNOWN_TOOL",
+          "ok": false
+        },
+        "process.list": {
+          "failure_class": "UNKNOWN_TOOL",
+          "ok": false
+        },
+        "processes.live": {
+          "failure_class": "UNKNOWN_TOOL",
+          "ok": false
+        },
+        "processes.status": {
+          "failure_class": "UNKNOWN_TOOL",
+          "ok": false
+        },
+        "shell.readonly(ps)": {
+          "error": "PermissionError: command is not in the read-only allowlist: ps",
+          "failure_class": "PermissionError",
+          "ok": false
+        }
+      },
+      "required_by_active_frontier": true
+    }
+  ],
+  "command": "python3 tools/sovereign/g009_reachability.py",
+  "counts": {
+    "audited_capabilities": 66,
+    "invoked_through_registry": 12,
+    "no_production_call_site": 0,
+    "not_in_live_model_facing_catalog": 9,
+    "registered_tools": 65,
+    "required_by_active_frontier": 13
+  },
+  "evidence": {
+    "invoked_through_registry": [
+      "accelerator.inspect",
+      "fs.list",
+      "fs.read",
+      "fs.search",
+      "modellake.status",
+      "odyssey.queue",
+      "odyssey.status",
+      "receipt.read",
+      "specimens.registry",
+      "tests.list",
+      "tests.run",
+      "tools.catalog"
+    ],
+    "mission_id": "8ee9a7d3-64f6-4fc5-a53f-66e30f9a959f",
+    "model_facing_catalog_chars": 3732,
+    "registered_tools": 65,
+    "registry_dispatch_sites": [
+      "hcli/agentos/recovery.py:502",
+      "hcli/agentos/recovery.py:504",
+      "hcli/agentos/research.py:265",
+      "hcli/agentos/runtime.py:488",
+      "hcli/agentos/vmcp_gate.py:275",
+      "hcli/engine.py:919",
+      "hcli/executors.py:364"
+    ]
+  },
+  "findings": [
+    {
+      "claim": "The live goal names processes as authority; the tool registry carries no process capability and both shell tools refuse `ps`.",
+      "evidence": "capabilities[].name == 'processes' -> registry_probes",
+      "id": "G009-F1",
+      "severity": "gap"
+    },
+    {
+      "claim": "Engine._tool_catalog (the FULL catalog) has no production call site: both callers of _prompt_with_observations pass compact_catalog=True, so the compact rendering is the only tool list the resident is ever shown.",
+      "evidence": "hcli/engine.py:1293 and hcli/engine.py:1319 vs hcli/engine.py:1166",
+      "id": "G009-F2",
+      "severity": "observation"
+    },
+    {
+      "claim": "These registered tools are absent from the live model-facing catalog for this goal and are reachable only via a tools.catalog(focus=...) round: architecture.inspect, forbidden_fruit.lab, github.fetch, github.search, grok.swarm.launch, grok.swarm.propose, vmcp.capabilities, vmcp.inspect, vmcp.query",
+      "evidence": "method.model_facing_surface rendering",
+      "id": "G009-F3",
+      "severity": "observation"
+    },
+    {
+      "claim": "No registered tool is structurally unreachable. Every one of 65 is either named in production, emitted by the live model-facing catalog, or returned by a real tools.catalog(focus=<its own name>) probe. This is the condition the 41-tools-with-no-call-site era failed.",
+      "evidence": "capabilities[].call_site_kinds",
+      "id": "G009-F4",
+      "severity": "result"
+    }
+  ],
+  "method": {
+    "call_site_scan_roots": [
+      "hcli",
+      "tools/odyssey"
+    ],
+    "excluded_from_scan": [
+      "test files",
+      "hcli/tool_registry.py"
+    ],
+    "invocation_entry_point": "hcli.tool_registry.ToolRegistry.invoke",
+    "model_facing_surface": "hcli/engine.py Engine._compact_tool_catalog, rendered for real with the live goal as focus; the agentic loop passes compact_catalog=True on every round",
+    "population": "every tool in hcli.tool_registry.default_tool_registry(...).discover()",
+    "required_set_derivation": "each required capability carries the exact substring of the LIVE mission goal that requires it; the producer aborts before writing if any quote is no longer present in that goal",
+    "why_not_direct_handler_calls": "a registry-reachability defect hid here before because tests called handlers directly and bypassed the registry the production path uses"
+  },
+  "mission": {
+    "goal_sha256": "c02e18894e8e53e715ce6b9290093670cbd45cb548287616937714f283a8e0e0",
+    "id": "8ee9a7d3-64f6-4fc5-a53f-66e30f9a959f",
+    "phase": "running",
+    "state_path": ".hcli/mission/state.json",
+    "units": 70,
+    "verifier_commands": [
+      "python3 -m pytest hcli/test_autonomous_frontier_metabolism.py",
+      "python3 -m pytest hcli/test_capability_callsite_reachability.py",
+      "python3 -m pytest hcli/test_context_compiler_runtime.py",
+      "python3 -m pytest hcli/test_deltanet_state_checkpoint.py",
+      "python3 -m pytest hcli/test_goal_verifier_synthesis.py",
+      "python3 -m pytest hcli/test_hcli_overhead.py",
+      "python3 -m pytest hcli/test_long_context_runtime.py",
+      "python3 -m pytest hcli/test_negative_science_runtime.py",
+      "python3 -m pytest hcli/test_qwen38_prefill_pipeline.py",
+      "python3 -m pytest hcli/test_resident_protected_performance.py",
+      "python3 -m pytest hcli/test_resident_successor_handoff.py",
+      "python3 -m pytest hcli/test_resident_watch_control_plane.py",
+      "python3 -m pytest hcli/test_self_mutation_e2e.py",
+      "python3 -m pytest tools/odyssey/test_modellake_retained_bytes.py",
+      "python3 -m pytest tools/odyssey/test_odyssey_streaming_runtime.py"
+    ]
+  },
+  "no_production_call_site": [],
+  "not_in_live_model_facing_catalog": [
+    "architecture.inspect",
+    "forbidden_fruit.lab",
+    "github.fetch",
+    "github.search",
+    "grok.swarm.launch",
+    "grok.swarm.propose",
+    "vmcp.capabilities",
+    "vmcp.inspect",
+    "vmcp.query"
+  ],
+  "produced_at": "2026-09-02T07:56:05+00:00",
+  "produced_by": "tools/sovereign/g009_reachability.py",
+  "reachable_only_after_a_tools_catalog_round": [
+    "forbidden_fruit.lab",
+    "grok.swarm.launch",
+    "grok.swarm.propose",
+    "vmcp.capabilities"
+  ],
+  "required_but_unregistered": [],
+  "required_invocations_that_failed": [],
+  "schema": "hawking.sovereign.g009.reachability.v1",
+  "status": "completed"
+}

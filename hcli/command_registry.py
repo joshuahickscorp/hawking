@@ -70,7 +70,22 @@ COMMANDS: Tuple[Command, ...] = (
         "read_only",
         "/receipts 5",
     ),
+    Command(
+        "/processes",
+        "what every live Hawking process is, and which are safe to stop",
+        False,
+        "read_only",
+        "/processes",
+    ),
     Command("/goal", "set active goal", True, "workspace_write", "/goal ship X"),
+    Command(
+        "/bank",
+        "queue a future goal; it starts after the active goal completes",
+        True,
+        "workspace_write",
+        "/bank prepare the overnight production report",
+        aliases=("\\bank",),
+    ),
     Command(
         "/ultragoal",
         "create or show the durable Goal + ledger + DAG",
@@ -109,7 +124,7 @@ COMMANDS: Tuple[Command, ...] = (
     ),
     Command(
         "/context",
-        "show context summary; list/drop/clear cached pastes",
+        "show context and prior knowledge; manage cached pastes",
         True,
         "destructive",
         "/context list",
@@ -124,12 +139,20 @@ COMMANDS: Tuple[Command, ...] = (
     ),
     Command("/resume", "resume session", True, "workspace_write", "/resume"),
     Command(
-        "/exit",
+        "/quit",
         "exit HCLI",
         True,
         "reversible_runtime",
-        "/exit",
-        aliases=("/quit",),
+        "/quit",
+        aliases=("/exit",),
+    ),
+    Command(
+        "/land",
+        "commit accumulated work via the governed landing service "
+        "(push/merge are separate: /land push, /land merge <branch>)",
+        True,
+        "repo_write",
+        "/land",
     ),
 )
 
@@ -149,7 +172,7 @@ def handler_name(name: str) -> str:
     Identical to the lookup in ``CommandHandler.handle``, so a test over this
     is a test of the real dispatch path.
     """
-    return f"_cmd_{name.lstrip('/')}"
+    return f"_cmd_{name.lstrip('/\\')}"
 
 
 def help_text() -> str:

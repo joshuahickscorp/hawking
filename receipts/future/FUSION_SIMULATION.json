@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:27:14Z",
+  "recorded_at": "2026-09-02T09:16:35Z",
   "recorded_by": "tools/future/fusion_sim.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -1028,8 +1028,8 @@
   "simulate": "simulate(topo, objects, work, collectives=(), vanish=None, inflight_edges=(), baseline_time_s=None) -> dict"
  },
  "negative_findings": [
-  "receipts/headless/APPLE_ANE_ATLAS.json: NOT in git \u2014 asked to read, could not.",
-  "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json: NOT in git \u2014 asked to read, could not.",
+  "receipts/headless/APPLE_ANE_ATLAS.json: present in git \u2014 asked to read, could not.",
+  "receipts/headless/APPLE_ANE_DEVICE_PROFILE.json: present in git \u2014 asked to read, could not.",
   "No U50-specific device genome (FPGA preboard is TARGET_UNSELECTED, not Alveo U50).",
   "No measured interconnect to FPGA, CUDA/DGX, eGPU, or a second Mac.",
   "No PROTECTED_ABSOLUTE token_ns, so even Apple-local compute is UNKNOWN for execution timing.",
@@ -1147,7 +1147,7 @@
   }
  },
  "schema": "hawking.future.fusion_sim.v1",
- "seal_sha256": "c7691a10cb6d4d82f03b988e97eb8e9f08de0bff4408c001970f9d188f186306",
+ "seal_sha256": "8187819bfbd50068cac948e4f0bcab47671ac17989f658aceb03d02b1284d58a",
  "simulated_dimensions": [
   "placement",
   "residency",

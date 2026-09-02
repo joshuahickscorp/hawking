@@ -87,7 +87,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:08:09Z",
+  "recorded_at": "2026-09-02T09:03:56Z",
   "recorded_by": "tools/future/odyssey_launch.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -142,13 +142,38 @@
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "LiquidAI/LFM2.5-1.2B-Instruct",
+    "revision": "0f604ada3f76"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "LiquidAI/LFM2.5-2.6B-Base",
     "revision": "c57bdaed1ef1"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen2.5-72B-Instruct",
+    "revision": "495f39366efe"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-14B",
+    "revision": "40c069824f42"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "Qwen/Qwen3-30B-A3B",
     "revision": "ad44e777bcd18fa416d9da3bd8f70d33ebb85d39"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-4B-Instruct-2507",
+    "revision": "cdbee75f17c0"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-Coder-30B-A3B-Instruct",
+    "revision": "b2cff646eb4b"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -159,6 +184,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "Qwen/Qwen3-VL-30B-A3B-Instruct",
     "revision": "9c4b90e1e4ba969fd3b5378b57d966d725f1b86c"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "Qwen/Qwen3-VL-8B-Instruct",
+    "revision": "0c351dd01ed8"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -247,6 +277,11 @@
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "ibm-granite/granite-4.0-h-tiny",
+    "revision": "791e0d3d28c8"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "kyutai/moshika-pytorch-bf16",
     "revision": "a49141e28b3d"
    },
@@ -254,6 +289,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "lerobot/pi0_base",
     "revision": "25c379b52ba2"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "microsoft/Phi-4-mini-instruct",
+    "revision": "cfbefacb9925"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -279,6 +319,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "moonshotai/Kimi-K3",
     "revision": "9f62e4e9fffbd0a83ddd60e1c209d828994b3569"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "moonshotai/Kimi-Linear-48B-A3B-Instruct",
+    "revision": "e1df551a4471"
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
@@ -312,6 +357,16 @@
    },
    {
     "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "thinkingmachines/Inkling-Small",
+    "revision": "8cc5877b44d3"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "tiiuae/Falcon3-1B-Instruct",
+    "revision": "28ba2251970a"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "zai-org/GLM-4.5",
     "revision": "cbb2c7cfb52fa128a9660cb1a7a78e017899e115"
    },
@@ -319,6 +374,11 @@
     "reason": "present in ModelLake, not a first-wave curriculum role",
     "repo": "zai-org/GLM-4.5-Air",
     "revision": "a24ceef6ce4f3536971efe9b778bdaa1bab18daa"
+   },
+   {
+    "reason": "present in ModelLake, not a first-wave curriculum role",
+    "repo": "zai-org/GLM-5.3-Flash",
+    "revision": "04c4e9e95c5d"
    }
   ],
   "not_proposed_rule": "Do not exhaustively optimize every downloaded model. First-wave curriculum is the five roles above; other lake entries are recorded and deferred.",
@@ -516,9 +576,9 @@
      "specimen_path": "/Volumes/corpdrive/hawking-modellake/specimens/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
      "stale_partial": {
       "action": "REPORT_ONLY_NO_DELETE",
-      "active_process_evidence": false,
-      "age_s": 129994.4,
-      "candidate_stale": true,
+      "active_process_evidence": true,
+      "age_s": 230063.6,
+      "candidate_stale": false,
       "path": "/Volumes/corpdrive/hawking-modellake/partial/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618"
      },
      "verification_source": "tools/future/specimen_verify.py (offline recomputation)",
@@ -1824,7 +1884,7 @@
   "note": "Identity is not invented. A missing this-wave receipt stays unbound. Bound only when RESIDENT_SANDBOX.json pins identity_sha256 and reentry_same_identity. HCLI prior gates are not this identity.",
   "path_taken": "worktree",
   "pins": {
-   "identity_sha256": "62912632605e63479f4d67855621cd0b1727b6a6d6d5fa4b9b7bfbf7eed72468",
+   "identity_sha256": "dcbaeaf74c90a1b44a7f2537070aee750ff431cf62d0cc4eed14f5143264e0b2",
    "reentry_same_identity": true,
    "sandbox_id": "resident"
   },
@@ -1838,7 +1898,7 @@
   "unbound_reason": null
  },
  "schema": "hawking.future.odyssey_i_launch.v1",
- "seal_sha256": "a448575db773674c7f1b82a8e997bf2a8d4502f7ebc46abb2544d4e2756aa414",
+ "seal_sha256": "896dac3f7f92e11b409a9cbf5217a6b801935da5c91f65c391f1198bd9455aba",
  "verdict": {
   "allowed": true,
   "met": [

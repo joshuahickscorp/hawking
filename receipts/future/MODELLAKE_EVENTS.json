@@ -5,7 +5,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T06:06:44Z",
+  "recorded_at": "2026-09-02T18:39:54Z",
   "recorded_by": "tools/future/modellake_events.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -15,7 +15,7 @@
  "detection": {
   "authority": "a lake manifest with resolved_sha and bytes",
   "complete_unsealed_do_not_emit": true,
-  "n_complete_unsealed": 29,
+  "n_complete_unsealed": 41,
   "n_sealed_on_disk": 8,
   "n_sealed_registry": 8,
   "not_authority": "a watcher download_exit or already_complete claim, a lifecycle label, or a human saying the model is ready",
@@ -32,11 +32,120 @@
  },
  "emitted": [
   {
+   "architecture": {
+    "architectures": [
+     "Qwen3ForCausalLM"
+    ],
+    "hidden_size": 1024,
+    "model_type": "qwen3",
+    "num_hidden_layers": 28
+   },
    "claimed_complete_in_log_tail": true,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 0.33,
+    "cold_load_seconds": 19.6,
+    "fits_in_uma": null,
+    "id": "Qwen--Qwen3-0.6B@c1899de289a0",
+    "source_gb": 1.52,
+    "warm_load_seconds": 0.14
+   },
+   "family": {
+    "is_novel_architecture": false,
+    "model_type": "qwen3",
+    "n_siblings": 3,
+    "sibling_ids": [
+     "Qwen--Qwen3-14B@40c069824f42",
+     "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+     "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d"
+    ]
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "qwen3",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "ORDERING_IN_A_LOG_IS_NOT_SIMULTANEITY. Adjacency of start events is a statement about the log, not about two processes being live.",
+      "hypothesis_family": "adjacency_is_not_overlap",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "only if two live pids (or same-unit intervals with positive overlap) are shown. Two starts without a completion between them is never a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "ENVIRONMENT_IS_PART_OF_EXPERIMENT_IDENTITY. A measurement whose env hash does not match the sealed config is a different experiment, not the incumbent.",
+      "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a measurement whose env_hash equals the sealed fusion env hash (including serving mode and measurement mode). An unfused probe that is labelled as unfused is not a reopen of this scar.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "HETEROGENEOUS_UNITS_ARE_NOT_A_TIMELINE. Falling back across clocks is not a missing-value policy; it is a unit error.",
+      "hypothesis_family": "event_timestamp_unit_mismatch",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for mixed-unit arithmetic. A schema that tags every stamp with its unit and rejects mixed subtraction is the guard, not a reopen of mixing them.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "NUMERATOR_AND_DENOMINATOR_COUNT_DIFFERENT_EVENTS. A field named per_X is not per_X unless both sides count the same events.",
+      "hypothesis_family": "prefill_over_generated_token_denominator",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a field whose numerator is decode-only (or generated-only) and whose denominator is generated tokens. Renaming the inflated fields to per_generated_token_including_prefill_work is a rename, not a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "FALSY_ZERO_IS_A_VALUE. `x or default` is not a missing-check when 0 is a legitimate member of the domain.",
+      "hypothesis_family": "priority_zero_falsy_or_default",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for the `prio or 99` form. A language or schema in which 0 is not falsy does not reopen a Python `or`.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     }
+    ],
+    "n_matches": 7,
+    "n_model_specific": 0,
+    "queried_model": "qwen3"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 1519280128,
    "specimen_id": "Qwen--Qwen3-0.6B@c1899de289a0",
    "unit_ids": [
@@ -82,7 +191,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture qwen3 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture qwen3 is the role signal. 3 sealed/complete specimen(s) already share model_type=qwen3: Qwen--Qwen3-14B@40c069824f42, Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0, Qwen--Qwen3-Embedding-0.6B@97b0c614be4d. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
@@ -112,12 +221,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3-0.6B@c1899de289a0",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. no model-specific scar for qwen3 yet; 7 general-physical law(s) still apply. Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-0.6B@c1899de289a0.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -231,11 +341,124 @@
    ]
   },
   {
+   "architecture": {
+    "architectures": [
+     "Qwen3MoeForCausalLM"
+    ],
+    "hidden_size": 2048,
+    "model_type": "qwen3_moe",
+    "num_hidden_layers": 48
+   },
    "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 13.1,
+    "cold_load_seconds": 786.2,
+    "fits_in_uma": null,
+    "id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
+    "source_gb": 61.09,
+    "warm_load_seconds": 5.55
+   },
+   "family": {
+    "is_novel_architecture": false,
+    "model_type": "qwen3_moe",
+    "n_siblings": 1,
+    "sibling_ids": [
+     "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b"
+    ]
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "qwen3_moe",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "sub_1_5_whole_model_dead",
+      "hypothesis_family": "sub_1_5_whole_model_dead_that_a_whole_model_artifact_at_complete_bpw_1_5_built_from_the_existing_gravity_families_hgravb01_r02_s01_rice_on_attention_is_coherent_on_qwen3_8_or_is_a_copyable_q30_template",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "qwen3-30b-a3b",
+      "models": [
+       "qwen3-30b-a3b",
+       "qwen3.8-27b"
+      ],
+      "organ": "attention",
+      "reopen_condition": "A new attention codec family, scored on real BF16 X, clearing mean-row output cosine \u2265 0.990 vs BF16 AND a multi-prompt native generate identity gate. The interval (2.0856, 4.2527) on Qwen3.8 with CURRENT codecs is untested \u2014 a coherent point there is a new measurement, not a retry of mixed-sub15 / mixed-2p0. Never copy the Q30 static \u22641.5 SVD as a template.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-003",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "PROPERTY_OF_IDEA"
+     },
+     {
+      "failure_mechanism": "q30_gibberish_baseline",
+      "hypothesis_family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "deepseek-v4-flash",
+      "models": [
+       "deepseek-v4-flash",
+       "qwen3-30b-a3b",
+       "qwen3-80b",
+       "qwen3.8-27b"
+      ],
+      "organ": "gate",
+      "reopen_condition": "Never calibrate on a degraded baseline. Fit against the named source (Q80 BF16, Qwen3.8 BF16, DSV4F official mixed). A Q30 sub-bit SVD retry is NNS-003, not this entry.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-006",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "LIVE_REOPEN_HOLDS"
+     },
+     {
+      "failure_mechanism": "undersampled_fits",
+      "hypothesis_family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "deepseek-v4-flash",
+      "models": [
+       "deepseek-v4-flash",
+       "qwen3-30b-a3b",
+       "qwen3-80b"
+      ],
+      "organ": "down",
+      "reopen_condition": "Re-score only when n_fit \u2265 claimed rank (and for a full-dim claim, n_fit \u2265 dim), with rank not clamped to n_fit. Corpus width is a legitimate lever only above a per-expert retention floor.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-007",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "ARTIFACT_OF_METHOD"
+     },
+     {
+      "failure_mechanism": "That selection-policy search over which sub-1.2-bpw organs to replace can recover coherence, or that beating a constant-mean null is the replacement gate.",
+      "hypothesis_family": "nns_025_that_selection_policy_search_over_which_sub_1_2_bpw_organs_to_replace_can_recover_coherence_or_that_beating_a_constant_mean_null_is_the_replacement_gate",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "qwen3-30b-a3b",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ": "down",
+      "reopen_condition": "A representation family that reaches ~0.99 per-organ output cosine; then selection policy matters again. Any replacement gate must score against the incumbent on the same rows with the same holdout split, never against a constant.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-025",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "PROPERTY_OF_IDEA"
+     },
+     {
+      "failure_mechanism": "That low-rank factorization is cheaper than dense 1-bit at sub-1.5 bpw on a [768, 2048] expert organ.",
+      "hypothesis_family": "low_rank",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "qwen3-30b-a3b",
+      "models": [
+       "qwen3-30b-a3b"
+      ],
+      "organ": "gate",
+      "reopen_condition": "Organs with genuinely low intrinsic rank, or a rank low enough (\u2264 64) that the factors are cheap, provided fidelity still reaches ~0.99. Qwen3.8 down 5120\u00d717408 at rank 160 is 3.1% of rows = 0.13 BPW \u2014 that geometry is a different (and still quality-open) premise.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-026",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "PROPERTY_OF_IDEA"
+     }
+    ],
+    "n_matches": 134,
+    "n_model_specific": 127,
+    "queried_model": "qwen3_moe"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 61087084544,
    "specimen_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
    "unit_ids": [
@@ -281,7 +504,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture qwen3_moe is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture qwen3_moe is the role signal. 1 sealed/complete specimen(s) already share model_type=qwen3_moe: Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
@@ -311,12 +534,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3-30B-A3B@ad44e777bcd1",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. 127 model-specific scar(s) already recorded for qwen3_moe, top hit receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-003 (PROPERTY_OF_IDEA). Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-30B-A3B@ad44e777bcd1.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -430,11 +654,116 @@
    ]
   },
   {
+   "architecture": {
+    "architectures": [
+     "Qwen3VLMoeForConditionalGeneration"
+    ],
+    "hidden_size": 2048,
+    "model_type": "qwen3_vl_moe",
+    "num_hidden_layers": 48
+   },
    "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 13.33,
+    "cold_load_seconds": 799.9,
+    "fits_in_uma": null,
+    "id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
+    "source_gb": 62.15,
+    "warm_load_seconds": 5.64
+   },
+   "family": {
+    "is_novel_architecture": true,
+    "model_type": "qwen3_vl_moe",
+    "n_siblings": 0,
+    "sibling_ids": []
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "qwen3_vl_moe",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "ORDERING_IN_A_LOG_IS_NOT_SIMULTANEITY. Adjacency of start events is a statement about the log, not about two processes being live.",
+      "hypothesis_family": "adjacency_is_not_overlap",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "only if two live pids (or same-unit intervals with positive overlap) are shown. Two starts without a completion between them is never a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "ENVIRONMENT_IS_PART_OF_EXPERIMENT_IDENTITY. A measurement whose env hash does not match the sealed config is a different experiment, not the incumbent.",
+      "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a measurement whose env_hash equals the sealed fusion env hash (including serving mode and measurement mode). An unfused probe that is labelled as unfused is not a reopen of this scar.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "HETEROGENEOUS_UNITS_ARE_NOT_A_TIMELINE. Falling back across clocks is not a missing-value policy; it is a unit error.",
+      "hypothesis_family": "event_timestamp_unit_mismatch",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for mixed-unit arithmetic. A schema that tags every stamp with its unit and rejects mixed subtraction is the guard, not a reopen of mixing them.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "NUMERATOR_AND_DENOMINATOR_COUNT_DIFFERENT_EVENTS. A field named per_X is not per_X unless both sides count the same events.",
+      "hypothesis_family": "prefill_over_generated_token_denominator",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a field whose numerator is decode-only (or generated-only) and whose denominator is generated tokens. Renaming the inflated fields to per_generated_token_including_prefill_work is a rename, not a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "FALSY_ZERO_IS_A_VALUE. `x or default` is not a missing-check when 0 is a legitimate member of the domain.",
+      "hypothesis_family": "priority_zero_falsy_or_default",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for the `prio or 99` form. A language or schema in which 0 is not falsy does not reopen a Python `or`.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     }
+    ],
+    "n_matches": 7,
+    "n_model_specific": 0,
+    "queried_model": "qwen3_vl_moe"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 62153351168,
    "specimen_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
    "unit_ids": [
@@ -480,7 +809,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture qwen3_vl_moe is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture qwen3_vl_moe is the role signal. no other specimen on the lake shares model_type=qwen3_vl_moe - novel architecture. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
@@ -510,12 +839,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. no model-specific scar for qwen3_vl_moe yet; 7 general-physical law(s) still apply. Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3-VL-30B-A3B-Instruct@9c4b90e1e4ba.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -629,11 +959,116 @@
    ]
   },
   {
+   "architecture": {
+    "architectures": [
+     "Qwen4ExpForConditionalGeneration"
+    ],
+    "hidden_size": 2560,
+    "model_type": "qwen4_exp",
+    "num_hidden_layers": 48
+   },
    "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 77.23,
+    "cold_load_seconds": 4633.9,
+    "fits_in_uma": null,
+    "id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
+    "source_gb": 360.05,
+    "warm_load_seconds": 32.69
+   },
+   "family": {
+    "is_novel_architecture": true,
+    "model_type": "qwen4_exp",
+    "n_siblings": 0,
+    "sibling_ids": []
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "qwen4_exp",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "ORDERING_IN_A_LOG_IS_NOT_SIMULTANEITY. Adjacency of start events is a statement about the log, not about two processes being live.",
+      "hypothesis_family": "adjacency_is_not_overlap",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "only if two live pids (or same-unit intervals with positive overlap) are shown. Two starts without a completion between them is never a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "ENVIRONMENT_IS_PART_OF_EXPERIMENT_IDENTITY. A measurement whose env hash does not match the sealed config is a different experiment, not the incumbent.",
+      "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a measurement whose env_hash equals the sealed fusion env hash (including serving mode and measurement mode). An unfused probe that is labelled as unfused is not a reopen of this scar.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "HETEROGENEOUS_UNITS_ARE_NOT_A_TIMELINE. Falling back across clocks is not a missing-value policy; it is a unit error.",
+      "hypothesis_family": "event_timestamp_unit_mismatch",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for mixed-unit arithmetic. A schema that tags every stamp with its unit and rejects mixed subtraction is the guard, not a reopen of mixing them.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "NUMERATOR_AND_DENOMINATOR_COUNT_DIFFERENT_EVENTS. A field named per_X is not per_X unless both sides count the same events.",
+      "hypothesis_family": "prefill_over_generated_token_denominator",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a field whose numerator is decode-only (or generated-only) and whose denominator is generated tokens. Renaming the inflated fields to per_generated_token_including_prefill_work is a rename, not a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "FALSY_ZERO_IS_A_VALUE. `x or default` is not a missing-check when 0 is a legitimate member of the domain.",
+      "hypothesis_family": "priority_zero_falsy_or_default",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for the `prio or 99` form. A language or schema in which 0 is not falsy does not reopen a Python `or`.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     }
+    ],
+    "n_matches": 7,
+    "n_model_specific": 0,
+    "queried_model": "qwen4_exp"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 360053432320,
    "specimen_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
    "unit_ids": [
@@ -679,7 +1114,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture qwen4_exp is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture qwen4_exp is the role signal. no other specimen on the lake shares model_type=qwen4_exp - novel architecture. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
@@ -709,12 +1144,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "Qwen--Qwen3.8-Flash-Next@34567a4712bc",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. no model-specific scar for qwen4_exp yet; 7 general-physical law(s) still apply. Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/Qwen--Qwen3.8-Flash-Next@34567a4712bc.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -828,11 +1264,125 @@
    ]
   },
   {
+   "architecture": {
+    "architectures": [
+     "DeepseekV4ForCausalLM"
+    ],
+    "hidden_size": 4096,
+    "model_type": "deepseek_v4",
+    "num_hidden_layers": 43
+   },
    "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 34.24,
+    "cold_load_seconds": 2054.4,
+    "fits_in_uma": null,
+    "id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
+    "source_gb": 159.63,
+    "warm_load_seconds": 14.49
+   },
+   "family": {
+    "is_novel_architecture": true,
+    "model_type": "deepseek_v4",
+    "n_siblings": 0,
+    "sibling_ids": []
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "deepseek_v4",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "sub_bit_synthetic_then_real",
+      "hypothesis_family": "synthetic_activation",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "deepseek-v4-flash",
+      "models": [
+       "deepseek-v4-flash",
+       "glm-5.2",
+       "qwen3-80b",
+       "qwen3.8-27b"
+      ],
+      "organ": "routed_experts",
+      "reopen_condition": "Never as a promotion path on synthetic X. The IDEA reopens (and already has) on real teacher-forced / captured-BF16 X from the named source, with a stated null and a generation gate.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-001",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "LIVE_REOPEN_HOLDS"
+     },
+     {
+      "failure_mechanism": "q30_gibberish_baseline",
+      "hypothesis_family": "q30_gibberish_baseline_that_x_captured_from_a_degraded_quantized_gibberish_baseline_is_close_enough_for_codec_ranking_the_q30_fits_calibrated_on_gibberish_campaign",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "deepseek-v4-flash",
+      "models": [
+       "deepseek-v4-flash",
+       "qwen3-30b-a3b",
+       "qwen3-80b",
+       "qwen3.8-27b"
+      ],
+      "organ": "gate",
+      "reopen_condition": "Never calibrate on a degraded baseline. Fit against the named source (Q80 BF16, Qwen3.8 BF16, DSV4F official mixed). A Q30 sub-bit SVD retry is NNS-003, not this entry.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-006",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "LIVE_REOPEN_HOLDS"
+     },
+     {
+      "failure_mechanism": "undersampled_fits",
+      "hypothesis_family": "undersampled_fits_that_a_rank_r_or_full_dim_codec_scored_on_fewer_captured_rows_than_the_fitted_dimension_is_a_score_of_the_codec",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "deepseek-v4-flash",
+      "models": [
+       "deepseek-v4-flash",
+       "qwen3-30b-a3b",
+       "qwen3-80b"
+      ],
+      "organ": "down",
+      "reopen_condition": "Re-score only when n_fit \u2265 claimed rank (and for a full-dim claim, n_fit \u2265 dim), with rank not clamped to n_fit. Corpus width is a legitimate lever only above a per-expert retention floor.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-007",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "ARTIFACT_OF_METHOD"
+     },
+     {
+      "failure_mechanism": "student_distillation_closed",
+      "hypothesis_family": "student_distillation_closed_that_independent_per_layer_functional_students_compose_across_a_full_moe_model_and_that_raw_activation_cosine_0_86_0_90_means_the_student_preserved_function",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 13,
+      "model": "deepseek-v4-flash",
+      "models": [
+       "deepseek-v4-flash",
+       "glm-5.2"
+      ],
+      "organ": "routed_experts",
+      "reopen_condition": "A jointly trained, route-aware / rollout objective that preserves the NEXT layer's routing, judged end-to-end (never per-layer), against a stated null (not raw cosine 0.898), plus generation. A late-layer stabilizer does not help: DSV4F divergence begins at L4.",
+      "scar_id": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-008",
+      "source_path": "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+      "verdict": "PROPERTY_OF_IDEA"
+     },
+     {
+      "failure_mechanism": "Determined ~20 h DSV4F teacher-X capture",
+      "hypothesis_family": "determined_20_h_dsv4f_teacher_x_capture",
+      "level": "MODEL_SPECIFIC",
+      "match_score": 12,
+      "model": "deepseek-v4-flash",
+      "models": [
+       "deepseek-v4-flash"
+      ],
+      "organ": "attention",
+      "reopen_condition": "Human authorisation, or a cheaper layer-tiled discard-X design (new premise).",
+      "scar_id": "hawking-experiments/superwave/g1/g1-arch-negative.md#determined_20_h_dsv4f_teacher_x_capture",
+      "source_path": "hawking-experiments/superwave/g1/g1-arch-negative.md",
+      "verdict": "DEAUTHORISED."
+     }
+    ],
+    "n_matches": 31,
+    "n_model_specific": 24,
+    "queried_model": "deepseek_v4"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 159630491648,
    "specimen_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
    "unit_ids": [
@@ -878,7 +1428,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture deepseek_v4 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture deepseek_v4 is the role signal. no other specimen on the lake shares model_type=deepseek_v4 - novel architecture. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
@@ -908,12 +1458,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. 24 model-specific scar(s) already recorded for deepseek_v4, top hit receipts/headless/NOETIC_NEGATIVE_SCIENCE.json#NNS-001 (LIVE_REOPEN_HOLDS). Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/deepseek-ai--DeepSeek-V4-Flash@60d8d70770c6.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -1027,11 +1578,116 @@
    ]
   },
   {
-   "claimed_complete_in_log_tail": false,
+   "architecture": {
+    "architectures": [
+     "Mistral3ForConditionalGeneration"
+    ],
+    "hidden_size": 5120,
+    "model_type": "mistral3",
+    "num_hidden_layers": 40
+   },
+   "claimed_complete_in_log_tail": true,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 20.61,
+    "cold_load_seconds": 1236.5,
+    "fits_in_uma": null,
+    "id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
+    "source_gb": 96.08,
+    "warm_load_seconds": 8.72
+   },
+   "family": {
+    "is_novel_architecture": true,
+    "model_type": "mistral3",
+    "n_siblings": 0,
+    "sibling_ids": []
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "mistral3",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "ORDERING_IN_A_LOG_IS_NOT_SIMULTANEITY. Adjacency of start events is a statement about the log, not about two processes being live.",
+      "hypothesis_family": "adjacency_is_not_overlap",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "only if two live pids (or same-unit intervals with positive overlap) are shown. Two starts without a completion between them is never a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "ENVIRONMENT_IS_PART_OF_EXPERIMENT_IDENTITY. A measurement whose env hash does not match the sealed config is a different experiment, not the incumbent.",
+      "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a measurement whose env_hash equals the sealed fusion env hash (including serving mode and measurement mode). An unfused probe that is labelled as unfused is not a reopen of this scar.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "HETEROGENEOUS_UNITS_ARE_NOT_A_TIMELINE. Falling back across clocks is not a missing-value policy; it is a unit error.",
+      "hypothesis_family": "event_timestamp_unit_mismatch",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for mixed-unit arithmetic. A schema that tags every stamp with its unit and rejects mixed subtraction is the guard, not a reopen of mixing them.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "NUMERATOR_AND_DENOMINATOR_COUNT_DIFFERENT_EVENTS. A field named per_X is not per_X unless both sides count the same events.",
+      "hypothesis_family": "prefill_over_generated_token_denominator",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a field whose numerator is decode-only (or generated-only) and whose denominator is generated tokens. Renaming the inflated fields to per_generated_token_including_prefill_work is a rename, not a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "FALSY_ZERO_IS_A_VALUE. `x or default` is not a missing-check when 0 is a legitimate member of the domain.",
+      "hypothesis_family": "priority_zero_falsy_or_default",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for the `prio or 99` form. A language or schema in which 0 is not falsy does not reopen a Python `or`.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     }
+    ],
+    "n_matches": 7,
+    "n_model_specific": 0,
+    "queried_model": "mistral3"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 96077959168,
    "specimen_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
    "unit_ids": [
@@ -1077,7 +1733,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture mistral3 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture mistral3 is the role signal. no other specimen on the lake shares model_type=mistral3 - novel architecture. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
@@ -1107,12 +1763,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. no model-specific scar for mistral3 yet; 7 general-physical law(s) still apply. Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/mistralai--Mistral-Small-3.1-24B-Instruct-2503@68faf511d618.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -1226,11 +1883,116 @@
    ]
   },
   {
+   "architecture": {
+    "architectures": [
+     "KimiVLForConditionalGeneration"
+    ],
+    "hidden_size": 2048,
+    "model_type": "kimi_vl",
+    "num_hidden_layers": 27
+   },
    "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 7.04,
+    "cold_load_seconds": 422.4,
+    "fits_in_uma": null,
+    "id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
+    "source_gb": 32.82,
+    "warm_load_seconds": 2.98
+   },
+   "family": {
+    "is_novel_architecture": true,
+    "model_type": "kimi_vl",
+    "n_siblings": 0,
+    "sibling_ids": []
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "kimi_vl",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "ORDERING_IN_A_LOG_IS_NOT_SIMULTANEITY. Adjacency of start events is a statement about the log, not about two processes being live.",
+      "hypothesis_family": "adjacency_is_not_overlap",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "only if two live pids (or same-unit intervals with positive overlap) are shown. Two starts without a completion between them is never a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "ENVIRONMENT_IS_PART_OF_EXPERIMENT_IDENTITY. A measurement whose env hash does not match the sealed config is a different experiment, not the incumbent.",
+      "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a measurement whose env_hash equals the sealed fusion env hash (including serving mode and measurement mode). An unfused probe that is labelled as unfused is not a reopen of this scar.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "HETEROGENEOUS_UNITS_ARE_NOT_A_TIMELINE. Falling back across clocks is not a missing-value policy; it is a unit error.",
+      "hypothesis_family": "event_timestamp_unit_mismatch",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for mixed-unit arithmetic. A schema that tags every stamp with its unit and rejects mixed subtraction is the guard, not a reopen of mixing them.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "NUMERATOR_AND_DENOMINATOR_COUNT_DIFFERENT_EVENTS. A field named per_X is not per_X unless both sides count the same events.",
+      "hypothesis_family": "prefill_over_generated_token_denominator",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a field whose numerator is decode-only (or generated-only) and whose denominator is generated tokens. Renaming the inflated fields to per_generated_token_including_prefill_work is a rename, not a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "FALSY_ZERO_IS_A_VALUE. `x or default` is not a missing-check when 0 is a legitimate member of the domain.",
+      "hypothesis_family": "priority_zero_falsy_or_default",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for the `prio or 99` form. A language or schema in which 0 is not falsy does not reopen a Python `or`.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     }
+    ],
+    "n_matches": 7,
+    "n_model_specific": 0,
+    "queried_model": "kimi_vl"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 32823230464,
    "specimen_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
    "unit_ids": [
@@ -1276,7 +2038,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture kimi_vl is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture kimi_vl is the role signal. no other specimen on the lake shares model_type=kimi_vl - novel architecture. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
@@ -1306,12 +2068,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "moonshotai--Kimi-VL-A3B-Instruct@398eede0903c",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. no model-specific scar for kimi_vl yet; 7 general-physical law(s) still apply. Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/moonshotai--Kimi-VL-A3B-Instruct@398eede0903c.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -1425,11 +2188,116 @@
    ]
   },
   {
+   "architecture": {
+    "architectures": [
+     "FalconH1ForCausalLM"
+    ],
+    "hidden_size": 3072,
+    "model_type": "falcon_h1",
+    "num_hidden_layers": 44
+   },
    "claimed_complete_in_log_tail": false,
    "detection": "lake_manifest",
+   "economics": {
+    "cold_load_minutes": 3.26,
+    "cold_load_seconds": 195.4,
+    "fits_in_uma": null,
+    "id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
+    "source_gb": 15.18,
+    "warm_load_seconds": 1.38
+   },
+   "family": {
+    "is_novel_architecture": true,
+    "model_type": "falcon_h1",
+    "n_siblings": 0,
+    "sibling_ids": []
+   },
    "lifecycle": "FINGERPRINTED",
    "model_type": "falcon_h1",
    "n_units": 6,
+   "relevant_scars": {
+    "matches": [
+     {
+      "failure_mechanism": "ORDERING_IN_A_LOG_IS_NOT_SIMULTANEITY. Adjacency of start events is a statement about the log, not about two processes being live.",
+      "hypothesis_family": "adjacency_is_not_overlap",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "only if two live pids (or same-unit intervals with positive overlap) are shown. Two starts without a completion between them is never a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ADJACENCY_IS_NOT_OVERLAP",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "ENVIRONMENT_IS_PART_OF_EXPERIMENT_IDENTITY. A measurement whose env hash does not match the sealed config is a different experiment, not the incumbent.",
+      "hypothesis_family": "environment_mismatch_unfused_vs_sealed",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a measurement whose env_hash equals the sealed fusion env hash (including serving mode and measurement mode). An unfused probe that is labelled as unfused is not a reopen of this scar.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#ENVIRONMENT_MISMATCH_UNFUSED_VS_SEALED",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "HETEROGENEOUS_UNITS_ARE_NOT_A_TIMELINE. Falling back across clocks is not a missing-value policy; it is a unit error.",
+      "hypothesis_family": "event_timestamp_unit_mismatch",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for mixed-unit arithmetic. A schema that tags every stamp with its unit and rejects mixed subtraction is the guard, not a reopen of mixing them.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#EVENT_TIMESTAMP_UNIT_MISMATCH",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "NUMERATOR_AND_DENOMINATOR_COUNT_DIFFERENT_EVENTS. A field named per_X is not per_X unless both sides count the same events.",
+      "hypothesis_family": "prefill_over_generated_token_denominator",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "a field whose numerator is decode-only (or generated-only) and whose denominator is generated tokens. Renaming the inflated fields to per_generated_token_including_prefill_work is a rename, not a reopen.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PREFILL_OVER_GENERATED_TOKEN_DENOMINATOR",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     },
+     {
+      "failure_mechanism": "FALSY_ZERO_IS_A_VALUE. `x or default` is not a missing-check when 0 is a legitimate member of the domain.",
+      "hypothesis_family": "priority_zero_falsy_or_default",
+      "level": "GENERAL_PHYSICAL",
+      "match_score": 2,
+      "model": "unrecorded",
+      "models": [
+       "unrecorded"
+      ],
+      "organ": "unrecorded",
+      "reopen_condition": "never for the `prio or 99` form. A language or schema in which 0 is not falsy does not reopen a Python `or`.",
+      "scar_id": "receipts/future/CAMPAIGN_SCARS.json#PRIORITY_ZERO_FALSY_OR_DEFAULT",
+      "source_path": "receipts/future/CAMPAIGN_SCARS.json",
+      "verdict": "FALSIFIED"
+     }
+    ],
+    "n_matches": 7,
+    "n_model_specific": 0,
+    "queried_model": "falcon_h1"
+   },
+   "residency_decision": "not implied by this event: sealed means the bytes are verified on disk, not that this specimen should load. Full residency, organ extraction, a partial/native artifact, or deferral are all still open - that choice belongs to HCLI, not to this consumer.",
    "source_bytes": 15183298560,
    "specimen_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
    "unit_ids": [
@@ -1475,7 +2343,7 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "architecture falcon_h1 is the role signal. Distance from the incumbent is computed from that field, not from a human assignment.",
+     "detail": "architecture falcon_h1 is the role signal. no other specimen on the lake shares model_type=falcon_h1 - novel architecture. Distance from the incumbent is computed from that field, not from a human assignment.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
@@ -1505,12 +2373,13 @@
      "bench_state": "UNKNOWN",
      "candidate_id": "tiiuae--Falcon-H1-7B-Instruct@41e72f27effb",
      "claim_boundary": "Static sidecar artifact. No hardware measurement. Does not produce DIAGNOSTIC_RELATIVE or PROTECTED_ABSOLUTE. SLEEPING physical work is never filled in with a synthetic result.",
-     "detail": "S027 \u00a720: the first question is whether to load at all. Query the law store and the negative index against this architecture before a byte is read.",
+     "detail": "S027 \u00a720: the first question is whether to load at all. no model-specific scar for falcon_h1 yet; 7 general-physical law(s) still apply. Query the law store and the negative index against this architecture before a byte is read.",
      "effect_class": "READ_ONLY",
      "evidence": [
       "/Volumes/corpdrive/hawking-modellake/manifests/tiiuae--Falcon-H1-7B-Instruct@41e72f27effb.json",
       "receipts/future/SPECIMEN_REGISTRY.json",
-      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json"
+      "receipts/future/MODELLAKE_SCHEDULER_VIEW.json",
+      "receipts/future/NEGATIVE_SCIENCE_INDEX.json"
      ],
      "evidence_class": "STATIC_ONLY",
      "expected_information_gain": 3,
@@ -1636,7 +2505,11 @@
    "GSAI-ML--iLLaDA-8B-Base@a1b5b5f8a31a",
    "HuggingFaceTB--SmolVLM2-2.2B-Instruct@482adb537c02",
    "LiquidAI--LFM2-24B-A2B@a3bbacd91a67",
+   "LiquidAI--LFM2.5-1.2B-Instruct@0f604ada3f76",
    "LiquidAI--LFM2.5-2.6B-Base@c57bdaed1ef1",
+   "Qwen--Qwen3-14B@40c069824f42",
+   "Qwen--Qwen3-4B-Instruct-2507@cdbee75f17c0",
+   "Qwen--Qwen3-Coder-30B-A3B-Instruct@b2cff646eb4b",
    "Qwen--Qwen3-Embedding-0.6B@97b0c614be4d",
    "Qwen--Qwen3-VL-8B-Instruct@0c351dd01ed8",
    "RWKV--RWKV7-13.3B-20260805@64ffe5934178",
@@ -1658,19 +2531,25 @@
    "ibm-granite--granite-4.0-h-tiny@791e0d3d28c8",
    "kyutai--moshika-pytorch-bf16@a49141e28b3d",
    "lerobot--pi0_base@25c379b52ba2",
+   "microsoft--Phi-4-mini-instruct@cfbefacb9925",
    "microsoft--Phi-4-multimodal-instruct@93f923e1a772",
    "microsoft--Phi-4-reasoning-plus@69baf8528e1b",
    "microsoft--bitnet-b1.58-2B-4T-bf16@276681394656",
    "microsoft--bitnet-b1.58-2B-4T@04c3b9ad9361",
+   "moonshotai--Kimi-K3@9f62e4e9fffb",
    "nvidia--audio-flamingo-3@ee26c5842398",
    "openai--whisper-large-v3-turbo@41f01f3fe87f",
    "state-spaces--mamba3-mimo-1.5b@bc6b5d0f7994",
    "state-spaces--mamba3-siso-1.5b@5cfc721542ec",
-   "tencent--HunyuanVideo@6204ad6aea1a"
+   "tencent--HunyuanVideo@6204ad6aea1a",
+   "thinkingmachines--Inkling-Small@8cc5877b44d3",
+   "tiiuae--Falcon3-1B-Instruct@28ba2251970a",
+   "zai-org--GLM-4.5-Air@a24ceef6ce4f",
+   "zai-org--GLM-5.3-Flash@04c4e9e95c5d"
   ],
-  "n_claims_without_seal": 35,
-  "n_completion_claims": 36,
-  "n_parseable_events": 312
+  "n_claims_without_seal": 45,
+  "n_completion_claims": 47,
+  "n_parseable_events": 111
  },
  "n_emitted_specimens": 8,
  "n_emitted_units": 48,
@@ -1679,7 +2558,7 @@
  "obligation": "G101",
  "question": "When a model seals, does anything happen without a human noticing?",
  "schema": "hawking.future.modellake_events.v1",
- "seal_sha256": "132f573546f0216d402c6d2f764f164cf31bbb9393f2b6394dc2160fae92578f",
+ "seal_sha256": "a68b0662d160e39af4611c65ca8375a473d3c7a47d68e8a46811f9ec15aa4d97",
  "seal_triggers": [
   "fingerprint",
   "role evaluation",

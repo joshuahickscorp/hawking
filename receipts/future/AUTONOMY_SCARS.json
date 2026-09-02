@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:17:29Z",
+  "recorded_at": "2026-09-02T09:19:15Z",
   "recorded_by": "tools/future/autonomy_scars.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -11,7 +11,8 @@
  "claim_boundary": "Static sidecar artifact. No hardware measurement.",
  "evidence_class": "STATIC_ONLY",
  "gaps_closed": [
-  "autonomy defects were fixed but never recorded as science"
+  "autonomy defects were fixed but never recorded as science",
+  "a scoped scar can no longer ban an out-of-scope retry"
  ],
  "general_law": "STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED.",
  "n_scars": 4,
@@ -20,9 +21,30 @@
  ],
  "purpose": "Defects in the resident's own scheduling and evidence model, kept as negative science so the next scheduler schema does not reinvent them.",
  "recovered_implementation": [
-  "tools/future/negative_index.py keys scars by hypothesis semantics; these are orchestration defects and do not belong in that keyspace"
+  "tools/future/negative_index.py keys scars by hypothesis semantics; these are orchestration defects and do not belong in that keyspace",
+  "tools/future/odyssey2_law_store.py stores laws with a scope lattice; this registry retrieves them without silently widening",
+  "tools/future/scar_reevaluator.py classifies reopenability; consult_candidate now asks autonomy_scars.consult before treating a scar as a ban"
  ],
+ "registry": {
+  "consult": "tools.future.autonomy_scars.consult",
+  "evidence_tier": "STATIC",
+  "in_scope_cross_expert_qwen3_80b_blocked": true,
+  "n_laws": 33,
+  "n_scoped_scars": 57,
+  "out_of_scope_cross_expert_dsv4f_blocked": false,
+  "over_generalization_guard": "a scar scoped to one condition does not block an out-of-scope retry",
+  "retrieve_law": "tools.future.autonomy_scars.retrieve_law",
+  "sources": [
+   "receipts/future/AUTONOMY_SCARS.json",
+   "receipts/future/CAMPAIGN_SCARS.json",
+   "receipts/headless/NOETIC_NEGATIVE_SCIENCE.json",
+   "tools/foundry/NEGATIVE_TRANSFER_ATLAS.json",
+   "receipts/future/ODYSSEY2_LAW_STORE.json",
+   "receipts/future/CLAIM_SCOPE.json"
+  ]
+ },
  "resident_callable": {
+  "consult": "tools.future.autonomy_scars.consult()",
   "entry_point": "tools.future.autonomy_scars.scars()",
   "fails_closed": "a scar whose regression test is absent is reported, not hidden",
   "frontier": "FT.HCLI_SELF.emit-workunits",
@@ -33,11 +55,21 @@
   {
    "claim_refuted": "that a scheduler may keep its own list of resource lanes alongside the frontier's",
    "cost": "the frontier's own work never ran once, while the driver documented itself as deriving work from the frontier",
+   "evidence": [
+    "tools/future/test_autonomy_run.py::test_the_driver_speaks_the_lane_vocabulary_the_frontier_actually_uses"
+   ],
+   "failed_mechanism": "scheduler_taxonomy",
    "family": "scheduler_taxonomy",
    "id": "STATIC_LANE_TAXONOMY_DIVERGED_FROM_FRONTIER",
    "law": "a scheduler derives its lane vocabulary from the authority; it never restates it",
+   "reason": "the loop was never short of work -- it queued capabilities and specimens directly -- so it looked busy and healthy, and the trial that scored it had already passed. Nothing reads as broken when a filter silently matches nothing.",
    "regression_test": "tools/future/test_autonomy_run.py::test_the_driver_speaks_the_lane_vocabulary_the_frontier_actually_uses",
    "reopen_condition": "never; a second lane list is the defect itself",
+   "reopen_if": "never; a second lane list is the defect itself",
+   "scope": {
+    "condition": "orchestrator",
+    "lattice": "GENERAL_PHYSICAL"
+   },
    "verdict": "BURIED",
    "what_happened": "autonomy_run declared AVAILABLE_LANES = CPU_ANALYSIS, CPU_VERIFY, CPU_REPRESENTATION, DISK_IO. The frontier matches required_lanes <= available against CPU, ANALYSIS, REPRESENTATION, SIMULATION, ODYSSEY, TOOLING. No item required an invented name, so the subset test was false for all 31 NEXT_WORK items and next_work() and refill() returned an empty list on every call, in every run, from the day the driver was written.",
    "why_it_hid": "the loop was never short of work -- it queued capabilities and specimens directly -- so it looked busy and healthy, and the trial that scored it had already passed. Nothing reads as broken when a filter silently matches nothing."
@@ -45,11 +77,21 @@
   {
    "claim_refuted": "that a module name can be asked whether it is a dead hypothesis family",
    "cost": "the resident could not reject anything on evidence, and did not know it",
+   "evidence": [
+    "tools/future/test_autonomy_run.py::test_proposal_space_is_the_fixed_taxonomy_not_the_set_of_dead_ideas"
+   ],
+   "failed_mechanism": "negative_science_keying",
    "family": "negative_science_keying",
    "id": "SCAR_LOOKUP_ON_IMPLEMENTATION_NAMES",
    "law": "negative science is keyed by hypothesis semantics, never by implementation identity",
+   "reason": "consultations were counted and reported, so the loop appeared to be using negative science. A counter of questions asked is not a measure of questions answered.",
    "regression_test": "tools/future/test_autonomy_run.py::test_proposal_space_is_the_fixed_taxonomy_not_the_set_of_dead_ideas",
    "reopen_condition": "never",
+   "reopen_if": "never",
+   "scope": {
+    "condition": "orchestrator",
+    "lattice": "GENERAL_PHYSICAL"
+   },
    "verdict": "BURIED",
    "what_happened": "the loop consulted refuse_if_dead with hypothesis_family set to a python module name. The index keys on hypothesis, representation, organ, model, machine and mechanism, so the question was a category error and the only possible answer was no. 71 consultations, 0 refusals.",
    "why_it_hid": "consultations were counted and reported, so the loop appeared to be using negative science. A counter of questions asked is not a measure of questions answered."
@@ -57,11 +99,21 @@
   {
    "claim_refuted": "that naming a tool in source is evidence the tool was driven",
    "cost": "a launch criterion would have passed on the gate's own declaration",
+   "evidence": [
+    "tools/future/test_odyssey_launch.py::test_negative_control_the_gate_cannot_certify_itself_as_the_driver"
+   ],
+   "failed_mechanism": "self_certification",
    "family": "self_certification",
    "id": "DECLARED_CAPABILITY_READ_AS_EXECUTED_CAPABILITY",
    "law": "DECLARED CAPABILITY != EXECUTED CAPABILITY. Require invocation, a resulting receipt, and the link between them.",
+   "reason": "it made a criterion look closer to met, which is the direction nobody audits",
    "regression_test": "tools/future/test_odyssey_launch.py::test_negative_control_the_gate_cannot_certify_itself_as_the_driver",
    "reopen_condition": "never",
+   "reopen_if": "never",
+   "scope": {
+    "condition": "orchestrator",
+    "lattice": "GENERAL_PHYSICAL"
+   },
    "verdict": "BURIED",
    "what_happened": "the Odyssey gate's resident-schedulability probe accepted any AST Assign containing a tool's path as proof a module drives it. odyssey_launch names Doctor's scripts in an `owned = [...]` literal, so the gate certified ITSELF as Doctor's resident driver and scored schedule and frontier true.",
    "why_it_hid": "it made a criterion look closer to met, which is the direction nobody audits"
@@ -69,11 +121,21 @@
   {
    "claim_refuted": "that a failure status naming a subsystem is evidence that subsystem failed",
    "cost": "gate 2 of the Flash meta funnel -- and every family behind it -- was classified as waiting on hardware that was present the whole time",
+   "evidence": [
+    "tools/future/test_metal_reachability.py::test_the_hardcoded_boundary_status_is_recorded_as_a_negative_finding"
+   ],
+   "failed_mechanism": "evidence_compression",
    "family": "evidence_compression",
    "id": "STATUS_LABEL_LAUNDERED_AS_CAUSAL_CLAIM",
    "law": "STATUS LABELS ARE HYPOTHESES UNTIL THEIR CAUSAL CLAIM IS VERIFIED. A failure receipt records the exact underlying error and the probes that would separate the candidate causes.",
+   "reason": "the status was specific, plausible, and repeated. Specificity reads as evidence.",
    "regression_test": "tools/future/test_metal_reachability.py::test_the_hardcoded_boundary_status_is_recorded_as_a_negative_finding",
    "reopen_condition": "the specific process context of the original failure is still unidentified; that diagnosis is open work, not a closed scar",
+   "reopen_if": "the specific process context of the original failure is still unidentified; that diagnosis is open work, not a closed scar",
+   "scope": {
+    "condition": "orchestrator",
+    "lattice": "GENERAL_PHYSICAL"
+   },
    "verdict": "BURIED",
    "what_happened": "flash_meta_teacher_trace writes status BLOCKED_NO_METAL_GPU for ANY dense_source_bf16_prefix_initialization error, and the claim_boundary text asserts the host has no Metal-capable GPU. That sentence was then carried across the campaign as a hardware fact, including into this sidecar's own autonomy driver. The host is an M3 Ultra; the device enumerates from Swift, from the exact metal crate the runtime uses, and shaders compile from source.",
    "why_it_hid": "the status was specific, plausible, and repeated. Specificity reads as evidence."
@@ -81,7 +143,7 @@
  ],
  "scars_without_a_regression_test": [],
  "schema": "hawking.future.autonomy_scars.v1",
- "seal_sha256": "b633eb0ca55f6924a48984047390dab565993c4329efc491cc7ae3bca6c81258",
+ "seal_sha256": "d58d8b4909c8b85e94c0d9fdbd79293a669253ed25658692ab2795ebd69675b5",
  "sister_symptoms": [
   "\"model missing\" may be a stale hardcoded path -- three Odyssey tools pointed at a directory that had moved, while the 52GB parent sat on another volume",
   "\"no work\" may be a scheduler taxonomy mismatch",

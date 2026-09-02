@@ -21,14 +21,17 @@ _HCLI_BODY = {
 
 
 def pytest_ignore_collect(collection_path, config):  # noqa: ARG001
+    # firstresult=True: False would stop parent hooks (tools/conftest.py)
+    # from ignoring name-colliding modules under `pytest tools/`. None
+    # means "no opinion" so a parent can still vote.
     if _HAIDER.is_dir():
-        return False
+        return None
     try:
         name = collection_path.name
     except AttributeError:
-        return False
+        return None
     if name.startswith("hcli_") and name.endswith(".py"):
         return True
     if name in _HCLI_BODY:
         return True
-    return False
+    return None

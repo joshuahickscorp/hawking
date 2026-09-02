@@ -3392,8 +3392,29 @@ def assemble() -> dict[str, Any]:
     return doc
 
 
+# assemble() compiles through two scratch directories neither call site pins
+# a name for: nr_nx_generic's own tempfile.mkdtemp(prefix="hawking-nx-cap-")
+# and device_compiler.py's TemporaryDirectory(prefix="hawking-dc-archives-").
+# Both are rmtree'd before build() returns, so the random suffix mkdtemp
+# picked is never evidence of anything - a rerun that compiled byte-identical
+# archives still gets a different suffix, and the tree stays dirty forever.
+# The suffix appears embedded (as a path component) in several places across
+# the assembled doc, so it is scrubbed once here rather than at each site.
+_EPHEMERAL_SCRATCH_DIR = re.compile(r"(hawking-(?:nx-cap|dc-archives)-)[A-Za-z0-9_]+")
+
+
+def _scrub_ephemeral_scratch_paths(node: Any) -> Any:
+    if isinstance(node, str):
+        return _EPHEMERAL_SCRATCH_DIR.sub(r"\1EPHEMERAL", node)
+    if isinstance(node, dict):
+        return {k: _scrub_ephemeral_scratch_paths(v) for k, v in node.items()}
+    if isinstance(node, list):
+        return [_scrub_ephemeral_scratch_paths(v) for v in node]
+    return node
+
+
 def build() -> Path:
-    doc = assemble()
+    doc = _scrub_ephemeral_scratch_paths(assemble())
     assert_no_physical_ebpw(doc)
     return write_receipt(RECEIPT, doc, RECORDED_BY)
 

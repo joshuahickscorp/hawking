@@ -1105,6 +1105,7 @@ dependencies = [
  "parking_lot",
  "rand 0.8.6",
  "rand_pcg 0.3.1",
+ "regex",
  "serde",
  "serde_json",
  "sha2",
@@ -1143,12 +1144,14 @@ name = "hawking-index"
 version = "0.2.2"
 dependencies = [
  "blake3",
+ "clap",
  "futures",
  "hide-core",
  "ignore",
  "notify",
  "parking_lot",
  "petgraph",
+ "regex",
  "reqwest",
  "rusqlite",
  "serde",
@@ -1161,6 +1164,16 @@ dependencies = [
  "tree-sitter-rust",
  "tree-sitter-typescript",
  "walkdir",
+]
+
+[[package]]
+name = "hawking-index-query"
+version = "0.2.2"
+dependencies = [
+ "serde",
+ "serde_json",
+ "tree-sitter",
+ "tree-sitter-python",
 ]
 
 [[package]]

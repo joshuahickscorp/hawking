@@ -567,12 +567,18 @@ def abort(
     lock.release(record.get("unit_id"))
     lock_free = lock.try_break_stale()
 
+    # Same contract as Mission.checkpoint(): DAG first, then state.json,
+    # both stamped with one checkpoint_id. Patching state alone used to
+    # leave a cancelled generation that dag.json could not name.
     state, defect = _read_json(mission_state_path(ws))
     if isinstance(state, dict):
-        state["phase"] = "cancelled"
-        state["cancel_reason"] = reason
-        state["last_checkpoint"] = time.time()
-        atomic_write_json(mission_state_path(ws), state)
+        try:
+            loaded = Mission.from_workspace(ws, quiet=True)
+            loaded.cancel(reason)
+            loaded.phase = "cancelled"
+            loaded.checkpoint()
+        except Exception as exc:
+            defect = defect or f"checkpoint failed: {type(exc).__name__}: {exc}"
 
     envelope = build_envelope(ws, aborted_reason=reason)
     atomic_write_json(envelope_path(ws), envelope)

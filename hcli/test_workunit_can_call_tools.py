@@ -113,6 +113,53 @@ def test_tool_backend_without_a_named_tool_keeps_the_old_command_path(tmp_path):
 
 
 
+class _RecordingEngine:
+    """Stand-in for Engine, whose ``_emit`` is the only thing execute()'s
+    non-qwen backends touch on the bus. Records every call verbatim."""
+
+    def __init__(self):
+        self.events = []
+
+    def _emit(self, event_type, data=None):
+        self.events.append((event_type, dict(data or {})))
+
+
+def test_non_engine_backends_now_emit_bus_events(tmp_path):
+    """Regression for: grok/tool/cpu/provider backends never touched
+    self.engine, so nothing they did ever reached the EventBus (and so never
+    reached EventSink/hcli resident watch) -- only the qwen/engine path did.
+    execute() must wrap every backend it does not route through the engine
+    at its one dispatch point."""
+    engine = _RecordingEngine()
+    executor = WorkUnitExecutor(workspace=str(REPO), repo_root=str(REPO), engine=engine)
+
+    executor.execute(_unit(tool="git.status"))
+    types = [t for t, _ in engine.events]
+    assert types == ["tool_call_started", "tool_call_finished"], types
+    assert engine.events[0][1]["backend"] == BACKEND_TOOL
+    assert engine.events[0][1]["tool"] == "git.status"
+    assert engine.events[1][1]["ok"] is True
+
+    engine.events.clear()
+    wu = _unit(id="wu-cpu-1", provider="tool", verifier="python3 -c \"import sys; sys.exit(1)\"")
+    executor.execute(wu)
+    types = [t for t, _ in engine.events]
+    assert types == ["tool_call_started", "tool_call_finished"], types
+    assert engine.events[1][1]["ok"] is False, "a failing verifier must be reported, not swallowed"
+
+
+def test_mutation_non_engine_emit_actually_gates_the_test(tmp_path):
+    """Mutation check: routing straight to the backend method (as the pre-fix
+    execute() did) must reproduce total silence on the bus."""
+    engine = _RecordingEngine()
+    executor = WorkUnitExecutor(workspace=str(REPO), repo_root=str(REPO), engine=engine)
+
+    # Reproduces the pre-fix dispatch: call the backend directly, bypassing
+    # _emit_wrapped, the way execute() used to before this fix.
+    executor._run_tool(_unit(tool="git.status"), {})
+    assert engine.events == [], "mutation did not actually reproduce the pre-fix silence"
+
+
 def test_mission_hands_down_agentos_registry_rather_than_minting_one():
     """One registry, not two.
 

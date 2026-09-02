@@ -17,6 +17,9 @@ members = [
     "crates/hide-fleet",
     "crates/hawking-context",
     "crates/hawking-index",
+    # JSON query surface over hawking-index (python-facts). Lives beside the
+    # library crate so r1 can later inline the same CLI without a second scanner.
+    "crates/hawking-index-query",
     "crates/hawking-orch",
     "crates/hawking-research",
     "crates/hawking-eval",
@@ -89,6 +92,7 @@ default-members = [
     "crates/hawking-speculate",
     "crates/hawking-context",
     "crates/hawking-index",
+    "crates/hawking-index-query",
     "crates/hawking-orch",
     "crates/hawking-research",
     "crates/hawking-eval",

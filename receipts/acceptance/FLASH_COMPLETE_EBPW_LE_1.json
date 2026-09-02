@@ -1,0 +1,69 @@
+{
+  "artifacts": [
+    "receipts/future/COMPLETE_EBPW.json"
+  ],
+  "blocker": "incumbent.complete_ebpw=3.139300850311054 which is not <= 1. receipts/future/COMPLETE_EBPW.json reports 3.139300850311054. Gate is not acceptable today.",
+  "claim_boundary": "STATIC_ONLY arithmetic over MIX_REPORT parts. This is not a hardware measurement and not a promotion. The bar is complete EBPW <= 1; measured 3.139 is recorded un-rounded.",
+  "command": [
+    "python3",
+    "-c",
+    "from tools.future.complete_ebpw import mix_report, build; mix_report(); build()"
+  ],
+  "comparison": {
+    "field": "incumbent.complete_ebpw",
+    "measured": 3.139300850311054,
+    "op": "<=",
+    "satisfied": false,
+    "threshold": 1.0
+  },
+  "criterion": {
+    "acceptance_span": {
+      "end_line": 505,
+      "section": "I-C",
+      "start_line": 478
+    },
+    "catalog": {
+      "field": "incumbent.complete_ebpw",
+      "kind": "numeric",
+      "op": "<=",
+      "receipt": "receipts/future/COMPLETE_EBPW.json",
+      "threshold": 1
+    },
+    "quoted": "FLASH HARD GATE: Final promotion requires BOTH complete-system EBPW <= 1.00 and accepted capability-preserving TPS >= 50. <= 1.00 EBPW + >= 50 accepted TPS is MINIMUM PROMOTION.",
+    "source": {
+      "file": "/Users/scammermike/Downloads/H-ROADMAP.md",
+      "lines": [
+        1607,
+        1640,
+        9498
+      ]
+    }
+  },
+  "criterion_altered": false,
+  "evidence_tier": "STATIC",
+  "finished_at": "2026-09-02T09:12:15Z",
+  "gate": "FLASH_COMPLETE_EBPW_LE_1",
+  "git_head": "4448974cc9f357fd2700f1c8f4f16c8fa47c20a9",
+  "measured": {
+    "evidence_class": "STATIC_ONLY",
+    "git_receipt_complete_ebpw": 3.139300850311054,
+    "incumbent.complete_ebpw": 3.139300850311054,
+    "is_sub2_executable": false,
+    "mix_storage_bpw": 3.139300850311054,
+    "parent_params": 26895998464,
+    "payload_bytes": 10554328856
+  },
+  "returncode": 0,
+  "schema": "hawking.acceptance.gate.v1",
+  "started_at": "2026-09-02T09:12:15Z",
+  "stderr": "",
+  "stdout": "{\"incumbent_complete_ebpw\": 3.139300850311054, \"mix_storage_bpw\": 3.139300850311054, \"threshold\": 1.0, \"op\": \"<=\", \"satisfied\": false, \"selftest\": {\"incumbent_bpw\": 3.139300850311054, \"incumbent_bpw_within_0_001_of_3_1393\": true, \"unreconciled_refused\": true, \"dense_parent_rematerialization_flagged\": true, \"remat_complete_ebpw_is_not_the_stored_figure\": true, \"aux_only_cut_ms_saved\": 0.0, \"aux_only_cut_bytes_saved\": 58176, \"aux_only_cut_ms_saved_is_zero\": true}, \"evidence_class\": \"STATIC_ONLY\"}",
+  "symbol": {
+    "also_called": "tools.future.complete_ebpw.build",
+    "file": "tools/acceptance/flash/run_gates.py",
+    "kind": "call",
+    "module": "tools.future.complete_ebpw",
+    "name": "mix_report"
+  },
+  "verdict": "BLOCKED"
+}

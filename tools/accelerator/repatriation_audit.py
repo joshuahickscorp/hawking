@@ -30,6 +30,113 @@ from tools.accelerator.architecture_atlas import (
 from tools.accelerator.repatriation_effects import build_effects, validate_effects
 
 
+def backend_contract_checks(*, repo_root: str | Path | None = None) -> dict[str, Any]:
+    """Call the shared backend contract. An import is not a call site.
+
+    Enumerates registered backends, asks each for capability and cost, then
+    repatriates ACCELERATOR_MACHINE_GENOME.json (Metal) into a backend-neutral
+    law that FPGA-HWIR consumes as a cost feature.
+    """
+    try:
+        from tools.accelerator.backend_contract import (
+            FPGA_BACKEND_ID,
+            HARDWARE_MEASURED,
+            MACHINE_GENOME_RECEIPT,
+            FpgaHardwareClaimError,
+            capability_and_cost_snapshot,
+            collect_evidence_tiers,
+            enumerate_backends,
+            fpga_evidence_tier,
+            get_backend,
+            repatriate_machine_bandwidth,
+            sample_elementwise_program,
+        )
+    except ImportError:  # pragma: no cover - sibling import under pytest
+        from backend_contract import (
+            FPGA_BACKEND_ID,
+            HARDWARE_MEASURED,
+            MACHINE_GENOME_RECEIPT,
+            FpgaHardwareClaimError,
+            capability_and_cost_snapshot,
+            collect_evidence_tiers,
+            enumerate_backends,
+            fpga_evidence_tier,
+            get_backend,
+            repatriate_machine_bandwidth,
+            sample_elementwise_program,
+        )
+
+    root = Path(repo_root).expanduser().resolve() if repo_root else REPO
+    program = sample_elementwise_program()
+    backends = enumerate_backends()
+    snapshot = capability_and_cost_snapshot(program)
+    fpga = get_backend(FPGA_BACKEND_ID)
+    fpga_cap = fpga.capabilities(program)
+    fpga_cost = fpga.cost(program)
+    fpga_exec = fpga.execute(program)
+    fpga_lowered = fpga.lower(program)
+    fpga_tiers = collect_evidence_tiers({
+        "capability": fpga_cap.to_dict(),
+        "cost": fpga_cost.to_dict(),
+        "execute": fpga_exec.to_dict(),
+        "lower": fpga_lowered.to_dict(),
+    })
+    fpga_hw_refused = False
+    try:
+        fpga_evidence_tier(HARDWARE_MEASURED)
+    except FpgaHardwareClaimError:
+        fpga_hw_refused = True
+    trace = repatriate_machine_bandwidth(
+        consumer_id=FPGA_BACKEND_ID, program=program, repo_root=root,
+    )
+    ids = [b.backend_id for b in backends]
+    each_answers = all(
+        row["capability"]["backend_id"] == row["backend_id"]
+        and row["cost"]["backend_id"] == row["backend_id"]
+        and row["cost"]["cost"]["label"] == "COST_MODEL"
+        for row in snapshot["backends"]
+    )
+    passed = (
+        len(backends) >= 4
+        and set(ids) >= {"CPU", "METAL", "ANE", "FPGA-HWIR"}
+        and each_answers
+        and HARDWARE_MEASURED not in fpga_tiers
+        and fpga_hw_refused
+        and trace.source_receipt == MACHINE_GENOME_RECEIPT
+        and trace.source_backend == "METAL"
+        and trace.consumer_backend == FPGA_BACKEND_ID
+        and "uma_dram_bandwidth_gb_s" in trace.consumer_cost.features
+        and trace.consumer_cost.evidence_tier != HARDWARE_MEASURED
+        and trace.binding.get("promotes_physical_law") is False
+    )
+    return _check(
+        "backend-contract",
+        "Four backends register through one contract, answer capability and cost, FPGA cannot emit HARDWARE_MEASURED, and a Metal receipt repatriates to a cost feature another backend consumes.",
+        passed,
+        [
+            "tools/accelerator/backend_contract.py",
+            MACHINE_GENOME_RECEIPT,
+            "tools/accelerator/repatriation_effects.py",
+        ],
+        {
+            "backend_ids": ids,
+            "count": len(backends),
+            "each_answers_capability_and_cost": each_answers,
+            "fpga_evidence_tiers": sorted(fpga_tiers),
+            "fpga_hardware_measured_refused": fpga_hw_refused,
+            "repatriation": {
+                "source_receipt": trace.source_receipt,
+                "source_backend": trace.source_backend,
+                "consumer_backend": trace.consumer_backend,
+                "law_id": trace.law.law_id,
+                "feature_gb_s": trace.consumer_cost.features.get("uma_dram_bandwidth_gb_s"),
+                "consumer_evidence_tier": trace.consumer_cost.evidence_tier,
+                "promotes_physical_law": trace.binding.get("promotes_physical_law"),
+            },
+        },
+    )
+
+
 SCHEMA = "hawking.accelerator.repatriation_audit.v1"
 DEFAULT_OUT = Path("receipts/headless/ACCELERATOR_REPATRIATION_AUDIT.json")
 
@@ -292,6 +399,7 @@ def build_audit(*, repo_root: str | Path | None = None) -> dict[str, Any]:
                 "effects_fingerprint": effects.get("fingerprint"),
             },
         ),
+        backend_contract_checks(repo_root=root),
     ]
     body: dict[str, Any] = {
         "schema": SCHEMA,
@@ -336,7 +444,15 @@ def main(argv: Sequence[str] | None = None) -> int:
     return 0 if body["passed"] else 1
 
 
-__all__ = ["DEFAULT_OUT", "SCHEMA", "build_audit", "emit_audit", "main", "validate_audit"]
+__all__ = [
+    "DEFAULT_OUT",
+    "SCHEMA",
+    "backend_contract_checks",
+    "build_audit",
+    "emit_audit",
+    "main",
+    "validate_audit",
+]
 
 
 if __name__ == "__main__":

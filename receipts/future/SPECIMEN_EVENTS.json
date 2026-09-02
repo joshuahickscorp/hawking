@@ -3,7 +3,7 @@
   "gpu_authority": false,
   "machine": "Apple host CPU; receipt/header metadata only",
   "measurement_state": "STATIC_ONLY",
-  "recorded_at": "2026-09-01T05:56:52Z",
+  "recorded_at": "2026-09-02T08:27:31Z",
   "recorded_by": "tools/future/specimen_events.py",
   "rule": "no hardware measurement claim without hardware",
   "state": "UNKNOWN"
@@ -187,26 +187,26 @@
  "live_arrival": false,
  "mission": {
   "identity_after": {
-   "launch_seal_sha256": "1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
-   "mission_id": "odyssey-i/1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
+   "launch_seal_sha256": "669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+   "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
    "phase_transition": "STARTED"
   },
   "identity_before": {
-   "launch_seal_sha256": "1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
-   "mission_id": "odyssey-i/1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
+   "launch_seal_sha256": "669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
+   "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
    "phase_transition": "STARTED"
   },
   "launch_receipt": "receipts/future/ODYSSEY_I_LAUNCH.json",
   "launch_untouched": {
-   "mission_id": "odyssey-i/1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
+   "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
    "mission_id_unchanged": true,
    "path": "/Users/scammermike/Downloads/hawking/receipts/future/ODYSSEY_I_LAUNCH.json",
    "phase_transition": "STARTED",
    "phase_transition_unchanged": true,
-   "seal_sha256": "1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
+   "seal_sha256": "669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
    "seal_unchanged": true
   },
-  "mission_id": "odyssey-i/1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
+  "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
   "phase_transition": "STARTED",
   "restarts_odyssey": false
  },
@@ -339,13 +339,13 @@
   "event_id": "0b63a8be2fc2828b1f5eba55d95206a6dc71ea3a353860e2095d16dc8f66476b",
   "human_reminder": false,
   "kind": "SCHEDULER_WAKE",
-  "mission_id": "odyssey-i/1cd14dff83c8565806217473bc7cb156f870a210e3bf38bf2ba4d3607fb33106",
+  "mission_id": "odyssey-i/669f24909ee1b14e109c59f0a7f1a7bcbb67fac5eb01d339d226f83b05d53bea",
   "phase_transition": "STARTED",
   "restarts_odyssey": false,
-  "ts": "2026-09-01T05:56:52Z"
+  "ts": "2026-09-02T08:27:31Z"
  },
  "schema": "hawking.future.specimen_events.v1",
- "seal_sha256": "f5f2a8e8f8cd8c4c48e40c4b4e6fc06eaa3537e7e0b88a0e1acd881c8d75bbd4",
+ "seal_sha256": "9c78d8e4c2ff5443206646919465e7b960ce92de161826e946c869d01108d581",
  "specimen": {
   "bytes_hashed": 13957873280,
   "n_files": 9,

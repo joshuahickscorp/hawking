@@ -1,0 +1,244 @@
+{
+  "schema": "hawking.future.measured_repatriation_ledger.v1",
+  "wave": "r4-measured-repatriation-ledger",
+  "rule": "A fast path that silently changes a verdict is worse than a slow one.",
+  "off_limits_already_in_flight": [
+    {
+      "path": "tools/future/capability_reachability.py",
+      "lane": "r1",
+      "stated_cost": "36.3s",
+      "action": "not profiled, not ranked, not ported"
+    },
+    {
+      "path": "tools/roadmap/",
+      "lane": "r2",
+      "stated_cost": "45s auditor",
+      "action": "not profiled, not ranked, not ported"
+    },
+    {
+      "path": "receipts/future/REACHABILITY_TRIAGE.json",
+      "lane": "r3",
+      "stated_cost": "2.7MB / 121K lines access weight",
+      "action": "not profiled, not ranked, not ported"
+    }
+  ],
+  "profiled": [
+    {
+      "id": "static_kernel_verify.scan",
+      "path": "tools/future/static_kernel_verify.py",
+      "command": "python3 -c 'from tools.future.static_kernel_verify import scan; scan()'",
+      "wall_s_min": 16.98,
+      "wall_s_first_cold": 56.51871133304667,
+      "peak_alloc_bytes": 40270462,
+      "frequency": "qualification_pipeline.run_static_preflight before every protected GPU window; orchestration binding future.static_kernel_verify; autonomy_run sidecar list",
+      "cpu_vs_io": "CPU: char-step comment strip (~11s cold) + regex parse of 22MB hawking-core rust+metal. File load 0.05s.",
+      "hcli_call_sites": [
+        "tools/future/qualification_pipeline.py:run_static_preflight",
+        "tools/future/orchestration.py BINDINGS",
+        "tools/future/abi_verdicts.py",
+        "tools/future/autonomy_run.py"
+      ],
+      "port_effort": "medium (host/shader parsers + report, ~2k Python lines)",
+      "integration_risk": "medium (JSON findings must match; a silent verdict change is forbidden)",
+      "crate_fit": "crates/hawking-core (the sources being scanned live there)",
+      "score_note": "(cost x HCLI/campaign frequency) / (effort x risk) is the highest remaining candidate that HCLI actually pays.",
+      "rank": 1,
+      "ported": true
+    },
+    {
+      "id": "hawking_graph.extract_rust_python",
+      "path": "tools/graph/hawking_graph.py",
+      "command": "extract_all_rust + extract_all_python on on-disk files, git co-change skipped",
+      "wall_s_min": 150.0166315829847,
+      "peak_alloc_bytes": 511934753,
+      "n_nodes": 75983,
+      "n_edges": 515505,
+      "rust_extract_s": 85.86971845803782,
+      "py_extract_s": 62.65558104205411,
+      "frequency": "manual G1 pipeline (README `--emit all`); no HCLI call site",
+      "cpu_vs_io": "CPU regex extract. git log --all --name-only is only 1.84s and is not the bottleneck.",
+      "rank": null,
+      "ported": false,
+      "rejection": "Measured hotter than static_kernel_verify but HCLI never invokes it. Campaign G1 is a hand-run pipeline. Porting 515k-edge graph identity into hawking-index is high integration risk. Rejected for THIS wave's single port; remains a future candidate if HCLI starts paying it."
+    },
+    {
+      "id": "headless.code_graph",
+      "path": "tools/headless/code_graph.py",
+      "command": "discover+extract+findings (no receipt write)",
+      "wall_s_min": 20.687546500004828,
+      "peak_alloc_bytes": 372341845,
+      "frequency": "one-shot census of tools/haider + tools/headless",
+      "rank": null,
+      "ported": false,
+      "rejection": "One-shot census. Contract forbids porting one-shot scripts."
+    },
+    {
+      "id": "hawking_topology.measure",
+      "path": "tools/loc/hawking_topology.py",
+      "command": "hawking_topology.measure(None) working tree",
+      "wall_s_min": 2.8492836670484394,
+      "peak_alloc_bytes": 6829318,
+      "frequency": "campaign rung_gate every rung (timeout 900s)",
+      "rank": 2,
+      "ported": false
+    },
+    {
+      "id": "hawking_loc.measure",
+      "path": "tools/loc/hawking_loc.py",
+      "command": "hawking_loc.measure(None) working tree",
+      "wall_s_min": 0.6940634169150144,
+      "peak_alloc_bytes": 4427778,
+      "frequency": "campaign rung_gate + ledger_rollup every rung",
+      "rank": 3,
+      "ported": false,
+      "note": "--rev mode is git-show-per-file (subprocess dominated); working-tree mode measured here."
+    },
+    {
+      "id": "hawking_inventory.capabilities",
+      "path": "tools/loc/hawking_inventory.py",
+      "wall_s_min": 0.3259941249853,
+      "frequency": "campaign inventory snapshots",
+      "rank": 4,
+      "ported": false
+    },
+    {
+      "id": "odyssey.dedup_synthetic",
+      "path": "tools/odyssey/dedup.py",
+      "command": "char_shingles+jaccard 200 docs x 8-window synthetic",
+      "wall_s_min": 0.20338845800142735,
+      "frequency": "ramanujan freeze_memberships / contamination barrier",
+      "rank": 5,
+      "ported": false,
+      "note": "Real eval corpus not on disk in this sparse checkout; synthetic bounds CPU per 200 docs."
+    },
+    {
+      "id": "status_causality.scan",
+      "path": "tools/future/status_causality.py",
+      "wall_s_min": 0.12064074992667884,
+      "frequency": "forensic --scan, not per-request",
+      "rank": 6,
+      "ported": false
+    },
+    {
+      "id": "status_causality.emit",
+      "path": "tools/future/status_causality.py",
+      "command": "emit() x2000",
+      "wall_s_min": 0.022842040983960032,
+      "per_call_s": 1.14e-05,
+      "frequency": "8 HCLI agentos gates stamp every status",
+      "rank": 7,
+      "ported": false,
+      "note": "High frequency, already in-memory and cheap. Not worth a crate."
+    },
+    {
+      "id": "architecture_atlas.build_atlas",
+      "path": "tools/accelerator/architecture_atlas.py",
+      "wall_s_min": 0.006699249963276088,
+      "frequency": "hcli agentos_cli; accelerator_runner",
+      "rank": 8,
+      "ported": false
+    },
+    {
+      "id": "tabula.evaluate",
+      "path": "tools/future/tabula.py",
+      "wall_s_min": 6.417045369744301e-06,
+      "frequency": "HCLI workunit / triage invoke",
+      "rank": 9,
+      "ported": false
+    },
+    {
+      "id": "static_kernel_verify.strip_comments",
+      "path": "tools/future/static_kernel_verify.py",
+      "wall_s_min": 11.115716165979393,
+      "note": "Inner loop of scan; included in scan wall time, not ranked separately."
+    },
+    {
+      "id": "git_log_all_name_only",
+      "path": "tools/graph/extract_other.py extract_git_cochange",
+      "wall_s_min": 1.8446764590917155,
+      "note": "hawking_graph co-change input. Not the 150s bottleneck."
+    }
+  ],
+  "could_not_profile": [
+    {
+      "path": "tools/loc/hawking_loc.py --rev HEAD",
+      "why": "git-show per tracked file is subprocess/IO this tool does not control. Working-tree mode was measured instead."
+    },
+    {
+      "path": "tools/odyssey/contamination.py on the sealed support-halo corpus",
+      "why": "corpus path is not materialized in this sparse checkout; synthetic dedup microbench used instead."
+    },
+    {
+      "path": "tools/future/hwir.py --build / evidence_dag.py --build / metal_reachability.py --probe",
+      "why": "receipt writes (forbidden here) or subprocess compile we do not control."
+    },
+    {
+      "path": "tools/future/capability_reachability.py",
+      "why": "lane r1; do not duplicate."
+    },
+    {
+      "path": "tools/roadmap/*",
+      "why": "lane r2; do not touch."
+    },
+    {
+      "path": "tools/audit/*",
+      "why": "do not touch; r3 is the triage JSON."
+    }
+  ],
+  "rejected_not_ported": [
+    {
+      "path": "tools/graph/hawking_graph.py",
+      "reason": "No HCLI caller. Manual campaign G1. 515k-edge identity is high integration risk. Measured 150s so it stays on the ledger as a future candidate."
+    },
+    {
+      "path": "tools/headless/code_graph.py",
+      "reason": "One-shot census."
+    },
+    {
+      "path": "tools/odyssey_ctl.py",
+      "reason": "8132-line controller; cost is subprocess/download/IO it does not own."
+    },
+    {
+      "path": "tools/loc/hawking_generation_audit.py --gate",
+      "reason": "reproduce() shells out to generators (timeout 900s). Subprocess we do not control."
+    },
+    {
+      "path": "tools/verify/case_extract.py",
+      "reason": "git show per blob; subprocess/IO dominated."
+    },
+    {
+      "path": "flash_*/gravity_* GPU compare scripts",
+      "reason": "Cost dominated by Metal/subprocess they do not control; many are one-shot probes."
+    },
+    {
+      "path": "status_causality.emit",
+      "reason": "11 microseconds per HCLI stamp. Porting buys nothing."
+    }
+  ],
+  "ported": {
+    "candidate": "tools/future/static_kernel_verify.py",
+    "crate": "crates/hawking-core",
+    "module": "crates/hawking-core/src/static_kernel_verify.rs",
+    "bin": "hawking-static-kernel-verify",
+    "python_fallback": "scan() tries the Rust binary; any miss/crash/bad JSON uses the original Python analyze(). HAWKING_SKV_FORCE_PYTHON=1 and HAWKING_STATIC_KERNEL_VERIFY=0 force Python. A missing binary does not crash.",
+    "parity_harness": "tools/future/static_kernel_verify_parity.py",
+    "parity_result": "PASS on real hawking-core shaders+hosts (canonical JSON equal after stripping git head/branch). 74616 bytes.",
+    "measured_before": {
+      "command": "HAWKING_SKV_FORCE_PYTHON=1 python3 -c 'from tools.future.static_kernel_verify import load_repo_sources, analyze, report_from_analyze; m,r,mem=load_repo_sources(); report_from_analyze(analyze(m,r,library_membership=mem))'",
+      "wall_s_min": 16.656,
+      "wall_s_runs": [17.286, 16.656],
+      "first_session_cold_scan_s": 56.519
+    },
+    "measured_after": {
+      "command": "cargo build --release -p hawking-core --bin hawking-static-kernel-verify && /usr/bin/time -p workspace/ops/build/rust/release/hawking-static-kernel-verify --repo . --json",
+      "wall_s_min": 0.84,
+      "wall_s_runs": [0.85, 0.84],
+      "scan_via_python_wrapper_s": 0.847
+    },
+    "graceful_fallback": {
+      "method": "mv release/hawking-static-kernel-verify to .bak; HAWKING_STATIC_KERNEL_VERIFY points at the missing path; skv.scan() still returns schema hawking.future.static_kernel_verify.v1 with 785 kernels",
+      "fallback_full_scan_s": 16.101,
+      "result": "PASS"
+    }
+  }
+}
